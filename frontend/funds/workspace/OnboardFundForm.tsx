@@ -1,6 +1,5 @@
 "use client";
 
-import { AssignmentGoalType, SpendingGoalType } from "@/goals/types";
 import { Button, Stack, Typography } from "@mui/material";
 import {
   type JSX,
@@ -26,6 +25,7 @@ import StringEntryField from "@/framework/forms/StringEntryField";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import onboardFund from "@/funds/workspace/onboardFund";
+import useFundSetupState from "@/funds/workspace/useFundSetupState";
 import { useRouter } from "next/navigation";
 
 /**
@@ -44,26 +44,26 @@ const OnboardFundForm = function ({
   unassignedBalance,
 }: OnboardFundFormProps): JSX.Element {
   const router = useRouter();
-  const [name, setName] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [assignmentGoalType, setAssignmentGoalType] =
-    useState<AssignmentGoalType | null>(AssignmentGoalType.MonthlyTarget);
-  const [assignmentGoalAmount, setAssignmentGoalAmount] = useState<
-    number | null
-  >(null);
-  const [spendingGoalType, setSpendingGoalType] =
-    useState<SpendingGoalType | null>(SpendingGoalType.Standard);
+  const fundSetup = useFundSetupState();
+  const {
+    name,
+    setName,
+    description,
+    setDescription,
+    assignmentGoalType,
+    setAssignmentGoalType,
+    assignmentGoalAmount,
+    setAssignmentGoalAmount,
+    spendingGoalType,
+    setSpendingGoalType,
+  } = fundSetup;
   const formRef = useRef<HTMLDivElement | null>(null);
   const [onboardedBalance, setOnboardedBalance] = useState<number | null>(null);
   const [state, action, pending] = useActionState(onboardFund, {});
 
   const reset = function (): void {
-    setName("");
-    setDescription("");
+    fundSetup.reset();
     setOnboardedBalance(null);
-    setAssignmentGoalType(AssignmentGoalType.MonthlyTarget);
-    setAssignmentGoalAmount(null);
-    setSpendingGoalType(SpendingGoalType.Standard);
     focusFirstEntryControl(formRef.current);
   };
 
@@ -72,6 +72,7 @@ const OnboardFundForm = function ({
       reset();
       router.replace(redirectUrl, { scroll: false });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [redirectUrl, router, state.success]);
 
   const remainingUnassignedAmount =
@@ -86,14 +87,14 @@ const OnboardFundForm = function ({
   );
   const spendingGoalSetupIsComplete =
     validateSpendingGoalSetup(spendingGoalType);
-  const request = buildOnboardFundRequest(
+  const request = buildOnboardFundRequest({
     name,
     description,
     onboardedBalance,
     assignmentGoalType,
     assignmentGoalAmount,
     spendingGoalType,
-  );
+  });
 
   return (
     <ConstrainedContent maxWidth={780}>

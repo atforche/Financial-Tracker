@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@mui/material";
-import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
+import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import SearchBar from "@/framework/listframe/SearchBar";

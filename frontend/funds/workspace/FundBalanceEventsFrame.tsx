@@ -3,9 +3,8 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { FundBalanceEvent } from "@/funds/types";
-import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
+import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
 import Link from "next/link";
 import ListFrame from "@/framework/listframe/ListFrame";
@@ -46,11 +45,35 @@ const FundBalanceEventsFrame = function ({
     });
 
   return (
-    <ConstrainedContent maxWidth={1200}>
-      <ListFrame<FundBalanceEvent>
-        title="Recent Balance Events"
-        color="info"
-        headerContent={
+    <ListFrame<FundBalanceEvent>
+      title="Recent Balance Events"
+      color="info"
+      headerContent={
+        <Button component={Link} href={addTransactionHref} variant="contained">
+          Add Transaction
+        </Button>
+      }
+      columns={columns}
+      getId={(balanceEvent) =>
+        `${balanceEvent.transactionId}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
+      }
+      data={data}
+      totalCount={totalCount}
+      pageParamName={propertyName<FundWorkspaceSearchParams>(
+        "balanceEventPage",
+      )}
+      onRowClick={(balanceEvent) => {
+        router.push(
+          routes.workspaceDetail(balanceEvent.transactionId, { returnUrl }),
+          { scroll: false },
+        );
+      }}
+      hasActiveFilters={false}
+      initialEmptyState={{
+        title: "No balance events yet",
+        description:
+          "Create a transaction for this fund to start building its balance history.",
+        action: (
           <Button
             component={Link}
             href={addTransactionHref}
@@ -58,39 +81,9 @@ const FundBalanceEventsFrame = function ({
           >
             Add Transaction
           </Button>
-        }
-        columns={columns}
-        getId={(balanceEvent) =>
-          `${balanceEvent.transactionId}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
-        }
-        data={data}
-        totalCount={totalCount}
-        pageParamName={propertyName<FundWorkspaceSearchParams>(
-          "balanceEventPage",
-        )}
-        onRowClick={(balanceEvent) => {
-          router.push(
-            routes.workspaceDetail(balanceEvent.transactionId, { returnUrl }),
-            { scroll: false },
-          );
-        }}
-        hasActiveFilters={false}
-        initialEmptyState={{
-          title: "No balance events yet",
-          description:
-            "Create a transaction for this fund to start building its balance history.",
-          action: (
-            <Button
-              component={Link}
-              href={addTransactionHref}
-              variant="contained"
-            >
-              Add Transaction
-            </Button>
-          ),
-        }}
-      />
-    </ConstrainedContent>
+        ),
+      }}
+    />
   );
 };
 

@@ -3,7 +3,7 @@
 import { Button, Stack, Typography } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { FundWithBalance } from "@/funds/types";
-import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
+import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import WorkspaceCard from "@/framework/view/WorkspaceCard";

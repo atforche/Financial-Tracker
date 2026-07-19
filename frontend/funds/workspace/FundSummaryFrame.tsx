@@ -1,7 +1,6 @@
 "use client";
 
 import type { JSX, ReactNode } from "react";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import Frame from "@/framework/view/Frame";
 import type { FundWithBalance } from "@/funds/types";
@@ -29,36 +28,34 @@ const FundSummaryFrame = function ({
     fund.currentBalance.pendingDebitAmount;
 
   return (
-    <ConstrainedContent maxWidth={1200}>
-      <Frame title="Fund Summary" color="info" headerContent={headerContent}>
-        <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
-          <StringEntryField
-            label="Name"
-            value={fund.name}
-            setValue={null}
-            errorMessage={null}
-          />
-          <StringEntryField
-            label="Description"
-            value={fund.description}
-            setValue={null}
-            errorMessage={null}
-          />
-          <CurrencyEntryField
-            label="Current Balance"
-            value={fund.currentBalance.postedBalance}
-            setValue={null}
-            errorMessage={null}
-          />
-          <CurrencyEntryField
-            label="Balance Including Pending"
-            value={balanceIncludingPending}
-            setValue={null}
-            errorMessage={null}
-          />
-        </ResponsiveGrid>
-      </Frame>
-    </ConstrainedContent>
+    <Frame title="Fund Summary" color="info" headerContent={headerContent}>
+      <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
+        <StringEntryField
+          label="Name"
+          value={fund.name}
+          setValue={null}
+          errorMessage={null}
+        />
+        <StringEntryField
+          label="Description"
+          value={fund.description}
+          setValue={null}
+          errorMessage={null}
+        />
+        <CurrencyEntryField
+          label="Current Balance"
+          value={fund.currentBalance.postedBalance}
+          setValue={null}
+          errorMessage={null}
+        />
+        <CurrencyEntryField
+          label="Balance Including Pending"
+          value={balanceIncludingPending}
+          setValue={null}
+          errorMessage={null}
+        />
+      </ResponsiveGrid>
+    </Frame>
   );
 };
 

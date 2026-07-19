@@ -4,9 +4,12 @@ import {
   objectToSearchParams,
 } from "@/framework/routes/helpers";
 import type { FundTrendsSearchParams } from "@/funds/trends/helpers";
-import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
+import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { Route } from "next";
 
+/**
+ * Converts the provided Fund Trends Search Params to URL search params.
+ */
 const fundTrendsSearchParamsToSearchParams = function (
   searchParams: FundTrendsSearchParams,
 ): URLSearchParams {

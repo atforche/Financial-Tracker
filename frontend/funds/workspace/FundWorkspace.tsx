@@ -1,17 +1,11 @@
 import FundWorkspaceCards from "@/funds/workspace/FundWorkspaceCards";
 import FundWorkspaceFilter from "@/funds/workspace/FundWorkspaceFilter";
+import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import createApiClient from "@/framework/data/createApiClient";
+import { isUnassignedFund } from "@/funds/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
-
-/**
- * Search parameters supported by the Funds workspace.
- */
-interface FundWorkspaceSearchParams {
-  search?: string;
-  balanceEventPage?: number | string | null;
-}
 
 /**
  * Props for the FundWorkspace component.
@@ -45,7 +39,9 @@ const FundWorkspace = async function ({
   );
   const funds = unwrapApiResponse(fundsResponse, "Failed to fetch funds");
 
-  const visibleFunds = funds.items.filter((fund) => fund.name !== "Unassigned");
+  const visibleFunds = funds.items.filter(
+    (fund) => !isUnassignedFund(fund.name),
+  );
   const isInOnboardingMode = accountingPeriod.items.length === 0;
 
   return (
@@ -59,5 +55,4 @@ const FundWorkspace = async function ({
   );
 };
 
-export type { FundWorkspaceSearchParams };
 export default FundWorkspace;

@@ -1,5 +1,9 @@
 "use server";
 
+import type {
+  FundActionPayload,
+  FundActionState,
+} from "@/funds/workspace/fundAction";
 import type { UpdateFundRequest } from "@/funds/types";
 import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
@@ -10,20 +14,16 @@ import { revalidatePath } from "next/cache";
 /**
  * Interface representing the state of updating a fund.
  */
-interface ActionState {
-  readonly success?: boolean;
-  readonly errorTitle?: string | null;
+interface ActionState extends FundActionState {
   readonly nameErrors?: string | null;
   readonly descriptionErrors?: string | null;
-  readonly unmappedErrors?: string | null;
 }
 
 /**
  * Payload for the update server action.
  */
-interface ActionPayload {
+interface ActionPayload extends FundActionPayload {
   readonly fundId: string;
-  readonly redirectUrl: string;
   readonly request: UpdateFundRequest;
 }
 

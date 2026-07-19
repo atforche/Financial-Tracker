@@ -1,5 +1,5 @@
-import { Box, Stack, Typography } from "@mui/material";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
+import { Stack, Typography } from "@mui/material";
 import {
   describeAssignmentGoalType,
   formatAssignmentGoalType,
@@ -7,6 +7,7 @@ import {
 import { AssignmentGoalType } from "@/goals/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import FundGoalTypeEntryField from "@/funds/FundGoalTypeEntryField";
+import GoalTypeDescription from "@/funds/workspace/GoalTypeDescription";
 import type { JSX } from "react";
 import { getAssignmentAmountHelperText } from "@/funds/workspace/helpers";
 
@@ -50,29 +51,18 @@ const AssignmentGoalSetupSection = function ({
           errorMessage={typeErrorMessage}
         />
 
-        <Box
-          sx={{
-            px: 2,
-            py: 1.5,
-            borderRadius: 3,
-            border: "1px solid",
-            borderColor: "divider",
-            backgroundColor: "action.hover",
-          }}
-        >
-          <Stack spacing={0.5}>
-            <Typography variant="subtitle2">
-              {value === null
-                ? "Choose an assignment goal type"
-                : formatAssignmentGoalType(value)}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {value === null
-                ? "Select an option to see how the assignment amount will be interpreted."
-                : describeAssignmentGoalType(value)}
-            </Typography>
-          </Stack>
-        </Box>
+        <GoalTypeDescription
+          title={
+            value === null
+              ? "Choose an assignment goal type"
+              : formatAssignmentGoalType(value)
+          }
+          description={
+            value === null
+              ? "Select an option to see how the assignment amount will be interpreted."
+              : describeAssignmentGoalType(value)
+          }
+        />
 
         <Stack spacing={0.75}>
           <CurrencyEntryField

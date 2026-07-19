@@ -1,4 +1,4 @@
-import { AssignmentGoalType, SpendingGoalType } from "@/goals/types";
+import { AssignmentGoalType, type SpendingGoalType } from "@/goals/types";
 import type { CreateFundRequest, OnboardFundRequest } from "@/funds/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 
@@ -42,41 +42,37 @@ const validateSpendingGoalSetup = function (
 };
 
 /**
- * Validates a request to create a fund.
+ * Fields required to build a request to create a fund.
  */
-const validateCreateFundRequest = function (
-  name: string,
-  accountingPeriod: AccountingPeriod | null,
-  assignmentGoalType: AssignmentGoalType | null,
-  assignmentGoalAmount: number | null,
-  spendingGoalType: SpendingGoalType | null,
-): boolean {
-  return (
-    validateCreateFundSetup(name, accountingPeriod) &&
-    validateAssignmentGoalSetup(assignmentGoalType, assignmentGoalAmount) &&
-    validateSpendingGoalSetup(spendingGoalType)
-  );
-};
+interface CreateFundRequestFields {
+  readonly name: string;
+  readonly description: string;
+  readonly accountingPeriod: AccountingPeriod | null;
+  readonly assignmentGoalType: AssignmentGoalType | null;
+  readonly assignmentGoalAmount: number | null;
+  readonly spendingGoalType: SpendingGoalType | null;
+}
 
 /**
  * Builds a request to create a fund.
  */
 const buildCreateFundRequest = function (
-  name: string,
-  description: string,
-  accountingPeriod: AccountingPeriod | null,
-  assignmentGoalType: AssignmentGoalType | null,
-  assignmentGoalAmount: number | null,
-  spendingGoalType: SpendingGoalType | null,
+  fields: CreateFundRequestFields,
 ): CreateFundRequest | null {
+  const {
+    name,
+    description,
+    accountingPeriod,
+    assignmentGoalType,
+    assignmentGoalAmount,
+    spendingGoalType,
+  } = fields;
   if (
-    !validateCreateFundRequest(
-      name,
-      accountingPeriod,
-      assignmentGoalType,
-      assignmentGoalAmount,
-      spendingGoalType,
-    )
+    name === "" ||
+    accountingPeriod === null ||
+    assignmentGoalType === null ||
+    assignmentGoalAmount === null ||
+    spendingGoalType === null
   ) {
     return null;
   }
@@ -84,49 +80,45 @@ const buildCreateFundRequest = function (
   return {
     name,
     description,
-    accountingPeriodId: accountingPeriod?.id ?? "",
-    assignmentGoalType: assignmentGoalType ?? AssignmentGoalType.MonthlyTarget,
-    assignmentGoalAmount: assignmentGoalAmount ?? 0,
-    spendingGoalType: spendingGoalType ?? SpendingGoalType.Standard,
+    accountingPeriodId: accountingPeriod.id,
+    assignmentGoalType,
+    assignmentGoalAmount,
+    spendingGoalType,
   };
 };
 
 /**
- * Validates a request to onboard a fund.
+ * Fields required to build a request to onboard a fund.
  */
-const validateOnboardFundRequest = function (
-  name: string,
-  onboardedBalance: number | null,
-  assignmentGoalType: AssignmentGoalType | null,
-  assignmentGoalAmount: number | null,
-  spendingGoalType: SpendingGoalType | null,
-): boolean {
-  return (
-    validateOnboardFundSetup(name, onboardedBalance) &&
-    validateAssignmentGoalSetup(assignmentGoalType, assignmentGoalAmount) &&
-    validateSpendingGoalSetup(spendingGoalType)
-  );
-};
+interface OnboardFundRequestFields {
+  readonly name: string;
+  readonly description: string;
+  readonly onboardedBalance: number | null;
+  readonly assignmentGoalType: AssignmentGoalType | null;
+  readonly assignmentGoalAmount: number | null;
+  readonly spendingGoalType: SpendingGoalType | null;
+}
 
 /**
  * Builds a request to onboard a fund.
  */
 const buildOnboardFundRequest = function (
-  name: string,
-  description: string,
-  onboardedBalance: number | null,
-  assignmentGoalType: AssignmentGoalType | null,
-  assignmentGoalAmount: number | null,
-  spendingGoalType: SpendingGoalType | null,
+  fields: OnboardFundRequestFields,
 ): OnboardFundRequest | null {
+  const {
+    name,
+    description,
+    onboardedBalance,
+    assignmentGoalType,
+    assignmentGoalAmount,
+    spendingGoalType,
+  } = fields;
   if (
-    !validateOnboardFundRequest(
-      name,
-      onboardedBalance,
-      assignmentGoalType,
-      assignmentGoalAmount,
-      spendingGoalType,
-    )
+    name === "" ||
+    onboardedBalance === null ||
+    assignmentGoalType === null ||
+    assignmentGoalAmount === null ||
+    spendingGoalType === null
   ) {
     return null;
   }
@@ -134,10 +126,10 @@ const buildOnboardFundRequest = function (
   return {
     name,
     description,
-    onboardedBalance: onboardedBalance ?? 0,
-    assignmentGoalType: assignmentGoalType ?? AssignmentGoalType.MonthlyTarget,
-    assignmentGoalAmount: assignmentGoalAmount ?? 0,
-    spendingGoalType: spendingGoalType ?? SpendingGoalType.Standard,
+    onboardedBalance,
+    assignmentGoalType,
+    assignmentGoalAmount,
+    spendingGoalType,
   };
 };
 
@@ -165,9 +157,7 @@ export {
   validateOnboardFundSetup,
   validateAssignmentGoalSetup,
   validateSpendingGoalSetup,
-  validateCreateFundRequest,
   buildCreateFundRequest,
-  validateOnboardFundRequest,
   buildOnboardFundRequest,
   getAssignmentAmountHelperText,
 };

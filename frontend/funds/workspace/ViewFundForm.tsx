@@ -1,13 +1,13 @@
 "use client";
 
+import { Button, Stack } from "@mui/material";
 import type { FundBalanceEvent, FundWithBalance } from "@/funds/types";
+import { type JSX, useState } from "react";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import DeleteFundForm from "@/funds/workspace/DeleteFundForm";
 import FundBalanceEventsFrame from "@/funds/workspace/FundBalanceEventsFrame";
 import FundSummaryFrame from "@/funds/workspace/FundSummaryFrame";
-import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import { Stack } from "@mui/material";
 import UpdateFundForm from "@/funds/workspace/UpdateFundForm";
 
 /**
@@ -31,6 +31,8 @@ const ViewFundForm = function ({
   recentBalanceEventCount,
   addTransactionHref,
 }: ViewFundFormProps): JSX.Element {
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+
   return (
     <ConstrainedContent maxWidth={1200}>
       <PageLayout>
@@ -38,7 +40,14 @@ const ViewFundForm = function ({
           fund={fund}
           headerContent={
             <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-              <UpdateFundForm fund={fund} redirectUrl={redirectUrl} />
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setUpdateDialogOpen(true);
+                }}
+              >
+                Edit
+              </Button>
               <DeleteFundForm fund={fund} redirectUrl={redirectUrl} />
             </Stack>
           }
@@ -48,6 +57,15 @@ const ViewFundForm = function ({
           totalCount={recentBalanceEventCount}
           addTransactionHref={addTransactionHref}
         />
+        {updateDialogOpen ? (
+          <UpdateFundForm
+            fund={fund}
+            redirectUrl={redirectUrl}
+            onClose={() => {
+              setUpdateDialogOpen(false);
+            }}
+          />
+        ) : null}
       </PageLayout>
     </ConstrainedContent>
   );

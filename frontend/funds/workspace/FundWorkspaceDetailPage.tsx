@@ -1,17 +1,15 @@
-import { Button, Stack, Typography } from "@mui/material";
 import {
   getPageOffset,
   normalizePageValue,
   rowsPerPage,
 } from "@/framework/listframe/page";
-import ArrowBack from "@mui/icons-material/ArrowBack";
-import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
+import { FundBalanceEventSort } from "@/funds/types";
+import FundWorkspacePageHeader from "@/funds/workspace/FundWorkspacePageHeader";
+import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
-import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
 import ViewFundForm from "@/funds/workspace/ViewFundForm";
 import createApiClient from "@/framework/data/createApiClient";
-import { getTransactionFundBalanceEvents } from "@/transactions/postingHelpers";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 import transactionRoutes from "@/transactions/routes";
@@ -37,17 +35,9 @@ const FundWorkspaceDetailPage = async function ({
   const { search, balanceEventPage } = resolvedSearchParams;
   const apiClient = createApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
-  const [fundsResponse, transactionsResponse] = await Promise.all([
-    apiClient.GET("/funds/with-balances"),
-    apiClient.GET("/transactions", {
-      params: { query: { "Filter.FundIds": [fundId] } },
-    }),
-  ]);
+  const balanceEventOffset = getPageOffset(currentBalanceEventPage);
+  const fundsResponse = await apiClient.GET("/funds/with-balances");
   const funds = unwrapApiResponse(fundsResponse, "Failed to fetch funds");
-  const transactions = unwrapApiResponse(
-    transactionsResponse,
-    "Failed to fetch fund transactions",
-  );
   const fund = funds.items.find((item) => item.id === fundId);
 
   const workspaceSearchParams: FundWorkspaceSearchParams = {
@@ -63,13 +53,24 @@ const FundWorkspaceDetailPage = async function ({
     redirect(workspaceUrl);
   }
 
-  const allBalanceEvents = transactions.items
-    .flatMap(getTransactionFundBalanceEvents)
-    .filter((event) => event.fund.id === fund.id);
-  const balanceEventOffset = getPageOffset(currentBalanceEventPage);
-  const balanceEvents = allBalanceEvents.slice(
-    balanceEventOffset,
-    balanceEventOffset + rowsPerPage,
+  const balanceEventsResponse = await apiClient.GET(
+    "/balance-events/funds/date-range",
+    {
+      params: {
+        query: {
+          "Range.Start": "0001-01-01",
+          "Range.End": "9999-12-31",
+          "Filter.Names": [fund.name],
+          Sort: FundBalanceEventSort.DateDescending,
+          Limit: rowsPerPage,
+          Offset: balanceEventOffset,
+        },
+      },
+    },
+  );
+  const balanceEvents = unwrapApiResponse(
+    balanceEventsResponse,
+    "Failed to fetch fund balance events",
   );
 
   const currentUrl = routes.workspaceDetail(fund.id, detailSearchParams);
@@ -80,22 +81,12 @@ const FundWorkspaceDetailPage = async function ({
 
   return (
     <PageLayout>
-      <Stack spacing={2.5}>
-        <Link
-          href={workspaceUrl}
-          style={{ alignSelf: "flex-start", textDecoration: "none" }}
-        >
-          <Button component="span" startIcon={<ArrowBack />}>
-            Back to Workspace
-          </Button>
-        </Link>
-        <Typography variant="h4">Fund Details</Typography>
-      </Stack>
+      <FundWorkspacePageHeader backHref={workspaceUrl} title="Fund Details" />
       <ViewFundForm
         fund={fund}
         redirectUrl={currentUrl}
-        recentBalanceEvents={balanceEvents}
-        recentBalanceEventCount={allBalanceEvents.length}
+        recentBalanceEvents={balanceEvents.items}
+        recentBalanceEventCount={balanceEvents.totalCount}
         addTransactionHref={addTransactionHref}
       />
     </PageLayout>

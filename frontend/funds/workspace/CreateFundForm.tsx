@@ -1,6 +1,5 @@
 "use client";
 
-import { AssignmentGoalType, SpendingGoalType } from "@/goals/types";
 import { Button, Stack } from "@mui/material";
 import {
   type JSX,
@@ -26,6 +25,7 @@ import SpendingGoalSetupSection from "@/funds/workspace/SpendingGoalSetupSection
 import StringEntryField from "@/framework/forms/StringEntryField";
 import createFund from "@/funds/workspace/createFund";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
+import useFundSetupState from "@/funds/workspace/useFundSetupState";
 import { useRouter } from "next/navigation";
 
 /**
@@ -44,15 +44,19 @@ const CreateFundForm = function ({
   redirectUrl,
 }: CreateFundFormProps): JSX.Element {
   const router = useRouter();
-  const [name, setName] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [assignmentGoalType, setAssignmentGoalType] =
-    useState<AssignmentGoalType | null>(AssignmentGoalType.MonthlyTarget);
-  const [assignmentGoalAmount, setAssignmentGoalAmount] = useState<
-    number | null
-  >(null);
-  const [spendingGoalType, setSpendingGoalType] =
-    useState<SpendingGoalType | null>(SpendingGoalType.Standard);
+  const fundSetup = useFundSetupState();
+  const {
+    name,
+    setName,
+    description,
+    setDescription,
+    assignmentGoalType,
+    setAssignmentGoalType,
+    assignmentGoalAmount,
+    setAssignmentGoalAmount,
+    spendingGoalType,
+    setSpendingGoalType,
+  } = fundSetup;
   const formRef = useRef<HTMLDivElement | null>(null);
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(null);
@@ -60,12 +64,8 @@ const CreateFundForm = function ({
   const [state, action, pending] = useActionState(createFund, {});
 
   const reset = function (): void {
-    setName("");
-    setDescription("");
+    fundSetup.reset();
     setAccountingPeriod(null);
-    setAssignmentGoalType(AssignmentGoalType.MonthlyTarget);
-    setAssignmentGoalAmount(null);
-    setSpendingGoalType(SpendingGoalType.Standard);
     focusFirstEntryControl(formRef.current);
   };
 
@@ -74,6 +74,7 @@ const CreateFundForm = function ({
       reset();
       router.replace(redirectUrl, { scroll: false });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [redirectUrl, router, state.success]);
 
   const fundSetupIsComplete = validateCreateFundSetup(name, accountingPeriod);
@@ -83,14 +84,14 @@ const CreateFundForm = function ({
   );
   const spendingGoalSetupIsComplete =
     validateSpendingGoalSetup(spendingGoalType);
-  const request = buildCreateFundRequest(
+  const request = buildCreateFundRequest({
     name,
     description,
     accountingPeriod,
     assignmentGoalType,
     assignmentGoalAmount,
     spendingGoalType,
-  );
+  });
 
   return (
     <ConstrainedContent maxWidth={780}>

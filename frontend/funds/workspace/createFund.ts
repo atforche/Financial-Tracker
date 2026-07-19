@@ -1,5 +1,9 @@
 "use server";
 
+import type {
+  FundActionPayload,
+  FundActionState,
+} from "@/funds/workspace/fundAction";
 import type { CreateFundRequest } from "@/funds/types";
 import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
@@ -10,23 +14,19 @@ import { revalidatePath } from "next/cache";
 /**
  * Interface representing the state of creating a fund.
  */
-interface ActionState {
-  readonly success?: boolean;
-  readonly errorTitle?: string | null;
+interface ActionState extends FundActionState {
   readonly nameErrors?: string | null;
   readonly descriptionErrors?: string | null;
   readonly accountingPeriodErrors?: string | null;
   readonly assignmentGoalTypeErrors?: string | null;
   readonly assignmentGoalAmountErrors?: string | null;
   readonly spendingGoalTypeErrors?: string | null;
-  readonly unmappedErrors?: string | null;
 }
 
 /**
  * Payload for the create fund server action.
  */
-interface ActionPayload {
-  readonly redirectUrl: string;
+interface ActionPayload extends FundActionPayload {
   readonly request: CreateFundRequest;
 }
 

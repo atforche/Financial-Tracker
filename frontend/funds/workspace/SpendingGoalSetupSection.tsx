@@ -1,12 +1,13 @@
-import { Box, Stack, Typography } from "@mui/material";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
 import {
   describeSpendingGoalType,
   formatSpendingGoalType,
 } from "@/goals/helpers";
 import FundGoalTypeEntryField from "@/funds/FundGoalTypeEntryField";
+import GoalTypeDescription from "@/funds/workspace/GoalTypeDescription";
 import type { JSX } from "react";
 import { SpendingGoalType } from "@/goals/types";
+import { Stack } from "@mui/material";
 
 /**
  * Props for the SpendingGoalSetupSection component.
@@ -39,29 +40,18 @@ const SpendingGoalSetupSection = function ({
           errorMessage={typeErrorMessage}
         />
 
-        <Box
-          sx={{
-            px: 2,
-            py: 1.5,
-            borderRadius: 3,
-            border: "1px solid",
-            borderColor: "divider",
-            backgroundColor: "action.hover",
-          }}
-        >
-          <Stack spacing={0.5}>
-            <Typography variant="subtitle2">
-              {value === null
-                ? "Choose a spending goal type"
-                : formatSpendingGoalType(value)}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {value === null
-                ? "Select an option to see how spending progress will be evaluated."
-                : describeSpendingGoalType(value)}
-            </Typography>
-          </Stack>
-        </Box>
+        <GoalTypeDescription
+          title={
+            value === null
+              ? "Choose a spending goal type"
+              : formatSpendingGoalType(value)
+          }
+          description={
+            value === null
+              ? "Select an option to see how spending progress will be evaluated."
+              : describeSpendingGoalType(value)
+          }
+        />
       </Stack>
     </Frame>
   );

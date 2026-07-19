@@ -1,6 +1,6 @@
 import CreateFundForm from "@/funds/workspace/CreateFundForm";
 import FundWorkspacePageHeader from "@/funds/workspace/FundWorkspacePageHeader";
-import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
+import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import createApiClient from "@/framework/data/createApiClient";

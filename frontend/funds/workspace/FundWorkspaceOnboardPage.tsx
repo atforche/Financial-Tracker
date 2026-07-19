@@ -1,9 +1,10 @@
 import FundWorkspacePageHeader from "@/funds/workspace/FundWorkspacePageHeader";
-import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
+import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
 import OnboardFundForm from "@/funds/workspace/OnboardFundForm";
 import PageLayout from "@/framework/view/PageLayout";
 import createApiClient from "@/framework/data/createApiClient";
+import { isUnassignedFund } from "@/funds/helpers";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -49,7 +50,7 @@ const FundWorkspaceOnboardPage = async function ({
   }
 
   const unassignedBalance =
-    funds.items.find((fund) => fund.name === "Unassigned")?.currentBalance
+    funds.items.find((fund) => isUnassignedFund(fund.name))?.currentBalance
       .postedBalance ?? null;
 
   return (
