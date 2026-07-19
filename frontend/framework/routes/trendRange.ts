@@ -1,5 +1,8 @@
 import propertyName from "@/framework/data/propertyName";
 
+/**
+ * Defines the mode of a trend range, which can be based on accounting periods or specific dates.
+ */
 type TrendRangeMode = "accounting-period" | "date";
 
 /**
@@ -11,6 +14,9 @@ interface TrendRangeDefaults {
   readonly defaultEndDate: string;
 }
 
+/**
+ * Search parameters used to configure a trend range.
+ */
 interface TrendRangeSearchParams {
   mode?: TrendRangeMode;
   startAccountingPeriodId?: string;

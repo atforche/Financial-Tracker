@@ -10,9 +10,6 @@ interface ColumnSortProps {
 
 /**
  * Creates a column sorting helper bound to the current sort and its setter.
- * @param currentSort - The currently selected API sort value.
- * @param setSort - Sets the selected API sort value.
- * @returns A function that creates sorting props for a column.
  */
 const createColumnSortProps = function <TSort>(
   currentSort: TSort | null | undefined,

@@ -12,7 +12,11 @@ import {
   defaultGoalTrendsView,
   isGoalTrendsView,
 } from "@/goals/trends/goalTrendsTypes";
-import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  getPageOffset,
+  normalizePageValue,
+  rowsPerPage,
+} from "@/framework/listframe/page";
 import {
   summarizeGoalRange,
   summarizeGoalsByAccountingPeriod,
@@ -35,7 +39,6 @@ import { normalizeGoalTypes } from "@/goals/trends/goalTypeFilter";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import { redirect } from "next/navigation";
 import routes from "@/goals/routes";
-import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 

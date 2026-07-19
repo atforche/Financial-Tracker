@@ -3,7 +3,11 @@ import {
   type AccountingPeriodWithTransactions,
 } from "@/accounting-periods/types";
 import { Stack, Typography } from "@mui/material";
-import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  getPageOffset,
+  normalizePageValue,
+  rowsPerPage,
+} from "@/framework/listframe/page";
 import AccountingPeriodCurrentSummaryCards from "@/accounting-periods/current/CurrentAccountingPeriodSummaryCards";
 import AccountingPeriodCurrentTransactionListFrame from "@/accounting-periods/current/CurrentAccountingPeriodTransactionListFrame";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
@@ -13,7 +17,6 @@ import PageLayout from "@/framework/view/PageLayout";
 import type { TransactionSort } from "@/transactions/types";
 import createApiClient from "@/framework/data/createApiClient";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
-import { rowsPerPage } from "@/framework/listframe/Constants";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**

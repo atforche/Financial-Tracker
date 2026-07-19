@@ -1,5 +1,9 @@
 import { Button, Stack, Typography } from "@mui/material";
-import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  getPageOffset,
+  normalizePageValue,
+  rowsPerPage,
+} from "@/framework/listframe/page";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { JSX } from "react";
@@ -10,7 +14,6 @@ import createApiClient from "@/framework/data/createApiClient";
 import { getTransactionFundBalanceEvents } from "@/transactions/postingHelpers";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
-import { rowsPerPage } from "@/framework/listframe/Constants";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 

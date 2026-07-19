@@ -4,11 +4,11 @@ import {
   Collapse,
   Divider,
   IconButton,
-  Paper,
   Stack,
   Typography,
 } from "@mui/material";
 import { type JSX, useState } from "react";
+import ContentSurface from "@/framework/view/ContentSurface";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import type { OverviewData } from "@/overview/types";
 import { formatCurrency } from "@/framework/currencyHelpers";
@@ -24,7 +24,7 @@ const FundOverview = function ({ data }: FundOverviewProps): JSX.Element {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
+    <ContentSurface>
       <Stack spacing={2}>
         <Typography variant="h6" color="text.secondary">
           Current Total Fund Balances
@@ -75,7 +75,7 @@ const FundOverview = function ({ data }: FundOverviewProps): JSX.Element {
           </Collapse>
         </Stack>
       </Stack>
-    </Paper>
+    </ContentSurface>
   );
 };
 

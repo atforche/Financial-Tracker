@@ -1,5 +1,6 @@
-import { Paper, Stack, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import { AccountingPeriodSortModel } from "@/framework/data/api";
+import ContentSurface from "@/framework/view/ContentSurface";
 import GoalTrendsSummaryCards from "@/goals/trends/GoalTrendsSummaryCards";
 import type { JSX } from "react";
 import createApiClient from "@/framework/data/createApiClient";
@@ -27,7 +28,7 @@ const GoalOverview = async function (): Promise<JSX.Element> {
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
   if (latestAccountingPeriod === null) {
     return (
-      <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
+      <ContentSurface>
         <Stack spacing={2}>
           <Typography variant="caption" color="text.secondary">
             Current Goals
@@ -37,7 +38,7 @@ const GoalOverview = async function (): Promise<JSX.Element> {
             No current accounting period is available to show goal summaries.
           </Typography>
         </Stack>
-      </Paper>
+      </ContentSurface>
     );
   }
   const [assignmentResponse, spendingResponse] = await Promise.all([
@@ -73,7 +74,7 @@ const GoalOverview = async function (): Promise<JSX.Element> {
     spendingGoals.items,
   );
   return (
-    <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
+    <ContentSurface>
       <Stack spacing={2}>
         <Typography variant="h6" color="text.secondary">
           Current Goals ({latestAccountingPeriod.name})
@@ -87,7 +88,7 @@ const GoalOverview = async function (): Promise<JSX.Element> {
         </Typography>
         <GoalTrendsSummaryCards trends={summary} view="spending" />
       </Stack>
-    </Paper>
+    </ContentSurface>
   );
 };
 

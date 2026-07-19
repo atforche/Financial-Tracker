@@ -3,7 +3,11 @@ import {
   type AccountingPeriodWithBalanceSort,
 } from "@/accounting-periods/types";
 import type { Transaction, TransactionSort } from "@/transactions/types";
-import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  getPageOffset,
+  normalizePageValue,
+  rowsPerPage,
+} from "@/framework/listframe/page";
 import AccountingPeriodTrendChart from "@/accounting-periods/trends/AccountingPeriodTrendChart";
 import AccountingPeriodTrendsChangeChart from "@/accounting-periods/trends/AccountingPeriodTrendsChangeChart";
 import AccountingPeriodTrendsFilter from "@/accounting-periods/trends/AccountingPeriodTrendsFilter";
@@ -18,7 +22,6 @@ import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import createApiClient from "@/framework/data/createApiClient";
 import { createEmptyTrends } from "@/accounting-periods/trends/helpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
-import { rowsPerPage } from "@/framework/listframe/Constants";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**

@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, IconButton, Stack } from "@mui/material";
+import { Box, Button, Stack } from "@mui/material";
 import {
   type FundWithBalanceRange,
   FundWithBalanceRangeSort,
@@ -12,6 +12,7 @@ import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
@@ -150,28 +151,28 @@ const FundTrendsListFrame = function ({
       headerContent: "",
       getBodyContent: (fund) => (
         <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-          <IconButton
+          <ListFrameActionButton
             size="small"
             color="inherit"
             onClick={(event) => {
               event.stopPropagation();
               setFundNameFilter(fund.name);
             }}
-            aria-label={`Filter ${fund.name}`}
+            ariaLabel={`Filter ${fund.name}`}
           >
             <FilterListOutlined fontSize="small" color="action" />
-          </IconButton>
-          <IconButton
+          </ListFrameActionButton>
+          <ListFrameActionButton
             size="small"
             color="primary"
             onClick={(event) => {
               event.stopPropagation();
               openFundWorkspace(fund);
             }}
-            aria-label={`Open ${fund.name}`}
+            ariaLabel={`Open ${fund.name}`}
           >
             <ArrowForwardOutlined fontSize="small" color="action" />
-          </IconButton>
+          </ListFrameActionButton>
         </Stack>
       ),
       alignment: "right",

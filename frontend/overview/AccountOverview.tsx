@@ -4,11 +4,11 @@ import {
   Collapse,
   Divider,
   IconButton,
-  Paper,
   Stack,
   Typography,
 } from "@mui/material";
 import { type JSX, useState } from "react";
+import ContentSurface from "@/framework/view/ContentSurface";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import type { OverviewData } from "@/overview/types";
 import { formatAccountType } from "@/accounts/helpers";
@@ -25,7 +25,7 @@ const AccountOverview = function ({ data }: AccountOverviewProps): JSX.Element {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
+    <ContentSurface>
       <Stack spacing={2}>
         <Typography variant="h6" color="text.secondary">
           Current Total Account Balances
@@ -79,7 +79,7 @@ const AccountOverview = function ({ data }: AccountOverviewProps): JSX.Element {
           </Collapse>
         </Stack>
       </Stack>
-    </Paper>
+    </ContentSurface>
   );
 };
 

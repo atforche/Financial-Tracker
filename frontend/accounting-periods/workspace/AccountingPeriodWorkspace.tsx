@@ -7,7 +7,11 @@ import {
   normalizeIntegerSearchParams,
   toRepeatedSearchParams,
 } from "@/framework/routes/helpers";
-import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  getPageOffset,
+  normalizePageValue,
+  rowsPerPage,
+} from "@/framework/listframe/page";
 import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/workspace/helpers";
 import AccountingPeriodWorkspaceActions from "@/accounting-periods/workspace/AccountingPeriodWorkspaceActions";
 import AccountingPeriodWorkspaceFilter from "@/accounting-periods/workspace/AccountingPeriodWorkspaceFilter";
@@ -19,7 +23,6 @@ import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
-import { rowsPerPage } from "@/framework/listframe/Constants";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**

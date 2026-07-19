@@ -7,7 +7,11 @@ import type {
   AccountTrendsDataMode,
   AccountTrendsSearchParams,
 } from "@/accounts/trends/helpers";
-import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  getPageOffset,
+  normalizePageValue,
+  rowsPerPage,
+} from "@/framework/listframe/page";
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
@@ -34,7 +38,6 @@ import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
-import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 

@@ -4,7 +4,7 @@ import {
   type AccountWithBalanceRange,
   AccountWithBalanceRangeSort,
 } from "@/accounts/types";
-import { Box, Button, IconButton, Stack } from "@mui/material";
+import { Box, Button, Stack } from "@mui/material";
 import {
   accountTrendsParamNames,
   clearAccountTrendsFilters,
@@ -20,6 +20,7 @@ import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
@@ -159,28 +160,28 @@ const AccountTrendsListFrame = function ({
       headerContent: "",
       getBodyContent: (account) => (
         <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-          <IconButton
+          <ListFrameActionButton
             size="small"
             color="inherit"
             onClick={(event) => {
               event.stopPropagation();
               setAccountNameFilter(account.name);
             }}
-            aria-label={`Filter ${account.name}`}
+            ariaLabel={`Filter ${account.name}`}
           >
             <FilterListOutlined fontSize="small" color="action" />
-          </IconButton>
-          <IconButton
+          </ListFrameActionButton>
+          <ListFrameActionButton
             size="small"
             color="primary"
             onClick={(event) => {
               event.stopPropagation();
               openAccountWorkspace(account);
             }}
-            aria-label={`Open ${account.name}`}
+            ariaLabel={`Open ${account.name}`}
           >
             <ArrowForwardOutlined fontSize="small" color="action" />
-          </IconButton>
+          </ListFrameActionButton>
         </Stack>
       ),
       alignment: "right",
@@ -194,7 +195,7 @@ const AccountTrendsListFrame = function ({
       title="Accounts"
       columns={columns}
       getId={(account) => account.id}
-      data={[...data]}
+      data={data}
       totalCount={totalCount}
       pageParamName={pageParamName}
       onRowClick={(account: AccountWithBalanceRange): void => {

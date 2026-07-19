@@ -12,12 +12,18 @@ interface WorkspaceCardContentProps {
   readonly color?: FrameColor;
 }
 
+/**
+ * Props for the WorkspaceCard component, which can either include an href for navigation or an onClick handler for interaction.
+ */
 type WorkspaceCardProps = WorkspaceCardContentProps &
   (
     | { readonly href: string; readonly onClick?: never }
     | { readonly href?: never; readonly onClick: () => void }
   );
 
+/**
+ * Styles for the button base used in the WorkspaceCard component, ensuring consistent layout and appearance.
+ */
 const buttonSx = {
   display: "flex",
   width: "100%",

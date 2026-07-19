@@ -10,8 +10,6 @@ interface CaptionProps {
 
 /**
  * Component that presents the user with a caption.
- * @param props - Props for the Caption component.
- * @returns JSX element representing the Caption component.
  */
 const Caption = function ({ caption }: CaptionProps): JSX.Element {
   return (

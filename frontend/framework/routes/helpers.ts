@@ -162,12 +162,43 @@ const buildUrl = function (pathname: string, params: URLSearchParams): string {
 };
 
 /**
+ * Serializes one non-null search parameter value.
+ */
+const serializeSearchParamValue = function (value: unknown): string {
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+
+  if (typeof value === "symbol") {
+    return value.description ?? "";
+  }
+
+  if (typeof value === "function") {
+    return value.name;
+  }
+
+  if (typeof value === "undefined") {
+    return "";
+  }
+
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "bigint" ||
+    typeof value === "boolean"
+  ) {
+    return String(value);
+  }
+
+  return "";
+};
+
+/**
  * Converts an arbitrary object to a URLSearchParams instance.
  * Handles nested objects and arrays by serializing them as JSON strings.
  */
-const objectToSearchParams = function (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  obj: Record<string, any>,
+const objectToSearchParams = function <T extends object>(
+  obj: T,
 ): URLSearchParams {
   const params = new URLSearchParams();
 
@@ -176,10 +207,16 @@ const objectToSearchParams = function (
       continue;
     }
 
-    if (typeof value === "object") {
-      params.set(key, JSON.stringify(value));
+    if (Array.isArray(value)) {
+      value.forEach((item) => {
+        if (!isNullOrUndefined(item)) {
+          params.append(key, serializeSearchParamValue(item));
+        }
+      });
+    } else if (typeof value === "object") {
+      params.set(key, serializeSearchParamValue(value));
     } else {
-      params.set(key, String(value));
+      params.set(key, serializeSearchParamValue(value));
     }
   }
 

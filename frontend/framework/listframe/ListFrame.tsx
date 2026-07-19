@@ -2,7 +2,7 @@
 
 import "@/framework/listframe/ListFrame.css";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
-import type { JSX, ReactNode } from "react";
+import { type JSX, type ReactNode, useEffect } from "react";
 import {
   Paper,
   Stack,
@@ -15,9 +15,9 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import { getPaginationIndex, rowsPerPage } from "@/framework/listframe/page";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnHeader from "@/framework/listframe/ColumnHeader";
-import { rowsPerPage } from "@/framework/listframe/Constants";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -30,7 +30,7 @@ const listFrameRowHeight = 50;
 interface EmptyStateDefinition {
   readonly title: string;
   readonly description: string;
-  readonly action: JSX.Element | null;
+  readonly action?: ReactNode;
 }
 
 /**
@@ -40,9 +40,9 @@ interface ListFrameProps<T> {
   readonly title: string;
   readonly headerContent?: ReactNode;
   readonly color?: FrameColor;
-  readonly columns: ColumnDefinition<T>[];
+  readonly columns: readonly ColumnDefinition<T>[];
   readonly getId: (item: T) => string;
-  readonly data: T[] | null;
+  readonly data: readonly T[] | null;
   readonly totalCount: number | null;
   readonly searchParamName?: string;
   readonly pageParamName: string;
@@ -79,6 +79,7 @@ const ListFrame = function <T>({
       ? searchParams.get(searchParamName)
       : null;
   const currentPage = searchParams.get(pageParamName);
+  const paginationIndex = getPaginationIndex(currentPage, totalCount ?? 0);
   const isFiltered =
     typeof hasActiveFilters === "boolean"
       ? hasActiveFilters
@@ -88,6 +89,24 @@ const ListFrame = function <T>({
   const numberOfRows = data?.length ?? 0;
   const placeholderRowCount =
     hasLoadingCompleted && numberOfRows > 0 ? rowsPerPage - numberOfRows : 0;
+
+  useEffect(() => {
+    if (!hasLoadingCompleted) {
+      return;
+    }
+    const canonicalPage = (paginationIndex + 1).toString();
+    if (currentPage !== null && currentPage !== canonicalPage) {
+      updateParams((params) => {
+        params.set(pageParamName, canonicalPage);
+      });
+    }
+  }, [
+    currentPage,
+    hasLoadingCompleted,
+    pageParamName,
+    paginationIndex,
+    updateParams,
+  ]);
 
   let emptyStateToDisplay = null;
   if (hasLoadingCompleted && numberOfRows === 0) {
@@ -121,14 +140,24 @@ const ListFrame = function <T>({
                 ? data.map((item): JSX.Element => {
                     const isClickable = typeof onRowClick === "function";
                     const isSelected = isRowSelected?.(item) ?? false;
+                    const id = getId(item);
                     return (
                       <TableRow
                         hover
                         selected={isSelected}
-                        tabIndex={-1}
-                        key={getId(item)}
+                        tabIndex={isClickable ? 0 : undefined}
+                        key={id}
                         onClick={(): void => {
                           if (isClickable) {
+                            onRowClick(item);
+                          }
+                        }}
+                        onKeyDown={(event): void => {
+                          if (
+                            isClickable &&
+                            (event.key === "Enter" || event.key === " ")
+                          ) {
+                            event.preventDefault();
                             onRowClick(item);
                           }
                         }}
@@ -138,7 +167,7 @@ const ListFrame = function <T>({
                         {columns.map((column) => (
                           <TableCell
                             className="list-frame-table-cell"
-                            key={`${getId(item)}-${column.name}`}
+                            key={`${id}-${column.name}`}
                             align={column.alignment ?? "left"}
                             sx={[
                               {
@@ -212,7 +241,7 @@ const ListFrame = function <T>({
             component="div"
             count={totalCount}
             rowsPerPage={rowsPerPage}
-            page={currentPage === null ? 0 : parseInt(currentPage, 10) - 1}
+            page={paginationIndex}
             onPageChange={(_, newPage) => {
               updateParams((params) => {
                 params.set(pageParamName, (newPage + 1).toString());
@@ -226,5 +255,4 @@ const ListFrame = function <T>({
 };
 
 export default ListFrame;
-export { rowsPerPage };
 export type { EmptyStateDefinition };

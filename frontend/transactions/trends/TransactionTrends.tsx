@@ -3,7 +3,11 @@ import type {
   TransactionSort,
   TransactionType,
 } from "@/transactions/types";
-import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  getPageOffset,
+  normalizePageValue,
+  rowsPerPage,
+} from "@/framework/listframe/page";
 import {
   normalizeRequestedAccountNames,
   shouldPersistAccountNames,
@@ -30,7 +34,6 @@ import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
 import { redirect } from "next/navigation";
 import routes from "@/transactions/routes";
-import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 

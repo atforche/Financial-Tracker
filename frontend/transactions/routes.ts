@@ -33,30 +33,23 @@ const transactionWorkspaceSearchParamsToSearchParams = function (
   return params;
 };
 
-const pathWithSearchParams = function (
-  pathname: string,
-  searchParams: URLSearchParams,
-): Route {
-  return buildUrl(pathname, searchParams);
-};
-
 /**
  * App routes related to accounting periods.
  */
 const routes = {
   current: (): Route => "/transactions/current",
   trends: (searchParams: TransactionTrendsSearchParams): Route =>
-    pathWithSearchParams(
+    buildUrl(
       "/transactions/trends",
       transactionTrendsSearchParamsToSearchParams(searchParams),
     ),
   workspace: (searchParams: TransactionWorkspaceSearchParams): Route =>
-    pathWithSearchParams(
+    buildUrl(
       "/transactions/workspace",
       transactionWorkspaceSearchParamsToSearchParams(searchParams),
     ),
   workspaceCreate: (searchParams: TransactionWorkspaceSearchParams): Route =>
-    pathWithSearchParams(
+    buildUrl(
       "/transactions/workspace/create",
       transactionWorkspaceSearchParamsToSearchParams(searchParams),
     ),
@@ -64,7 +57,7 @@ const routes = {
     transactionId: string,
     searchParams: TransactionWorkspaceSearchParams,
   ): Route =>
-    pathWithSearchParams(
+    buildUrl(
       `/transactions/workspace/${transactionId}`,
       transactionWorkspaceSearchParamsToSearchParams(searchParams),
     ),
@@ -72,7 +65,7 @@ const routes = {
     transactionId: string,
     searchParams: TransactionWorkspaceSearchParams,
   ): Route =>
-    pathWithSearchParams(
+    buildUrl(
       `/transactions/workspace/${transactionId}/edit`,
       transactionWorkspaceSearchParamsToSearchParams(searchParams),
     ),

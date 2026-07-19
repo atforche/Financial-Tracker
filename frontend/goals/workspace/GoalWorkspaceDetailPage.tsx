@@ -1,4 +1,8 @@
-import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  getPageOffset,
+  normalizePageValue,
+  rowsPerPage,
+} from "@/framework/listframe/page";
 import GoalWorkspacePageHeader from "@/goals/workspace/GoalWorkspacePageHeader";
 import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
 import type { JSX } from "react";
@@ -7,7 +11,6 @@ import ViewGoalForm from "@/goals/workspace/ViewGoalForm";
 import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
 import routes from "@/goals/routes";
-import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";

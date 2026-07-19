@@ -4,7 +4,11 @@ import type {
   TransactionSummaryByType,
   TransactionType,
 } from "@/transactions/types";
-import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  getPageOffset,
+  normalizePageValue,
+  rowsPerPage,
+} from "@/framework/listframe/page";
 import {
   getPostableTransactionAccounts,
   getTransactionAccountIds,
@@ -33,7 +37,6 @@ import TransactionsByTypeCard from "@/transactions/TransactionsByTypeCard";
 import createApiClient from "@/framework/data/createApiClient";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
-import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 

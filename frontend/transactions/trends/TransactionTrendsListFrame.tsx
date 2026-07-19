@@ -1,6 +1,5 @@
 "use client";
 
-import { Button, IconButton } from "@mui/material";
 import { type Transaction, TransactionSort } from "@/transactions/types";
 import {
   getTransactionAccountIds,
@@ -12,9 +11,11 @@ import {
 } from "@/transactions/current/helpers";
 import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
+import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import type { TransactionTrendsSearchParams } from "@/transactions/trends/TransactionTrends";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
@@ -153,17 +154,17 @@ const TransactionTrendsListFrame = function ({
       name: "actions",
       headerContent: "",
       getBodyContent: (transaction) => (
-        <IconButton
+        <ListFrameActionButton
           size="small"
           color="primary"
           onClick={(event) => {
             event.stopPropagation();
             openTransactionWorkspace(transaction);
           }}
-          aria-label={`Open transaction ${transaction.id}`}
+          ariaLabel={`Open transaction ${transaction.id}`}
         >
           <ArrowForwardOutlined fontSize="small" color="action" />
-        </IconButton>
+        </ListFrameActionButton>
       ),
       alignment: "right",
       minWidth: 52,

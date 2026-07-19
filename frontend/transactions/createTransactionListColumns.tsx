@@ -5,7 +5,7 @@ import {
 } from "@/transactions/current/helpers";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import { IconButton } from "@mui/material";
+import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
@@ -76,17 +76,17 @@ const createTransactionListColumns = function ({
       name: "actions",
       headerContent: "",
       getBodyContent: (transaction) => (
-        <IconButton
+        <ListFrameActionButton
           size="small"
           color="primary"
           onClick={(event) => {
             event.stopPropagation();
             openTransaction(transaction);
           }}
-          aria-label={`Open transaction ${transaction.id}`}
+          ariaLabel={`Open transaction ${transaction.id}`}
         >
           <ArrowForwardOutlined fontSize="small" color="action" />
-        </IconButton>
+        </ListFrameActionButton>
       ),
       alignment: "right",
       minWidth: 52,

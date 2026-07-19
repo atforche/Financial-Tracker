@@ -1,5 +1,6 @@
-import { Paper, Stack, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
 import TransactionsByTypeCard from "@/transactions/TransactionsByTypeCard";
 import createApiClient from "@/framework/data/createApiClient";
@@ -20,7 +21,7 @@ const TransactionOverview = async function ({
 }: TransactionOverviewProps): Promise<JSX.Element> {
   if (currentAccountingPeriod === null) {
     return (
-      <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
+      <ContentSurface>
         <Stack spacing={2}>
           <Typography variant="h6" color="text.secondary">
             Current Transactions
@@ -30,7 +31,7 @@ const TransactionOverview = async function ({
             summaries.
           </Typography>
         </Stack>
-      </Paper>
+      </ContentSurface>
     );
   }
   const apiClient = createApiClient();
@@ -52,14 +53,14 @@ const TransactionOverview = async function ({
     "Failed to load transaction overview data",
   );
   return (
-    <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
+    <ContentSurface>
       <Stack spacing={2}>
         <Typography variant="h6" color="text.secondary">
           Current Transactions ({currentAccountingPeriod.name})
         </Typography>
         <TransactionsByTypeCard transactionTypes={data.transactionTypes} />
       </Stack>
-    </Paper>
+    </ContentSurface>
   );
 };
 

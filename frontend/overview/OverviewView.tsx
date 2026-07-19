@@ -1,7 +1,9 @@
-import { Paper, Stack, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import AccountOverview from "@/overview/AccountOverview";
 import { AccountTypeModel } from "@/framework/data/api";
 import AccountingPeriodOverview from "@/overview/AccountingPeriodOverview";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
+import ContentSurface from "@/framework/view/ContentSurface";
 import FundOverview from "@/overview/FundOverview";
 import GoalOverview from "@/overview/GoalOverview";
 import type { JSX } from "react";
@@ -138,36 +140,31 @@ const OverviewView = async function (): Promise<JSX.Element> {
   const data = await getOverviewData();
 
   return (
-    <PageLayout>
-      <Paper
-        sx={{
-          border: "1px solid",
-          borderColor: "divider",
-          p: { xs: 3, md: 4 },
-          maxWidth: 1440,
-        }}
-      >
-        <Stack spacing={1.5}>
-          <Typography variant="overline" color="text.secondary">
-            Financial Tracker
-          </Typography>
-          <Typography variant="h3">Overview</Typography>
-        </Stack>
-      </Paper>
+    <ConstrainedContent>
+      <PageLayout>
+        <ContentSurface prominent>
+          <Stack spacing={1.5}>
+            <Typography variant="overline" color="text.secondary">
+              Financial Tracker
+            </Typography>
+            <Typography variant="h3">Overview</Typography>
+          </Stack>
+        </ContentSurface>
 
-      <ResponsiveGrid columns={{ xs: 1 }}>
-        <AccountingPeriodOverview />
-        <ResponsiveGrid columns={{ xs: 1, md: 2 }}>
-          <AccountOverview data={data} />
-          <FundOverview data={data} />
+        <ResponsiveGrid columns={{ xs: 1 }}>
+          <AccountingPeriodOverview />
+          <ResponsiveGrid columns={{ xs: 1, md: 2 }}>
+            <AccountOverview data={data} />
+            <FundOverview data={data} />
+          </ResponsiveGrid>
+          <GoalOverview />
         </ResponsiveGrid>
-        <GoalOverview />
-      </ResponsiveGrid>
 
-      <TransactionOverview
-        currentAccountingPeriod={data.currentAccountingPeriod}
-      />
-    </PageLayout>
+        <TransactionOverview
+          currentAccountingPeriod={data.currentAccountingPeriod}
+        />
+      </PageLayout>
+    </ConstrainedContent>
   );
 };
 

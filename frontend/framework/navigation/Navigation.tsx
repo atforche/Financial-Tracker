@@ -1,20 +1,40 @@
-import { Drawer, Toolbar, Typography } from "@mui/material";
+import { Drawer, type DrawerProps, Toolbar, Typography } from "@mui/material";
 import Image from "next/image";
 import type { JSX } from "react";
 import NavigationLinks from "@/framework/navigation/NavigationLinks";
 
 /**
- * Component that displays a navigation sidebar.
+ * Width of the navigation drawer.
  */
-const Navigation = function (): JSX.Element {
-  const drawerWidth = 280;
+const navigationWidth = 280;
+
+/**
+ * Props for the Navigation component.
+ */
+interface NavigationProps {
+  readonly variant?: DrawerProps["variant"];
+  readonly open?: boolean;
+  readonly onClose?: () => void;
+}
+
+/**
+ * Displays the navigation using either a permanent or temporary drawer.
+ */
+const Navigation = function ({
+  variant = "permanent",
+  open = true,
+  onClose,
+}: NavigationProps): JSX.Element {
   return (
     <Drawer
-      variant="permanent"
+      variant={variant}
+      open={open}
+      onClose={onClose}
       sx={{
         [`& .MuiToolbar-root`]: { padding: "12px" },
         flexShrink: 0,
-        width: drawerWidth,
+        width: navigationWidth,
+        "& .MuiDrawer-paper": { width: navigationWidth },
       }}
     >
       <Toolbar>
@@ -28,9 +48,12 @@ const Navigation = function (): JSX.Element {
           Financial Tracker
         </Typography>
       </Toolbar>
-      <NavigationLinks />
+      <NavigationLinks
+        onNavigate={variant === "temporary" ? onClose : undefined}
+      />
     </Drawer>
   );
 };
 
 export default Navigation;
+export { navigationWidth };

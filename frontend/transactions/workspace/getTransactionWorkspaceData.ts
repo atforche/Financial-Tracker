@@ -1,5 +1,9 @@
 import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
-import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  getPageOffset,
+  normalizePageValue,
+  rowsPerPage,
+} from "@/framework/listframe/page";
 import {
   normalizeStringSearchParams,
   toRepeatedSearchParams,
@@ -10,7 +14,6 @@ import type { FundWithBalance } from "@/funds/types";
 import type { Transaction } from "@/transactions/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import createApiClient from "@/framework/data/createApiClient";
-import { rowsPerPage } from "@/framework/listframe/Constants";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 interface TransactionWorkspaceReferenceData {

@@ -1,6 +1,7 @@
-import { Paper, Stack, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import { AccountingPeriodSortModel } from "@/framework/data/api";
 import AccountingPeriodTrendsSummaryCards from "@/accounting-periods/trends/AccountingPeriodTrendsSummaryCards";
+import ContentSurface from "@/framework/view/ContentSurface";
 import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
 import createApiClient from "@/framework/data/createApiClient";
@@ -47,7 +48,7 @@ const AccountingPeriodOverview = async function (): Promise<JSX.Element> {
         );
   const periods = range?.accountingPeriods.items ?? [];
   return (
-    <Paper sx={{ border: "1px solid", borderColor: "divider", p: 3 }}>
+    <ContentSurface>
       <Stack spacing={2}>
         <Typography variant="h6" color="text.secondary">
           Current Accounting Period:
@@ -63,7 +64,7 @@ const AccountingPeriodOverview = async function (): Promise<JSX.Element> {
           />
         </Stack>
       </Stack>
-    </Paper>
+    </ContentSurface>
   );
 };
 

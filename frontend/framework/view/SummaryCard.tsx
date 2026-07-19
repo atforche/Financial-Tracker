@@ -1,5 +1,5 @@
+import { Box, Stack, Typography } from "@mui/material";
 import type { JSX, ReactNode } from "react";
-import { Stack, Typography } from "@mui/material";
 import Frame from "@/framework/view/Frame";
 
 /**
@@ -25,7 +25,7 @@ const SummaryCard = function ({
     <Frame title={title}>
       <Stack spacing={0.75}>
         {typeof value !== "undefined" && (
-          <Typography variant="h4">{value}</Typography>
+          <Box sx={(theme) => theme.typography.h4}>{value}</Box>
         )}
         {children}
         {typeof description !== "undefined" && (

@@ -1,5 +1,9 @@
 import { Button, Stack, Typography } from "@mui/material";
-import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  getPageOffset,
+  normalizePageValue,
+  rowsPerPage,
+} from "@/framework/listframe/page";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import type { JSX } from "react";
@@ -10,7 +14,6 @@ import createApiClient from "@/framework/data/createApiClient";
 import { getTransactionAccountBalanceEvents } from "@/transactions/postingHelpers";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
-import { rowsPerPage } from "@/framework/listframe/Constants";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 

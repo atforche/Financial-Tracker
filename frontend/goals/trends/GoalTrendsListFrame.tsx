@@ -6,7 +6,7 @@ import {
   type SpendingGoal,
   SpendingGoalSort,
 } from "@/goals/types";
-import { Button, IconButton, Stack } from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import {
   type GoalTrendsView,
   defaultGoalTrendsView,
@@ -18,6 +18,7 @@ import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { GoalTrendsSearchParams } from "@/goals/trends/GoalTrends";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { formatSpendingGoalType } from "@/goals/helpers";
@@ -163,28 +164,28 @@ const GoalTrendsListFrame = function ({
         headerContent: "",
         getBodyContent: (goal) => (
           <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-            <IconButton
+            <ListFrameActionButton
               size="small"
               color="inherit"
               onClick={(event) => {
                 event.stopPropagation();
                 setFundNameFilter(goal.fund.name);
               }}
-              aria-label={`Filter ${goal.fund.name}`}
+              ariaLabel={`Filter ${goal.fund.name}`}
             >
               <FilterListOutlined fontSize="small" color="action" />
-            </IconButton>
-            <IconButton
+            </ListFrameActionButton>
+            <ListFrameActionButton
               size="small"
               color="primary"
               onClick={(event) => {
                 event.stopPropagation();
                 openGoalWorkspace();
               }}
-              aria-label={`Open ${goal.fund.name}`}
+              ariaLabel={`Open ${goal.fund.name}`}
             >
               <ArrowForwardOutlined fontSize="small" color="action" />
-            </IconButton>
+            </ListFrameActionButton>
           </Stack>
         ),
         alignment: "right",
@@ -318,28 +319,28 @@ const GoalTrendsListFrame = function ({
       headerContent: "",
       getBodyContent: (goal) => (
         <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-          <IconButton
+          <ListFrameActionButton
             size="small"
             color="inherit"
             onClick={(event) => {
               event.stopPropagation();
               setFundNameFilter(goal.fund.name);
             }}
-            aria-label={`Filter ${goal.fund.name}`}
+            ariaLabel={`Filter ${goal.fund.name}`}
           >
             <FilterListOutlined fontSize="small" color="action" />
-          </IconButton>
-          <IconButton
+          </ListFrameActionButton>
+          <ListFrameActionButton
             size="small"
             color="primary"
             onClick={(event) => {
               event.stopPropagation();
               openGoalWorkspace();
             }}
-            aria-label={`Open ${goal.fund.name}`}
+            ariaLabel={`Open ${goal.fund.name}`}
           >
             <ArrowForwardOutlined fontSize="small" color="action" />
-          </IconButton>
+          </ListFrameActionButton>
         </Stack>
       ),
       alignment: "right",

@@ -7,13 +7,6 @@ import type { GoalTrendsSearchParams } from "@/goals/trends/GoalTrends";
 import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
 import type { Route } from "next";
 
-const pathWithSearchParams = function (
-  pathname: string,
-  searchParams: URLSearchParams,
-): Route {
-  return buildUrl(pathname, searchParams);
-};
-
 const goalWorkspaceSearchParamsToSearchParams = function (
   searchParams: GoalWorkspaceSearchParams,
 ): URLSearchParams {
@@ -41,18 +34,13 @@ const goalTrendsSearchParamsToSearchParams = function (
 };
 
 const routes = {
-  index: (searchParams: GoalTrendsSearchParams): Route =>
-    pathWithSearchParams(
-      "/goals/trends",
-      goalTrendsSearchParamsToSearchParams(searchParams),
-    ),
   trends: (searchParams: GoalTrendsSearchParams): Route =>
-    pathWithSearchParams(
+    buildUrl(
       "/goals/trends",
       goalTrendsSearchParamsToSearchParams(searchParams),
     ),
   workspace: (searchParams: GoalWorkspaceSearchParams): Route =>
-    pathWithSearchParams(
+    buildUrl(
       "/goals/workspace",
       goalWorkspaceSearchParamsToSearchParams(searchParams),
     ),
@@ -60,7 +48,7 @@ const routes = {
     fundId: string,
     searchParams: GoalWorkspaceSearchParams,
   ): Route =>
-    pathWithSearchParams(
+    buildUrl(
       `/goals/workspace/${fundId}`,
       goalWorkspaceSearchParamsToSearchParams(searchParams),
     ),

@@ -10,13 +10,14 @@ import {
   clearAccountTrendsFilters,
   hasActiveAccountTrendsFilters,
 } from "@/accounts/trends/helpers";
-import { Box, Button, IconButton } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import { BalanceEventType } from "@/balance-events/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatBalanceEventType } from "@/balance-events/helpers";
 import { formatCurrency } from "@/framework/currencyHelpers";
@@ -160,17 +161,17 @@ const AccountTrendsBalanceEventListFrame = function ({
       name: "actions",
       headerContent: "",
       getBodyContent: (balanceEvent) => (
-        <IconButton
+        <ListFrameActionButton
           size="small"
           color="primary"
           onClick={(event) => {
             event.stopPropagation();
             openTransactionWorkspace(balanceEvent);
           }}
-          aria-label={`Open transaction ${balanceEvent.transactionId}`}
+          ariaLabel={`Open transaction ${balanceEvent.transactionId}`}
         >
           <ArrowForwardOutlined fontSize="small" color="action" />
-        </IconButton>
+        </ListFrameActionButton>
       ),
       alignment: "right",
       minWidth: 52,
@@ -185,7 +186,7 @@ const AccountTrendsBalanceEventListFrame = function ({
       getId={(balanceEvent) =>
         `${balanceEvent.transactionId}-${balanceEvent.account.id}-${balanceEvent.date ?? "pending"}-${balanceEvent.type}-${balanceEvent.amount}`
       }
-      data={[...data]}
+      data={data}
       totalCount={totalCount}
       pageParamName={pageParamName}
       hasActiveFilters={hasActiveFilters}

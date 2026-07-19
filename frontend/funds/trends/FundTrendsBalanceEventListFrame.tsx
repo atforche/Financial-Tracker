@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, IconButton } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { type FundBalanceEvent, FundBalanceEventSort } from "@/funds/types";
 import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
@@ -9,6 +9,7 @@ import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatBalanceEventType } from "@/balance-events/helpers";
 import { formatCurrency } from "@/framework/currencyHelpers";
@@ -153,17 +154,17 @@ const FundTrendsBalanceEventListFrame = function ({
       name: "actions",
       headerContent: "",
       getBodyContent: (balanceEvent) => (
-        <IconButton
+        <ListFrameActionButton
           size="small"
           color="primary"
           onClick={(event) => {
             event.stopPropagation();
             openTransactionWorkspace(balanceEvent);
           }}
-          aria-label={`Open transaction ${balanceEvent.transactionId}`}
+          ariaLabel={`Open transaction ${balanceEvent.transactionId}`}
         >
           <ArrowForwardOutlined fontSize="small" color="action" />
-        </IconButton>
+        </ListFrameActionButton>
       ),
       alignment: "right",
       minWidth: 52,

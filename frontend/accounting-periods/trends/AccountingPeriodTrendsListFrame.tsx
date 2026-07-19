@@ -4,7 +4,7 @@ import {
   type AccountingPeriodWithBalance,
   AccountingPeriodWithBalanceSort,
 } from "@/accounting-periods/types";
-import { Button, Checkbox, IconButton, Stack } from "@mui/material";
+import { Button, Checkbox, Stack } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriodTrendsSearchParams } from "@/accounting-periods/trends/AccountingPeriodTrends";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
@@ -12,6 +12,7 @@ import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
@@ -137,28 +138,28 @@ const AccountingPeriodTrendsListFrame = function ({
       headerContent: "",
       getBodyContent: (accountingPeriod) => (
         <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-          <IconButton
+          <ListFrameActionButton
             size="small"
             color="inherit"
             onClick={(event) => {
               event.stopPropagation();
               setAccountingPeriodFilter(accountingPeriod);
             }}
-            aria-label={`Filter ${accountingPeriod.name}`}
+            ariaLabel={`Filter ${accountingPeriod.name}`}
           >
             <FilterListOutlined fontSize="small" color="action" />
-          </IconButton>
-          <IconButton
+          </ListFrameActionButton>
+          <ListFrameActionButton
             size="small"
             color="primary"
             onClick={(event) => {
               event.stopPropagation();
               openAccountingPeriodWorkspace(accountingPeriod);
             }}
-            aria-label={`Open ${accountingPeriod.name}`}
+            ariaLabel={`Open ${accountingPeriod.name}`}
           >
             <ArrowForwardOutlined fontSize="small" color="action" />
-          </IconButton>
+          </ListFrameActionButton>
         </Stack>
       ),
       alignment: "right",

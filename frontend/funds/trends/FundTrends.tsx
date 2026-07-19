@@ -4,7 +4,11 @@ import type {
   FundsInAccountingPeriodRange,
   FundsInDateRange,
 } from "@/funds/types";
-import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
+import {
+  getPageOffset,
+  normalizePageValue,
+  rowsPerPage,
+} from "@/framework/listframe/page";
 import {
   normalizeRequestedFundNames,
   shouldPersistFundNames,
@@ -26,7 +30,6 @@ import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
-import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 

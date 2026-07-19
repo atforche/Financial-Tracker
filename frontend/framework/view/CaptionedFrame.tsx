@@ -16,8 +16,6 @@ interface CaptionedFrameProps {
 
 /**
  * Component that presents the user with a frame that has a caption and children content.
- * @param props - Props for the CaptionedFrame component.
- * @returns JSX element representing the CaptionedFrame.
  */
 const CaptionedFrame = function ({
   caption,

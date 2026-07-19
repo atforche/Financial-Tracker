@@ -1,6 +1,5 @@
 "use client";
 
-import { Button, IconButton } from "@mui/material";
 import {
   type GoalBalanceEvent,
   type GoalTrendsView,
@@ -8,11 +7,13 @@ import {
 } from "@/goals/trends/goalTrendsTypes";
 import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
+import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import { GoalBalanceEventSort } from "@/goals/types";
 import type { GoalTrendsSearchParams } from "@/goals/trends/GoalTrends";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { formatShortDate } from "@/framework/dateHelpers";
@@ -140,17 +141,17 @@ const GoalTrendsBalanceEventListFrame = function ({
       name: "actions",
       headerContent: "",
       getBodyContent: (balanceEvent) => (
-        <IconButton
+        <ListFrameActionButton
           size="small"
           color="primary"
           onClick={(event) => {
             event.stopPropagation();
             openTransactionWorkspace(balanceEvent);
           }}
-          aria-label={`Open transaction ${balanceEvent.transactionId}`}
+          ariaLabel={`Open transaction ${balanceEvent.transactionId}`}
         >
           <ArrowForwardOutlined fontSize="small" color="action" />
-        </IconButton>
+        </ListFrameActionButton>
       ),
       alignment: "right",
       minWidth: 52,
