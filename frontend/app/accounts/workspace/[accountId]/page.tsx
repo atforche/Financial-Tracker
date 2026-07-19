@@ -1,6 +1,6 @@
 import { Button, Stack, Typography } from "@mui/material";
 import { getPageOffset, normalizePageValue } from "@/framework/listframe/page";
-import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
+import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import type { JSX } from "react";
 import Link from "next/link";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Autocomplete, Checkbox, TextField } from "@mui/material";
+import type { AssignmentGoalType, SpendingGoalType } from "@/goals/types";
 import type {
   GoalTrendsGoalType,
   GoalTrendsView,
@@ -8,12 +8,13 @@ import type {
 import {
   formatAssignmentGoalType,
   formatSpendingGoalType,
-} from "@/goals/types";
+} from "@/goals/helpers";
 import {
   getGoalTypeValues,
   normalizeGoalTypes,
 } from "@/goals/trends/goalTypeFilter";
 import type { JSX } from "react";
+import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 
 interface GoalTrendsGoalTypeFilterProps {
   readonly view: GoalTrendsView;
@@ -31,103 +32,32 @@ const GoalTrendsGoalTypeFilter = function ({
   onChange,
   disabled = false,
 }: GoalTrendsGoalTypeFilterProps): JSX.Element {
-  if (view === "assignment") {
-    const goalTypeValues = getGoalTypeValues(view);
-    const selectedGoalTypes = normalizeGoalTypes(value, view);
-    const label = "Assignment goal types";
-
-    return (
-      <Autocomplete
-        multiple
-        disableCloseOnSelect
-        size="small"
-        options={[...goalTypeValues]}
-        value={[...selectedGoalTypes]}
-        disabled={disabled}
-        limitTags={1}
-        sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
-        noOptionsText={
-          goalTypeValues.length === 0
-            ? "No goal types available"
-            : "No goal types found"
-        }
-        slotProps={{
-          paper: {
-            sx: {
-              "& .MuiAutocomplete-listbox": {
-                maxHeight: 320,
-              },
-            },
-          },
-        }}
-        onChange={(_, nextGoalTypes) => {
-          onChange(normalizeGoalTypes(nextGoalTypes, view));
-        }}
-        renderOption={(props, option, { selected }) => (
-          <li {...props}>
-            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-            {formatAssignmentGoalType(option)}
-          </li>
-        )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label={label}
-            {...(selectedGoalTypes.length === 0
-              ? { placeholder: `All ${label.toLowerCase()}` }
-              : {})}
-          />
-        )}
-      />
-    );
-  }
-
   const goalTypeValues = getGoalTypeValues(view);
   const selectedGoalTypes = normalizeGoalTypes(value, view);
-  const label = "Spending goal types";
+  const isAssignment = view === "assignment";
+  const label = isAssignment ? "Assignment goal types" : "Spending goal types";
+  const formatGoalType = function (goalType: GoalTrendsGoalType): string {
+    return isAssignment
+      ? formatAssignmentGoalType(goalType as AssignmentGoalType)
+      : formatSpendingGoalType(goalType as SpendingGoalType);
+  };
 
   return (
-    <Autocomplete
-      multiple
-      disableCloseOnSelect
-      size="small"
-      options={[...goalTypeValues]}
-      value={[...selectedGoalTypes]}
+    <MultiSelectAutocompleteFilter
+      label={label}
+      options={goalTypeValues}
+      value={selectedGoalTypes}
       disabled={disabled}
-      limitTags={1}
-      sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
+      placeholder={`All ${label.toLowerCase()}`}
       noOptionsText={
         goalTypeValues.length === 0
           ? "No goal types available"
           : "No goal types found"
       }
-      slotProps={{
-        paper: {
-          sx: {
-            "& .MuiAutocomplete-listbox": {
-              maxHeight: 320,
-            },
-          },
-        },
-      }}
-      onChange={(_, nextGoalTypes) => {
+      getOptionLabel={formatGoalType}
+      onChange={(nextGoalTypes) => {
         onChange(normalizeGoalTypes(nextGoalTypes, view));
       }}
-      renderOption={(props, option, { selected }) => (
-        <li {...props}>
-          <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-          {formatSpendingGoalType(option)}
-        </li>
-      )}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          label={label}
-          {...(selectedGoalTypes.length === 0
-            ? { placeholder: `All ${label.toLowerCase()}` }
-            : {})}
-        />
-      )}
     />
   );
 };

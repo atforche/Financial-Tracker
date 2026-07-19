@@ -7,13 +7,11 @@ import {
   startTransition,
   useActionState,
   useEffect,
-  useRef,
   useState,
 } from "react";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import updateAccount from "@/accounts/workspace/updateAccount";
 import { useRouter } from "next/navigation";
 
@@ -23,6 +21,7 @@ import { useRouter } from "next/navigation";
 interface UpdateAccountFormProps {
   readonly account: Account;
   readonly redirectUrl: string;
+  readonly onClose: () => void;
 }
 
 /**
@@ -31,29 +30,18 @@ interface UpdateAccountFormProps {
 const UpdateAccountForm = function ({
   account,
   redirectUrl,
+  onClose,
 }: UpdateAccountFormProps): JSX.Element {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
   const [name, setName] = useState<string>(account.name);
-  const formRef = useRef<HTMLDivElement | null>(null);
-
   const [state, action, pending] = useActionState(updateAccount, {});
-
-  const reset = function (): void {
-    setName(account.name);
-    focusFirstEntryControl(formRef.current);
-  };
 
   useEffect(() => {
     if (state.success === true) {
-      setOpen(false);
+      onClose();
       router.replace(redirectUrl, { scroll: false });
     }
-  }, [redirectUrl, router, state.success]);
-
-  useEffect(() => {
-    setName(account.name);
-  }, [account.id, account.name]);
+  }, [onClose, redirectUrl, router, state.success]);
 
   let request: UpdateAccountRequest | null = null;
   if (name !== "") {
@@ -63,74 +51,59 @@ const UpdateAccountForm = function ({
   }
 
   return (
-    <>
-      <Button
-        variant="contained"
-        onClick={() => {
-          setOpen(true);
-        }}
-      >
-        Edit
-      </Button>
-      <Dialog
-        open={open}
-        onClose={
-          pending
-            ? undefined
-            : (): void => {
-                setOpen(false);
-                reset();
+    <Dialog
+      open
+      onClose={
+        pending
+          ? undefined
+          : (): void => {
+              onClose();
+            }
+      }
+      fullWidth
+      maxWidth="sm"
+      title="Update Account"
+      actions={
+        <>
+          <Button
+            disabled={pending}
+            onClick={() => {
+              onClose();
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            loading={pending}
+            disabled={request === null}
+            onClick={() => {
+              if (request === null) {
+                return;
               }
-        }
-        fullWidth
-        maxWidth="sm"
-        title="Update Account"
-        actions={
-          <>
-            <Button
-              disabled={pending}
-              onClick={() => {
-                setOpen(false);
-                reset();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button variant="outlined" disabled={pending} onClick={reset}>
-              Reset
-            </Button>
-            <Button
-              variant="contained"
-              loading={pending}
-              disabled={request === null}
-              onClick={() => {
-                if (request === null) {
-                  return;
-                }
-                startTransition(() => {
-                  action({ accountId: account.id, redirectUrl, request });
-                });
-              }}
-            >
-              Save
-            </Button>
-          </>
-        }
-      >
-        <Stack ref={formRef} spacing={3}>
-          <StringEntryField
-            label="Name"
-            value={name}
-            setValue={setName}
-            errorMessage={state.nameErrors ?? null}
-          />
-          <ErrorAlert
-            errorMessage={state.errorTitle ?? null}
-            unmappedErrors={state.unmappedErrors ?? null}
-          />
-        </Stack>
-      </Dialog>
-    </>
+              startTransition(() => {
+                action({ accountId: account.id, redirectUrl, request });
+              });
+            }}
+          >
+            Save
+          </Button>
+        </>
+      }
+    >
+      <Stack spacing={3}>
+        <StringEntryField
+          label="Name"
+          value={name}
+          setValue={setName}
+          errorMessage={state.nameErrors ?? null}
+        />
+        <ErrorAlert
+          errorMessage={state.errorTitle ?? null}
+          unmappedErrors={state.unmappedErrors ?? null}
+        />
+      </Stack>
+    </Dialog>
   );
 };
 

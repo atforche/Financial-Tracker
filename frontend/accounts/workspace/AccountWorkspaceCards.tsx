@@ -4,6 +4,7 @@ import { Button, Stack, Typography } from "@mui/material";
 import {
   accountWorkspaceParamNames,
   clearAccountWorkspaceFilters,
+  parseAccountWorkspaceFilters,
 } from "@/accounts/workspace/searchParams";
 import {
   normalizeAccountTypes,
@@ -11,7 +12,7 @@ import {
 } from "@/accounts/accountTypeFilterHelpers";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { AccountWithBalance } from "@/accounts/types";
-import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
+import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
 import type { JSX } from "react";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import WorkspaceCard from "@/framework/view/WorkspaceCard";
@@ -38,6 +39,7 @@ const AccountWorkspaceCards = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
   const updateParams = useSearchParamUpdater([]);
+  const filters = parseAccountWorkspaceFilters(searchParams);
 
   const {
     action: actionParamName,
@@ -62,7 +64,7 @@ const AccountWorkspaceCards = function ({
     if (search !== null) {
       detailSearchParams.search = search;
     }
-    if (accountTypes.length > 0 && shouldPersistAccountTypes(accountTypes)) {
+    if (shouldPersistAccountTypes(accountTypes)) {
       detailSearchParams.accountType = accountTypes;
     }
     router.push(routes.workspaceDetail(accountId, detailSearchParams), {
@@ -70,22 +72,16 @@ const AccountWorkspaceCards = function ({
     });
   };
 
-  const hasSearch = (searchParams.get(searchParamName) ?? "").trim() !== "";
-  const hasAccountTypeFilter =
-    searchParams.getAll(accountTypeParamName).length > 0;
-  const hasActiveFilters = hasSearch || hasAccountTypeFilter;
-  const accounts = data;
-
-  return accounts.length === 0 ? (
+  return data.length === 0 ? (
     <Stack spacing={2} alignItems="flex-start">
       <Typography color="text.secondary">
-        {hasActiveFilters
+        {filters.hasActiveFilters
           ? "No accounts match the current filters. Try a different search or account type."
           : isInOnboardingMode
             ? "Use onboarding to add the first account to your workspace."
             : "Create an account to start building your workspace."}
       </Typography>
-      {hasActiveFilters ? (
+      {filters.hasActiveFilters ? (
         <Button variant="contained" onClick={clearFilters}>
           Clear Filters
         </Button>
@@ -93,7 +89,7 @@ const AccountWorkspaceCards = function ({
     </Stack>
   ) : (
     <ResponsiveGrid minimumColumnWidth={280} spacing={2}>
-      {accounts.map((account) => (
+      {data.map((account) => (
         <WorkspaceCard
           key={account.id}
           title={account.name}

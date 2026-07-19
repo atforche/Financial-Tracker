@@ -4,7 +4,6 @@ import type { Dispatch, JSX, ReactNode, SetStateAction } from "react";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
 import type { AccountType } from "@/accounts/types";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import StringEntryField from "@/framework/forms/StringEntryField";
 
@@ -36,24 +35,22 @@ const AccountDetailsFrame = function ({
   headerContent = null,
 }: AccountDetailsFrameProps): JSX.Element {
   return (
-    <ConstrainedContent maxWidth={1200}>
-      <Frame title="Details" color={color} headerContent={headerContent}>
-        <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
-          <StringEntryField
-            label="Name"
-            value={name}
-            setValue={setName}
-            errorMessage={nameErrorMessage}
-          />
-          <AccountTypeEntryField
-            label="Type"
-            value={accountType}
-            setValue={setAccountType}
-            errorMessage={accountTypeErrorMessage}
-          />
-        </ResponsiveGrid>
-      </Frame>
-    </ConstrainedContent>
+    <Frame title="Details" color={color} headerContent={headerContent}>
+      <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
+        <StringEntryField
+          label="Name"
+          value={name}
+          setValue={setName}
+          errorMessage={nameErrorMessage}
+        />
+        <AccountTypeEntryField
+          label="Type"
+          value={accountType}
+          setValue={setAccountType}
+          errorMessage={accountTypeErrorMessage}
+        />
+      </ResponsiveGrid>
+    </Frame>
   );
 };
 

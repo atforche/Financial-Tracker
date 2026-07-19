@@ -1,5 +1,9 @@
 "use server";
 
+import type {
+  AccountActionPayload,
+  AccountActionState,
+} from "@/accounts/workspace/accountAction";
 import formatAccountActionError from "@/accounts/workspace/formatAccountActionError";
 import getApiClient from "@/framework/data/getApiClient";
 import { isApiError } from "@/framework/data/apiError";
@@ -8,18 +12,13 @@ import { revalidatePath } from "next/cache";
 /**
  * Interface representing the state of deleting an account.
  */
-interface ActionState {
-  readonly success?: boolean;
-  readonly errorTitle?: string | null;
-  readonly unmappedErrors?: string | null;
-}
+type ActionState = AccountActionState;
 
 /**
  * Payload for the delete account server action.
  */
-interface ActionPayload {
+interface ActionPayload extends AccountActionPayload {
   readonly accountId: string;
-  readonly redirectUrl: string;
 }
 
 /**
@@ -29,8 +28,8 @@ const deleteAccount = async function (
   _: ActionState,
   { accountId, redirectUrl }: ActionPayload,
 ): Promise<ActionState> {
-  const client = getApiClient();
-  const { error } = await client.DELETE("/accounts/{accountId}", {
+  const apiClient = getApiClient();
+  const { error } = await apiClient.DELETE("/accounts/{accountId}", {
     params: {
       path: {
         accountId,

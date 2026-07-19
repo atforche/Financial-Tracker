@@ -7,7 +7,6 @@ import {
   startTransition,
   useActionState,
   useEffect,
-  useRef,
   useState,
 } from "react";
 import {
@@ -21,7 +20,6 @@ import type { Dayjs } from "dayjs";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import createAccount from "@/accounts/workspace/createAccount";
-import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import { getDefaultDate } from "@/accounting-periods/helpers";
 import { useRouter } from "next/navigation";
 
@@ -52,15 +50,7 @@ const CreateAccountForm = function ({
   const [dateOpened, setDateOpened] = useState<Dayjs | null>(
     getDefaultDate(null),
   );
-  const formRef = useRef<HTMLDivElement | null>(null);
-
   const [state, action, pending] = useActionState(createAccount, {});
-  const setupIsValid =
-    name !== "" &&
-    accountType !== null &&
-    accountingPeriod !== null &&
-    dateOpened !== null;
-
   const onAccountingPeriodChange = function (
     newAccountingPeriod: AccountingPeriod | null,
   ): void {
@@ -70,17 +60,8 @@ const CreateAccountForm = function ({
     );
   };
 
-  const reset = function (): void {
-    setName("");
-    setAccountType(null);
-    setAccountingPeriod(null);
-    setDateOpened(getDefaultDate(null));
-    focusFirstEntryControl(formRef.current);
-  };
-
   useEffect(() => {
     if (state.success === true) {
-      reset();
       onClose();
       router.replace(redirectUrl, { scroll: false });
     }
@@ -96,30 +77,14 @@ const CreateAccountForm = function ({
   return (
     <Dialog
       open={open}
-      onClose={
-        pending
-          ? undefined
-          : (): void => {
-              onClose();
-              reset();
-            }
-      }
+      onClose={pending ? undefined : onClose}
       fullWidth
       maxWidth="md"
       title="Create Account"
       actions={
         <>
-          <Button
-            disabled={pending}
-            onClick={() => {
-              onClose();
-              reset();
-            }}
-          >
+          <Button disabled={pending} onClick={onClose}>
             Cancel
-          </Button>
-          <Button variant="outlined" disabled={pending} onClick={reset}>
-            Reset
           </Button>
           <Button
             variant="contained"
@@ -142,7 +107,7 @@ const CreateAccountForm = function ({
         </>
       }
     >
-      <Stack ref={formRef} spacing={3}>
+      <Stack spacing={3}>
         <AccountDetailsFrame
           color={name !== "" && accountType !== null ? "info" : "error"}
           name={name}
@@ -153,7 +118,7 @@ const CreateAccountForm = function ({
           accountTypeErrorMessage={state.typeErrors ?? null}
         />
         <AccountOpeningFrame
-          color={setupIsValid ? "info" : "error"}
+          color={request === null ? "error" : "info"}
           accountingPeriods={accountingPeriods}
           accountingPeriod={accountingPeriod}
           setAccountingPeriod={onAccountingPeriodChange}

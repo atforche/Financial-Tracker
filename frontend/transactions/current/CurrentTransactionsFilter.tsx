@@ -1,6 +1,5 @@
 "use client";
 
-import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
 import {
   normalizeAccountNames,
   shouldPersistAccountNames,
@@ -15,9 +14,11 @@ import {
   transactionTypeValues,
 } from "@/transactions/trends/transactionTypeFilter";
 import AccountNameFilter from "@/accounts/AccountNameFilter";
+import { Button } from "@mui/material";
 import type { CurrentTransactionsSearchParams } from "@/transactions/current/CurrentTransactions";
 import FundTrendsFundNameFilter from "@/funds/trends/FundTrendsFundNameFilter";
 import type { JSX } from "react";
+import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import type { TransactionType } from "@/transactions/types";
 import nameof from "@/framework/data/nameof";
@@ -127,43 +128,16 @@ const CurrentTransactionsFilter = function ({
       title="Current Transactions"
       description="Filter the live transaction snapshot by transaction type, account name, and fund name."
     >
-      <Autocomplete
-        multiple
-        disableCloseOnSelect
-        size="small"
-        options={[...transactionTypeValues]}
-        value={[...currentTransactionTypes]}
+      <MultiSelectAutocompleteFilter
+        label="Transaction types"
+        options={transactionTypeValues}
+        value={currentTransactionTypes}
         disabled={disabled}
-        limitTags={1}
-        sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
+        placeholder="All transaction types"
         noOptionsText="No transaction types found"
-        slotProps={{
-          paper: {
-            sx: {
-              "& .MuiAutocomplete-listbox": {
-                maxHeight: 320,
-              },
-            },
-          },
-        }}
-        onChange={(_, nextTransactionTypes) => {
+        onChange={(nextTransactionTypes) => {
           handleTransactionTypeChange(nextTransactionTypes);
         }}
-        renderOption={(props, option, { selected }) => (
-          <li {...props}>
-            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-            {option}
-          </li>
-        )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Transaction types"
-            {...(currentTransactionTypes.length === 0
-              ? { placeholder: "All transaction types" }
-              : {})}
-          />
-        )}
       />
       <AccountNameFilter
         availableAccountNames={availableAccountNames}

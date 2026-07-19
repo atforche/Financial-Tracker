@@ -1,5 +1,9 @@
 "use server";
 
+import type {
+  AccountActionPayload,
+  AccountActionState,
+} from "@/accounts/workspace/accountAction";
 import type { OnboardAccountRequest } from "@/accounts/types";
 import formatAccountActionError from "@/accounts/workspace/formatAccountActionError";
 import getApiClient from "@/framework/data/getApiClient";
@@ -10,20 +14,16 @@ import { revalidatePath } from "next/cache";
 /**
  * Interface representing the state of onboarding an account.
  */
-interface ActionState {
-  readonly success?: boolean;
-  readonly errorTitle?: string | null;
+interface ActionState extends AccountActionState {
   readonly nameErrors?: string | null;
   readonly typeErrors?: string | null;
   readonly onboardedBalanceErrors?: string | null;
-  readonly unmappedErrors?: string | null;
 }
 
 /**
  * Payload for the onboarding server action.
  */
-interface ActionPayload {
-  readonly redirectUrl: string;
+interface ActionPayload extends AccountActionPayload {
   readonly request: OnboardAccountRequest;
 }
 
@@ -48,10 +48,10 @@ const onboardAccount = async function (
       });
       return {
         errorTitle: formattedError.errorTitle,
-        nameErrors: formattedError.fieldErrors["nameErrors"] ?? null,
-        typeErrors: formattedError.fieldErrors["typeErrors"] ?? null,
+        nameErrors: formattedError.fieldErrors.nameErrors ?? null,
+        typeErrors: formattedError.fieldErrors.typeErrors ?? null,
         onboardedBalanceErrors:
-          formattedError.fieldErrors["onboardedBalanceErrors"] ?? null,
+          formattedError.fieldErrors.onboardedBalanceErrors ?? null,
         unmappedErrors: formattedError.unmappedErrors,
       };
     }

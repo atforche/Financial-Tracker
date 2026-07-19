@@ -1,16 +1,25 @@
+import {
+  appendRepeatedSearchParam,
+  buildUrl,
+} from "@/framework/routes/helpers";
 import type { AccountTrendsSearchParams } from "@/accounts/trends/AccountTrends";
 import type { AccountType } from "@/accounts/types";
-import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
+import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
 import type { Route } from "next";
-import { appendRepeatedSearchParam } from "@/framework/routes/helpers";
 import { objectToSearchParams } from "@/framework/routes";
 
+/**
+ * Determines if the provided value is an account type array.
+ */
 const isAccountTypeArray = function (
   value: AccountTrendsSearchParams["accountType"],
 ): value is readonly AccountType[] {
   return Array.isArray(value);
 };
 
+/**
+ * Converts the provided Account Trends Search Params to URL search params for the account workspace.
+ */
 const accountTrendsSearchParamsToSearchParams = function (
   searchParams: AccountTrendsSearchParams,
 ): URLSearchParams {
@@ -26,6 +35,9 @@ const accountTrendsSearchParamsToSearchParams = function (
   return params;
 };
 
+/**
+ * Converts the provided Account Workspace Search Params to URL search params for the account workspace.
+ */
 const accountWorkspaceSearchParamsToSearchParams = function (
   searchParams: AccountWorkspaceSearchParams,
 ): URLSearchParams {
@@ -40,25 +52,17 @@ const accountWorkspaceSearchParamsToSearchParams = function (
   return params;
 };
 
-const pathWithSearchParams = function (
-  pathname: string,
-  searchParams: URLSearchParams,
-): Route {
-  const query = searchParams.toString();
-  return query === "" ? pathname : `${pathname}?${query}`;
-};
-
 /**
  * App routes related to accounts.
  */
 const routes = {
   trends: (searchParams: AccountTrendsSearchParams): Route =>
-    pathWithSearchParams(
+    buildUrl(
       "/accounts/trends",
       accountTrendsSearchParamsToSearchParams(searchParams),
     ),
   workspace: (searchParams: AccountWorkspaceSearchParams): Route =>
-    pathWithSearchParams(
+    buildUrl(
       "/accounts/workspace",
       accountWorkspaceSearchParamsToSearchParams(searchParams),
     ),
@@ -66,7 +70,7 @@ const routes = {
     accountId: string,
     searchParams: AccountWorkspaceSearchParams,
   ): Route =>
-    pathWithSearchParams(
+    buildUrl(
       `/accounts/workspace/${accountId}`,
       accountWorkspaceSearchParamsToSearchParams(searchParams),
     ),

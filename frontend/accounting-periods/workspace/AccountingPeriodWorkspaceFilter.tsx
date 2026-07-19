@@ -1,6 +1,5 @@
 "use client";
 
-import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
 import {
   accountingPeriodMonths,
   formatAccountingPeriodMonth,
@@ -11,7 +10,9 @@ import {
 } from "@/framework/routes/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
+import { Button } from "@mui/material";
 import type { JSX } from "react";
+import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import nameof from "@/framework/data/nameof";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -97,89 +98,37 @@ const AccountingPeriodWorkspaceFilter = function ({
 
   return (
     <PageFilterFrame title="Accounting Periods Workspace">
-      <Autocomplete
-        multiple
-        disableCloseOnSelect
-        size="small"
-        options={[...availableYears]}
-        value={[...currentYears]}
+      <MultiSelectAutocompleteFilter
+        label="Years"
+        options={availableYears}
+        value={currentYears}
         disabled={firstAccountingPeriod === null || availableYears.length === 0}
-        limitTags={1}
-        sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
+        placeholder="All years"
         noOptionsText={
           availableYears.length === 0 ? "No years available" : "No years found"
         }
-        slotProps={{
-          paper: {
-            sx: {
-              "& .MuiAutocomplete-listbox": {
-                maxHeight: 320,
-              },
-            },
-          },
-        }}
-        onChange={(_, nextYears) => {
+        onChange={(nextYears) => {
           handleYearChange(nextYears);
         }}
         getOptionLabel={(year) => year.toString()}
-        renderOption={(props, option, { selected }) => (
-          <li {...props}>
-            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-            {option}
-          </li>
-        )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Years"
-            {...(currentYears.length === 0 ? { placeholder: "All years" } : {})}
-          />
-        )}
       />
-      <Autocomplete
-        multiple
-        disableCloseOnSelect
-        size="small"
+      <MultiSelectAutocompleteFilter
+        label="Months"
         options={accountingPeriodMonths}
-        value={[...currentMonths]}
+        value={currentMonths}
         disabled={
           firstAccountingPeriod === null || accountingPeriodMonths.length === 0
         }
-        limitTags={1}
-        sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
+        placeholder="All months"
         noOptionsText={
           accountingPeriodMonths.length === 0
             ? "No months available"
             : "No months found"
         }
-        slotProps={{
-          paper: {
-            sx: {
-              "& .MuiAutocomplete-listbox": {
-                maxHeight: 320,
-              },
-            },
-          },
-        }}
-        onChange={(_, nextMonths) => {
+        onChange={(nextMonths) => {
           handleMonthChange(nextMonths);
         }}
         getOptionLabel={formatAccountingPeriodMonth}
-        renderOption={(props, option, { selected }) => (
-          <li {...props}>
-            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-            {formatAccountingPeriodMonth(option)}
-          </li>
-        )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Months"
-            {...(currentMonths.length === 0
-              ? { placeholder: "All months" }
-              : {})}
-          />
-        )}
       />
       <Button
         variant="outlined"

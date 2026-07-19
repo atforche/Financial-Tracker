@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useSearchParams } from "next/navigation";
-import type { AccountWorkspaceAction } from "@/accounts/workspace/AccountWorkspace";
+import type { AccountWorkspaceAction } from "@/accounts/workspace/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateAccountForm from "@/accounts/workspace/CreateAccountForm";
 import type { JSX } from "react";
@@ -52,21 +52,25 @@ const AccountWorkspaceActions = function ({
 
   return (
     <>
-      <CreateAccountForm
-        accountingPeriods={accountingPeriods}
-        open={isCreateDialogOpen}
-        onClose={() => {
-          setAction(null);
-        }}
-        redirectUrl={dialogRedirectUrl}
-      />
-      <OnboardAccountForm
-        open={isOnboardDialogOpen}
-        onClose={() => {
-          setAction(null);
-        }}
-        redirectUrl={dialogRedirectUrl}
-      />
+      {isCreateDialogOpen ? (
+        <CreateAccountForm
+          accountingPeriods={accountingPeriods}
+          open
+          onClose={() => {
+            setAction(null);
+          }}
+          redirectUrl={dialogRedirectUrl}
+        />
+      ) : null}
+      {isOnboardDialogOpen ? (
+        <OnboardAccountForm
+          open
+          onClose={() => {
+            setAction(null);
+          }}
+          redirectUrl={dialogRedirectUrl}
+        />
+      ) : null}
     </>
   );
 };

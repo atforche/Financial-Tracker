@@ -7,7 +7,6 @@ import {
   startTransition,
   useActionState,
   useEffect,
-  useRef,
   useState,
 } from "react";
 import AccountDetailsFrame from "@/accounts/workspace/AccountDetailsFrame";
@@ -15,7 +14,6 @@ import AccountStartingBalanceFrame from "@/accounts/workspace/AccountStartingBal
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import { buildOnboardRequest } from "@/accounts/workspace/helpers";
-import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import onboardAccount from "@/accounts/workspace/onboardAccount";
 import { useRouter } from "next/navigation";
 
@@ -40,18 +38,7 @@ const OnboardAccountForm = function ({
   const [name, setName] = useState<string>("");
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [onboardedBalance, setOnboardedBalance] = useState<number | null>(null);
-  const formRef = useRef<HTMLDivElement | null>(null);
   const [state, action, pending] = useActionState(onboardAccount, {});
-  const setupIsValid =
-    name !== "" && accountType !== null && onboardedBalance !== null;
-
-  const reset = function (): void {
-    setName("");
-    setAccountType(null);
-    setOnboardedBalance(null);
-    focusFirstEntryControl(formRef.current);
-  };
-
   const request: OnboardAccountRequest | null = buildOnboardRequest(
     name,
     accountType,
@@ -60,7 +47,6 @@ const OnboardAccountForm = function ({
 
   useEffect(() => {
     if (state.success === true) {
-      reset();
       onClose();
       router.replace(redirectUrl, { scroll: false });
     }
@@ -69,30 +55,14 @@ const OnboardAccountForm = function ({
   return (
     <Dialog
       open={open}
-      onClose={
-        pending
-          ? undefined
-          : (): void => {
-              onClose();
-              reset();
-            }
-      }
+      onClose={pending ? undefined : onClose}
       fullWidth
       maxWidth="md"
       title="Onboard Account"
       actions={
         <>
-          <Button
-            disabled={pending}
-            onClick={() => {
-              onClose();
-              reset();
-            }}
-          >
+          <Button disabled={pending} onClick={onClose}>
             Cancel
-          </Button>
-          <Button variant="outlined" disabled={pending} onClick={reset}>
-            Reset
           </Button>
           <Button
             variant="contained"
@@ -115,7 +85,7 @@ const OnboardAccountForm = function ({
         </>
       }
     >
-      <Stack ref={formRef} spacing={3}>
+      <Stack spacing={3}>
         <AccountDetailsFrame
           color={name !== "" && accountType !== null ? "warning" : "error"}
           name={name}
@@ -126,7 +96,7 @@ const OnboardAccountForm = function ({
           accountTypeErrorMessage={state.typeErrors ?? null}
         />
         <AccountStartingBalanceFrame
-          color={setupIsValid ? "warning" : "error"}
+          color={request === null ? "error" : "warning"}
           value={onboardedBalance}
           setValue={setOnboardedBalance}
           errorMessage={state.onboardedBalanceErrors ?? null}

@@ -4,7 +4,6 @@ import type {
   AccountingPeriod,
   AccountingPeriodRange,
 } from "@/accounting-periods/types";
-import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
 import {
   type GoalTrendsGoalType,
   type GoalTrendsView,
@@ -19,9 +18,11 @@ import {
   shouldPersistGoalTypes,
 } from "@/goals/trends/goalTypeFilter";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
+import { Button } from "@mui/material";
 import GoalTrendsGoalTypeFilter from "@/goals/trends/GoalTrendsGoalTypeFilter";
 import type { GoalTrendsSearchParams } from "@/goals/trends/GoalTrends";
 import type { JSX } from "react";
+import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
 import nameof from "@/framework/data/nameof";
@@ -35,8 +36,6 @@ interface GoalTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly availableFundNames: readonly string[];
   readonly defaultAccountingPeriodId: string | null;
-  readonly defaultStartDate: string;
-  readonly defaultEndDate: string;
   readonly view: GoalTrendsView;
   readonly disabled?: boolean;
 }
@@ -187,47 +186,20 @@ const GoalTrendsFilter = function ({
         onChange={handleGoalTypeChange}
         disabled={disabled}
       />
-      <Autocomplete
-        multiple
-        disableCloseOnSelect
-        size="small"
-        options={[...availableFundNames]}
-        value={[...currentFundNames]}
+      <MultiSelectAutocompleteFilter
+        label="Fund names"
+        options={availableFundNames}
+        value={currentFundNames}
         disabled={disabled || availableFundNames.length === 0}
-        limitTags={1}
-        sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
+        placeholder="All fund names"
         noOptionsText={
           availableFundNames.length === 0
             ? "No fund names available"
             : "No fund names found"
         }
-        slotProps={{
-          paper: {
-            sx: {
-              "& .MuiAutocomplete-listbox": {
-                maxHeight: 320,
-              },
-            },
-          },
-        }}
-        onChange={(_, nextFundNames) => {
+        onChange={(nextFundNames) => {
           handleFundNameChange(nextFundNames);
         }}
-        renderOption={(props, option, { selected }) => (
-          <li {...props}>
-            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-            {option}
-          </li>
-        )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Fund names"
-            {...(currentFundNames.length === 0
-              ? { placeholder: "All fund names" }
-              : {})}
-          />
-        )}
       />
       <Button
         variant="outlined"

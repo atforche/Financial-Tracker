@@ -6,7 +6,7 @@ import formatErrors from "@/framework/forms/formatErrors";
  */
 interface FormattedAccountActionError {
   readonly errorTitle: string | null;
-  readonly fieldErrors: Readonly<Record<string, string | null>>;
+  readonly fieldErrors: Readonly<Partial<Record<string, string | null>>>;
   readonly unmappedErrors: string | null;
 }
 
@@ -14,17 +14,19 @@ interface FormattedAccountActionError {
  * Maps an API validation response to account-form fields and collects any
  * remaining validation messages for the form-level alert.
  */
-const formatAccountActionError = function (
+const formatAccountActionError = function <StateField extends string>(
   error: ApiError,
-  fields: Readonly<Record<string, string>>,
-): FormattedAccountActionError {
+  fields: Readonly<Record<string, StateField>>,
+): FormattedAccountActionError & {
+  readonly fieldErrors: Readonly<Partial<Record<StateField, string | null>>>;
+} {
   const normalizedFields = new Map(
     Object.entries(fields).map(([requestField, stateField]) => [
       requestField.toUpperCase(),
       stateField,
     ]),
   );
-  const fieldErrors: Record<string, string | null> = {};
+  const fieldErrors: Partial<Record<StateField, string | null>> = {};
   const unmappedErrors: string[] = [];
 
   for (const [key, errors] of Object.entries(error.errors ?? {})) {

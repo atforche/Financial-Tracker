@@ -1,13 +1,13 @@
 "use client";
 
 import type { AccountBalanceEvent, AccountWithBalance } from "@/accounts/types";
+import { Button, Stack } from "@mui/material";
+import { type JSX, useState } from "react";
 import AccountBalanceEventsFrame from "@/accounts/workspace/AccountBalanceEventsFrame";
 import AccountSummaryFrame from "@/accounts/workspace/AccountSummaryFrame";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import DeleteAccountForm from "@/accounts/workspace/DeleteAccountForm";
-import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import { Stack } from "@mui/material";
 import UpdateAccountForm from "@/accounts/workspace/UpdateAccountForm";
 
 /**
@@ -31,6 +31,8 @@ const ViewAccountForm = function ({
   recentBalanceEventCount,
   addTransactionHref,
 }: ViewAccountFormProps): JSX.Element {
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+
   return (
     <ConstrainedContent maxWidth={1200}>
       <PageLayout>
@@ -38,7 +40,14 @@ const ViewAccountForm = function ({
           account={account}
           headerContent={
             <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-              <UpdateAccountForm account={account} redirectUrl={redirectUrl} />
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setUpdateDialogOpen(true);
+                }}
+              >
+                Edit
+              </Button>
               <DeleteAccountForm account={account} redirectUrl={redirectUrl} />
             </Stack>
           }
@@ -48,6 +57,15 @@ const ViewAccountForm = function ({
           totalCount={recentBalanceEventCount}
           addTransactionHref={addTransactionHref}
         />
+        {updateDialogOpen ? (
+          <UpdateAccountForm
+            account={account}
+            redirectUrl={redirectUrl}
+            onClose={() => {
+              setUpdateDialogOpen(false);
+            }}
+          />
+        ) : null}
       </PageLayout>
     </ConstrainedContent>
   );

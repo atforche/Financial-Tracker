@@ -3,10 +3,9 @@
 import { Box, Button } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountBalanceEvent } from "@/accounts/types";
-import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/AccountWorkspace";
+import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
 import { BalanceEventType } from "@/framework/data/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import Link from "next/link";
@@ -114,11 +113,35 @@ const AccountBalanceEventsFrame = function ({
   ];
 
   return (
-    <ConstrainedContent maxWidth={1200}>
-      <ListFrame<AccountBalanceEvent>
-        title="Recent Balance Events"
-        color="info"
-        headerContent={
+    <ListFrame<AccountBalanceEvent>
+      title="Recent Balance Events"
+      color="info"
+      headerContent={
+        <Button component={Link} href={addTransactionHref} variant="contained">
+          Add Transaction
+        </Button>
+      }
+      columns={columns}
+      getId={(balanceEvent) =>
+        `${balanceEvent.transactionId}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
+      }
+      data={data}
+      totalCount={totalCount}
+      pageParamName={nameof<AccountWorkspaceSearchParams>("balanceEventPage")}
+      onRowClick={(balanceEvent) => {
+        router.push(
+          routes.workspaceDetail(balanceEvent.transactionId, {
+            returnUrl,
+          }),
+          { scroll: false },
+        );
+      }}
+      hasActiveFilters={false}
+      initialEmptyState={{
+        title: "No balance events yet",
+        description:
+          "Create or post a transaction for this account to start building its balance history.",
+        action: (
           <Button
             component={Link}
             href={addTransactionHref}
@@ -126,39 +149,9 @@ const AccountBalanceEventsFrame = function ({
           >
             Add Transaction
           </Button>
-        }
-        columns={columns}
-        getId={(balanceEvent) =>
-          `${balanceEvent.transactionId}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
-        }
-        data={data}
-        totalCount={totalCount}
-        pageParamName={nameof<AccountWorkspaceSearchParams>("balanceEventPage")}
-        onRowClick={(balanceEvent) => {
-          router.push(
-            routes.workspaceDetail(balanceEvent.transactionId, {
-              returnUrl,
-            }),
-            { scroll: false },
-          );
-        }}
-        hasActiveFilters={false}
-        initialEmptyState={{
-          title: "No balance events yet",
-          description:
-            "Create or post a transaction for this account to start building its balance history.",
-          action: (
-            <Button
-              component={Link}
-              href={addTransactionHref}
-              variant="contained"
-            >
-              Add Transaction
-            </Button>
-          ),
-        }}
-      />
-    </ConstrainedContent>
+        ),
+      }}
+    />
   );
 };
 

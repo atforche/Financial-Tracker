@@ -2,27 +2,15 @@ import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
 } from "@/accounts/accountTypeFilterHelpers";
-import type { AccountType } from "@/accounts/types";
 import AccountWorkspaceActions from "@/accounts/workspace/AccountWorkspaceActions";
 import AccountWorkspaceCards from "@/accounts/workspace/AccountWorkspaceCards";
 import AccountWorkspaceFilter from "@/accounts/workspace/AccountWorkspaceFilter";
+import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import getApiClient from "@/framework/data/getApiClient";
 import getApiData from "@/framework/data/apiResponse";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
-
-type AccountWorkspaceAction = "create" | "onboard";
-
-/**
- * Search parameters supported by the Accounts workspace.
- */
-interface AccountWorkspaceSearchParams {
-  search?: string;
-  accountType?: AccountType | readonly AccountType[];
-  action?: AccountWorkspaceAction;
-  balanceEventPage?: number | string | null;
-}
 
 /**
  * Props for the AccountWorkspace component.
@@ -43,13 +31,6 @@ const AccountWorkspace = async function ({
     toRepeatedSearchParams(accountType),
   );
 
-  const anyAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
-    params: {
-      query: {
-        Limit: 1,
-      },
-    },
-  });
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: { query: { Limit: 500 } },
   });
@@ -61,20 +42,10 @@ const AccountWorkspace = async function ({
     },
   });
 
-  const [
-    accountingPeriodResponse,
-    accountingPeriodsResponse,
-    accountsResponse,
-  ] = await Promise.all([
-    anyAccountingPeriodsPromise,
+  const [accountingPeriodsResponse, accountsResponse] = await Promise.all([
     accountingPeriodsPromise,
     accountsPromise,
   ]);
-
-  const accountingPeriod = getApiData(
-    accountingPeriodResponse,
-    "Failed to fetch accounting periods",
-  );
   const accountingPeriods = getApiData(
     accountingPeriodsResponse,
     "Failed to fetch accounting periods",
@@ -86,7 +57,7 @@ const AccountWorkspace = async function ({
         currentAccountTypes.includes(account.type),
       )
     : accounts.items;
-  const isInOnboardingMode = accountingPeriod.items.length === 0;
+  const isInOnboardingMode = accountingPeriods.items.length === 0;
   const openAccountingPeriods = accountingPeriods.items.filter(
     (period) => period.isOpen,
   );
@@ -107,5 +78,4 @@ const AccountWorkspace = async function ({
   );
 };
 
-export type { AccountWorkspaceAction, AccountWorkspaceSearchParams };
 export default AccountWorkspace;

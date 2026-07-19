@@ -1,14 +1,15 @@
 "use client";
 
-import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
 import {
   normalizeStringSearchParams,
   selectAvailableSearchParamValues,
 } from "@/framework/routes/helpers";
 import type { Account } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import { Button } from "@mui/material";
 import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
+import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import nameof from "@/framework/data/nameof";
@@ -107,138 +108,54 @@ const TransactionWorkspaceFilter = function ({
     });
   };
 
-  const sharedAutocompleteSx = {
-    minWidth: { xs: "100%", sm: 280 },
-    flex: { md: 1 },
-  };
-
   return (
     <PageFilterFrame title="Transactions Workspace">
-      <Autocomplete
-        multiple
-        disableCloseOnSelect
-        size="small"
-        options={[...accountingPeriods]}
-        value={[...currentAccountingPeriods]}
+      <MultiSelectAutocompleteFilter
+        label="Accounting periods"
+        options={accountingPeriods}
+        value={currentAccountingPeriods}
         disabled={accountingPeriods.length === 0}
-        limitTags={1}
-        sx={sharedAutocompleteSx}
+        placeholder="All accounting periods"
         noOptionsText={
           accountingPeriods.length === 0
             ? "No accounting periods available"
             : "No accounting periods found"
         }
         isOptionEqualToValue={(option, value) => option.id === value.id}
-        slotProps={{
-          paper: {
-            sx: {
-              "& .MuiAutocomplete-listbox": {
-                maxHeight: 320,
-              },
-            },
-          },
-        }}
-        onChange={(_, nextAccountingPeriods) => {
+        onChange={(nextAccountingPeriods) => {
           handleAccountingPeriodChange(nextAccountingPeriods);
         }}
         getOptionLabel={(accountingPeriod) => accountingPeriod.name}
-        renderOption={(props, option, { selected }) => (
-          <li {...props}>
-            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-            {option.name}
-          </li>
-        )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Accounting periods"
-            {...(currentAccountingPeriods.length === 0
-              ? { placeholder: "All accounting periods" }
-              : {})}
-          />
-        )}
       />
-      <Autocomplete
-        multiple
-        disableCloseOnSelect
-        size="small"
-        options={[...accounts]}
-        value={[...currentAccounts]}
+      <MultiSelectAutocompleteFilter
+        label="Accounts"
+        options={accounts}
+        value={currentAccounts}
         disabled={accounts.length === 0}
-        limitTags={1}
-        sx={sharedAutocompleteSx}
+        placeholder="All accounts"
         noOptionsText={
           accounts.length === 0 ? "No accounts available" : "No accounts found"
         }
         isOptionEqualToValue={(option, value) => option.id === value.id}
-        slotProps={{
-          paper: {
-            sx: {
-              "& .MuiAutocomplete-listbox": {
-                maxHeight: 320,
-              },
-            },
-          },
-        }}
-        onChange={(_, nextAccounts) => {
+        onChange={(nextAccounts) => {
           handleAccountChange(nextAccounts);
         }}
         getOptionLabel={(account) => account.name}
-        renderOption={(props, option, { selected }) => (
-          <li {...props}>
-            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-            {option.name}
-          </li>
-        )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Accounts"
-            {...(currentAccounts.length === 0
-              ? { placeholder: "All accounts" }
-              : {})}
-          />
-        )}
       />
-      <Autocomplete
-        multiple
-        disableCloseOnSelect
-        size="small"
-        options={[...funds]}
-        value={[...currentFunds]}
+      <MultiSelectAutocompleteFilter
+        label="Funds"
+        options={funds}
+        value={currentFunds}
         disabled={funds.length === 0}
-        limitTags={1}
-        sx={sharedAutocompleteSx}
+        placeholder="All funds"
         noOptionsText={
           funds.length === 0 ? "No funds available" : "No funds found"
         }
         isOptionEqualToValue={(option, value) => option.id === value.id}
-        slotProps={{
-          paper: {
-            sx: {
-              "& .MuiAutocomplete-listbox": {
-                maxHeight: 320,
-              },
-            },
-          },
-        }}
-        onChange={(_, nextFunds) => {
+        onChange={(nextFunds) => {
           handleFundChange(nextFunds);
         }}
         getOptionLabel={(fund) => fund.name}
-        renderOption={(props, option, { selected }) => (
-          <li {...props}>
-            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-            {option.name}
-          </li>
-        )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Funds"
-            {...(currentFunds.length === 0 ? { placeholder: "All funds" } : {})}
-          />
-        )}
       />
       <Button
         variant="outlined"

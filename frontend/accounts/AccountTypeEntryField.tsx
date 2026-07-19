@@ -1,6 +1,7 @@
-import { AccountType, formatAccountType } from "@/accounts/types";
+import { AccountType } from "@/accounts/types";
 import { ComboBoxEntryField } from "@/framework/forms/ComboBoxEntryField";
 import type { JSX } from "react";
+import { formatAccountType } from "@/accounts/helpers";
 
 /**
  * Props for the AccountTypeEntryField component.

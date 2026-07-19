@@ -4,7 +4,6 @@ import Frame, { type FrameColor } from "@/framework/view/Frame";
 import { getMaximumDate, getMinimumDate } from "@/accounting-periods/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import type { Dayjs } from "dayjs";
 import type { JSX } from "react";
@@ -39,36 +38,30 @@ const AccountOpeningFrame = function ({
   color = "info",
 }: AccountOpeningFrameProps): JSX.Element {
   return (
-    <ConstrainedContent maxWidth={1200}>
-      <Frame title="Opening Details" color={color}>
-        <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
-          <AccountingPeriodEntryField
-            label="Opening Accounting Period"
-            options={accountingPeriods}
-            value={accountingPeriod}
-            setValue={setAccountingPeriod}
-            errorMessage={accountingPeriodErrorMessage}
-          />
-          <DateEntryField
-            label="Date Opened"
-            value={dateOpened}
-            setValue={setDateOpened}
-            errorMessage={dateOpenedErrorMessage}
-            minDate={
-              accountingPeriod === null
-                ? null
-                : getMinimumDate(accountingPeriod)
-            }
-            maxDate={
-              accountingPeriod === null
-                ? null
-                : getMaximumDate(accountingPeriod)
-            }
-            disabled={accountingPeriod === null}
-          />
-        </ResponsiveGrid>
-      </Frame>
-    </ConstrainedContent>
+    <Frame title="Opening Details" color={color}>
+      <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
+        <AccountingPeriodEntryField
+          label="Opening Accounting Period"
+          options={accountingPeriods}
+          value={accountingPeriod}
+          setValue={setAccountingPeriod}
+          errorMessage={accountingPeriodErrorMessage}
+        />
+        <DateEntryField
+          label="Date Opened"
+          value={dateOpened}
+          setValue={setDateOpened}
+          errorMessage={dateOpenedErrorMessage}
+          minDate={
+            accountingPeriod === null ? null : getMinimumDate(accountingPeriod)
+          }
+          maxDate={
+            accountingPeriod === null ? null : getMaximumDate(accountingPeriod)
+          }
+          disabled={accountingPeriod === null}
+        />
+      </ResponsiveGrid>
+    </Frame>
   );
 };
 

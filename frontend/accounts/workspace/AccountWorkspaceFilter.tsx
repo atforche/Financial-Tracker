@@ -4,16 +4,15 @@ import { Button, Stack } from "@mui/material";
 import {
   accountWorkspaceParamNames,
   clearAccountWorkspaceFilters,
+  parseAccountWorkspaceFilters,
 } from "@/accounts/workspace/searchParams";
-import {
-  normalizeAccountTypes,
-  shouldPersistAccountTypes,
-} from "@/accounts/accountTypeFilterHelpers";
 import type { AccountType } from "@/accounts/types";
 import AccountTypeFilter from "@/accounts/AccountTypeFilter";
+import type { AccountWorkspaceAction } from "@/accounts/workspace/types";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import SearchBar from "@/framework/listframe/SearchBar";
+import { shouldPersistAccountTypes } from "@/accounts/accountTypeFilterHelpers";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -31,6 +30,7 @@ const AccountWorkspaceFilter = function ({
   isInOnboardingMode,
 }: AccountWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
+  const filters = parseAccountWorkspaceFilters(searchParams);
 
   const {
     action: actionParamName,
@@ -38,9 +38,7 @@ const AccountWorkspaceFilter = function ({
     search: searchParamName,
   } = accountWorkspaceParamNames;
 
-  const currentAccountTypes = normalizeAccountTypes(
-    searchParams.getAll(accountTypeParamName),
-  );
+  const currentAccountTypes = filters.accountTypes;
 
   const updateParams = useSearchParamUpdater([]);
 
@@ -63,15 +61,11 @@ const AccountWorkspaceFilter = function ({
     });
   };
 
-  const hasActiveView =
-    (searchParams.get(searchParamName) ?? "").trim() !== "" ||
-    shouldPersistAccountTypes(currentAccountTypes);
-
   const addActionLabel = isInOnboardingMode
     ? "Onboard Account"
     : "Create Account";
 
-  const setAction = function (action: "create" | "onboard"): void {
+  const setAction = function (action: AccountWorkspaceAction): void {
     updateParams((params) => {
       params.set(actionParamName, action);
     });
@@ -85,7 +79,7 @@ const AccountWorkspaceFilter = function ({
           <Button
             variant="outlined"
             onClick={clearView}
-            disabled={!hasActiveView}
+            disabled={!filters.hasActiveFilters}
           >
             Reset Filters
           </Button>

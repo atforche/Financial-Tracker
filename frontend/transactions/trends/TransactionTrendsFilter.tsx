@@ -4,7 +4,7 @@ import type {
   AccountingPeriod,
   AccountingPeriodRange,
 } from "@/accounting-periods/types";
-import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
+import { Button, TextField } from "@mui/material";
 import type { ChangeEvent, JSX } from "react";
 import {
   normalizeAccountNames,
@@ -21,6 +21,7 @@ import {
 } from "@/transactions/trends/transactionTypeFilter";
 import AccountNameFilter from "@/accounts/AccountNameFilter";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
+import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
 import type { TransactionTrendsSearchParams } from "@/transactions/trends/TransactionTrends";
@@ -215,11 +216,6 @@ const TransactionTrendsFilter = function ({
     });
   };
 
-  const sharedAutocompleteSx = {
-    minWidth: { xs: "100%", sm: 280 },
-    flex: { md: 1 },
-  };
-
   const sharedFieldSx = {
     minWidth: { xs: "100%", sm: 180 },
   };
@@ -279,43 +275,16 @@ const TransactionTrendsFilter = function ({
           />
         </>
       )}
-      <Autocomplete
-        multiple
-        disableCloseOnSelect
-        size="small"
-        options={[...transactionTypeValues]}
-        value={[...currentTransactionTypes]}
+      <MultiSelectAutocompleteFilter
+        label="Transaction types"
+        options={transactionTypeValues}
+        value={currentTransactionTypes}
         disabled={disabled}
-        limitTags={1}
-        sx={sharedAutocompleteSx}
+        placeholder="All transaction types"
         noOptionsText="No transaction types found"
-        slotProps={{
-          paper: {
-            sx: {
-              "& .MuiAutocomplete-listbox": {
-                maxHeight: 320,
-              },
-            },
-          },
-        }}
-        onChange={(_, nextTransactionTypes) => {
+        onChange={(nextTransactionTypes) => {
           handleTransactionTypeChange(nextTransactionTypes);
         }}
-        renderOption={(props, option, { selected }) => (
-          <li {...props}>
-            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-            {option}
-          </li>
-        )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Transaction types"
-            {...(currentTransactionTypes.length === 0
-              ? { placeholder: "All transaction types" }
-              : {})}
-          />
-        )}
       />
       <AccountNameFilter
         availableAccountNames={availableAccountNames}
@@ -323,47 +292,20 @@ const TransactionTrendsFilter = function ({
         onChange={handleAccountNameChange}
         disabled={disabled}
       />
-      <Autocomplete
-        multiple
-        disableCloseOnSelect
-        size="small"
-        options={[...availableFundNames]}
-        value={[...currentFundNames]}
+      <MultiSelectAutocompleteFilter
+        label="Fund names"
+        options={availableFundNames}
+        value={currentFundNames}
         disabled={disabled || availableFundNames.length === 0}
-        limitTags={1}
-        sx={sharedAutocompleteSx}
+        placeholder="All fund names"
         noOptionsText={
           availableFundNames.length === 0
             ? "No fund names available"
             : "No fund names found"
         }
-        slotProps={{
-          paper: {
-            sx: {
-              "& .MuiAutocomplete-listbox": {
-                maxHeight: 320,
-              },
-            },
-          },
-        }}
-        onChange={(_, nextFundNames) => {
+        onChange={(nextFundNames) => {
           handleFundNameChange(nextFundNames);
         }}
-        renderOption={(props, option, { selected }) => (
-          <li {...props}>
-            <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-            {option}
-          </li>
-        )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Fund names"
-            {...(currentFundNames.length === 0
-              ? { placeholder: "All fund names" }
-              : {})}
-          />
-        )}
       />
       <Button
         variant="outlined"

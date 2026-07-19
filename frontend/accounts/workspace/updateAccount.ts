@@ -1,5 +1,9 @@
 "use server";
 
+import type {
+  AccountActionPayload,
+  AccountActionState,
+} from "@/accounts/workspace/accountAction";
 import type { UpdateAccountRequest } from "@/accounts/types";
 import formatAccountActionError from "@/accounts/workspace/formatAccountActionError";
 import getApiClient from "@/framework/data/getApiClient";
@@ -10,19 +14,15 @@ import { revalidatePath } from "next/cache";
 /**
  * Interface representing the state of updating an account.
  */
-interface ActionState {
-  readonly success?: boolean;
-  readonly errorTitle?: string | null;
+interface ActionState extends AccountActionState {
   readonly nameErrors?: string | null;
-  readonly unmappedErrors?: string | null;
 }
 
 /**
  * Payload for the update server action.
  */
-interface ActionPayload {
+interface ActionPayload extends AccountActionPayload {
   readonly accountId: string;
-  readonly redirectUrl: string;
   readonly request: UpdateAccountRequest;
 }
 
@@ -33,8 +33,8 @@ const updateAccount = async function (
   _: ActionState,
   { accountId, redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const client = getApiClient();
-  const { error } = await client.POST("/accounts/{accountId}", {
+  const apiClient = getApiClient();
+  const { error } = await apiClient.POST("/accounts/{accountId}", {
     params: {
       path: {
         accountId,
@@ -49,7 +49,7 @@ const updateAccount = async function (
       });
       return {
         errorTitle: formattedError.errorTitle,
-        nameErrors: formattedError.fieldErrors["nameErrors"] ?? null,
+        nameErrors: formattedError.fieldErrors.nameErrors ?? null,
         unmappedErrors: formattedError.unmappedErrors,
       };
     }

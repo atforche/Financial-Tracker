@@ -1,7 +1,7 @@
 "use client";
 
-import { Autocomplete, Checkbox, TextField } from "@mui/material";
 import type { JSX } from "react";
+import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 import { normalizeAccountNames } from "@/accounts/accountNameFilterHelpers";
 
 /**
@@ -24,47 +24,22 @@ const AccountNameFilter = function ({
   disabled = false,
 }: AccountNameFilterProps): JSX.Element {
   return (
-    <Autocomplete
-      multiple
-      disableCloseOnSelect
-      size="small"
-      options={[...availableAccountNames]}
-      value={[...value]}
+    <MultiSelectAutocompleteFilter
+      label="Account names"
+      options={availableAccountNames}
+      value={value}
       disabled={disabled || availableAccountNames.length === 0}
-      limitTags={1}
-      sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
+      placeholder="All account names"
       noOptionsText={
         availableAccountNames.length === 0
           ? "No matching account names"
           : "No account names found"
       }
-      slotProps={{
-        paper: {
-          sx: {
-            "& .MuiAutocomplete-listbox": {
-              maxHeight: 320,
-            },
-          },
-        },
-      }}
-      onChange={(_, nextAccountNames) => {
+      onChange={(nextAccountNames) => {
         onChange(
           normalizeAccountNames(nextAccountNames, availableAccountNames),
         );
       }}
-      renderOption={(props, option, { selected }) => (
-        <li {...props}>
-          <Checkbox size="small" checked={selected} sx={{ mr: 1 }} />
-          {option}
-        </li>
-      )}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          label="Account names"
-          {...(value.length === 0 ? { placeholder: "All account names" } : {})}
-        />
-      )}
     />
   );
 };
