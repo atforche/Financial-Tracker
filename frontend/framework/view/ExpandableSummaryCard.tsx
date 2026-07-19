@@ -1,5 +1,7 @@
+"use client";
+
 import { Collapse, Divider, IconButton, Stack } from "@mui/material";
-import type { JSX, ReactNode } from "react";
+import { type JSX, type ReactNode, useId } from "react";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import SummaryCard from "@/framework/view/SummaryCard";
 
@@ -24,6 +26,8 @@ const ExpandableSummaryCard = function ({
   onToggle,
   children,
 }: ExpandableSummaryCardProps): JSX.Element {
+  const detailsId = useId();
+
   return (
     <SummaryCard
       title={title}
@@ -39,6 +43,8 @@ const ExpandableSummaryCard = function ({
             size="small"
             onClick={onToggle}
             aria-label={`${expanded ? "Collapse" : "Expand"} ${title}`}
+            aria-expanded={expanded}
+            aria-controls={detailsId}
             sx={{
               p: 0.25,
               transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
@@ -50,7 +56,7 @@ const ExpandableSummaryCard = function ({
         </Stack>
       }
     >
-      <Collapse in={expanded} timeout="auto" unmountOnExit>
+      <Collapse id={detailsId} in={expanded} timeout="auto" unmountOnExit>
         <Stack spacing={1.25} sx={{ pt: 1.25 }}>
           <Divider />
           {children}

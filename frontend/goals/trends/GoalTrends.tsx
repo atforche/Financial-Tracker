@@ -35,7 +35,7 @@ import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import createApiClient from "@/framework/data/createApiClient";
-import loadAllPages from "@/goals/trends/loadAllPages";
+import loadAllPages from "@/framework/data/loadAllPages";
 import { normalizeGoalTypes } from "@/goals/trends/goalTypeFilter";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import { redirect } from "next/navigation";

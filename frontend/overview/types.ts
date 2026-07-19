@@ -3,16 +3,29 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { FundBalanceSummary } from "@/funds/types";
 
 /**
+ * Account balance data displayed on the overview page.
+ */
+type AccountOverviewSummary = Pick<
+  AccountBalanceSummary,
+  "totalBalance" | "balanceByAccountType"
+>;
+
+/**
+ * Fund balance data displayed on the overview page.
+ */
+type FundOverviewSummary = Pick<
+  FundBalanceSummary,
+  "totalBalance" | "totalAssignedBalance" | "totalUnassignedBalance"
+>;
+
+/**
  * Aggregated data required to render the overview page.
  */
 interface OverviewData {
-  readonly accountSummary: AccountBalanceSummary;
-  readonly fundSummary: FundBalanceSummary;
+  readonly accountSummary: AccountOverviewSummary;
+  readonly fundSummary: FundOverviewSummary;
+  readonly latestAccountingPeriod: AccountingPeriod | null;
   readonly currentAccountingPeriod: AccountingPeriod | null;
-  readonly openAccountingPeriods: AccountingPeriod[];
-  readonly totalAccountingPeriods: number;
-  readonly totalAccounts: number;
-  readonly totalFunds: number;
 }
 
-export type { OverviewData };
+export type { AccountOverviewSummary, FundOverviewSummary, OverviewData };

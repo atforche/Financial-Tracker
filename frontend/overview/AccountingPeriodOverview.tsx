@@ -1,5 +1,5 @@
 import { Stack, Typography } from "@mui/material";
-import { AccountingPeriodSortModel } from "@/framework/data/api";
+import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodTrendsSummaryCards from "@/accounting-periods/trends/AccountingPeriodTrendsSummaryCards";
 import ContentSurface from "@/framework/view/ContentSurface";
 import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
@@ -8,24 +8,19 @@ import createApiClient from "@/framework/data/createApiClient";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
+ * Props for the AccountingPeriodOverview component.
+ */
+interface AccountingPeriodOverviewProps {
+  readonly latestAccountingPeriod: AccountingPeriod | null;
+}
+
+/**
  * Overview component for accounting periods.
  */
-const AccountingPeriodOverview = async function (): Promise<JSX.Element> {
+const AccountingPeriodOverview = async function ({
+  latestAccountingPeriod,
+}: AccountingPeriodOverviewProps): Promise<JSX.Element> {
   const apiClient = createApiClient();
-  const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
-    params: {
-      query: {
-        Sort: AccountingPeriodSortModel.DateDescending,
-        Limit: 1,
-        Offset: 0,
-      },
-    },
-  });
-  const accountingPeriods = unwrapApiResponse(
-    accountingPeriodsResponse,
-    "Failed to load accounting periods",
-  );
-  const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
   const rangeResponse =
     latestAccountingPeriod === null
       ? null

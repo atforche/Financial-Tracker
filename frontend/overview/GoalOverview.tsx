@@ -1,31 +1,26 @@
 import { Stack, Typography } from "@mui/material";
-import { AccountingPeriodSortModel } from "@/framework/data/api";
+import type { AccountingPeriod } from "@/accounting-periods/types";
 import ContentSurface from "@/framework/view/ContentSurface";
 import GoalTrendsSummaryCards from "@/goals/trends/GoalTrendsSummaryCards";
 import type { JSX } from "react";
 import createApiClient from "@/framework/data/createApiClient";
+import loadAllPages from "@/framework/data/loadAllPages";
 import { summarizeGoalRange } from "@/goals/trends/goalTrendsSummary";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
+ * Props for the GoalOverview component.
+ */
+interface GoalOverviewProps {
+  readonly latestAccountingPeriod: AccountingPeriod | null;
+}
+
+/**
  * Overview component for goals.
  */
-const GoalOverview = async function (): Promise<JSX.Element> {
-  const apiClient = createApiClient();
-  const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
-    params: {
-      query: {
-        Sort: AccountingPeriodSortModel.DateDescending,
-        Limit: 1,
-        Offset: 0,
-      },
-    },
-  });
-  const accountingPeriods = unwrapApiResponse(
-    accountingPeriodsResponse,
-    "Failed to load accounting periods",
-  );
-  const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
+const GoalOverview = async function ({
+  latestAccountingPeriod,
+}: GoalOverviewProps): Promise<JSX.Element> {
   if (latestAccountingPeriod === null) {
     return (
       <ContentSurface>
@@ -41,38 +36,38 @@ const GoalOverview = async function (): Promise<JSX.Element> {
       </ContentSurface>
     );
   }
-  const [assignmentResponse, spendingResponse] = await Promise.all([
-    apiClient.GET("/goals/assignment", {
-      params: {
-        query: {
-          "Filter.AccountingPeriodIds": [latestAccountingPeriod.id],
-          Limit: 500,
-          Offset: 0,
-        },
-      },
-    }),
-    apiClient.GET("/goals/spending", {
-      params: {
-        query: {
-          "Filter.AccountingPeriodIds": [latestAccountingPeriod.id],
-          Limit: 500,
-          Offset: 0,
-        },
-      },
-    }),
+  const apiClient = createApiClient();
+  const [assignmentGoals, spendingGoals] = await Promise.all([
+    loadAllPages(async (limit, offset) =>
+      unwrapApiResponse(
+        await apiClient.GET("/goals/assignment", {
+          params: {
+            query: {
+              "Filter.AccountingPeriodIds": [latestAccountingPeriod.id],
+              Limit: limit,
+              Offset: offset,
+            },
+          },
+        }),
+        "Failed to load assignment goals",
+      ),
+    ),
+    loadAllPages(async (limit, offset) =>
+      unwrapApiResponse(
+        await apiClient.GET("/goals/spending", {
+          params: {
+            query: {
+              "Filter.AccountingPeriodIds": [latestAccountingPeriod.id],
+              Limit: limit,
+              Offset: offset,
+            },
+          },
+        }),
+        "Failed to load spending goals",
+      ),
+    ),
   ]);
-  const assignmentGoals = unwrapApiResponse(
-    assignmentResponse,
-    "Failed to load assignment goals",
-  );
-  const spendingGoals = unwrapApiResponse(
-    spendingResponse,
-    "Failed to load spending goals",
-  );
-  const summary = summarizeGoalRange(
-    assignmentGoals.items,
-    spendingGoals.items,
-  );
+  const summary = summarizeGoalRange(assignmentGoals, spendingGoals);
   return (
     <ContentSurface>
       <Stack spacing={2}>

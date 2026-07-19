@@ -1,7 +1,8 @@
 import { Stack, Typography } from "@mui/material";
+import { summarizeAccounts, summarizeFunds } from "@/overview/helpers";
 import AccountOverview from "@/overview/AccountOverview";
-import { AccountTypeModel } from "@/framework/data/api";
 import AccountingPeriodOverview from "@/overview/AccountingPeriodOverview";
+import { AccountingPeriodSortModel } from "@/framework/data/api";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import ContentSurface from "@/framework/view/ContentSurface";
 import FundOverview from "@/overview/FundOverview";
@@ -12,6 +13,7 @@ import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import TransactionOverview from "@/overview/TransactionOverview";
 import createApiClient from "@/framework/data/createApiClient";
+import loadAllPages from "@/framework/data/loadAllPages";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -21,115 +23,43 @@ const getOverviewData = async function (): Promise<OverviewData> {
   const apiClient = createApiClient();
   const accountSummaryPromise = apiClient.GET("/accounts/with-balances");
   const fundSummaryPromise = apiClient.GET("/funds/with-balances");
-  const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
-    params: {
-      query: {
-        Sort: null,
-        Limit: 500,
-        Offset: 0,
-      },
-    },
-  });
-  const accountsPromise = apiClient.GET("/accounts", {
-    params: {
-      query: {
-        Sort: null,
-        Limit: 1,
-        Offset: 0,
-      },
-    },
-  });
-  const fundsPromise = apiClient.GET("/funds", {
-    params: {
-      query: {
-        Sort: null,
-        Limit: 1,
-        Offset: 0,
-      },
-    },
-  });
+  const accountingPeriodsPromise = loadAllPages(async (limit, offset) =>
+    unwrapApiResponse(
+      await apiClient.GET("/accounting-periods", {
+        params: {
+          query: {
+            Sort: AccountingPeriodSortModel.DateDescending,
+            Limit: limit,
+            Offset: offset,
+          },
+        },
+      }),
+      "Failed to fetch accounting periods",
+    ),
+  );
 
-  const responses = await Promise.all([
-    accountSummaryPromise,
-    fundSummaryPromise,
-    accountingPeriodsPromise,
-    accountsPromise,
-    fundsPromise,
-  ]);
+  const [accountSummaryResponse, fundSummaryResponse, accountingPeriods] =
+    await Promise.all([
+      accountSummaryPromise,
+      fundSummaryPromise,
+      accountingPeriodsPromise,
+    ]);
 
-  const accountSummary = unwrapApiResponse(
-    responses[0],
+  const accounts = unwrapApiResponse(
+    accountSummaryResponse,
     "Failed to fetch account summary",
   );
-  const fundSummary = unwrapApiResponse(
-    responses[1],
+  const funds = unwrapApiResponse(
+    fundSummaryResponse,
     "Failed to fetch fund summary",
   );
-  const accountingPeriods = unwrapApiResponse(
-    responses[2],
-    "Failed to fetch accounting periods",
-  );
-  const accounts = unwrapApiResponse(responses[3], "Failed to fetch accounts");
-  const funds = unwrapApiResponse(responses[4], "Failed to fetch funds");
 
-  const accountBalances = accountSummary.items;
-  const trackedAccounts = accountBalances.filter(
-    (account) =>
-      account.type === AccountTypeModel.Standard ||
-      account.type === AccountTypeModel.CreditCard,
-  );
-  const balanceByAccountType = Array.from(
-    Map.groupBy(accountBalances, (account) => account.type),
-    ([accountType, groupedAccounts]) => ({
-      accountType,
-      totalBalance: groupedAccounts.reduce(
-        (total, account) => total + account.currentBalance.postedBalance,
-        0,
-      ),
-    }),
-  );
-  const openAccountingPeriods = accountingPeriods.items.filter(
-    (period) => period.isOpen,
-  );
-  const assignedFunds = fundSummary.items.filter(
-    (fund) => fund.name !== "Unassigned",
-  );
   return {
-    accountSummary: {
-      totalBalance: accountBalances.reduce(
-        (total, account) => total + account.currentBalance.postedBalance,
-        0,
-      ),
-      totalTrackedBalance: trackedAccounts.reduce(
-        (total, account) => total + account.currentBalance.postedBalance,
-        0,
-      ),
-      totalUntrackedBalance: accountBalances
-        .filter((account) => !trackedAccounts.includes(account))
-        .reduce(
-          (total, account) => total + account.currentBalance.postedBalance,
-          0,
-        ),
-      balanceByAccountType,
-    },
-    fundSummary: {
-      totalBalance: fundSummary.items.reduce(
-        (total, fund) => total + fund.currentBalance.postedBalance,
-        0,
-      ),
-      totalAssignedBalance: assignedFunds.reduce(
-        (total, fund) => total + fund.currentBalance.postedBalance,
-        0,
-      ),
-      totalUnassignedBalance:
-        fundSummary.items.find((fund) => fund.name === "Unassigned")
-          ?.currentBalance.postedBalance ?? 0,
-    },
-    currentAccountingPeriod: openAccountingPeriods[0] ?? null,
-    openAccountingPeriods,
-    totalAccountingPeriods: accountingPeriods.totalCount,
-    totalAccounts: accounts.totalCount,
-    totalFunds: funds.totalCount,
+    accountSummary: summarizeAccounts(accounts.items),
+    fundSummary: summarizeFunds(funds.items),
+    latestAccountingPeriod: accountingPeriods[0] ?? null,
+    currentAccountingPeriod:
+      accountingPeriods.find((period) => period.isOpen) ?? null,
   };
 };
 
@@ -152,12 +82,14 @@ const OverviewView = async function (): Promise<JSX.Element> {
         </ContentSurface>
 
         <ResponsiveGrid columns={{ xs: 1 }}>
-          <AccountingPeriodOverview />
+          <AccountingPeriodOverview
+            latestAccountingPeriod={data.latestAccountingPeriod}
+          />
           <ResponsiveGrid columns={{ xs: 1, md: 2 }}>
-            <AccountOverview data={data} />
-            <FundOverview data={data} />
+            <AccountOverview summary={data.accountSummary} />
+            <FundOverview summary={data.fundSummary} />
           </ResponsiveGrid>
-          <GoalOverview />
+          <GoalOverview latestAccountingPeriod={data.latestAccountingPeriod} />
         </ResponsiveGrid>
 
         <TransactionOverview
