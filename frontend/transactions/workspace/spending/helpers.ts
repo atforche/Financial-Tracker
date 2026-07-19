@@ -328,20 +328,14 @@ const getFundAssignmentFromTransactionFund = (
   previousFundBalance: assignment.previousBalance.postedBalance,
   newFundBalance: assignment.newBalance.postedBalance,
   previousGoalBalance: {
-    remainingAmountToAssignIncludingPending:
-      (goal?.previousBalance.amountAssigned ?? 0) +
-      (goal?.previousBalance.pendingAmountAssigned ?? 0),
-    remainingAmountToSpendIncludingPending:
+    remainingAmount:
       (goal?.previousBalance.amountAssigned ?? 0) +
       (goal?.previousBalance.pendingAmountAssigned ?? 0) -
       (goal?.previousBalance.amountSpent ?? 0) -
       (goal?.previousBalance.pendingAmountSpent ?? 0),
   },
   newGoalBalance: {
-    remainingAmountToAssignIncludingPending:
-      (goal?.newBalance.amountAssigned ?? 0) +
-      (goal?.newBalance.pendingAmountAssigned ?? 0),
-    remainingAmountToSpendIncludingPending:
+    remainingAmount:
       (goal?.newBalance.amountAssigned ?? 0) +
       (goal?.newBalance.pendingAmountAssigned ?? 0) -
       (goal?.newBalance.amountSpent ?? 0) -

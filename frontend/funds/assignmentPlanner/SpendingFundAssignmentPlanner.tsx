@@ -2,12 +2,13 @@ import { Chip, Stack } from "@mui/material";
 import type { Fund, FundWithBalance } from "@/funds/types";
 import {
   type FundAssignmentDraft,
-  getExplicitFundAssignments,
+  addFundAssignment as appendFundAssignment,
+  createFundAssignmentDraft,
   getFundOptionSecondaryLabel,
   getSpendingGoalRemainingAmount,
-  getSuggestedAmount,
+  deleteFundAssignment as removeFundAssignment,
   sortFundsByRemainingAmount,
-  updateUnassignedFundAmount,
+  updateFundAssignment,
 } from "@/funds/assignmentPlanner/helpers";
 import type { FrameColor } from "@/framework/view/Frame";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
@@ -57,103 +58,54 @@ const SpendingFundAssignmentPlanner = function ({
   };
 
   const addFundAssignment = function (): void {
-    const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
-    const nextFundAssignments: FundAssignmentDraft[] = [
-      ...explicitFundAssignments,
-      {
-        fundId: "",
-        fundName: "",
-        amount: getSuggestedAmount(
-          totalAmountToAssign,
-          explicitFundAssignments,
-          explicitFundAssignments.length,
-        ),
-        previousFundBalance: 0,
-        newFundBalance: 0,
-        previousGoalBalance: {
-          remainingAmountToAssignIncludingPending: 0,
-          remainingAmountToSpendIncludingPending: 0,
-        },
-        newGoalBalance: {
-          remainingAmountToAssignIncludingPending: 0,
-          remainingAmountToSpendIncludingPending: 0,
-        },
-      },
-    ];
     setFundAssignments?.(
-      updateUnassignedFundAmount(
+      appendFundAssignment(
         unassignedFund,
         totalAmountToAssign,
-        nextFundAssignments,
+        fundAssignments,
       ),
     );
   };
 
   const deleteFundAssignment = function (index: number): void {
-    const nextFundAssignments = getExplicitFundAssignments(
-      fundAssignments,
-    ).filter((_, assignmentIndex) => assignmentIndex !== index);
     setFundAssignments?.(
-      updateUnassignedFundAmount(
+      removeFundAssignment(
         unassignedFund,
         totalAmountToAssign,
-        nextFundAssignments,
+        fundAssignments,
+        index,
       ),
     );
   };
 
   const updateFund = function (index: number, newFund: Fund | null): void {
-    const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
-    const nextFundAssignments = explicitFundAssignments.map(
-      (assignment, assignmentIndex) => {
-        if (assignmentIndex !== index) {
-          return assignment;
-        }
-        if (newFund === null) {
-          return {
-            fundId: "",
-            fundName: "",
-            amount: assignment.amount,
-            previousFundBalance: 0,
-            newFundBalance: 0,
-            previousGoalBalance: {
-              remainingAmountToAssignIncludingPending: 0,
-              remainingAmountToSpendIncludingPending: 0,
-            },
-            newGoalBalance: {
-              remainingAmountToAssignIncludingPending: 0,
-              remainingAmountToSpendIncludingPending: 0,
-            },
-          };
-        }
-        const fund = funds.find((f) => f.id === newFund.id);
-        const previousFundBalance = fund?.currentBalance.postedBalance ?? 0;
-        const goal = spendingGoals.find((g) => g.fund.id === newFund.id);
-        const previousGoalBalance =
-          goal?.remainingAmountToSpendIncludingPending ?? 0;
-        return {
-          fundId: newFund.id,
-          fundName: newFund.name,
-          amount: assignment.amount,
-          previousFundBalance,
-          newFundBalance: previousFundBalance - assignment.amount,
-          previousGoalBalance: {
-            remainingAmountToAssignIncludingPending: 0,
-            remainingAmountToSpendIncludingPending: previousGoalBalance,
-          },
-          newGoalBalance: {
-            remainingAmountToAssignIncludingPending: 0,
-            remainingAmountToSpendIncludingPending:
-              previousGoalBalance - assignment.amount,
-          },
-        };
-      },
-    );
     setFundAssignments?.(
-      updateUnassignedFundAmount(
+      updateFundAssignment(
         unassignedFund,
         totalAmountToAssign,
-        nextFundAssignments,
+        fundAssignments,
+        index,
+        (assignment) => {
+          if (newFund === null) {
+            return createFundAssignmentDraft(assignment.amount);
+          }
+          const fund = funds.find((f) => f.id === newFund.id);
+          const previousFundBalance = fund?.currentBalance.postedBalance ?? 0;
+          const goal = spendingGoals.find((g) => g.fund.id === newFund.id);
+          const previousGoalBalance =
+            goal?.remainingAmountToSpendIncludingPending ?? 0;
+          return {
+            fundId: newFund.id,
+            fundName: newFund.name,
+            amount: assignment.amount,
+            previousFundBalance,
+            newFundBalance: previousFundBalance - assignment.amount,
+            previousGoalBalance: { remainingAmount: previousGoalBalance },
+            newGoalBalance: {
+              remainingAmount: previousGoalBalance - assignment.amount,
+            },
+          };
+        },
       ),
     );
   };
@@ -162,31 +114,27 @@ const SpendingFundAssignmentPlanner = function ({
     index: number,
     newAmount: number | null,
   ): void {
-    const nextFundAssignments = getExplicitFundAssignments(fundAssignments).map(
-      (assignment, assignmentIndex) => {
-        if (assignmentIndex !== index) {
-          return assignment;
-        }
-        const goal = spendingGoals.find((g) => g.fund.id === assignment.fundId);
-        const previousGoalBalance =
-          goal?.remainingAmountToSpendIncludingPending ?? 0;
-        return {
-          ...assignment,
-          amount: newAmount ?? 0,
-          newFundBalance: assignment.previousFundBalance - (newAmount ?? 0),
-          newGoalBalance: {
-            remainingAmountToAssignIncludingPending: 0,
-            remainingAmountToSpendIncludingPending:
-              previousGoalBalance - (newAmount ?? 0),
-          },
-        };
-      },
-    );
     setFundAssignments?.(
-      updateUnassignedFundAmount(
+      updateFundAssignment(
         unassignedFund,
         totalAmountToAssign,
-        nextFundAssignments,
+        fundAssignments,
+        index,
+        (assignment) => {
+          const goal = spendingGoals.find(
+            (g) => g.fund.id === assignment.fundId,
+          );
+          const previousGoalBalance =
+            goal?.remainingAmountToSpendIncludingPending ?? 0;
+          return {
+            ...assignment,
+            amount: newAmount ?? 0,
+            newFundBalance: assignment.previousFundBalance - (newAmount ?? 0),
+            newGoalBalance: {
+              remainingAmount: previousGoalBalance - (newAmount ?? 0),
+            },
+          };
+        },
       ),
     );
   };
@@ -201,16 +149,13 @@ const SpendingFundAssignmentPlanner = function ({
       <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap>
         <Chip
           variant="outlined"
-          label={`Previous remaining to spend ${formatCurrency(assignment.previousGoalBalance.remainingAmountToSpendIncludingPending)}`}
+          label={`Previous remaining to spend ${formatCurrency(assignment.previousGoalBalance.remainingAmount)}`}
         />
         <Chip
           color={
-            assignment.newGoalBalance.remainingAmountToSpendIncludingPending >=
-            0
-              ? "success"
-              : "error"
+            assignment.newGoalBalance.remainingAmount >= 0 ? "success" : "error"
           }
-          label={`New remaining to spend ${formatCurrency(assignment.newGoalBalance.remainingAmountToSpendIncludingPending)}`}
+          label={`New remaining to spend ${formatCurrency(assignment.newGoalBalance.remainingAmount)}`}
         />
       </Stack>
     );

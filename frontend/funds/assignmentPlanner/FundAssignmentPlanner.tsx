@@ -12,7 +12,7 @@ import Frame, { type FrameColor } from "@/framework/view/Frame";
 import {
   type FundAssignmentDraft,
   getAssignedFundAmount,
-  getAvailableFundsToAssign,
+  getAvailableFundCount,
   getExplicitFundAssignments,
   getRemainingFundAmount,
 } from "@/funds/assignmentPlanner/helpers";
@@ -21,6 +21,7 @@ import type { Fund } from "@/funds/types";
 import FundEntryField from "@/funds/FundEntryField";
 import type { JSX } from "react";
 import { formatCurrency } from "@/framework/currencyHelpers";
+import { isUnassignedFund } from "@/funds/helpers";
 
 /**
  * Props for the FundAssignmentPlanner component.
@@ -70,7 +71,10 @@ const FundAssignmentPlanner = function ({
     totalAmountToAssign,
     fundAssignments,
   );
-  const availableFunds = getAvailableFundsToAssign(funds, fundAssignments);
+  const assignedFundIds = new Set(
+    explicitFundAssignments.map((assignment) => assignment.fundId),
+  );
+  const availableFundCount = getAvailableFundCount(funds, fundAssignments);
 
   return (
     <Frame
@@ -116,12 +120,9 @@ const FundAssignmentPlanner = function ({
                           }
                     }
                     filter={(fund) =>
-                      fund.name !== "Unassigned" &&
+                      !isUnassignedFund(fund.name) &&
                       (fund.id === assignment.fundId ||
-                        !explicitFundAssignments.some(
-                          (existingAssignment) =>
-                            existingAssignment.fundId === fund.id,
-                        ))
+                        !assignedFundIds.has(fund.id))
                     }
                     getOptionSecondaryLabel={getFundOptionSecondaryLabel}
                     sortComparator={sortFunds}
@@ -169,15 +170,15 @@ const FundAssignmentPlanner = function ({
             alignItems={{ xs: "stretch", sm: "center" }}
           >
             <Typography variant="body2" color="text.secondary">
-              {availableFunds.length > 0
-                ? `${availableFunds.length} fund${availableFunds.length === 1 ? "" : "s"} still available to assign.`
+              {availableFundCount > 0
+                ? `${availableFundCount} fund${availableFundCount === 1 ? "" : "s"} still available to assign.`
                 : "All available funds are already represented in this split."}
             </Typography>
             <Button
               variant="contained"
               startIcon={<AddCircleOutline />}
               onClick={addFundAssignment}
-              disabled={availableFunds.length === 0}
+              disabled={availableFundCount === 0}
             >
               Add Fund Assignment
             </Button>
