@@ -1,10 +1,8 @@
 "use client";
 
 import BarMetricChart from "@/framework/charts/BarMetricChart";
-import type { BarMetricChartPoint } from "@/framework/charts/barMetricHelpers";
 import type { JSX } from "react";
-import dayjs from "dayjs";
-import { formatLongDate } from "@/framework/dateHelpers";
+import { buildRangeMetricChartPoints } from "@/framework/charts/chartPointHelpers";
 
 type TransactionTrendsCountChartMode = "AccountingPeriod" | "Date";
 
@@ -26,35 +24,10 @@ interface TransactionTrendsCountChartProps {
   readonly dates: readonly TransactionDateSummary[] | null;
 }
 
-const chartColor = "#1976d2";
 const countFormatter = new Intl.NumberFormat("en-US", {
   notation: "compact",
   maximumFractionDigits: 1,
 });
-
-const buildChartPoints = function (
-  mode: TransactionTrendsCountChartMode,
-  accountingPeriods: readonly TransactionAccountingPeriodSummary[],
-  dates: readonly TransactionDateSummary[],
-): BarMetricChartPoint[] {
-  if (mode === "AccountingPeriod") {
-    return accountingPeriods.map((summary) => ({
-      key: summary.accountingPeriodId,
-      tickLabel: summary.accountingPeriodName,
-      tooltipLabel: summary.accountingPeriodName,
-      value: summary.totalCount,
-      fill: chartColor,
-    }));
-  }
-
-  return dates.map((summary) => ({
-    key: summary.date,
-    tickLabel: dayjs(summary.date).format("MMM D"),
-    tooltipLabel: formatLongDate(new Date(`${summary.date}T00:00:00`)),
-    value: summary.totalCount,
-    fill: chartColor,
-  }));
-};
 
 /** Renders transaction counts for the Transactions trends. */
 const TransactionTrendsCountChart = function ({
@@ -66,7 +39,17 @@ const TransactionTrendsCountChart = function ({
     <BarMetricChart
       title="Transaction Count"
       emptyMessage="No transaction counts are available for the selected trends range."
-      chartPoints={buildChartPoints(mode, accountingPeriods ?? [], dates ?? [])}
+      chartPoints={buildRangeMetricChartPoints({
+        mode,
+        accountingPeriods: (accountingPeriods ?? []).map((summary) => ({
+          name: summary.accountingPeriodName,
+          value: summary.totalCount,
+        })),
+        dates: (dates ?? []).map((summary) => ({
+          date: summary.date,
+          value: summary.totalCount,
+        })),
+      })}
       xAxisLabel={mode === "Date" ? "Date" : "Accounting Period"}
       yAxisLabel="Transaction Count"
       tickFormatter={(value) => countFormatter.format(value)}

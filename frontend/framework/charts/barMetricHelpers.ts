@@ -1,59 +1,60 @@
+import {
+  findTooltipPayload,
+  isObject,
+} from "@/framework/charts/tooltipHelpers";
+import type { ChartColor } from "@/framework/charts/chartTypes";
 import type { TooltipContentProps } from "recharts";
 
+/**
+ * A normalized data point rendered by the bar metric chart.
+ */
 interface BarMetricChartPoint {
-  readonly key: string;
   readonly tickLabel: string;
   readonly tooltipLabel: string;
   readonly value: number;
-  readonly fill?: string;
+  readonly color?: ChartColor;
 }
 
-const positiveBarColor = "#2e7d32";
-const negativeBarColor = "#c62828";
-const neutralBarColor = "#90a4ae";
-
-const isObject = function (
-  value: unknown,
-): value is Record<PropertyKey, unknown> {
-  return typeof value === "object" && value !== null;
-};
-
+/**
+ * Determines if the provided value is a bar metric chart point.
+ */
 const isBarMetricChartPoint = function (
   value: unknown,
 ): value is BarMetricChartPoint {
   return (
     isObject(value) &&
-    typeof value["key"] === "string" &&
     typeof value["tickLabel"] === "string" &&
     typeof value["tooltipLabel"] === "string" &&
     typeof value["value"] === "number" &&
-    (typeof value["fill"] === "undefined" || typeof value["fill"] === "string")
+    (typeof value["color"] === "undefined" ||
+      (typeof value["color"] === "string" &&
+        ["primary", "secondary", "positive", "negative", "neutral"].includes(
+          value["color"],
+        )))
   );
 };
 
-/** Retrieves a normalized bar metric point from a Recharts tooltip payload. */
+/**
+ * Retrieves a normalized bar metric point from a Recharts tooltip payload.
+ */
 const getBarMetricTooltipChartPoint = function (
   tooltipProps: TooltipContentProps,
 ): BarMetricChartPoint | null {
-  for (const payloadEntry of tooltipProps.payload) {
-    if (isBarMetricChartPoint(payloadEntry.payload)) {
-      return payloadEntry.payload;
-    }
-  }
-
-  return null;
+  return findTooltipPayload(tooltipProps, isBarMetricChartPoint);
 };
 
-/** Gets the semantic bar color for a signed value. */
-const getSignedBarColor = function (value: number): string {
+/**
+ * Gets the semantic bar color for a signed value.
+ */
+const getSignedChartColor = function (value: number): ChartColor {
   if (value > 0) {
-    return positiveBarColor;
+    return "positive";
   }
   if (value < 0) {
-    return negativeBarColor;
+    return "negative";
   }
-  return neutralBarColor;
+  return "neutral";
 };
 
-export { getBarMetricTooltipChartPoint, getSignedBarColor };
+export { getBarMetricTooltipChartPoint, getSignedChartColor };
 export type { BarMetricChartPoint };

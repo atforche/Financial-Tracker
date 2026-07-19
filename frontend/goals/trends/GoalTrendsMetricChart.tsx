@@ -3,6 +3,7 @@
 import BarMetricChart from "@/framework/charts/BarMetricChart";
 import type { GoalAccountingPeriodSummary } from "@/goals/trends/goalTrendsTypes";
 import type { JSX } from "react";
+import { createAccountingPeriodMetricPoint } from "@/framework/charts/chartPointHelpers";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
 interface GoalTrendsMetricChartProps {
@@ -25,13 +26,12 @@ const GoalTrendsMetricChart = function ({
   formatter,
   tickFormatter,
 }: GoalTrendsMetricChartProps): JSX.Element {
-  const chartPoints = (accountingPeriods ?? []).map((summary) => ({
-    key: summary.accountingPeriodId,
-    tickLabel: summary.accountingPeriodName,
-    tooltipLabel: summary.accountingPeriodName,
-    value: getValue(summary),
-    fill: "#1976d2",
-  }));
+  const chartPoints = (accountingPeriods ?? []).map((summary) =>
+    createAccountingPeriodMetricPoint({
+      name: summary.accountingPeriodName,
+      value: getValue(summary),
+    }),
+  );
 
   return (
     <BarMetricChart

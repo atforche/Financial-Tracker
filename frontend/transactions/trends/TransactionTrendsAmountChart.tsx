@@ -1,17 +1,13 @@
 "use client";
 
 import {
-  type BarMetricChartPoint,
-  getSignedBarColor,
-} from "@/framework/charts/barMetricHelpers";
-import {
   formatCompactCurrency,
   formatSignedCurrency,
 } from "@/framework/currencyHelpers";
 import BarMetricChart from "@/framework/charts/BarMetricChart";
 import type { JSX } from "react";
-import dayjs from "dayjs";
-import { formatLongDate } from "@/framework/dateHelpers";
+import { buildRangeMetricChartPoints } from "@/framework/charts/chartPointHelpers";
+import { getSignedChartColor } from "@/framework/charts/barMetricHelpers";
 
 type TransactionTrendsAmountChartMode = "AccountingPeriod" | "Date";
 
@@ -33,32 +29,6 @@ interface TransactionTrendsAmountChartProps {
   readonly dates: readonly TransactionDateSummary[] | null;
 }
 
-const buildChartPoints = function (
-  mode: TransactionTrendsAmountChartMode,
-  accountingPeriods: readonly TransactionAccountingPeriodSummary[],
-  dates: readonly TransactionDateSummary[],
-): BarMetricChartPoint[] {
-  const summaries =
-    mode === "AccountingPeriod"
-      ? accountingPeriods.map((summary) => ({
-          key: summary.accountingPeriodId,
-          tickLabel: summary.accountingPeriodName,
-          tooltipLabel: summary.accountingPeriodName,
-          value: summary.totalAmount,
-        }))
-      : dates.map((summary) => ({
-          key: summary.date,
-          tickLabel: dayjs(summary.date).format("MMM D"),
-          tooltipLabel: formatLongDate(new Date(`${summary.date}T00:00:00`)),
-          value: summary.totalAmount,
-        }));
-
-  return summaries.map((point) => ({
-    ...point,
-    fill: getSignedBarColor(point.value),
-  }));
-};
-
 /** Renders transaction amounts for the Transactions trends. */
 const TransactionTrendsAmountChart = function ({
   mode,
@@ -69,7 +39,18 @@ const TransactionTrendsAmountChart = function ({
     <BarMetricChart
       title="Transaction Amount"
       emptyMessage="No transaction amounts are available for the selected trends range."
-      chartPoints={buildChartPoints(mode, accountingPeriods ?? [], dates ?? [])}
+      chartPoints={buildRangeMetricChartPoints({
+        mode,
+        accountingPeriods: (accountingPeriods ?? []).map((summary) => ({
+          name: summary.accountingPeriodName,
+          value: summary.totalAmount,
+        })),
+        dates: (dates ?? []).map((summary) => ({
+          date: summary.date,
+          value: summary.totalAmount,
+        })),
+        getColor: getSignedChartColor,
+      })}
       xAxisLabel={mode === "Date" ? "Date" : "Accounting Period"}
       yAxisLabel="Transaction Amount"
       tickFormatter={(value) => formatCompactCurrency(value, true)}

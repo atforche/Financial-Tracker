@@ -1,3 +1,8 @@
+import {
+  findTooltipPayload,
+  isObject,
+} from "@/framework/charts/tooltipHelpers";
+import type { ChartRangeMode } from "@/framework/charts/chartTypes";
 import type { TooltipContentProps } from "recharts";
 import dayjs from "dayjs";
 import { formatLongDate } from "@/framework/dateHelpers";
@@ -5,7 +10,7 @@ import { formatLongDate } from "@/framework/dateHelpers";
 /**
  * Indicates whether the chart is grouped by accounting period or date.
  */
-type BalanceTrendChartMode = "AccountingPeriod" | "Date";
+type BalanceTrendChartMode = ChartRangeMode;
 
 /**
  * A balance summary for one day in a balance trend.
@@ -31,7 +36,6 @@ interface BalanceTrendPeriodSummary {
  * A normalized data point rendered by the balance trend chart.
  */
 interface BalanceTrendChartPoint {
-  readonly key: string;
   readonly tickLabel: string;
   readonly tooltipLabel: string;
   readonly balance: number;
@@ -41,20 +45,10 @@ interface BalanceTrendChartPoint {
  * The unvalidated shape of a balance trend chart point.
  */
 interface BalanceTrendChartPointCandidate {
-  readonly key?: unknown;
   readonly tickLabel?: unknown;
   readonly tooltipLabel?: unknown;
   readonly balance?: unknown;
 }
-
-/**
- * Determines whether a value is a non-null object.
- */
-const isObject = function (
-  value: unknown,
-): value is Record<PropertyKey, unknown> {
-  return typeof value === "object" && value !== null;
-};
 
 /**
  * Determines whether a value has the normalized balance trend chart point shape.
@@ -67,14 +61,12 @@ const isBalanceTrendChartPoint = function (
   }
 
   const candidate: BalanceTrendChartPointCandidate = {
-    key: value["key"],
     tickLabel: value["tickLabel"],
     tooltipLabel: value["tooltipLabel"],
     balance: value["balance"],
   };
 
   return (
-    typeof candidate.key === "string" &&
     typeof candidate.tickLabel === "string" &&
     typeof candidate.tooltipLabel === "string" &&
     typeof candidate.balance === "number"
@@ -92,7 +84,6 @@ const toBalanceTrendChartPoint = function (
   }
 
   return {
-    key: value.key,
     tickLabel: value.tickLabel,
     tooltipLabel: value.tooltipLabel,
     balance: value.balance,
@@ -102,17 +93,11 @@ const toBalanceTrendChartPoint = function (
 /**
  * Retrieves the first normalized chart point from a Recharts tooltip payload.
  */
-const getTooltipChartPoint = function (
+const getBalanceTrendTooltipPoint = function (
   tooltipProps: TooltipContentProps,
 ): BalanceTrendChartPoint | null {
-  for (const payloadEntry of tooltipProps.payload) {
-    const chartPoint = toBalanceTrendChartPoint(payloadEntry.payload);
-    if (chartPoint !== null) {
-      return chartPoint;
-    }
-  }
-
-  return null;
+  const point = findTooltipPayload(tooltipProps, isBalanceTrendChartPoint);
+  return point === null ? null : toBalanceTrendChartPoint(point);
 };
 
 /**
@@ -122,7 +107,6 @@ const buildDateChartPoints = function (
   dates: readonly BalanceTrendDateSummary[],
 ): BalanceTrendChartPoint[] {
   return dates.map((dateSummary) => ({
-    key: dateSummary.date,
     tickLabel: dayjs(dateSummary.date).format("MMMM D"),
     tooltipLabel: formatLongDate(new Date(`${dateSummary.date}T00:00:00`)),
     balance: dateSummary.totalBalance,
@@ -136,7 +120,6 @@ const buildAccountingPeriodChartPoints = function (
   accountingPeriods: readonly BalanceTrendPeriodSummary[],
 ): BalanceTrendChartPoint[] {
   const openingPoints = accountingPeriods.map((accountingPeriod) => ({
-    key: `${accountingPeriod.accountingPeriodId}-opening`,
     tickLabel: dayjs(
       new Date(accountingPeriod.year, accountingPeriod.month - 1, 1),
     ).format("MMMM YYYY"),
@@ -152,7 +135,6 @@ const buildAccountingPeriodChartPoints = function (
   return [
     ...openingPoints,
     {
-      key: `${lastAccountingPeriod.accountingPeriodId}-closing`,
       tickLabel: "End",
       tooltipLabel: `${lastAccountingPeriod.accountingPeriodName} closing balance`,
       balance: lastAccountingPeriod.totalClosingBalance,
@@ -183,7 +165,7 @@ export {
   buildAccountingPeriodChartPoints,
   buildBalanceTrendChartPoints,
   buildDateChartPoints,
-  getTooltipChartPoint,
+  getBalanceTrendTooltipPoint,
 };
 export type {
   BalanceTrendChartMode,

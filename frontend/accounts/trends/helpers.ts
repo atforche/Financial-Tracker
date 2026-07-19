@@ -6,13 +6,8 @@ import type {
   AccountTypeBalance,
   AccountWithBalanceRangeSort,
 } from "@/accounts/types";
-import {
-  type BarMetricChartPoint,
-  getSignedBarColor,
-} from "@/framework/charts/barMetricHelpers";
-import { formatLongDate, formatShortDate } from "@/framework/dateHelpers";
 import type { TrendRangeMode } from "@/framework/routes/trendRange";
-import dayjs from "dayjs";
+import { formatShortDate } from "@/framework/dateHelpers";
 
 /**
  * Search parameters supported by the account trends page.
@@ -202,59 +197,8 @@ const clearAccountTrendsFilters = function (params: URLSearchParams): void {
   });
 };
 
-/**
- * Builds chart points for the balance change chart based on the selected mode and provided data.
- */
-const buildChartPoints = function (
-  mode: AccountTrendsDataMode,
-  accountingPeriods: readonly AccountBalanceSummaryByPeriod[],
-  dates: readonly AccountBalanceSummaryByDate[],
-): BarMetricChartPoint[] {
-  if (mode === "AccountingPeriod") {
-    return accountingPeriods.map((summary) => {
-      const value =
-        summary.closingBalance.totalBalance -
-        summary.openingBalance.totalBalance;
-      return {
-        key: summary.accountingPeriod.id,
-        tickLabel: summary.accountingPeriod.name,
-        tooltipLabel: summary.accountingPeriod.name,
-        value,
-        fill: getSignedBarColor(value),
-      };
-    });
-  }
-
-  if (dates.length === 1) {
-    const [summary] = dates;
-    return typeof summary === "undefined"
-      ? []
-      : [
-          {
-            key: summary.date,
-            tickLabel: dayjs(summary.date).format("MMM D"),
-            tooltipLabel: formatLongDate(new Date(`${summary.date}T00:00:00`)),
-            value: 0,
-            fill: getSignedBarColor(0),
-          },
-        ];
-  }
-
-  return dates.slice(1).map((summary, index) => {
-    const value = summary.totalBalance - (dates[index]?.totalBalance ?? 0);
-    return {
-      key: summary.date,
-      tickLabel: dayjs(summary.date).format("MMM D"),
-      tooltipLabel: formatLongDate(new Date(`${summary.date}T00:00:00`)),
-      value,
-      fill: getSignedBarColor(value),
-    };
-  });
-};
-
 export {
   accountTrendsParamNames,
-  buildChartPoints,
   clearAccountTrendsFilters,
   getAccountTrendsSnapshot,
   getAccountTypeBreakdownDetails,

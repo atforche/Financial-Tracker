@@ -4,9 +4,10 @@ import type {
 } from "@/accounting-periods/types";
 import {
   type BarMetricChartPoint,
-  getSignedBarColor,
+  getSignedChartColor,
 } from "@/framework/charts/barMetricHelpers";
-import type { BalanceTrendChartPoint } from "@/framework/charts/helpers";
+import type { BalanceTrendChartPoint } from "@/framework/charts/balanceTrendHelpers";
+import { createAccountingPeriodMetricPoint } from "@/framework/charts/chartPointHelpers";
 
 /**
  * Builds the chart points for the balance trend chart based on the provided accounting periods.
@@ -15,7 +16,6 @@ const buildTrendChartPoints = function (
   accountingPeriods: readonly AccountingPeriodWithBalance[],
 ): BalanceTrendChartPoint[] {
   const openingPoints = accountingPeriods.map((accountingPeriod) => ({
-    key: `${accountingPeriod.id}-opening`,
     tickLabel: accountingPeriod.name,
     tooltipLabel: `${accountingPeriod.name} opening balance`,
     balance: accountingPeriod.openingBalance,
@@ -29,7 +29,6 @@ const buildTrendChartPoints = function (
   return [
     ...openingPoints,
     {
-      key: `${lastAccountingPeriod.id}-closing`,
       tickLabel: "End",
       tooltipLabel: `${lastAccountingPeriod.name} closing balance`,
       balance: lastAccountingPeriod.closingBalance,
@@ -47,13 +46,10 @@ const buildChangeChartPoints = function (
     const value =
       accountingPeriod.closingBalance - accountingPeriod.openingBalance;
 
-    return {
-      key: accountingPeriod.id,
-      tickLabel: accountingPeriod.name,
-      tooltipLabel: accountingPeriod.name,
-      value,
-      fill: getSignedBarColor(value),
-    };
+    return createAccountingPeriodMetricPoint(
+      { name: accountingPeriod.name, value },
+      getSignedChartColor(value),
+    );
   });
 };
 

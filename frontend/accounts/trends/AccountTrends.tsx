@@ -29,7 +29,7 @@ import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import type { TrendRangeMode } from "@/framework/routes/trendRange";
-import { buildBalanceTrendChartPoints } from "@/framework/charts/helpers";
+import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import dayjs from "dayjs";
 import getApiClient from "@/framework/data/getApiClient";
 import getApiData from "@/framework/data/apiResponse";
