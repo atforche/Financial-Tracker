@@ -21,6 +21,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "recharts": "^3.8.1",
+    "openapi-fetch": "^0.15.0",
     "use-debounce": "^10.1.0"
   },
   "devDependencies": {
@@ -35,7 +36,6 @@
     "eslint-plugin-jsdoc": "^61.1.12",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "openapi-fetch": "^0.15.0",
     "openapi-typescript": "7.10.1",
     "typescript": "^5"
   }

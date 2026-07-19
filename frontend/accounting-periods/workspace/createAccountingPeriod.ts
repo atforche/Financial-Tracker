@@ -1,11 +1,10 @@
 "use server";
 
 import type { CreateAccountingPeriodRequest } from "@/accounting-periods/types";
-import formatErrors from "@/framework/forms/formatErrors";
-import getApiClient from "@/framework/data/getApiClient";
+import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
-import { isNotNullOrUndefined } from "@/framework/nullHelpers";
-import nameof from "@/framework/data/nameof";
+import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -34,37 +33,19 @@ const createAccountingPeriod = async function (
   _: ActionState,
   { redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const client = getApiClient();
+  const client = createApiClient();
   const { error } = await client.POST("/accounting-periods", {
     body: request,
   });
   if (error) {
     if (isApiError(error)) {
-      let yearErrorMessage = null;
-      let monthErrorMessage = null;
-      const unmappedErrors: (string | null)[] = [];
-      for (const key of Object.keys(error.errors ?? {})) {
-        if (
-          key.toUpperCase() ===
-          nameof<CreateAccountingPeriodRequest>("year").toUpperCase()
-        ) {
-          yearErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateAccountingPeriodRequest>("month").toUpperCase()
-        ) {
-          monthErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else {
-          unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
-        }
-      }
+      const mappedError = mapApiValidationError(error, {
+        [propertyName<CreateAccountingPeriodRequest>("year")]: "yearErrors",
+        [propertyName<CreateAccountingPeriodRequest>("month")]: "monthErrors",
+      });
       return {
-        errorTitle: error.title ?? null,
-        unmappedErrors: formatErrors(
-          unmappedErrors.filter(isNotNullOrUndefined),
-        ),
-        yearErrors: yearErrorMessage,
-        monthErrors: monthErrorMessage,
+        ...mappedError,
+        ...mappedError.fieldErrors,
       };
     }
     throw new Error("An unexpected error occurred", { cause: error });

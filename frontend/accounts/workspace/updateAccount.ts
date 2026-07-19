@@ -5,10 +5,10 @@ import type {
   AccountActionState,
 } from "@/accounts/workspace/accountAction";
 import type { UpdateAccountRequest } from "@/accounts/types";
-import formatAccountActionError from "@/accounts/workspace/formatAccountActionError";
-import getApiClient from "@/framework/data/getApiClient";
+import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
-import nameof from "@/framework/data/nameof";
+import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -33,7 +33,7 @@ const updateAccount = async function (
   _: ActionState,
   { accountId, redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const { error } = await apiClient.POST("/accounts/{accountId}", {
     params: {
       path: {
@@ -44,8 +44,8 @@ const updateAccount = async function (
   });
   if (error) {
     if (isApiError(error)) {
-      const formattedError = formatAccountActionError(error, {
-        [nameof<UpdateAccountRequest>("name")]: "nameErrors",
+      const formattedError = mapApiValidationError(error, {
+        [propertyName<UpdateAccountRequest>("name")]: "nameErrors",
       });
       return {
         errorTitle: formattedError.errorTitle,

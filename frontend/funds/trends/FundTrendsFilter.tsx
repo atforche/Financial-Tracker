@@ -15,7 +15,7 @@ import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 import { setTrendRangeMode } from "@/framework/routes/trendRange";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
@@ -50,17 +50,17 @@ const FundTrendsFilter = function ({
 }: FundTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const pageParamName = nameof<FundTrendsSearchParams>("page");
-  const modeParamName = nameof<FundTrendsSearchParams>("mode");
-  const fundNameParamName = nameof<FundTrendsSearchParams>("fundName");
-  const startAccountingPeriodIdParamName = nameof<FundTrendsSearchParams>(
+  const pageParamName = propertyName<FundTrendsSearchParams>("page");
+  const modeParamName = propertyName<FundTrendsSearchParams>("mode");
+  const fundNameParamName = propertyName<FundTrendsSearchParams>("fundName");
+  const startAccountingPeriodIdParamName = propertyName<FundTrendsSearchParams>(
     "startAccountingPeriodId",
   );
-  const endAccountingPeriodIdParamName = nameof<FundTrendsSearchParams>(
+  const endAccountingPeriodIdParamName = propertyName<FundTrendsSearchParams>(
     "endAccountingPeriodId",
   );
-  const startDateParamName = nameof<FundTrendsSearchParams>("startDate");
-  const endDateParamName = nameof<FundTrendsSearchParams>("endDate");
+  const startDateParamName = propertyName<FundTrendsSearchParams>("startDate");
+  const endDateParamName = propertyName<FundTrendsSearchParams>("endDate");
 
   const currentMode: FundsTrendsFilterMode =
     searchParams.get(modeParamName) === "accounting-period"

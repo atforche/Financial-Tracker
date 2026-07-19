@@ -2,9 +2,9 @@ import GoalWorkspaceCards from "@/goals/workspace/GoalWorkspaceCards";
 import GoalWorkspaceFilter from "@/goals/workspace/GoalWorkspaceFilter";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
+import createApiClient from "@/framework/data/createApiClient";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Search parameters for the GoalWorkspace component.
@@ -30,12 +30,12 @@ const GoalWorkspace = async function ({
   searchParams,
 }: GoalWorkspaceProps): Promise<JSX.Element> {
   const { accountingPeriodId, fundIds } = await searchParams;
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
     params: { query: { Limit: 500 } },
   });
 
-  const accountingPeriods = getApiData(
+  const accountingPeriods = unwrapApiResponse(
     accountingPeriodsResponse,
     "Failed to fetch goal workspace filters",
   );
@@ -69,11 +69,11 @@ const GoalWorkspace = async function ({
       },
     }),
   ]);
-  const assignmentGoals = getApiData(
+  const assignmentGoals = unwrapApiResponse(
     assignmentGoalResponse,
     "Failed to fetch assignment goals",
   );
-  const spendingGoals = getApiData(
+  const spendingGoals = unwrapApiResponse(
     spendingGoalResponse,
     "Failed to fetch spending goals",
   );

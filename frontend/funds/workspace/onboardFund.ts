@@ -1,10 +1,10 @@
 "use server";
 
 import type { OnboardFundRequest } from "@/funds/types";
-import formatErrors from "@/framework/forms/formatErrors";
-import getApiClient from "@/framework/data/getApiClient";
+import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
-import nameof from "@/framework/data/nameof";
+import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -37,70 +37,25 @@ const onboardFund = async function (
   _: ActionState,
   { redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const { error } = await apiClient.POST("/funds/onboard", { body: request });
   if (error) {
     if (isApiError(error)) {
-      let nameErrorMessage = null;
-      let descriptionErrorMessage = null;
-      let onboardedBalanceErrorMessage = null;
-      let assignmentGoalTypeErrorMessage = null;
-      let assignmentGoalAmountErrorMessage = null;
-      let spendingGoalTypeErrorMessage = null;
-      const unmappedErrors: (string | null)[] = [];
-
-      for (const key of Object.keys(error.errors ?? {})) {
-        if (
-          key.toUpperCase() === nameof<OnboardFundRequest>("name").toUpperCase()
-        ) {
-          nameErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<OnboardFundRequest>("description").toUpperCase()
-        ) {
-          descriptionErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<OnboardFundRequest>("onboardedBalance").toUpperCase()
-        ) {
-          onboardedBalanceErrorMessage = formatErrors(
-            error.errors?.[key] ?? null,
-          );
-        } else if (
-          key.toUpperCase() ===
-          nameof<OnboardFundRequest>("assignmentGoalType").toUpperCase()
-        ) {
-          assignmentGoalTypeErrorMessage = formatErrors(
-            error.errors?.[key] ?? null,
-          );
-        } else if (
-          key.toUpperCase() ===
-          nameof<OnboardFundRequest>("assignmentGoalAmount").toUpperCase()
-        ) {
-          assignmentGoalAmountErrorMessage = formatErrors(
-            error.errors?.[key] ?? null,
-          );
-        } else if (
-          key.toUpperCase() ===
-          nameof<OnboardFundRequest>("spendingGoalType").toUpperCase()
-        ) {
-          spendingGoalTypeErrorMessage = formatErrors(
-            error.errors?.[key] ?? null,
-          );
-        } else {
-          unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
-        }
-      }
-
+      const mappedError = mapApiValidationError(error, {
+        [propertyName<OnboardFundRequest>("name")]: "nameErrors",
+        [propertyName<OnboardFundRequest>("description")]: "descriptionErrors",
+        [propertyName<OnboardFundRequest>("onboardedBalance")]:
+          "onboardedBalanceErrors",
+        [propertyName<OnboardFundRequest>("assignmentGoalType")]:
+          "assignmentGoalTypeErrors",
+        [propertyName<OnboardFundRequest>("assignmentGoalAmount")]:
+          "assignmentGoalAmountErrors",
+        [propertyName<OnboardFundRequest>("spendingGoalType")]:
+          "spendingGoalTypeErrors",
+      });
       return {
-        errorTitle: error.title ?? null,
-        nameErrors: nameErrorMessage,
-        descriptionErrors: descriptionErrorMessage,
-        onboardedBalanceErrors: onboardedBalanceErrorMessage,
-        assignmentGoalTypeErrors: assignmentGoalTypeErrorMessage,
-        assignmentGoalAmountErrors: assignmentGoalAmountErrorMessage,
-        spendingGoalTypeErrors: spendingGoalTypeErrorMessage,
-        unmappedErrors: unmappedErrors.join(", ") || null,
+        ...mappedError,
+        ...mappedError.fieldErrors,
       };
     }
     throw new Error("An unexpected error occurred", { cause: error });

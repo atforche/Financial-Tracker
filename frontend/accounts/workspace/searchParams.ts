@@ -4,7 +4,7 @@ import {
 } from "@/accounts/accountTypeFilterHelpers";
 import type { AccountType } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 
 /**
  * Normalized filters used by account workspace clients.
@@ -19,9 +19,9 @@ interface AccountWorkspaceFilters {
  * Defines the parameter names used in the account workspace search parameters.
  */
 const accountWorkspaceParamNames = {
-  action: nameof<AccountWorkspaceSearchParams>("action"),
-  accountType: nameof<AccountWorkspaceSearchParams>("accountType"),
-  search: nameof<AccountWorkspaceSearchParams>("search"),
+  action: propertyName<AccountWorkspaceSearchParams>("action"),
+  accountType: propertyName<AccountWorkspaceSearchParams>("accountType"),
+  search: propertyName<AccountWorkspaceSearchParams>("search"),
 } as const;
 
 /**

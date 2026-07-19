@@ -14,9 +14,9 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
-import nameof from "@/framework/data/nameof";
+import parseEnumValue from "@/framework/data/parseEnumValue";
+import propertyName from "@/framework/data/propertyName";
 import routes from "@/accounting-periods/routes";
-import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
@@ -38,11 +38,13 @@ const AccountingPeriodTrendsListFrame = function ({
   const router = useRouter();
 
   const startAccountingPeriodParamName =
-    nameof<AccountingPeriodTrendsSearchParams>("startAccountingPeriodId");
+    propertyName<AccountingPeriodTrendsSearchParams>("startAccountingPeriodId");
   const endAccountingPeriodParamName =
-    nameof<AccountingPeriodTrendsSearchParams>("endAccountingPeriodId");
-  const sortParamName = nameof<AccountingPeriodTrendsSearchParams>("sort");
-  const pageParamName = nameof<AccountingPeriodTrendsSearchParams>("page");
+    propertyName<AccountingPeriodTrendsSearchParams>("endAccountingPeriodId");
+  const sortParamName =
+    propertyName<AccountingPeriodTrendsSearchParams>("sort");
+  const pageParamName =
+    propertyName<AccountingPeriodTrendsSearchParams>("page");
   const updateParams = useSearchParamUpdater([pageParamName]);
 
   const setSort = function (
@@ -68,7 +70,7 @@ const AccountingPeriodTrendsListFrame = function ({
     });
   };
 
-  const currentSort = tryParseEnum(
+  const currentSort = parseEnumValue(
     AccountingPeriodWithBalanceSort,
     searchParams.get(sortParamName) ?? "",
   );

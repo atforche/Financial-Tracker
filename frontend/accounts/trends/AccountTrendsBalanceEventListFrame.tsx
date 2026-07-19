@@ -13,16 +13,16 @@ import {
 import { Box, Button, IconButton } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
-import { BalanceEventType } from "@/framework/data/types";
+import { BalanceEventType } from "@/balance-events/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
-import { formatBalanceEventType } from "@/framework/data/helpers";
+import { formatBalanceEventType } from "@/balance-events/helpers";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { formatShortDate } from "@/framework/dateHelpers";
+import parseEnumValue from "@/framework/data/parseEnumValue";
 import routes from "@/transactions/routes";
-import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
@@ -60,7 +60,7 @@ const AccountTrendsBalanceEventListFrame = function ({
     });
   };
 
-  const currentSort = tryParseEnum(
+  const currentSort = parseEnumValue(
     AccountBalanceEventSort,
     searchParams.get(sortParamName) ?? "",
   );

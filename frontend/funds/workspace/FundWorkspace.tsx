@@ -2,8 +2,8 @@ import FundWorkspaceCards from "@/funds/workspace/FundWorkspaceCards";
 import FundWorkspaceFilter from "@/funds/workspace/FundWorkspaceFilter";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
+import createApiClient from "@/framework/data/createApiClient";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Search parameters supported by the Funds workspace.
@@ -27,7 +27,7 @@ const FundWorkspace = async function ({
   searchParams,
 }: FundWorkspaceProps): Promise<JSX.Element> {
   const { search } = await searchParams;
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const anyAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: { query: { Limit: 1 } },
   });
@@ -39,11 +39,11 @@ const FundWorkspace = async function ({
     fundsPromise,
   ]);
 
-  const accountingPeriod = getApiData(
+  const accountingPeriod = unwrapApiResponse(
     accountingPeriodResponse,
     "Failed to fetch accounting periods",
   );
-  const funds = getApiData(fundsResponse, "Failed to fetch funds");
+  const funds = unwrapApiResponse(fundsResponse, "Failed to fetch funds");
 
   const visibleFunds = funds.items.filter((fund) => fund.name !== "Unassigned");
   const isInOnboardingMode = accountingPeriod.items.length === 0;

@@ -12,7 +12,7 @@ import type { JSX } from "react";
 import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -35,13 +35,13 @@ const TransactionWorkspaceFilter = function ({
 }: TransactionWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const pageParamName = nameof<TransactionWorkspaceSearchParams>("page");
-  const accountingPeriodParamName = nameof<TransactionWorkspaceSearchParams>(
-    "accountingPeriodIds",
-  );
+  const pageParamName = propertyName<TransactionWorkspaceSearchParams>("page");
+  const accountingPeriodParamName =
+    propertyName<TransactionWorkspaceSearchParams>("accountingPeriodIds");
   const accountParamName =
-    nameof<TransactionWorkspaceSearchParams>("accountIds");
-  const fundParamName = nameof<TransactionWorkspaceSearchParams>("fundIds");
+    propertyName<TransactionWorkspaceSearchParams>("accountIds");
+  const fundParamName =
+    propertyName<TransactionWorkspaceSearchParams>("fundIds");
 
   const currentAccountingPeriods = selectAvailableSearchParamValues(
     normalizeStringSearchParams(searchParams.getAll(accountingPeriodParamName)),

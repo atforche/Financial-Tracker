@@ -1,8 +1,7 @@
 import { TransactionType } from "@/transactions/types";
+import enumValues from "@/framework/data/enumValues";
 
-const transactionTypeValues = Object.values(
-  TransactionType,
-) as readonly TransactionType[];
+const transactionTypeValues = enumValues(TransactionType);
 
 const transactionTypeSet = new Set<string>(transactionTypeValues);
 

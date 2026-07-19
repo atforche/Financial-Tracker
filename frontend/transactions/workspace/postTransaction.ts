@@ -1,10 +1,10 @@
 "use server";
 
 import type { PostTransactionRequest } from "@/transactions/types";
-import formatErrors from "@/framework/forms/formatErrors";
-import getApiClient from "@/framework/data/getApiClient";
+import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
-import nameof from "@/framework/data/nameof";
+import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -34,7 +34,7 @@ const postTransaction = async function (
   _: ActionState,
   { transactionId, redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const client = getApiClient();
+  const client = createApiClient();
   const { error } = await client.POST("/transactions/{transactionId}/post", {
     params: {
       path: {
@@ -45,29 +45,13 @@ const postTransaction = async function (
   });
   if (error) {
     if (isApiError(error)) {
-      let accountErrors = null;
-      let dateErrors = null;
-      const unmappedErrors: (string | null)[] = [];
-      for (const key of Object.keys(error.errors ?? {})) {
-        if (
-          key.toUpperCase() ===
-          nameof<PostTransactionRequest>("accountId").toUpperCase()
-        ) {
-          accountErrors = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<PostTransactionRequest>("date").toUpperCase()
-        ) {
-          dateErrors = formatErrors(error.errors?.[key] ?? null);
-        } else {
-          unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
-        }
-      }
+      const mappedError = mapApiValidationError(error, {
+        [propertyName<PostTransactionRequest>("accountId")]: "accountErrors",
+        [propertyName<PostTransactionRequest>("date")]: "dateErrors",
+      });
       return {
-        errorTitle: error.title ?? null,
-        accountErrors,
-        dateErrors,
-        unmappedErrors: unmappedErrors.filter(Boolean).join(", ") || null,
+        ...mappedError,
+        ...mappedError.fieldErrors,
       };
     }
     throw new Error("An unexpected error occurred", { cause: error });

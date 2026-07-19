@@ -5,7 +5,7 @@ import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace"
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import SearchBar from "@/framework/listframe/SearchBar";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 import routes from "@/funds/routes";
 
 /**
@@ -35,7 +35,7 @@ const FundWorkspaceFilter = function ({
       }
     >
       <SearchBar
-        searchParamName={nameof<FundWorkspaceSearchParams>("search")}
+        searchParamName={propertyName<FundWorkspaceSearchParams>("search")}
       />
     </PageFilterFrame>
   );

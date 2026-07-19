@@ -16,11 +16,11 @@ import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
+import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Search parameters supported by the accounting period workspace.
@@ -47,7 +47,7 @@ interface AccountingPeriodWorkspaceProps {
 const AccountingPeriodWorkspace = async function ({
   searchParams,
 }: AccountingPeriodWorkspaceProps): Promise<JSX.Element> {
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const { years, months, sort, page, selectedAccountingPeriodId, action } =
     await searchParams;
   const currentPage = normalizePageValue(page);
@@ -69,7 +69,7 @@ const AccountingPeriodWorkspace = async function ({
       },
     },
   );
-  const firstAccountingPeriod = getApiData(
+  const firstAccountingPeriod = unwrapApiResponse(
     firstAccountingPeriodResponse,
     "Failed to fetch the first accounting period",
   );
@@ -96,7 +96,7 @@ const AccountingPeriodWorkspace = async function ({
     },
   );
 
-  const accountingPeriods = getApiData(
+  const accountingPeriods = unwrapApiResponse(
     accountingPeriodsResponse,
     "Failed to fetch accounting periods",
   );

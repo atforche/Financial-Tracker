@@ -1,9 +1,10 @@
 "use server";
 
 import type { UpdateTransactionRequest } from "@/transactions/types";
-import formatErrors from "@/framework/forms/formatErrors";
-import getApiClient from "@/framework/data/getApiClient";
+import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
+import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
 interface ActionState {
@@ -30,6 +31,13 @@ interface ActionPayload {
   readonly request: UpdateTransactionRequest;
 }
 
+/** Validation fields returned for nested transaction request models. */
+interface TransactionValidationFields {
+  readonly location: string;
+  readonly sourceLocation: string;
+  readonly destinationLocation: string;
+}
+
 /**
  * Server action that updates a transaction.
  */
@@ -37,7 +45,7 @@ const updateTransaction = async function (
   _: ActionState,
   { transactionId, redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const client = getApiClient();
+  const client = createApiClient();
   const { error } = await client.POST("/transactions/{transactionId}", {
     params: {
       path: {
@@ -48,41 +56,21 @@ const updateTransaction = async function (
   });
   if (error) {
     if (isApiError(error)) {
-      let dateErrors = null;
-      let locationErrors = null;
-      let sourceLocationErrors = null;
-      let destinationLocationErrors = null;
-      let descriptionErrors = null;
-      let amountErrors = null;
-      const unmappedErrors: (string | null)[] = [];
-      for (const key of Object.keys(error.errors ?? {})) {
-        const normalizedKey = key.toUpperCase();
-
-        if (normalizedKey === "DATE") {
-          dateErrors = formatErrors(error.errors?.[key] ?? null);
-        } else if (normalizedKey === "LOCATION") {
-          locationErrors = formatErrors(error.errors?.[key] ?? null);
-        } else if (normalizedKey === "SOURCELOCATION") {
-          sourceLocationErrors = formatErrors(error.errors?.[key] ?? null);
-        } else if (normalizedKey === "DESTINATIONLOCATION") {
-          destinationLocationErrors = formatErrors(error.errors?.[key] ?? null);
-        } else if (normalizedKey === "DESCRIPTION") {
-          descriptionErrors = formatErrors(error.errors?.[key] ?? null);
-        } else if (normalizedKey === "AMOUNT") {
-          amountErrors = formatErrors(error.errors?.[key] ?? null);
-        } else {
-          unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
-        }
-      }
+      const mappedError = mapApiValidationError(error, {
+        [propertyName<UpdateTransactionRequest>("date")]: "dateErrors",
+        [propertyName<TransactionValidationFields>("location")]:
+          "locationErrors",
+        [propertyName<TransactionValidationFields>("sourceLocation")]:
+          "sourceLocationErrors",
+        [propertyName<TransactionValidationFields>("destinationLocation")]:
+          "destinationLocationErrors",
+        [propertyName<UpdateTransactionRequest>("description")]:
+          "descriptionErrors",
+        [propertyName<UpdateTransactionRequest>("amount")]: "amountErrors",
+      });
       return {
-        errorTitle: error.title ?? null,
-        dateErrors,
-        locationErrors,
-        sourceLocationErrors,
-        destinationLocationErrors,
-        descriptionErrors,
-        amountErrors,
-        unmappedErrors: unmappedErrors.filter(Boolean).join(", ") || null,
+        ...mappedError,
+        ...mappedError.fieldErrors,
       };
     }
     throw new Error("An unexpected error occurred", { cause: error });

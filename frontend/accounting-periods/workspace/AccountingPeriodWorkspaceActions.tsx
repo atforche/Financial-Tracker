@@ -15,7 +15,7 @@ import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
 import ReopenAccountingPeriodForm from "@/accounting-periods/workspace/ReopenAccountingPeriodForm";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 import { usePathname } from "next/navigation";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
@@ -40,7 +40,7 @@ const AccountingPeriodWorkspaceActions = function ({
   const updateParams = useSearchParamUpdater([]);
 
   const actionParamName =
-    nameof<AccountingPeriodWorkspaceSearchParams>("action");
+    propertyName<AccountingPeriodWorkspaceSearchParams>("action");
   const availableActions = getAvailableAccountingPeriodWorkspaceActions(
     selectedAccountingPeriod,
   );

@@ -4,13 +4,13 @@ import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace"
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ViewGoalForm from "@/goals/workspace/ViewGoalForm";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
+import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
 import routes from "@/goals/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import transactionRoutes from "@/transactions/routes";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Props for the GoalWorkspaceDetailPage component.
@@ -29,11 +29,11 @@ const GoalWorkspaceDetailPage = async function ({
   const { accountingPeriodId, fundIds, search, balanceEventPage } =
     await searchParams;
   const selectedFundIds = toRepeatedSearchParams(fundIds);
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const periodsResponse = await apiClient.GET("/accounting-periods", {
     params: { query: { Limit: 1 } },
   });
-  const periods = getApiData(
+  const periods = unwrapApiResponse(
     periodsResponse,
     "Failed to fetch accounting periods",
   );
@@ -67,11 +67,11 @@ const GoalWorkspaceDetailPage = async function ({
       },
     }),
   ]);
-  const assignmentGoal = getApiData(
+  const assignmentGoal = unwrapApiResponse(
     assignmentGoalResponse,
     "Failed to fetch the assignment goal",
   );
-  const spendingGoal = getApiData(
+  const spendingGoal = unwrapApiResponse(
     spendingGoalResponse,
     "Failed to fetch the spending goal",
   );
@@ -98,7 +98,7 @@ const GoalWorkspaceDetailPage = async function ({
       },
     },
   );
-  const balanceEvents = getApiData(
+  const balanceEvents = unwrapApiResponse(
     balanceEventsResponse,
     "Failed to fetch goal balance events",
   );

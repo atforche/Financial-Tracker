@@ -8,7 +8,7 @@ import type { JSX } from "react";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import WorkspaceCard from "@/framework/view/WorkspaceCard";
 import { formatCurrency } from "@/framework/currencyHelpers";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 import routes from "@/funds/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
@@ -30,7 +30,7 @@ const FundWorkspaceCards = function ({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const searchParamName = nameof<FundWorkspaceSearchParams>("search");
+  const searchParamName = propertyName<FundWorkspaceSearchParams>("search");
   const hasSearch = (searchParams.get(searchParamName) ?? "").trim() !== "";
   const funds = data ?? [];
   const updateParams = useSearchParamUpdater([]);

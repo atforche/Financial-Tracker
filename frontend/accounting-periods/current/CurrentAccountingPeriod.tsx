@@ -11,10 +11,10 @@ import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import type { TransactionSort } from "@/transactions/types";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
+import createApiClient from "@/framework/data/createApiClient";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import { rowsPerPage } from "@/framework/listframe/Constants";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Search parameters for the CurrentAccountingPeriod component.
@@ -40,20 +40,20 @@ const CurrentAccountingPeriod = async function ({
   const { transactionSort, transactionPage } = await searchParams;
   const currentTransactionPage = normalizePageValue(transactionPage);
 
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
     params: {
       query: { Sort: AccountingPeriodSort.DateDescending, Limit: 1 },
     },
   });
-  const accountingPeriods = getApiData(
+  const accountingPeriods = unwrapApiResponse(
     accountingPeriodsResponse,
     "Failed to fetch accounting periods",
   );
   const currentAccountingPeriod = accountingPeriods.items[0] ?? null;
   let current: AccountingPeriodWithTransactions | null = null;
   if (isNotNullOrUndefined(currentAccountingPeriod)) {
-    current = getApiData(
+    current = unwrapApiResponse(
       await apiClient.GET(
         "/accounting-periods/{accountingPeriodId}/transactions",
         {

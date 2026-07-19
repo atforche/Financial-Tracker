@@ -4,9 +4,9 @@ import type {
   AccountActionPayload,
   AccountActionState,
 } from "@/accounts/workspace/accountAction";
-import formatAccountActionError from "@/accounts/workspace/formatAccountActionError";
-import getApiClient from "@/framework/data/getApiClient";
+import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
+import mapApiValidationError from "@/framework/forms/mapApiValidationError";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -28,7 +28,7 @@ const deleteAccount = async function (
   _: ActionState,
   { accountId, redirectUrl }: ActionPayload,
 ): Promise<ActionState> {
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const { error } = await apiClient.DELETE("/accounts/{accountId}", {
     params: {
       path: {
@@ -38,7 +38,7 @@ const deleteAccount = async function (
   });
   if (error) {
     if (isApiError(error)) {
-      const formattedError = formatAccountActionError(error, {});
+      const formattedError = mapApiValidationError(error, {});
       return {
         errorTitle: formattedError.errorTitle,
         unmappedErrors: formattedError.unmappedErrors,

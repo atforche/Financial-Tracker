@@ -2,7 +2,7 @@
 
 import { Box, Button } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { BalanceEventType } from "@/framework/data/types";
+import { BalanceEventType } from "@/balance-events/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { FundBalanceEvent } from "@/funds/types";
@@ -12,10 +12,10 @@ import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import Link from "next/link";
 import ListFrame from "@/framework/listframe/ListFrame";
 import { buildUrl } from "@/framework/routes/helpers";
-import { formatBalanceEventType } from "@/framework/data/helpers";
+import { formatBalanceEventType } from "@/balance-events/helpers";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { formatLongDate } from "@/framework/dateHelpers";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
 
 /**
@@ -134,7 +134,9 @@ const FundBalanceEventsFrame = function ({
         }
         data={data}
         totalCount={totalCount}
-        pageParamName={nameof<FundWorkspaceSearchParams>("balanceEventPage")}
+        pageParamName={propertyName<FundWorkspaceSearchParams>(
+          "balanceEventPage",
+        )}
         onRowClick={(balanceEvent) => {
           router.push(
             routes.workspaceDetail(balanceEvent.transactionId, { returnUrl }),

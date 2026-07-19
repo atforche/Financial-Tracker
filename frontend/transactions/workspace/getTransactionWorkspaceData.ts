@@ -9,9 +9,9 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { FundWithBalance } from "@/funds/types";
 import type { Transaction } from "@/transactions/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
+import createApiClient from "@/framework/data/createApiClient";
 import { rowsPerPage } from "@/framework/listframe/Constants";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 interface TransactionWorkspaceReferenceData {
   readonly openAccountingPeriods: AccountingPeriod[];
@@ -38,7 +38,7 @@ interface TransactionWorkspaceListData extends TransactionWorkspaceReferenceData
  */
 const getTransactionWorkspaceReferenceData =
   async function (): Promise<TransactionWorkspaceReferenceData> {
-    const apiClient = getApiClient();
+    const apiClient = createApiClient();
 
     const allAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
       params: {
@@ -57,12 +57,15 @@ const getTransactionWorkspaceReferenceData =
         fundsPromise,
       ]);
 
-    const allAccountingPeriods = getApiData(
+    const allAccountingPeriods = unwrapApiResponse(
       allAccountingPeriodsResponse,
       "Failed to fetch accounting periods",
     );
-    const accounts = getApiData(accountsResponse, "Failed to fetch accounts");
-    const funds = getApiData(fundsResponse, "Failed to fetch funds");
+    const accounts = unwrapApiResponse(
+      accountsResponse,
+      "Failed to fetch accounts",
+    );
+    const funds = unwrapApiResponse(fundsResponse, "Failed to fetch funds");
 
     const openAccountingPeriods = allAccountingPeriods.items.filter(
       (period) => period.isOpen,
@@ -92,11 +95,11 @@ const getTransactionWorkspaceReferenceData =
         }),
       ]);
 
-      assignmentGoals = getApiData(
+      assignmentGoals = unwrapApiResponse(
         assignmentGoalResponse,
         "Failed to fetch assignment goals",
       ).items;
-      spendingGoals = getApiData(
+      spendingGoals = unwrapApiResponse(
         spendingGoalResponse,
         "Failed to fetch spending goals",
       ).items;
@@ -118,7 +121,7 @@ const getTransactionWorkspaceReferenceData =
 const getTransactionById = async function (
   transactionId: string,
 ): Promise<Transaction | null> {
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const response = await apiClient.GET("/transactions/{transactionId}", {
     params: {
       path: {
@@ -131,7 +134,7 @@ const getTransactionById = async function (
     return null;
   }
 
-  return getApiData(response, "Failed to fetch the transaction");
+  return unwrapApiResponse(response, "Failed to fetch the transaction");
 };
 
 /**
@@ -141,7 +144,7 @@ const getTransactionWorkspaceListData = async function (
   searchParams: TransactionWorkspaceSearchParams,
 ): Promise<TransactionWorkspaceListData> {
   const { accountingPeriodIds, accountIds, fundIds, sort, page } = searchParams;
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const currentPage = normalizePageValue(page);
   const normalizedAccountingPeriodIds = normalizeStringSearchParams(
     toRepeatedSearchParams(accountingPeriodIds),
@@ -177,7 +180,7 @@ const getTransactionWorkspaceListData = async function (
     transactionsPromise,
   ]);
 
-  const transactions = getApiData(
+  const transactions = unwrapApiResponse(
     transactionsResponse,
     "Failed to fetch transactions",
   );

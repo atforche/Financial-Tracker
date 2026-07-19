@@ -1,7 +1,3 @@
-import type { ApiError } from "@/framework/data/apiError";
-import formatErrors from "@/framework/forms/formatErrors";
-import { isNotNullOrUndefined } from "@/framework/nullHelpers";
-
 /**
  * State representing the result of an accounting period action, including success or error information.
  */
@@ -27,25 +23,8 @@ type AccountingPeriodServerAction = (
   payload: AccountingPeriodActionPayload,
 ) => Promise<AccountingPeriodActionState>;
 
-/**
- * Converts an API error into the common accounting period action state.
- */
-const getAccountingPeriodActionError = function (
-  error: ApiError,
-): AccountingPeriodActionState {
-  const unmappedErrors = Object.values(error.errors ?? {})
-    .map((errors) => formatErrors(errors))
-    .filter(isNotNullOrUndefined);
-
-  return {
-    errorTitle: error.title ?? null,
-    unmappedErrors: formatErrors(unmappedErrors),
-  };
-};
-
 export type {
   AccountingPeriodActionPayload,
   AccountingPeriodActionState,
   AccountingPeriodServerAction,
 };
-export { getAccountingPeriodActionError };

@@ -26,7 +26,7 @@ import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
 import type { TransactionTrendsSearchParams } from "@/transactions/trends/TransactionTrends";
 import type { TransactionType } from "@/transactions/types";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 import { setTrendRangeMode } from "@/framework/routes/trendRange";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
@@ -63,20 +63,22 @@ const TransactionTrendsFilter = function ({
 }: TransactionTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const pageParamName = nameof<TransactionTrendsSearchParams>("page");
-  const modeParamName = nameof<TransactionTrendsSearchParams>("mode");
+  const pageParamName = propertyName<TransactionTrendsSearchParams>("page");
+  const modeParamName = propertyName<TransactionTrendsSearchParams>("mode");
   const transactionTypeParamName =
-    nameof<TransactionTrendsSearchParams>("transactionType");
+    propertyName<TransactionTrendsSearchParams>("transactionType");
   const accountNameParamName =
-    nameof<TransactionTrendsSearchParams>("accountName");
-  const fundNameParamName = nameof<TransactionTrendsSearchParams>("fundName");
+    propertyName<TransactionTrendsSearchParams>("accountName");
+  const fundNameParamName =
+    propertyName<TransactionTrendsSearchParams>("fundName");
   const startAccountingPeriodIdParamName =
-    nameof<TransactionTrendsSearchParams>("startAccountingPeriodId");
-  const endAccountingPeriodIdParamName = nameof<TransactionTrendsSearchParams>(
-    "endAccountingPeriodId",
-  );
-  const startDateParamName = nameof<TransactionTrendsSearchParams>("startDate");
-  const endDateParamName = nameof<TransactionTrendsSearchParams>("endDate");
+    propertyName<TransactionTrendsSearchParams>("startAccountingPeriodId");
+  const endAccountingPeriodIdParamName =
+    propertyName<TransactionTrendsSearchParams>("endAccountingPeriodId");
+  const startDateParamName =
+    propertyName<TransactionTrendsSearchParams>("startDate");
+  const endDateParamName =
+    propertyName<TransactionTrendsSearchParams>("endDate");
 
   const currentMode: TransactionTrendsFilterMode =
     searchParams.get(modeParamName) === "accounting-period"

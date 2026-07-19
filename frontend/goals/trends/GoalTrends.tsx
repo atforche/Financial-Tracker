@@ -17,7 +17,7 @@ import {
   summarizeGoalRange,
   summarizeGoalsByAccountingPeriod,
 } from "@/goals/trends/goalTrendsSummary";
-import { BalanceEventType } from "@/framework/data/types";
+import { BalanceEventType } from "@/balance-events/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import GoalTrendsAmountAssignedChart from "@/goals/trends/GoalTrendsAmountAssignedChart";
 import GoalTrendsAmountSpentChart from "@/goals/trends/GoalTrendsAmountSpentChart";
@@ -30,14 +30,14 @@ import GoalTrendsSummaryCards from "@/goals/trends/GoalTrendsSummaryCards";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
+import createApiClient from "@/framework/data/createApiClient";
 import { normalizeGoalTypes } from "@/goals/trends/goalTypeFilter";
+import parseEnumValue from "@/framework/data/parseEnumValue";
 import { redirect } from "next/navigation";
 import routes from "@/goals/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
-import tryParseEnum from "@/framework/data/tryParseEnum";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Search parameters for the GoalTrends component.
@@ -71,7 +71,7 @@ const GoalTrends = async function ({
   const currentView = isGoalTrendsView(params.view)
     ? params.view
     : defaultGoalTrendsView;
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
     params: {
       query: {
@@ -81,7 +81,7 @@ const GoalTrends = async function ({
       },
     },
   });
-  const accountingPeriods = getApiData(
+  const accountingPeriods = unwrapApiResponse(
     accountingPeriodsResponse,
     "Failed to load accounting periods",
   );
@@ -104,11 +104,11 @@ const GoalTrends = async function ({
   const endId = params.endAccountingPeriodId ?? latestAccountingPeriod?.id;
   const assignmentSort =
     currentView === "assignment" && typeof params.sort === "string"
-      ? tryParseEnum(AssignmentGoalSort, params.sort)
+      ? parseEnumValue(AssignmentGoalSort, params.sort)
       : null;
   const spendingSort =
     currentView === "spending" && typeof params.sort === "string"
-      ? tryParseEnum(SpendingGoalSort, params.sort)
+      ? parseEnumValue(SpendingGoalSort, params.sort)
       : null;
   const range = {
     ...(typeof startId === "string" ? { "Range.Start": startId } : {}),
@@ -116,7 +116,7 @@ const GoalTrends = async function ({
   };
   const balanceEventSort =
     typeof params.balanceEventSort === "string"
-      ? tryParseEnum(GoalBalanceEventSort, params.balanceEventSort)
+      ? parseEnumValue(GoalBalanceEventSort, params.balanceEventSort)
       : null;
   const [
     periodResponse,
@@ -169,19 +169,19 @@ const GoalTrends = async function ({
       },
     }),
   ]);
-  const periodData = getApiData(
+  const periodData = unwrapApiResponse(
     periodResponse,
     "Failed to load accounting period trends",
   );
-  const assignmentData = getApiData(
+  const assignmentData = unwrapApiResponse(
     assignmentResponse,
     "Failed to load assignment goals",
   );
-  const spendingData = getApiData(
+  const spendingData = unwrapApiResponse(
     spendingResponse,
     "Failed to load spending goals",
   );
-  const balanceEventData = getApiData(
+  const balanceEventData = unwrapApiResponse(
     balanceEventResponse,
     "Failed to load goal balance events",
   );

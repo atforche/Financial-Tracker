@@ -15,11 +15,11 @@ import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import createApiClient from "@/framework/data/createApiClient";
 import { createEmptyTrends } from "@/accounting-periods/trends/helpers";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import { rowsPerPage } from "@/framework/listframe/Constants";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Search parameters for the AccountingPeriodTrends component.
@@ -55,7 +55,7 @@ const AccountingPeriodTrends = async function ({
     endAccountingPeriodId,
   } = await searchParams;
 
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
     params: {
       query: {
@@ -65,7 +65,7 @@ const AccountingPeriodTrends = async function ({
       },
     },
   });
-  const accountingPeriods = getApiData(
+  const accountingPeriods = unwrapApiResponse(
     accountingPeriodsResponse,
     "Failed to fetch accounting periods",
   );
@@ -107,11 +107,11 @@ const AccountingPeriodTrends = async function ({
         },
       }),
     ]);
-    trends = getApiData(
+    trends = unwrapApiResponse(
       trendsResponse,
       "Failed to fetch accounting period trends",
     );
-    const { transactions: responseTransactions } = getApiData(
+    const { transactions: responseTransactions } = unwrapApiResponse(
       transactionResponse,
       "Failed to fetch transactions for the accounting period range",
     );

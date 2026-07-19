@@ -2,15 +2,15 @@ import { Paper, Stack, Typography } from "@mui/material";
 import { AccountingPeriodSortModel } from "@/framework/data/api";
 import GoalTrendsSummaryCards from "@/goals/trends/GoalTrendsSummaryCards";
 import type { JSX } from "react";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
+import createApiClient from "@/framework/data/createApiClient";
 import { summarizeGoalRange } from "@/goals/trends/goalTrendsSummary";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Overview component for goals.
  */
 const GoalOverview = async function (): Promise<JSX.Element> {
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
     params: {
       query: {
@@ -20,7 +20,7 @@ const GoalOverview = async function (): Promise<JSX.Element> {
       },
     },
   });
-  const accountingPeriods = getApiData(
+  const accountingPeriods = unwrapApiResponse(
     accountingPeriodsResponse,
     "Failed to load accounting periods",
   );
@@ -60,11 +60,11 @@ const GoalOverview = async function (): Promise<JSX.Element> {
       },
     }),
   ]);
-  const assignmentGoals = getApiData(
+  const assignmentGoals = unwrapApiResponse(
     assignmentResponse,
     "Failed to load assignment goals",
   );
-  const spendingGoals = getApiData(
+  const spendingGoals = unwrapApiResponse(
     spendingResponse,
     "Failed to load spending goals",
   );

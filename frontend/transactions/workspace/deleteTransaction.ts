@@ -1,8 +1,8 @@
 "use server";
 
-import formatErrors from "@/framework/forms/formatErrors";
-import getApiClient from "@/framework/data/getApiClient";
+import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
+import mapApiValidationError from "@/framework/forms/mapApiValidationError";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -29,7 +29,7 @@ const deleteTransaction = async function (
   _: ActionState,
   { transactionId, redirectUrl }: ActionPayload,
 ): Promise<ActionState> {
-  const client = getApiClient();
+  const client = createApiClient();
   const { error } = await client.DELETE("/transactions/{transactionId}", {
     params: {
       path: {
@@ -39,14 +39,7 @@ const deleteTransaction = async function (
   });
   if (error) {
     if (isApiError(error)) {
-      const unmappedErrors: (string | null)[] = [];
-      for (const key of Object.keys(error.errors ?? {})) {
-        unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
-      }
-      return {
-        errorTitle: error.title ?? null,
-        unmappedErrors: unmappedErrors.filter(Boolean).join(", ") || null,
-      };
+      return mapApiValidationError(error, {});
     }
     throw new Error("An unexpected error occurred", { cause: error });
   }

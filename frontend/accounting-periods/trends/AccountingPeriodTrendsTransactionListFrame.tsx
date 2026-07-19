@@ -11,9 +11,9 @@ import { Button } from "@mui/material";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createTransactionListColumns from "@/transactions/createTransactionListColumns";
-import nameof from "@/framework/data/nameof";
+import parseEnumValue from "@/framework/data/parseEnumValue";
+import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
-import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
@@ -35,13 +35,13 @@ const AccountingPeriodTrendsTransactionListFrame = function ({
   const router = useRouter();
 
   const sortParamName =
-    nameof<AccountingPeriodTrendsSearchParams>("transactionSort");
+    propertyName<AccountingPeriodTrendsSearchParams>("transactionSort");
   const pageParamName =
-    nameof<AccountingPeriodTrendsSearchParams>("transactionPage");
+    propertyName<AccountingPeriodTrendsSearchParams>("transactionPage");
   const startAccountingPeriodIdParamName =
-    nameof<AccountingPeriodTrendsSearchParams>("startAccountingPeriodId");
+    propertyName<AccountingPeriodTrendsSearchParams>("startAccountingPeriodId");
   const endAccountingPeriodIdParamName =
-    nameof<AccountingPeriodTrendsSearchParams>("endAccountingPeriodId");
+    propertyName<AccountingPeriodTrendsSearchParams>("endAccountingPeriodId");
   const updateParams = useSearchParamUpdater([pageParamName]);
 
   const setSort = function (sort: TransactionSort | null): void {
@@ -54,7 +54,7 @@ const AccountingPeriodTrendsTransactionListFrame = function ({
     });
   };
 
-  const currentSort = tryParseEnum(
+  const currentSort = parseEnumValue(
     TransactionSort,
     searchParams.get(sortParamName) ?? "",
   );

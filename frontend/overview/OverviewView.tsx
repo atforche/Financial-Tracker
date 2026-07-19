@@ -9,14 +9,14 @@ import type { OverviewData } from "@/overview/types";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import TransactionOverview from "@/overview/TransactionOverview";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
+import createApiClient from "@/framework/data/createApiClient";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Loads all data required by the overview page.
  */
 const getOverviewData = async function (): Promise<OverviewData> {
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const accountSummaryPromise = apiClient.GET("/accounts/with-balances");
   const fundSummaryPromise = apiClient.GET("/funds/with-balances");
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
@@ -55,17 +55,20 @@ const getOverviewData = async function (): Promise<OverviewData> {
     fundsPromise,
   ]);
 
-  const accountSummary = getApiData(
+  const accountSummary = unwrapApiResponse(
     responses[0],
     "Failed to fetch account summary",
   );
-  const fundSummary = getApiData(responses[1], "Failed to fetch fund summary");
-  const accountingPeriods = getApiData(
+  const fundSummary = unwrapApiResponse(
+    responses[1],
+    "Failed to fetch fund summary",
+  );
+  const accountingPeriods = unwrapApiResponse(
     responses[2],
     "Failed to fetch accounting periods",
   );
-  const accounts = getApiData(responses[3], "Failed to fetch accounts");
-  const funds = getApiData(responses[4], "Failed to fetch funds");
+  const accounts = unwrapApiResponse(responses[3], "Failed to fetch accounts");
+  const funds = unwrapApiResponse(responses[4], "Failed to fetch funds");
 
   const accountBalances = accountSummary.items;
   const trackedAccounts = accountBalances.filter(

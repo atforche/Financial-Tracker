@@ -3,13 +3,10 @@ import type {
   GoalTrendsGoalType,
   GoalTrendsView,
 } from "@/goals/trends/goalTrendsTypes";
+import enumValues from "@/framework/data/enumValues";
 
-const assignmentGoalTypeValues = Object.values(
-  AssignmentGoalType,
-) as readonly AssignmentGoalType[];
-const spendingGoalTypeValues = Object.values(
-  SpendingGoalType,
-) as readonly SpendingGoalType[];
+const assignmentGoalTypeValues = enumValues(AssignmentGoalType);
+const spendingGoalTypeValues = enumValues(SpendingGoalType);
 
 /**
  * Gets the goal type values.

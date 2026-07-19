@@ -1,11 +1,10 @@
 /**
- * Attempts to parse the provided string value to a value of the specified enum type.
+ * Parses a string as a member of a string enum, returning null when invalid.
  */
-const tryParseEnum = function <T extends Record<string, string>>(
+const parseEnumValue = function <T extends Record<string, string>>(
   enumObject: T,
   value: string,
 ): T[keyof T] | null {
-  // Check if the string value exists in the enum's values
   if (Object.values(enumObject).includes(value)) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     return value as T[keyof T];
@@ -13,4 +12,4 @@ const tryParseEnum = function <T extends Record<string, string>>(
   return null;
 };
 
-export default tryParseEnum;
+export default parseEnumValue;

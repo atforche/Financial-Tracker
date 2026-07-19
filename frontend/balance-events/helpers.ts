@@ -1,4 +1,4 @@
-import { BalanceEventType } from "@/framework/data/types";
+import { BalanceEventType } from "@/balance-events/types";
 
 /**
  * Formats a balance event type for display.

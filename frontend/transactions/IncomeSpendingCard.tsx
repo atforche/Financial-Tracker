@@ -1,6 +1,6 @@
 "use client";
 
-import type { IncomeAmount } from "@/framework/data/types";
+import type { IncomeAmount } from "@/transactions/types";
 import type { JSX } from "react";
 import LabeledAmountBar from "@/framework/view/LabeledAmountBar";
 import { Stack } from "@mui/material";

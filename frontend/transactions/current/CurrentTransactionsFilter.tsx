@@ -21,7 +21,7 @@ import type { JSX } from "react";
 import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import type { TransactionType } from "@/transactions/types";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -45,14 +45,15 @@ const CurrentTransactionsFilter = function ({
   const searchParams = useSearchParams();
 
   const unpostedTransactionPageParamName =
-    nameof<CurrentTransactionsSearchParams>("unpostedTransactionPage");
+    propertyName<CurrentTransactionsSearchParams>("unpostedTransactionPage");
   const postedTransactionPageParamName =
-    nameof<CurrentTransactionsSearchParams>("postedTransactionPage");
+    propertyName<CurrentTransactionsSearchParams>("postedTransactionPage");
   const transactionTypeParamName =
-    nameof<CurrentTransactionsSearchParams>("transactionType");
+    propertyName<CurrentTransactionsSearchParams>("transactionType");
   const accountNameParamName =
-    nameof<CurrentTransactionsSearchParams>("accountName");
-  const fundNameParamName = nameof<CurrentTransactionsSearchParams>("fundName");
+    propertyName<CurrentTransactionsSearchParams>("accountName");
+  const fundNameParamName =
+    propertyName<CurrentTransactionsSearchParams>("fundName");
 
   const currentTransactionTypes = normalizeTransactionTypes(
     searchParams.getAll(transactionTypeParamName),

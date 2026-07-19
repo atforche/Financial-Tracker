@@ -1,10 +1,10 @@
 "use server";
 
 import type { CreateFundRequest } from "@/funds/types";
-import formatErrors from "@/framework/forms/formatErrors";
-import getApiClient from "@/framework/data/getApiClient";
+import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
-import nameof from "@/framework/data/nameof";
+import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -37,70 +37,27 @@ const createFund = async function (
   _: ActionState,
   { redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const client = getApiClient();
+  const client = createApiClient();
   const { error } = await client.POST("/funds", {
     body: request,
   });
   if (error) {
     if (isApiError(error)) {
-      let nameErrorMessage = null;
-      let descriptionErrorMessage = null;
-      let accountingPeriodErrorMessage = null;
-      let assignmentGoalTypeErrorMessage = null;
-      let assignmentGoalAmountErrorMessage = null;
-      let spendingGoalTypeErrorMessage = null;
-      const unmappedErrors: (string | null)[] = [];
-      for (const key of Object.keys(error.errors ?? {})) {
-        if (
-          key.toUpperCase() === nameof<CreateFundRequest>("name").toUpperCase()
-        ) {
-          nameErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateFundRequest>("description").toUpperCase()
-        ) {
-          descriptionErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateFundRequest>("accountingPeriodId").toUpperCase()
-        ) {
-          accountingPeriodErrorMessage = formatErrors(
-            error.errors?.[key] ?? null,
-          );
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateFundRequest>("assignmentGoalType").toUpperCase()
-        ) {
-          assignmentGoalTypeErrorMessage = formatErrors(
-            error.errors?.[key] ?? null,
-          );
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateFundRequest>("assignmentGoalAmount").toUpperCase()
-        ) {
-          assignmentGoalAmountErrorMessage = formatErrors(
-            error.errors?.[key] ?? null,
-          );
-        } else if (
-          key.toUpperCase() ===
-          nameof<CreateFundRequest>("spendingGoalType").toUpperCase()
-        ) {
-          spendingGoalTypeErrorMessage = formatErrors(
-            error.errors?.[key] ?? null,
-          );
-        } else {
-          unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
-        }
-      }
+      const mappedError = mapApiValidationError(error, {
+        [propertyName<CreateFundRequest>("name")]: "nameErrors",
+        [propertyName<CreateFundRequest>("description")]: "descriptionErrors",
+        [propertyName<CreateFundRequest>("accountingPeriodId")]:
+          "accountingPeriodErrors",
+        [propertyName<CreateFundRequest>("assignmentGoalType")]:
+          "assignmentGoalTypeErrors",
+        [propertyName<CreateFundRequest>("assignmentGoalAmount")]:
+          "assignmentGoalAmountErrors",
+        [propertyName<CreateFundRequest>("spendingGoalType")]:
+          "spendingGoalTypeErrors",
+      });
       return {
-        errorTitle: error.title ?? null,
-        nameErrors: nameErrorMessage,
-        descriptionErrors: descriptionErrorMessage,
-        accountingPeriodErrors: accountingPeriodErrorMessage,
-        assignmentGoalTypeErrors: assignmentGoalTypeErrorMessage,
-        assignmentGoalAmountErrors: assignmentGoalAmountErrorMessage,
-        spendingGoalTypeErrors: spendingGoalTypeErrorMessage,
-        unmappedErrors: unmappedErrors.join(", ") || null,
+        ...mappedError,
+        ...mappedError.fieldErrors,
       };
     }
     throw new Error("An unexpected error occurred", { cause: error });

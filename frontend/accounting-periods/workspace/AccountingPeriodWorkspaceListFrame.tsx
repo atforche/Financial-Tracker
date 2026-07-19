@@ -11,8 +11,8 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
-import nameof from "@/framework/data/nameof";
-import tryParseEnum from "@/framework/data/tryParseEnum";
+import parseEnumValue from "@/framework/data/parseEnumValue";
+import propertyName from "@/framework/data/propertyName";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -35,15 +35,20 @@ const AccountingPeriodWorkspaceListFrame = function ({
 }: AccountingPeriodWorkspaceListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const sortParamName = nameof<AccountingPeriodWorkspaceSearchParams>("sort");
-  const pageParamName = nameof<AccountingPeriodWorkspaceSearchParams>("page");
+  const sortParamName =
+    propertyName<AccountingPeriodWorkspaceSearchParams>("sort");
+  const pageParamName =
+    propertyName<AccountingPeriodWorkspaceSearchParams>("page");
   const selectedAccountingPeriodIdParamName =
-    nameof<AccountingPeriodWorkspaceSearchParams>("selectedAccountingPeriodId");
+    propertyName<AccountingPeriodWorkspaceSearchParams>(
+      "selectedAccountingPeriodId",
+    );
   const actionParamName =
-    nameof<AccountingPeriodWorkspaceSearchParams>("action");
-  const yearParamName = nameof<AccountingPeriodWorkspaceSearchParams>("years");
+    propertyName<AccountingPeriodWorkspaceSearchParams>("action");
+  const yearParamName =
+    propertyName<AccountingPeriodWorkspaceSearchParams>("years");
   const monthParamName =
-    nameof<AccountingPeriodWorkspaceSearchParams>("months");
+    propertyName<AccountingPeriodWorkspaceSearchParams>("months");
   const updateParams = useSearchParamUpdater([]);
 
   const setSort = function (
@@ -72,7 +77,7 @@ const AccountingPeriodWorkspaceListFrame = function ({
     });
   };
 
-  const currentSort = tryParseEnum(
+  const currentSort = parseEnumValue(
     AccountingPeriodWithBalanceSort,
     searchParams.get(sortParamName) ?? "",
   );

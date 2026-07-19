@@ -68,6 +68,11 @@ type TransactionSummaryByType =
   components["schemas"]["TransactionSummaryByTypeModel"];
 
 /**
+ * Type representing total, tracked, and untracked income amounts.
+ */
+type IncomeAmount = components["schemas"]["IncomeAmountModel"];
+
+/**
  * Determines whether a transaction is an account transaction.
  */
 const isAccountTransaction = (
@@ -162,6 +167,7 @@ export {
   type SpendingTransaction,
   type SpendingTransactionDestination,
   type TransactionSummaryByType,
+  type IncomeAmount,
   type CreateTransactionRequest,
   type UpdateTransactionRequest,
   type PostTransactionRequest,

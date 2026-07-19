@@ -5,10 +5,10 @@ import type {
   AccountActionState,
 } from "@/accounts/workspace/accountAction";
 import type { CreateAccountRequest } from "@/accounts/types";
-import formatAccountActionError from "@/accounts/workspace/formatAccountActionError";
-import getApiClient from "@/framework/data/getApiClient";
+import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
-import nameof from "@/framework/data/nameof";
+import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -35,18 +35,18 @@ const createAccount = async function (
   _: ActionState,
   { redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const { error } = await apiClient.POST("/accounts", {
     body: request,
   });
   if (error) {
     if (isApiError(error)) {
-      const formattedError = formatAccountActionError(error, {
-        [nameof<CreateAccountRequest>("name")]: "nameErrors",
-        [nameof<CreateAccountRequest>("type")]: "typeErrors",
-        [nameof<CreateAccountRequest>("openingAccountingPeriodId")]:
+      const formattedError = mapApiValidationError(error, {
+        [propertyName<CreateAccountRequest>("name")]: "nameErrors",
+        [propertyName<CreateAccountRequest>("type")]: "typeErrors",
+        [propertyName<CreateAccountRequest>("openingAccountingPeriodId")]:
           "accountingPeriodErrors",
-        [nameof<CreateAccountRequest>("dateOpened")]: "dateOpenedErrors",
+        [propertyName<CreateAccountRequest>("dateOpened")]: "dateOpenedErrors",
       });
       return {
         errorTitle: formattedError.errorTitle,

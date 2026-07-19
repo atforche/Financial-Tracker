@@ -15,9 +15,9 @@ import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/
 import { buildUrl } from "@/framework/routes/helpers";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
-import nameof from "@/framework/data/nameof";
+import parseEnumValue from "@/framework/data/parseEnumValue";
+import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
-import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
@@ -39,14 +39,14 @@ const TransactionWorkspaceListFrame = function ({
   const pathname = usePathname();
   const router = useRouter();
 
-  const accountingPeriodIdsParamName = nameof<TransactionWorkspaceSearchParams>(
-    "accountingPeriodIds",
-  );
+  const accountingPeriodIdsParamName =
+    propertyName<TransactionWorkspaceSearchParams>("accountingPeriodIds");
   const accountIdsParamName =
-    nameof<TransactionWorkspaceSearchParams>("accountIds");
-  const fundIdsParamName = nameof<TransactionWorkspaceSearchParams>("fundIds");
-  const sortParamName = nameof<TransactionWorkspaceSearchParams>("sort");
-  const pageParamName = nameof<TransactionWorkspaceSearchParams>("page");
+    propertyName<TransactionWorkspaceSearchParams>("accountIds");
+  const fundIdsParamName =
+    propertyName<TransactionWorkspaceSearchParams>("fundIds");
+  const sortParamName = propertyName<TransactionWorkspaceSearchParams>("sort");
+  const pageParamName = propertyName<TransactionWorkspaceSearchParams>("page");
 
   const updateParams = useSearchParamUpdater([]);
 
@@ -69,7 +69,7 @@ const TransactionWorkspaceListFrame = function ({
         accountIds: params.getAll(accountIdsParamName),
         fundIds: params.getAll(fundIdsParamName),
         sort:
-          tryParseEnum(TransactionSort, params.get(sortParamName) ?? "") ??
+          parseEnumValue(TransactionSort, params.get(sortParamName) ?? "") ??
           null,
         page: params.get(pageParamName),
       } satisfies TransactionWorkspaceSearchParams),
@@ -77,7 +77,7 @@ const TransactionWorkspaceListFrame = function ({
     );
   };
 
-  const currentSort = tryParseEnum(
+  const currentSort = parseEnumValue(
     TransactionSort,
     searchParams.get(sortParamName) ?? "",
   );

@@ -22,8 +22,8 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
+import parseEnumValue from "@/framework/data/parseEnumValue";
 import routes from "@/accounts/routes";
-import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
@@ -77,7 +77,7 @@ const AccountTrendsListFrame = function ({
     router.push(routes.workspaceDetail(account.id, {}));
   };
 
-  const currentSort = tryParseEnum(
+  const currentSort = parseEnumValue(
     AccountWithBalanceRangeSort,
     searchParams.get(sortParamName) ?? "",
   );

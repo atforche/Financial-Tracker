@@ -26,13 +26,13 @@ import TransactionTrendsCountChart from "@/transactions/trends/TransactionTrends
 import TransactionTrendsFilter from "@/transactions/trends/TransactionTrendsFilter";
 import TransactionTrendsListFrame from "@/transactions/trends/TransactionTrendsListFrame";
 import TransactionsByTypeCard from "@/transactions/TransactionsByTypeCard";
+import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
 import { redirect } from "next/navigation";
 import routes from "@/transactions/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * URL mode values used to filter the Transactions trends.
@@ -84,7 +84,7 @@ const TransactionTrends = async function ({
   const defaultEndDate = dayjs();
   const defaultStartDate = defaultEndDate.subtract(90, "day");
 
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
       query: {
@@ -94,7 +94,7 @@ const TransactionTrends = async function ({
       },
     },
   });
-  const accountingPeriods = getApiData(
+  const accountingPeriods = unwrapApiResponse(
     await accountingPeriodsPromise,
     "Failed to fetch accounting periods",
   );
@@ -161,8 +161,11 @@ const TransactionTrends = async function ({
     apiClient.GET("/accounts"),
     apiClient.GET("/funds"),
   ]);
-  const accounts = getApiData(accountsResponse, "Failed to fetch accounts");
-  const funds = getApiData(fundsResponse, "Failed to fetch funds");
+  const accounts = unwrapApiResponse(
+    accountsResponse,
+    "Failed to fetch accounts",
+  );
+  const funds = unwrapApiResponse(fundsResponse, "Failed to fetch funds");
   const accountIds = accounts.items
     .filter((account) => currentAccountNames.includes(account.name))
     .map((account) => account.id);
@@ -228,8 +231,11 @@ const TransactionTrends = async function ({
     listRequest,
     summaryRequest,
   ]);
-  const listData = getApiData(listResponse, "Failed to load transactions");
-  const summaryData = getApiData(
+  const listData = unwrapApiResponse(
+    listResponse,
+    "Failed to load transactions",
+  );
+  const summaryData = unwrapApiResponse(
     summaryResponse,
     "Failed to load transaction summary",
   );

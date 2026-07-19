@@ -6,13 +6,13 @@ import type { JSX } from "react";
 import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
 import ViewAccountForm from "@/accounts/workspace/ViewAccountForm";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
+import createApiClient from "@/framework/data/createApiClient";
 import { getTransactionAccountBalanceEvents } from "@/transactions/postingHelpers";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 import transactionRoutes from "@/transactions/routes";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Props for the AccountWorkspaceDetailPage component.
@@ -34,7 +34,7 @@ const AccountWorkspaceDetailPage = async function ({
   const { accountId } = await params;
   const resolvedSearchParams = await searchParams;
   const { search, accountType, balanceEventPage } = resolvedSearchParams;
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
   const [accountsResponse, transactionsResponse] = await Promise.all([
     apiClient.GET("/accounts/with-balances"),
@@ -42,8 +42,11 @@ const AccountWorkspaceDetailPage = async function ({
       params: { query: { "Filter.AccountIds": [accountId] } },
     }),
   ]);
-  const accounts = getApiData(accountsResponse, "Failed to fetch accounts");
-  const transactions = getApiData(
+  const accounts = unwrapApiResponse(
+    accountsResponse,
+    "Failed to fetch accounts",
+  );
+  const transactions = unwrapApiResponse(
     transactionsResponse,
     "Failed to fetch account transactions",
   );

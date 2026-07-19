@@ -1,6 +1,7 @@
 import { AccountType } from "@/accounts/types";
 import { ComboBoxEntryField } from "@/framework/forms/ComboBoxEntryField";
 import type { JSX } from "react";
+import enumValues from "@/framework/data/enumValues";
 import { formatAccountType } from "@/accounts/helpers";
 
 /**
@@ -25,7 +26,7 @@ const AccountTypeEntryField = function ({
   return (
     <ComboBoxEntryField<AccountType>
       label={label}
-      options={Object.values(AccountType).map((type) => ({
+      options={enumValues(AccountType).map((type) => ({
         label: formatAccountType(type),
         value: type,
       }))}

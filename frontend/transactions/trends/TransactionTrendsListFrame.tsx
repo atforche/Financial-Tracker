@@ -18,9 +18,9 @@ import ListFrame from "@/framework/listframe/ListFrame";
 import type { TransactionTrendsSearchParams } from "@/transactions/trends/TransactionTrends";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
-import nameof from "@/framework/data/nameof";
+import parseEnumValue from "@/framework/data/parseEnumValue";
+import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
-import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 interface TransactionTrendsListFrameProps {
@@ -38,21 +38,23 @@ const TransactionTrendsListFrame = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sortParamName = nameof<TransactionTrendsSearchParams>("sort");
-  const pageParamName = nameof<TransactionTrendsSearchParams>("page");
-  const modeParamName = nameof<TransactionTrendsSearchParams>("mode");
+  const sortParamName = propertyName<TransactionTrendsSearchParams>("sort");
+  const pageParamName = propertyName<TransactionTrendsSearchParams>("page");
+  const modeParamName = propertyName<TransactionTrendsSearchParams>("mode");
   const transactionTypeParamName =
-    nameof<TransactionTrendsSearchParams>("transactionType");
+    propertyName<TransactionTrendsSearchParams>("transactionType");
   const accountNameParamName =
-    nameof<TransactionTrendsSearchParams>("accountName");
-  const fundNameParamName = nameof<TransactionTrendsSearchParams>("fundName");
+    propertyName<TransactionTrendsSearchParams>("accountName");
+  const fundNameParamName =
+    propertyName<TransactionTrendsSearchParams>("fundName");
   const startAccountingPeriodIdParamName =
-    nameof<TransactionTrendsSearchParams>("startAccountingPeriodId");
-  const endAccountingPeriodIdParamName = nameof<TransactionTrendsSearchParams>(
-    "endAccountingPeriodId",
-  );
-  const startDateParamName = nameof<TransactionTrendsSearchParams>("startDate");
-  const endDateParamName = nameof<TransactionTrendsSearchParams>("endDate");
+    propertyName<TransactionTrendsSearchParams>("startAccountingPeriodId");
+  const endAccountingPeriodIdParamName =
+    propertyName<TransactionTrendsSearchParams>("endAccountingPeriodId");
+  const startDateParamName =
+    propertyName<TransactionTrendsSearchParams>("startDate");
+  const endDateParamName =
+    propertyName<TransactionTrendsSearchParams>("endDate");
 
   const updateParams = useSearchParamUpdater([pageParamName]);
 
@@ -66,7 +68,7 @@ const TransactionTrendsListFrame = function ({
     });
   };
 
-  const currentSort = tryParseEnum(
+  const currentSort = parseEnumValue(
     TransactionSort,
     searchParams.get(sortParamName) ?? "",
   );

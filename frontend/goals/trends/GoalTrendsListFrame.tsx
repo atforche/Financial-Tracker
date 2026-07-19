@@ -21,9 +21,9 @@ import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { formatSpendingGoalType } from "@/goals/helpers";
-import nameof from "@/framework/data/nameof";
+import parseEnumValue from "@/framework/data/parseEnumValue";
+import propertyName from "@/framework/data/propertyName";
 import routes from "@/goals/routes";
-import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
@@ -48,14 +48,14 @@ const GoalTrendsListFrame = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sortParamName = nameof<GoalTrendsSearchParams>("sort");
-  const pageParamName = nameof<GoalTrendsSearchParams>("page");
-  const goalTypeParamName = nameof<GoalTrendsSearchParams>("goalType");
-  const fundNameParamName = nameof<GoalTrendsSearchParams>("fundName");
-  const startAccountingPeriodIdParamName = nameof<GoalTrendsSearchParams>(
+  const sortParamName = propertyName<GoalTrendsSearchParams>("sort");
+  const pageParamName = propertyName<GoalTrendsSearchParams>("page");
+  const goalTypeParamName = propertyName<GoalTrendsSearchParams>("goalType");
+  const fundNameParamName = propertyName<GoalTrendsSearchParams>("fundName");
+  const startAccountingPeriodIdParamName = propertyName<GoalTrendsSearchParams>(
     "startAccountingPeriodId",
   );
-  const endAccountingPeriodIdParamName = nameof<GoalTrendsSearchParams>(
+  const endAccountingPeriodIdParamName = propertyName<GoalTrendsSearchParams>(
     "endAccountingPeriodId",
   );
   const updateParams = useSearchParamUpdater([pageParamName]);
@@ -97,7 +97,7 @@ const GoalTrendsListFrame = function ({
       : "Create or onboard a spending goal to start tracking spending progress.";
 
   if (view === "assignment") {
-    const currentSort = tryParseEnum(
+    const currentSort = parseEnumValue(
       AssignmentGoalSort,
       searchParams.get(sortParamName) ?? "",
     );
@@ -235,7 +235,10 @@ const GoalTrendsListFrame = function ({
                     params.delete(key);
                   });
                   if (view !== defaultGoalTrendsView) {
-                    params.set(nameof<GoalTrendsSearchParams>("view"), view);
+                    params.set(
+                      propertyName<GoalTrendsSearchParams>("view"),
+                      view,
+                    );
                   }
                 });
               }}
@@ -248,7 +251,7 @@ const GoalTrendsListFrame = function ({
     );
   }
 
-  const currentSort = tryParseEnum(
+  const currentSort = parseEnumValue(
     SpendingGoalSort,
     searchParams.get(sortParamName) ?? "",
   );
@@ -387,7 +390,10 @@ const GoalTrendsListFrame = function ({
                   params.delete(key);
                 });
                 if (view !== defaultGoalTrendsView) {
-                  params.set(nameof<GoalTrendsSearchParams>("view"), view);
+                  params.set(
+                    propertyName<GoalTrendsSearchParams>("view"),
+                    view,
+                  );
                 }
               });
             }}

@@ -1,4 +1,4 @@
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 
 type TrendRangeMode = "accounting-period" | "date";
 
@@ -31,35 +31,42 @@ const setTrendRangeMode = function (
     defaultEndDate,
   }: TrendRangeDefaults,
 ): void {
-  params.set(nameof<TrendRangeSearchParams>("mode"), nextMode);
+  params.set(propertyName<TrendRangeSearchParams>("mode"), nextMode);
 
   if (nextMode === "date") {
-    params.delete(nameof<TrendRangeSearchParams>("startAccountingPeriodId"));
-    params.delete(nameof<TrendRangeSearchParams>("endAccountingPeriodId"));
+    params.delete(
+      propertyName<TrendRangeSearchParams>("startAccountingPeriodId"),
+    );
+    params.delete(
+      propertyName<TrendRangeSearchParams>("endAccountingPeriodId"),
+    );
     params.set(
-      nameof<TrendRangeSearchParams>("startDate"),
-      params.get(nameof<TrendRangeSearchParams>("startDate")) ??
+      propertyName<TrendRangeSearchParams>("startDate"),
+      params.get(propertyName<TrendRangeSearchParams>("startDate")) ??
         defaultStartDate,
     );
     params.set(
-      nameof<TrendRangeSearchParams>("endDate"),
-      params.get(nameof<TrendRangeSearchParams>("endDate")) ?? defaultEndDate,
+      propertyName<TrendRangeSearchParams>("endDate"),
+      params.get(propertyName<TrendRangeSearchParams>("endDate")) ??
+        defaultEndDate,
     );
     return;
   }
 
-  params.delete(nameof<TrendRangeSearchParams>("startDate"));
-  params.delete(nameof<TrendRangeSearchParams>("endDate"));
+  params.delete(propertyName<TrendRangeSearchParams>("startDate"));
+  params.delete(propertyName<TrendRangeSearchParams>("endDate"));
   if (defaultAccountingPeriodId !== null) {
     params.set(
-      nameof<TrendRangeSearchParams>("startAccountingPeriodId"),
-      params.get(nameof<TrendRangeSearchParams>("startAccountingPeriodId")) ??
-        defaultAccountingPeriodId,
+      propertyName<TrendRangeSearchParams>("startAccountingPeriodId"),
+      params.get(
+        propertyName<TrendRangeSearchParams>("startAccountingPeriodId"),
+      ) ?? defaultAccountingPeriodId,
     );
     params.set(
-      nameof<TrendRangeSearchParams>("endAccountingPeriodId"),
-      params.get(nameof<TrendRangeSearchParams>("endAccountingPeriodId")) ??
-        defaultAccountingPeriodId,
+      propertyName<TrendRangeSearchParams>("endAccountingPeriodId"),
+      params.get(
+        propertyName<TrendRangeSearchParams>("endAccountingPeriodId"),
+      ) ?? defaultAccountingPeriodId,
     );
   }
 };

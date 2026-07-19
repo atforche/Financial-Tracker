@@ -2,24 +2,21 @@ import type { ApiError } from "@/framework/data/apiError";
 import formatErrors from "@/framework/forms/formatErrors";
 
 /**
- * Represents a formatted error response for account actions, including a title.
+ * Represents the mapped API validation error for a form, including field errors and unmapped errors.
  */
-interface FormattedAccountActionError {
+interface MappedApiValidationError<StateField extends string> {
   readonly errorTitle: string | null;
-  readonly fieldErrors: Readonly<Partial<Record<string, string | null>>>;
+  readonly fieldErrors: Readonly<Partial<Record<StateField, string | null>>>;
   readonly unmappedErrors: string | null;
 }
 
 /**
- * Maps an API validation response to account-form fields and collects any
- * remaining validation messages for the form-level alert.
+ * Maps API validation fields to form-state fields and collects other messages.
  */
-const formatAccountActionError = function <StateField extends string>(
+const mapApiValidationError = function <StateField extends string>(
   error: ApiError,
   fields: Readonly<Record<string, StateField>>,
-): FormattedAccountActionError & {
-  readonly fieldErrors: Readonly<Partial<Record<StateField, string | null>>>;
-} {
+): MappedApiValidationError<StateField> {
   const normalizedFields = new Map(
     Object.entries(fields).map(([requestField, stateField]) => [
       requestField.toUpperCase(),
@@ -44,8 +41,8 @@ const formatAccountActionError = function <StateField extends string>(
   return {
     errorTitle: error.title ?? null,
     fieldErrors,
-    unmappedErrors: unmappedErrors.join(", ") || null,
+    unmappedErrors: formatErrors(unmappedErrors),
   };
 };
 
-export default formatAccountActionError;
+export default mapApiValidationError;

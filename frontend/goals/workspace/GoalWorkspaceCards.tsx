@@ -8,7 +8,7 @@ import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace"
 import type { JSX } from "react";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import WorkspaceCard from "@/framework/view/WorkspaceCard";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 import routes from "@/goals/routes";
 import { useSearchParams } from "next/navigation";
 
@@ -31,7 +31,7 @@ const GoalWorkspaceCards = function ({
 }: GoalWorkspaceCardsProps): JSX.Element {
   const searchParams = useSearchParams();
   const search = (
-    searchParams.get(nameof<GoalWorkspaceSearchParams>("search")) ?? ""
+    searchParams.get(propertyName<GoalWorkspaceSearchParams>("search")) ?? ""
   )
     .trim()
     .toLowerCase();
@@ -66,7 +66,7 @@ const GoalWorkspaceCards = function ({
           ...(search === "" ? {} : { search }),
         };
         const fundIds = searchParams.getAll(
-          nameof<GoalWorkspaceSearchParams>("fundIds"),
+          propertyName<GoalWorkspaceSearchParams>("fundIds"),
         );
         if (fundIds.length > 0) {
           detailSearchParams.fundIds = fundIds;

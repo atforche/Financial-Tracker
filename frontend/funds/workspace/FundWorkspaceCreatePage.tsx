@@ -3,10 +3,10 @@ import FundWorkspacePageHeader from "@/funds/workspace/FundWorkspacePageHeader";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
+import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Props for the FundWorkspaceCreatePage component.
@@ -27,13 +27,13 @@ const FundWorkspaceCreatePage = async function ({
     ...(typeof search !== "undefined" ? { search } : {}),
   };
   const workspaceUrl = routes.workspace(workspaceSearchParams);
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
 
   const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
     params: { query: { Limit: 500 } },
   });
 
-  const accountingPeriods = getApiData(
+  const accountingPeriods = unwrapApiResponse(
     accountingPeriodsResponse,
     "Failed to fetch accounting periods",
   );

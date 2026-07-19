@@ -3,10 +3,10 @@ import type { FundWorkspaceSearchParams } from "@/funds/workspace/FundWorkspace"
 import type { JSX } from "react";
 import OnboardFundForm from "@/funds/workspace/OnboardFundForm";
 import PageLayout from "@/framework/view/PageLayout";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
+import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Props for the FundWorkspaceOnboardPage component.
@@ -27,7 +27,7 @@ const FundWorkspaceOnboardPage = async function ({
     ...(typeof search !== "undefined" ? { search } : {}),
   };
   const workspaceUrl = routes.workspace(workspaceSearchParams);
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const [accountingPeriodsResponse, fundsResponse] = await Promise.all([
     apiClient.GET("/accounting-periods", {
       params: {
@@ -39,11 +39,11 @@ const FundWorkspaceOnboardPage = async function ({
     apiClient.GET("/funds/with-balances"),
   ]);
 
-  const accountingPeriods = getApiData(
+  const accountingPeriods = unwrapApiResponse(
     accountingPeriodsResponse,
     "Failed to fetch accounting periods",
   );
-  const funds = getApiData(fundsResponse, "Failed to fetch funds");
+  const funds = unwrapApiResponse(fundsResponse, "Failed to fetch funds");
   if (accountingPeriods.items.length > 0) {
     redirect(workspaceUrl);
   }

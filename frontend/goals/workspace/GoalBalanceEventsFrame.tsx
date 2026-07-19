@@ -2,7 +2,7 @@
 
 import { Box, Button } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { BalanceEventType } from "@/framework/data/types";
+import { BalanceEventType } from "@/balance-events/types";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { GoalBalanceEvent } from "@/goals/types";
@@ -14,7 +14,7 @@ import ListFrame from "@/framework/listframe/ListFrame";
 import { buildUrl } from "@/framework/routes/helpers";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { formatLongDate } from "@/framework/dateHelpers";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
 
 /**
@@ -123,7 +123,9 @@ const GoalBalanceEventsFrame = function ({
         }
         data={data}
         totalCount={totalCount}
-        pageParamName={nameof<GoalWorkspaceSearchParams>("balanceEventPage")}
+        pageParamName={propertyName<GoalWorkspaceSearchParams>(
+          "balanceEventPage",
+        )}
         onRowClick={(balanceEvent) => {
           router.push(
             routes.workspaceDetail(balanceEvent.transactionId, {

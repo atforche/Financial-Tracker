@@ -6,7 +6,7 @@ import type { AccountingPeriodTrendsSearchParams } from "@/accounting-periods/tr
 import { Button } from "@mui/material";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -29,11 +29,12 @@ const AccountingPeriodTrendsFilter = function ({
 }: AccountingPeriodTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const pageParamName = nameof<AccountingPeriodTrendsSearchParams>("page");
+  const pageParamName =
+    propertyName<AccountingPeriodTrendsSearchParams>("page");
   const startAccountingPeriodIdParamName =
-    nameof<AccountingPeriodTrendsSearchParams>("startAccountingPeriodId");
+    propertyName<AccountingPeriodTrendsSearchParams>("startAccountingPeriodId");
   const endAccountingPeriodIdParamName =
-    nameof<AccountingPeriodTrendsSearchParams>("endAccountingPeriodId");
+    propertyName<AccountingPeriodTrendsSearchParams>("endAccountingPeriodId");
 
   const currentStartAccountingPeriodId =
     searchParams.get(startAccountingPeriodIdParamName) ??

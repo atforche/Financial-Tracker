@@ -5,10 +5,10 @@ import type {
   AccountActionState,
 } from "@/accounts/workspace/accountAction";
 import type { OnboardAccountRequest } from "@/accounts/types";
-import formatAccountActionError from "@/accounts/workspace/formatAccountActionError";
-import getApiClient from "@/framework/data/getApiClient";
+import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
-import nameof from "@/framework/data/nameof";
+import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -34,16 +34,16 @@ const onboardAccount = async function (
   _: ActionState,
   { redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const { error } = await apiClient.POST("/accounts/onboard", {
     body: request,
   });
   if (error) {
     if (isApiError(error)) {
-      const formattedError = formatAccountActionError(error, {
-        [nameof<OnboardAccountRequest>("name")]: "nameErrors",
-        [nameof<OnboardAccountRequest>("type")]: "typeErrors",
-        [nameof<OnboardAccountRequest>("onboardedBalance")]:
+      const formattedError = mapApiValidationError(error, {
+        [propertyName<OnboardAccountRequest>("name")]: "nameErrors",
+        [propertyName<OnboardAccountRequest>("type")]: "typeErrors",
+        [propertyName<OnboardAccountRequest>("onboardedBalance")]:
           "onboardedBalanceErrors",
       });
       return {

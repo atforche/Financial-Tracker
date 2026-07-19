@@ -7,7 +7,7 @@ import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace"
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import SearchBar from "@/framework/listframe/SearchBar";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -31,11 +31,11 @@ const GoalWorkspaceFilter = function ({
     accountingPeriods.find(
       (period) => period.id === selectedAccountingPeriodId,
     ) ?? null;
-  const searchParamName = nameof<GoalWorkspaceSearchParams>("search");
+  const searchParamName = propertyName<GoalWorkspaceSearchParams>("search");
   const balanceEventPageParamName =
-    nameof<GoalWorkspaceSearchParams>("balanceEventPage");
+    propertyName<GoalWorkspaceSearchParams>("balanceEventPage");
   const accountingPeriodParamName =
-    nameof<GoalWorkspaceSearchParams>("accountingPeriodId");
+    propertyName<GoalWorkspaceSearchParams>("accountingPeriodId");
 
   const updateParams = useSearchParamUpdater([balanceEventPageParamName]);
 

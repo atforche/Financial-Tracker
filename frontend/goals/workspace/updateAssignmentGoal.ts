@@ -4,10 +4,10 @@ import type {
   AssignmentGoal,
   UpdateAssignmentGoalRequest,
 } from "@/goals/types";
-import formatErrors from "@/framework/forms/formatErrors";
-import getApiClient from "@/framework/data/getApiClient";
+import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
-import nameof from "@/framework/data/nameof";
+import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -37,7 +37,7 @@ const updateAssignmentGoal = async function (
   _: ActionState,
   { goal, request, redirectUrl }: ActionPayload,
 ): Promise<ActionState> {
-  const client = getApiClient();
+  const client = createApiClient();
   const { error } = await client.POST("/goals/assignment/{goalId}", {
     params: {
       path: {
@@ -48,31 +48,15 @@ const updateAssignmentGoal = async function (
   });
   if (error) {
     if (isApiError(error)) {
-      let typeErrorMessage = null;
-      let goalAmountErrorMessage = null;
-      const unmappedErrors: (string | null)[] = [];
-      for (const key of Object.keys(error.errors ?? {})) {
-        if (
-          key.toUpperCase() ===
-          nameof<UpdateAssignmentGoalRequest>(
-            "assignmentGoalType",
-          ).toUpperCase()
-        ) {
-          typeErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else if (
-          key.toUpperCase() ===
-          nameof<UpdateAssignmentGoalRequest>("goalAmount").toUpperCase()
-        ) {
-          goalAmountErrorMessage = formatErrors(error.errors?.[key] ?? null);
-        } else {
-          unmappedErrors.push(formatErrors(error.errors?.[key] ?? null));
-        }
-      }
+      const mappedError = mapApiValidationError(error, {
+        [propertyName<UpdateAssignmentGoalRequest>("assignmentGoalType")]:
+          "typeErrors",
+        [propertyName<UpdateAssignmentGoalRequest>("goalAmount")]:
+          "goalAmountErrors",
+      });
       return {
-        errorTitle: error.title ?? null,
-        typeErrors: typeErrorMessage,
-        goalAmountErrors: goalAmountErrorMessage,
-        unmappedErrors: unmappedErrors.join(", ") || null,
+        ...mappedError,
+        ...mappedError.fieldErrors,
       };
     }
     throw new Error("An unexpected error occurred", { cause: error });

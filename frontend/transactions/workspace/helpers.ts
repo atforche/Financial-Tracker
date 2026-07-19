@@ -3,7 +3,7 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import { buildUrl } from "@/framework/routes/helpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 
 /**
  * Gets the default accounting period from a list of accounting periods.
@@ -37,7 +37,7 @@ const redirectWithSelectedTransaction = function (
   const [pathname, search = ""] = redirectUrl.split("?");
   const params = new URLSearchParams(search);
   params.set(
-    nameof<TransactionWorkspaceSearchParams>("selectedTransactionId"),
+    propertyName<TransactionWorkspaceSearchParams>("selectedTransactionId"),
     transactionId,
   );
   return buildUrl(`${pathname}/${transactionId}`, params);

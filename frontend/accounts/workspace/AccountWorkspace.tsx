@@ -8,9 +8,9 @@ import AccountWorkspaceFilter from "@/accounts/workspace/AccountWorkspaceFilter"
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
+import createApiClient from "@/framework/data/createApiClient";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Props for the AccountWorkspace component.
@@ -26,7 +26,7 @@ const AccountWorkspace = async function ({
   searchParams,
 }: AccountWorkspaceProps): Promise<JSX.Element> {
   const { search, accountType, action } = await searchParams;
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const currentAccountTypes = normalizeAccountTypes(
     toRepeatedSearchParams(accountType),
   );
@@ -46,11 +46,14 @@ const AccountWorkspace = async function ({
     accountingPeriodsPromise,
     accountsPromise,
   ]);
-  const accountingPeriods = getApiData(
+  const accountingPeriods = unwrapApiResponse(
     accountingPeriodsResponse,
     "Failed to fetch accounting periods",
   );
-  const accounts = getApiData(accountsResponse, "Failed to fetch accounts");
+  const accounts = unwrapApiResponse(
+    accountsResponse,
+    "Failed to fetch accounts",
+  );
 
   const filteredAccounts = shouldPersistAccountTypes(currentAccountTypes)
     ? accounts.items.filter((account) =>

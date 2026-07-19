@@ -22,13 +22,13 @@ import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
+import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * URL mode values used to filter the Funds trends.
@@ -80,7 +80,7 @@ const FundTrends = async function ({
   const defaultEndDate = dayjs();
   const defaultStartDate = defaultEndDate.subtract(90, "day");
 
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
       query: {
@@ -90,7 +90,7 @@ const FundTrends = async function ({
       },
     },
   });
-  const accountingPeriods = getApiData(
+  const accountingPeriods = unwrapApiResponse(
     await accountingPeriodsPromise,
     "Failed to fetch accounting periods",
   );
@@ -177,8 +177,8 @@ const FundTrends = async function ({
         params: { query: { ...balanceEventQuery, ...range } },
       }),
     ]);
-    trends = getApiData(fundResponse, "Failed to load fund trends");
-    balanceEvents = getApiData(
+    trends = unwrapApiResponse(fundResponse, "Failed to load fund trends");
+    balanceEvents = unwrapApiResponse(
       balanceEventResponse,
       "Failed to load fund balance events",
     );
@@ -196,8 +196,8 @@ const FundTrends = async function ({
         params: { query: { ...balanceEventQuery, ...range } },
       }),
     ]);
-    trends = getApiData(fundResponse, "Failed to load fund trends");
-    balanceEvents = getApiData(
+    trends = unwrapApiResponse(fundResponse, "Failed to load fund trends");
+    balanceEvents = unwrapApiResponse(
       balanceEventResponse,
       "Failed to load fund balance events",
     );

@@ -16,9 +16,9 @@ import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { formatShortDate } from "@/framework/dateHelpers";
-import nameof from "@/framework/data/nameof";
+import parseEnumValue from "@/framework/data/parseEnumValue";
+import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
-import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
@@ -41,14 +41,16 @@ const GoalTrendsBalanceEventListFrame = function ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sortParamName = nameof<GoalTrendsSearchParams>("balanceEventSort");
-  const pageParamName = nameof<GoalTrendsSearchParams>("balanceEventPage");
-  const goalTypeParamName = nameof<GoalTrendsSearchParams>("goalType");
-  const fundNameParamName = nameof<GoalTrendsSearchParams>("fundName");
-  const startAccountingPeriodIdParamName = nameof<GoalTrendsSearchParams>(
+  const sortParamName =
+    propertyName<GoalTrendsSearchParams>("balanceEventSort");
+  const pageParamName =
+    propertyName<GoalTrendsSearchParams>("balanceEventPage");
+  const goalTypeParamName = propertyName<GoalTrendsSearchParams>("goalType");
+  const fundNameParamName = propertyName<GoalTrendsSearchParams>("fundName");
+  const startAccountingPeriodIdParamName = propertyName<GoalTrendsSearchParams>(
     "startAccountingPeriodId",
   );
-  const endAccountingPeriodIdParamName = nameof<GoalTrendsSearchParams>(
+  const endAccountingPeriodIdParamName = propertyName<GoalTrendsSearchParams>(
     "endAccountingPeriodId",
   );
 
@@ -64,7 +66,7 @@ const GoalTrendsBalanceEventListFrame = function ({
     });
   };
 
-  const currentSort = tryParseEnum(
+  const currentSort = parseEnumValue(
     GoalBalanceEventSort,
     searchParams.get(sortParamName) ?? "",
   );
@@ -184,7 +186,10 @@ const GoalTrendsBalanceEventListFrame = function ({
                   params.delete(key);
                 });
                 if (view !== defaultGoalTrendsView) {
-                  params.set(nameof<GoalTrendsSearchParams>("view"), view);
+                  params.set(
+                    propertyName<GoalTrendsSearchParams>("view"),
+                    view,
+                  );
                 }
               });
             }}
@@ -209,7 +214,10 @@ const GoalTrendsBalanceEventListFrame = function ({
                   params.delete(key);
                 });
                 if (view !== defaultGoalTrendsView) {
-                  params.set(nameof<GoalTrendsSearchParams>("view"), view);
+                  params.set(
+                    propertyName<GoalTrendsSearchParams>("view"),
+                    view,
+                  );
                 }
               });
             }}

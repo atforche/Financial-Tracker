@@ -25,7 +25,7 @@ import type { JSX } from "react";
 import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -52,19 +52,19 @@ const GoalTrendsFilter = function ({
 }: GoalTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const pageParamName = nameof<GoalTrendsSearchParams>("page");
+  const pageParamName = propertyName<GoalTrendsSearchParams>("page");
   const balanceEventPageParamName =
-    nameof<GoalTrendsSearchParams>("balanceEventPage");
-  const sortParamName = nameof<GoalTrendsSearchParams>("sort");
+    propertyName<GoalTrendsSearchParams>("balanceEventPage");
+  const sortParamName = propertyName<GoalTrendsSearchParams>("sort");
   const balanceEventSortParamName =
-    nameof<GoalTrendsSearchParams>("balanceEventSort");
-  const viewParamName = nameof<GoalTrendsSearchParams>("view");
-  const goalTypeParamName = nameof<GoalTrendsSearchParams>("goalType");
-  const fundNameParamName = nameof<GoalTrendsSearchParams>("fundName");
-  const startAccountingPeriodIdParamName = nameof<GoalTrendsSearchParams>(
+    propertyName<GoalTrendsSearchParams>("balanceEventSort");
+  const viewParamName = propertyName<GoalTrendsSearchParams>("view");
+  const goalTypeParamName = propertyName<GoalTrendsSearchParams>("goalType");
+  const fundNameParamName = propertyName<GoalTrendsSearchParams>("fundName");
+  const startAccountingPeriodIdParamName = propertyName<GoalTrendsSearchParams>(
     "startAccountingPeriodId",
   );
-  const endAccountingPeriodIdParamName = nameof<GoalTrendsSearchParams>(
+  const endAccountingPeriodIdParamName = propertyName<GoalTrendsSearchParams>(
     "endAccountingPeriodId",
   );
 

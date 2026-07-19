@@ -1,10 +1,11 @@
 import { formatAccountType, isTrackedAccountType } from "@/accounts/helpers";
 import { AccountType } from "@/accounts/types";
+import enumValues from "@/framework/data/enumValues";
 
 /**
  * Collection of account types.
  */
-const accountTypeValues = Object.values(AccountType);
+const accountTypeValues = enumValues(AccountType);
 
 /**
  * Set of account type values for quick membership checks.

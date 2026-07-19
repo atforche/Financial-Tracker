@@ -9,8 +9,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createTransactionListColumns from "@/transactions/createTransactionListColumns";
+import parseEnumValue from "@/framework/data/parseEnumValue";
 import routes from "@/transactions/routes";
-import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
@@ -57,7 +57,7 @@ const CurrentTransactionListFrame = function ({
     });
   };
 
-  const currentSort = tryParseEnum(
+  const currentSort = parseEnumValue(
     TransactionSort,
     searchParams.get(sortParamName) ?? "",
   );

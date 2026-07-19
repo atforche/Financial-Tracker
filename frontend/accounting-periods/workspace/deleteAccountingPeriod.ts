@@ -1,12 +1,12 @@
 "use server";
 
-import {
-  type AccountingPeriodActionPayload,
-  type AccountingPeriodActionState,
-  getAccountingPeriodActionError,
+import type {
+  AccountingPeriodActionPayload,
+  AccountingPeriodActionState,
 } from "@/accounting-periods/workspace/accountingPeriodAction";
-import getApiClient from "@/framework/data/getApiClient";
+import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
+import mapApiValidationError from "@/framework/forms/mapApiValidationError";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -16,7 +16,7 @@ const deleteAccountingPeriod = async function (
   _: AccountingPeriodActionState,
   { accountingPeriodId, redirectUrl }: AccountingPeriodActionPayload,
 ): Promise<AccountingPeriodActionState> {
-  const client = getApiClient();
+  const client = createApiClient();
   const { error } = await client.DELETE(
     "/accounting-periods/{accountingPeriodId}",
     {
@@ -29,7 +29,7 @@ const deleteAccountingPeriod = async function (
   );
   if (error) {
     if (isApiError(error)) {
-      return getAccountingPeriodActionError(error);
+      return mapApiValidationError(error, {});
     }
     throw new Error("An unexpected error occurred", { cause: error });
   }

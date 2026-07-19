@@ -12,9 +12,9 @@ import type { CurrentAccountingPeriodSearchParams } from "@/accounting-periods/c
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createTransactionListColumns from "@/transactions/createTransactionListColumns";
-import nameof from "@/framework/data/nameof";
+import parseEnumValue from "@/framework/data/parseEnumValue";
+import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
-import tryParseEnum from "@/framework/data/tryParseEnum";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
@@ -34,9 +34,9 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
   const router = useRouter();
 
   const sortParamName =
-    nameof<CurrentAccountingPeriodSearchParams>("transactionSort");
+    propertyName<CurrentAccountingPeriodSearchParams>("transactionSort");
   const pageParamName =
-    nameof<CurrentAccountingPeriodSearchParams>("transactionPage");
+    propertyName<CurrentAccountingPeriodSearchParams>("transactionPage");
   const updateParams = useSearchParamUpdater([pageParamName]);
 
   const setSort = function (sort: TransactionSort | null): void {
@@ -49,7 +49,7 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
     });
   };
 
-  const currentSort = tryParseEnum(
+  const currentSort = parseEnumValue(
     TransactionSort,
     searchParams.get(sortParamName) ?? "",
   );

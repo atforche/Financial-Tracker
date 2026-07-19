@@ -30,13 +30,13 @@ import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import type { TrendRangeMode } from "@/framework/routes/trendRange";
 import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
+import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Props for the AccountTrends component.
@@ -68,7 +68,7 @@ const AccountTrends = async function ({
   const defaultEndDate = dayjs();
   const defaultStartDate = defaultEndDate.subtract(90, "day");
 
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
       query: {
@@ -78,7 +78,7 @@ const AccountTrends = async function ({
       },
     },
   });
-  const accountingPeriods = getApiData(
+  const accountingPeriods = unwrapApiResponse(
     await accountingPeriodsPromise,
     "Failed to fetch accounting periods",
   );
@@ -178,8 +178,11 @@ const AccountTrends = async function ({
         }),
       ]);
       return {
-        trends: getApiData(accountResponse, "Failed to load account trends"),
-        balanceEvents: getApiData(
+        trends: unwrapApiResponse(
+          accountResponse,
+          "Failed to load account trends",
+        ),
+        balanceEvents: unwrapApiResponse(
           balanceEventResponse,
           "Failed to load account balance events",
         ),
@@ -199,8 +202,11 @@ const AccountTrends = async function ({
       }),
     ]);
     return {
-      trends: getApiData(accountResponse, "Failed to load account trends"),
-      balanceEvents: getApiData(
+      trends: unwrapApiResponse(
+        accountResponse,
+        "Failed to load account trends",
+      ),
+      balanceEvents: unwrapApiResponse(
         balanceEventResponse,
         "Failed to load account balance events",
       ),

@@ -6,13 +6,13 @@ import type { JSX } from "react";
 import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
 import ViewFundForm from "@/funds/workspace/ViewFundForm";
-import getApiClient from "@/framework/data/getApiClient";
-import getApiData from "@/framework/data/apiResponse";
+import createApiClient from "@/framework/data/createApiClient";
 import { getTransactionFundBalanceEvents } from "@/transactions/postingHelpers";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 import { rowsPerPage } from "@/framework/listframe/Constants";
 import transactionRoutes from "@/transactions/routes";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Props for the FundWorkspaceDetailPage component.
@@ -32,7 +32,7 @@ const FundWorkspaceDetailPage = async function ({
   const { fundId } = await params;
   const resolvedSearchParams = await searchParams;
   const { search, balanceEventPage } = resolvedSearchParams;
-  const apiClient = getApiClient();
+  const apiClient = createApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
   const [fundsResponse, transactionsResponse] = await Promise.all([
     apiClient.GET("/funds/with-balances"),
@@ -40,8 +40,8 @@ const FundWorkspaceDetailPage = async function ({
       params: { query: { "Filter.FundIds": [fundId] } },
     }),
   ]);
-  const funds = getApiData(fundsResponse, "Failed to fetch funds");
-  const transactions = getApiData(
+  const funds = unwrapApiResponse(fundsResponse, "Failed to fetch funds");
+  const transactions = unwrapApiResponse(
     transactionsResponse,
     "Failed to fetch fund transactions",
   );

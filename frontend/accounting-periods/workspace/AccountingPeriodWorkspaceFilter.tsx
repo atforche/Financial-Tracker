@@ -14,7 +14,7 @@ import { Button } from "@mui/material";
 import type { JSX } from "react";
 import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
-import nameof from "@/framework/data/nameof";
+import propertyName from "@/framework/data/propertyName";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -33,12 +33,16 @@ const AccountingPeriodWorkspaceFilter = function ({
 }: AccountingPeriodWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
-  const pageParamName = nameof<AccountingPeriodWorkspaceSearchParams>("page");
-  const yearsParamName = nameof<AccountingPeriodWorkspaceSearchParams>("years");
+  const pageParamName =
+    propertyName<AccountingPeriodWorkspaceSearchParams>("page");
+  const yearsParamName =
+    propertyName<AccountingPeriodWorkspaceSearchParams>("years");
   const monthsParamName =
-    nameof<AccountingPeriodWorkspaceSearchParams>("months");
+    propertyName<AccountingPeriodWorkspaceSearchParams>("months");
   const selectedAccountingPeriodIdParamName =
-    nameof<AccountingPeriodWorkspaceSearchParams>("selectedAccountingPeriodId");
+    propertyName<AccountingPeriodWorkspaceSearchParams>(
+      "selectedAccountingPeriodId",
+    );
 
   const currentYear = new Date().getFullYear();
   const firstAccountingPeriodYear = firstAccountingPeriod?.year ?? currentYear;
