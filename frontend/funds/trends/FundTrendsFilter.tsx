@@ -4,12 +4,13 @@ import type {
   AccountingPeriod,
   AccountingPeriodRange,
 } from "@/accounting-periods/types";
-import { Button, TextField } from "@mui/material";
 import {
   normalizeFundNames,
   shouldPersistFundNames,
 } from "@/funds/trends/fundNameFilter";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
+import { Button } from "@mui/material";
+import DateRangeFilter from "@/framework/forms/DateRangeFilter";
 import FundTrendsFundNameFilter from "@/funds/trends/FundTrendsFundNameFilter";
 import type { FundTrendsSearchParams } from "@/funds/trends/FundTrends";
 import type { JSX } from "react";
@@ -124,29 +125,10 @@ const FundTrendsFilter = function ({
     });
   };
 
-  const handleStartDateChange = function (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ): void {
-    const nextStartDate = event.target.value;
-    const nextEndDate =
-      nextStartDate > currentEndDate ? nextStartDate : currentEndDate;
-
+  const handleDateRangeChange = function (range: AccountingPeriodRange): void {
     updateParams((params) => {
-      params.set(startDateParamName, nextStartDate);
-      params.set(endDateParamName, nextEndDate);
-    });
-  };
-
-  const handleEndDateChange = function (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ): void {
-    const nextEndDate = event.target.value;
-    const nextStartDate =
-      nextEndDate < currentStartDate ? nextEndDate : currentStartDate;
-
-    updateParams((params) => {
-      params.set(startDateParamName, nextStartDate);
-      params.set(endDateParamName, nextEndDate);
+      params.set(startDateParamName, range.start);
+      params.set(endDateParamName, range.end);
     });
   };
 
@@ -164,10 +146,6 @@ const FundTrendsFilter = function ({
         params.delete(endAccountingPeriodIdParamName);
       }
     });
-  };
-
-  const sharedFieldSx = {
-    minWidth: { xs: "100%", sm: 180 },
   };
 
   return (
@@ -194,36 +172,11 @@ const FundTrendsFilter = function ({
           disabled={disabled}
         />
       ) : (
-        <>
-          <TextField
-            size="small"
-            label="Start date"
-            type="date"
-            value={currentStartDate}
-            onChange={handleStartDateChange}
-            disabled={disabled}
-            sx={sharedFieldSx}
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-              },
-            }}
-          />
-          <TextField
-            size="small"
-            label="End date"
-            type="date"
-            value={currentEndDate}
-            onChange={handleEndDateChange}
-            disabled={disabled}
-            sx={sharedFieldSx}
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-              },
-            }}
-          />
-        </>
+        <DateRangeFilter
+          value={{ start: currentStartDate, end: currentEndDate }}
+          onChange={handleDateRangeChange}
+          disabled={disabled}
+        />
       )}
       <FundTrendsFundNameFilter
         availableFundNames={availableFundNames}

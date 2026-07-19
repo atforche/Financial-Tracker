@@ -17,7 +17,7 @@ interface StringEntryFieldProps {
 const StringEntryField = function ({
   label,
   value,
-  setValue,
+  setValue = null,
   errorMessage = null,
 }: StringEntryFieldProps): JSX.Element {
   return (

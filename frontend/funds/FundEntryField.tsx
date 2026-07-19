@@ -50,6 +50,9 @@ const FundEntryField = function ({
           ? { label: "", value: null }
           : { label: value.name, value }
       }
+      isOptionEqualToValue={(option, selectedValue) =>
+        option.value?.id === selectedValue.value?.id
+      }
       setValue={
         setValue === null
           ? null

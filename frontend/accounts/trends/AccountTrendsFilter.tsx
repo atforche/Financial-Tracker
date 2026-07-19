@@ -4,7 +4,6 @@ import type {
   AccountingPeriod,
   AccountingPeriodRange,
 } from "@/accounting-periods/types";
-import { Button, TextField } from "@mui/material";
 import {
   type TrendRangeMode,
   setTrendRangeMode,
@@ -21,6 +20,8 @@ import AccountNameFilter from "@/accounts/AccountNameFilter";
 import type { AccountType } from "@/accounts/types";
 import AccountTypeFilter from "@/accounts/AccountTypeFilter";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
+import { Button } from "@mui/material";
+import DateRangeFilter from "@/framework/forms/DateRangeFilter";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
@@ -148,29 +149,10 @@ const AccountTrendsFilter = function ({
     });
   };
 
-  const handleStartDateChange = function (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ): void {
-    const nextStartDate = event.target.value;
-    const nextEndDate =
-      nextStartDate > currentEndDate ? nextStartDate : currentEndDate;
-
+  const handleDateRangeChange = function (range: AccountingPeriodRange): void {
     updateParams((params) => {
-      params.set(startDateParamName, nextStartDate);
-      params.set(endDateParamName, nextEndDate);
-    });
-  };
-
-  const handleEndDateChange = function (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ): void {
-    const nextEndDate = event.target.value;
-    const nextStartDate =
-      nextEndDate < currentStartDate ? nextEndDate : currentStartDate;
-
-    updateParams((params) => {
-      params.set(startDateParamName, nextStartDate);
-      params.set(endDateParamName, nextEndDate);
+      params.set(startDateParamName, range.start);
+      params.set(endDateParamName, range.end);
     });
   };
 
@@ -184,10 +166,6 @@ const AccountTrendsFilter = function ({
       params.delete(startAccountingPeriodIdParamName);
       params.delete(endAccountingPeriodIdParamName);
     });
-  };
-
-  const sharedFieldSx = {
-    minWidth: { xs: "100%", sm: 180 },
   };
 
   return (
@@ -214,36 +192,11 @@ const AccountTrendsFilter = function ({
           disabled={disabled}
         />
       ) : (
-        <>
-          <TextField
-            size="small"
-            label="Start date"
-            type="date"
-            value={currentStartDate}
-            onChange={handleStartDateChange}
-            disabled={disabled}
-            sx={sharedFieldSx}
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-              },
-            }}
-          />
-          <TextField
-            size="small"
-            label="End date"
-            type="date"
-            value={currentEndDate}
-            onChange={handleEndDateChange}
-            disabled={disabled}
-            sx={sharedFieldSx}
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-              },
-            }}
-          />
-        </>
+        <DateRangeFilter
+          value={{ start: currentStartDate, end: currentEndDate }}
+          onChange={handleDateRangeChange}
+          disabled={disabled}
+        />
       )}
       <AccountTypeFilter
         value={currentAccountTypes}

@@ -3,8 +3,6 @@ import { type JSX, useEffect, useRef, useState } from "react";
 
 /**
  * Interface representing a Combo Box option.
- * @param label - Label for this option.
- * @param value - Value for this option.
  */
 interface ComboBoxOption<T> {
   readonly label: string;
@@ -23,12 +21,24 @@ interface ComboBoxEntryFieldProps<T> {
   readonly errorMessage?: string | null;
   readonly autoFocus?: boolean;
   readonly size?: "small" | "medium";
+  readonly isOptionEqualToValue?: (
+    option: ComboBoxOption<T>,
+    value: ComboBoxOption<T>,
+  ) => boolean;
 }
 
 /**
+ * Compares two ComboBoxOption values for equality based on their value property.
+ */
+const compareOptionValues = function <T>(
+  option: ComboBoxOption<T>,
+  selectedValue: ComboBoxOption<T>,
+): boolean {
+  return Object.is(option.value, selectedValue.value);
+};
+
+/**
  * Component the presents the user with an entry field where they can enter string values.
- * @param props - Props for the ComboBoxEntryField component.
- * @returns JSX element representing the ComboBoxEntryField component.
  */
 const ComboBoxEntryField = function <T>({
   label,
@@ -38,6 +48,7 @@ const ComboBoxEntryField = function <T>({
   errorMessage = null,
   autoFocus = false,
   size = "medium",
+  isOptionEqualToValue = compareOptionValues,
 }: ComboBoxEntryFieldProps<T>): JSX.Element {
   const hint = useRef("");
   const justSelected = useRef(false);
@@ -55,9 +66,7 @@ const ComboBoxEntryField = function <T>({
       inputValue={inputValue}
       value={value}
       readOnly={setValue === null}
-      isOptionEqualToValue={(option, selectedValue) =>
-        option.label === selectedValue.label
-      }
+      isOptionEqualToValue={isOptionEqualToValue}
       renderOption={(props, option) => (
         <Box component="li" {...props}>
           <Box sx={{ minWidth: 0 }}>
@@ -97,19 +106,6 @@ const ComboBoxEntryField = function <T>({
                 ...params.InputProps,
               },
             }}
-            onChange={(event) => {
-              const newValue = event.target.value;
-              setInputValue(newValue);
-              const matchingOption = options.find((option) =>
-                option.label.startsWith(newValue),
-              );
-
-              if (newValue && matchingOption) {
-                hint.current = matchingOption.label;
-              } else {
-                hint.current = "";
-              }
-            }}
           />
         </Box>
       )}
@@ -118,11 +114,24 @@ const ComboBoxEntryField = function <T>({
         setInputValue(newValue?.label ?? "");
         setValue?.(newValue);
       }}
+      onInputChange={(_, newInputValue, reason) => {
+        if (reason !== "input") {
+          return;
+        }
+
+        setInputValue(newInputValue);
+        const normalizedInput = newInputValue.toLocaleLowerCase();
+        const matchingOption = options.find((option) =>
+          option.label.toLocaleLowerCase().startsWith(normalizedInput),
+        );
+        hint.current =
+          newInputValue && matchingOption ? matchingOption.label : "";
+      }}
       onKeyDown={(event) => {
         if (event.key === "Tab") {
           if (hint.current) {
-            const matchingOption = options.find((option) =>
-              option.label.startsWith(hint.current),
+            const matchingOption = options.find(
+              (option) => option.label === hint.current,
             );
             if (matchingOption) {
               setInputValue(matchingOption.label);
