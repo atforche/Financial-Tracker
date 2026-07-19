@@ -16,6 +16,9 @@ import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/
 import createApiClient from "@/framework/data/createApiClient";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
+/**
+ * Represents reference data required for the transaction workspace, including accounting periods, accounts, funds, and goals.
+ */
 interface TransactionWorkspaceReferenceData {
   readonly openAccountingPeriods: AccountingPeriod[];
   readonly allAccountingPeriods: AccountingPeriod[];
@@ -25,6 +28,9 @@ interface TransactionWorkspaceReferenceData {
   readonly spendingGoals: SpendingGoal[];
 }
 
+/**
+ * Represents the data required for displaying the transaction workspace, including reference data and the list of transactions.
+ */
 interface TransactionWorkspaceListData extends TransactionWorkspaceReferenceData {
   readonly currentPage: number;
   readonly normalizedAccountingPeriodIds: string[];

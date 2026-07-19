@@ -1,29 +1,19 @@
 "use client";
 
-import { type Transaction, TransactionSort } from "@/transactions/types";
-import {
-  getTransactionAccountIds,
-  getTransactionFundIds,
-} from "@/transactions/postingHelpers";
-import {
-  getTransactionDestinationLabel,
-  getTransactionSourceLabel,
-} from "@/transactions/current/helpers";
-import { useRouter, useSearchParams } from "next/navigation";
-import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import { Button } from "@mui/material";
-import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
-import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
+import type { Transaction } from "@/transactions/types";
 import type { TransactionTrendsSearchParams } from "@/transactions/trends/TransactionTrends";
-import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
-import { formatCurrency } from "@/framework/currencyHelpers";
-import parseEnumValue from "@/framework/data/parseEnumValue";
+import createTransactionListColumns from "@/transactions/createTransactionListColumns";
 import propertyName from "@/framework/data/propertyName";
-import routes from "@/transactions/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useSearchParams } from "next/navigation";
+import useTransactionList from "@/transactions/useTransactionList";
 
+/**
+ * Props for the TransactionTrendsListFrame component.
+ */
 interface TransactionTrendsListFrameProps {
   readonly data: Transaction[] | null;
   readonly totalCount: number | null;
@@ -37,7 +27,6 @@ const TransactionTrendsListFrame = function ({
   totalCount,
 }: TransactionTrendsListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const sortParamName = propertyName<TransactionTrendsSearchParams>("sort");
   const pageParamName = propertyName<TransactionTrendsSearchParams>("page");
@@ -58,32 +47,10 @@ const TransactionTrendsListFrame = function ({
     propertyName<TransactionTrendsSearchParams>("endDate");
 
   const updateParams = useSearchParamUpdater([pageParamName]);
-
-  const setSort = function (sort: TransactionSort | null): void {
-    updateParams((params) => {
-      if (sort === null) {
-        params.delete(sortParamName);
-      } else {
-        params.set(sortParamName, sort);
-      }
-    });
-  };
-
-  const currentSort = parseEnumValue(
-    TransactionSort,
-    searchParams.get(sortParamName) ?? "",
+  const { currentSort, openTransactionWorkspace, setSort } = useTransactionList(
+    sortParamName,
+    pageParamName,
   );
-
-  const openTransactionWorkspace = function (transaction: Transaction): void {
-    router.push(
-      routes.workspace({
-        accountingPeriodIds: [transaction.accountingPeriodId],
-        accountIds: getTransactionAccountIds(transaction),
-        fundIds: getTransactionFundIds(transaction),
-        selectedTransactionId: transaction.id,
-      }),
-    );
-  };
 
   const hasActiveFilters =
     searchParams.get(modeParamName) === "date" ||
@@ -95,82 +62,12 @@ const TransactionTrendsListFrame = function ({
     searchParams.has(startDateParamName) ||
     searchParams.has(endDateParamName);
 
-  const getSortProps = createColumnSortProps(currentSort, setSort);
-
-  const columns: ColumnDefinition<Transaction>[] = [
-    {
-      name: "date",
-      headerContent: "Date",
-      getBodyContent: (transaction) => transaction.date,
-      ...getSortProps(TransactionSort.Date, TransactionSort.DateDescending),
-      minWidth: 125,
-    },
-    {
-      name: "accountingPeriod",
-      headerContent: "Accounting Period",
-      getBodyContent: (transaction) => transaction.accountingPeriodName,
-      ...getSortProps(
-        TransactionSort.AccountingPeriod,
-        TransactionSort.AccountingPeriodDescending,
-      ),
-      minWidth: 165,
-    },
-    {
-      name: "description",
-      headerContent: "Description",
-      getBodyContent: (transaction) => transaction.description,
-      ...getSortProps(
-        TransactionSort.Description,
-        TransactionSort.DescriptionDescending,
-      ),
-      minWidth: 150,
-    },
-    {
-      name: "source",
-      headerContent: "Source",
-      getBodyContent: getTransactionSourceLabel,
-      ...getSortProps(TransactionSort.Source, TransactionSort.SourceDescending),
-      minWidth: 170,
-    },
-    {
-      name: "destination",
-      headerContent: "Destination",
-      getBodyContent: getTransactionDestinationLabel,
-      ...getSortProps(
-        TransactionSort.Destination,
-        TransactionSort.DestinationDescending,
-      ),
-      minWidth: 170,
-    },
-    {
-      name: "amount",
-      headerContent: "Amount",
-      getBodyContent: (transaction) => formatCurrency(transaction.amount),
-      ...getSortProps(TransactionSort.Amount, TransactionSort.AmountDescending),
-      alignment: "right",
-      minWidth: 150,
-    },
-    {
-      name: "actions",
-      headerContent: "",
-      getBodyContent: (transaction) => (
-        <ListFrameActionButton
-          size="small"
-          color="primary"
-          onClick={(event) => {
-            event.stopPropagation();
-            openTransactionWorkspace(transaction);
-          }}
-          ariaLabel={`Open transaction ${transaction.id}`}
-        >
-          <ArrowForwardOutlined fontSize="small" color="action" />
-        </ListFrameActionButton>
-      ),
-      alignment: "right",
-      minWidth: 52,
-      maxWidth: 52,
-    },
-  ];
+  const columns = createTransactionListColumns({
+    currentSort,
+    includeAccountingPeriod: true,
+    openTransaction: openTransactionWorkspace,
+    setSort,
+  });
 
   return (
     <ListFrame<Transaction>

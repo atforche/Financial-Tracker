@@ -1,19 +1,20 @@
 "use server";
 
+import {
+  type TransactionActionErrorState,
+  mapTransactionActionError,
+} from "@/transactions/workspace/transactionActionHelpers";
 import type { CreateTransactionRequest } from "@/transactions/types";
 import createApiClient from "@/framework/data/createApiClient";
-import { isApiError } from "@/framework/data/apiError";
-import mapApiValidationError from "@/framework/forms/mapApiValidationError";
 import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
 /**
  * Interface representing the state of creating a transaction.
  */
-interface ActionState {
+interface ActionState extends TransactionActionErrorState {
   readonly success?: boolean;
   readonly transactionId?: string | null;
-  readonly errorTitle?: string | null;
   readonly accountingPeriodErrors?: string | null;
   readonly dateErrors?: string | null;
   readonly locationErrors?: string | null;
@@ -24,7 +25,6 @@ interface ActionState {
   readonly debitAccountErrors?: string | null;
   readonly creditAccountErrors?: string | null;
   readonly fundErrors?: string | null;
-  readonly unmappedErrors?: string | null;
 }
 
 /**
@@ -54,27 +54,19 @@ const createTransaction = async function (
     body: request,
   });
   if (error) {
-    if (isApiError(error)) {
-      const mappedError = mapApiValidationError(error, {
-        [propertyName<CreateTransactionRequest>("accountingPeriodId")]:
-          "accountingPeriodErrors",
-        [propertyName<CreateTransactionRequest>("date")]: "dateErrors",
-        [propertyName<TransactionValidationFields>("location")]:
-          "locationErrors",
-        [propertyName<TransactionValidationFields>("sourceLocation")]:
-          "sourceLocationErrors",
-        [propertyName<TransactionValidationFields>("destinationLocation")]:
-          "destinationLocationErrors",
-        [propertyName<CreateTransactionRequest>("description")]:
-          "descriptionErrors",
-        [propertyName<CreateTransactionRequest>("amount")]: "amountErrors",
-      });
-      return {
-        ...mappedError,
-        ...mappedError.fieldErrors,
-      };
-    }
-    throw new Error("An unexpected error occurred", { cause: error });
+    return mapTransactionActionError(error, {
+      [propertyName<CreateTransactionRequest>("accountingPeriodId")]:
+        "accountingPeriodErrors",
+      [propertyName<CreateTransactionRequest>("date")]: "dateErrors",
+      [propertyName<TransactionValidationFields>("location")]: "locationErrors",
+      [propertyName<TransactionValidationFields>("sourceLocation")]:
+        "sourceLocationErrors",
+      [propertyName<TransactionValidationFields>("destinationLocation")]:
+        "destinationLocationErrors",
+      [propertyName<CreateTransactionRequest>("description")]:
+        "descriptionErrors",
+      [propertyName<CreateTransactionRequest>("amount")]: "amountErrors",
+    });
   }
   if (typeof data === "undefined") {
     throw new Error("Transaction creation did not return a transaction.");

@@ -2,6 +2,7 @@ import type { Account, AccountBalanceEventDraft } from "@/accounts/types";
 import {
   CreateTransactionModelCreateSpendingTransactionModelType,
   UpdateTransactionModelUpdateSpendingTransactionModelType,
+  type components,
 } from "@/framework/data/api";
 import type {
   CreateTransactionRequest,
@@ -43,6 +44,14 @@ interface SpendingDestinationDraft {
   readonly fundAssignments: FundAssignmentDraft[];
   readonly baselineFundAssignments: FundAssignmentDraft[];
 }
+
+/**
+ * Interface representing a potentially unfinished spending transaction request.
+ */
+type SpendingRequestFields = Omit<
+  components["schemas"]["UpdateTransactionModelUpdateSpendingTransactionModel"],
+  "type"
+>;
 
 /**
  * Creates an empty source draft.
@@ -158,6 +167,38 @@ const validateRequest = function (
   );
 };
 
+/** Maps a validated spending draft to fields shared by create and update requests. */
+const buildRequestFields = function (
+  date: Dayjs | null,
+  defaultDate: Dayjs | null,
+  description: string,
+  source: SpendingSourceDraft,
+  destinations: SpendingDestinationDraft[],
+): SpendingRequestFields {
+  return {
+    date: date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
+    description,
+    amount: source.amount ?? 0,
+    source: {
+      accountId: source.account?.accountId ?? "",
+    },
+    destinations: destinations.map((destination) => ({
+      accountId: destination.account?.accountId ?? null,
+      location:
+        destination.account === null
+          ? (destination.location?.trim() ?? null)
+          : null,
+      amount: destination.amount ?? 0,
+      fundAssignments: destination.fundAssignments
+        .filter((fundAmount) => !isUnassignedFund(fundAmount.fundName))
+        .map((fundAmount) => ({
+          fundId: fundAmount.fundId,
+          amount: fundAmount.amount,
+        })),
+    })),
+  };
+};
+
 /**
  * Builds the create transaction request object from .
  */
@@ -184,26 +225,7 @@ const buildCreateRequest = function (
   return {
     type: CreateTransactionModelCreateSpendingTransactionModelType.Spending,
     accountingPeriodId: accountingPeriod?.id ?? "",
-    date: date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
-    description,
-    amount: source.amount ?? 0,
-    source: {
-      accountId: source.account?.accountId ?? "",
-    },
-    destinations: destinations.map((destination) => ({
-      accountId: destination.account?.accountId ?? null,
-      location:
-        destination.account === null
-          ? (destination.location?.trim() ?? null)
-          : null,
-      amount: destination.amount ?? 0,
-      fundAssignments: destination.fundAssignments
-        .filter((fundAmount) => !isUnassignedFund(fundAmount.fundName))
-        .map((fundAmount) => ({
-          fundId: fundAmount.fundId,
-          amount: fundAmount.amount,
-        })),
-    })),
+    ...buildRequestFields(date, defaultDate, description, source, destinations),
   };
 };
 
@@ -231,26 +253,7 @@ const buildUpdateRequest = function (
   }
   return {
     type: UpdateTransactionModelUpdateSpendingTransactionModelType.Spending,
-    date: date?.format("YYYY-MM-DD") ?? "",
-    description,
-    amount: source.amount ?? 0,
-    source: {
-      accountId: source.account?.accountId ?? "",
-    },
-    destinations: destinations.map((destination) => ({
-      accountId: destination.account?.accountId ?? null,
-      location:
-        destination.account === null
-          ? (destination.location?.trim() ?? null)
-          : null,
-      amount: destination.amount ?? 0,
-      fundAssignments: destination.fundAssignments
-        .filter((fundAmount) => !isUnassignedFund(fundAmount.fundName))
-        .map((fundAmount) => ({
-          fundId: fundAmount.fundId,
-          amount: fundAmount.amount,
-        })),
-    })),
+    ...buildRequestFields(date, null, description, source, destinations),
   };
 };
 

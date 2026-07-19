@@ -1,21 +1,21 @@
 "use server";
 
+import {
+  type TransactionActionErrorState,
+  mapTransactionActionError,
+} from "@/transactions/workspace/transactionActionHelpers";
 import type { PostTransactionRequest } from "@/transactions/types";
 import createApiClient from "@/framework/data/createApiClient";
-import { isApiError } from "@/framework/data/apiError";
-import mapApiValidationError from "@/framework/forms/mapApiValidationError";
 import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
 /**
  * Interface representing the state of posting a transaction.
  */
-interface ActionState {
+interface ActionState extends TransactionActionErrorState {
   readonly success?: boolean;
-  readonly errorTitle?: string | null;
   readonly accountErrors?: string | null;
   readonly dateErrors?: string | null;
-  readonly unmappedErrors?: string | null;
 }
 
 /**
@@ -44,17 +44,10 @@ const postTransaction = async function (
     body: request,
   });
   if (error) {
-    if (isApiError(error)) {
-      const mappedError = mapApiValidationError(error, {
-        [propertyName<PostTransactionRequest>("accountId")]: "accountErrors",
-        [propertyName<PostTransactionRequest>("date")]: "dateErrors",
-      });
-      return {
-        ...mappedError,
-        ...mappedError.fieldErrors,
-      };
-    }
-    throw new Error("An unexpected error occurred", { cause: error });
+    return mapTransactionActionError(error, {
+      [propertyName<PostTransactionRequest>("accountId")]: "accountErrors",
+      [propertyName<PostTransactionRequest>("date")]: "dateErrors",
+    });
   }
 
   revalidatePath(redirectUrl);

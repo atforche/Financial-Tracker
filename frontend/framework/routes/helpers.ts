@@ -138,6 +138,16 @@ const appendRepeatedSearchParam = function <T extends RepeatedSearchParamValue>(
 };
 
 /**
+ * Replaces every occurrence of a repeated URL search parameter.
+ */
+const replaceRepeatedSearchParam = function <
+  T extends RepeatedSearchParamValue,
+>(params: URLSearchParams, key: string, values: readonly T[]): void {
+  params.delete(key);
+  appendRepeatedSearchParam(params, key, values);
+};
+
+/**
  * Omits undefined values and empty arrays from a search parameter object.
  */
 const compactSearchParams = function <T extends Record<string, unknown>>(
@@ -230,6 +240,7 @@ export {
   normalizeIntegerSearchParams,
   normalizeStringSearchParams,
   objectToSearchParams,
+  replaceRepeatedSearchParam,
   selectAvailableSearchParamValues,
   toRepeatedSearchParams,
 };

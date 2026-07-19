@@ -22,6 +22,9 @@ import StringEntryField from "@/framework/forms/StringEntryField";
 import postTransaction from "@/transactions/workspace/postTransaction";
 import { useRouter } from "next/navigation";
 
+/**
+ * Represents the posting state of a transaction account, including its ID, name, and posted date.
+ */
 interface AccountPostingState {
   readonly accountId: string;
   readonly accountName: string;

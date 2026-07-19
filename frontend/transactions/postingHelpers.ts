@@ -5,13 +5,10 @@ import {
   asIncomeTransaction,
   asSpendingTransaction,
 } from "@/transactions/types";
-import {
-  isNotNullOrUndefined,
-  isNullOrUndefined,
-} from "@/framework/nullHelpers";
 import type { AccountBalanceEvent } from "@/accounts/types";
 import type { FundBalanceEvent } from "@/funds/types";
 import type { GoalBalanceEvent } from "@/goals/types";
+import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
  * Type representing an account involved in a transaction posting.
@@ -23,132 +20,54 @@ interface TransactionPostingAccount {
 }
 
 /**
- * Gets the account IDs involved in the provided transaction.
- */
-const getTransactionAccountIds = function (transaction: Transaction): string[] {
-  const accountIds = new Set<string>();
-
-  const addAccount = function (
-    account: AccountBalanceEvent | null | undefined,
-  ): void {
-    if (isNotNullOrUndefined(account)) {
-      accountIds.add(account.account.id);
-    }
-  };
-
-  const spendingTransaction = asSpendingTransaction(transaction);
-  if (spendingTransaction !== null) {
-    addAccount(spendingTransaction.source.account);
-    spendingTransaction.destinations.forEach((destination) => {
-      addAccount(destination.account);
-    });
-    return Array.from(accountIds);
-  }
-
-  const incomeTransaction = asIncomeTransaction(transaction);
-  if (incomeTransaction !== null) {
-    addAccount(incomeTransaction.source.account);
-    incomeTransaction.destinations.forEach((destination) => {
-      addAccount(destination.account);
-    });
-    return Array.from(accountIds);
-  }
-
-  const accountTransaction = asAccountTransaction(transaction);
-  if (accountTransaction !== null) {
-    addAccount(accountTransaction.source.account);
-    accountTransaction.destinations.forEach((destination) => {
-      addAccount(destination.account);
-    });
-  }
-
-  return Array.from(accountIds);
-};
-
-/**
  * Gets the Account balance events captured by the provided Transaction.
  */
 const getTransactionAccountBalanceEvents = function (
   transaction: Transaction,
 ): AccountBalanceEvent[] {
-  const events: AccountBalanceEvent[] = [];
-  const addAccount = function (
-    account: AccountBalanceEvent | null | undefined,
-  ): void {
-    if (isNotNullOrUndefined(account)) {
-      events.push(account);
-    }
-  };
-
   const spendingTransaction = asSpendingTransaction(transaction);
   if (spendingTransaction !== null) {
-    addAccount(spendingTransaction.source.account);
-    spendingTransaction.destinations.forEach((destination) => {
-      addAccount(destination.account);
-    });
-    return events;
+    return [
+      spendingTransaction.source.account,
+      ...spendingTransaction.destinations.map(
+        (destination) => destination.account,
+      ),
+    ].filter(isNotNullOrUndefined);
   }
 
   const incomeTransaction = asIncomeTransaction(transaction);
   if (incomeTransaction !== null) {
-    addAccount(incomeTransaction.source.account);
-    incomeTransaction.destinations.forEach((destination) => {
-      addAccount(destination.account);
-    });
-    return events;
+    return [
+      incomeTransaction.source.account,
+      ...incomeTransaction.destinations.map(
+        (destination) => destination.account,
+      ),
+    ].filter(isNotNullOrUndefined);
   }
 
   const accountTransaction = asAccountTransaction(transaction);
   if (accountTransaction !== null) {
-    addAccount(accountTransaction.source.account);
-    accountTransaction.destinations.forEach((destination) => {
-      addAccount(destination.account);
-    });
+    return [
+      accountTransaction.source.account,
+      ...accountTransaction.destinations.map(
+        (destination) => destination.account,
+      ),
+    ].filter(isNotNullOrUndefined);
   }
-  return events;
+  return [];
 };
 
 /**
- * Gets the fund IDs involved in the provided transaction.
+ * Gets the account IDs involved in the provided transaction.
  */
-const getTransactionFundIds = function (transaction: Transaction): string[] {
-  const fundIds = new Set<string>();
-
-  const addFund = function (fund: FundBalanceEvent | null | undefined): void {
-    if (isNotNullOrUndefined(fund)) {
-      fundIds.add(fund.fund.id);
-    }
-  };
-
-  const spendingTransaction = asSpendingTransaction(transaction);
-  if (spendingTransaction !== null) {
-    spendingTransaction.destinations.forEach((destination) => {
-      destination.fundAssignments.forEach((fundAssignment) => {
-        addFund(fundAssignment);
-      });
-    });
-    return Array.from(fundIds);
-  }
-
-  const incomeTransaction = asIncomeTransaction(transaction);
-  if (incomeTransaction !== null) {
-    incomeTransaction.destinations.forEach((destination) => {
-      destination.fundAssignments.forEach((fundAssignment) => {
-        addFund(fundAssignment);
-      });
-    });
-    return Array.from(fundIds);
-  }
-
-  const fundTransaction = asFundTransaction(transaction);
-  if (fundTransaction !== null) {
-    addFund(fundTransaction.source.fund);
-    fundTransaction.destinations.forEach((destination) => {
-      addFund(destination.fund);
-    });
-  }
-
-  return Array.from(fundIds);
+const getTransactionAccountIds = function (transaction: Transaction): string[] {
+  return Array.from(
+    new Set(
+      getTransactionAccountBalanceEvents(transaction).map(
+        (event) => event.account.id,
+      ),
+    ),
+  );
 };
 
 /**
@@ -157,35 +76,41 @@ const getTransactionFundIds = function (transaction: Transaction): string[] {
 const getTransactionFundBalanceEvents = function (
   transaction: Transaction,
 ): FundBalanceEvent[] {
-  const events: FundBalanceEvent[] = [];
-  const addFund = function (fund: FundBalanceEvent): void {
-    events.push(fund);
-  };
-
   const spendingTransaction = asSpendingTransaction(transaction);
   if (spendingTransaction !== null) {
-    spendingTransaction.destinations.forEach((destination) => {
-      destination.fundAssignments.forEach(addFund);
-    });
-    return events;
+    return spendingTransaction.destinations.flatMap(
+      (destination) => destination.fundAssignments,
+    );
   }
 
   const incomeTransaction = asIncomeTransaction(transaction);
   if (incomeTransaction !== null) {
-    incomeTransaction.destinations.forEach((destination) => {
-      destination.fundAssignments.forEach(addFund);
-    });
-    return events;
+    return incomeTransaction.destinations.flatMap(
+      (destination) => destination.fundAssignments,
+    );
   }
 
   const fundTransaction = asFundTransaction(transaction);
   if (fundTransaction !== null) {
-    addFund(fundTransaction.source.fund);
-    fundTransaction.destinations.forEach((destination) => {
-      addFund(destination.fund);
-    });
+    return [
+      fundTransaction.source.fund,
+      ...fundTransaction.destinations.map((destination) => destination.fund),
+    ];
   }
-  return events;
+  return [];
+};
+
+/**
+ * Gets the fund IDs involved in the provided transaction.
+ */
+const getTransactionFundIds = function (transaction: Transaction): string[] {
+  return Array.from(
+    new Set(
+      getTransactionFundBalanceEvents(transaction).map(
+        (event) => event.fund.id,
+      ),
+    ),
+  );
 };
 
 /**
@@ -218,51 +143,24 @@ const getTransactionGoalBalanceEvents = function (
   return [];
 };
 
+/**
+ * Gets the Transaction Posting Accounts for the provided Transaction.
+ */
 const collectTransactionPostingAccounts = function (
   transaction: Transaction,
 ): TransactionPostingAccount[] {
-  const accounts = new Map<string, TransactionPostingAccount>();
-
-  const addAccount = function (
-    account: AccountBalanceEvent | null | undefined,
-  ): void {
-    if (isNullOrUndefined(account)) {
-      return;
-    }
-    accounts.set(account.account.id, {
-      accountId: account.account.id,
-      accountName: account.account.name,
-      postedDate: account.date ?? null,
-    });
-  };
-
-  const spendingTransaction = asSpendingTransaction(transaction);
-  if (spendingTransaction !== null) {
-    addAccount(spendingTransaction.source.account);
-    spendingTransaction.destinations.forEach((destination) => {
-      addAccount(destination.account);
-    });
-    return Array.from(accounts.values());
-  }
-
-  const incomeTransaction = asIncomeTransaction(transaction);
-  if (incomeTransaction !== null) {
-    addAccount(incomeTransaction.source.account);
-    incomeTransaction.destinations.forEach((destination) => {
-      addAccount(destination.account);
-    });
-    return Array.from(accounts.values());
-  }
-
-  const accountTransaction = asAccountTransaction(transaction);
-  if (accountTransaction !== null) {
-    addAccount(accountTransaction.source.account);
-    accountTransaction.destinations.forEach((destination) => {
-      addAccount(destination.account);
-    });
-  }
-
-  return Array.from(accounts.values());
+  return Array.from(
+    getTransactionAccountBalanceEvents(transaction)
+      .reduce((accounts, event) => {
+        accounts.set(event.account.id, {
+          accountId: event.account.id,
+          accountName: event.account.name,
+          postedDate: event.date ?? null,
+        });
+        return accounts;
+      }, new Map<string, TransactionPostingAccount>())
+      .values(),
+  );
 };
 
 /**

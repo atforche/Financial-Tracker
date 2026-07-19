@@ -9,19 +9,31 @@ import type { JSX } from "react";
 import { buildRangeMetricChartPoints } from "@/framework/charts/chartPointHelpers";
 import { getSignedChartColor } from "@/framework/charts/barMetricHelpers";
 
+/**
+ * Mode for the TransactionTrendsAmountChart component, indicating whether to display data by accounting period or by date.
+ */
 type TransactionTrendsAmountChartMode = "AccountingPeriod" | "Date";
 
+/**
+ * Represents a summary of transaction amounts for a specific accounting period.
+ */
 interface TransactionAccountingPeriodSummary {
   readonly accountingPeriodId: string;
   readonly accountingPeriodName: string;
   readonly totalAmount: number;
 }
 
+/**
+ * Represents a summary of transaction amounts for a specific date.
+ */
 interface TransactionDateSummary {
   readonly date: string;
   readonly totalAmount: number;
 }
 
+/**
+ * Props for the TransactionTrendsAmountChart component, which displays transaction amounts over time.
+ */
 interface TransactionTrendsAmountChartProps {
   readonly mode: TransactionTrendsAmountChartMode;
   readonly accountingPeriods:
@@ -29,7 +41,9 @@ interface TransactionTrendsAmountChartProps {
   readonly dates: readonly TransactionDateSummary[] | null;
 }
 
-/** Renders transaction amounts for the Transactions trends. */
+/**
+ * Renders transaction amounts for the Transactions trends.
+ */
 const TransactionTrendsAmountChart = function ({
   mode,
   accountingPeriods,

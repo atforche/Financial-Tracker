@@ -7,6 +7,9 @@ import type { Route } from "next";
 import type { TransactionTrendsSearchParams } from "@/transactions/trends/TransactionTrends";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 
+/**
+ * Converts the provided Transaction Trends Search Params to URL Search Params.
+ */
 const transactionTrendsSearchParamsToSearchParams = function (
   searchParams: TransactionTrendsSearchParams,
 ): URLSearchParams {
@@ -20,6 +23,9 @@ const transactionTrendsSearchParamsToSearchParams = function (
   return params;
 };
 
+/**
+ * Converts the provided Transaction Workspace Search Params to URL Search Params.
+ */
 const transactionWorkspaceSearchParamsToSearchParams = function (
   searchParams: TransactionWorkspaceSearchParams,
 ): URLSearchParams {

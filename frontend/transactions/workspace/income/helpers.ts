@@ -2,6 +2,7 @@ import type { Account, AccountBalanceEventDraft } from "@/accounts/types";
 import {
   CreateTransactionModelCreateIncomeTransactionModelType,
   UpdateTransactionModelUpdateIncomeTransactionModelType,
+  type components,
 } from "@/framework/data/api";
 import type {
   CreateTransactionRequest,
@@ -57,6 +58,14 @@ interface IncomeDestinationDraft {
   readonly fundAssignments: FundAssignmentDraft[];
   readonly baselineFundAssignments: FundAssignmentDraft[];
 }
+
+/**
+ * Interface representing a potentially unfinished income transaction request.
+ */
+type IncomeRequestFields = Omit<
+  components["schemas"]["UpdateTransactionModelUpdateIncomeTransactionModel"],
+  "type"
+>;
 
 /**
  * Creates an empty income line.
@@ -223,31 +232,16 @@ const validateRequest = function (
 };
 
 /**
- * Builds a create transaction request from the provided parameters.
+ * Maps a validated income draft to fields shared by create and update requests.
  */
-const buildCreateRequest = function (
-  accountingPeriod: AccountingPeriod | null,
+const buildRequestFields = function (
   date: Dayjs | null,
   defaultDate: Dayjs | null,
   description: string,
   source: IncomeSourceDraft,
   destinations: IncomeDestinationDraft[],
-): CreateTransactionRequest | null {
-  if (
-    !validateRequest(
-      accountingPeriod,
-      date,
-      defaultDate,
-      description,
-      source,
-      destinations,
-    )
-  ) {
-    return null;
-  }
+): IncomeRequestFields {
   return {
-    type: CreateTransactionModelCreateIncomeTransactionModelType.Income,
-    accountingPeriodId: accountingPeriod?.id ?? "",
     date: date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
     description,
     amount: getNetIncomeAmount(source),
@@ -278,6 +272,36 @@ const buildCreateRequest = function (
 };
 
 /**
+ * Builds a create transaction request from the provided parameters.
+ */
+const buildCreateRequest = function (
+  accountingPeriod: AccountingPeriod | null,
+  date: Dayjs | null,
+  defaultDate: Dayjs | null,
+  description: string,
+  source: IncomeSourceDraft,
+  destinations: IncomeDestinationDraft[],
+): CreateTransactionRequest | null {
+  if (
+    !validateRequest(
+      accountingPeriod,
+      date,
+      defaultDate,
+      description,
+      source,
+      destinations,
+    )
+  ) {
+    return null;
+  }
+  return {
+    type: CreateTransactionModelCreateIncomeTransactionModelType.Income,
+    accountingPeriodId: accountingPeriod?.id ?? "",
+    ...buildRequestFields(date, defaultDate, description, source, destinations),
+  };
+};
+
+/**
  * Builds an update transaction request from the provided parameters.
  */
 const buildUpdateRequest = function (
@@ -302,32 +326,7 @@ const buildUpdateRequest = function (
   }
   return {
     type: UpdateTransactionModelUpdateIncomeTransactionModelType.Income,
-    date: date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
-    description,
-    amount: getNetIncomeAmount(source),
-    source: {
-      accountId: source.account?.accountId ?? null,
-      location:
-        source.account === null ? (source.location?.trim() ?? null) : null,
-      incomeLines: source.incomeLines.map((line) => ({
-        description: line.description?.trim() ?? "",
-        amount: line.amount ?? 0,
-      })),
-      incomeDeductions: source.incomeDeductions.map((deduction) => ({
-        description: deduction.description?.trim() ?? "",
-        amount: deduction.amount ?? 0,
-      })),
-    },
-    destinations: destinations.map((destination) => ({
-      accountId: destination.account?.accountId ?? "",
-      amount: destination.amount ?? 0,
-      fundAssignments: destination.fundAssignments
-        .filter((fundAmount) => fundAmount.fundName !== "Unassigned")
-        .map((fundAmount) => ({
-          fundId: fundAmount.fundId,
-          amount: fundAmount.amount,
-        })),
-    })),
+    ...buildRequestFields(date, defaultDate, description, source, destinations),
   };
 };
 

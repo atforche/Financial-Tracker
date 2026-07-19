@@ -1,17 +1,17 @@
 "use server";
 
+import {
+  type TransactionActionErrorState,
+  mapTransactionActionError,
+} from "@/transactions/workspace/transactionActionHelpers";
 import createApiClient from "@/framework/data/createApiClient";
-import { isApiError } from "@/framework/data/apiError";
-import mapApiValidationError from "@/framework/forms/mapApiValidationError";
 import { revalidatePath } from "next/cache";
 
 /**
  * Interface representing the state of unposting a transaction.
  */
-interface ActionState {
+interface ActionState extends TransactionActionErrorState {
   readonly success?: boolean;
-  readonly errorTitle?: string | null;
-  readonly unmappedErrors?: string | null;
 }
 
 /**
@@ -38,10 +38,7 @@ const unpostTransaction = async function (
     },
   });
   if (error) {
-    if (isApiError(error)) {
-      return mapApiValidationError(error, {});
-    }
-    throw new Error("An unexpected error occurred", { cause: error });
+    return mapTransactionActionError<never>(error, {});
   }
   revalidatePath(redirectUrl);
   return { success: true };

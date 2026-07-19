@@ -1,20 +1,13 @@
 "use client";
 
-import { Box, Button } from "@mui/material";
 import { type Transaction, TransactionSort } from "@/transactions/types";
-import {
-  getTransactionDestinationLabel,
-  getTransactionSourceLabel,
-} from "@/transactions/current/helpers";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
+import { Button } from "@mui/material";
 import type { JSX } from "react";
-import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import ListFrame from "@/framework/listframe/ListFrame";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import { buildUrl } from "@/framework/routes/helpers";
-import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
-import { formatCurrency } from "@/framework/currencyHelpers";
+import createTransactionListColumns from "@/transactions/createTransactionListColumns";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
@@ -61,10 +54,10 @@ const TransactionWorkspaceListFrame = function ({
     });
   };
 
-  const openTransaction = function (transactionId: string): void {
+  const openTransaction = function (transaction: Transaction): void {
     const params = new URLSearchParams(searchParams.toString());
     router.push(
-      routes.workspaceDetail(transactionId, {
+      routes.workspaceDetail(transaction.id, {
         accountingPeriodIds: params.getAll(accountingPeriodIdsParamName),
         accountIds: params.getAll(accountIdsParamName),
         fundIds: params.getAll(fundIdsParamName),
@@ -86,73 +79,11 @@ const TransactionWorkspaceListFrame = function ({
     new URLSearchParams(searchParams),
   );
 
-  const getSortProps = createColumnSortProps(currentSort, setSort);
-
-  const columns: ColumnDefinition<Transaction>[] = [
-    {
-      name: "date",
-      headerContent: "Date",
-      getBodyContent: (transaction: Transaction) => transaction.date,
-      ...getSortProps(TransactionSort.Date, TransactionSort.DateDescending),
-      minWidth: 125,
-    },
-    {
-      name: "description",
-      headerContent: "Description",
-      getBodyContent: (transaction: Transaction) => transaction.description,
-      ...getSortProps(
-        TransactionSort.Description,
-        TransactionSort.DescriptionDescending,
-      ),
-      minWidth: 150,
-    },
-    {
-      name: "source",
-      headerContent: "Source",
-      getBodyContent: getTransactionSourceLabel,
-      ...getSortProps(TransactionSort.Source, TransactionSort.SourceDescending),
-      minWidth: 170,
-    },
-    {
-      name: "destination",
-      headerContent: "Destination",
-      getBodyContent: getTransactionDestinationLabel,
-      ...getSortProps(
-        TransactionSort.Destination,
-        TransactionSort.DestinationDescending,
-      ),
-      minWidth: 170,
-    },
-    {
-      name: "amount",
-      headerContent: "Amount",
-      getBodyContent: (transaction: Transaction) =>
-        formatCurrency(transaction.amount),
-      ...getSortProps(TransactionSort.Amount, TransactionSort.AmountDescending),
-      alignment: "right",
-      minWidth: 150,
-    },
-    {
-      name: "open",
-      headerContent: "",
-      getBodyContent: () => (
-        <Box
-          sx={{
-            alignItems: "center",
-            color: "text.secondary",
-            display: "flex",
-            justifyContent: "center",
-            minHeight: 40,
-          }}
-        >
-          <KeyboardArrowRight fontSize="small" />
-        </Box>
-      ),
-      alignment: "center",
-      minWidth: 0,
-      maxWidth: 0,
-    },
-  ];
+  const columns = createTransactionListColumns({
+    currentSort,
+    openTransaction,
+    setSort,
+  });
 
   return (
     <ListFrame<Transaction>
@@ -172,9 +103,7 @@ const TransactionWorkspaceListFrame = function ({
       data={data ?? null}
       totalCount={totalCount ?? null}
       pageParamName={pageParamName}
-      onRowClick={(transaction) => {
-        openTransaction(transaction.id);
-      }}
+      onRowClick={openTransaction}
       initialEmptyState={{
         title: "No transactions found",
         description: "No transactions have been recorded yet.",

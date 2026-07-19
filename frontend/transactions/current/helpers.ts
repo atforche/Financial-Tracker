@@ -6,6 +6,9 @@ import {
   asSpendingTransaction,
 } from "@/transactions/types";
 
+/**
+ * Summarizes the provided values.
+ */
 const summarizeValues = function (values: string[]): string {
   const meaningfulValues = values.filter((value) => value.trim() !== "");
   if (meaningfulValues.length === 0) {

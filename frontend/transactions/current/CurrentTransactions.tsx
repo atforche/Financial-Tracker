@@ -62,11 +62,17 @@ interface CurrentTransactionsProps {
   readonly searchParams: Promise<CurrentTransactionsSearchParams>;
 }
 
+/**
+ * Data structure representing a collection of transactions and their total count.
+ */
 interface CurrentTransactionCollection {
   readonly items: Transaction[];
   readonly totalCount: number;
 }
 
+/**
+ * Data structure representing the current transactions snapshot.
+ */
 interface CurrentTransactionData {
   readonly accountingPeriodId: string | null;
   readonly accountingPeriodName: string | null;

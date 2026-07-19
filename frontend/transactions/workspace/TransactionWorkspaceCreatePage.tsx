@@ -6,6 +6,9 @@ import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/
 import { getTransactionWorkspaceReferenceData } from "@/transactions/workspace/getTransactionWorkspaceData";
 import routes from "@/transactions/routes";
 
+/**
+ * Props for the TransactionWorkspaceCreatePage component.
+ */
 interface TransactionWorkspaceCreatePageProps {
   readonly searchParams: Promise<TransactionWorkspaceSearchParams>;
 }

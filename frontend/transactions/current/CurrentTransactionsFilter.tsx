@@ -22,6 +22,7 @@ import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocomp
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import type { TransactionType } from "@/transactions/types";
 import propertyName from "@/framework/data/propertyName";
+import { replaceRepeatedSearchParam } from "@/framework/routes/helpers";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -76,12 +77,13 @@ const CurrentTransactionsFilter = function ({
     nextTransactionTypes: readonly TransactionType[],
   ): void {
     updateParams((params) => {
-      params.delete(transactionTypeParamName);
-      if (shouldPersistTransactionTypes(nextTransactionTypes)) {
-        nextTransactionTypes.forEach((transactionType) => {
-          params.append(transactionTypeParamName, transactionType);
-        });
-      }
+      replaceRepeatedSearchParam(
+        params,
+        transactionTypeParamName,
+        shouldPersistTransactionTypes(nextTransactionTypes)
+          ? nextTransactionTypes
+          : [],
+      );
     });
   };
 
@@ -89,12 +91,11 @@ const CurrentTransactionsFilter = function ({
     nextAccountNames: readonly string[],
   ): void {
     updateParams((params) => {
-      params.delete(accountNameParamName);
-      if (shouldPersistAccountNames(nextAccountNames)) {
-        nextAccountNames.forEach((accountName) => {
-          params.append(accountNameParamName, accountName);
-        });
-      }
+      replaceRepeatedSearchParam(
+        params,
+        accountNameParamName,
+        shouldPersistAccountNames(nextAccountNames) ? nextAccountNames : [],
+      );
     });
   };
 
@@ -102,12 +103,11 @@ const CurrentTransactionsFilter = function ({
     nextFundNames: readonly string[],
   ): void {
     updateParams((params) => {
-      params.delete(fundNameParamName);
-      if (shouldPersistFundNames(nextFundNames)) {
-        nextFundNames.forEach((fundName) => {
-          params.append(fundNameParamName, fundName);
-        });
-      }
+      replaceRepeatedSearchParam(
+        params,
+        fundNameParamName,
+        shouldPersistFundNames(nextFundNames) ? nextFundNames : [],
+      );
     });
   };
 

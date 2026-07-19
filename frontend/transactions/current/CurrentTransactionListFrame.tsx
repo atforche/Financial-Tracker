@@ -1,17 +1,10 @@
 "use client";
 
-import { type Transaction, TransactionSort } from "@/transactions/types";
-import {
-  getTransactionAccountIds,
-  getTransactionFundIds,
-} from "@/transactions/postingHelpers";
-import { useRouter, useSearchParams } from "next/navigation";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import type { Transaction } from "@/transactions/types";
 import createTransactionListColumns from "@/transactions/createTransactionListColumns";
-import parseEnumValue from "@/framework/data/parseEnumValue";
-import routes from "@/transactions/routes";
-import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import useTransactionList from "@/transactions/useTransactionList";
 
 /**
  * Props for the CurrentTransactionListFrame component.
@@ -42,36 +35,10 @@ const CurrentTransactionListFrame = function ({
   emptyDescription,
   emptyAction,
 }: CurrentTransactionListFrameProps): JSX.Element {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  const updateParams = useSearchParamUpdater([pageParamName]);
-
-  const setSort = function (sort: TransactionSort | null): void {
-    updateParams((params) => {
-      if (sort === null) {
-        params.delete(sortParamName);
-      } else {
-        params.set(sortParamName, sort);
-      }
-    });
-  };
-
-  const currentSort = parseEnumValue(
-    TransactionSort,
-    searchParams.get(sortParamName) ?? "",
+  const { currentSort, openTransactionWorkspace, setSort } = useTransactionList(
+    sortParamName,
+    pageParamName,
   );
-
-  const openTransactionWorkspace = function (transaction: Transaction): void {
-    router.push(
-      routes.workspace({
-        accountingPeriodIds: [transaction.accountingPeriodId],
-        accountIds: getTransactionAccountIds(transaction),
-        fundIds: getTransactionFundIds(transaction),
-        selectedTransactionId: transaction.id,
-      }),
-    );
-  };
 
   const columns = createTransactionListColumns({
     currentSort,

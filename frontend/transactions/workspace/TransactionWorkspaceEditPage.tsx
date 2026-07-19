@@ -10,6 +10,9 @@ import UpdateTransactionForm from "@/transactions/workspace/UpdateTransactionFor
 import { redirect } from "next/navigation";
 import routes from "@/transactions/routes";
 
+/**
+ * Props for the TransactionWorkspaceEditPage component.
+ */
 interface TransactionWorkspaceEditPageProps {
   readonly params: Promise<{
     transactionId: string;

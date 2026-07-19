@@ -10,6 +10,9 @@ import ViewTransactionForm from "@/transactions/workspace/ViewTransactionForm";
 import { redirect } from "next/navigation";
 import routes from "@/transactions/routes";
 
+/**
+ * Props for the TransactionWorkspaceDetailPage component.
+ */
 interface TransactionWorkspaceDetailPageProps {
   readonly params: Promise<{
     transactionId: string;

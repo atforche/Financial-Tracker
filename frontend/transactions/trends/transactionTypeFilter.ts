@@ -1,8 +1,14 @@
 import { TransactionType } from "@/transactions/types";
 import enumValues from "@/framework/data/enumValues";
 
+/**
+ * Set of all valid transaction types, derived from the TransactionType enum.
+ */
 const transactionTypeValues = enumValues(TransactionType);
 
+/**
+ * Set of valid transaction types for quick lookup, used in normalization and validation.
+ */
 const transactionTypeSet = new Set<string>(transactionTypeValues);
 
 /**
