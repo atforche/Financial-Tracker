@@ -1,35 +1,27 @@
-import { Alert, Snackbar } from "@mui/material";
-import { type JSX, useState } from "react";
+import { Alert, type AlertProps, Snackbar } from "@mui/material";
+import type { JSX, ReactNode } from "react";
 
 /**
  * Props for the Toast component.
  */
 interface ToastProps {
-  readonly children: React.ReactNode | null;
-  readonly severity: "error" | "success";
-  readonly autoHideDuration: number | null;
+  readonly children: ReactNode;
+  readonly severity: AlertProps["severity"];
+  readonly open: boolean;
+  readonly onClose: () => void;
+  readonly autoHideDuration?: number | null;
 }
 
 /**
- * Component that displays an toast message to the user.
+ * Component that displays a toast message to the user.
  */
 const Toast = function ({
   children,
   severity,
-  autoHideDuration,
+  open,
+  onClose,
+  autoHideDuration = null,
 }: ToastProps): JSX.Element {
-  const [open, setOpen] = useState(false);
-  const [hasBeenCleared, setHasBeenCleared] = useState(false);
-  const onClose = function (): void {
-    setOpen(false);
-    setHasBeenCleared(true);
-  };
-  if (children !== null && !open && !hasBeenCleared) {
-    setOpen(true);
-  } else if (children === null && (open || hasBeenCleared)) {
-    setOpen(false);
-    setHasBeenCleared(false);
-  }
   return (
     <Snackbar
       open={open}
