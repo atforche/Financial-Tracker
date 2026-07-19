@@ -87,7 +87,7 @@ const OnboardAccountForm = function ({
     >
       <Stack spacing={3}>
         <AccountDetailsFrame
-          color={name !== "" && accountType !== null ? "warning" : "error"}
+          color={name !== "" && accountType !== null ? "success" : "error"}
           name={name}
           setName={setName}
           nameErrorMessage={state.nameErrors ?? null}
@@ -96,7 +96,7 @@ const OnboardAccountForm = function ({
           accountTypeErrorMessage={state.typeErrors ?? null}
         />
         <AccountStartingBalanceFrame
-          color={request === null ? "error" : "warning"}
+          color={request !== null ? "success" : "error"}
           value={onboardedBalance}
           setValue={setOnboardedBalance}
           errorMessage={state.onboardedBalanceErrors ?? null}

@@ -20,14 +20,14 @@ const FundWorkspacePageHeader = function ({
 }: FundWorkspacePageHeaderProps): JSX.Element {
   return (
     <Stack spacing={2.5}>
-      <Button
-        component={Link}
+      <Link
         href={backHref}
-        startIcon={<ArrowBack />}
-        sx={{ alignSelf: "flex-start" }}
+        style={{ alignSelf: "flex-start", textDecoration: "none" }}
       >
-        Back to Workspace
-      </Button>
+        <Button component="span" startIcon={<ArrowBack />}>
+          Back to Workspace
+        </Button>
+      </Link>
       <Typography variant="h4">{title}</Typography>
     </Stack>
   );

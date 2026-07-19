@@ -101,7 +101,7 @@ const OnboardFundForm = function ({
       <Stack ref={formRef} spacing={3}>
         <Frame
           title="Fund Setup"
-          color={fundSetupIsComplete ? "warning" : "error"}
+          color={fundSetupIsComplete ? "success" : "error"}
         >
           <Stack spacing={2.5}>
             <StringEntryField
@@ -140,7 +140,7 @@ const OnboardFundForm = function ({
         </Frame>
 
         <AssignmentGoalSetupSection
-          color={assignmentGoalSetupIsComplete ? "warning" : "error"}
+          color={assignmentGoalSetupIsComplete ? "success" : "error"}
           value={assignmentGoalType}
           setValue={setAssignmentGoalType}
           amount={assignmentGoalAmount}
@@ -150,7 +150,7 @@ const OnboardFundForm = function ({
         />
 
         <SpendingGoalSetupSection
-          color={spendingGoalSetupIsComplete ? "warning" : "error"}
+          color={spendingGoalSetupIsComplete ? "success" : "error"}
           value={spendingGoalType}
           setValue={setSpendingGoalType}
           typeErrorMessage={state.spendingGoalTypeErrors ?? null}
