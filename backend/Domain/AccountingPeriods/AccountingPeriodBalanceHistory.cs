@@ -10,7 +10,8 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
 {
     private List<AccountingPeriodAccountBalanceHistory> _accountBalances = [];
     private List<AccountingPeriodFundBalanceHistory> _fundBalances = [];
-    private List<AccountingPeriodGoalBalanceHistory> _goalBalances = [];
+    private List<AccountingPeriodFundPlanTotals> _fundPlanTotals = [];
+    private List<AccountingPeriodFundPlanSnapshot> _fundPlanSnapshots = [];
 
     /// <summary>
     /// Accounting Period for this Accounting Period Balance History
@@ -46,12 +47,21 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
     }
 
     /// <summary>
-    /// Goal Balances for this Accounting Period Balance History
+    /// Fund Plan totals for this Accounting Period Balance History.
     /// </summary>
-    public IReadOnlyCollection<AccountingPeriodGoalBalanceHistory> GoalBalances
+    public IReadOnlyCollection<AccountingPeriodFundPlanTotals> FundPlanTotals
     {
-        get => _goalBalances;
-        private set => _goalBalances = value.ToList();
+        get => _fundPlanTotals;
+        private set => _fundPlanTotals = value.ToList();
+    }
+
+    /// <summary>
+    /// Fund Plan configuration snapshots for this Accounting Period Balance History.
+    /// </summary>
+    public IReadOnlyCollection<AccountingPeriodFundPlanSnapshot> FundPlanSnapshots
+    {
+        get => _fundPlanSnapshots;
+        private set => _fundPlanSnapshots = value.ToList();
     }
 
     /// <summary>
@@ -61,13 +71,15 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
         AccountingPeriod accountingPeriod,
         IEnumerable<AccountingPeriodAccountBalanceHistory> accountBalances,
         IEnumerable<AccountingPeriodFundBalanceHistory> fundBalances,
-        IEnumerable<AccountingPeriodGoalBalanceHistory> goalBalances)
+        IEnumerable<AccountingPeriodFundPlanTotals> fundPlanTotals,
+        IEnumerable<AccountingPeriodFundPlanSnapshot> fundPlanSnapshots)
         : base(new AccountingPeriodBalanceHistoryId(Guid.NewGuid()))
     {
         AccountingPeriod = accountingPeriod;
         _accountBalances = accountBalances.ToList();
         _fundBalances = fundBalances.ToList();
-        _goalBalances = goalBalances.ToList();
+        _fundPlanTotals = fundPlanTotals.ToList();
+        _fundPlanSnapshots = fundPlanSnapshots.ToList();
         UpdateBalances();
     }
 
@@ -110,14 +122,26 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
         _ = _fundBalances.RemoveAll(fundBalance => fundBalance.Fund.Id == fundId);
 
     /// <summary>
-    /// Adds a Goal Balance to this Accounting Period Balance History.
+    /// Adds Fund Plan totals to this Accounting Period Balance History.
     /// </summary>
-    internal void AddGoalBalance(AccountingPeriodGoalBalanceHistory goalBalance) => _goalBalances.Add(goalBalance);
+    internal void AddFundPlanTotals(AccountingPeriodFundPlanTotals totals) => _fundPlanTotals.Add(totals);
 
     /// <summary>
-    /// Removes the Goal Balance for the provided Fund from this Accounting Period Balance History.
+    /// Adds a Fund Plan configuration snapshot to this Accounting Period Balance History.
     /// </summary>
-    internal void RemoveGoalBalance(FundId fundId) => _ = _goalBalances.RemoveAll(goalBalance => goalBalance.Fund.Id == fundId);
+    internal void AddFundPlanSnapshot(AccountingPeriodFundPlanSnapshot snapshot) => _fundPlanSnapshots.Add(snapshot);
+
+    /// <summary>
+    /// Removes Fund Plan totals for the provided Fund from this Accounting Period Balance History.
+    /// </summary>
+    internal void RemoveFundPlanTotals(FundId fundId) =>
+        _ = _fundPlanTotals.RemoveAll(totals => totals.Fund.Id == fundId);
+
+    /// <summary>
+    /// Removes the Fund Plan configuration snapshot for the provided Fund.
+    /// </summary>
+    internal void RemoveFundPlanSnapshot(FundId fundId) =>
+        _ = _fundPlanSnapshots.RemoveAll(snapshot => snapshot.Fund.Id == fundId);
 
     /// <summary>
     /// Constructs a new default instance of this class

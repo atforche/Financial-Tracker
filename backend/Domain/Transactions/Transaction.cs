@@ -1,7 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
-using Domain.Goals;
+using Domain.FundPlans;
 
 namespace Domain.Transactions;
 
@@ -107,19 +107,19 @@ public abstract class Transaction : Entity<TransactionId>
     }
 
     /// <summary>
-    /// Applies this Transaction to the provided existing Goal Balance.
+    /// Applies this Transaction to the provided Fund Plan totals.
     /// </summary>
-    public GoalBalance ApplyToGoalBalance(
-        GoalBalance existingGoalBalance,
+    public FundPlanTotals ApplyToFundPlanTotals(
+        FundPlanTotals existingTotals,
         DateOnly? asOfDate = null,
         AccountId? accountId = null,
         bool reverse = false,
         bool postingOnly = false)
     {
-        GoalBalance newBalance = existingGoalBalance;
+        FundPlanTotals newTotals = existingTotals;
         if (!postingOnly && (asOfDate == null || Date == asOfDate))
         {
-            newBalance = AddToGoalBalance(existingGoalBalance, reverse);
+            newTotals = AddToFundPlanTotals(existingTotals, reverse);
         }
         foreach (AccountId affectedAccountId in GetAllAffectedAccountIds())
         {
@@ -130,10 +130,10 @@ public abstract class Transaction : Entity<TransactionId>
             DateOnly? postedDate = GetPostedDateForAccount(affectedAccountId);
             if (postedDate != null && (asOfDate == null || postedDate == asOfDate))
             {
-                newBalance = PostToGoalBalance(newBalance, affectedAccountId, reverse);
+                newTotals = PostToFundPlanTotals(newTotals, affectedAccountId, reverse);
             }
         }
-        return newBalance;
+        return newTotals;
     }
 
     /// <summary>
@@ -180,14 +180,14 @@ public abstract class Transaction : Entity<TransactionId>
     protected abstract FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse);
 
     /// <summary>
-    /// Adds this Transaction to the provided existing Goal Balance
+    /// Adds this Transaction to the provided Fund Plan totals.
     /// </summary>
-    protected abstract GoalBalance AddToGoalBalance(GoalBalance existingGoalBalance, bool reverse);
+    protected abstract FundPlanTotals AddToFundPlanTotals(FundPlanTotals existingTotals, bool reverse);
 
     /// <summary>
-    /// Posts this Transaction to the provided Goal Balance
+    /// Posts this Transaction to the provided Fund Plan totals.
     /// </summary>
-    protected abstract GoalBalance PostToGoalBalance(GoalBalance existingGoalBalance, AccountId accountId, bool reverse);
+    protected abstract FundPlanTotals PostToFundPlanTotals(FundPlanTotals existingTotals, AccountId accountId, bool reverse);
 }
 
 /// <summary>

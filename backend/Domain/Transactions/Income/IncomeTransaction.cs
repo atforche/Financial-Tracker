@@ -1,6 +1,6 @@
 using Domain.Accounts;
 using Domain.Funds;
-using Domain.Goals;
+using Domain.FundPlans;
 
 namespace Domain.Transactions.Income;
 
@@ -193,19 +193,19 @@ public class IncomeTransaction : Transaction
     }
 
     /// <inheritdoc/>
-    protected override GoalBalance AddToGoalBalance(GoalBalance existingGoalBalance, bool reverse)
+    protected override FundPlanTotals AddToFundPlanTotals(FundPlanTotals existingTotals, bool reverse)
     {
         decimal amount = _destinations.SelectMany(destination => destination.FundAssignments)
-            .Where(assignment => assignment.FundId == existingGoalBalance.FundId).Sum(assignment => assignment.Amount);
-        return amount == 0 ? existingGoalBalance : existingGoalBalance.AddNewPendingAmountAssigned(reverse ? -amount : amount);
+            .Where(assignment => assignment.FundId == existingTotals.FundId).Sum(assignment => assignment.Amount);
+        return amount == 0 ? existingTotals : existingTotals.AddNewPendingAmountAssigned(reverse ? -amount : amount);
     }
 
     /// <inheritdoc/>
-    protected override GoalBalance PostToGoalBalance(GoalBalance existingGoalBalance, AccountId accountId, bool reverse)
+    protected override FundPlanTotals PostToFundPlanTotals(FundPlanTotals existingTotals, AccountId accountId, bool reverse)
     {
         decimal amount = _destinations.Where(destination => destination.Account.Id == accountId)
             .SelectMany(destination => destination.FundAssignments)
-            .Where(assignment => assignment.FundId == existingGoalBalance.FundId).Sum(assignment => assignment.Amount);
-        return amount == 0 ? existingGoalBalance : existingGoalBalance.PostPendingAmountAssigned(reverse ? -amount : amount);
+            .Where(assignment => assignment.FundId == existingTotals.FundId).Sum(assignment => assignment.Amount);
+        return amount == 0 ? existingTotals : existingTotals.PostPendingAmountAssigned(reverse ? -amount : amount);
     }
 }

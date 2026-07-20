@@ -1,6 +1,6 @@
 using Domain.Accounts;
 using Domain.Funds;
-using Domain.Goals;
+using Domain.FundPlans;
 
 namespace Domain.Transactions.Funds;
 
@@ -98,25 +98,25 @@ public class FundTransaction : Transaction
     protected override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse) => existingFundBalance;
 
     /// <inheritdoc/>
-    protected override GoalBalance AddToGoalBalance(GoalBalance existingGoalBalance, bool reverse)
+    protected override FundPlanTotals AddToFundPlanTotals(FundPlanTotals existingTotals, bool reverse)
     {
-        GoalBalance newBalance = existingGoalBalance;
-        if (existingGoalBalance.FundId == Source.Fund.Id)
+        FundPlanTotals newTotals = existingTotals;
+        if (existingTotals.FundId == Source.Fund.Id)
         {
             decimal amount = reverse ? Amount : -Amount;
-            newBalance = newBalance.AddNewPendingAmountAssigned(amount);
-            newBalance = newBalance.PostPendingAmountAssigned(amount);
+            newTotals = newTotals.AddNewPendingAmountAssigned(amount);
+            newTotals = newTotals.PostPendingAmountAssigned(amount);
         }
-        FundTransactionDestination? destination = _destinations.FirstOrDefault(destination => destination.Fund.Id == existingGoalBalance.FundId);
+        FundTransactionDestination? destination = _destinations.FirstOrDefault(destination => destination.Fund.Id == existingTotals.FundId);
         if (destination != null)
         {
             decimal amount = reverse ? -destination.Amount : destination.Amount;
-            newBalance = newBalance.AddNewPendingAmountAssigned(amount);
-            newBalance = newBalance.PostPendingAmountAssigned(amount);
+            newTotals = newTotals.AddNewPendingAmountAssigned(amount);
+            newTotals = newTotals.PostPendingAmountAssigned(amount);
         }
-        return newBalance;
+        return newTotals;
     }
 
     /// <inheritdoc/>
-    protected override GoalBalance PostToGoalBalance(GoalBalance existingGoalBalance, AccountId accountId, bool reverse) => existingGoalBalance;
+    protected override FundPlanTotals PostToFundPlanTotals(FundPlanTotals existingTotals, AccountId accountId, bool reverse) => existingTotals;
 }

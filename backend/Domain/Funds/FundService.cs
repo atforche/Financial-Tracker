@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
-using Domain.Goals;
+using Domain.FundPlans;
 using Domain.Transactions;
 using Domain.Validation;
 
@@ -12,12 +12,10 @@ namespace Domain.Funds;
 public class FundService(
     IFundRepository fundRepository,
     IAccountingPeriodRepository accountingPeriodRepository,
-    IAssignmentGoalRepository assignmentGoalRepository,
-    ISpendingGoalRepository spendingGoalRepository,
+    IFundPlanRepository fundPlanRepository,
     ITransactionRepository transactionRepository,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
-    AssignmentGoalService assignmentGoalService,
-    SpendingGoalService spendingGoalService)
+    FundPlanService fundPlanService)
 {
     /// <summary>
     /// Attempts to create a new Fund
@@ -34,35 +32,33 @@ public class FundService(
             return false;
         }
         fund = new Fund(request.Name, request.Description, request.OpeningAccountingPeriod.Id);
-        fundRepository.Add(fund);
-        accountingPeriodBalanceService.AddFund(fund);
-
-        var assignmentGoals = new List<AssignmentGoal>();
-        var spendingGoals = new List<SpendingGoal>();
-        if (!TryCreateGoalsForAccountingPeriods(
-                fund,
-                GetAccountingPeriodsFrom(request.OpeningAccountingPeriod),
-                request.AssignmentGoalType,
-                request.AssignmentGoalAmount,
-                request.SpendingGoalType,
-                assignmentGoals,
-                spendingGoals,
-                out exceptions))
+        if (!fundPlanService.TryCreate(
+            new CreateFundPlanRequest
+            {
+                Fund = fund,
+                RegularContribution = request.RegularContribution,
+                MinimumFundedBalance = request.MinimumFundedBalance,
+                MaximumFundedBalance = request.MaximumFundedBalance,
+                TargetEndingBalance = request.TargetEndingBalance,
+            },
+            out FundPlan? fundPlan,
+            out exceptions))
         {
-            accountingPeriodBalanceService.DeleteFund(fund);
-            fundRepository.Delete(fund);
             fund = null;
             return false;
         }
 
-        foreach (AssignmentGoal assignmentGoal in assignmentGoals)
+        fundRepository.Add(fund);
+        if (!fundPlanRepository.TryAdd(fundPlan))
         {
-            assignmentGoalRepository.Add(assignmentGoal);
+            fundRepository.Delete(fund);
+            fund = null;
+            exceptions = [new ValidationError(
+                new ValidationErrorPath(nameof(CreateFundRequest.Name)),
+                "A Fund Plan already exists for this Fund.")];
+            return false;
         }
-        foreach (SpendingGoal spendingGoal in spendingGoals)
-        {
-            spendingGoalRepository.Add(spendingGoal);
-        }
+        accountingPeriodBalanceService.AddFund(fund, fundPlan);
         return true;
     }
 
@@ -81,39 +77,33 @@ public class FundService(
             return false;
         }
         fund = new Fund(request.Name, request.Description, request.OnboardedBalance);
-        if (!assignmentGoalService.TryCreate(
-            new CreateAssignmentGoalRequest
+        if (!fundPlanService.TryCreate(
+            new CreateFundPlanRequest
             {
                 Fund = fund,
-                AccountingPeriod = null,
-                AssignmentGoalType = request.AssignmentGoalType,
-                GoalAmount = request.AssignmentGoalAmount,
+                RegularContribution = request.RegularContribution,
+                MinimumFundedBalance = request.MinimumFundedBalance,
+                MaximumFundedBalance = request.MaximumFundedBalance,
+                TargetEndingBalance = request.TargetEndingBalance,
             },
-            out AssignmentGoal? assignmentGoal,
-            out IEnumerable<ValidationError> assignmentGoalExceptions))
+            out FundPlan? fundPlan,
+            out IEnumerable<ValidationError> fundPlanExceptions))
         {
-            exceptions = assignmentGoalExceptions;
-            fund = null;
-            return false;
-        }
-        if (!spendingGoalService.TryCreate(
-            new CreateSpendingGoalRequest
-            {
-                Fund = fund,
-                AccountingPeriod = null,
-                SpendingGoalType = request.SpendingGoalType,
-            },
-            out SpendingGoal? spendingGoal,
-            out IEnumerable<ValidationError> spendingGoalExceptions))
-        {
-            exceptions = spendingGoalExceptions;
+            exceptions = fundPlanExceptions;
             fund = null;
             return false;
         }
 
         fundRepository.Add(fund);
-        assignmentGoalRepository.Add(assignmentGoal);
-        spendingGoalRepository.Add(spendingGoal);
+        if (!fundPlanRepository.TryAdd(fundPlan))
+        {
+            fundRepository.Delete(fund);
+            fund = null;
+            exceptions = [new ValidationError(
+                new ValidationErrorPath(nameof(OnboardFundRequest.Name)),
+                "A Fund Plan already exists for this Fund.")];
+            return false;
+        }
         if (request.Name != Fund.UnassignedFundName)
         {
             Fund? unassignedFund = fundRepository.GetUnassignedFund() ?? throw new InvalidOperationException();
@@ -151,6 +141,9 @@ public class FundService(
             unassignedFund.OnboardedBalance += fund.OnboardedBalance.Value;
         }
         accountingPeriodBalanceService.DeleteFund(fund);
+        FundPlan fundPlan = fundPlanRepository.GetByFund(fund.Id)
+            ?? throw new InvalidOperationException("Fund is missing its Fund Plan. Fund ID: " + fund.Id);
+        fundPlanRepository.Delete(fundPlan);
         fundRepository.Delete(fund);
         return true;
     }
@@ -170,9 +163,10 @@ public class FundService(
             Name = Fund.UnassignedFundName,
             Description = Fund.UnassignedFundDescription,
             OpeningAccountingPeriod = openingAccountingPeriod,
-            AssignmentGoalType = AssignmentGoalType.MonthlyTarget,
-            AssignmentGoalAmount = 1,
-            SpendingGoalType = SpendingGoalType.Standard,
+            RegularContribution = null,
+            MinimumFundedBalance = null,
+            MaximumFundedBalance = null,
+            TargetEndingBalance = null,
         };
         if (!ValidateCreate(request, out exceptions, allowUnassignedFund: true))
         {
@@ -199,9 +193,10 @@ public class FundService(
             Name = Fund.UnassignedFundName,
             Description = Fund.UnassignedFundDescription,
             OnboardedBalance = onboardedBalance,
-            AssignmentGoalType = AssignmentGoalType.MonthlyTarget,
-            AssignmentGoalAmount = 1,
-            SpendingGoalType = SpendingGoalType.Standard,
+            RegularContribution = null,
+            MinimumFundedBalance = null,
+            MaximumFundedBalance = null,
+            TargetEndingBalance = null,
         };
         if (!ValidateOnboard(request, out exceptions, allowUnassignedFund: true))
         {
@@ -256,18 +251,6 @@ public class FundService(
                 new ValidationErrorPath(nameof(CreateFundRequest.OpeningAccountingPeriod)),
                 "The provided accounting period is closed."));
         }
-        if (!ValidateAssignmentGoalType(request.AssignmentGoalType, new ValidationErrorPath(nameof(CreateFundRequest.AssignmentGoalType)), out IEnumerable<ValidationError> assignmentGoalTypeExceptions))
-        {
-            exceptions = exceptions.Concat(assignmentGoalTypeExceptions);
-        }
-        if (!ValidateAssignmentGoalAmount(request.AssignmentGoalAmount, new ValidationErrorPath(nameof(CreateFundRequest.AssignmentGoalAmount)), out IEnumerable<ValidationError> assignmentGoalAmountExceptions))
-        {
-            exceptions = exceptions.Concat(assignmentGoalAmountExceptions);
-        }
-        if (!ValidateSpendingGoalType(request.SpendingGoalType, new ValidationErrorPath(nameof(CreateFundRequest.SpendingGoalType)), out IEnumerable<ValidationError> spendingGoalTypeExceptions))
-        {
-            exceptions = exceptions.Concat(spendingGoalTypeExceptions);
-        }
         return !exceptions.Any();
     }
 
@@ -294,18 +277,6 @@ public class FundService(
         if (accountingPeriodRepository.GetAll().Count > 0)
         {
             exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "Funds can only be onboarded before any Accounting Periods have been created."));
-        }
-        if (!ValidateAssignmentGoalType(request.AssignmentGoalType, new ValidationErrorPath(nameof(OnboardFundRequest.AssignmentGoalType)), out IEnumerable<ValidationError> assignmentGoalTypeExceptions))
-        {
-            exceptions = exceptions.Concat(assignmentGoalTypeExceptions);
-        }
-        if (!ValidateAssignmentGoalAmount(request.AssignmentGoalAmount, new ValidationErrorPath(nameof(OnboardFundRequest.AssignmentGoalAmount)), out IEnumerable<ValidationError> assignmentGoalAmountExceptions))
-        {
-            exceptions = exceptions.Concat(assignmentGoalAmountExceptions);
-        }
-        if (!ValidateSpendingGoalType(request.SpendingGoalType, new ValidationErrorPath(nameof(OnboardFundRequest.SpendingGoalType)), out IEnumerable<ValidationError> spendingGoalTypeExceptions))
-        {
-            exceptions = exceptions.Concat(spendingGoalTypeExceptions);
         }
         if (request.Name != Fund.UnassignedFundName)
         {
@@ -362,110 +333,5 @@ public class FundService(
             exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "Cannot delete a Fund that has Transactions."));
         }
         return !exceptions.Any();
-    }
-
-    /// <summary>
-    /// Validates the provided assignment goal type.
-    /// </summary>
-    private static bool ValidateAssignmentGoalType(AssignmentGoalType assignmentGoalType, ValidationErrorPath assignmentGoalTypePath, out IEnumerable<ValidationError> exceptions)
-    {
-        exceptions = [];
-
-        if (!Enum.IsDefined(assignmentGoalType))
-        {
-            exceptions = exceptions.Append(new ValidationError(assignmentGoalTypePath, "The provided assignment goal type is invalid."));
-        }
-        return !exceptions.Any();
-    }
-
-    /// <summary>
-    /// Validates the provided assignment goal amount.
-    /// </summary>
-    private static bool ValidateAssignmentGoalAmount(decimal assignmentGoalAmount, ValidationErrorPath assignmentGoalAmountPath, out IEnumerable<ValidationError> exceptions)
-    {
-        exceptions = [];
-
-        if (assignmentGoalAmount < 0)
-        {
-            exceptions = exceptions.Append(new ValidationError(assignmentGoalAmountPath, "Goal amount must be greater than or equal to zero."));
-        }
-        return !exceptions.Any();
-    }
-
-    /// <summary>
-    /// Validates the provided spending goal type.
-    /// </summary>
-    private static bool ValidateSpendingGoalType(SpendingGoalType spendingGoalType, ValidationErrorPath spendingGoalTypePath, out IEnumerable<ValidationError> exceptions)
-    {
-        exceptions = [];
-
-        if (!Enum.IsDefined(spendingGoalType))
-        {
-            exceptions = exceptions.Append(new ValidationError(spendingGoalTypePath, "The provided spending goal type is invalid."));
-        }
-        return !exceptions.Any();
-    }
-
-    /// <summary>
-    /// Gets all accounting periods that fall on or after the provided accounting period.
-    /// </summary>
-    private IEnumerable<AccountingPeriod> GetAccountingPeriodsFrom(AccountingPeriod openingAccountingPeriod)
-    {
-        AccountingPeriod? accountingPeriod = openingAccountingPeriod;
-        while (accountingPeriod != null)
-        {
-            yield return accountingPeriod;
-            accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
-        }
-    }
-
-    /// <summary>
-    /// Attempts to create assignment and spending goals for the provided accounting periods.
-    /// </summary>
-    private bool TryCreateGoalsForAccountingPeriods(
-        Fund fund,
-        IEnumerable<AccountingPeriod> accountingPeriods,
-        AssignmentGoalType assignmentGoalType,
-        decimal assignmentGoalAmount,
-        SpendingGoalType spendingGoalType,
-        List<AssignmentGoal> assignmentGoals,
-        List<SpendingGoal> spendingGoals,
-        out IEnumerable<ValidationError> exceptions)
-    {
-        exceptions = [];
-
-        foreach (AccountingPeriod accountingPeriod in accountingPeriods)
-        {
-            if (!assignmentGoalService.TryCreate(
-                new CreateAssignmentGoalRequest
-                {
-                    Fund = fund,
-                    AccountingPeriod = accountingPeriod,
-                    AssignmentGoalType = assignmentGoalType,
-                    GoalAmount = assignmentGoalAmount,
-                },
-                out AssignmentGoal? assignmentGoal,
-                out IEnumerable<ValidationError> assignmentGoalExceptions))
-            {
-                exceptions = exceptions.Concat(assignmentGoalExceptions);
-                return false;
-            }
-            if (!spendingGoalService.TryCreate(
-                new CreateSpendingGoalRequest
-                {
-                    Fund = fund,
-                    AccountingPeriod = accountingPeriod,
-                    SpendingGoalType = spendingGoalType,
-                },
-                out SpendingGoal? spendingGoal,
-                out IEnumerable<ValidationError> spendingGoalExceptions))
-            {
-                exceptions = exceptions.Concat(spendingGoalExceptions);
-                return false;
-            }
-            assignmentGoals.Add(assignmentGoal);
-            spendingGoals.Add(spendingGoal);
-        }
-        return true;
     }
 }

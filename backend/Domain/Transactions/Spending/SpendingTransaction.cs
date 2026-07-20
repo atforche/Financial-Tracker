@@ -1,6 +1,6 @@
 using Domain.Accounts;
 using Domain.Funds;
-using Domain.Goals;
+using Domain.FundPlans;
 
 namespace Domain.Transactions.Spending;
 
@@ -203,20 +203,20 @@ public class SpendingTransaction : Transaction
     }
 
     /// <inheritdoc/>
-    protected override GoalBalance AddToGoalBalance(GoalBalance existingGoalBalance, bool reverse)
+    protected override FundPlanTotals AddToFundPlanTotals(FundPlanTotals existingTotals, bool reverse)
     {
         decimal amount = _destinations.SelectMany(destination => destination.FundAssignments)
-            .Where(assignment => assignment.FundId == existingGoalBalance.FundId).Sum(assignment => assignment.Amount);
-        return amount == 0 ? existingGoalBalance : existingGoalBalance.AddNewPendingAmountSpent(reverse ? -amount : amount);
+            .Where(assignment => assignment.FundId == existingTotals.FundId).Sum(assignment => assignment.Amount);
+        return amount == 0 ? existingTotals : existingTotals.AddNewPendingAmountSpent(reverse ? -amount : amount);
     }
 
     /// <inheritdoc/>
-    protected override GoalBalance PostToGoalBalance(GoalBalance existingGoalBalance, AccountId accountId, bool reverse)
+    protected override FundPlanTotals PostToFundPlanTotals(FundPlanTotals existingTotals, AccountId accountId, bool reverse)
     {
         IEnumerable<FundAmount> assignments = accountId == Source.Account.Id
             ? _destinations.Where(destination => destination.Account == null).SelectMany(destination => destination.FundAssignments)
             : _destinations.Where(destination => destination.Account?.Id == accountId).SelectMany(destination => destination.FundAssignments);
-        decimal amount = assignments.Where(assignment => assignment.FundId == existingGoalBalance.FundId).Sum(assignment => assignment.Amount);
-        return amount == 0 ? existingGoalBalance : existingGoalBalance.PostPendingAmountSpent(reverse ? -amount : amount);
+        decimal amount = assignments.Where(assignment => assignment.FundId == existingTotals.FundId).Sum(assignment => assignment.Amount);
+        return amount == 0 ? existingTotals : existingTotals.PostPendingAmountSpent(reverse ? -amount : amount);
     }
 }

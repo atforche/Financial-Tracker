@@ -1,5 +1,4 @@
 using Domain.AccountingPeriods;
-using Domain.Goals;
 
 namespace Domain.Funds;
 
@@ -24,17 +23,22 @@ public record CreateFundRequest
     public required AccountingPeriod OpeningAccountingPeriod { get; init; }
 
     /// <summary>
-    /// Assignment goal behavior for the Fund.
+    /// Regular contribution for the Fund Plan.
     /// </summary>
-    public required AssignmentGoalType AssignmentGoalType { get; init; }
+    public required decimal? RegularContribution { get; init; }
 
     /// <summary>
-    /// Assignment goal amount for the Fund.
+    /// Minimum funded balance for the Fund Plan.
     /// </summary>
-    public required decimal AssignmentGoalAmount { get; init; }
+    public required decimal? MinimumFundedBalance { get; init; }
 
     /// <summary>
-    /// Spending goal behavior for the Fund.
+    /// Maximum funded balance for the Fund Plan.
     /// </summary>
-    public required SpendingGoalType SpendingGoalType { get; init; }
+    public required decimal? MaximumFundedBalance { get; init; }
+
+    /// <summary>
+    /// Target ending balance for the Fund Plan.
+    /// </summary>
+    public required decimal? TargetEndingBalance { get; init; }
 }
