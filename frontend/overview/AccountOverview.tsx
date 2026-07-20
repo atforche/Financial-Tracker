@@ -1,10 +1,10 @@
 "use client";
 
-import { Divider, Stack, Typography } from "@mui/material";
 import { type JSX, useState } from "react";
+import { formatAccountType, isTrackedAccountType } from "@/accounts/helpers";
 import type { AccountOverviewSummary } from "@/overview/types";
-import ExpandableSummaryCard from "@/framework/view/ExpandableSummaryCard";
-import { formatAccountType } from "@/accounts/helpers";
+import AccountSummaryCard from "@/accounts/AccountSummaryCard";
+import type { BreakdownDetailRow } from "@/framework/view/BreakdownSection";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
@@ -21,34 +21,46 @@ const AccountOverview = function ({
   summary,
 }: AccountOverviewProps): JSX.Element {
   const [expanded, setExpanded] = useState(false);
+  const [trackedExpanded, setTrackedExpanded] = useState(false);
+  const [untrackedExpanded, setUntrackedExpanded] = useState(false);
+  const trackedBalances = summary.balanceByAccountType.filter(
+    ({ accountType }) => isTrackedAccountType(accountType),
+  );
+  const untrackedBalances = summary.balanceByAccountType.filter(
+    ({ accountType }) => !isTrackedAccountType(accountType),
+  );
+  const toDetailRows = (
+    balances: typeof summary.balanceByAccountType,
+  ): BreakdownDetailRow[] =>
+    balances.map(({ accountType, totalBalance }) => ({
+      key: accountType,
+      label: formatAccountType(accountType),
+      value: formatCurrency(totalBalance),
+    }));
+  const total = (balances: typeof summary.balanceByAccountType): number =>
+    balances.reduce((sum, { totalBalance }) => sum + totalBalance, 0);
 
   return (
-    <ExpandableSummaryCard
+    <AccountSummaryCard
       title="Current Total Account Balances"
       value={formatCurrency(summary.totalBalance)}
+      trackedValue={formatCurrency(total(trackedBalances))}
+      untrackedValue={formatCurrency(total(untrackedBalances))}
+      trackedDetailRows={toDetailRows(trackedBalances)}
+      untrackedDetailRows={toDetailRows(untrackedBalances)}
       expanded={expanded}
       onToggle={() => {
         setExpanded((current) => !current);
       }}
-    >
-      <Stack spacing={1.25} divider={<Divider flexItem />}>
-        {summary.balanceByAccountType.map((item) => (
-          <Stack
-            key={item.accountType}
-            direction="row"
-            justifyContent="space-between"
-            gap={2}
-          >
-            <Typography variant="body2">
-              {formatAccountType(item.accountType)}
-            </Typography>
-            <Typography variant="body2" fontWeight={600}>
-              {formatCurrency(item.totalBalance)}
-            </Typography>
-          </Stack>
-        ))}
-      </Stack>
-    </ExpandableSummaryCard>
+      trackedExpanded={trackedExpanded}
+      onTrackedToggle={() => {
+        setTrackedExpanded((current) => !current);
+      }}
+      untrackedExpanded={untrackedExpanded}
+      onUntrackedToggle={() => {
+        setUntrackedExpanded((current) => !current);
+      }}
+    />
   );
 };
 

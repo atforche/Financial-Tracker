@@ -49,7 +49,6 @@ interface CreateTrendsBalanceEventColumnsOptions<
   readonly dateSort: SortPair<TSort>;
   readonly typeSort?: SortPair<TSort>;
   readonly amountSort: SortPair<TSort>;
-  readonly getTypeLabel?: (event: T) => string;
   readonly onOpen: (event: T) => void;
   readonly amountMinWidth?: number;
 }
@@ -66,7 +65,6 @@ const createTrendsBalanceEventColumns = function <
   dateSort,
   typeSort,
   amountSort,
-  getTypeLabel,
   onOpen,
   amountMinWidth = 120,
 }: CreateTrendsBalanceEventColumnsOptions<T, TSort>): ColumnDefinition<T>[] {
@@ -84,7 +82,7 @@ const createTrendsBalanceEventColumns = function <
     },
   ];
 
-  if (getTypeLabel && typeSort) {
+  if (typeSort) {
     columns.push({
       name: "type",
       headerContent: "Type",
@@ -99,7 +97,7 @@ const createTrendsBalanceEventColumns = function <
             fontWeight: 600,
           }}
         >
-          {getTypeLabel(event)}
+          {event.type === BalanceEventType.Debit ? "Debit" : "Credit"}
         </Box>
       ),
       ...getSortProps(typeSort.ascending, typeSort.descending),

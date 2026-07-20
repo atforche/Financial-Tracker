@@ -10,7 +10,6 @@ import Link from "next/link";
 import ListFrame from "@/framework/listframe/ListFrame";
 import { buildUrl } from "@/framework/routes/helpers";
 import createBalanceEventColumns from "@/balance-events/createBalanceEventColumns";
-import { formatBalanceEventType } from "@/balance-events/helpers";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
 
@@ -38,8 +37,6 @@ const FundBalanceEventsFrame = function ({
 
   const columns: readonly ColumnDefinition<FundBalanceEvent>[] =
     createBalanceEventColumns<FundBalanceEvent>({
-      getTypeLabel: (event) =>
-        formatBalanceEventType(event.type, event.isPosted),
       getPreviousBalance: (event) => event.previousBalance.postedBalance,
       getNewBalance: (event) => event.newBalance.postedBalance,
     });

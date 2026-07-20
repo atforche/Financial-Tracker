@@ -25,23 +25,30 @@ public sealed class AccountQueryService(DatabaseContext databaseContext)
             _ => query.OrderBy(account => account.Name).ThenBy(account => account.Id),
         };
         int totalCount = await query.CountAsync(cancellationToken);
-        List<AccountModel> items = await query.Skip(request.Offset ?? 0).Take(request.Limit ?? int.MaxValue)
-            .Select(account => new AccountModel
-            {
-                Id = account.Id.Value,
-                Name = account.Name,
-                Type = (AccountTypeModel)account.Type,
-            }).ToListAsync(cancellationToken);
+        var accounts = await query.Skip(request.Offset ?? 0).Take(request.Limit ?? int.MaxValue)
+            .Select(account => new { Id = account.Id.Value, account.Name, account.Type })
+            .ToListAsync(cancellationToken);
+        var items = accounts.Select(account => new AccountModel
+        {
+            Id = account.Id,
+            Name = account.Name,
+            Type = ToModel(account.Type),
+        }).ToList();
         return new CollectionModel<AccountModel> { Items = items, TotalCount = totalCount };
     }
 
     /// <summary>
     /// Retrieves an Account by ID.
     /// </summary>
-    public Task<AccountModel?> GetByIdAsync(Guid accountId, CancellationToken cancellationToken = default) =>
-        databaseContext.Accounts.AsNoTracking().Where(account => account.Id == new AccountId(accountId))
-            .Select(account => new AccountModel { Id = account.Id.Value, Name = account.Name, Type = (AccountTypeModel)account.Type })
+    public async Task<AccountModel?> GetByIdAsync(Guid accountId, CancellationToken cancellationToken = default)
+    {
+        var account = await databaseContext.Accounts.AsNoTracking().Where(account => account.Id == new AccountId(accountId))
+            .Select(account => new { Id = account.Id.Value, account.Name, account.Type })
             .SingleOrDefaultAsync(cancellationToken);
+        return account == null
+            ? null
+            : new AccountModel { Id = account.Id, Name = account.Name, Type = ToModel(account.Type) };
+    }
 
     /// <summary>
     /// Retrieves Accounts with their current balances.
@@ -49,11 +56,11 @@ public sealed class AccountQueryService(DatabaseContext databaseContext)
     public async Task<CollectionModel<AccountWithBalanceModel>> GetWithBalancesAsync(AccountWithBalanceQueryParameterModel request, CancellationToken cancellationToken = default)
     {
         IQueryable<Account> accounts = ApplyFilter(databaseContext.Accounts.AsNoTracking(), request.Filter);
-        IQueryable<AccountWithBalanceModel> query = accounts.Select(account => new AccountWithBalanceModel
+        var query = accounts.Select(account => new
         {
             Id = account.Id.Value,
-            Name = account.Name,
-            Type = (AccountTypeModel)account.Type,
+            account.Name,
+            account.Type,
             CurrentBalance = databaseContext.AccountBalanceHistories.Where(history => history.Account.Id == account.Id)
                 .OrderByDescending(history => history.Date).ThenByDescending(history => history.Sequence)
                 .Select(history => new AccountBalanceModel { PostedBalance = history.PostedBalance, PendingDebitAmount = history.PendingDebitAmount, PendingCreditAmount = history.PendingCreditAmount })
@@ -70,9 +77,30 @@ public sealed class AccountQueryService(DatabaseContext databaseContext)
             _ => query.OrderBy(account => account.Name),
         };
         int totalCount = await query.CountAsync(cancellationToken);
-        List<AccountWithBalanceModel> items = await query.Skip(request.Offset ?? 0).Take(request.Limit ?? int.MaxValue).ToListAsync(cancellationToken);
+        var accountBalances = await query.Skip(request.Offset ?? 0).Take(request.Limit ?? int.MaxValue).ToListAsync(cancellationToken);
+        var items = accountBalances.Select(account => new AccountWithBalanceModel
+        {
+            Id = account.Id,
+            Name = account.Name,
+            Type = ToModel(account.Type),
+            CurrentBalance = account.CurrentBalance,
+        }).ToList();
         return new CollectionModel<AccountWithBalanceModel> { Items = items, TotalCount = totalCount };
     }
+
+    /// <summary>
+    /// Converts a domain account type after the database query has been materialized.
+    /// </summary>
+    private static AccountTypeModel ToModel(AccountType accountType) => accountType switch
+    {
+        AccountType.Standard => AccountTypeModel.Standard,
+        AccountType.CreditCard => AccountTypeModel.CreditCard,
+        AccountType.Investment => AccountTypeModel.Investment,
+        AccountType.Debt => AccountTypeModel.Debt,
+        AccountType.Retirement => AccountTypeModel.Retirement,
+        AccountType.Escrow => AccountTypeModel.Escrow,
+        _ => throw new ArgumentOutOfRangeException(nameof(accountType), accountType, "Unrecognized account type."),
+    };
 
     /// <summary>
     /// Applies the filter to the provided query

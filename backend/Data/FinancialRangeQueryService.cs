@@ -220,10 +220,17 @@ public sealed class FinancialRangeQueryService(DatabaseContext databaseContext)
     /// </summary>
     private async Task<(IncomeAmountModel, decimal)> GetTotalsAsync(DateOnly start, DateOnly end, CancellationToken cancellationToken)
     {
-        IQueryable<IncomeTransaction> incomeQuery = databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>().Where(transaction => transaction.Date >= start && transaction.Date <= end);
-        decimal total = await incomeQuery.SumAsync(transaction => (decimal?)transaction.Amount, cancellationToken) ?? 0;
-        decimal tracked = await incomeQuery.SumAsync(transaction => (decimal?)transaction.TrackedAmount, cancellationToken) ?? 0;
-        decimal spending = await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>().Where(transaction => transaction.Date >= start && transaction.Date <= end)
+        List<IncomeTransaction> incomeTransactions = await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
+            .Where(transaction => transaction.Date >= start && transaction.Date <= end)
+            .ToListAsync(cancellationToken);
+        var incomeDestinations = incomeTransactions.SelectMany(transaction => transaction.Destinations
+            .Where(destination => transaction.Source.Account == null || destination.PostedDate != null))
+            .ToList();
+        decimal total = incomeDestinations.Sum(destination => destination.Amount);
+        decimal tracked = incomeDestinations.Where(destination => destination.Account.Type.IsTracked()).Sum(destination => destination.Amount);
+        decimal spending = await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
+            .Where(transaction => transaction.Date >= start && transaction.Date <= end)
+            .Where(transaction => transaction.Source.PostedDate != null)
             .SumAsync(transaction => (decimal?)transaction.Amount, cancellationToken) ?? 0;
         return (new IncomeAmountModel { Total = total, Tracked = tracked, Untracked = total - tracked }, spending);
     }
@@ -234,10 +241,18 @@ public sealed class FinancialRangeQueryService(DatabaseContext databaseContext)
     private async Task<(IncomeAmountModel, decimal)> GetTotalsAsync(IReadOnlyCollection<Guid> periodIds, CancellationToken cancellationToken)
     {
         var accountingPeriodIds = periodIds.Select(id => new AccountingPeriodId(id)).ToList();
-        IQueryable<IncomeTransaction> incomeQuery = databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>().Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId));
-        decimal total = await incomeQuery.SumAsync(transaction => (decimal?)transaction.Amount, cancellationToken) ?? 0;
-        decimal tracked = await incomeQuery.SumAsync(transaction => (decimal?)transaction.TrackedAmount, cancellationToken) ?? 0;
-        decimal spending = await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>().Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId)).SumAsync(transaction => (decimal?)transaction.Amount, cancellationToken) ?? 0;
+        List<IncomeTransaction> incomeTransactions = await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
+            .Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId))
+            .ToListAsync(cancellationToken);
+        var incomeDestinations = incomeTransactions.SelectMany(transaction => transaction.Destinations
+            .Where(destination => transaction.Source.Account == null || destination.PostedDate != null))
+            .ToList();
+        decimal total = incomeDestinations.Sum(destination => destination.Amount);
+        decimal tracked = incomeDestinations.Where(destination => destination.Account.Type.IsTracked()).Sum(destination => destination.Amount);
+        decimal spending = await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
+            .Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId))
+            .Where(transaction => transaction.Source.PostedDate != null)
+            .SumAsync(transaction => (decimal?)transaction.Amount, cancellationToken) ?? 0;
         return (new IncomeAmountModel { Total = total, Tracked = tracked, Untracked = total - tracked }, spending);
     }
 

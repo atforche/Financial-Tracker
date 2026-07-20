@@ -4,6 +4,7 @@ import type {
 } from "@/overview/types";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { FundWithBalance } from "@/funds/types";
+import { isDebtAccountType } from "@/accounts/helpers";
 import { isUnassignedFund } from "@/funds/helpers";
 
 /**
@@ -12,20 +13,26 @@ import { isUnassignedFund } from "@/funds/helpers";
 const summarizeAccounts = function (
   accounts: readonly AccountWithBalance[],
 ): AccountOverviewSummary {
+  const balances = accounts.map((account) => ({
+    accountType: account.type,
+    totalBalance:
+      (isDebtAccountType(account.type) ? -1 : 1) *
+      account.currentBalance.postedBalance,
+  }));
   const balanceByAccountType = Array.from(
-    Map.groupBy(accounts, (account) => account.type),
-    ([accountType, groupedAccounts]) => ({
+    Map.groupBy(balances, (balance) => balance.accountType),
+    ([accountType, groupedBalances]) => ({
       accountType,
-      totalBalance: groupedAccounts.reduce(
-        (total, account) => total + account.currentBalance.postedBalance,
+      totalBalance: groupedBalances.reduce(
+        (total, balance) => total + balance.totalBalance,
         0,
       ),
     }),
   );
 
   return {
-    totalBalance: accounts.reduce(
-      (total, account) => total + account.currentBalance.postedBalance,
+    totalBalance: balances.reduce(
+      (total, balance) => total + balance.totalBalance,
       0,
     ),
     balanceByAccountType,

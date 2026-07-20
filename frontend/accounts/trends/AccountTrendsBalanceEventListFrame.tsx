@@ -17,7 +17,6 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import createTrendsBalanceEventColumns from "@/balance-events/createTrendsBalanceEventColumns";
-import { formatBalanceEventType } from "@/balance-events/helpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import routes from "@/transactions/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -118,8 +117,6 @@ const AccountTrendsBalanceEventListFrame = function ({
       ascending: AccountBalanceEventSort.Amount,
       descending: AccountBalanceEventSort.AmountDescending,
     },
-    getTypeLabel: (event: AccountBalanceEvent) =>
-      formatBalanceEventType(event.type, event.isPosted),
     onOpen: openTransactionWorkspace,
   });
 

@@ -1,7 +1,5 @@
 "use client";
 
-import { type ComponentProps, type JSX, useState } from "react";
-import { Divider, Stack } from "@mui/material";
 import type {
   FundBalanceSummaryByDate,
   FundBalanceSummaryByPeriod,
@@ -10,9 +8,9 @@ import {
   type FundTrendsDataMode,
   getFundTrendsSnapshot,
 } from "@/funds/trends/helpers";
-import BreakdownSection from "@/framework/view/BreakdownSection";
+import { type JSX, type ReactNode, useState } from "react";
 import ChangeValue from "@/framework/view/ChangeValue";
-import ExpandableSummaryCard from "@/framework/view/ExpandableSummaryCard";
+import FundSummaryCard from "@/funds/FundSummaryCard";
 import SummaryCardGrid from "@/framework/view/SummaryCardGrid";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
@@ -26,22 +24,14 @@ interface FundTrendsSummaryCardsProps {
 }
 
 /**
- * Defines the breakdown of a summary card, including its label and value.
- */
-type BreakdownDefinition = Pick<
-  ComponentProps<typeof BreakdownSection>,
-  "label" | "value"
->;
-
-/**
  * Defines the structure of a summary card, including its title, value, and breakdowns.
  */
-type CardDefinition = Pick<
-  ComponentProps<typeof ExpandableSummaryCard>,
-  "title" | "value"
-> & {
-  readonly breakdowns: readonly BreakdownDefinition[];
-};
+interface CardDefinition {
+  readonly title: string;
+  readonly value: ReactNode;
+  readonly assignedValue: ReactNode;
+  readonly unassignedValue: ReactNode;
+}
 
 /** Displays fund balances for the selected trends range. */
 const FundTrendsSummaryCards = function ({
@@ -59,30 +49,14 @@ const FundTrendsSummaryCards = function ({
     {
       title: `Starting balance (${snapshot.startLabel})`,
       value: formatCurrency(snapshot.totalStartingBalance),
-      breakdowns: [
-        {
-          label: "Assigned",
-          value: formatCurrency(snapshot.assignedStartingBalance),
-        },
-        {
-          label: "Unassigned",
-          value: formatCurrency(snapshot.unassignedStartingBalance),
-        },
-      ],
+      assignedValue: formatCurrency(snapshot.assignedStartingBalance),
+      unassignedValue: formatCurrency(snapshot.unassignedStartingBalance),
     },
     {
       title: `Ending balance (${snapshot.endLabel})`,
       value: formatCurrency(snapshot.totalEndingBalance),
-      breakdowns: [
-        {
-          label: "Assigned",
-          value: formatCurrency(snapshot.assignedEndingBalance),
-        },
-        {
-          label: "Unassigned",
-          value: formatCurrency(snapshot.unassignedEndingBalance),
-        },
-      ],
+      assignedValue: formatCurrency(snapshot.assignedEndingBalance),
+      unassignedValue: formatCurrency(snapshot.unassignedEndingBalance),
     },
     {
       title: "Net change",
@@ -92,45 +66,30 @@ const FundTrendsSummaryCards = function ({
           endingValue={snapshot.totalEndingBalance}
         />
       ),
-      breakdowns: [
-        {
-          label: "Assigned",
-          value: (
-            <ChangeValue
-              startingValue={snapshot.assignedStartingBalance}
-              endingValue={snapshot.assignedEndingBalance}
-            />
-          ),
-        },
-        {
-          label: "Unassigned",
-          value: (
-            <ChangeValue
-              startingValue={snapshot.unassignedStartingBalance}
-              endingValue={snapshot.unassignedEndingBalance}
-            />
-          ),
-        },
-      ],
+      assignedValue: (
+        <ChangeValue
+          startingValue={snapshot.assignedStartingBalance}
+          endingValue={snapshot.assignedEndingBalance}
+        />
+      ),
+      unassignedValue: (
+        <ChangeValue
+          startingValue={snapshot.unassignedStartingBalance}
+          endingValue={snapshot.unassignedEndingBalance}
+        />
+      ),
     },
   ];
 
   return (
     <SummaryCardGrid>
       {cards.map((card) => (
-        <ExpandableSummaryCard
+        <FundSummaryCard
           key={card.title}
-          title={card.title}
-          value={card.value}
+          {...card}
           expanded={expanded}
           onToggle={toggleExpanded}
-        >
-          <Stack spacing={1.25} divider={<Divider flexItem />}>
-            {card.breakdowns.map((breakdown) => (
-              <BreakdownSection key={breakdown.label} {...breakdown} />
-            ))}
-          </Stack>
-        </ExpandableSummaryCard>
+        />
       ))}
     </SummaryCardGrid>
   );

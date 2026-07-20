@@ -19,7 +19,6 @@ interface BalanceEventListItem {
  * Options for creating balance event columns.
  */
 interface CreateBalanceEventColumnsOptions<T extends BalanceEventListItem> {
-  readonly getTypeLabel: (event: T) => string;
   readonly getPreviousBalance?: (event: T) => number;
   readonly getNewBalance?: (event: T) => number;
 }
@@ -28,7 +27,6 @@ interface CreateBalanceEventColumnsOptions<T extends BalanceEventListItem> {
  * Creates the common columns used by workspace balance-event lists.
  */
 const createBalanceEventColumns = function <T extends BalanceEventListItem>({
-  getTypeLabel,
   getPreviousBalance,
   getNewBalance,
 }: CreateBalanceEventColumnsOptions<T>): readonly ColumnDefinition<T>[] {
@@ -56,7 +54,7 @@ const createBalanceEventColumns = function <T extends BalanceEventListItem>({
             fontWeight: 600,
           }}
         >
-          {getTypeLabel(event)}
+          {event.type === BalanceEventType.Debit ? "Debit" : "Credit"}
         </Box>
       ),
       minWidth: 130,

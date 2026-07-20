@@ -48,9 +48,15 @@ const SpendingFundAssignmentPlanner = function ({
   const unassignedFund = getUnassignedFund(funds);
 
   const sortFunds = function (left: Fund, right: Fund): number {
-    return sortFundsByRemainingAmount(left, right, (fundId: string) =>
-      getEndingBalanceVariance(fundId, fundPlans, baselineFundAssignments),
-    );
+    return sortFundsByRemainingAmount(left, right, (fundId: string) => {
+      const fund = funds.find((candidate) => candidate.id === fundId);
+      return getEndingBalanceVariance(
+        fundId,
+        fundPlans,
+        baselineFundAssignments,
+        fund?.currentBalance.postedBalance ?? 0,
+      );
+    });
   };
 
   const addFundAssignment = function (): void {
@@ -91,7 +97,8 @@ const SpendingFundAssignmentPlanner = function ({
             (plan) => plan.fund.id === newFund.id,
           );
           const previousPlanAmount =
-            fundPlan?.progress.endingBalance?.variance ?? 0;
+            fundPlan?.progress.endingBalance?.variance ??
+            (fundPlan === undefined ? 0 : previousFundBalance);
           return {
             fundId: newFund.id,
             fundName: newFund.name,
@@ -121,7 +128,8 @@ const SpendingFundAssignmentPlanner = function ({
             (plan) => plan.fund.id === assignment.fundId,
           );
           const previousPlanAmount =
-            fundPlan?.progress.endingBalance?.variance ?? 0;
+            fundPlan?.progress.endingBalance?.variance ??
+            (fundPlan === undefined ? 0 : assignment.previousFundBalance);
           return {
             ...assignment,
             amount: newAmount ?? 0,
@@ -174,12 +182,20 @@ const SpendingFundAssignmentPlanner = function ({
 
         return "error";
       }}
-      getFundOptionSecondaryLabel={(fund) =>
-        getFundOptionSecondaryLabel(
+      getFundOptionSecondaryLabel={(fund) => {
+        const fundWithBalance = funds.find(
+          (candidate) => candidate.id === fund.id,
+        );
+        return getFundOptionSecondaryLabel(
           "Remaining to spend",
-          getEndingBalanceVariance(fund.id, fundPlans, baselineFundAssignments),
-        )
-      }
+          getEndingBalanceVariance(
+            fund.id,
+            fundPlans,
+            baselineFundAssignments,
+            fundWithBalance?.currentBalance.postedBalance ?? 0,
+          ),
+        );
+      }}
       sortFunds={sortFunds}
       renderAssignmentDetails={renderAssignmentDetails}
       color={frameColor}

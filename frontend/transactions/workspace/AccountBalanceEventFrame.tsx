@@ -26,6 +26,7 @@ import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
 import { buildUrl } from "@/framework/routes/helpers";
 import { formatLongDate } from "@/framework/dateHelpers";
+import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import postTransaction from "@/transactions/workspace/postTransaction";
 
 /**
@@ -89,6 +90,22 @@ const AccountBalanceEventFrame = function ({
     postedDate === null
       ? setTransactionAccountDraftBalanceChange(account, balanceChange)
       : account;
+  const displayedAccountId = displayedAccount?.accountId;
+  const displayedAccountName = displayedAccount?.accountName;
+  const displayedAccountType = displayedAccount?.accountType;
+  const selectedAccount =
+    accounts.find(({ id }) => id === displayedAccountId) ?? null;
+  const readOnlyAccount =
+    setAccount === null &&
+    isNotNullOrUndefined(displayedAccountId) &&
+    isNotNullOrUndefined(displayedAccountName) &&
+    isNotNullOrUndefined(displayedAccountType)
+      ? {
+          id: displayedAccountId,
+          name: displayedAccountName,
+          type: displayedAccountType,
+        }
+      : null;
   const newBalanceLabel = postedDate === null ? "Projected" : "New";
 
   let helperContent = null;
@@ -151,9 +168,7 @@ const AccountBalanceEventFrame = function ({
       <AccountEntryField
         label={label}
         options={accounts}
-        value={
-          accounts.find(({ id }) => id === displayedAccount?.accountId) ?? null
-        }
+        value={selectedAccount ?? readOnlyAccount}
         setValue={
           setAccount === null
             ? null

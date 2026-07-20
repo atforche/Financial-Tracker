@@ -6,7 +6,6 @@ import { AccountingPeriodSortModel } from "@/framework/data/api";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import ContentSurface from "@/framework/view/ContentSurface";
 import FundOverview from "@/overview/FundOverview";
-import FundPlanOverview from "@/overview/FundPlanOverview";
 import type { JSX } from "react";
 import type { OverviewData } from "@/overview/types";
 import PageLayout from "@/framework/view/PageLayout";
@@ -89,9 +88,6 @@ const OverviewView = async function (): Promise<JSX.Element> {
             <AccountOverview summary={data.accountSummary} />
             <FundOverview summary={data.fundSummary} />
           </ResponsiveGrid>
-          <FundPlanOverview
-            latestAccountingPeriod={data.latestAccountingPeriod}
-          />
         </ResponsiveGrid>
 
         <TransactionOverview

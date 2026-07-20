@@ -198,10 +198,14 @@ const getEndingBalanceVariance = function (
   fundId: string,
   fundPlans: FundPlanWithProgress[],
   baselineFundAssignments: readonly FundAssignmentDraft[],
+  fundBalance: number,
 ): number | null {
   const fundPlan = fundPlans.find((plan) => plan.fund.id === fundId);
+  if (fundPlan === undefined) {
+    return null;
+  }
   return getRemainingAmount(
-    fundPlan?.progress.endingBalance?.variance,
+    fundPlan.progress.endingBalance?.variance ?? fundBalance,
     baselineFundAssignments,
     fundId,
   );
@@ -217,7 +221,6 @@ const getFundOptionSecondaryLabel = function (
   if (planRemainingAmount === null) {
     return "No Funding Plan";
   }
-
   return `${prefix} ${formatCurrency(planRemainingAmount)}`;
 };
 

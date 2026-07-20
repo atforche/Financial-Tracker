@@ -1,7 +1,6 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { BalanceEventType } from "@/balance-events/types";
 import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
@@ -42,10 +41,7 @@ const FundPlanBalanceEventsFrame = function ({
   const returnUrl = buildUrl(pathname, new URLSearchParams(searchParams));
 
   const columns: readonly ColumnDefinition<FundPlanBalanceEvent>[] =
-    createBalanceEventColumns<FundPlanBalanceEvent>({
-      getTypeLabel: (event) =>
-        event.type === BalanceEventType.Credit ? "Assignment" : "Spending",
-    });
+    createBalanceEventColumns<FundPlanBalanceEvent>({});
 
   return (
     <ConstrainedContent maxWidth={1200}>

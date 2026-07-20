@@ -4,35 +4,30 @@ import type {
   AccountBalanceSummaryByDate,
   AccountBalanceSummaryByPeriod,
 } from "@/accounts/types";
-import AccountBreakdownSection, {
-  type BreakdownDetailRow,
-} from "@/framework/view/BreakdownSection";
 import {
   type AccountTrendsDataMode,
   type AccountTypeBreakdownDetail,
   getAccountTrendsSnapshot,
   getAccountTypeBreakdownDetails,
 } from "@/accounts/trends/helpers";
-import { Divider, Stack } from "@mui/material";
 import { type JSX, type ReactNode, useState } from "react";
 import { formatAccountType, isTrackedAccountType } from "@/accounts/helpers";
+import AccountSummaryCard from "@/accounts/AccountSummaryCard";
+import type { BreakdownDetailRow } from "@/framework/view/BreakdownSection";
 import ChangeValue from "@/framework/view/ChangeValue";
-import ExpandableSummaryCard from "@/framework/view/ExpandableSummaryCard";
 import SummaryCardGrid from "@/framework/view/SummaryCardGrid";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
-interface BreakdownDefinition {
-  readonly label: string;
-  readonly value: ReactNode;
-  readonly detailRows: readonly BreakdownDetailRow[];
-  readonly expanded: boolean;
-  readonly onToggle: () => void;
-}
-
+/**
+ * Defines the structure of a summary card for account trends.
+ */
 interface CardDefinition {
   readonly title: string;
   readonly value: ReactNode;
-  readonly breakdowns: readonly BreakdownDefinition[];
+  readonly trackedValue: ReactNode;
+  readonly untrackedValue: ReactNode;
+  readonly trackedDetailRows: readonly BreakdownDetailRow[];
+  readonly untrackedDetailRows: readonly BreakdownDetailRow[];
 }
 
 /**
@@ -91,30 +86,26 @@ const AccountTrendsSummaryCards = function ({
   const makeBreakdowns = function (
     getGroupValue: (tracked: boolean) => ReactNode,
     getDetailValue: (detail: AccountTypeBreakdownDetail) => ReactNode,
-  ): readonly BreakdownDefinition[] {
-    return [
-      {
-        label: "Tracked",
-        value: getGroupValue(true),
-        detailRows: toDetailRows(trackedDetails, getDetailValue),
-        expanded: trackedTypesExpanded,
-        onToggle: toggleTracked,
-      },
-      {
-        label: "Untracked",
-        value: getGroupValue(false),
-        detailRows: toDetailRows(untrackedDetails, getDetailValue),
-        expanded: untrackedTypesExpanded,
-        onToggle: toggleUntracked,
-      },
-    ];
+  ): Pick<
+    CardDefinition,
+    | "trackedValue"
+    | "untrackedValue"
+    | "trackedDetailRows"
+    | "untrackedDetailRows"
+  > {
+    return {
+      trackedValue: getGroupValue(true),
+      untrackedValue: getGroupValue(false),
+      trackedDetailRows: toDetailRows(trackedDetails, getDetailValue),
+      untrackedDetailRows: toDetailRows(untrackedDetails, getDetailValue),
+    };
   };
 
   const cards: readonly CardDefinition[] = [
     {
       title: `Starting balance (${snapshot.startLabel})`,
       value: formatCurrency(snapshot.totalStartingBalance),
-      breakdowns: makeBreakdowns(
+      ...makeBreakdowns(
         (tracked) =>
           formatCurrency(
             tracked
@@ -127,7 +118,7 @@ const AccountTrendsSummaryCards = function ({
     {
       title: `Ending balance (${snapshot.endLabel})`,
       value: formatCurrency(snapshot.totalEndingBalance),
-      breakdowns: makeBreakdowns(
+      ...makeBreakdowns(
         (tracked) =>
           formatCurrency(
             tracked
@@ -145,7 +136,7 @@ const AccountTrendsSummaryCards = function ({
           endingValue={snapshot.totalEndingBalance}
         />
       ),
-      breakdowns: makeBreakdowns(
+      ...makeBreakdowns(
         (tracked) => (
           <ChangeValue
             startingValue={
@@ -176,19 +167,16 @@ const AccountTrendsSummaryCards = function ({
   return (
     <SummaryCardGrid>
       {cards.map((card) => (
-        <ExpandableSummaryCard
+        <AccountSummaryCard
           key={card.title}
-          title={card.title}
-          value={card.value}
+          {...card}
           expanded={expanded}
           onToggle={toggleExpanded}
-        >
-          <Stack spacing={1.25} divider={<Divider flexItem />}>
-            {card.breakdowns.map((breakdown) => (
-              <AccountBreakdownSection key={breakdown.label} {...breakdown} />
-            ))}
-          </Stack>
-        </ExpandableSummaryCard>
+          trackedExpanded={trackedTypesExpanded}
+          onTrackedToggle={toggleTracked}
+          untrackedExpanded={untrackedTypesExpanded}
+          onUntrackedToggle={toggleUntracked}
+        />
       ))}
     </SummaryCardGrid>
   );
