@@ -11,17 +11,14 @@ import {
 } from "react";
 import {
   buildCreateFundRequest,
-  validateAssignmentGoalSetup,
   validateCreateFundSetup,
-  validateSpendingGoalSetup,
 } from "@/funds/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
-import AssignmentGoalSetupSection from "@/funds/workspace/AssignmentGoalSetupSection";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Frame from "@/framework/view/Frame";
-import SpendingGoalSetupSection from "@/funds/workspace/SpendingGoalSetupSection";
+import FundPlanSetupSection from "@/funds/workspace/FundPlanSetupSection";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import createFund from "@/funds/workspace/createFund";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
@@ -50,12 +47,14 @@ const CreateFundForm = function ({
     setName,
     description,
     setDescription,
-    assignmentGoalType,
-    setAssignmentGoalType,
-    assignmentGoalAmount,
-    setAssignmentGoalAmount,
-    spendingGoalType,
-    setSpendingGoalType,
+    regularContribution,
+    setRegularContribution,
+    minimumFundedBalance,
+    setMinimumFundedBalance,
+    maximumFundedBalance,
+    setMaximumFundedBalance,
+    targetEndingBalance,
+    setTargetEndingBalance,
   } = fundSetup;
   const formRef = useRef<HTMLDivElement | null>(null);
   const [accountingPeriod, setAccountingPeriod] =
@@ -78,19 +77,14 @@ const CreateFundForm = function ({
   }, [redirectUrl, router, state.success]);
 
   const fundSetupIsComplete = validateCreateFundSetup(name, accountingPeriod);
-  const assignmentGoalSetupIsComplete = validateAssignmentGoalSetup(
-    assignmentGoalType,
-    assignmentGoalAmount,
-  );
-  const spendingGoalSetupIsComplete =
-    validateSpendingGoalSetup(spendingGoalType);
   const request = buildCreateFundRequest({
     name,
     description,
     accountingPeriod,
-    assignmentGoalType,
-    assignmentGoalAmount,
-    spendingGoalType,
+    regularContribution,
+    minimumFundedBalance,
+    maximumFundedBalance,
+    targetEndingBalance,
   });
 
   return (
@@ -123,21 +117,16 @@ const CreateFundForm = function ({
           </Stack>
         </Frame>
 
-        <AssignmentGoalSetupSection
-          color={assignmentGoalSetupIsComplete ? "info" : "error"}
-          value={assignmentGoalType}
-          setValue={setAssignmentGoalType}
-          amount={assignmentGoalAmount}
-          setAmount={setAssignmentGoalAmount}
-          typeErrorMessage={state.assignmentGoalTypeErrors ?? null}
-          amountErrorMessage={state.assignmentGoalAmountErrors ?? null}
-        />
-
-        <SpendingGoalSetupSection
-          color={spendingGoalSetupIsComplete ? "info" : "error"}
-          value={spendingGoalType}
-          setValue={setSpendingGoalType}
-          typeErrorMessage={state.spendingGoalTypeErrors ?? null}
+        <FundPlanSetupSection
+          color="info"
+          regularContribution={regularContribution}
+          setRegularContribution={setRegularContribution}
+          minimumFundedBalance={minimumFundedBalance}
+          setMinimumFundedBalance={setMinimumFundedBalance}
+          maximumFundedBalance={maximumFundedBalance}
+          setMaximumFundedBalance={setMaximumFundedBalance}
+          targetEndingBalance={targetEndingBalance}
+          setTargetEndingBalance={setTargetEndingBalance}
         />
 
         <ErrorAlert

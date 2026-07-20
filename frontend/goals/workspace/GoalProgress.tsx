@@ -1,10 +1,4 @@
-import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { Box, Stack, Typography } from "@mui/material";
-import {
-  getGoalProgressAmounts,
-  getGoalProgressBackgroundColor,
-  getGoalProgressPercent,
-} from "@/goals/workspace/helpers";
 import type { JSX } from "react";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
@@ -13,7 +7,9 @@ import { formatCurrency } from "@/framework/currencyHelpers";
  */
 interface GoalProgressProps {
   readonly label: string;
-  readonly progress: AssignmentGoal | SpendingGoal | null;
+  readonly current: number;
+  readonly target: number;
+  readonly satisfied: boolean;
 }
 
 /**
@@ -21,10 +17,12 @@ interface GoalProgressProps {
  */
 const GoalProgress = function ({
   label,
-  progress,
+  current,
+  target,
+  satisfied,
 }: GoalProgressProps): JSX.Element {
-  const progressPercent = getGoalProgressPercent(progress);
-  const amounts = progress === null ? null : getGoalProgressAmounts(progress);
+  const percent =
+    target === 0 ? 100 : Math.min(Math.max((current / target) * 100, 0), 100);
   return (
     <Stack spacing={0.75}>
       <Stack direction="row" justifyContent="space-between" gap={2}>
@@ -32,9 +30,9 @@ const GoalProgress = function ({
           {label}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          {progress === null
-            ? "No goal"
-            : `${formatCurrency(amounts?.remaining ?? 0)} remaining`}
+          {satisfied
+            ? "Satisfied"
+            : `${formatCurrency(Math.max(target - current, 0))} remaining`}
         </Typography>
       </Stack>
       <Box
@@ -47,21 +45,17 @@ const GoalProgress = function ({
       >
         <Box
           sx={{
-            width: `${progressPercent}%`,
+            width: `${percent}%`,
             height: "100%",
             borderRadius: 999,
-            bgcolor: getGoalProgressBackgroundColor(progress, progressPercent),
-            transition: "width 200ms ease",
+            bgcolor: satisfied ? "success.main" : "primary.main",
           }}
         />
       </Box>
       <Typography variant="caption" color="text.secondary">
-        {progress === null
-          ? "Set up a goal"
-          : `${formatCurrency(amounts?.current ?? 0)} of ${formatCurrency(amounts?.target ?? 0)}`}
+        {formatCurrency(current)} of {formatCurrency(target)}
       </Typography>
     </Stack>
   );
 };
-
 export default GoalProgress;

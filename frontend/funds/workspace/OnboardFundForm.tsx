@@ -11,16 +11,13 @@ import {
 } from "react";
 import {
   buildOnboardFundRequest,
-  validateAssignmentGoalSetup,
   validateOnboardFundSetup,
-  validateSpendingGoalSetup,
 } from "@/funds/workspace/helpers";
-import AssignmentGoalSetupSection from "@/funds/workspace/AssignmentGoalSetupSection";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Frame from "@/framework/view/Frame";
-import SpendingGoalSetupSection from "@/funds/workspace/SpendingGoalSetupSection";
+import FundPlanSetupSection from "@/funds/workspace/FundPlanSetupSection";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import { formatCurrency } from "@/framework/currencyHelpers";
@@ -50,12 +47,14 @@ const OnboardFundForm = function ({
     setName,
     description,
     setDescription,
-    assignmentGoalType,
-    setAssignmentGoalType,
-    assignmentGoalAmount,
-    setAssignmentGoalAmount,
-    spendingGoalType,
-    setSpendingGoalType,
+    regularContribution,
+    setRegularContribution,
+    minimumFundedBalance,
+    setMinimumFundedBalance,
+    maximumFundedBalance,
+    setMaximumFundedBalance,
+    targetEndingBalance,
+    setTargetEndingBalance,
   } = fundSetup;
   const formRef = useRef<HTMLDivElement | null>(null);
   const [onboardedBalance, setOnboardedBalance] = useState<number | null>(null);
@@ -81,19 +80,14 @@ const OnboardFundForm = function ({
       : unassignedBalance - (onboardedBalance ?? 0);
 
   const fundSetupIsComplete = validateOnboardFundSetup(name, onboardedBalance);
-  const assignmentGoalSetupIsComplete = validateAssignmentGoalSetup(
-    assignmentGoalType,
-    assignmentGoalAmount,
-  );
-  const spendingGoalSetupIsComplete =
-    validateSpendingGoalSetup(spendingGoalType);
   const request = buildOnboardFundRequest({
     name,
     description,
     onboardedBalance,
-    assignmentGoalType,
-    assignmentGoalAmount,
-    spendingGoalType,
+    regularContribution,
+    minimumFundedBalance,
+    maximumFundedBalance,
+    targetEndingBalance,
   });
 
   return (
@@ -139,21 +133,16 @@ const OnboardFundForm = function ({
           </Stack>
         </Frame>
 
-        <AssignmentGoalSetupSection
-          color={assignmentGoalSetupIsComplete ? "success" : "error"}
-          value={assignmentGoalType}
-          setValue={setAssignmentGoalType}
-          amount={assignmentGoalAmount}
-          setAmount={setAssignmentGoalAmount}
-          typeErrorMessage={state.assignmentGoalTypeErrors ?? null}
-          amountErrorMessage={state.assignmentGoalAmountErrors ?? null}
-        />
-
-        <SpendingGoalSetupSection
-          color={spendingGoalSetupIsComplete ? "success" : "error"}
-          value={spendingGoalType}
-          setValue={setSpendingGoalType}
-          typeErrorMessage={state.spendingGoalTypeErrors ?? null}
+        <FundPlanSetupSection
+          color="success"
+          regularContribution={regularContribution}
+          setRegularContribution={setRegularContribution}
+          minimumFundedBalance={minimumFundedBalance}
+          setMinimumFundedBalance={setMinimumFundedBalance}
+          maximumFundedBalance={maximumFundedBalance}
+          setMaximumFundedBalance={setMaximumFundedBalance}
+          targetEndingBalance={targetEndingBalance}
+          setTargetEndingBalance={setTargetEndingBalance}
         />
 
         <ErrorAlert

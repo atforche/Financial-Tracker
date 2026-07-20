@@ -4,16 +4,16 @@ import {
   type FundAssignmentDraft,
   addFundAssignment as appendFundAssignment,
   createFundAssignmentDraft,
+  getEndingBalanceVariance,
   getFundOptionSecondaryLabel,
-  getSpendingGoalRemainingAmount,
   deleteFundAssignment as removeFundAssignment,
   sortFundsByRemainingAmount,
   updateFundAssignment,
 } from "@/funds/assignmentPlanner/helpers";
 import type { FrameColor } from "@/framework/view/Frame";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
+import type { FundPlanWithProgress } from "@/goals/types";
 import type { JSX } from "react";
-import type { SpendingGoal } from "@/goals/types";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { getUnassignedFund } from "@/funds/helpers";
 
@@ -22,7 +22,7 @@ import { getUnassignedFund } from "@/funds/helpers";
  */
 interface SpendingFundAssignmentPlannerProps {
   readonly funds: FundWithBalance[];
-  readonly spendingGoals: SpendingGoal[];
+  readonly fundPlans: FundPlanWithProgress[];
   readonly totalAmountToAssign: number | null;
   readonly fundAssignments: FundAssignmentDraft[];
   readonly setFundAssignments:
@@ -37,7 +37,7 @@ interface SpendingFundAssignmentPlannerProps {
  */
 const SpendingFundAssignmentPlanner = function ({
   funds,
-  spendingGoals,
+  fundPlans,
   totalAmountToAssign,
   fundAssignments,
   setFundAssignments,
@@ -49,11 +49,7 @@ const SpendingFundAssignmentPlanner = function ({
 
   const sortFunds = function (left: Fund, right: Fund): number {
     return sortFundsByRemainingAmount(left, right, (fundId: string) =>
-      getSpendingGoalRemainingAmount(
-        fundId,
-        spendingGoals,
-        baselineFundAssignments,
-      ),
+      getEndingBalanceVariance(fundId, fundPlans, baselineFundAssignments),
     );
   };
 
@@ -91,19 +87,17 @@ const SpendingFundAssignmentPlanner = function ({
           }
           const fund = funds.find((f) => f.id === newFund.id);
           const previousFundBalance = fund?.currentBalance.postedBalance ?? 0;
-          const goal = spendingGoals.find((g) => g.fund.id === newFund.id);
-          const previousGoalBalance =
-            goal?.remainingAmountToSpendIncludingPending ?? 0;
+          const goal = fundPlans.find((g) => g.fund.id === newFund.id);
+          const previousPlanAmount =
+            goal?.progress.endingBalance?.variance ?? 0;
           return {
             fundId: newFund.id,
             fundName: newFund.name,
             amount: assignment.amount,
             previousFundBalance,
             newFundBalance: previousFundBalance - assignment.amount,
-            previousGoalBalance: { remainingAmount: previousGoalBalance },
-            newGoalBalance: {
-              remainingAmount: previousGoalBalance - assignment.amount,
-            },
+            previousPlanAmount,
+            newPlanAmount: previousPlanAmount - assignment.amount,
           };
         },
       ),
@@ -121,18 +115,14 @@ const SpendingFundAssignmentPlanner = function ({
         fundAssignments,
         index,
         (assignment) => {
-          const goal = spendingGoals.find(
-            (g) => g.fund.id === assignment.fundId,
-          );
-          const previousGoalBalance =
-            goal?.remainingAmountToSpendIncludingPending ?? 0;
+          const goal = fundPlans.find((g) => g.fund.id === assignment.fundId);
+          const previousPlanAmount =
+            goal?.progress.endingBalance?.variance ?? 0;
           return {
             ...assignment,
             amount: newAmount ?? 0,
             newFundBalance: assignment.previousFundBalance - (newAmount ?? 0),
-            newGoalBalance: {
-              remainingAmount: previousGoalBalance - (newAmount ?? 0),
-            },
+            newPlanAmount: previousPlanAmount - (newAmount ?? 0),
           };
         },
       ),
@@ -149,13 +139,11 @@ const SpendingFundAssignmentPlanner = function ({
       <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap>
         <Chip
           variant="outlined"
-          label={`Previous remaining to spend ${formatCurrency(assignment.previousGoalBalance.remainingAmount)}`}
+          label={`Previous remaining to spend ${formatCurrency(assignment.previousPlanAmount)}`}
         />
         <Chip
-          color={
-            assignment.newGoalBalance.remainingAmount >= 0 ? "success" : "error"
-          }
-          label={`New remaining to spend ${formatCurrency(assignment.newGoalBalance.remainingAmount)}`}
+          color={assignment.newPlanAmount >= 0 ? "success" : "error"}
+          label={`New remaining to spend ${formatCurrency(assignment.newPlanAmount)}`}
         />
       </Stack>
     );
@@ -185,11 +173,7 @@ const SpendingFundAssignmentPlanner = function ({
       getFundOptionSecondaryLabel={(fund) =>
         getFundOptionSecondaryLabel(
           "Remaining to spend",
-          getSpendingGoalRemainingAmount(
-            fund.id,
-            spendingGoals,
-            baselineFundAssignments,
-          ),
+          getEndingBalanceVariance(fund.id, fundPlans, baselineFundAssignments),
         )
       }
       sortFunds={sortFunds}

@@ -1,163 +1,107 @@
-import { AssignmentGoalType, type SpendingGoalType } from "@/goals/types";
 import type { CreateFundRequest, OnboardFundRequest } from "@/funds/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 
 /**
  * Validates the fund setup section for fund creation.
  */
-const validateCreateFundSetup = function (
+const validateCreateFundSetup = (
   name: string,
-  accountingPeriod: AccountingPeriod | null,
-): boolean {
-  return name !== "" && accountingPeriod !== null;
-};
+  period: AccountingPeriod | null,
+): boolean => name !== "" && period !== null;
 
 /**
  * Validates the fund setup section for fund onboarding.
  */
-const validateOnboardFundSetup = function (
+const validateOnboardFundSetup = (
   name: string,
-  onboardedBalance: number | null,
-): boolean {
-  return name !== "" && onboardedBalance !== null;
-};
+  balance: number | null,
+): boolean => name !== "" && balance !== null;
 
 /**
- * Validates the assignment goal setup section.
+ * Fields required to build a Fund Plan.
  */
-const validateAssignmentGoalSetup = function (
-  assignmentGoalType: AssignmentGoalType | null,
-  assignmentGoalAmount: number | null,
-): boolean {
-  return assignmentGoalType !== null && assignmentGoalAmount !== null;
-};
-
-/**
- * Validates the spending goal setup section.
- */
-const validateSpendingGoalSetup = function (
-  spendingGoalType: SpendingGoalType | null,
-): boolean {
-  return spendingGoalType !== null;
-};
+interface FundPlanFields {
+  readonly regularContribution: number | null;
+  readonly minimumFundedBalance: number | null;
+  readonly maximumFundedBalance: number | null;
+  readonly targetEndingBalance: number | null;
+}
 
 /**
  * Fields required to build a request to create a fund.
  */
-interface CreateFundRequestFields {
+interface CreateFundRequestFields extends FundPlanFields {
   readonly name: string;
   readonly description: string;
   readonly accountingPeriod: AccountingPeriod | null;
-  readonly assignmentGoalType: AssignmentGoalType | null;
-  readonly assignmentGoalAmount: number | null;
-  readonly spendingGoalType: SpendingGoalType | null;
 }
+
+/**
+ * Fields required to build a request to onboard a fund.
+ */
+interface OnboardFundRequestFields extends FundPlanFields {
+  readonly name: string;
+  readonly description: string;
+  readonly onboardedBalance: number | null;
+}
+
+/**
+ * Validates that the minimum and maximum funded balances are in a valid range.
+ */
+const validRange = (fields: FundPlanFields): boolean =>
+  fields.minimumFundedBalance === null ||
+  fields.maximumFundedBalance === null ||
+  fields.minimumFundedBalance <= fields.maximumFundedBalance;
 
 /**
  * Builds a request to create a fund.
  */
-const buildCreateFundRequest = function (
+const buildCreateFundRequest = (
   fields: CreateFundRequestFields,
-): CreateFundRequest | null {
-  const {
-    name,
-    description,
-    accountingPeriod,
-    assignmentGoalType,
-    assignmentGoalAmount,
-    spendingGoalType,
-  } = fields;
+): CreateFundRequest | null => {
   if (
-    name === "" ||
-    accountingPeriod === null ||
-    assignmentGoalType === null ||
-    assignmentGoalAmount === null ||
-    spendingGoalType === null
+    !validateCreateFundSetup(fields.name, fields.accountingPeriod) ||
+    !validRange(fields)
   ) {
     return null;
   }
-
   return {
-    name,
-    description,
-    accountingPeriodId: accountingPeriod.id,
-    assignmentGoalType,
-    assignmentGoalAmount,
-    spendingGoalType,
+    name: fields.name,
+    description: fields.description,
+    accountingPeriodId: fields.accountingPeriod?.id ?? "",
+    regularContribution: fields.regularContribution,
+    minimumFundedBalance: fields.minimumFundedBalance,
+    maximumFundedBalance: fields.maximumFundedBalance,
+    targetEndingBalance: fields.targetEndingBalance,
   };
 };
 
 /**
  * Fields required to build a request to onboard a fund.
  */
-interface OnboardFundRequestFields {
-  readonly name: string;
-  readonly description: string;
-  readonly onboardedBalance: number | null;
-  readonly assignmentGoalType: AssignmentGoalType | null;
-  readonly assignmentGoalAmount: number | null;
-  readonly spendingGoalType: SpendingGoalType | null;
-}
-
-/**
- * Builds a request to onboard a fund.
- */
-const buildOnboardFundRequest = function (
+const buildOnboardFundRequest = (
   fields: OnboardFundRequestFields,
-): OnboardFundRequest | null {
-  const {
-    name,
-    description,
-    onboardedBalance,
-    assignmentGoalType,
-    assignmentGoalAmount,
-    spendingGoalType,
-  } = fields;
+): OnboardFundRequest | null => {
   if (
-    name === "" ||
-    onboardedBalance === null ||
-    assignmentGoalType === null ||
-    assignmentGoalAmount === null ||
-    spendingGoalType === null
+    !validateOnboardFundSetup(fields.name, fields.onboardedBalance) ||
+    !validRange(fields)
   ) {
     return null;
   }
-
   return {
-    name,
-    description,
-    onboardedBalance,
-    assignmentGoalType,
-    assignmentGoalAmount,
-    spendingGoalType,
+    name: fields.name,
+    description: fields.description,
+    onboardedBalance: fields.onboardedBalance ?? 0,
+    regularContribution: fields.regularContribution,
+    minimumFundedBalance: fields.minimumFundedBalance,
+    maximumFundedBalance: fields.maximumFundedBalance,
+    targetEndingBalance: fields.targetEndingBalance,
   };
-};
-
-/**
- * Gets the assignment amount helper text for the provided goal type.
- */
-const getAssignmentAmountHelperText = function (
-  goalType: AssignmentGoalType | null,
-): string {
-  if (goalType === null) {
-    return "Choose the assignment behavior that matches how you want to fund this category.";
-  }
-  switch (goalType) {
-    case AssignmentGoalType.MonthlyTarget:
-      return "Enter the ending balance you want this fund to reach for the period.";
-    case AssignmentGoalType.RecurringContribution:
-      return "Enter the amount you want to assign into this fund during the period.";
-    default:
-      return goalType satisfies never;
-  }
 };
 
 export {
   validateCreateFundSetup,
   validateOnboardFundSetup,
-  validateAssignmentGoalSetup,
-  validateSpendingGoalSetup,
   buildCreateFundRequest,
   buildOnboardFundRequest,
-  getAssignmentAmountHelperText,
 };

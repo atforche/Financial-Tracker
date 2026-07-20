@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.Accounts;
-using Domain.Funds;
 using Domain.FundPlans;
+using Domain.Funds;
 using Domain.Transactions;
 using Domain.Validation;
 

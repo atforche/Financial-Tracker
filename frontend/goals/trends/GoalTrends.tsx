@@ -1,43 +1,14 @@
-import {
-  AccountingPeriodSort,
-  AccountingPeriodWithBalanceSort,
-} from "@/accounting-periods/types";
-import {
-  AssignmentGoalSort,
-  GoalBalanceEventSort,
-  SpendingGoalSort,
-} from "@/goals/types";
-import {
-  type GoalTrendsView,
-  defaultGoalTrendsView,
-  isGoalTrendsView,
-} from "@/goals/trends/goalTrendsTypes";
-import {
-  getPageOffset,
-  normalizePageValue,
-  rowsPerPage,
-} from "@/framework/listframe/page";
-import {
-  summarizeGoalRange,
-  summarizeGoalsByAccountingPeriod,
-} from "@/goals/trends/goalTrendsSummary";
-import { BalanceEventType } from "@/balance-events/types";
+import { Stack, Typography } from "@mui/material";
+import { AccountingPeriodSort } from "@/accounting-periods/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import GoalTrendsAmountAssignedChart from "@/goals/trends/GoalTrendsAmountAssignedChart";
-import GoalTrendsAmountSpentChart from "@/goals/trends/GoalTrendsAmountSpentChart";
-import GoalTrendsBalanceEventListFrame from "@/goals/trends/GoalTrendsBalanceEventListFrame";
-import GoalTrendsFilter from "@/goals/trends/GoalTrendsFilter";
-import GoalTrendsGoalAmountChart from "@/goals/trends/GoalTrendsGoalAmountChart";
-import GoalTrendsGoalsMetChart from "@/goals/trends/GoalTrendsGoalsMetChart";
-import GoalTrendsListFrame from "@/goals/trends/GoalTrendsListFrame";
-import GoalTrendsSummaryCards from "@/goals/trends/GoalTrendsSummaryCards";
+import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import createApiClient from "@/framework/data/createApiClient";
+import { formatCurrency } from "@/framework/currencyHelpers";
+import { isNullOrUndefined } from "@/framework/nullHelpers";
 import loadAllPages from "@/framework/data/loadAllPages";
-import { normalizeGoalTypes } from "@/goals/trends/goalTypeFilter";
-import parseEnumValue from "@/framework/data/parseEnumValue";
 import { redirect } from "next/navigation";
 import routes from "@/goals/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
@@ -47,20 +18,10 @@ import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
  * Search parameters for the GoalTrends component.
  */
 interface GoalTrendsSearchParams {
-  sort?: string;
-  page?: number | string | null;
-  balanceEventSort?: GoalBalanceEventSort;
-  balanceEventPage?: number | string | null;
-  goalType?: string | string[];
   fundName?: string | string[];
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;
-  view?: GoalTrendsView;
 }
-
-/**
- * Props for the GoalTrends component.
- */
 interface GoalTrendsProps {
   readonly searchParams: Promise<GoalTrendsSearchParams>;
 }
@@ -72,223 +33,132 @@ const GoalTrends = async function ({
   searchParams,
 }: GoalTrendsProps): Promise<JSX.Element> {
   const params = await searchParams;
-  const currentView = isGoalTrendsView(params.view)
-    ? params.view
-    : defaultGoalTrendsView;
   const apiClient = createApiClient();
-  const accountingPeriodItems = await loadAllPages(async (limit, offset) =>
+  const periods = await loadAllPages(async (limit, offset) =>
     unwrapApiResponse(
       await apiClient.GET("/accounting-periods", {
         params: {
-          query: {
-            Sort: AccountingPeriodSort.DateDescending,
-            Limit: limit,
-            Offset: offset,
-          },
+          query: { Sort: AccountingPeriodSort.DateDescending, limit, offset },
         },
       }),
       "Failed to load accounting periods",
     ),
   );
-  const latestAccountingPeriod = accountingPeriodItems[0] ?? null;
+  const latest = periods[0] ?? null;
   if (
-    (typeof params.startAccountingPeriodId === "undefined" ||
-      typeof params.endAccountingPeriodId === "undefined") &&
-    latestAccountingPeriod !== null
+    (isNullOrUndefined(params.startAccountingPeriodId) ||
+      isNullOrUndefined(params.endAccountingPeriodId)) &&
+    latest
   ) {
     redirect(
       routes.trends({
-        ...(currentView === defaultGoalTrendsView ? {} : { view: currentView }),
-        startAccountingPeriodId: latestAccountingPeriod.id,
-        endAccountingPeriodId: latestAccountingPeriod.id,
+        startAccountingPeriodId: latest.id,
+        endAccountingPeriodId: latest.id,
       }),
     );
   }
-
-  const startId = params.startAccountingPeriodId ?? latestAccountingPeriod?.id;
-  const endId = params.endAccountingPeriodId ?? latestAccountingPeriod?.id;
-  const assignmentSort =
-    currentView === "assignment" && typeof params.sort === "string"
-      ? parseEnumValue(AssignmentGoalSort, params.sort)
-      : null;
-  const spendingSort =
-    currentView === "spending" && typeof params.sort === "string"
-      ? parseEnumValue(SpendingGoalSort, params.sort)
-      : null;
-  const range = {
-    ...(typeof startId === "string" ? { "Range.Start": startId } : {}),
-    ...(typeof endId === "string" ? { "Range.End": endId } : {}),
-  };
-  const balanceEventSort =
-    typeof params.balanceEventSort === "string"
-      ? parseEnumValue(GoalBalanceEventSort, params.balanceEventSort)
-      : null;
-  const [periodItems, assignmentItems, spendingItems, balanceEventItems] =
-    await Promise.all([
-      loadAllPages(async (limit, offset) => {
-        const data = unwrapApiResponse(
-          await apiClient.GET("/accounting-periods/range", {
-            params: {
-              query: {
-                ...range,
-                Sort: AccountingPeriodWithBalanceSort.Date,
-                Limit: limit,
-                Offset: offset,
-              },
-            },
-          }),
-          "Failed to load accounting period trends",
-        );
-        return data.accountingPeriods;
-      }),
-      loadAllPages(async (limit, offset) =>
-        unwrapApiResponse(
-          await apiClient.GET("/goals/assignment", {
-            params: {
-              query: {
-                ...(assignmentSort === null ? {} : { Sort: assignmentSort }),
-                Limit: limit,
-                Offset: offset,
-              },
-            },
-          }),
-          "Failed to load assignment goals",
-        ),
-      ),
-      loadAllPages(async (limit, offset) =>
-        unwrapApiResponse(
-          await apiClient.GET("/goals/spending", {
-            params: {
-              query: {
-                ...(spendingSort === null ? {} : { Sort: spendingSort }),
-                Limit: limit,
-                Offset: offset,
-              },
-            },
-          }),
-          "Failed to load spending goals",
-        ),
-      ),
-      loadAllPages(async (limit, offset) =>
-        unwrapApiResponse(
-          await apiClient.GET("/balance-events/goals/accounting-period-range", {
-            params: {
-              query: {
-                ...range,
-                ...(balanceEventSort === null
-                  ? {}
-                  : { Sort: balanceEventSort }),
-                Limit: limit,
-                Offset: offset,
-              },
-            },
-          }),
-          "Failed to load goal balance events",
-        ),
-      ),
-    ]);
-
-  const periodIds = new Set(periodItems.map((period) => period.id));
+  const start = params.startAccountingPeriodId ?? latest?.id;
+  const end = params.endAccountingPeriodId ?? latest?.id;
   const fundNames = toRepeatedSearchParams(params.fundName);
-  const requestedTypes = toRepeatedSearchParams(params.goalType);
-  const assignmentTypes =
-    currentView === "assignment"
-      ? normalizeGoalTypes(requestedTypes, currentView)
-      : [];
-  const spendingTypes =
-    currentView === "spending"
-      ? normalizeGoalTypes(requestedTypes, currentView)
-      : [];
-  const assignmentGoals = assignmentItems.filter(
-    (goal) =>
-      (goal.accountingPeriod === null ||
-        periodIds.has(goal.accountingPeriod.id)) &&
-      (fundNames.length === 0 || fundNames.includes(goal.fund.name)) &&
-      (assignmentTypes.length === 0 || assignmentTypes.includes(goal.type)),
-  );
-  const spendingGoals = spendingItems.filter(
-    (goal) =>
-      (goal.accountingPeriod === null ||
-        periodIds.has(goal.accountingPeriod.id)) &&
-      (fundNames.length === 0 || fundNames.includes(goal.fund.name)) &&
-      (spendingTypes.length === 0 || spendingTypes.includes(goal.type)),
-  );
-  const summary = summarizeGoalRange(assignmentGoals, spendingGoals);
-  const periodSummaries = summarizeGoalsByAccountingPeriod(
-    periodItems,
-    assignmentGoals,
-    spendingGoals,
-  );
-  const eventType =
-    currentView === "assignment"
-      ? BalanceEventType.Credit
-      : BalanceEventType.Debit;
-  const events = balanceEventItems.filter(
-    (event) =>
-      event.type === eventType &&
-      (fundNames.length === 0 || fundNames.includes(event.fund.name)),
-  );
-  const pageOffset = getPageOffset(normalizePageValue(params.page));
-  const eventOffset = getPageOffset(
-    normalizePageValue(params.balanceEventPage),
-  );
-  const availableFundNames = Array.from(
-    new Set(
-      [...assignmentItems, ...spendingItems].map((goal) => goal.fund.name),
+  const plans = await loadAllPages(async (limit, offset) =>
+    unwrapApiResponse(
+      await apiClient.GET("/fund-plans", {
+        params: {
+          query: {
+            "Filter.AccountingPeriodIds": periods
+              .filter(
+                (p) =>
+                  (isNullOrUndefined(start) ||
+                    p.id === start ||
+                    periods.findIndex((x) => x.id === p.id) <=
+                      periods.findIndex((x) => x.id === start)) &&
+                  (isNullOrUndefined(end) ||
+                    p.id === end ||
+                    periods.findIndex((x) => x.id === p.id) >=
+                      periods.findIndex((x) => x.id === end)),
+              )
+              .map((p) => p.id),
+            limit,
+            offset,
+          },
+        },
+      }),
+      "Failed to load goals",
     ),
-  ).sort();
-
+  );
+  const visible = plans.filter(
+    (plan) => fundNames.length === 0 || fundNames.includes(plan.fund.name),
+  );
+  const configured = visible.filter(
+    (plan) =>
+      plan.regularContribution !== null ||
+      plan.minimumFundedBalance !== null ||
+      plan.maximumFundedBalance !== null ||
+      plan.targetEndingBalance !== null,
+  );
+  const totalContribution = visible.reduce(
+    (sum, plan) => sum + (plan.regularContribution ?? 0),
+    0,
+  );
   return (
     <PageLayout>
       <ConstrainedContent>
-        <GoalTrendsFilter
-          accountingPeriods={accountingPeriodItems}
-          availableFundNames={availableFundNames}
-          defaultAccountingPeriodId={latestAccountingPeriod?.id ?? null}
-          view={currentView}
-        />
+        <Frame title="Goal Trends">
+          <Stack spacing={2}>
+            <Typography color="text.secondary">
+              Review how goal configuration changes across accounting periods.
+            </Typography>
+            <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
+              <Frame title="Plans">
+                <Typography variant="h4">{visible.length}</Typography>
+              </Frame>
+              <Frame title="Configured Goals">
+                <Typography variant="h4">{configured.length}</Typography>
+              </Frame>
+              <Frame title="Regular Contributions">
+                <Typography variant="h4">
+                  {formatCurrency(totalContribution)}
+                </Typography>
+              </Frame>
+            </ResponsiveGrid>
+          </Stack>
+        </Frame>
       </ConstrainedContent>
-      <GoalTrendsSummaryCards trends={summary} view={currentView} />
-      <ResponsiveGrid columns={{ xs: 1, lg: 3 }}>
-        <GoalTrendsGoalAmountChart
-          accountingPeriods={periodSummaries}
-          view={currentView}
-        />
-        {currentView === "assignment" ? (
-          <GoalTrendsAmountAssignedChart accountingPeriods={periodSummaries} />
-        ) : (
-          <GoalTrendsAmountSpentChart accountingPeriods={periodSummaries} />
-        )}
-        <GoalTrendsGoalsMetChart
-          accountingPeriods={periodSummaries}
-          view={currentView}
-        />
-      </ResponsiveGrid>
-      <ResponsiveGrid minimumColumnWidth={800}>
-        {currentView === "assignment" ? (
-          <GoalTrendsListFrame
-            view="assignment"
-            data={assignmentGoals.slice(pageOffset, pageOffset + rowsPerPage)}
-            totalCount={assignmentGoals.length}
-            isInOnboardingMode={false}
-          />
-        ) : (
-          <GoalTrendsListFrame
-            view="spending"
-            data={spendingGoals.slice(pageOffset, pageOffset + rowsPerPage)}
-            totalCount={spendingGoals.length}
-            isInOnboardingMode={false}
-          />
-        )}
-        <GoalTrendsBalanceEventListFrame
-          view={currentView}
-          data={events.slice(eventOffset, eventOffset + rowsPerPage)}
-          totalCount={events.length}
-        />
+      <ResponsiveGrid minimumColumnWidth={320} spacing={2}>
+        {visible.map((plan) => (
+          <Frame key={plan.id} title={plan.fund.name}>
+            <Stack spacing={0.75}>
+              <Typography color="text.secondary">
+                {plan.accountingPeriod?.name ?? "Onboarded"}
+              </Typography>
+              <Typography>
+                Regular contribution:{" "}
+                {isNullOrUndefined(plan.regularContribution)
+                  ? "Not configured"
+                  : formatCurrency(plan.regularContribution)}
+              </Typography>
+              <Typography>
+                Funded range:{" "}
+                {isNullOrUndefined(plan.minimumFundedBalance)
+                  ? "No minimum"
+                  : formatCurrency(plan.minimumFundedBalance)}{" "}
+                –{" "}
+                {isNullOrUndefined(plan.maximumFundedBalance)
+                  ? "No maximum"
+                  : formatCurrency(plan.maximumFundedBalance)}
+              </Typography>
+              <Typography>
+                Target ending balance:{" "}
+                {isNullOrUndefined(plan.targetEndingBalance)
+                  ? "Not configured"
+                  : formatCurrency(plan.targetEndingBalance)}
+              </Typography>
+            </Stack>
+          </Frame>
+        ))}
       </ResponsiveGrid>
     </PageLayout>
   );
 };
-
 export type { GoalTrendsSearchParams };
 export default GoalTrends;

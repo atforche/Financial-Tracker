@@ -1,6 +1,5 @@
 "use client";
 
-import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { Button, Stack } from "@mui/material";
 import {
   type Transaction,
@@ -31,6 +30,7 @@ import AccountTransactionDestinationFrame from "@/transactions/workspace/account
 import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFrame";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import DeleteTransactionForm from "@/transactions/workspace/DeleteTransactionForm";
+import type { FundPlanWithProgress } from "@/goals/types";
 import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
 import FundTransactionSourceFrame from "@/transactions/workspace/fund/FundTransactionSourceFrame";
 import type { FundWithBalance } from "@/funds/types";
@@ -52,8 +52,7 @@ interface ViewTransactionFormProps {
   readonly transaction: Transaction;
   readonly transactionAccountingPeriod: AccountingPeriod;
   readonly funds: FundWithBalance[];
-  readonly assignmentGoals: AssignmentGoal[];
-  readonly spendingGoals: SpendingGoal[];
+  readonly fundPlans: FundPlanWithProgress[];
   readonly currentUrl: string;
   readonly workspaceUrl: string;
   readonly editUrl: string;
@@ -69,8 +68,7 @@ const ViewTransactionForm = function ({
   transaction,
   transactionAccountingPeriod,
   funds,
-  assignmentGoals,
-  spendingGoals,
+  fundPlans,
   currentUrl,
   workspaceUrl,
   editUrl,
@@ -118,7 +116,7 @@ const ViewTransactionForm = function ({
         index={index}
         accounts={[]}
         funds={funds}
-        spendingGoals={spendingGoals}
+        fundPlans={fundPlans}
         transaction={spendingTransaction}
         account={destination.account}
         setAccount={null}
@@ -166,7 +164,7 @@ const ViewTransactionForm = function ({
         index={index}
         accounts={[]}
         funds={funds}
-        assignmentGoals={assignmentGoals}
+        fundPlans={fundPlans}
         transaction={incomeTransaction}
         account={destination.account}
         setAccount={null}

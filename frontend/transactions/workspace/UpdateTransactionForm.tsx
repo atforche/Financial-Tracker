@@ -1,6 +1,5 @@
 "use client";
 
-import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import {
   type Transaction,
   isAccountTransaction,
@@ -10,6 +9,7 @@ import {
 } from "@/transactions/types";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { FundPlanWithProgress } from "@/goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import type { JSX } from "react";
 import UpdateAccountTransactionForm from "@/transactions/workspace/account/UpdateAccountTransactionForm";
@@ -25,8 +25,7 @@ interface UpdateTransactionFormProps {
   readonly transactionAccountingPeriod: AccountingPeriod;
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
-  readonly assignmentGoals: AssignmentGoal[];
-  readonly spendingGoals: SpendingGoal[];
+  readonly fundPlans: FundPlanWithProgress[];
   readonly redirectUrl: string;
 }
 
@@ -38,8 +37,7 @@ const UpdateTransactionForm = function ({
   transactionAccountingPeriod,
   accounts,
   funds,
-  assignmentGoals,
-  spendingGoals,
+  fundPlans,
   redirectUrl,
 }: UpdateTransactionFormProps): JSX.Element | null {
   if (isIncomeTransaction(transaction)) {
@@ -49,7 +47,7 @@ const UpdateTransactionForm = function ({
         transactionAccountingPeriod={transactionAccountingPeriod}
         accounts={accounts}
         funds={funds}
-        assignmentGoals={assignmentGoals}
+        fundPlans={fundPlans}
         redirectUrl={redirectUrl}
       />
     );
@@ -61,7 +59,7 @@ const UpdateTransactionForm = function ({
         transactionAccountingPeriod={transactionAccountingPeriod}
         accounts={accounts}
         funds={funds}
-        spendingGoals={spendingGoals}
+        fundPlans={fundPlans}
         redirectUrl={redirectUrl}
       />
     );

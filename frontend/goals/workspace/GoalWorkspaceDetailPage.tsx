@@ -3,6 +3,10 @@ import {
   normalizePageValue,
   rowsPerPage,
 } from "@/framework/listframe/page";
+import {
+  isNotNullOrUndefined,
+  isNullOrUndefined,
+} from "@/framework/nullHelpers";
 import GoalWorkspacePageHeader from "@/goals/workspace/GoalWorkspacePageHeader";
 import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
 import type { JSX } from "react";
@@ -35,62 +39,33 @@ const GoalWorkspaceDetailPage = async function ({
     await searchParams;
   const selectedFundIds = toRepeatedSearchParams(fundIds);
   const apiClient = createApiClient();
-  const periodsResponse = await apiClient.GET("/accounting-periods", {
-    params: { query: { Limit: 1 } },
-  });
   const periods = unwrapApiResponse(
-    periodsResponse,
+    await apiClient.GET("/accounting-periods", {
+      params: { query: { Limit: 1 } },
+    }),
     "Failed to fetch accounting periods",
   );
   const periodId = accountingPeriodId ?? periods.items[0]?.id;
   const workspaceUrl = routes.workspace({
-    ...(typeof periodId === "string" ? { accountingPeriodId: periodId } : {}),
-    ...(selectedFundIds.length > 0 ? { fundIds: selectedFundIds } : {}),
-    ...(typeof search === "string" ? { search } : {}),
+    ...(isNotNullOrUndefined(periodId) ? { accountingPeriodId: periodId } : {}),
+    ...(selectedFundIds.length ? { fundIds: selectedFundIds } : {}),
+    ...(isNotNullOrUndefined(search) ? { search } : {}),
   });
-  if (typeof periodId === "undefined") {
+  if (isNullOrUndefined(periodId)) {
     redirect(workspaceUrl);
   }
-
-  const [assignmentGoalResponse, spendingGoalResponse] = await Promise.all([
-    apiClient.GET("/goals/assignment", {
-      params: {
-        query: {
-          "Filter.FundIds": [fundId],
-          "Filter.AccountingPeriodIds": [periodId],
-          Limit: 1,
-        },
-      },
-    }),
-    apiClient.GET("/goals/spending", {
-      params: {
-        query: {
-          "Filter.FundIds": [fundId],
-          "Filter.AccountingPeriodIds": [periodId],
-          Limit: 1,
-        },
-      },
-    }),
-  ]);
-  const assignmentGoal = unwrapApiResponse(
-    assignmentGoalResponse,
-    "Failed to fetch the assignment goal",
-  );
-  const spendingGoal = unwrapApiResponse(
-    spendingGoalResponse,
-    "Failed to fetch the spending goal",
-  );
-  if (
-    typeof assignmentGoal.items[0] === "undefined" ||
-    typeof spendingGoal.items[0] === "undefined"
-  ) {
+  const planResponse = await apiClient.GET("/fund-plans/fund/{fundId}", {
+    params: { path: { fundId }, query: { accountingPeriodId: periodId } },
+  });
+  if (planResponse.response.status === 404) {
     redirect(workspaceUrl);
   }
-
-  const currentBalanceEventPage = normalizePageValue(balanceEventPage);
-  const balanceEventsResponse = await apiClient.GET(
-    "/balance-events/goals/accounting-period-range",
-    {
+  const fundPlan = unwrapApiResponse(
+    planResponse,
+    "Failed to fetch the fund plan",
+  );
+  const events = unwrapApiResponse(
+    await apiClient.GET("/balance-events/fund-plans/accounting-period-range", {
       params: {
         query: {
           "Range.Start": periodId,
@@ -98,43 +73,35 @@ const GoalWorkspaceDetailPage = async function ({
           "Filter.FundIds": [fundId],
           "Filter.AccountingPeriodIds": [periodId],
           Limit: rowsPerPage,
-          Offset: getPageOffset(currentBalanceEventPage),
+          Offset: getPageOffset(normalizePageValue(balanceEventPage)),
         },
       },
-    },
-  );
-  const balanceEvents = unwrapApiResponse(
-    balanceEventsResponse,
+    }),
     "Failed to fetch goal balance events",
   );
-
   const currentUrl = routes.workspaceDetail(fundId, {
     accountingPeriodId: periodId,
-    ...(selectedFundIds.length > 0 ? { fundIds: selectedFundIds } : {}),
-    ...(typeof search === "string" ? { search } : {}),
-    ...(typeof balanceEventPage === "undefined" ? {} : { balanceEventPage }),
+    ...(selectedFundIds.length ? { fundIds: selectedFundIds } : {}),
+    ...(isNotNullOrUndefined(search) ? { search } : {}),
+    ...(isNotNullOrUndefined(balanceEventPage) ? { balanceEventPage } : {}),
   });
-  const addTransactionHref = transactionRoutes.workspaceCreate({
-    accountingPeriodIds: [periodId],
-    fundIds: [fundId],
-    returnUrl: currentUrl,
-  });
-
   return (
     <PageLayout>
       <GoalWorkspacePageHeader backHref={workspaceUrl} title="Goal Details" />
       <ViewGoalForm
-        assignmentGoal={assignmentGoal.items[0]}
-        spendingGoal={spendingGoal.items[0]}
+        fundPlan={fundPlan}
         redirectUrl={currentUrl}
-        recentBalanceEvents={balanceEvents.items}
-        recentBalanceEventCount={balanceEvents.totalCount}
-        addTransactionHref={addTransactionHref}
+        recentBalanceEvents={events.items}
+        recentBalanceEventCount={events.totalCount}
+        addTransactionHref={transactionRoutes.workspaceCreate({
+          accountingPeriodIds: [periodId],
+          fundIds: [fundId],
+          returnUrl: currentUrl,
+        })}
         accountingPeriodId={periodId}
         fundId={fundId}
       />
     </PageLayout>
   );
 };
-
 export default GoalWorkspaceDetailPage;

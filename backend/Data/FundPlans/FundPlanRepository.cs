@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.AccountingPeriods;
 using Domain.FundPlans;
 using Domain.Funds;
-using Domain.AccountingPeriods;
 
 namespace Data.FundPlans;
 

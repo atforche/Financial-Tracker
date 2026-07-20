@@ -25,8 +25,8 @@ import {
   syncDestinationAmountsToSource,
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import type { AssignmentGoal } from "@/goals/types";
 import type { Dayjs } from "dayjs";
+import type { FundPlanWithProgress } from "@/goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFrame";
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
@@ -49,7 +49,7 @@ interface IncomeTransactionFormProps<RequestPayload> {
   readonly formRef: RefObject<HTMLDivElement | null>;
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
-  readonly assignmentGoals: AssignmentGoal[];
+  readonly fundPlans: FundPlanWithProgress[];
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
   readonly setAccountingPeriod?: Dispatch<
@@ -79,7 +79,7 @@ const IncomeTransactionForm = function <RequestPayload>({
   formRef,
   accounts,
   funds,
-  assignmentGoals,
+  fundPlans,
   accountingPeriods,
   accountingPeriod,
   setAccountingPeriod = null,
@@ -101,7 +101,7 @@ const IncomeTransactionForm = function <RequestPayload>({
 }: IncomeTransactionFormProps<RequestPayload>): JSX.Element {
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
-  const currentAssignmentGoals = assignmentGoals.filter(
+  const currentFundPlans = fundPlans.filter(
     (goal) => goal.accountingPeriod?.id === accountingPeriod?.id,
   );
   const sourceNetAmount = getNetIncomeAmount(source);
@@ -247,7 +247,7 @@ const IncomeTransactionForm = function <RequestPayload>({
               index={index}
               accounts={accounts}
               funds={funds}
-              assignmentGoals={currentAssignmentGoals}
+              fundPlans={currentFundPlans}
               transaction={null}
               account={destination.account}
               setAccount={(account): void => {

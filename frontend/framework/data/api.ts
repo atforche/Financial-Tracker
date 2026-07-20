@@ -420,280 +420,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/goals/assignment": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves Assignment Goals matching the specified criteria. */
-        get: {
-            parameters: {
-                query?: {
-                    "Filter.AccountingPeriodIds"?: string[];
-                    "Filter.FundIds"?: string[];
-                    /** @description Sort to apply to the results */
-                    Sort?: components["schemas"]["AssignmentGoalSortModel"];
-                    Limit?: number;
-                    Offset?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CollectionModelOfAssignmentGoalModel"];
-                        "application/json": components["schemas"]["CollectionModelOfAssignmentGoalModel"];
-                        "text/json": components["schemas"]["CollectionModelOfAssignmentGoalModel"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/goals/assignment/{goalId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves an Assignment Goal by ID. */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    goalId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AssignmentGoalModel"];
-                        "application/json": components["schemas"]["AssignmentGoalModel"];
-                        "text/json": components["schemas"]["AssignmentGoalModel"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Updates the provided Assignment Goal with the provided properties */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    goalId: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateAssignmentGoalModel"];
-                    "text/json": components["schemas"]["UpdateAssignmentGoalModel"];
-                    "application/*+json": components["schemas"]["UpdateAssignmentGoalModel"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AssignmentGoalModel"];
-                        "application/json": components["schemas"]["AssignmentGoalModel"];
-                        "text/json": components["schemas"]["AssignmentGoalModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/goals/spending": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves Spending Goals matching the specified criteria. */
-        get: {
-            parameters: {
-                query?: {
-                    "Filter.AccountingPeriodIds"?: string[];
-                    "Filter.FundIds"?: string[];
-                    /** @description Sort to apply to the results */
-                    Sort?: components["schemas"]["SpendingGoalSortModel"];
-                    Limit?: number;
-                    Offset?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CollectionModelOfSpendingGoalModel"];
-                        "application/json": components["schemas"]["CollectionModelOfSpendingGoalModel"];
-                        "text/json": components["schemas"]["CollectionModelOfSpendingGoalModel"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/goals/spending/{goalId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves a Spending Goal by ID. */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    goalId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["SpendingGoalModel"];
-                        "application/json": components["schemas"]["SpendingGoalModel"];
-                        "text/json": components["schemas"]["SpendingGoalModel"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Updates the provided Spending Goal with the provided properties */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    goalId: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateSpendingGoalModel"];
-                    "text/json": components["schemas"]["UpdateSpendingGoalModel"];
-                    "application/*+json": components["schemas"]["UpdateSpendingGoalModel"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["SpendingGoalModel"];
-                        "application/json": components["schemas"]["SpendingGoalModel"];
-                        "text/json": components["schemas"]["SpendingGoalModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/funds/{fundId}": {
         parameters: {
             query?: never;
@@ -1099,6 +825,241 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/fund-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves Fund Plans matching the provided query. */
+        get: {
+            parameters: {
+                query?: {
+                    "Filter.FundIds"?: string[];
+                    "Filter.AccountingPeriodIds"?: string[];
+                    "Filter.IncludeOnboarded"?: boolean;
+                    /** @description Gets the optional Fund Plan ordering. */
+                    Sort?: components["schemas"]["FundPlanSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfFundPlanModel"];
+                        "application/json": components["schemas"]["CollectionModelOfFundPlanModel"];
+                        "text/json": components["schemas"]["CollectionModelOfFundPlanModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/fund-plans/{fundPlanId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves a Fund Plan by ID. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    fundPlanId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["FundPlanModel"];
+                        "application/json": components["schemas"]["FundPlanModel"];
+                        "text/json": components["schemas"]["FundPlanModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Updates Fund Plan configuration for its associated open Accounting Period or onboarding state. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    fundPlanId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateFundPlanModel"];
+                    "text/json": components["schemas"]["UpdateFundPlanModel"];
+                    "application/*+json": components["schemas"]["UpdateFundPlanModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/fund-plans/fund/{fundId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves the Fund Plan associated with a Fund and Accounting Period, or its onboarded plan when the Accounting Period ID is null. */
+        get: {
+            parameters: {
+                query?: {
+                    accountingPeriodId?: string;
+                };
+                header?: never;
+                path: {
+                    fundId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["FundPlanModel"];
+                        "application/json": components["schemas"]["FundPlanModel"];
+                        "text/json": components["schemas"]["FundPlanModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/fund-plans/{fundPlanId}/progress/{accountingPeriodId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves Fund Plan progress for an Accounting Period. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    fundPlanId: string;
+                    accountingPeriodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["FundPlanProgressModel"];
+                        "application/json": components["schemas"]["FundPlanProgressModel"];
+                        "text/json": components["schemas"]["FundPlanProgressModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/fund-plans/{fundPlanId}/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves current Fund availability. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    fundPlanId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["FundAvailabilityModel"];
+                        "application/json": components["schemas"]["FundAvailabilityModel"];
+                        "text/json": components["schemas"]["FundAvailabilityModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/balance-events/accounts/date-range": {
         parameters: {
             query?: never;
@@ -1311,23 +1272,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/balance-events/goals/date-range": {
+    "/balance-events/fund-plans/date-range": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Retrieves Goal Balance Events in a date range. */
+        /** Retrieves Fund Plan balance events in a date range. */
         get: {
             parameters: {
                 query?: {
                     "Range.Start"?: string;
                     "Range.End"?: string;
-                    "Filter.AccountingPeriodIds"?: string[];
                     "Filter.FundIds"?: string[];
-                    /** @description Sort order to apply to the results. */
-                    Sort?: components["schemas"]["GoalBalanceEventSortModel"];
+                    "Filter.AccountingPeriodIds"?: string[];
+                    "Filter.IncludeOnboarded"?: boolean;
+                    /** @description Optional event ordering. */
+                    Sort?: components["schemas"]["FundPlanBalanceEventSortModel"];
                     Limit?: number;
                     Offset?: number;
                 };
@@ -1343,9 +1305,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["CollectionModelOfGoalBalanceEventModel"];
-                        "application/json": components["schemas"]["CollectionModelOfGoalBalanceEventModel"];
-                        "text/json": components["schemas"]["CollectionModelOfGoalBalanceEventModel"];
+                        "text/plain": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
+                        "application/json": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
+                        "text/json": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
                     };
                 };
             };
@@ -1358,23 +1320,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/balance-events/goals/accounting-period-range": {
+    "/balance-events/fund-plans/accounting-period-range": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Retrieves Goal Balance Events in an Accounting Period range. */
+        /** Retrieves Fund Plan balance events in an Accounting Period range. */
         get: {
             parameters: {
                 query?: {
                     "Range.Start"?: string;
                     "Range.End"?: string;
-                    "Filter.AccountingPeriodIds"?: string[];
                     "Filter.FundIds"?: string[];
-                    /** @description Sort order to apply to the results. */
-                    Sort?: components["schemas"]["GoalBalanceEventSortModel"];
+                    "Filter.AccountingPeriodIds"?: string[];
+                    "Filter.IncludeOnboarded"?: boolean;
+                    /** @description Optional event ordering. */
+                    Sort?: components["schemas"]["FundPlanBalanceEventSortModel"];
                     Limit?: number;
                     Offset?: number;
                 };
@@ -1390,20 +1353,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["CollectionModelOfGoalBalanceEventModel"];
-                        "application/json": components["schemas"]["CollectionModelOfGoalBalanceEventModel"];
-                        "text/json": components["schemas"]["CollectionModelOfGoalBalanceEventModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/plain": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
+                        "application/json": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
+                        "text/json": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
                     };
                 };
             };
@@ -2599,60 +2551,6 @@ export interface components {
         AccountWithBalanceRangeSortModel: AccountWithBalanceRangeSortModel | null;
         /** @enum {unknown} */
         AccountWithBalanceSortModel: AccountWithBalanceSortModel | null;
-        /** @description Model representing an Assignment Goal */
-        AssignmentGoalModel: {
-            /**
-             * Format: uuid
-             * @description ID for the Assignment Goal
-             */
-            id: string;
-            /** @description Fund for the Assignment Goal. */
-            fund: components["schemas"]["FundModel"];
-            accountingPeriod: null | components["schemas"]["AccountingPeriodModel"];
-            /** @description Type for the Assignment Goal */
-            type: components["schemas"]["AssignmentGoalTypeModel"];
-            /**
-             * Format: double
-             * @description Goal amount for the Assignment Goal
-             */
-            goalAmount: number;
-            /**
-             * Format: double
-             * @description Total amount to assign for the Assignment Goal
-             */
-            totalAmountToAssign: number;
-            /**
-             * Format: double
-             * @description Total amount assigned for the Assignment Goal
-             */
-            totalAmountAssigned: number;
-            /**
-             * Format: double
-             * @description Total amount assigned including pending assigned amounts for the Assignment Goal
-             */
-            totalAmountAssignedIncludingPending: number;
-            /**
-             * Format: double
-             * @description Remaining amount to assign for the Assignment Goal
-             */
-            remainingAmountToAssign: number;
-            /**
-             * Format: double
-             * @description Remaining amount to assign including pending assigned amounts for the Assignment Goal
-             */
-            remainingAmountToAssignIncludingPending: number;
-            /** @description Whether the Assignment Goal has been met */
-            isGoalMet: boolean;
-            /** @description Whether the Assignment Goal has been met including pending assigned amounts */
-            isGoalMetIncludingPending: boolean;
-        };
-        /** @enum {unknown} */
-        AssignmentGoalSortModel: AssignmentGoalSortModel | null;
-        /**
-         * @description Enum representing the supported assignment goal behaviors.
-         * @enum {unknown}
-         */
-        AssignmentGoalTypeModel: AssignmentGoalTypeModel;
         /**
          * @description Model representing the type of a balance event.
          * @enum {unknown}
@@ -2719,16 +2617,6 @@ export interface components {
             totalCount: number;
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
-        CollectionModelOfAssignmentGoalModel: {
-            /** @description The collection of items. */
-            items: components["schemas"]["AssignmentGoalModel"][];
-            /**
-             * Format: int32
-             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
-             */
-            totalCount: number;
-        };
-        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfFundBalanceEventModel: {
             /** @description The collection of items. */
             items: components["schemas"]["FundBalanceEventModel"][];
@@ -2742,6 +2630,26 @@ export interface components {
         CollectionModelOfFundModel: {
             /** @description The collection of items. */
             items: components["schemas"]["FundModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfFundPlanBalanceEventModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["FundPlanBalanceEventModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfFundPlanModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["FundPlanModel"][];
             /**
              * Format: int32
              * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
@@ -2769,26 +2677,6 @@ export interface components {
             totalCount: number;
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
-        CollectionModelOfGoalBalanceEventModel: {
-            /** @description The collection of items. */
-            items: components["schemas"]["GoalBalanceEventModel"][];
-            /**
-             * Format: int32
-             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
-             */
-            totalCount: number;
-        };
-        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
-        CollectionModelOfSpendingGoalModel: {
-            /** @description The collection of items. */
-            items: components["schemas"]["SpendingGoalModel"][];
-            /**
-             * Format: int32
-             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
-             */
-            totalCount: number;
-        };
-        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfTransactionModel: {
             /** @description The collection of items. */
             items: components["schemas"]["TransactionModel"][];
@@ -2797,6 +2685,26 @@ export interface components {
              * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
              */
             totalCount: number;
+        };
+        /** @description Model describing contribution progress. */
+        ContributionProgressModel: {
+            /**
+             * Format: double
+             * @description Gets the recommended contribution.
+             */
+            targetAmount: number;
+            /**
+             * Format: double
+             * @description Gets the amount assigned.
+             */
+            assignedAmount: number;
+            /**
+             * Format: double
+             * @description Gets the nonnegative remaining amount.
+             */
+            remainingAmount: number;
+            /** @description Gets whether the recommendation is satisfied. */
+            isSatisfied: boolean;
         };
         /** @description Model representing a request to create an Accounting Period */
         CreateAccountingPeriodModel: {
@@ -2877,15 +2785,26 @@ export interface components {
              * @description Accounting Period that the Fund is being added to
              */
             accountingPeriodId: string;
-            /** @description Assignment goal behavior for the Fund. */
-            assignmentGoalType: components["schemas"]["AssignmentGoalTypeModel"];
             /**
              * Format: double
-             * @description Assignment goal amount for the Fund.
+             * @description Regular contribution for the Fund Plan.
              */
-            assignmentGoalAmount: number;
-            /** @description Spending goal behavior for the Fund. */
-            spendingGoalType: components["schemas"]["SpendingGoalTypeModel"];
+            regularContribution?: null | number;
+            /**
+             * Format: double
+             * @description Minimum funded balance for the Fund Plan.
+             */
+            minimumFundedBalance?: null | number;
+            /**
+             * Format: double
+             * @description Maximum funded balance for the Fund Plan.
+             */
+            maximumFundedBalance?: null | number;
+            /**
+             * Format: double
+             * @description Target ending balance for the Fund Plan.
+             */
+            targetEndingBalance?: null | number;
         };
         /** @description Model representing a destination of a fund transaction create request. */
         CreateFundTransactionDestinationModel: {
@@ -3088,12 +3007,59 @@ export interface components {
              */
             amount: number;
         };
+        /** @description Model describing ending-balance progress. */
+        EndingBalanceProgressModel: {
+            /**
+             * Format: double
+             * @description Gets the target ending balance.
+             */
+            targetBalance: number;
+            /**
+             * Format: double
+             * @description Gets the current balance.
+             */
+            currentBalance: number;
+            /**
+             * Format: double
+             * @description Gets current balance minus target balance.
+             */
+            variance: number;
+            /** @description Gets the ending-balance status. */
+            status: components["schemas"]["EndingBalanceStatusModel"];
+            /**
+             * Format: double
+             * @description Gets the projected ending balance when available.
+             */
+            projectedEndingBalance?: null | number;
+        };
+        /**
+         * @description Status of a balance relative to its ending target.
+         * @enum {unknown}
+         */
+        EndingBalanceStatusModel: EndingBalanceStatusModel;
         FundAmountModel: {
             /** Format: uuid */
             fundId: string;
             fundName: string;
             /** Format: decimal */
             amount: number;
+        };
+        /** @description Model describing the current availability of a Fund. */
+        FundAvailabilityModel: {
+            /**
+             * Format: double
+             * @description Gets the posted available balance.
+             */
+            availableBalance: number;
+            /**
+             * Format: double
+             * @description Gets the available balance including pending activity.
+             */
+            availableBalanceIncludingPending: number;
+            /** @description Gets whether the posted balance is overspent. */
+            isOverspent: boolean;
+            /** @description Gets whether the balance including pending activity is overspent. */
+            isOverspentIncludingPending: boolean;
         };
         /** @description Model representing a balance event for a fund. */
         FundBalanceEventModel: {
@@ -3195,6 +3161,41 @@ export interface components {
              */
             totalUnassignedBalance: number;
         };
+        /** @description Model describing post-assignment funded-balance progress. */
+        FundedBalanceProgressModel: {
+            /**
+             * Format: double
+             * @description Gets the funded balance.
+             */
+            balance: number;
+            /**
+             * Format: double
+             * @description Gets the configured minimum balance.
+             */
+            minimumBalance?: null | number;
+            /**
+             * Format: double
+             * @description Gets the configured maximum balance.
+             */
+            maximumBalance?: null | number;
+            /**
+             * Format: double
+             * @description Gets the amount below the minimum.
+             */
+            amountBelowMinimum: number;
+            /**
+             * Format: double
+             * @description Gets the amount above the maximum.
+             */
+            amountAboveMaximum: number;
+            /** @description Gets the funded-balance status. */
+            status: components["schemas"]["FundedBalanceStatusModel"];
+        };
+        /**
+         * @description Status of a funded balance relative to configured bounds.
+         * @enum {unknown}
+         */
+        FundedBalanceStatusModel: FundedBalanceStatusModel;
         /** @description Model representing a Fund */
         FundModel: {
             /**
@@ -3206,6 +3207,100 @@ export interface components {
             name: string;
             /** @description Description for the Fund */
             description: string;
+        };
+        /** @description Balance event showing a Transaction's effect on Fund Plan totals. */
+        FundPlanBalanceEventModel: {
+            /** @description Fund whose plan totals were affected. */
+            fund: components["schemas"]["FundModel"];
+            /** @description Totals immediately before the Transaction. */
+            previousTotals: components["schemas"]["FundPlanTotalsModel"];
+            /** @description Totals immediately after the Transaction. */
+            newTotals: components["schemas"]["FundPlanTotalsModel"];
+            /** @description Accounting Period for the balance event. */
+            accountingPeriod: components["schemas"]["AccountingPeriodModel"];
+            /**
+             * Format: uuid
+             * @description Transaction for the balance event.
+             */
+            transactionId: string;
+            /**
+             * Format: date
+             * @description Date for the balance event, or null if it's still pending.
+             */
+            date?: null | string;
+            /** @description Type of balance event. */
+            type: components["schemas"]["BalanceEventTypeModel"];
+            /** @description True if the balance event has been posted, false otherwise. */
+            isPosted: boolean;
+            /**
+             * Format: double
+             * @description Amount associated with the balance event.
+             */
+            amount: number;
+        };
+        /** @enum {unknown} */
+        FundPlanBalanceEventSortModel: FundPlanBalanceEventSortModel | null;
+        /** @description Model representing a Fund Plan for an Accounting Period. */
+        FundPlanModel: {
+            /**
+             * Format: uuid
+             * @description Gets the Fund Plan ID.
+             */
+            id: string;
+            /** @description Gets the Fund associated with the plan. */
+            fund: components["schemas"]["FundModel"];
+            accountingPeriod?: null | components["schemas"]["AccountingPeriodModel"];
+            /**
+             * Format: double
+             * @description Gets the regular contribution.
+             */
+            regularContribution?: null | number;
+            /**
+             * Format: double
+             * @description Gets the minimum funded balance.
+             */
+            minimumFundedBalance?: null | number;
+            /**
+             * Format: double
+             * @description Gets the maximum funded balance.
+             */
+            maximumFundedBalance?: null | number;
+            /**
+             * Format: double
+             * @description Gets the target ending balance.
+             */
+            targetEndingBalance?: null | number;
+        };
+        /** @description Model comparing a Fund's financial state with its Fund Plan. */
+        FundPlanProgressModel: {
+            contribution?: null | components["schemas"]["ContributionProgressModel"];
+            fundedBalance?: null | components["schemas"]["FundedBalanceProgressModel"];
+            endingBalance?: null | components["schemas"]["EndingBalanceProgressModel"];
+        };
+        /** @enum {unknown} */
+        FundPlanSortModel: FundPlanSortModel | null;
+        /** @description Model representing assignment and spending totals for a Fund Plan. */
+        FundPlanTotalsModel: {
+            /**
+             * Format: double
+             * @description Posted amount assigned.
+             */
+            amountAssigned: number;
+            /**
+             * Format: double
+             * @description Pending amount assigned.
+             */
+            pendingAmountAssigned: number;
+            /**
+             * Format: double
+             * @description Posted amount spent.
+             */
+            amountSpent: number;
+            /**
+             * Format: double
+             * @description Pending amount spent.
+             */
+            pendingAmountSpent: number;
         };
         /** @description Model representing the collection of Funds within a specified accounting period range. */
         FundsInAccountingPeriodRangeModel: {
@@ -3245,13 +3340,13 @@ export interface components {
         FundTransactionDestinationModel: {
             /** @description Fund for the destination. */
             fund: components["schemas"]["FundBalanceEventModel"];
-            goal?: null | components["schemas"]["GoalBalanceEventModel"];
+            fundPlan?: null | components["schemas"]["FundPlanBalanceEventModel"];
         };
         /** @description Model representing the source of a fund transaction response. */
         FundTransactionSourceModel: {
             /** @description Fund for the source. */
             fund: components["schemas"]["FundBalanceEventModel"];
-            goal?: null | components["schemas"]["GoalBalanceEventModel"];
+            fundPlan?: null | components["schemas"]["FundPlanBalanceEventModel"];
         };
         /** @description Model representing a Fund along with its current balance. */
         FundWithBalanceModel: {
@@ -3293,61 +3388,6 @@ export interface components {
         FundWithBalanceRangeSortModel: FundWithBalanceRangeSortModel | null;
         /** @enum {unknown} */
         FundWithBalanceSortModel: FundWithBalanceSortModel | null;
-        /** @description Model representing a balance event for a Goal. */
-        GoalBalanceEventModel: {
-            /** @description Fund affected by the balance event. */
-            fund: components["schemas"]["FundModel"];
-            /** @description Goal balance prior to the balance event. */
-            previousBalance: components["schemas"]["GoalBalanceModel"];
-            /** @description Goal balance after the balance event. */
-            newBalance: components["schemas"]["GoalBalanceModel"];
-            /** @description Accounting Period for the balance event. */
-            accountingPeriod: components["schemas"]["AccountingPeriodModel"];
-            /**
-             * Format: uuid
-             * @description Transaction for the balance event.
-             */
-            transactionId: string;
-            /**
-             * Format: date
-             * @description Date for the balance event, or null if it's still pending.
-             */
-            date?: null | string;
-            /** @description Type of balance event. */
-            type: components["schemas"]["BalanceEventTypeModel"];
-            /** @description True if the balance event has been posted, false otherwise. */
-            isPosted: boolean;
-            /**
-             * Format: double
-             * @description Amount associated with the balance event.
-             */
-            amount: number;
-        };
-        /** @enum {unknown} */
-        GoalBalanceEventSortModel: GoalBalanceEventSortModel | null;
-        /** @description Model representing the assignment and spending balance for a Goal. */
-        GoalBalanceModel: {
-            /**
-             * Format: double
-             * @description Posted amount assigned to the Goal.
-             */
-            amountAssigned: number;
-            /**
-             * Format: double
-             * @description Pending amount assigned to the Goal.
-             */
-            pendingAmountAssigned: number;
-            /**
-             * Format: double
-             * @description Posted amount spent from the Goal.
-             */
-            amountSpent: number;
-            /**
-             * Format: double
-             * @description Pending amount spent from the Goal.
-             */
-            pendingAmountSpent: number;
-        };
         /** @description Model representing an income amount. */
         IncomeAmountModel: {
             /**
@@ -3402,8 +3442,8 @@ export interface components {
             postedDate: null | string;
             /** @description Fund assignments for this destination. */
             fundAssignments: components["schemas"]["FundBalanceEventModel"][];
-            /** @description Goals for this destination. */
-            goals: components["schemas"]["GoalBalanceEventModel"][];
+            /** @description Fund Plan balance events for this destination. */
+            fundPlans: components["schemas"]["FundPlanBalanceEventModel"][];
         };
         /** @description Model representing the source of an income transaction response. */
         IncomeTransactionSourceModel: {
@@ -3438,15 +3478,26 @@ export interface components {
              * @description Starting balance assigned during onboarding
              */
             onboardedBalance: number;
-            /** @description Assignment goal behavior for the Fund. */
-            assignmentGoalType: components["schemas"]["AssignmentGoalTypeModel"];
             /**
              * Format: double
-             * @description Assignment goal amount for the Fund.
+             * @description Regular contribution for the Fund Plan.
              */
-            assignmentGoalAmount: number;
-            /** @description Spending goal behavior for the Fund. */
-            spendingGoalType: components["schemas"]["SpendingGoalTypeModel"];
+            regularContribution?: null | number;
+            /**
+             * Format: double
+             * @description Minimum funded balance for the Fund Plan.
+             */
+            minimumFundedBalance?: null | number;
+            /**
+             * Format: double
+             * @description Maximum funded balance for the Fund Plan.
+             */
+            maximumFundedBalance?: null | number;
+            /**
+             * Format: double
+             * @description Target ending balance for the Fund Plan.
+             */
+            targetEndingBalance?: null | number;
         };
         /** @description Model representing a request to post a Transaction */
         PostTransactionModel: {
@@ -3469,55 +3520,6 @@ export interface components {
             detail?: null | string;
             instance?: null | string;
         };
-        /** @description Model representing a Spending Goal. */
-        SpendingGoalModel: {
-            /**
-             * Format: uuid
-             * @description ID of the Spending Goal.
-             */
-            id: string;
-            /** @description Fund for the Spending Goal. */
-            fund: components["schemas"]["FundModel"];
-            accountingPeriod: null | components["schemas"]["AccountingPeriodModel"];
-            /** @description Type of the Spending Goal. */
-            type: components["schemas"]["SpendingGoalTypeModel"];
-            /**
-             * Format: double
-             * @description Total amount to spend for the Spending Goal
-             */
-            totalAmountToSpend: number;
-            /**
-             * Format: double
-             * @description Total amount spent for the Spending Goal
-             */
-            totalAmountSpent: number;
-            /**
-             * Format: double
-             * @description Total amount spent including pending assigned amounts for the Spending Goal
-             */
-            totalAmountSpentIncludingPending: number;
-            /**
-             * Format: double
-             * @description Remaining amount to spend for the Spending Goal
-             */
-            remainingAmountToSpend: number;
-            /**
-             * Format: double
-             * @description Remaining amount to spend including pending assigned amounts for the Spending Goal
-             */
-            remainingAmountToSpendIncludingPending: number;
-            /** @description Whether the Spending Goal has been met */
-            isGoalMet: boolean;
-            /** @description Whether the Spending Goal has been met including pending assigned amounts */
-            isGoalMetIncludingPending: boolean;
-        };
-        /** @enum {unknown} */
-        SpendingGoalSortModel: SpendingGoalSortModel | null;
-        /**
-         * @description Enum representing the supported spending goal behaviors.
-         * @enum {unknown}
-         */
-        SpendingGoalTypeModel: SpendingGoalTypeModel;
         /** @description Model representing a destination of a spending transaction response. */
         SpendingTransactionDestinationModel: {
             account?: null | components["schemas"]["AccountBalanceEventModel"];
@@ -3535,8 +3537,8 @@ export interface components {
             postedDate: null | string;
             /** @description Fund assignments for this destination. */
             fundAssignments: components["schemas"]["FundBalanceEventModel"][];
-            /** @description Goals for this destination. */
-            goals: components["schemas"]["GoalBalanceEventModel"][];
+            /** @description Fund Plan balance events for this destination. */
+            fundPlans: components["schemas"]["FundPlanBalanceEventModel"][];
         };
         /** @description Model representing the source of a spending transaction response. */
         SpendingTransactionSourceModel: {
@@ -3804,22 +3806,35 @@ export interface components {
             /** @description Optional location for the source. */
             location?: null | string;
         };
-        /** @description Model representing a request to update an Assignment Goal */
-        UpdateAssignmentGoalModel: {
-            /** @description Assignment goal type for the Goal */
-            assignmentGoalType: components["schemas"]["AssignmentGoalTypeModel"];
-            /**
-             * Format: double
-             * @description Goal amount for the Assignment Goal
-             */
-            goalAmount: number;
-        };
         /** @description Model representing a request to update a Fund */
         UpdateFundModel: {
             /** @description Name for the Fund */
             name: string;
             /** @description Description for the Fund */
             description: string;
+        };
+        /** @description Model representing Fund Plan configuration updates. */
+        UpdateFundPlanModel: {
+            /**
+             * Format: double
+             * @description Gets the new regular contribution.
+             */
+            regularContribution?: null | number;
+            /**
+             * Format: double
+             * @description Gets the new minimum funded balance.
+             */
+            minimumFundedBalance?: null | number;
+            /**
+             * Format: double
+             * @description Gets the new maximum funded balance.
+             */
+            maximumFundedBalance?: null | number;
+            /**
+             * Format: double
+             * @description Gets the new target ending balance.
+             */
+            targetEndingBalance?: null | number;
         };
         /** @description Model representing a destination of a fund transaction update request. */
         UpdateFundTransactionDestinationModel: {
@@ -3890,11 +3905,6 @@ export interface components {
             incomeLines: components["schemas"]["UpdateIncomeLineModel"][];
             /** @description Income deductions for the source. */
             incomeDeductions: components["schemas"]["UpdateIncomeDeductionModel"][];
-        };
-        /** @description Model representing a request to update a Spending Goal */
-        UpdateSpendingGoalModel: {
-            /** @description Spending goal type for the Spending Goal */
-            spendingGoalType: components["schemas"]["SpendingGoalTypeModel"];
         };
         /** @description Model representing a destination of a spending transaction update request. */
         UpdateSpendingTransactionDestinationModel: {
@@ -4088,26 +4098,6 @@ export enum AccountWithBalanceSortModel {
     PostedBalance = "PostedBalance",
     PostedBalanceDescending = "PostedBalanceDescending"
 }
-export enum AssignmentGoalSortModel {
-    AccountingPeriod = "AccountingPeriod",
-    AccountingPeriodDescending = "AccountingPeriodDescending",
-    Fund = "Fund",
-    FundDescending = "FundDescending",
-    Type = "Type",
-    TypeDescending = "TypeDescending",
-    GoalAmount = "GoalAmount",
-    GoalAmountDescending = "GoalAmountDescending",
-    TotalAmountToAssign = "TotalAmountToAssign",
-    TotalAmountToAssignDescending = "TotalAmountToAssignDescending",
-    TotalAmountAssigned = "TotalAmountAssigned",
-    TotalAmountAssignedDescending = "TotalAmountAssignedDescending",
-    IsMet = "IsMet",
-    IsMetDescending = "IsMetDescending"
-}
-export enum AssignmentGoalTypeModel {
-    MonthlyTarget = "MonthlyTarget",
-    RecurringContribution = "RecurringContribution"
-}
 export enum BalanceEventTypeModel {
     Debit = "Debit",
     Credit = "Credit"
@@ -4124,6 +4114,11 @@ export enum CreateTransactionModelCreateIncomeTransactionModelType {
 export enum CreateTransactionModelCreateSpendingTransactionModelType {
     Spending = "Spending"
 }
+export enum EndingBalanceStatusModel {
+    BelowTarget = "BelowTarget",
+    AtTarget = "AtTarget",
+    AboveTarget = "AboveTarget"
+}
 export enum FundBalanceEventSortModel {
     FundName = "FundName",
     FundNameDescending = "FundNameDescending",
@@ -4135,6 +4130,25 @@ export enum FundBalanceEventSortModel {
     TypeDescending = "TypeDescending",
     Amount = "Amount",
     AmountDescending = "AmountDescending"
+}
+export enum FundedBalanceStatusModel {
+    BelowMinimum = "BelowMinimum",
+    WithinRange = "WithinRange",
+    AboveMaximum = "AboveMaximum"
+}
+export enum FundPlanBalanceEventSortModel {
+    FundName = "FundName",
+    FundNameDescending = "FundNameDescending",
+    Date = "Date",
+    DateDescending = "DateDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    Amount = "Amount",
+    AmountDescending = "AmountDescending"
+}
+export enum FundPlanSortModel {
+    Fund = "Fund",
+    FundDescending = "FundDescending"
 }
 export enum FundSortModel {
     Name = "Name",
@@ -4159,36 +4173,6 @@ export enum FundWithBalanceSortModel {
     DescriptionDescending = "DescriptionDescending",
     PostedBalance = "PostedBalance",
     PostedBalanceDescending = "PostedBalanceDescending"
-}
-export enum GoalBalanceEventSortModel {
-    FundName = "FundName",
-    FundNameDescending = "FundNameDescending",
-    AccountingPeriodName = "AccountingPeriodName",
-    AccountingPeriodNameDescending = "AccountingPeriodNameDescending",
-    Date = "Date",
-    DateDescending = "DateDescending",
-    Type = "Type",
-    TypeDescending = "TypeDescending",
-    Amount = "Amount",
-    AmountDescending = "AmountDescending"
-}
-export enum SpendingGoalSortModel {
-    AccountingPeriod = "AccountingPeriod",
-    AccountingPeriodDescending = "AccountingPeriodDescending",
-    Fund = "Fund",
-    FundDescending = "FundDescending",
-    Type = "Type",
-    TypeDescending = "TypeDescending",
-    TotalAmountToSpend = "TotalAmountToSpend",
-    TotalAmountToSpendDescending = "TotalAmountToSpendDescending",
-    TotalAmountSpent = "TotalAmountSpent",
-    TotalAmountSpentDescending = "TotalAmountSpentDescending",
-    IsMet = "IsMet",
-    IsMetDescending = "IsMetDescending"
-}
-export enum SpendingGoalTypeModel {
-    Standard = "Standard",
-    Debt = "Debt"
 }
 export enum TransactionModelAccountTransactionModelType {
     Account = "Account"

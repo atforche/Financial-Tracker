@@ -1,6 +1,5 @@
 "use client";
 
-import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import { type JSX, useState } from "react";
 import { Stack, Typography } from "@mui/material";
 import type { AccountWithBalance } from "@/accounts/types";
@@ -9,6 +8,7 @@ import CreateAccountTransactionForm from "@/transactions/workspace/account/Creat
 import CreateFundTransactionForm from "@/transactions/workspace/fund/CreateFundTransactionForm";
 import CreateIncomeTransactionForm from "@/transactions/workspace/income/CreateIncomeTransactionForm";
 import CreateSpendingTransactionForm from "@/transactions/workspace/spending/CreateSpendingTransactionForm";
+import type { FundPlanWithProgress } from "@/goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import PageLayout from "@/framework/view/PageLayout";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
@@ -20,8 +20,7 @@ interface CreateTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
-  readonly assignmentGoals: AssignmentGoal[];
-  readonly spendingGoals: SpendingGoal[];
+  readonly fundPlans: FundPlanWithProgress[];
   readonly redirectUrl: string;
   readonly showHeading?: boolean;
 }
@@ -33,8 +32,7 @@ const CreateTransactionForm = function ({
   accountingPeriods,
   accounts,
   funds,
-  assignmentGoals,
-  spendingGoals,
+  fundPlans,
   redirectUrl,
   showHeading = true,
 }: CreateTransactionFormProps): JSX.Element {
@@ -70,7 +68,7 @@ const CreateTransactionForm = function ({
           accountingPeriods={accountingPeriods}
           accounts={accounts}
           funds={funds}
-          assignmentGoals={assignmentGoals}
+          fundPlans={fundPlans}
           redirectUrl={redirectUrl}
         />
       ) : null}
@@ -79,7 +77,7 @@ const CreateTransactionForm = function ({
           accountingPeriods={accountingPeriods}
           accounts={accounts}
           funds={funds}
-          spendingGoals={spendingGoals}
+          fundPlans={fundPlans}
           redirectUrl={redirectUrl}
         />
       ) : null}

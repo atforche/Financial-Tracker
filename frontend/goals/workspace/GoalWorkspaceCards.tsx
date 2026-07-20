@@ -1,6 +1,10 @@
 "use client";
 
-import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
+import {
+  EndingBalanceStatus,
+  type FundPlanWithProgress,
+  FundedBalanceStatus,
+} from "@/goals/types";
 import { Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import GoalProgress from "@/goals/workspace/GoalProgress";
@@ -17,8 +21,7 @@ import { useSearchParams } from "next/navigation";
  */
 interface GoalWorkspaceCardsProps {
   readonly accountingPeriod: AccountingPeriod | null;
-  readonly assignmentGoals: AssignmentGoal[];
-  readonly spendingGoals: SpendingGoal[];
+  readonly fundPlans: FundPlanWithProgress[];
 }
 
 /**
@@ -26,8 +29,7 @@ interface GoalWorkspaceCardsProps {
  */
 const GoalWorkspaceCards = function ({
   accountingPeriod,
-  assignmentGoals,
-  spendingGoals,
+  fundPlans,
 }: GoalWorkspaceCardsProps): JSX.Element {
   const searchParams = useSearchParams();
   const search = (
@@ -35,71 +37,74 @@ const GoalWorkspaceCards = function ({
   )
     .trim()
     .toLowerCase();
-  const funds = Array.from(
-    new Map(
-      [...assignmentGoals, ...spendingGoals].map((goal) => [
-        goal.fund.id,
-        goal.fund,
-      ]),
-    ).values(),
-  ).filter((fund) => fund.name.toLowerCase().includes(search));
-
-  if (funds.length === 0) {
+  const filtered = fundPlans.filter((plan) =>
+    plan.fund.name.toLowerCase().includes(search),
+  );
+  if (!filtered.length) {
     return (
       <Typography color="text.secondary">
         No goals match the selected accounting period and search filters.
       </Typography>
     );
   }
-
   return (
     <ResponsiveGrid minimumColumnWidth={340} spacing={2}>
-      {funds.map((fund) => {
-        const assignmentGoal =
-          assignmentGoals.find((goal) => goal.fund.id === fund.id) ?? null;
-        const spendingGoal =
-          spendingGoals.find((goal) => goal.fund.id === fund.id) ?? null;
+      {filtered.map((plan) => {
+        const configured = [
+          plan.progress.contribution,
+          plan.progress.fundedBalance,
+          plan.progress.endingBalance,
+        ].filter(Boolean).length;
+        const satisfied = [
+          plan.progress.contribution?.isSatisfied,
+          plan.progress.fundedBalance?.status ===
+            FundedBalanceStatus.WithinRange,
+          plan.progress.endingBalance?.status === EndingBalanceStatus.AtTarget,
+        ].filter(Boolean).length;
         const detailSearchParams: GoalWorkspaceSearchParams = {
-          ...(accountingPeriod === null
-            ? {}
-            : { accountingPeriodId: accountingPeriod.id }),
-          ...(search === "" ? {} : { search }),
+          ...(accountingPeriod
+            ? { accountingPeriodId: accountingPeriod.id }
+            : {}),
+          ...(search ? { search } : {}),
         };
-        const fundIds = searchParams.getAll(
+        const ids = searchParams.getAll(
           propertyName<GoalWorkspaceSearchParams>("fundIds"),
         );
-        if (fundIds.length > 0) {
-          detailSearchParams.fundIds = fundIds;
-        }
-
-        let goalsMet = 0;
-        if (assignmentGoal?.isGoalMet === true) {
-          goalsMet += 1;
-        }
-        if (spendingGoal?.isGoalMet === true) {
-          goalsMet += 1;
+        if (ids.length) {
+          detailSearchParams.fundIds = ids;
         }
         return (
           <WorkspaceCard
-            key={fund.id}
-            title={fund.name}
-            href={routes.workspaceDetail(fund.id, detailSearchParams)}
+            key={plan.id}
+            title={plan.fund.name}
+            href={routes.workspaceDetail(plan.fund.id, detailSearchParams)}
             color={
-              goalsMet === 2 ? "success" : goalsMet === 1 ? "warning" : "error"
+              configured === 0
+                ? "info"
+                : satisfied === configured
+                  ? "success"
+                  : "warning"
             }
           >
-            <Stack spacing={2.25}>
+            <Stack spacing={2}>
               <Typography variant="body2" color="text.secondary">
                 {accountingPeriod?.name ?? "No accounting period"}
               </Typography>
-              <GoalProgress
-                label="Remaining to assign"
-                progress={assignmentGoal}
-              />
-              <GoalProgress
-                label="Remaining to spend"
-                progress={spendingGoal}
-              />
+              {plan.progress.contribution ? (
+                <GoalProgress
+                  label="Monthly contribution"
+                  current={plan.progress.contribution.assignedAmount}
+                  target={plan.progress.contribution.targetAmount}
+                  satisfied={plan.progress.contribution.isSatisfied}
+                />
+              ) : (
+                <Typography variant="body2">
+                  No contribution goal configured
+                </Typography>
+              )}
+              <Typography variant="body2" color="text.secondary">
+                Available goal dimensions: {configured} of 3
+              </Typography>
             </Stack>
           </WorkspaceCard>
         );
@@ -107,5 +112,4 @@ const GoalWorkspaceCards = function ({
     </ResponsiveGrid>
   );
 };
-
 export default GoalWorkspaceCards;

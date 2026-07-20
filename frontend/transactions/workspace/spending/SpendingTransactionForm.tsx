@@ -25,8 +25,8 @@ import {
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
+import type { FundPlanWithProgress } from "@/goals/types";
 import type { FundWithBalance } from "@/funds/types";
-import type { SpendingGoal } from "@/goals/types";
 import SpendingTransactionDestinationFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFrame";
 import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
@@ -48,7 +48,7 @@ interface SpendingTransactionFormProps<RequestPayload> {
   readonly formRef: RefObject<HTMLDivElement | null>;
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
-  readonly spendingGoals: SpendingGoal[];
+  readonly fundPlans: FundPlanWithProgress[];
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
   readonly setAccountingPeriod?: Dispatch<
@@ -80,7 +80,7 @@ const SpendingTransactionForm = function <RequestPayload>({
   formRef,
   accounts,
   funds,
-  spendingGoals,
+  fundPlans,
   accountingPeriods,
   accountingPeriod,
   setAccountingPeriod = null,
@@ -102,7 +102,7 @@ const SpendingTransactionForm = function <RequestPayload>({
 }: SpendingTransactionFormProps<RequestPayload>): JSX.Element {
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
-  const currentSpendingGoals = spendingGoals.filter(
+  const currentFundPlans = fundPlans.filter(
     (goal) => goal.accountingPeriod?.id === accountingPeriod?.id,
   );
 
@@ -228,7 +228,7 @@ const SpendingTransactionForm = function <RequestPayload>({
               index={index}
               accounts={accounts}
               funds={funds}
-              spendingGoals={currentSpendingGoals}
+              fundPlans={currentFundPlans}
               transaction={null}
               account={destination.account}
               setAccount={(account): void => {

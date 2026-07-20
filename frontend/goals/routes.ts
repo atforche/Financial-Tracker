@@ -27,10 +27,9 @@ const goalWorkspaceSearchParamsToSearchParams = function (
 const goalTrendsSearchParamsToSearchParams = function (
   searchParams: GoalTrendsSearchParams,
 ): URLSearchParams {
-  const { goalType, fundName, ...remainingSearchParams } = searchParams;
+  const { fundName, ...remainingSearchParams } = searchParams;
   const params = objectToSearchParams(remainingSearchParams);
 
-  appendRepeatedSearchParam(params, "goalType", goalType);
   appendRepeatedSearchParam(params, "fundName", fundName);
 
   return params;

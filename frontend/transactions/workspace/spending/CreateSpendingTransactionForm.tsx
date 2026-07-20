@@ -16,8 +16,8 @@ import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { CreateTransactionRequest } from "@/transactions/types";
 import type { Dayjs } from "dayjs";
+import type { FundPlanWithProgress } from "@/goals/types";
 import type { FundWithBalance } from "@/funds/types";
-import type { SpendingGoal } from "@/goals/types";
 import SpendingTransactionForm from "@/transactions/workspace/spending/SpendingTransactionForm";
 import { useCreateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
@@ -28,7 +28,7 @@ interface CreateSpendingTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
-  readonly spendingGoals: SpendingGoal[];
+  readonly fundPlans: FundPlanWithProgress[];
   readonly redirectUrl: string;
 }
 
@@ -39,7 +39,7 @@ const CreateSpendingTransactionForm = function ({
   accountingPeriods,
   accounts,
   funds,
-  spendingGoals,
+  fundPlans,
   redirectUrl,
 }: CreateSpendingTransactionFormProps): JSX.Element {
   const [accountingPeriod, setAccountingPeriod] =
@@ -82,7 +82,7 @@ const CreateSpendingTransactionForm = function ({
       formRef={formRef}
       accounts={accounts}
       funds={funds}
-      spendingGoals={spendingGoals}
+      fundPlans={fundPlans}
       accountingPeriods={accountingPeriods}
       accountingPeriod={accountingPeriod}
       setAccountingPeriod={setAccountingPeriod}

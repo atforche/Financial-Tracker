@@ -1,10 +1,5 @@
 "use client";
-
-import type {
-  AssignmentGoal,
-  GoalBalanceEvent,
-  SpendingGoal,
-} from "@/goals/types";
+import type { FundPlan, FundPlanBalanceEvent } from "@/goals/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import GoalBalanceEventsFrame from "@/goals/workspace/GoalBalanceEventsFrame";
 import GoalContextFrame from "@/goals/workspace/GoalContextFrame";
@@ -15,10 +10,9 @@ import PageLayout from "@/framework/view/PageLayout";
  * Props for the ViewGoalForm component.
  */
 interface ViewGoalFormProps {
-  readonly assignmentGoal: AssignmentGoal;
-  readonly spendingGoal: SpendingGoal;
+  readonly fundPlan: FundPlan;
   readonly redirectUrl: string;
-  readonly recentBalanceEvents: GoalBalanceEvent[];
+  readonly recentBalanceEvents: FundPlanBalanceEvent[];
   readonly recentBalanceEventCount: number;
   readonly addTransactionHref: string;
   readonly accountingPeriodId: string;
@@ -28,34 +22,23 @@ interface ViewGoalFormProps {
 /**
  * Displays paired goal details, recent events, and a dialog-backed edit action.
  */
-const ViewGoalForm = function ({
-  assignmentGoal,
-  spendingGoal,
-  redirectUrl,
-  recentBalanceEvents,
-  recentBalanceEventCount,
-  addTransactionHref,
-  accountingPeriodId,
-  fundId,
-}: ViewGoalFormProps): JSX.Element {
+const ViewGoalForm = function (props: ViewGoalFormProps): JSX.Element {
   return (
     <ConstrainedContent maxWidth={1200}>
       <PageLayout>
         <GoalContextFrame
-          assignmentGoal={assignmentGoal}
-          spendingGoal={spendingGoal}
-          redirectUrl={redirectUrl}
+          fundPlan={props.fundPlan}
+          redirectUrl={props.redirectUrl}
         />
         <GoalBalanceEventsFrame
-          data={recentBalanceEvents}
-          totalCount={recentBalanceEventCount}
-          addTransactionHref={addTransactionHref}
-          accountingPeriodId={accountingPeriodId}
-          fundId={fundId}
+          data={props.recentBalanceEvents}
+          totalCount={props.recentBalanceEventCount}
+          addTransactionHref={props.addTransactionHref}
+          accountingPeriodId={props.accountingPeriodId}
+          fundId={props.fundId}
         />
       </PageLayout>
     </ConstrainedContent>
   );
 };
-
 export default ViewGoalForm;

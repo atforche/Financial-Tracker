@@ -15,8 +15,8 @@ import type {
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { FundPlanWithProgress } from "@/goals/types";
 import type { FundWithBalance } from "@/funds/types";
-import type { SpendingGoal } from "@/goals/types";
 import SpendingTransactionForm from "@/transactions/workspace/spending/SpendingTransactionForm";
 import { useUpdateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
@@ -28,7 +28,7 @@ interface UpdateSpendingTransactionFormProps {
   readonly transactionAccountingPeriod: AccountingPeriod;
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
-  readonly spendingGoals: SpendingGoal[];
+  readonly fundPlans: FundPlanWithProgress[];
   readonly redirectUrl: string;
 }
 
@@ -40,7 +40,7 @@ const UpdateSpendingTransactionForm = function ({
   transactionAccountingPeriod,
   accounts,
   funds,
-  spendingGoals,
+  fundPlans,
   redirectUrl,
 }: UpdateSpendingTransactionFormProps): JSX.Element {
   const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
@@ -80,7 +80,7 @@ const UpdateSpendingTransactionForm = function ({
       formRef={formRef}
       accounts={accounts}
       funds={funds}
-      spendingGoals={spendingGoals}
+      fundPlans={fundPlans}
       accountingPeriods={[transactionAccountingPeriod]}
       accountingPeriod={transactionAccountingPeriod}
       setAccountingPeriod={null}

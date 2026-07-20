@@ -18,9 +18,10 @@ interface ActionState extends FundActionState {
   readonly nameErrors?: string | null;
   readonly descriptionErrors?: string | null;
   readonly accountingPeriodErrors?: string | null;
-  readonly assignmentGoalTypeErrors?: string | null;
-  readonly assignmentGoalAmountErrors?: string | null;
-  readonly spendingGoalTypeErrors?: string | null;
+  readonly regularContributionErrors?: string | null;
+  readonly minimumFundedBalanceErrors?: string | null;
+  readonly maximumFundedBalanceErrors?: string | null;
+  readonly targetEndingBalanceErrors?: string | null;
 }
 
 /**
@@ -48,12 +49,14 @@ const createFund = async function (
         [propertyName<CreateFundRequest>("description")]: "descriptionErrors",
         [propertyName<CreateFundRequest>("accountingPeriodId")]:
           "accountingPeriodErrors",
-        [propertyName<CreateFundRequest>("assignmentGoalType")]:
-          "assignmentGoalTypeErrors",
-        [propertyName<CreateFundRequest>("assignmentGoalAmount")]:
-          "assignmentGoalAmountErrors",
-        [propertyName<CreateFundRequest>("spendingGoalType")]:
-          "spendingGoalTypeErrors",
+        [propertyName<CreateFundRequest>("regularContribution")]:
+          "regularContributionErrors",
+        [propertyName<CreateFundRequest>("minimumFundedBalance")]:
+          "minimumFundedBalanceErrors",
+        [propertyName<CreateFundRequest>("maximumFundedBalance")]:
+          "maximumFundedBalanceErrors",
+        [propertyName<CreateFundRequest>("targetEndingBalance")]:
+          "targetEndingBalanceErrors",
       });
       return {
         ...mappedError,

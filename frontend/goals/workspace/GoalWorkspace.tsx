@@ -3,6 +3,7 @@ import GoalWorkspaceFilter from "@/goals/workspace/GoalWorkspaceFilter";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import createApiClient from "@/framework/data/createApiClient";
+import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
@@ -31,71 +32,68 @@ const GoalWorkspace = async function ({
 }: GoalWorkspaceProps): Promise<JSX.Element> {
   const { accountingPeriodId, fundIds } = await searchParams;
   const apiClient = createApiClient();
-  const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
-    params: { query: { Limit: 500 } },
-  });
-
-  const accountingPeriods = unwrapApiResponse(
-    accountingPeriodsResponse,
+  const periods = unwrapApiResponse(
+    await apiClient.GET("/accounting-periods", {
+      params: { query: { Limit: 500 } },
+    }),
     "Failed to fetch goal workspace filters",
   );
-
-  const selectedAccountingPeriodId =
-    accountingPeriodId ?? accountingPeriods.items[0]?.id;
+  const selectedAccountingPeriodId = accountingPeriodId ?? periods.items[0]?.id;
   const selectedFundIds = toRepeatedSearchParams(fundIds);
-  const [assignmentGoalResponse, spendingGoalResponse] = await Promise.all([
-    apiClient.GET("/goals/assignment", {
+  const plans = unwrapApiResponse(
+    await apiClient.GET("/fund-plans", {
       params: {
         query: {
-          ...(typeof selectedAccountingPeriodId === "string"
+          ...(isNotNullOrUndefined(selectedAccountingPeriodId)
             ? { "Filter.AccountingPeriodIds": [selectedAccountingPeriodId] }
             : {}),
-          ...(selectedFundIds.length > 0
+          ...(selectedFundIds.length
             ? { "Filter.FundIds": selectedFundIds }
             : {}),
+          Limit: 500,
         },
       },
     }),
-    apiClient.GET("/goals/spending", {
-      params: {
-        query: {
-          ...(typeof selectedAccountingPeriodId === "string"
-            ? { "Filter.AccountingPeriodIds": [selectedAccountingPeriodId] }
-            : {}),
-          ...(selectedFundIds.length > 0
-            ? { "Filter.FundIds": selectedFundIds }
-            : {}),
-        },
-      },
-    }),
-  ]);
-  const assignmentGoals = unwrapApiResponse(
-    assignmentGoalResponse,
-    "Failed to fetch assignment goals",
+    "Failed to fetch fund plans",
   );
-  const spendingGoals = unwrapApiResponse(
-    spendingGoalResponse,
-    "Failed to fetch spending goals",
-  );
-
+  const plansWithProgress =
+    typeof selectedAccountingPeriodId === "string"
+      ? await Promise.all(
+          plans.items.map(async (fundPlan) => ({
+            ...fundPlan,
+            progress: unwrapApiResponse(
+              await apiClient.GET(
+                "/fund-plans/{fundPlanId}/progress/{accountingPeriodId}",
+                {
+                  params: {
+                    path: {
+                      fundPlanId: fundPlan.id,
+                      accountingPeriodId: selectedAccountingPeriodId,
+                    },
+                  },
+                },
+              ),
+              "Failed to fetch goal progress",
+            ),
+          })),
+        )
+      : [];
   return (
     <PageLayout>
       <GoalWorkspaceFilter
-        accountingPeriods={accountingPeriods.items}
+        accountingPeriods={periods.items}
         selectedAccountingPeriodId={selectedAccountingPeriodId ?? null}
       />
       <GoalWorkspaceCards
         accountingPeriod={
-          accountingPeriods.items.find(
+          periods.items.find(
             (period) => period.id === selectedAccountingPeriodId,
           ) ?? null
         }
-        assignmentGoals={assignmentGoals.items}
-        spendingGoals={spendingGoals.items}
+        fundPlans={plansWithProgress}
       />
     </PageLayout>
   );
 };
-
 export type { GoalWorkspaceSearchParams };
 export default GoalWorkspace;

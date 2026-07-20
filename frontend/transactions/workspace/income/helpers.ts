@@ -18,7 +18,7 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 import type { FundBalanceEvent } from "@/funds/types";
-import type { GoalBalanceEvent } from "@/goals/types";
+import type { FundPlanBalanceEvent } from "@/goals/types";
 import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/accountBalanceEventDraft";
 import { hasIncompleteFundAssignments } from "@/funds/helpers";
 import { isTrackedAccountType } from "@/accounts/helpers";
@@ -404,23 +404,19 @@ const getSourceFromTransaction = function (
  */
 const getFundAssignmentFromTransactionFund = (
   assignment: FundBalanceEvent,
-  goal: GoalBalanceEvent | null = null,
+  fundPlan: FundPlanBalanceEvent | null = null,
 ): FundAssignmentDraft => ({
   fundId: assignment.fund.id,
   fundName: assignment.fund.name,
   amount: assignment.amount,
   previousFundBalance: assignment.previousBalance.postedBalance,
   newFundBalance: assignment.newBalance.postedBalance,
-  previousGoalBalance: {
-    remainingAmount:
-      (goal?.previousBalance.amountAssigned ?? 0) +
-      (goal?.previousBalance.pendingAmountAssigned ?? 0),
-  },
-  newGoalBalance: {
-    remainingAmount:
-      (goal?.newBalance.amountAssigned ?? 0) +
-      (goal?.newBalance.pendingAmountAssigned ?? 0),
-  },
+  previousPlanAmount:
+    (fundPlan?.previousTotals.amountAssigned ?? 0) +
+    (fundPlan?.previousTotals.pendingAmountAssigned ?? 0),
+  newPlanAmount:
+    (fundPlan?.newTotals.amountAssigned ?? 0) +
+    (fundPlan?.newTotals.pendingAmountAssigned ?? 0),
 });
 
 /**
@@ -438,16 +434,16 @@ const getDestinationsFromTransaction = function (
       fundAssignments: destination.fundAssignments.map((assignment) =>
         getFundAssignmentFromTransactionFund(
           assignment,
-          destination.goals.find(
-            (goal) => goal.fund.id === assignment.fund.id,
+          destination.fundPlans.find(
+            (fundPlan) => fundPlan.fund.id === assignment.fund.id,
           ) ?? null,
         ),
       ),
       baselineFundAssignments: destination.fundAssignments.map((assignment) =>
         getFundAssignmentFromTransactionFund(
           assignment,
-          destination.goals.find(
-            (goal) => goal.fund.id === assignment.fund.id,
+          destination.fundPlans.find(
+            (fundPlan) => fundPlan.fund.id === assignment.fund.id,
           ) ?? null,
         ),
       ),

@@ -1,54 +1,58 @@
 import {
-  AssignmentGoalSortModel,
-  AssignmentGoalTypeModel,
-  GoalBalanceEventSortModel,
-  SpendingGoalSortModel,
-  SpendingGoalTypeModel,
+  EndingBalanceStatusModel,
+  FundPlanBalanceEventSortModel,
+  FundPlanSortModel,
+  FundedBalanceStatusModel,
   type components,
 } from "@/framework/data/api";
 
 /**
- * Type representing an Assignment Goal.
+ * Type representing a Fund Plan.
  */
-type AssignmentGoal = components["schemas"]["AssignmentGoalModel"];
+type FundPlan = components["schemas"]["FundPlanModel"];
 
 /**
- * Type representing a Spending Goal.
+ * Type representing Fund Plan progress.
  */
-type SpendingGoal = components["schemas"]["SpendingGoalModel"];
+type FundPlanProgress = components["schemas"]["FundPlanProgressModel"];
 
 /**
- * Type representing a request to update an Assignment Goal.
+ * A Fund Plan paired with its calculated progress for the selected period.
  */
-type UpdateAssignmentGoalRequest =
-  components["schemas"]["UpdateAssignmentGoalModel"];
+interface FundPlanWithProgress extends FundPlan {
+  readonly progress: FundPlanProgress;
+}
 
 /**
- * Type representing a request to update a Spending Goal.
+ * Type representing current Fund availability.
  */
-type UpdateSpendingGoalRequest =
-  components["schemas"]["UpdateSpendingGoalModel"];
+type FundAvailability = components["schemas"]["FundAvailabilityModel"];
 
 /**
- * Type representing a balance event for a goal.
+ * Type representing a request to update a Fund Plan.
  */
-type GoalBalanceEvent = components["schemas"]["GoalBalanceEventModel"];
+type UpdateFundPlanRequest = components["schemas"]["UpdateFundPlanModel"];
 
 /**
- * Type representing a potentially unfinished goal balance event.
+ * Type representing a balance event for a Fund Plan.
  */
-type GoalBalanceEventDraft = Partial<GoalBalanceEvent>;
+type FundPlanBalanceEvent = components["schemas"]["FundPlanBalanceEventModel"];
+
+/**
+ * Type representing a potentially unfinished Fund Plan balance event.
+ */
+type FundPlanBalanceEventDraft = Partial<FundPlanBalanceEvent>;
 
 export {
-  type AssignmentGoal,
-  AssignmentGoalSortModel as AssignmentGoalSort,
-  AssignmentGoalTypeModel as AssignmentGoalType,
-  type SpendingGoal,
-  SpendingGoalSortModel as SpendingGoalSort,
-  SpendingGoalTypeModel as SpendingGoalType,
-  type UpdateAssignmentGoalRequest,
-  type UpdateSpendingGoalRequest,
-  type GoalBalanceEvent,
-  type GoalBalanceEventDraft,
-  GoalBalanceEventSortModel as GoalBalanceEventSort,
+  EndingBalanceStatusModel as EndingBalanceStatus,
+  type FundAvailability,
+  type FundPlan,
+  type FundPlanBalanceEvent,
+  type FundPlanBalanceEventDraft,
+  FundPlanBalanceEventSortModel as FundPlanBalanceEventSort,
+  type FundPlanProgress,
+  FundedBalanceStatusModel as FundedBalanceStatus,
+  type FundPlanWithProgress,
+  FundPlanSortModel as FundPlanSort,
+  type UpdateFundPlanRequest,
 };

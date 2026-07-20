@@ -1,4 +1,3 @@
-import type { AssignmentGoal, SpendingGoal } from "@/goals/types";
 import {
   getPageOffset,
   normalizePageValue,
@@ -10,6 +9,7 @@ import {
 } from "@/framework/routes/helpers";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { FundPlanWithProgress } from "@/goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import type { Transaction } from "@/transactions/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
@@ -24,8 +24,7 @@ interface TransactionWorkspaceReferenceData {
   readonly allAccountingPeriods: AccountingPeriod[];
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
-  readonly assignmentGoals: AssignmentGoal[];
-  readonly spendingGoals: SpendingGoal[];
+  readonly fundPlans: FundPlanWithProgress[];
 }
 
 /**
@@ -79,39 +78,42 @@ const getTransactionWorkspaceReferenceData =
     const openAccountingPeriods = allAccountingPeriods.items.filter(
       (period) => period.isOpen,
     );
-    let assignmentGoals: AssignmentGoal[] = [];
-    let spendingGoals: SpendingGoal[] = [];
+    let fundPlans: FundPlanWithProgress[] = [];
 
     if (openAccountingPeriods.length > 0) {
-      const [assignmentGoalResponse, spendingGoalResponse] = await Promise.all([
-        apiClient.GET("/goals/assignment", {
-          params: {
-            query: {
-              "Filter.AccountingPeriodIds": openAccountingPeriods.map(
-                (period) => period.id,
-              ),
-            },
+      const planResponse = await apiClient.GET("/fund-plans", {
+        params: {
+          query: {
+            "Filter.AccountingPeriodIds": openAccountingPeriods.map(
+              (period) => period.id,
+            ),
+            Limit: 500,
           },
-        }),
-        apiClient.GET("/goals/spending", {
-          params: {
-            query: {
-              "Filter.AccountingPeriodIds": openAccountingPeriods.map(
-                (period) => period.id,
-              ),
-            },
-          },
-        }),
-      ]);
-
-      assignmentGoals = unwrapApiResponse(
-        assignmentGoalResponse,
-        "Failed to fetch assignment goals",
+        },
+      });
+      const plans = unwrapApiResponse(
+        planResponse,
+        "Failed to fetch fund plans",
       ).items;
-      spendingGoals = unwrapApiResponse(
-        spendingGoalResponse,
-        "Failed to fetch spending goals",
-      ).items;
+      fundPlans = await Promise.all(
+        plans.map(async (fundPlan) => ({
+          ...fundPlan,
+          progress: unwrapApiResponse(
+            await apiClient.GET(
+              "/fund-plans/{fundPlanId}/progress/{accountingPeriodId}",
+              {
+                params: {
+                  path: {
+                    fundPlanId: fundPlan.id,
+                    accountingPeriodId: fundPlan.accountingPeriod?.id ?? "",
+                  },
+                },
+              },
+            ),
+            "Failed to fetch fund plan progress",
+          ),
+        })),
+      );
     }
 
     return {
@@ -119,8 +121,7 @@ const getTransactionWorkspaceReferenceData =
       allAccountingPeriods: allAccountingPeriods.items,
       accounts: accounts.items,
       funds: funds.items,
-      assignmentGoals,
-      spendingGoals,
+      fundPlans,
     };
   };
 

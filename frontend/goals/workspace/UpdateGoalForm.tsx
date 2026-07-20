@@ -1,14 +1,7 @@
 "use client";
 
-import type {
-  AssignmentGoal,
-  AssignmentGoalType,
-  SpendingGoal,
-  SpendingGoalType,
-  UpdateAssignmentGoalRequest,
-  UpdateSpendingGoalRequest,
-} from "@/goals/types";
 import { Button, Stack } from "@mui/material";
+import type { FundPlan, UpdateFundPlanRequest } from "@/goals/types";
 import {
   type JSX,
   startTransition,
@@ -17,19 +10,17 @@ import {
   useRef,
   useState,
 } from "react";
-import AssignmentGoalSetupSection from "@/funds/workspace/AssignmentGoalSetupSection";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import SpendingGoalSetupSection from "@/funds/workspace/SpendingGoalSetupSection";
+import FundPlanSetupSection from "@/funds/workspace/FundPlanSetupSection";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
-import updateGoalPair from "@/goals/workspace/updateGoalPair";
+import updateFundPlan from "@/goals/workspace/updateFundPlan";
 
 /**
  * Props for the UpdateGoalForm component.
  */
 interface UpdateGoalFormProps {
-  readonly assignmentGoal: AssignmentGoal;
-  readonly spendingGoal: SpendingGoal;
+  readonly fundPlan: FundPlan;
   readonly redirectUrl: string;
 }
 
@@ -37,28 +28,31 @@ interface UpdateGoalFormProps {
  * Opens a dialog for updating both paired goal configurations together.
  */
 const UpdateGoalForm = function ({
-  assignmentGoal,
-  spendingGoal,
+  fundPlan,
   redirectUrl,
 }: UpdateGoalFormProps): JSX.Element {
   const [open, setOpen] = useState(false);
-  const [assignmentGoalType, setAssignmentGoalType] =
-    useState<AssignmentGoalType | null>(assignmentGoal.type);
-  const [assignmentGoalAmount, setAssignmentGoalAmount] = useState<
-    number | null
-  >(assignmentGoal.goalAmount);
-  const [spendingGoalType, setSpendingGoalType] =
-    useState<SpendingGoalType | null>(spendingGoal.type);
+  const [regularContribution, setRegularContribution] = useState(
+    fundPlan.regularContribution ?? null,
+  );
+  const [minimumFundedBalance, setMinimumFundedBalance] = useState(
+    fundPlan.minimumFundedBalance ?? null,
+  );
+  const [maximumFundedBalance, setMaximumFundedBalance] = useState(
+    fundPlan.maximumFundedBalance ?? null,
+  );
+  const [targetEndingBalance, setTargetEndingBalance] = useState(
+    fundPlan.targetEndingBalance ?? null,
+  );
   const formRef = useRef<HTMLDivElement | null>(null);
-  const [state, updateGoals, pending] = useActionState(updateGoalPair, {});
-
-  const reset = function (): void {
-    setAssignmentGoalType(assignmentGoal.type);
-    setAssignmentGoalAmount(assignmentGoal.goalAmount);
-    setSpendingGoalType(spendingGoal.type);
+  const [state, action, pending] = useActionState(updateFundPlan, {});
+  const reset = (): void => {
+    setRegularContribution(fundPlan.regularContribution ?? null);
+    setMinimumFundedBalance(fundPlan.minimumFundedBalance ?? null);
+    setMaximumFundedBalance(fundPlan.maximumFundedBalance ?? null);
+    setTargetEndingBalance(fundPlan.targetEndingBalance ?? null);
     focusFirstEntryControl(formRef.current);
   };
-
   useEffect(() => {
     if (state.success === true) {
       setOpen(false);
@@ -66,14 +60,16 @@ const UpdateGoalForm = function ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.success]);
-
-  const assignmentRequest: UpdateAssignmentGoalRequest | null =
-    assignmentGoalType !== null && assignmentGoalAmount !== null
-      ? { assignmentGoalType, goalAmount: assignmentGoalAmount }
-      : null;
-  const spendingRequest: UpdateSpendingGoalRequest | null =
-    spendingGoalType !== null ? { spendingGoalType } : null;
-
+  const request: UpdateFundPlanRequest = {
+    regularContribution,
+    minimumFundedBalance,
+    maximumFundedBalance,
+    targetEndingBalance,
+  };
+  const rangeIsValid =
+    minimumFundedBalance === null ||
+    maximumFundedBalance === null ||
+    minimumFundedBalance <= maximumFundedBalance;
   return (
     <>
       <Button
@@ -88,7 +84,7 @@ const UpdateGoalForm = function ({
         open={open}
         fullWidth
         maxWidth="md"
-        title="Update Goals"
+        title="Update Goal"
         {...(pending
           ? {}
           : {
@@ -114,19 +110,10 @@ const UpdateGoalForm = function ({
             <Button
               variant="contained"
               loading={pending}
-              disabled={assignmentRequest === null || spendingRequest === null}
+              disabled={!rangeIsValid}
               onClick={() => {
-                if (assignmentRequest === null || spendingRequest === null) {
-                  return;
-                }
                 startTransition(() => {
-                  updateGoals({
-                    assignmentGoal,
-                    assignmentRequest,
-                    spendingGoal,
-                    spendingRequest,
-                    redirectUrl,
-                  });
+                  action({ fundPlan, request, redirectUrl });
                 });
               }}
             >
@@ -136,27 +123,20 @@ const UpdateGoalForm = function ({
         }
       >
         <Stack ref={formRef} spacing={3}>
-          <AssignmentGoalSetupSection
-            value={assignmentGoalType}
-            setValue={setAssignmentGoalType}
-            amount={assignmentGoalAmount}
-            setAmount={setAssignmentGoalAmount}
-            typeErrorMessage={state.assignmentTypeErrors ?? null}
-            amountErrorMessage={state.assignmentGoalAmountErrors ?? null}
+          <FundPlanSetupSection
+            regularContribution={regularContribution}
+            setRegularContribution={setRegularContribution}
+            minimumFundedBalance={minimumFundedBalance}
+            setMinimumFundedBalance={setMinimumFundedBalance}
+            maximumFundedBalance={maximumFundedBalance}
+            setMaximumFundedBalance={setMaximumFundedBalance}
+            targetEndingBalance={targetEndingBalance}
+            setTargetEndingBalance={setTargetEndingBalance}
           />
-          <SpendingGoalSetupSection
-            value={spendingGoalType}
-            setValue={setSpendingGoalType}
-            typeErrorMessage={state.spendingTypeErrors ?? null}
-          />
-          <ErrorAlert
-            errorMessage={state.errorTitle ?? null}
-            unmappedErrors={state.unmappedErrors ?? null}
-          />
+          <ErrorAlert errorMessage={null} unmappedErrors={null} />
         </Stack>
       </Dialog>
     </>
   );
 };
-
 export default UpdateGoalForm;

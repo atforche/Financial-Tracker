@@ -15,6 +15,7 @@ interface CurrencyEntryFieldProps {
   readonly value: number | null;
   readonly setValue?: ((newValue: number | null) => void) | null;
   readonly errorMessage?: string | null;
+  readonly disabled?: boolean;
 }
 
 /**
@@ -25,6 +26,7 @@ const CurrencyEntryField = function ({
   value,
   setValue = null,
   errorMessage = null,
+  disabled = false,
 }: CurrencyEntryFieldProps): JSX.Element {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [stringValue, setStringValue] = useState<string>(
@@ -45,6 +47,7 @@ const CurrencyEntryField = function ({
       label={label}
       variant="outlined"
       value={stringValue}
+      disabled={disabled}
       slotProps={{
         input: {
           readOnly: setValue === null,

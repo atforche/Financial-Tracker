@@ -5,7 +5,7 @@ import { BalanceEventType } from "@/balance-events/types";
 import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import type { GoalBalanceEvent } from "@/goals/types";
+import type { FundPlanBalanceEvent } from "@/goals/types";
 import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
 import type { JSX } from "react";
 import Link from "next/link";
@@ -19,7 +19,7 @@ import routes from "@/transactions/routes";
  * Props for the GoalBalanceEventsFrame component.
  */
 interface GoalBalanceEventsFrameProps {
-  readonly data: GoalBalanceEvent[] | null;
+  readonly data: FundPlanBalanceEvent[] | null;
   readonly totalCount: number | null;
   readonly addTransactionHref: string;
   readonly accountingPeriodId: string;
@@ -41,15 +41,15 @@ const GoalBalanceEventsFrame = function ({
   const searchParams = useSearchParams();
   const returnUrl = buildUrl(pathname, new URLSearchParams(searchParams));
 
-  const columns: readonly ColumnDefinition<GoalBalanceEvent>[] =
-    createBalanceEventColumns<GoalBalanceEvent>({
+  const columns: readonly ColumnDefinition<FundPlanBalanceEvent>[] =
+    createBalanceEventColumns<FundPlanBalanceEvent>({
       getTypeLabel: (event) =>
         event.type === BalanceEventType.Credit ? "Assignment" : "Spending",
     });
 
   return (
     <ConstrainedContent maxWidth={1200}>
-      <ListFrame<GoalBalanceEvent>
+      <ListFrame<FundPlanBalanceEvent>
         title="Recent Balance Events"
         color="info"
         headerContent={

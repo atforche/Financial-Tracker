@@ -1,11 +1,10 @@
 import { Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import ContentSurface from "@/framework/view/ContentSurface";
-import GoalTrendsSummaryCards from "@/goals/trends/GoalTrendsSummaryCards";
 import type { JSX } from "react";
 import createApiClient from "@/framework/data/createApiClient";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import loadAllPages from "@/framework/data/loadAllPages";
-import { summarizeGoalRange } from "@/goals/trends/goalTrendsSummary";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -37,54 +36,46 @@ const GoalOverview = async function ({
     );
   }
   const apiClient = createApiClient();
-  const [assignmentGoals, spendingGoals] = await Promise.all([
-    loadAllPages(async (limit, offset) =>
-      unwrapApiResponse(
-        await apiClient.GET("/goals/assignment", {
-          params: {
-            query: {
-              "Filter.AccountingPeriodIds": [latestAccountingPeriod.id],
-              Limit: limit,
-              Offset: offset,
-            },
+  const plans = await loadAllPages(async (limit, offset) =>
+    unwrapApiResponse(
+      await apiClient.GET("/fund-plans", {
+        params: {
+          query: {
+            "Filter.AccountingPeriodIds": [latestAccountingPeriod.id],
+            Limit: limit,
+            Offset: offset,
           },
-        }),
-        "Failed to load assignment goals",
-      ),
+        },
+      }),
+      "Failed to load goals",
     ),
-    loadAllPages(async (limit, offset) =>
-      unwrapApiResponse(
-        await apiClient.GET("/goals/spending", {
-          params: {
-            query: {
-              "Filter.AccountingPeriodIds": [latestAccountingPeriod.id],
-              Limit: limit,
-              Offset: offset,
-            },
-          },
-        }),
-        "Failed to load spending goals",
-      ),
-    ),
-  ]);
-  const summary = summarizeGoalRange(assignmentGoals, spendingGoals);
+  );
+  const configured = plans.filter(
+    (plan) =>
+      plan.regularContribution !== null ||
+      plan.minimumFundedBalance !== null ||
+      plan.maximumFundedBalance !== null ||
+      plan.targetEndingBalance !== null,
+  );
   return (
     <ContentSurface>
       <Stack spacing={2}>
         <Typography variant="h6" color="text.secondary">
           Current Goals ({latestAccountingPeriod.name})
         </Typography>
-        <Typography variant="h6" color="text.secondary">
-          Assignment
+        <Typography variant="h4">{configured.length} configured</Typography>
+        <Typography color="text.secondary">
+          Across {plans.length} funds with{" "}
+          {formatCurrency(
+            plans.reduce(
+              (sum, plan) => sum + (plan.regularContribution ?? 0),
+              0,
+            ),
+          )}{" "}
+          in regular monthly contributions.
         </Typography>
-        <GoalTrendsSummaryCards trends={summary} view="assignment" />
-        <Typography variant="h6" color="text.secondary">
-          Spending
-        </Typography>
-        <GoalTrendsSummaryCards trends={summary} view="spending" />
       </Stack>
     </ContentSurface>
   );
 };
-
 export default GoalOverview;

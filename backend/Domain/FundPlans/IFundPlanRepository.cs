@@ -1,5 +1,5 @@
-using Domain.Funds;
 using Domain.AccountingPeriods;
+using Domain.Funds;
 
 namespace Domain.FundPlans;
 

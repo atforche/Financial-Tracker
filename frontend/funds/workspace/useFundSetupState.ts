@@ -1,6 +1,5 @@
 "use client";
 
-import { AssignmentGoalType, SpendingGoalType } from "@/goals/types";
 import { type Dispatch, type SetStateAction, useState } from "react";
 
 /**
@@ -11,16 +10,14 @@ interface FundSetupState {
   readonly setName: Dispatch<SetStateAction<string>>;
   readonly description: string;
   readonly setDescription: Dispatch<SetStateAction<string>>;
-  readonly assignmentGoalType: AssignmentGoalType | null;
-  readonly setAssignmentGoalType: Dispatch<
-    SetStateAction<AssignmentGoalType | null>
-  >;
-  readonly assignmentGoalAmount: number | null;
-  readonly setAssignmentGoalAmount: Dispatch<SetStateAction<number | null>>;
-  readonly spendingGoalType: SpendingGoalType | null;
-  readonly setSpendingGoalType: Dispatch<
-    SetStateAction<SpendingGoalType | null>
-  >;
+  readonly regularContribution: number | null;
+  readonly setRegularContribution: Dispatch<SetStateAction<number | null>>;
+  readonly minimumFundedBalance: number | null;
+  readonly setMinimumFundedBalance: Dispatch<SetStateAction<number | null>>;
+  readonly maximumFundedBalance: number | null;
+  readonly setMaximumFundedBalance: Dispatch<SetStateAction<number | null>>;
+  readonly targetEndingBalance: number | null;
+  readonly setTargetEndingBalance: Dispatch<SetStateAction<number | null>>;
   readonly reset: () => void;
 }
 
@@ -30,33 +27,39 @@ interface FundSetupState {
 const useFundSetupState = function (): FundSetupState {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [assignmentGoalType, setAssignmentGoalType] =
-    useState<AssignmentGoalType | null>(AssignmentGoalType.MonthlyTarget);
-  const [assignmentGoalAmount, setAssignmentGoalAmount] = useState<
+  const [regularContribution, setRegularContribution] = useState<number | null>(
+    null,
+  );
+  const [minimumFundedBalance, setMinimumFundedBalance] = useState<
     number | null
   >(null);
-  const [spendingGoalType, setSpendingGoalType] =
-    useState<SpendingGoalType | null>(SpendingGoalType.Standard);
-
-  const reset = function (): void {
+  const [maximumFundedBalance, setMaximumFundedBalance] = useState<
+    number | null
+  >(null);
+  const [targetEndingBalance, setTargetEndingBalance] = useState<number | null>(
+    null,
+  );
+  const reset = (): void => {
     setName("");
     setDescription("");
-    setAssignmentGoalType(AssignmentGoalType.MonthlyTarget);
-    setAssignmentGoalAmount(null);
-    setSpendingGoalType(SpendingGoalType.Standard);
+    setRegularContribution(null);
+    setMinimumFundedBalance(null);
+    setMaximumFundedBalance(null);
+    setTargetEndingBalance(null);
   };
-
   return {
     name,
     setName,
     description,
     setDescription,
-    assignmentGoalType,
-    setAssignmentGoalType,
-    assignmentGoalAmount,
-    setAssignmentGoalAmount,
-    spendingGoalType,
-    setSpendingGoalType,
+    regularContribution,
+    setRegularContribution,
+    minimumFundedBalance,
+    setMinimumFundedBalance,
+    maximumFundedBalance,
+    setMaximumFundedBalance,
+    targetEndingBalance,
+    setTargetEndingBalance,
     reset,
   };
 };
