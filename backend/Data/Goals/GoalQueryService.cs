@@ -88,11 +88,13 @@ public sealed class GoalQueryService(DatabaseContext databaseContext)
     {
         if (filter?.AccountingPeriodIds is { Count: > 0 } periodIds)
         {
-            query = query.Where(goal => goal.AccountingPeriodId != null && periodIds.Contains(goal.AccountingPeriodId.Value));
+            var accountingPeriodIds = periodIds.Select(id => new AccountingPeriodId(id)).ToList();
+            query = query.Where(goal => goal.AccountingPeriodId != null && accountingPeriodIds.Contains(goal.AccountingPeriodId));
         }
         if (filter?.FundIds is { Count: > 0 } fundIds)
         {
-            query = query.Where(goal => fundIds.Contains(goal.Fund.Id.Value));
+            var domainFundIds = fundIds.Select(id => new Domain.Funds.FundId(id)).ToList();
+            query = query.Where(goal => domainFundIds.Contains(goal.Fund.Id));
         }
         return query;
     }
@@ -104,11 +106,13 @@ public sealed class GoalQueryService(DatabaseContext databaseContext)
     {
         if (filter?.AccountingPeriodIds is { Count: > 0 } periodIds)
         {
-            query = query.Where(goal => goal.AccountingPeriodId != null && periodIds.Contains(goal.AccountingPeriodId.Value));
+            var accountingPeriodIds = periodIds.Select(id => new AccountingPeriodId(id)).ToList();
+            query = query.Where(goal => goal.AccountingPeriodId != null && accountingPeriodIds.Contains(goal.AccountingPeriodId));
         }
         if (filter?.FundIds is { Count: > 0 } fundIds)
         {
-            query = query.Where(goal => fundIds.Contains(goal.Fund.Id.Value));
+            var domainFundIds = fundIds.Select(id => new Domain.Funds.FundId(id)).ToList();
+            query = query.Where(goal => domainFundIds.Contains(goal.Fund.Id));
         }
         return query;
     }

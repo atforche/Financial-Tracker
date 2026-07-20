@@ -99,8 +99,9 @@ public sealed class TransactionQueryService(DatabaseContext databaseContext, Tra
         {
             return null;
         }
+        var accountingPeriodIds = periodIds.Select(id => new AccountingPeriodId(id)).ToList();
         IQueryable<Transaction> query = ApplyFilter(databaseContext.Transactions.AsNoTracking(), request.Filter)
-            .Where(transaction => periodIds.Contains(transaction.AccountingPeriodId.Value));
+            .Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId));
         RangeContent content = await ExecuteRangeAsync(query, request.Sort, request.Offset, request.Limit, cancellationToken);
         return new TransactionsInAccountingPeriodRangeModel
         {
@@ -148,29 +149,32 @@ public sealed class TransactionQueryService(DatabaseContext databaseContext, Tra
     {
         if (filter?.AccountingPeriodIds is { Count: > 0 } periodIds)
         {
-            query = query.Where(transaction => periodIds.Contains(transaction.AccountingPeriodId.Value));
+            var accountingPeriodIds = periodIds.Select(id => new AccountingPeriodId(id)).ToList();
+            query = query.Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId));
         }
         if (filter?.AccountIds is { Count: > 0 } accountIds)
         {
+            var domainAccountIds = accountIds.Select(id => new Domain.Accounts.AccountId(id)).ToList();
             query = query.Where(transaction =>
                 (transaction is SpendingTransaction &&
-                    (accountIds.Contains(((SpendingTransaction)transaction).Source.Account.Id.Value) ||
-                     ((SpendingTransaction)transaction).Destinations.Any(destination => destination.Account != null && accountIds.Contains(destination.Account.Id.Value)))) ||
+                    (domainAccountIds.Contains(((SpendingTransaction)transaction).Source.Account.Id) ||
+                     ((SpendingTransaction)transaction).Destinations.Any(destination => destination.Account != null && domainAccountIds.Contains(destination.Account.Id)))) ||
                 (transaction is IncomeTransaction &&
-                    ((((IncomeTransaction)transaction).Source.Account != null && accountIds.Contains(((IncomeTransaction)transaction).Source.Account!.Id.Value)) ||
-                     ((IncomeTransaction)transaction).Destinations.Any(destination => accountIds.Contains(destination.Account.Id.Value)))) ||
+                    ((((IncomeTransaction)transaction).Source.Account != null && domainAccountIds.Contains(((IncomeTransaction)transaction).Source.Account!.Id)) ||
+                     ((IncomeTransaction)transaction).Destinations.Any(destination => domainAccountIds.Contains(destination.Account.Id)))) ||
                 (transaction is AccountTransaction &&
-                    ((((AccountTransaction)transaction).Source.Account != null && accountIds.Contains(((AccountTransaction)transaction).Source.Account!.Id.Value)) ||
-                     ((AccountTransaction)transaction).Destinations.Any(destination => destination.Account != null && accountIds.Contains(destination.Account.Id.Value)))));
+                    ((((AccountTransaction)transaction).Source.Account != null && domainAccountIds.Contains(((AccountTransaction)transaction).Source.Account!.Id)) ||
+                     ((AccountTransaction)transaction).Destinations.Any(destination => destination.Account != null && domainAccountIds.Contains(destination.Account.Id)))));
         }
         if (filter?.FundIds is { Count: > 0 } fundIds)
         {
+            var domainFundIds = fundIds.Select(id => new Domain.Funds.FundId(id)).ToList();
             query = query.Where(transaction =>
-                (transaction is SpendingTransaction && ((SpendingTransaction)transaction).Destinations.Any(destination => destination.FundAssignments.Any(assignment => fundIds.Contains(assignment.FundId.Value)))) ||
-                (transaction is IncomeTransaction && ((IncomeTransaction)transaction).Destinations.Any(destination => destination.FundAssignments.Any(assignment => fundIds.Contains(assignment.FundId.Value)))) ||
+                (transaction is SpendingTransaction && ((SpendingTransaction)transaction).Destinations.Any(destination => destination.FundAssignments.Any(assignment => domainFundIds.Contains(assignment.FundId)))) ||
+                (transaction is IncomeTransaction && ((IncomeTransaction)transaction).Destinations.Any(destination => destination.FundAssignments.Any(assignment => domainFundIds.Contains(assignment.FundId)))) ||
                 (transaction is FundTransaction &&
-                    (fundIds.Contains(((FundTransaction)transaction).Source.Fund.Id.Value) ||
-                     ((FundTransaction)transaction).Destinations.Any(destination => fundIds.Contains(destination.Fund.Id.Value)))));
+                    (domainFundIds.Contains(((FundTransaction)transaction).Source.Fund.Id) ||
+                     ((FundTransaction)transaction).Destinations.Any(destination => domainFundIds.Contains(destination.Fund.Id)))));
         }
         return query;
     }

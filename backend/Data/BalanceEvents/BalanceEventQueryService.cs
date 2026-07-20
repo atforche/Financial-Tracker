@@ -41,8 +41,9 @@ public sealed class BalanceEventQueryService(DatabaseContext databaseContext, Tr
         {
             return null;
         }
+        var accountingPeriodIds = periodIds.Select(id => new AccountingPeriodId(id)).ToList();
         IReadOnlyCollection<TransactionModel> transactions = await GetTransactionsAsync(
-            databaseContext.Transactions.AsNoTracking().Where(transaction => periodIds.Contains(transaction.AccountingPeriodId.Value)),
+            databaseContext.Transactions.AsNoTracking().Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId)),
             cancellationToken);
         return ToCollection(ApplySort(GetAccountEvents(transactions).Where(balanceEvent => Matches(balanceEvent.Account, request.Filter)), request.Sort), request.Offset, request.Limit);
     }
@@ -72,8 +73,9 @@ public sealed class BalanceEventQueryService(DatabaseContext databaseContext, Tr
         {
             return null;
         }
+        var accountingPeriodIds = periodIds.Select(id => new AccountingPeriodId(id)).ToList();
         IReadOnlyCollection<TransactionModel> transactions = await GetTransactionsAsync(
-            databaseContext.Transactions.AsNoTracking().Where(transaction => periodIds.Contains(transaction.AccountingPeriodId.Value)),
+            databaseContext.Transactions.AsNoTracking().Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId)),
             cancellationToken);
         return ToCollection(ApplySort(GetFundEvents(transactions).Where(balanceEvent => Matches(balanceEvent.Fund, request.Filter)), request.Sort), request.Offset, request.Limit);
     }
@@ -103,8 +105,9 @@ public sealed class BalanceEventQueryService(DatabaseContext databaseContext, Tr
         {
             return null;
         }
+        var accountingPeriodIds = periodIds.Select(id => new AccountingPeriodId(id)).ToList();
         IReadOnlyCollection<TransactionModel> transactions = await GetTransactionsAsync(
-            databaseContext.Transactions.AsNoTracking().Where(transaction => periodIds.Contains(transaction.AccountingPeriodId.Value)),
+            databaseContext.Transactions.AsNoTracking().Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId)),
             cancellationToken);
         return ToCollection(ApplySort(GetGoalEvents(transactions).Where(balanceEvent => Matches(balanceEvent, request.Filter)), request.Sort), request.Offset, request.Limit);
     }
