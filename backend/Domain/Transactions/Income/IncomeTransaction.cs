@@ -1,6 +1,6 @@
 using Domain.Accounts;
-using Domain.Funds;
 using Domain.FundPlans;
+using Domain.Funds;
 
 namespace Domain.Transactions.Income;
 

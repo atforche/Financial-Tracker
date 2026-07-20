@@ -13,7 +13,7 @@ public sealed class FundTransactionDestinationModel
     public required FundBalanceEventModel Fund { get; init; }
 
     /// <summary>
-    /// Goal for the destination, if applicable.
+    /// Fund Plan balance event for the destination, when applicable.
     /// </summary>
-    public GoalBalanceEventModel? Goal { get; init; }
+    public FundPlanBalanceEventModel? FundPlan { get; init; }
 }

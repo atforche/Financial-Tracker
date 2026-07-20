@@ -1,5 +1,3 @@
-using Models.Goals;
-
 namespace Models.Funds;
 
 /// <summary>
@@ -23,17 +21,22 @@ public class OnboardFundModel
     public required decimal OnboardedBalance { get; init; }
 
     /// <summary>
-    /// Assignment goal behavior for the Fund.
+    /// Regular contribution for the Fund Plan.
     /// </summary>
-    public required AssignmentGoalTypeModel AssignmentGoalType { get; init; }
+    public decimal? RegularContribution { get; init; }
 
     /// <summary>
-    /// Assignment goal amount for the Fund.
+    /// Minimum funded balance for the Fund Plan.
     /// </summary>
-    public required decimal AssignmentGoalAmount { get; init; }
+    public decimal? MinimumFundedBalance { get; init; }
 
     /// <summary>
-    /// Spending goal behavior for the Fund.
+    /// Maximum funded balance for the Fund Plan.
     /// </summary>
-    public required SpendingGoalTypeModel SpendingGoalType { get; init; }
+    public decimal? MaximumFundedBalance { get; init; }
+
+    /// <summary>
+    /// Target ending balance for the Fund Plan.
+    /// </summary>
+    public decimal? TargetEndingBalance { get; init; }
 }

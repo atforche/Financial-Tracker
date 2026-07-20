@@ -1,6 +1,6 @@
 using Domain.Accounts;
+using Domain.FundPlans;
 using Domain.Funds;
-using Domain.Goals;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using Models.AccountingPeriods;
 using Models.Accounts;
 using Models.BalanceEvents;
+using Models.FundPlans;
 using Models.Funds;
-using Models.Goals;
 using Models.Transactions;
 using Models.Transactions.Types;
 
@@ -49,10 +49,10 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
             .Where(history => accountIds.Contains(history.Account.Id)).OrderBy(history => history.Date).ThenBy(history => history.Sequence).ToListAsync(cancellationToken);
         List<FundBalanceHistory> fundHistories = await databaseContext.FundBalanceHistories.AsNoTracking()
             .Where(history => fundIds.Contains(history.FundId)).OrderBy(history => history.Date).ThenBy(history => history.Sequence).ToListAsync(cancellationToken);
-        List<GoalBalanceHistory> goalHistories = await databaseContext.GoalBalanceHistories.AsNoTracking()
+        List<FundPlanTotalsHistory> planHistories = await databaseContext.FundPlanTotalsHistories.AsNoTracking()
             .Where(history => fundIds.Contains(history.FundId))
             .OrderBy(history => history.Date).ThenBy(history => history.Sequence).ToListAsync(cancellationToken);
-        MappingContext context = new(periods, funds, accountHistories, fundHistories, goalHistories);
+        MappingContext context = new(periods, funds, accountHistories, fundHistories, planHistories);
         return transactions.Select(transaction => Map(transaction, context)).ToList();
     }
 
@@ -79,9 +79,9 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
                 Amount = destination.Amount,
                 PostedDate = destination.PostedDate,
                 FundAssignments = destination.FundAssignments.Select(assignment => FundEvent(transaction, context, assignment, BalanceEventTypeModel.Debit)).ToList(),
-                Goals = destination.FundAssignments
+                FundPlans = destination.FundAssignments
                     .Where(assignment => assignment.FundId != Fund.UnassignedFundId)
-                    .Select(assignment => GoalEvent(transaction, context, assignment, destination.PostedDate, BalanceEventTypeModel.Debit)).ToList(),
+                    .Select(assignment => FundPlanEvent(transaction, context, assignment, destination.PostedDate, BalanceEventTypeModel.Debit)).ToList(),
             }).ToList(),
         },
         IncomeTransaction income => new IncomeTransactionModel
@@ -108,9 +108,9 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
                 Amount = destination.Amount,
                 PostedDate = destination.PostedDate,
                 FundAssignments = destination.FundAssignments.Select(assignment => FundEvent(transaction, context, assignment, BalanceEventTypeModel.Credit)).ToList(),
-                Goals = destination.FundAssignments
+                FundPlans = destination.FundAssignments
                     .Where(assignment => assignment.FundId != Fund.UnassignedFundId)
-                    .Select(assignment => GoalEvent(transaction, context, assignment, destination.PostedDate, BalanceEventTypeModel.Credit)).ToList(),
+                    .Select(assignment => FundPlanEvent(transaction, context, assignment, destination.PostedDate, BalanceEventTypeModel.Credit)).ToList(),
             }).ToList(),
         },
         AccountTransaction account => new AccountTransactionModel
@@ -149,16 +149,16 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
             Source = new FundTransactionSourceModel
             {
                 Fund = FundEvent(transaction, context, new FundAmount { FundId = fund.Source.Fund.Id, Amount = transaction.Amount }, BalanceEventTypeModel.Debit),
-                Goal = fund.Source.Fund.Id == Fund.UnassignedFundId
+                FundPlan = fund.Source.Fund.Id == Fund.UnassignedFundId
                     ? null
-                    : GoalEvent(transaction, context, new FundAmount { FundId = fund.Source.Fund.Id, Amount = transaction.Amount }, transaction.Date, BalanceEventTypeModel.Debit),
+                    : FundPlanEvent(transaction, context, new FundAmount { FundId = fund.Source.Fund.Id, Amount = transaction.Amount }, transaction.Date, BalanceEventTypeModel.Debit),
             },
             Destinations = fund.Destinations.Select(destination => new FundTransactionDestinationModel
             {
                 Fund = FundEvent(transaction, context, new FundAmount { FundId = destination.Fund.Id, Amount = destination.Amount }, BalanceEventTypeModel.Credit),
-                Goal = destination.Fund.Id == Fund.UnassignedFundId
+                FundPlan = destination.Fund.Id == Fund.UnassignedFundId
                     ? null
-                    : GoalEvent(transaction, context, new FundAmount { FundId = destination.Fund.Id, Amount = destination.Amount }, transaction.Date, BalanceEventTypeModel.Credit),
+                    : FundPlanEvent(transaction, context, new FundAmount { FundId = destination.Fund.Id, Amount = destination.Amount }, transaction.Date, BalanceEventTypeModel.Credit),
             }).ToList(),
         },
         _ => throw new InvalidOperationException($"Unrecognized Transaction type '{transaction.GetType().Name}'."),
@@ -210,22 +210,22 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
         };
     }
 
-    private static GoalBalanceEventModel GoalEvent(
+    /// <summary>
+    /// Maps the provided Transaction and Fund Assignment to a Fund Plan Balance Event Model
+    /// </summary>
+    private static FundPlanBalanceEventModel FundPlanEvent(
         Transaction transaction,
         MappingContext context,
         FundAmount amount,
         DateOnly? postedDate,
         BalanceEventTypeModel type)
     {
-        DateOnly historyDate = postedDate ?? transaction.Date;
-        var histories = context.GoalHistories
-            .Where(history => history.FundId == amount.FundId && history.AccountingPeriodId == transaction.AccountingPeriodId)
-            .ToList();
-        GoalBalanceHistory? current = histories.LastOrDefault(history =>
-            history.TransactionId == transaction.Id && history.Date == historyDate);
+        var histories = context.FundPlanHistories.Where(history =>
+            history.FundId == amount.FundId && history.AccountingPeriodId == transaction.AccountingPeriodId).ToList();
+        FundPlanTotalsHistory? current = histories.SingleOrDefault(history => history.TransactionId == transaction.Id);
         int index = current == null ? -1 : histories.IndexOf(current);
-        GoalBalanceHistory? previous = index > 0 ? histories[index - 1] : null;
-        return new GoalBalanceEventModel
+        FundPlanTotalsHistory? previous = index > 0 ? histories[index - 1] : null;
+        return new FundPlanBalanceEventModel
         {
             AccountingPeriod = context.Periods[transaction.AccountingPeriodId.Value],
             TransactionId = transaction.Id.Value,
@@ -234,16 +234,14 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
             IsPosted = postedDate.HasValue,
             Amount = amount.Amount,
             Fund = context.Funds[amount.FundId.Value],
-            PreviousBalance = ToBalance(previous),
-            NewBalance = ToBalance(current),
+            PreviousTotals = ToTotals(previous),
+            NewTotals = ToTotals(current),
         };
     }
 
     /// <summary>
     /// Maps the provided Account Balance History to an Account Balance Model
     /// </summary>
-    /// <param name="history"></param>
-    /// <returns></returns>
     private static AccountBalanceModel ToBalance(AccountBalanceHistory? history) => new()
     {
         PostedBalance = history?.PostedBalance ?? 0,
@@ -254,8 +252,6 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
     /// <summary>
     /// Maps the provided Fund Balance History to a Fund Balance Model
     /// </summary>
-    /// <param name="history"></param>
-    /// <returns></returns>
     private static FundBalanceModel ToBalance(FundBalanceHistory? history) => new()
     {
         PostedBalance = history?.PostedBalance ?? 0,
@@ -263,7 +259,10 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
         PendingCreditAmount = history?.PendingCreditAmount ?? 0,
     };
 
-    private static GoalBalanceModel ToBalance(GoalBalanceHistory? history) => new()
+    /// <summary>
+    /// Maps the provided Fund Plan Totals History to a Fund Plan Totals Model
+    /// </summary>
+    private static FundPlanTotalsModel ToTotals(FundPlanTotalsHistory? history) => new()
     {
         AmountAssigned = history?.AmountAssigned ?? 0,
         PendingAmountAssigned = history?.PendingAmountAssigned ?? 0,
@@ -279,5 +278,5 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
         Dictionary<Guid, FundModel> Funds,
         List<AccountBalanceHistory> AccountHistories,
         List<FundBalanceHistory> FundHistories,
-        List<GoalBalanceHistory> GoalHistories);
+        List<FundPlanTotalsHistory> FundPlanHistories);
 }

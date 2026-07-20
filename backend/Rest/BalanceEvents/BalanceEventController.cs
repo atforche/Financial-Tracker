@@ -61,26 +61,23 @@ public sealed class BalanceEventController(BalanceEventQueryService balanceEvent
     }
 
     /// <summary>
-    /// Retrieves Goal Balance Events in a date range.
+    /// Retrieves Fund Plan balance events in a date range.
     /// </summary>
-    [HttpGet("goals/date-range")]
-    [ProducesResponseType(typeof(CollectionModel<GoalBalanceEventModel>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<CollectionModel<GoalBalanceEventModel>>> GetGoalEventsAsync(
-        [FromQuery] GoalBalanceEventsInDateRangeQueryParameterModel query,
+    [HttpGet("fund-plans/date-range")]
+    public async Task<ActionResult<CollectionModel<FundPlanBalanceEventModel>>> GetFundPlanEventsAsync(
+        [FromQuery] FundPlanBalanceEventsInDateRangeQueryParameterModel query,
         CancellationToken cancellationToken) =>
-        Ok(await balanceEventQueryService.GetGoalEventsAsync(query, cancellationToken));
+        Ok(await balanceEventQueryService.GetFundPlanEventsAsync(query, cancellationToken));
 
     /// <summary>
-    /// Retrieves Goal Balance Events in an Accounting Period range.
+    /// Retrieves Fund Plan balance events in an Accounting Period range.
     /// </summary>
-    [HttpGet("goals/accounting-period-range")]
-    [ProducesResponseType(typeof(CollectionModel<GoalBalanceEventModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<CollectionModel<GoalBalanceEventModel>>> GetGoalEventsAsync(
-        [FromQuery] GoalBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
+    [HttpGet("fund-plans/accounting-period-range")]
+    public async Task<ActionResult<CollectionModel<FundPlanBalanceEventModel>>> GetFundPlanEventsAsync(
+        [FromQuery] FundPlanBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        CollectionModel<GoalBalanceEventModel>? model = await balanceEventQueryService.GetGoalEventsAsync(query, cancellationToken);
+        CollectionModel<FundPlanBalanceEventModel>? model = await balanceEventQueryService.GetFundPlanEventsAsync(query, cancellationToken);
         return model == null ? InvalidAccountingPeriodRange() : Ok(model);
     }
 

@@ -51,20 +51,21 @@ internal sealed class AccountingPeriodBalanceHistoryConfiguration : IEntityTypeC
         });
         builder.Navigation(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.FundBalances).AutoInclude();
 
-        builder.OwnsMany(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.GoalBalances, builder =>
+        builder.OwnsMany(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.FundPlanTotals, builder =>
         {
             builder.WithOwner().HasForeignKey("AccountingPeriodBalanceHistoryId");
 
-            builder.HasKey(goalBalance => goalBalance.Id);
-            builder.Property(goalBalance => goalBalance.Id)
-                .HasConversion(goalBalanceId => goalBalanceId.Value, value => new AccountingPeriodGoalBalanceHistoryId(value));
+            builder.HasKey(totals => totals.Id);
+            builder.Property(totals => totals.Id)
+                .HasConversion(id => id.Value, value => new AccountingPeriodFundPlanTotalsId(value));
 
-            builder.HasOne(goalBalance => goalBalance.Fund).WithMany();
-            builder.Navigation(goalBalance => goalBalance.Fund).AutoInclude();
+            builder.HasOne(totals => totals.Fund).WithMany();
+            builder.Navigation(totals => totals.Fund).AutoInclude();
 
-            builder.HasOne(goalBalance => goalBalance.AccountingPeriod).WithMany();
-            builder.Navigation(goalBalance => goalBalance.AccountingPeriod).AutoInclude();
+            builder.HasOne(totals => totals.AccountingPeriod).WithMany();
+            builder.Navigation(totals => totals.AccountingPeriod).AutoInclude();
         });
-        builder.Navigation(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.GoalBalances).AutoInclude();
+        builder.Navigation(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.FundPlanTotals).AutoInclude();
+
     }
 }

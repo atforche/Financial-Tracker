@@ -1,27 +1,27 @@
-namespace Models.Goals;
+namespace Models.FundPlans;
 
 /// <summary>
-/// Model representing the assignment and spending balance for a Goal.
+/// Model representing assignment and spending totals for a Fund Plan.
 /// </summary>
-public class GoalBalanceModel
+public sealed class FundPlanTotalsModel
 {
     /// <summary>
-    /// Posted amount assigned to the Goal.
+    /// Posted amount assigned.
     /// </summary>
     public required decimal AmountAssigned { get; init; }
 
     /// <summary>
-    /// Pending amount assigned to the Goal.
+    /// Pending amount assigned.
     /// </summary>
     public required decimal PendingAmountAssigned { get; init; }
 
     /// <summary>
-    /// Posted amount spent from the Goal.
+    /// Posted amount spent.
     /// </summary>
     public required decimal AmountSpent { get; init; }
 
     /// <summary>
-    /// Pending amount spent from the Goal.
+    /// Pending amount spent.
     /// </summary>
     public required decimal PendingAmountSpent { get; init; }
 }

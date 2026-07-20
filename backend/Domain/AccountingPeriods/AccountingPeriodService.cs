@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.FundPlans;
 using Domain.Transactions;
 using Domain.Validation;
 
@@ -15,6 +16,7 @@ public class AccountingPeriodService(
     IFundRepository fundRepository,
     ITransactionRepository transactionRepository,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
+    FundPlanService fundPlanService,
     FundService fundService)
 {
     /// <summary>
@@ -31,10 +33,10 @@ public class AccountingPeriodService(
         {
             return false;
         }
+        AccountingPeriod? previousAccountingPeriod = accountingPeriodRepository.GetLatestAccountingPeriod();
         accountingPeriod = new AccountingPeriod(request.Year, request.Month);
+        fundPlanService.CopyToAccountingPeriod(previousAccountingPeriod, accountingPeriod);
         accountingPeriodBalanceService.AddAccountingPeriod(accountingPeriod);
-
-        AccountingPeriod? previousAccountingPeriod = accountingPeriodRepository.GetPreviousAccountingPeriod(accountingPeriod.Id);
         if (previousAccountingPeriod == null)
         {
             return TryCreateFirstAccountingPeriod(accountingPeriod, out exceptions);
@@ -79,6 +81,7 @@ public class AccountingPeriodService(
             return false;
         }
         accountingPeriodBalanceService.DeleteAccountingPeriod(accountingPeriod);
+        fundPlanService.DeleteForAccountingPeriod(accountingPeriod);
         if (fundRepository.GetAllFundsAddedInPeriod(accountingPeriod.Id).FirstOrDefault(fund => fund.IsUnassignedFund) is Fund unassignedFund)
         {
             // If the unassigned fund was added in this accounting period, delete it.

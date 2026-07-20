@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.FundPlans;
 using Domain.Funds;
 using Domain.Validation;
 
@@ -13,12 +14,14 @@ public class AccountTransactionService(
     AccountBalanceService accountBalanceService,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
+    FundPlanTotalsHistoryService fundPlanTotalsHistoryService,
     IAccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository) :
     TransactionService(
         accountBalanceService,
         accountingPeriodBalanceService,
         fundBalanceService,
+        fundPlanTotalsHistoryService,
         accountingPeriodRepository,
         transactionRepository)
 {

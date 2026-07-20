@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Accounts;
 using Models.BalanceEvents;
+using Models.FundPlans;
 using Models.Funds;
-using Models.Goals;
 using Models.Transactions.Types;
 
 namespace Data.BalanceEvents;
@@ -81,23 +81,23 @@ public sealed class BalanceEventQueryService(DatabaseContext databaseContext, Tr
     }
 
     /// <summary>
-    /// Retrieves Goal Balance Events in a date range.
+    /// Retrieves Fund Plan balance events in a date range.
     /// </summary>
-    public async Task<CollectionModel<GoalBalanceEventModel>> GetGoalEventsAsync(
-        GoalBalanceEventsInDateRangeQueryParameterModel request,
+    public async Task<CollectionModel<FundPlanBalanceEventModel>> GetFundPlanEventsAsync(
+        FundPlanBalanceEventsInDateRangeQueryParameterModel request,
         CancellationToken cancellationToken = default)
     {
         IReadOnlyCollection<TransactionModel> transactions = await GetTransactionsAsync(
             databaseContext.Transactions.AsNoTracking().Where(transaction => transaction.Date >= request.Range.Start && transaction.Date <= request.Range.End),
             cancellationToken);
-        return ToCollection(ApplySort(GetGoalEvents(transactions).Where(balanceEvent => Matches(balanceEvent, request.Filter)), request.Sort), request.Offset, request.Limit);
+        return ToCollection(ApplySort(GetFundPlanEvents(transactions).Where(item => Matches(item, request.Filter)), request.Sort), request.Offset, request.Limit);
     }
 
     /// <summary>
-    /// Retrieves Goal Balance Events in an Accounting Period range, or null when the range is invalid.
+    /// Retrieves Fund Plan balance events in an Accounting Period range.
     /// </summary>
-    public async Task<CollectionModel<GoalBalanceEventModel>?> GetGoalEventsAsync(
-        GoalBalanceEventsInAccountingPeriodRangeQueryParameterModel request,
+    public async Task<CollectionModel<FundPlanBalanceEventModel>?> GetFundPlanEventsAsync(
+        FundPlanBalanceEventsInAccountingPeriodRangeQueryParameterModel request,
         CancellationToken cancellationToken = default)
     {
         IReadOnlyCollection<Guid>? periodIds = await GetAccountingPeriodIdsAsync(request.Range, cancellationToken);
@@ -109,7 +109,7 @@ public sealed class BalanceEventQueryService(DatabaseContext databaseContext, Tr
         IReadOnlyCollection<TransactionModel> transactions = await GetTransactionsAsync(
             databaseContext.Transactions.AsNoTracking().Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId)),
             cancellationToken);
-        return ToCollection(ApplySort(GetGoalEvents(transactions).Where(balanceEvent => Matches(balanceEvent, request.Filter)), request.Sort), request.Offset, request.Limit);
+        return ToCollection(ApplySort(GetFundPlanEvents(transactions).Where(item => Matches(item, request.Filter)), request.Sort), request.Offset, request.Limit);
     }
 
     /// <summary>
@@ -165,14 +165,15 @@ public sealed class BalanceEventQueryService(DatabaseContext databaseContext, Tr
     });
 
     /// <summary>
-    /// Gets all Goal Balance Events from the provided Transactions.
+    /// Gets all Fund Plan balance events from the provided Transactions.
     /// </summary>
-    private static IEnumerable<GoalBalanceEventModel> GetGoalEvents(IEnumerable<TransactionModel> transactions) => transactions.SelectMany(transaction => transaction switch
+    private static IEnumerable<FundPlanBalanceEventModel> GetFundPlanEvents(IEnumerable<TransactionModel> transactions) => transactions.SelectMany(transaction => transaction switch
     {
-        SpendingTransactionModel spending => spending.Destinations.SelectMany(destination => destination.Goals),
-        IncomeTransactionModel income => income.Destinations.SelectMany(destination => destination.Goals),
-        FundTransactionModel fund => (fund.Source.Goal == null ? Enumerable.Empty<GoalBalanceEventModel>() : new[] { fund.Source.Goal! }).Concat(fund.Destinations.Where(destination => destination.Goal != null).Select(destination => destination.Goal!)),
-        _ => Enumerable.Empty<GoalBalanceEventModel>(),
+        SpendingTransactionModel spending => spending.Destinations.SelectMany(destination => destination.FundPlans),
+        IncomeTransactionModel income => income.Destinations.SelectMany(destination => destination.FundPlans),
+        FundTransactionModel fund => (fund.Source.FundPlan == null ? [] : new[] { fund.Source.FundPlan })
+            .Concat(fund.Destinations.Where(destination => destination.FundPlan != null).Select(destination => destination.FundPlan!)),
+        _ => [],
     });
 
     /// <summary>
@@ -191,11 +192,10 @@ public sealed class BalanceEventQueryService(DatabaseContext databaseContext, Tr
         (filter?.Names is not { Count: > 0 } names || names.Contains(fund.Name));
 
     /// <summary>
-    /// Determines whether the provided Goal Balance Event matches the provided filter.
+    /// Determines whether a Fund Plan event matches the provided filter.
     /// </summary>
-    private static bool Matches(GoalBalanceEventModel balanceEvent, GoalFilterModel? filter) =>
-        (filter?.AccountingPeriodIds is not { Count: > 0 } periodIds || periodIds.Contains(balanceEvent.AccountingPeriod.Id)) &&
-        (filter?.FundIds is not { Count: > 0 } fundIds || fundIds.Contains(balanceEvent.Fund.Id));
+    private static bool Matches(FundPlanBalanceEventModel balanceEvent, FundPlanFilterModel? filter) =>
+        filter?.FundIds is not { Count: > 0 } fundIds || fundIds.Contains(balanceEvent.Fund.Id);
 
     /// <summary>
     /// Applies the provided sort to the provided Account Balance Events, or a default sort when the provided sort is null or invalid.
@@ -234,22 +234,22 @@ public sealed class BalanceEventQueryService(DatabaseContext databaseContext, Tr
     };
 
     /// <summary>
-    /// Applies the provided sort to the provided Goal Balance Events, or a default sort when the provided sort is null or invalid.
+    /// Applies ordering to Fund Plan balance events.
     /// </summary>
-    private static IOrderedEnumerable<GoalBalanceEventModel> ApplySort(IEnumerable<GoalBalanceEventModel> events, GoalBalanceEventSortModel? sort) => sort switch
-    {
-        GoalBalanceEventSortModel.FundName => events.OrderBy(balanceEvent => balanceEvent.Fund.Name).ThenByDescending(balanceEvent => balanceEvent.Date).ThenBy(balanceEvent => balanceEvent.TransactionId),
-        GoalBalanceEventSortModel.FundNameDescending => events.OrderByDescending(balanceEvent => balanceEvent.Fund.Name).ThenByDescending(balanceEvent => balanceEvent.Date).ThenBy(balanceEvent => balanceEvent.TransactionId),
-        GoalBalanceEventSortModel.AccountingPeriodName => events.OrderBy(balanceEvent => balanceEvent.AccountingPeriod.Year).ThenBy(balanceEvent => balanceEvent.AccountingPeriod.Month).ThenBy(balanceEvent => balanceEvent.TransactionId),
-        GoalBalanceEventSortModel.AccountingPeriodNameDescending => events.OrderByDescending(balanceEvent => balanceEvent.AccountingPeriod.Year).ThenByDescending(balanceEvent => balanceEvent.AccountingPeriod.Month).ThenBy(balanceEvent => balanceEvent.TransactionId),
-        GoalBalanceEventSortModel.Date => events.OrderBy(balanceEvent => balanceEvent.Date).ThenBy(balanceEvent => balanceEvent.TransactionId),
-        GoalBalanceEventSortModel.DateDescending => events.OrderByDescending(balanceEvent => balanceEvent.Date).ThenBy(balanceEvent => balanceEvent.TransactionId),
-        GoalBalanceEventSortModel.Type => events.OrderBy(balanceEvent => balanceEvent.Type).ThenByDescending(balanceEvent => balanceEvent.Date).ThenBy(balanceEvent => balanceEvent.TransactionId),
-        GoalBalanceEventSortModel.TypeDescending => events.OrderByDescending(balanceEvent => balanceEvent.Type).ThenByDescending(balanceEvent => balanceEvent.Date).ThenBy(balanceEvent => balanceEvent.TransactionId),
-        GoalBalanceEventSortModel.Amount => events.OrderBy(balanceEvent => balanceEvent.Amount).ThenByDescending(balanceEvent => balanceEvent.Date).ThenBy(balanceEvent => balanceEvent.TransactionId),
-        GoalBalanceEventSortModel.AmountDescending => events.OrderByDescending(balanceEvent => balanceEvent.Amount).ThenByDescending(balanceEvent => balanceEvent.Date).ThenBy(balanceEvent => balanceEvent.TransactionId),
-        _ => events.OrderByDescending(balanceEvent => balanceEvent.Date).ThenBy(balanceEvent => balanceEvent.TransactionId),
-    };
+    private static IOrderedEnumerable<FundPlanBalanceEventModel> ApplySort(
+        IEnumerable<FundPlanBalanceEventModel> events,
+        FundPlanBalanceEventSortModel? sort) => sort switch
+        {
+            FundPlanBalanceEventSortModel.FundName => events.OrderBy(item => item.Fund.Name).ThenByDescending(item => item.Date),
+            FundPlanBalanceEventSortModel.FundNameDescending => events.OrderByDescending(item => item.Fund.Name).ThenByDescending(item => item.Date),
+            FundPlanBalanceEventSortModel.Date => events.OrderBy(item => item.Date).ThenBy(item => item.TransactionId),
+            FundPlanBalanceEventSortModel.Type => events.OrderBy(item => item.Type).ThenByDescending(item => item.Date),
+            FundPlanBalanceEventSortModel.TypeDescending => events.OrderByDescending(item => item.Type).ThenByDescending(item => item.Date),
+            FundPlanBalanceEventSortModel.Amount => events.OrderBy(item => item.Amount).ThenByDescending(item => item.Date),
+            FundPlanBalanceEventSortModel.AmountDescending => events.OrderByDescending(item => item.Amount).ThenByDescending(item => item.Date),
+            FundPlanBalanceEventSortModel.DateDescending or null => events.OrderByDescending(item => item.Date).ThenBy(item => item.TransactionId),
+            _ => events.OrderByDescending(item => item.Date).ThenBy(item => item.TransactionId),
+        };
 
     /// <summary>
     /// Projects the provided items to a CollectionModel, applying the provided offset and limit for pagination, and including the total count of items before pagination.

@@ -32,33 +32,48 @@ public class FundService(
             return false;
         }
         fund = new Fund(request.Name, request.Description, request.OpeningAccountingPeriod.Id);
-        if (!fundPlanService.TryCreate(
-            new CreateFundPlanRequest
-            {
-                Fund = fund,
-                RegularContribution = request.RegularContribution,
-                MinimumFundedBalance = request.MinimumFundedBalance,
-                MaximumFundedBalance = request.MaximumFundedBalance,
-                TargetEndingBalance = request.TargetEndingBalance,
-            },
-            out FundPlan? fundPlan,
-            out exceptions))
+        List<FundPlan> fundPlans = [];
+        AccountingPeriod? accountingPeriod = request.OpeningAccountingPeriod;
+        while (accountingPeriod != null)
         {
-            fund = null;
-            return false;
+            if (!fundPlanService.TryCreate(
+                new CreateFundPlanRequest
+                {
+                    Fund = fund,
+                    AccountingPeriod = accountingPeriod,
+                    RegularContribution = request.RegularContribution,
+                    MinimumFundedBalance = request.MinimumFundedBalance,
+                    MaximumFundedBalance = request.MaximumFundedBalance,
+                    TargetEndingBalance = request.TargetEndingBalance,
+                },
+                out FundPlan? fundPlan,
+                out exceptions))
+            {
+                fund = null;
+                return false;
+            }
+            fundPlans.Add(fundPlan);
+            accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
         }
 
         fundRepository.Add(fund);
-        if (!fundPlanRepository.TryAdd(fundPlan))
+        foreach (FundPlan fundPlan in fundPlans)
         {
-            fundRepository.Delete(fund);
-            fund = null;
-            exceptions = [new ValidationError(
-                new ValidationErrorPath(nameof(CreateFundRequest.Name)),
-                "A Fund Plan already exists for this Fund.")];
-            return false;
+            if (!fundPlanRepository.TryAdd(fundPlan))
+            {
+                foreach (FundPlan addedFundPlan in fundPlans.TakeWhile(plan => plan != fundPlan))
+                {
+                    fundPlanRepository.Delete(addedFundPlan);
+                }
+                fundRepository.Delete(fund);
+                fund = null;
+                exceptions = [new ValidationError(
+                    new ValidationErrorPath(nameof(CreateFundRequest.Name)),
+                    "A Fund Plan already exists for this Fund.")];
+                return false;
+            }
         }
-        accountingPeriodBalanceService.AddFund(fund, fundPlan);
+        accountingPeriodBalanceService.AddFund(fund);
         return true;
     }
 
@@ -81,6 +96,7 @@ public class FundService(
             new CreateFundPlanRequest
             {
                 Fund = fund,
+                AccountingPeriod = null,
                 RegularContribution = request.RegularContribution,
                 MinimumFundedBalance = request.MinimumFundedBalance,
                 MaximumFundedBalance = request.MaximumFundedBalance,
@@ -141,9 +157,10 @@ public class FundService(
             unassignedFund.OnboardedBalance += fund.OnboardedBalance.Value;
         }
         accountingPeriodBalanceService.DeleteFund(fund);
-        FundPlan fundPlan = fundPlanRepository.GetByFund(fund.Id)
-            ?? throw new InvalidOperationException("Fund is missing its Fund Plan. Fund ID: " + fund.Id);
-        fundPlanRepository.Delete(fundPlan);
+        foreach (FundPlan fundPlan in fundPlanRepository.GetAllByFund(fund.Id))
+        {
+            fundPlanRepository.Delete(fundPlan);
+        }
         fundRepository.Delete(fund);
         return true;
     }

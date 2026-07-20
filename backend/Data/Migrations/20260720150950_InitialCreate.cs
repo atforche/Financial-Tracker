@@ -61,22 +61,7 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Funds",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    OpeningAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    OnboardedBalance = table.Column<decimal>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Funds", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "GoalBalanceHistories",
+                name: "FundPlanTotalsHistories",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -92,7 +77,22 @@ namespace Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_GoalBalanceHistories", x => x.Id);
+                    table.PrimaryKey("PK_FundPlanTotalsHistories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Funds",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Description = table.Column<string>(type: "TEXT", nullable: false),
+                    OpeningAccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    OnboardedBalance = table.Column<decimal>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Funds", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -140,50 +140,27 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AssignmentGoals",
+                name: "FundPlans",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     FundId = table.Column<Guid>(type: "TEXT", nullable: false),
                     AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    AssignmentGoalType = table.Column<string>(type: "TEXT", nullable: false),
-                    GoalAmount = table.Column<decimal>(type: "TEXT", nullable: false),
-                    TotalAmountToAssign = table.Column<decimal>(type: "TEXT", nullable: false),
-                    TotalAmountAssigned = table.Column<decimal>(type: "TEXT", nullable: false),
-                    TotalAmountAssignedIncludingPending = table.Column<decimal>(type: "TEXT", nullable: false),
-                    IsGoalMet = table.Column<bool>(type: "INTEGER", nullable: false),
-                    IsGoalMetIncludingPending = table.Column<bool>(type: "INTEGER", nullable: false)
+                    RegularContribution = table.Column<decimal>(type: "TEXT", nullable: true),
+                    MinimumFundedBalance = table.Column<decimal>(type: "TEXT", nullable: true),
+                    MaximumFundedBalance = table.Column<decimal>(type: "TEXT", nullable: true),
+                    TargetEndingBalance = table.Column<decimal>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AssignmentGoals", x => x.Id);
+                    table.PrimaryKey("PK_FundPlans", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AssignmentGoals_Funds_FundId",
-                        column: x => x.FundId,
-                        principalTable: "Funds",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SpendingGoals",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    FundId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    AccountingPeriodId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    SpendingGoalType = table.Column<string>(type: "TEXT", nullable: false),
-                    TotalAmountToSpend = table.Column<decimal>(type: "TEXT", nullable: false),
-                    TotalAmountSpent = table.Column<decimal>(type: "TEXT", nullable: false),
-                    TotalAmountSpentIncludingPending = table.Column<decimal>(type: "TEXT", nullable: false),
-                    IsGoalMet = table.Column<bool>(type: "INTEGER", nullable: false),
-                    IsGoalMetIncludingPending = table.Column<bool>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SpendingGoals", x => x.Id);
+                        name: "FK_FundPlans_AccountingPeriods_AccountingPeriodId",
+                        column: x => x.AccountingPeriodId,
+                        principalTable: "AccountingPeriods",
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_SpendingGoals_Funds_FundId",
+                        name: "FK_FundPlans_Funds_FundId",
                         column: x => x.FundId,
                         principalTable: "Funds",
                         principalColumn: "Id",
@@ -308,7 +285,7 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AccountingPeriodGoalBalanceHistory",
+                name: "AccountingPeriodFundPlanTotals",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -322,21 +299,21 @@ namespace Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AccountingPeriodGoalBalanceHistory", x => x.Id);
+                    table.PrimaryKey("PK_AccountingPeriodFundPlanTotals", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AccountingPeriodGoalBalanceHistory_AccountingPeriodBalanceHistories_AccountingPeriodBalanceHistoryId",
+                        name: "FK_AccountingPeriodFundPlanTotals_AccountingPeriodBalanceHistories_AccountingPeriodBalanceHistoryId",
                         column: x => x.AccountingPeriodBalanceHistoryId,
                         principalTable: "AccountingPeriodBalanceHistories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_AccountingPeriodGoalBalanceHistory_AccountingPeriods_AccountingPeriodId",
+                        name: "FK_AccountingPeriodFundPlanTotals_AccountingPeriods_AccountingPeriodId",
                         column: x => x.AccountingPeriodId,
                         principalTable: "AccountingPeriods",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_AccountingPeriodGoalBalanceHistory_Funds_FundId",
+                        name: "FK_AccountingPeriodFundPlanTotals_Funds_FundId",
                         column: x => x.FundId,
                         principalTable: "Funds",
                         principalColumn: "Id",
@@ -580,18 +557,18 @@ namespace Data.Migrations
                 column: "FundId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AccountingPeriodGoalBalanceHistory_AccountingPeriodBalanceHistoryId",
-                table: "AccountingPeriodGoalBalanceHistory",
+                name: "IX_AccountingPeriodFundPlanTotals_AccountingPeriodBalanceHistoryId",
+                table: "AccountingPeriodFundPlanTotals",
                 column: "AccountingPeriodBalanceHistoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AccountingPeriodGoalBalanceHistory_AccountingPeriodId",
-                table: "AccountingPeriodGoalBalanceHistory",
+                name: "IX_AccountingPeriodFundPlanTotals_AccountingPeriodId",
+                table: "AccountingPeriodFundPlanTotals",
                 column: "AccountingPeriodId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AccountingPeriodGoalBalanceHistory_FundId",
-                table: "AccountingPeriodGoalBalanceHistory",
+                name: "IX_AccountingPeriodFundPlanTotals_FundId",
+                table: "AccountingPeriodFundPlanTotals",
                 column: "FundId");
 
             migrationBuilder.CreateIndex(
@@ -616,16 +593,27 @@ namespace Data.Migrations
                 column: "CreditAccountId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AssignmentGoals_FundId",
-                table: "AssignmentGoals",
+                name: "IX_FundPlans_AccountingPeriodId",
+                table: "FundPlans",
+                column: "AccountingPeriodId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FundPlans_FundId",
+                table: "FundPlans",
                 column: "FundId",
                 unique: true,
                 filter: "\"AccountingPeriodId\" IS NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AssignmentGoals_FundId_AccountingPeriodId",
-                table: "AssignmentGoals",
+                name: "IX_FundPlans_FundId_AccountingPeriodId",
+                table: "FundPlans",
                 columns: new[] { "FundId", "AccountingPeriodId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FundPlanTotalsHistories_FundId_AccountingPeriodId_Date_Sequence",
+                table: "FundPlanTotalsHistories",
+                columns: new[] { "FundId", "AccountingPeriodId", "Date", "Sequence" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -643,12 +631,6 @@ namespace Data.Migrations
                 name: "IX_FundTransactionDestinations_FundTransactionId",
                 table: "FundTransactionDestinations",
                 column: "FundTransactionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_GoalBalanceHistories_FundId_AccountingPeriodId_Date_Sequence",
-                table: "GoalBalanceHistories",
-                columns: new[] { "FundId", "AccountingPeriodId", "Date", "Sequence" },
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_IncomeTransactionIncomeDeductions_IncomeTransactionId",
@@ -674,19 +656,6 @@ namespace Data.Migrations
                 name: "IX_IncomeTransactionIncomeLines_IncomeTransactionId",
                 table: "IncomeTransactionIncomeLines",
                 column: "IncomeTransactionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SpendingGoals_FundId",
-                table: "SpendingGoals",
-                column: "FundId",
-                unique: true,
-                filter: "\"AccountingPeriodId\" IS NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SpendingGoals_FundId_AccountingPeriodId",
-                table: "SpendingGoals",
-                columns: new[] { "FundId", "AccountingPeriodId" },
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_SpendingTransactionDestinationFundAssignments_DestinationId",
@@ -743,22 +712,22 @@ namespace Data.Migrations
                 name: "AccountingPeriodFundBalanceHistory");
 
             migrationBuilder.DropTable(
-                name: "AccountingPeriodGoalBalanceHistory");
+                name: "AccountingPeriodFundPlanTotals");
 
             migrationBuilder.DropTable(
                 name: "AccountTransactionDestinations");
 
             migrationBuilder.DropTable(
-                name: "AssignmentGoals");
-
-            migrationBuilder.DropTable(
                 name: "FundBalanceHistories");
 
             migrationBuilder.DropTable(
-                name: "FundTransactionDestinations");
+                name: "FundPlans");
 
             migrationBuilder.DropTable(
-                name: "GoalBalanceHistories");
+                name: "FundPlanTotalsHistories");
+
+            migrationBuilder.DropTable(
+                name: "FundTransactionDestinations");
 
             migrationBuilder.DropTable(
                 name: "IncomeTransactionIncomeDeductions");
@@ -768,9 +737,6 @@ namespace Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "IncomeTransactionIncomeLines");
-
-            migrationBuilder.DropTable(
-                name: "SpendingGoals");
 
             migrationBuilder.DropTable(
                 name: "SpendingTransactionDestinationFundAssignments");

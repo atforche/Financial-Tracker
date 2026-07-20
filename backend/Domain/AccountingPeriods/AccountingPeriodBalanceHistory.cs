@@ -11,7 +11,6 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
     private List<AccountingPeriodAccountBalanceHistory> _accountBalances = [];
     private List<AccountingPeriodFundBalanceHistory> _fundBalances = [];
     private List<AccountingPeriodFundPlanTotals> _fundPlanTotals = [];
-    private List<AccountingPeriodFundPlanSnapshot> _fundPlanSnapshots = [];
 
     /// <summary>
     /// Accounting Period for this Accounting Period Balance History
@@ -56,30 +55,19 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
     }
 
     /// <summary>
-    /// Fund Plan configuration snapshots for this Accounting Period Balance History.
-    /// </summary>
-    public IReadOnlyCollection<AccountingPeriodFundPlanSnapshot> FundPlanSnapshots
-    {
-        get => _fundPlanSnapshots;
-        private set => _fundPlanSnapshots = value.ToList();
-    }
-
-    /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
     internal AccountingPeriodBalanceHistory(
         AccountingPeriod accountingPeriod,
         IEnumerable<AccountingPeriodAccountBalanceHistory> accountBalances,
         IEnumerable<AccountingPeriodFundBalanceHistory> fundBalances,
-        IEnumerable<AccountingPeriodFundPlanTotals> fundPlanTotals,
-        IEnumerable<AccountingPeriodFundPlanSnapshot> fundPlanSnapshots)
+        IEnumerable<AccountingPeriodFundPlanTotals> fundPlanTotals)
         : base(new AccountingPeriodBalanceHistoryId(Guid.NewGuid()))
     {
         AccountingPeriod = accountingPeriod;
         _accountBalances = accountBalances.ToList();
         _fundBalances = fundBalances.ToList();
         _fundPlanTotals = fundPlanTotals.ToList();
-        _fundPlanSnapshots = fundPlanSnapshots.ToList();
         UpdateBalances();
     }
 
@@ -127,21 +115,10 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
     internal void AddFundPlanTotals(AccountingPeriodFundPlanTotals totals) => _fundPlanTotals.Add(totals);
 
     /// <summary>
-    /// Adds a Fund Plan configuration snapshot to this Accounting Period Balance History.
-    /// </summary>
-    internal void AddFundPlanSnapshot(AccountingPeriodFundPlanSnapshot snapshot) => _fundPlanSnapshots.Add(snapshot);
-
-    /// <summary>
     /// Removes Fund Plan totals for the provided Fund from this Accounting Period Balance History.
     /// </summary>
     internal void RemoveFundPlanTotals(FundId fundId) =>
         _ = _fundPlanTotals.RemoveAll(totals => totals.Fund.Id == fundId);
-
-    /// <summary>
-    /// Removes the Fund Plan configuration snapshot for the provided Fund.
-    /// </summary>
-    internal void RemoveFundPlanSnapshot(FundId fundId) =>
-        _ = _fundPlanSnapshots.RemoveAll(snapshot => snapshot.Fund.Id == fundId);
 
     /// <summary>
     /// Constructs a new default instance of this class

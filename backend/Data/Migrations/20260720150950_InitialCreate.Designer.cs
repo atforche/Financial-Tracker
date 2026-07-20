@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20260714222623_InitialCreate")]
+    [Migration("20260720150950_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -130,6 +130,83 @@ namespace Data.Migrations
                     b.ToTable("AccountBalanceHistories");
                 });
 
+            modelBuilder.Entity("Domain.FundPlans.FundPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("AccountingPeriodId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("FundId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("MaximumFundedBalance")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("MinimumFundedBalance")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("RegularContribution")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("TargetEndingBalance")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountingPeriodId");
+
+                    b.HasIndex("FundId")
+                        .IsUnique()
+                        .HasFilter("\"AccountingPeriodId\" IS NULL");
+
+                    b.HasIndex("FundId", "AccountingPeriodId")
+                        .IsUnique();
+
+                    b.ToTable("FundPlans");
+                });
+
+            modelBuilder.Entity("Domain.FundPlans.FundPlanTotalsHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AccountingPeriodId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("AmountAssigned")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("AmountSpent")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("FundId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PendingAmountAssigned")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PendingAmountSpent")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Sequence")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("TransactionId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FundId", "AccountingPeriodId", "Date", "Sequence")
+                        .IsUnique();
+
+                    b.ToTable("FundPlanTotalsHistories");
+                });
+
             modelBuilder.Entity("Domain.Funds.Fund", b =>
                 {
                     b.Property<Guid>("Id")
@@ -186,133 +263,6 @@ namespace Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FundBalanceHistories");
-                });
-
-            modelBuilder.Entity("Domain.Goals.AssignmentGoal", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("AccountingPeriodId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("AssignmentGoalType")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("FundId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("GoalAmount")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsGoalMet")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsGoalMetIncludingPending")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("TotalAmountAssigned")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("TotalAmountAssignedIncludingPending")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("TotalAmountToAssign")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FundId")
-                        .IsUnique()
-                        .HasFilter("\"AccountingPeriodId\" IS NULL");
-
-                    b.HasIndex("FundId", "AccountingPeriodId")
-                        .IsUnique();
-
-                    b.ToTable("AssignmentGoals");
-                });
-
-            modelBuilder.Entity("Domain.Goals.GoalBalanceHistory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("AccountingPeriodId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("AmountAssigned")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("AmountSpent")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("FundId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("PendingAmountAssigned")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("PendingAmountSpent")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Sequence")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("TransactionId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FundId", "AccountingPeriodId", "Date", "Sequence")
-                        .IsUnique();
-
-                    b.ToTable("GoalBalanceHistories");
-                });
-
-            modelBuilder.Entity("Domain.Goals.SpendingGoal", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("AccountingPeriodId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("FundId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsGoalMet")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsGoalMetIncludingPending")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("SpendingGoalType")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("TotalAmountSpent")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("TotalAmountSpentIncludingPending")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("TotalAmountToSpend")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FundId")
-                        .IsUnique()
-                        .HasFilter("\"AccountingPeriodId\" IS NULL");
-
-                    b.HasIndex("FundId", "AccountingPeriodId")
-                        .IsUnique();
-
-                    b.ToTable("SpendingGoals");
                 });
 
             modelBuilder.Entity("Domain.Transactions.Transaction", b =>
@@ -490,7 +440,7 @@ namespace Data.Migrations
                             b1.Navigation("Fund");
                         });
 
-                    b.OwnsMany("Domain.AccountingPeriods.AccountingPeriodGoalBalanceHistory", "GoalBalances", b1 =>
+                    b.OwnsMany("Domain.AccountingPeriods.AccountingPeriodFundPlanTotals", "FundPlanTotals", b1 =>
                         {
                             b1.Property<Guid>("Id")
                                 .HasColumnType("TEXT");
@@ -524,7 +474,7 @@ namespace Data.Migrations
 
                             b1.HasIndex("FundId");
 
-                            b1.ToTable("AccountingPeriodGoalBalanceHistory");
+                            b1.ToTable("AccountingPeriodFundPlanTotals");
 
                             b1.WithOwner()
                                 .HasForeignKey("AccountingPeriodBalanceHistoryId");
@@ -552,7 +502,7 @@ namespace Data.Migrations
 
                     b.Navigation("FundBalances");
 
-                    b.Navigation("GoalBalances");
+                    b.Navigation("FundPlanTotals");
                 });
 
             modelBuilder.Entity("Domain.Accounts.AccountBalanceHistory", b =>
@@ -566,24 +516,19 @@ namespace Data.Migrations
                     b.Navigation("Account");
                 });
 
-            modelBuilder.Entity("Domain.Goals.AssignmentGoal", b =>
+            modelBuilder.Entity("Domain.FundPlans.FundPlan", b =>
                 {
+                    b.HasOne("Domain.AccountingPeriods.AccountingPeriod", "AccountingPeriod")
+                        .WithMany()
+                        .HasForeignKey("AccountingPeriodId");
+
                     b.HasOne("Domain.Funds.Fund", "Fund")
                         .WithMany()
                         .HasForeignKey("FundId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Fund");
-                });
-
-            modelBuilder.Entity("Domain.Goals.SpendingGoal", b =>
-                {
-                    b.HasOne("Domain.Funds.Fund", "Fund")
-                        .WithMany()
-                        .HasForeignKey("FundId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("AccountingPeriod");
 
                     b.Navigation("Fund");
                 });

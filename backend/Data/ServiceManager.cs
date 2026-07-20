@@ -1,13 +1,13 @@
 using Data.AccountingPeriods;
 using Data.Accounts;
 using Data.BalanceEvents;
+using Data.FundPlans;
 using Data.Funds;
-using Data.Goals;
 using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.FundPlans;
 using Domain.Funds;
-using Domain.Goals;
 using Domain.Transactions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -50,14 +50,11 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<IFundBalanceHistoryRepository, FundBalanceHistoryRepository>();
         _ = serviceCollection.AddScoped<FundBalanceHistoryRepository>();
 
-        _ = serviceCollection.AddScoped<IGoalBalanceHistoryRepository, GoalBalanceHistoryRepository>();
-        _ = serviceCollection.AddScoped<GoalBalanceHistoryRepository>();
-
-        _ = serviceCollection.AddScoped<IAssignmentGoalRepository, AssignmentGoalRepository>();
-        _ = serviceCollection.AddScoped<AssignmentGoalRepository>();
-        _ = serviceCollection.AddScoped<ISpendingGoalRepository, SpendingGoalRepository>();
-        _ = serviceCollection.AddScoped<SpendingGoalRepository>();
-        _ = serviceCollection.AddScoped<GoalQueryService>();
+        _ = serviceCollection.AddScoped<IFundPlanRepository, FundPlanRepository>();
+        _ = serviceCollection.AddScoped<FundPlanRepository>();
+        _ = serviceCollection.AddScoped<FundPlanQueryService>();
+        _ = serviceCollection.AddScoped<IFundPlanTotalsHistoryRepository, FundPlanTotalsHistoryRepository>();
+        _ = serviceCollection.AddScoped<FundPlanTotalsHistoryRepository>();
 
         _ = serviceCollection.AddScoped<ITransactionRepository, TransactionRepository>();
         _ = serviceCollection.AddScoped<TransactionRepository>();

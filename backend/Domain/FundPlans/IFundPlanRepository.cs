@@ -1,4 +1,5 @@
 using Domain.Funds;
+using Domain.AccountingPeriods;
 
 namespace Domain.FundPlans;
 
@@ -13,12 +14,22 @@ public interface IFundPlanRepository
     FundPlan GetById(FundPlanId id);
 
     /// <summary>
-    /// Attempts to get the Fund Plan associated with the specified Fund.
+    /// Gets all Fund Plans associated with the specified Fund.
     /// </summary>
-    FundPlan? GetByFund(FundId fundId);
+    IReadOnlyCollection<FundPlan> GetAllByFund(FundId fundId);
 
     /// <summary>
-    /// Atomically attempts to add the provided Fund Plan when no plan exists for its Fund.
+    /// Gets all Fund Plans associated with the specified Accounting Period.
+    /// </summary>
+    IReadOnlyCollection<FundPlan> GetAllByAccountingPeriod(AccountingPeriodId? accountingPeriodId);
+
+    /// <summary>
+    /// Attempts to get the Fund Plan associated with the specified Fund and Accounting Period.
+    /// </summary>
+    FundPlan? GetByFundAndAccountingPeriod(FundId fundId, AccountingPeriodId? accountingPeriodId);
+
+    /// <summary>
+    /// Atomically attempts to add the provided Fund Plan when no plan exists for its Fund and Accounting Period.
     /// </summary>
     bool TryAdd(FundPlan fundPlan);
 

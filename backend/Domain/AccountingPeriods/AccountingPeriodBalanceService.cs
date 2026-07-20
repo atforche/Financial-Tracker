@@ -1,6 +1,6 @@
 using Domain.Accounts;
-using Domain.Funds;
 using Domain.FundPlans;
+using Domain.Funds;
 using Domain.Transactions;
 
 namespace Domain.AccountingPeriods;
@@ -34,7 +34,6 @@ public class AccountingPeriodBalanceService(
         }
         IEnumerable<AccountingPeriodFundBalanceHistory> fundBalanceHistories = [];
         IEnumerable<AccountingPeriodFundPlanTotals> fundPlanTotals = [];
-        IEnumerable<AccountingPeriodFundPlanSnapshot> fundPlanSnapshots = [];
         foreach (Fund fund in fundRepository.GetAll())
         {
             FundBalance currentBalance = fundBalanceService.GetCurrentBalance(fund.Id);
@@ -46,24 +45,19 @@ public class AccountingPeriodBalanceService(
                 currentBalance));
             if (!fund.IsUnassignedFund)
             {
-                FundPlan fundPlan = fundPlanRepository.GetByFund(fund.Id)
+                _ = fundPlanRepository.GetByFundAndAccountingPeriod(fund.Id, newAccountingPeriod.Id)
                     ?? throw new InvalidOperationException("Fund is missing its Fund Plan. Fund ID: " + fund.Id);
                 fundPlanTotals = fundPlanTotals.Append(new AccountingPeriodFundPlanTotals(
                     fund,
                     newAccountingPeriod,
                     new FundPlanTotals(fund.Id, 0, 0, 0, 0)));
-                fundPlanSnapshots = fundPlanSnapshots.Append(new AccountingPeriodFundPlanSnapshot(
-                    fund,
-                    newAccountingPeriod,
-                    fundPlan));
             }
         }
         accountingPeriodBalanceHistoryRepository.Add(new AccountingPeriodBalanceHistory(
             newAccountingPeriod,
             accountBalanceHistories,
             fundBalanceHistories,
-            fundPlanTotals,
-            fundPlanSnapshots));
+            fundPlanTotals));
     }
 
     /// <summary>
@@ -75,7 +69,7 @@ public class AccountingPeriodBalanceService(
     /// <summary>
     /// Updates the Accounting Period Balances for a newly added Fund
     /// </summary>
-    internal void AddFund(Fund newFund, FundPlan? fundPlan = null)
+    internal void AddFund(Fund newFund)
     {
         if (newFund.OpeningAccountingPeriodId == null)
         {
@@ -89,16 +83,12 @@ public class AccountingPeriodBalanceService(
             balanceHistory.AddFundBalance(new AccountingPeriodFundBalanceHistory(newFund, accountingPeriod, balance, balance));
             if (!newFund.IsUnassignedFund)
             {
-                fundPlan ??= fundPlanRepository.GetByFund(newFund.Id)
+                _ = fundPlanRepository.GetByFundAndAccountingPeriod(newFund.Id, accountingPeriod.Id)
                     ?? throw new InvalidOperationException("Fund is missing its Fund Plan. Fund ID: " + newFund.Id);
                 balanceHistory.AddFundPlanTotals(new AccountingPeriodFundPlanTotals(
                     newFund,
                     accountingPeriod,
                     new FundPlanTotals(newFund.Id, 0, 0, 0, 0)));
-                balanceHistory.AddFundPlanSnapshot(new AccountingPeriodFundPlanSnapshot(
-                    newFund,
-                    accountingPeriod,
-                    fundPlan));
             }
             accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
         }
@@ -119,7 +109,6 @@ public class AccountingPeriodBalanceService(
             AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
             balanceHistory.RemoveFundBalance(fund.Id);
             balanceHistory.RemoveFundPlanTotals(fund.Id);
-            balanceHistory.RemoveFundPlanSnapshot(fund.Id);
             accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
         }
     }

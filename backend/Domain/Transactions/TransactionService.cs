@@ -1,5 +1,6 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.FundPlans;
 using Domain.Funds;
 using Domain.Validation;
 
@@ -12,6 +13,7 @@ public abstract class TransactionService(
     AccountBalanceService accountBalanceService,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
+    FundPlanTotalsHistoryService fundPlanTotalsHistoryService,
     IAccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository)
 {
@@ -210,6 +212,7 @@ public abstract class TransactionService(
         accountingPeriodBalanceService.PostTransaction(transaction, accountId);
         accountBalanceService.PostTransaction(transaction, accountId);
         fundBalanceService.PostTransaction(transaction, accountId);
+        fundPlanTotalsHistoryService.PostTransaction(transaction, accountId);
     }
 
     /// <summary>
@@ -238,6 +241,7 @@ public abstract class TransactionService(
         accountingPeriodBalanceService.UnpostTransaction(transaction);
         accountBalanceService.UnpostTransaction(transaction);
         fundBalanceService.UnpostTransaction(transaction);
+        fundPlanTotalsHistoryService.UnpostTransaction(transaction);
     }
 
     /// <summary>
@@ -275,6 +279,7 @@ public abstract class TransactionService(
         accountingPeriodBalanceService.AddTransaction(transaction);
         accountBalanceService.AddTransaction(transaction);
         fundBalanceService.AddTransaction(transaction);
+        fundPlanTotalsHistoryService.AddTransaction(transaction);
     }
 
     /// <summary>
@@ -285,6 +290,7 @@ public abstract class TransactionService(
         accountingPeriodBalanceService.DeleteTransaction(transaction);
         accountBalanceService.DeleteTransaction(transaction);
         fundBalanceService.DeleteTransaction(transaction);
+        fundPlanTotalsHistoryService.DeleteTransaction(transaction);
     }
 
     /// <summary>

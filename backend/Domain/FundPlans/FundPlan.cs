@@ -1,9 +1,10 @@
 using Domain.Funds;
+using Domain.AccountingPeriods;
 
 namespace Domain.FundPlans;
 
 /// <summary>
-/// Entity class representing the reusable plan for a Fund.
+/// Entity class representing the plan for a Fund in an Accounting Period.
 /// </summary>
 public sealed class FundPlan : Entity<FundPlanId>
 {
@@ -11,6 +12,11 @@ public sealed class FundPlan : Entity<FundPlanId>
     /// Fund associated with this Fund Plan.
     /// </summary>
     public Fund Fund { get; private set; }
+
+    /// <summary>
+    /// Accounting Period associated with this Fund Plan, or null for an onboarded plan.
+    /// </summary>
+    public AccountingPeriod? AccountingPeriod { get; private set; }
 
     /// <summary>
     /// Amount normally contributed during each Accounting Period.
@@ -52,6 +58,7 @@ public sealed class FundPlan : Entity<FundPlanId>
     /// </summary>
     internal FundPlan(
         Fund fund,
+        AccountingPeriod? accountingPeriod,
         decimal? regularContribution,
         decimal? minimumFundedBalance,
         decimal? maximumFundedBalance,
@@ -59,6 +66,7 @@ public sealed class FundPlan : Entity<FundPlanId>
         : base(new FundPlanId(Guid.NewGuid()))
     {
         Fund = fund;
+        AccountingPeriod = accountingPeriod;
         Update(regularContribution, minimumFundedBalance, maximumFundedBalance, targetEndingBalance);
     }
 

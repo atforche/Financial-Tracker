@@ -1,4 +1,5 @@
 using Domain.Funds;
+using Domain.AccountingPeriods;
 
 namespace Domain.FundPlans;
 
@@ -11,6 +12,11 @@ public sealed record CreateFundPlanRequest
     /// Fund associated with the Fund Plan.
     /// </summary>
     public Fund Fund { get; init; } = null!;
+
+    /// <summary>
+    /// Accounting Period associated with the Fund Plan, or null for an onboarded plan.
+    /// </summary>
+    public AccountingPeriod? AccountingPeriod { get; init; }
 
     /// <summary>
     /// Amount normally contributed during each Accounting Period.

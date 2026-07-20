@@ -33,11 +33,11 @@ public sealed class FundPlanService(
                 new ValidationErrorPath(nameof(CreateFundPlanRequest.Fund)),
                 "The unassigned fund cannot have a fund plan."));
         }
-        if (fundPlanRepository.GetByFund(request.Fund.Id) != null)
+        if (fundPlanRepository.GetByFundAndAccountingPeriod(request.Fund.Id, request.AccountingPeriod?.Id) != null)
         {
             exceptions = exceptions.Append(new ValidationError(
                 new ValidationErrorPath(nameof(CreateFundPlanRequest.Fund)),
-                "A Fund Plan already exists for this Fund."));
+                "A Fund Plan already exists for this Fund and Accounting Period."));
         }
         if (exceptions.Any())
         {
@@ -46,6 +46,7 @@ public sealed class FundPlanService(
 
         fundPlan = new FundPlan(
             request.Fund,
+            request.AccountingPeriod,
             request.RegularContribution,
             request.MinimumFundedBalance,
             request.MaximumFundedBalance,
@@ -67,6 +68,12 @@ public sealed class FundPlanService(
             request.MaximumFundedBalance,
             request.TargetEndingBalance,
             out exceptions);
+        if (fundPlan.AccountingPeriod is { IsOpen: false })
+        {
+            exceptions = exceptions.Append(new ValidationError(
+                ValidationErrorPath.Empty,
+                "A Fund Plan for a closed Accounting Period cannot be changed."));
+        }
         if (exceptions.Any())
         {
             return false;
@@ -81,49 +88,35 @@ public sealed class FundPlanService(
     }
 
     /// <summary>
-    /// Attempts to update a Fund Plan configuration for an open Accounting Period.
+    /// Copies Fund Plans from the previous Accounting Period, or onboarded plans for the first Accounting Period.
     /// </summary>
-    public bool TryUpdateForAccountingPeriod(
-        FundPlan fundPlan,
-        AccountingPeriod accountingPeriod,
-        UpdateFundPlanRequest request,
-        out IEnumerable<ValidationError> exceptions)
+    public void CopyToAccountingPeriod(AccountingPeriod? previousAccountingPeriod, AccountingPeriod accountingPeriod)
     {
-        _ = Validate(
-            request.RegularContribution,
-            request.MinimumFundedBalance,
-            request.MaximumFundedBalance,
-            request.TargetEndingBalance,
-            out exceptions);
-        if (!accountingPeriod.IsOpen)
+        foreach (FundPlan existingPlan in fundPlanRepository.GetAllByAccountingPeriod(previousAccountingPeriod?.Id))
         {
-            exceptions = exceptions.Append(new ValidationError(
-                new ValidationErrorPath(nameof(accountingPeriod)),
-                "A Fund Plan cannot be changed for a closed Accounting Period."));
+            var copiedPlan = new FundPlan(
+                existingPlan.Fund,
+                accountingPeriod,
+                existingPlan.RegularContribution,
+                existingPlan.MinimumFundedBalance,
+                existingPlan.MaximumFundedBalance,
+                existingPlan.TargetEndingBalance);
+            if (!fundPlanRepository.TryAdd(copiedPlan))
+            {
+                throw new InvalidOperationException("A Fund Plan already exists for the Fund and Accounting Period.");
+            }
         }
-        if (exceptions.Any())
-        {
-            return false;
-        }
+    }
 
-        AccountingPeriodFundPlanSnapshot? snapshot = accountingPeriodBalanceHistoryRepository
-            .GetForAccountingPeriod(accountingPeriod.Id)
-            .FundPlanSnapshots
-            .SingleOrDefault(existingSnapshot => existingSnapshot.Fund.Id == fundPlan.Fund.Id);
-        if (snapshot == null)
+    /// <summary>
+    /// Deletes all Fund Plans associated with an Accounting Period.
+    /// </summary>
+    public void DeleteForAccountingPeriod(AccountingPeriod accountingPeriod)
+    {
+        foreach (FundPlan fundPlan in fundPlanRepository.GetAllByAccountingPeriod(accountingPeriod.Id))
         {
-            exceptions = [new ValidationError(
-                new ValidationErrorPath(nameof(accountingPeriod)),
-                "The Fund Plan does not apply to the provided Accounting Period.")];
-            return false;
+            fundPlanRepository.Delete(fundPlan);
         }
-
-        snapshot.Update(
-            request.RegularContribution,
-            request.MinimumFundedBalance,
-            request.MaximumFundedBalance,
-            request.TargetEndingBalance);
-        return true;
     }
 
     /// <summary>
@@ -137,15 +130,20 @@ public sealed class FundPlanService(
     {
         progress = null;
         exceptions = [];
+        if (fundPlan.AccountingPeriod?.Id != accountingPeriod.Id)
+        {
+            exceptions = [new ValidationError(
+                new ValidationErrorPath(nameof(accountingPeriod)),
+                "The Fund Plan does not apply to the provided Accounting Period.")];
+            return false;
+        }
         AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository
             .GetForAccountingPeriod(accountingPeriod.Id);
         AccountingPeriodFundBalanceHistory? fundBalanceHistory = balanceHistory.FundBalances.SingleOrDefault(
             balance => balance.Fund.Id == fundPlan.Fund.Id);
         AccountingPeriodFundPlanTotals? totals = balanceHistory.FundPlanTotals.SingleOrDefault(
             totals => totals.Fund.Id == fundPlan.Fund.Id);
-        AccountingPeriodFundPlanSnapshot? snapshot = balanceHistory.FundPlanSnapshots.SingleOrDefault(
-            snapshot => snapshot.Fund.Id == fundPlan.Fund.Id);
-        if (fundBalanceHistory == null || totals == null || snapshot == null)
+        if (fundBalanceHistory == null || totals == null)
         {
             exceptions = [new ValidationError(
                 new ValidationErrorPath(nameof(accountingPeriod)),
@@ -157,10 +155,10 @@ public sealed class FundPlanService(
             fundBalanceHistory.OpeningBalance,
             totals.AmountAssigned,
             fundBalanceHistory.ClosingBalance,
-            snapshot.RegularContribution,
-            snapshot.MinimumFundedBalance,
-            snapshot.MaximumFundedBalance,
-            snapshot.TargetEndingBalance);
+            fundPlan.RegularContribution,
+            fundPlan.MinimumFundedBalance,
+            fundPlan.MaximumFundedBalance,
+            fundPlan.TargetEndingBalance);
         return true;
     }
 

@@ -28,7 +28,7 @@ public sealed class IncomeTransactionDestinationModel
     public required IReadOnlyCollection<FundBalanceEventModel> FundAssignments { get; init; }
 
     /// <summary>
-    /// Goals for this destination.
+    /// Fund Plan balance events for this destination.
     /// </summary>
-    public required IReadOnlyCollection<GoalBalanceEventModel> Goals { get; init; }
+    public required IReadOnlyCollection<FundPlanBalanceEventModel> FundPlans { get; init; }
 }

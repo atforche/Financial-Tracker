@@ -2,7 +2,6 @@ using Data;
 using Data.Funds;
 using Domain.AccountingPeriods;
 using Domain.Funds;
-using Domain.Goals;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
@@ -105,33 +104,16 @@ public sealed class FundController(
             });
         }
 
-        if (!FundGoalTypeConverter.TryToDomain(createFundModel.AssignmentGoalType, out AssignmentGoalType? assignmentGoalType))
-        {
-            errors.Add(nameof(createFundModel.AssignmentGoalType), [$"Unrecognized assignment goal type: {createFundModel.AssignmentGoalType}"]);
-        }
-        if (!FundGoalTypeConverter.TryToDomain(createFundModel.SpendingGoalType, out SpendingGoalType? spendingGoalType))
-        {
-            errors.Add(nameof(createFundModel.SpendingGoalType), [$"Unrecognized spending goal type: {createFundModel.SpendingGoalType}"]);
-        }
-        if (errors.Count > 0 || assignmentGoalType == null || spendingGoalType == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to create Fund.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-
         if (!fundService.TryCreate(
             new CreateFundRequest
             {
                 Name = createFundModel.Name,
                 Description = createFundModel.Description,
                 OpeningAccountingPeriod = accountingPeriod,
-                AssignmentGoalType = assignmentGoalType.Value,
-                AssignmentGoalAmount = createFundModel.AssignmentGoalAmount,
-                SpendingGoalType = spendingGoalType.Value,
+                RegularContribution = createFundModel.RegularContribution,
+                MinimumFundedBalance = createFundModel.MinimumFundedBalance,
+                MaximumFundedBalance = createFundModel.MaximumFundedBalance,
+                TargetEndingBalance = createFundModel.TargetEndingBalance,
             },
             out Fund? newFund,
             out IEnumerable<ValidationError> validationErrors))
@@ -157,34 +139,16 @@ public sealed class FundController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> OnboardAsync(OnboardFundModel onboardFundModel)
     {
-        Dictionary<string, string[]> errors = [];
-        if (!FundGoalTypeConverter.TryToDomain(onboardFundModel.AssignmentGoalType, out AssignmentGoalType? assignmentGoalType))
-        {
-            errors.Add(nameof(onboardFundModel.AssignmentGoalType), [$"Unrecognized assignment goal type: {onboardFundModel.AssignmentGoalType}"]);
-        }
-        if (!FundGoalTypeConverter.TryToDomain(onboardFundModel.SpendingGoalType, out SpendingGoalType? spendingGoalType))
-        {
-            errors.Add(nameof(onboardFundModel.SpendingGoalType), [$"Unrecognized spending goal type: {onboardFundModel.SpendingGoalType}"]);
-        }
-        if (errors.Count > 0 || assignmentGoalType == null || spendingGoalType == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to onboard Fund.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-
         if (!fundService.TryOnboard(
             new OnboardFundRequest
             {
                 Name = onboardFundModel.Name,
                 Description = onboardFundModel.Description,
                 OnboardedBalance = onboardFundModel.OnboardedBalance,
-                AssignmentGoalType = assignmentGoalType.Value,
-                AssignmentGoalAmount = onboardFundModel.AssignmentGoalAmount,
-                SpendingGoalType = spendingGoalType.Value,
+                RegularContribution = onboardFundModel.RegularContribution,
+                MinimumFundedBalance = onboardFundModel.MinimumFundedBalance,
+                MaximumFundedBalance = onboardFundModel.MaximumFundedBalance,
+                TargetEndingBalance = onboardFundModel.TargetEndingBalance,
             },
             out Fund? newFund,
             out IEnumerable<ValidationError> validationErrors))
