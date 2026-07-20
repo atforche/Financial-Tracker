@@ -38,7 +38,11 @@ public static class FundPlanProgressService
             ? new EndingBalanceProgress(targetBalance, currentAvailableBalance)
             : null;
 
-        return new FundPlanProgress(contribution, fundedBalance, endingBalance);
+        return new FundPlanProgress(
+            new AvailableBalanceProgress(currentAvailableBalance),
+            contribution,
+            fundedBalance,
+            endingBalance);
     }
 
     /// <summary>

@@ -6,6 +6,11 @@ namespace Domain.FundPlans;
 public sealed class FundPlanProgress
 {
     /// <summary>
+    /// Available-balance health.
+    /// </summary>
+    public AvailableBalanceProgress AvailableBalance { get; }
+
+    /// <summary>
     /// Contribution progress, or null when no contribution dimension is configured.
     /// </summary>
     public ContributionProgress? Contribution { get; }
@@ -24,10 +29,12 @@ public sealed class FundPlanProgress
     /// Constructs a new instance of this class.
     /// </summary>
     internal FundPlanProgress(
+        AvailableBalanceProgress availableBalance,
         ContributionProgress? contribution,
         FundedBalanceProgress? fundedBalance,
         EndingBalanceProgress? endingBalance)
     {
+        AvailableBalance = availableBalance;
         Contribution = contribution;
         FundedBalance = fundedBalance;
         EndingBalance = endingBalance;

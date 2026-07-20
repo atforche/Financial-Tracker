@@ -130,6 +130,13 @@ public sealed class FundPlanController(
     /// </summary>
     private static FundPlanProgressModel ToModel(FundPlanProgress progress) => new()
     {
+        AvailableBalance = new AvailableBalanceProgressModel
+        {
+            CurrentBalance = progress.AvailableBalance.CurrentBalance,
+            MinimumBalance = progress.AvailableBalance.MinimumBalance,
+            Shortfall = progress.AvailableBalance.Shortfall,
+            IsSatisfied = progress.AvailableBalance.IsSatisfied,
+        },
         Contribution = progress.Contribution == null ? null : new ContributionProgressModel
         {
             TargetAmount = progress.Contribution.TargetAmount,

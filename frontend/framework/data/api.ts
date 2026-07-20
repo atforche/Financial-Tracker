@@ -2551,6 +2551,26 @@ export interface components {
         AccountWithBalanceRangeSortModel: AccountWithBalanceRangeSortModel | null;
         /** @enum {unknown} */
         AccountWithBalanceSortModel: AccountWithBalanceSortModel | null;
+        /** @description Model describing a Fund's available-balance health. */
+        AvailableBalanceProgressModel: {
+            /**
+             * Format: double
+             * @description Gets the current available balance.
+             */
+            currentBalance: number;
+            /**
+             * Format: double
+             * @description Gets the minimum allowed available balance.
+             */
+            minimumBalance: number;
+            /**
+             * Format: double
+             * @description Gets the amount required to restore the minimum allowed balance.
+             */
+            shortfall: number;
+            /** @description Gets whether the available balance is at least zero. */
+            isSatisfied: boolean;
+        };
         /**
          * @description Model representing the type of a balance event.
          * @enum {unknown}
@@ -3273,6 +3293,8 @@ export interface components {
         };
         /** @description Model comparing a Fund's financial state with its Fund Plan. */
         FundPlanProgressModel: {
+            /** @description Gets available-balance health. */
+            availableBalance: components["schemas"]["AvailableBalanceProgressModel"];
             contribution?: null | components["schemas"]["ContributionProgressModel"];
             fundedBalance?: null | components["schemas"]["FundedBalanceProgressModel"];
             endingBalance?: null | components["schemas"]["EndingBalanceProgressModel"];

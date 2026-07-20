@@ -6,6 +6,11 @@ namespace Models.FundPlans;
 public sealed class FundPlanProgressModel
 {
     /// <summary>
+    /// Gets available-balance health.
+    /// </summary>
+    public required AvailableBalanceProgressModel AvailableBalance { get; init; }
+
+    /// <summary>
     /// Gets contribution progress when configured.
     /// </summary>
     public ContributionProgressModel? Contribution { get; init; }

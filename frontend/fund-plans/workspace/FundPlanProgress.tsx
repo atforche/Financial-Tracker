@@ -10,6 +10,9 @@ interface FundPlanProgressProps {
   readonly current: number;
   readonly target: number;
   readonly satisfied: boolean;
+  readonly percent?: number;
+  readonly currentDescription?: string;
+  readonly statusDescription?: string;
 }
 
 /**
@@ -20,9 +23,13 @@ const FundPlanProgress = function ({
   current,
   target,
   satisfied,
+  percent: percentOverride,
+  currentDescription,
+  statusDescription,
 }: FundPlanProgressProps): JSX.Element {
   const percent =
-    target === 0 ? 100 : Math.min(Math.max((current / target) * 100, 0), 100);
+    percentOverride ??
+    (target === 0 ? 100 : Math.min(Math.max((current / target) * 100, 0), 100));
   return (
     <Stack spacing={0.75}>
       <Stack direction="row" justifyContent="space-between" gap={2}>
@@ -52,12 +59,14 @@ const FundPlanProgress = function ({
       </Box>
       <Stack direction="row" justifyContent="space-between" gap={2}>
         <Typography variant="caption" color="text.secondary">
-          {formatCurrency(current)} of {formatCurrency(target)}
+          {currentDescription ??
+            `${formatCurrency(current)} of ${formatCurrency(target)}`}
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          {satisfied
-            ? "Satisfied"
-            : `${formatCurrency(Math.max(target - current, 0))} remaining`}
+          {statusDescription ??
+            (satisfied
+              ? "Satisfied"
+              : `${formatCurrency(Math.max(target - current, 0))} remaining`)}
         </Typography>
       </Stack>
     </Stack>

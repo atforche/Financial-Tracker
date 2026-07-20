@@ -35,6 +35,19 @@ const FundPlanProgressBars = function ({
 }: FundPlanProgressBarsProps): JSX.Element {
   return (
     <Stack spacing={2}>
+      <FundPlanProgress
+        label="Available Balance"
+        current={progress.availableBalance.currentBalance}
+        target={progress.availableBalance.minimumBalance}
+        satisfied={progress.availableBalance.isSatisfied}
+        percent={progress.availableBalance.isSatisfied ? 100 : 0}
+        currentDescription={`${formatCurrency(progress.availableBalance.currentBalance)} available`}
+        statusDescription={
+          progress.availableBalance.isSatisfied
+            ? "Healthy"
+            : `${formatCurrency(progress.availableBalance.shortfall)} overdrawn`
+        }
+      />
       {isNotNullOrUndefined(fundPlan?.regularContribution) &&
       progress.contribution ? (
         <FundPlanProgress
