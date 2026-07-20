@@ -1,15 +1,15 @@
 "use client";
-import type { FundPlan, FundPlanBalanceEvent } from "@/goals/types";
+import type { FundPlan, FundPlanBalanceEvent } from "@/fund-plans/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import GoalBalanceEventsFrame from "@/goals/workspace/GoalBalanceEventsFrame";
-import GoalContextFrame from "@/goals/workspace/GoalContextFrame";
+import FundPlanBalanceEventsFrame from "@/fund-plans/workspace/FundPlanBalanceEventsFrame";
+import FundPlanContextFrame from "@/fund-plans/workspace/FundPlanContextFrame";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 
 /**
- * Props for the ViewGoalForm component.
+ * Props for the ViewFundPlanForm component.
  */
-interface ViewGoalFormProps {
+interface ViewFundPlanFormProps {
   readonly fundPlan: FundPlan;
   readonly redirectUrl: string;
   readonly recentBalanceEvents: FundPlanBalanceEvent[];
@@ -20,17 +20,17 @@ interface ViewGoalFormProps {
 }
 
 /**
- * Displays paired goal details, recent events, and a dialog-backed edit action.
+ * Displays Funding Plan details, recent events, and an edit action.
  */
-const ViewGoalForm = function (props: ViewGoalFormProps): JSX.Element {
+const ViewFundPlanForm = function (props: ViewFundPlanFormProps): JSX.Element {
   return (
     <ConstrainedContent maxWidth={1200}>
       <PageLayout>
-        <GoalContextFrame
+        <FundPlanContextFrame
           fundPlan={props.fundPlan}
           redirectUrl={props.redirectUrl}
         />
-        <GoalBalanceEventsFrame
+        <FundPlanBalanceEventsFrame
           data={props.recentBalanceEvents}
           totalCount={props.recentBalanceEventCount}
           addTransactionHref={props.addTransactionHref}
@@ -41,4 +41,4 @@ const ViewGoalForm = function (props: ViewGoalFormProps): JSX.Element {
     </ConstrainedContent>
   );
 };
-export default ViewGoalForm;
+export default ViewFundPlanForm;

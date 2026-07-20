@@ -30,7 +30,7 @@ import AccountTransactionDestinationFrame from "@/transactions/workspace/account
 import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFrame";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import DeleteTransactionForm from "@/transactions/workspace/DeleteTransactionForm";
-import type { FundPlanWithProgress } from "@/goals/types";
+import type { FundPlanWithProgress } from "@/fund-plans/types";
 import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
 import FundTransactionSourceFrame from "@/transactions/workspace/fund/FundTransactionSourceFrame";
 import type { FundWithBalance } from "@/funds/types";

@@ -1,4 +1,4 @@
-import GoalWorkspace from "@/goals/workspace/GoalWorkspace";
+import FundPlanWorkspace from "@/fund-plans/workspace/FundPlanWorkspace";
 
 export const dynamic = "force-dynamic";
-export default GoalWorkspace;
+export default FundPlanWorkspace;

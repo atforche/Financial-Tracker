@@ -5,8 +5,8 @@ import { BalanceEventType } from "@/balance-events/types";
 import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import type { FundPlanBalanceEvent } from "@/goals/types";
-import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
+import type { FundPlanBalanceEvent } from "@/fund-plans/types";
+import type { FundPlanWorkspaceSearchParams } from "@/fund-plans/workspace/FundPlanWorkspace";
 import type { JSX } from "react";
 import Link from "next/link";
 import ListFrame from "@/framework/listframe/ListFrame";
@@ -16,9 +16,9 @@ import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
 
 /**
- * Props for the GoalBalanceEventsFrame component.
+ * Props for the FundPlanBalanceEventsFrame component.
  */
-interface GoalBalanceEventsFrameProps {
+interface FundPlanBalanceEventsFrameProps {
   readonly data: FundPlanBalanceEvent[] | null;
   readonly totalCount: number | null;
   readonly addTransactionHref: string;
@@ -27,15 +27,15 @@ interface GoalBalanceEventsFrameProps {
 }
 
 /**
- * Displays recent assignment and spending events within the goal workspace.
+ * Displays recent assignment and spending events for a Funding Plan.
  */
-const GoalBalanceEventsFrame = function ({
+const FundPlanBalanceEventsFrame = function ({
   data,
   totalCount,
   addTransactionHref,
   accountingPeriodId,
   fundId,
-}: GoalBalanceEventsFrameProps): JSX.Element {
+}: FundPlanBalanceEventsFrameProps): JSX.Element {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -67,7 +67,7 @@ const GoalBalanceEventsFrame = function ({
         }
         data={data}
         totalCount={totalCount}
-        pageParamName={propertyName<GoalWorkspaceSearchParams>(
+        pageParamName={propertyName<FundPlanWorkspaceSearchParams>(
           "balanceEventPage",
         )}
         onRowClick={(balanceEvent) => {
@@ -84,7 +84,7 @@ const GoalBalanceEventsFrame = function ({
         initialEmptyState={{
           title: "No balance events yet",
           description:
-            "Create a transaction for this fund to start building its goal history.",
+            "Create a transaction for this fund to start building its Funding Plan history.",
           action: (
             <Button
               component={Link}
@@ -100,4 +100,4 @@ const GoalBalanceEventsFrame = function ({
   );
 };
 
-export default GoalBalanceEventsFrame;
+export default FundPlanBalanceEventsFrame;

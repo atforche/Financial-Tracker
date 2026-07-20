@@ -126,8 +126,10 @@ public sealed class BalanceEventQueryService(DatabaseContext databaseContext, Tr
     /// </summary>
     private async Task<IReadOnlyCollection<Guid>?> GetAccountingPeriodIdsAsync(AccountingPeriodRangeModel range, CancellationToken cancellationToken)
     {
+        var startId = new AccountingPeriodId(range.Start);
+        var endId = new AccountingPeriodId(range.End);
         List<AccountingPeriod> endpoints = await databaseContext.AccountingPeriods.AsNoTracking()
-            .Where(period => period.Id.Value == range.Start || period.Id.Value == range.End).ToListAsync(cancellationToken);
+            .Where(period => period.Id == startId || period.Id == endId).ToListAsync(cancellationToken);
         AccountingPeriod? start = endpoints.SingleOrDefault(period => period.Id.Value == range.Start);
         AccountingPeriod? end = endpoints.SingleOrDefault(period => period.Id.Value == range.End);
         if (start == null || end == null || (start.Year * 12) + start.Month > (end.Year * 12) + end.Month)
@@ -136,10 +138,10 @@ public sealed class BalanceEventQueryService(DatabaseContext databaseContext, Tr
         }
         int startIndex = (start.Year * 12) + start.Month;
         int endIndex = (end.Year * 12) + end.Month;
-        List<Guid> periodIds = await databaseContext.AccountingPeriods.AsNoTracking()
+        List<AccountingPeriodId> periodIds = await databaseContext.AccountingPeriods.AsNoTracking()
             .Where(period => (period.Year * 12) + period.Month >= startIndex && (period.Year * 12) + period.Month <= endIndex)
-            .Select(period => period.Id.Value).ToListAsync(cancellationToken);
-        return periodIds.Count == endIndex - startIndex + 1 ? periodIds : null;
+            .Select(period => period.Id).ToListAsync(cancellationToken);
+        return periodIds.Count == endIndex - startIndex + 1 ? periodIds.Select(id => id.Value).ToList() : null;
     }
 
     /// <summary>

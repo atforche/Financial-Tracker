@@ -3,9 +3,9 @@ import type { JSX } from "react";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
- * Props for the GoalProgress component.
+ * Props for the FundPlanProgress component.
  */
-interface GoalProgressProps {
+interface FundPlanProgressProps {
   readonly label: string;
   readonly current: number;
   readonly target: number;
@@ -13,14 +13,14 @@ interface GoalProgressProps {
 }
 
 /**
- * Component that displays information about a goal progress.
+ * Displays progress toward one Funding Plan target.
  */
-const GoalProgress = function ({
+const FundPlanProgress = function ({
   label,
   current,
   target,
   satisfied,
-}: GoalProgressProps): JSX.Element {
+}: FundPlanProgressProps): JSX.Element {
   const percent =
     target === 0 ? 100 : Math.min(Math.max((current / target) * 100, 0), 100);
   return (
@@ -58,4 +58,4 @@ const GoalProgress = function ({
     </Stack>
   );
 };
-export default GoalProgress;
+export default FundPlanProgress;

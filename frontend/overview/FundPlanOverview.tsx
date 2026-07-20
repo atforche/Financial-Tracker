@@ -8,28 +8,28 @@ import loadAllPages from "@/framework/data/loadAllPages";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
- * Props for the GoalOverview component.
+ * Props for the FundPlanOverview component.
  */
-interface GoalOverviewProps {
+interface FundPlanOverviewProps {
   readonly latestAccountingPeriod: AccountingPeriod | null;
 }
 
 /**
- * Overview component for goals.
+ * Overview component for Funding Plans.
  */
-const GoalOverview = async function ({
+const FundPlanOverview = async function ({
   latestAccountingPeriod,
-}: GoalOverviewProps): Promise<JSX.Element> {
+}: FundPlanOverviewProps): Promise<JSX.Element> {
   if (latestAccountingPeriod === null) {
     return (
       <ContentSurface>
         <Stack spacing={2}>
           <Typography variant="caption" color="text.secondary">
-            Current Goals
+            Current Plans
           </Typography>
-          <Typography variant="h5">Goals</Typography>
+          <Typography variant="h5">Plans</Typography>
           <Typography color="text.secondary">
-            No current accounting period is available to show goal summaries.
+            No current accounting period is available to show plan summaries.
           </Typography>
         </Stack>
       </ContentSurface>
@@ -47,7 +47,7 @@ const GoalOverview = async function ({
           },
         },
       }),
-      "Failed to load goals",
+      "Failed to load Funding Plans",
     ),
   );
   const configured = plans.filter(
@@ -61,7 +61,7 @@ const GoalOverview = async function ({
     <ContentSurface>
       <Stack spacing={2}>
         <Typography variant="h6" color="text.secondary">
-          Current Goals ({latestAccountingPeriod.name})
+          Current Plans ({latestAccountingPeriod.name})
         </Typography>
         <Typography variant="h4">{configured.length} configured</Typography>
         <Typography color="text.secondary">
@@ -78,4 +78,4 @@ const GoalOverview = async function ({
     </ContentSurface>
   );
 };
-export default GoalOverview;
+export default FundPlanOverview;

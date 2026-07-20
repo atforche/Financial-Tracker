@@ -8,7 +8,7 @@ import CreateAccountTransactionForm from "@/transactions/workspace/account/Creat
 import CreateFundTransactionForm from "@/transactions/workspace/fund/CreateFundTransactionForm";
 import CreateIncomeTransactionForm from "@/transactions/workspace/income/CreateIncomeTransactionForm";
 import CreateSpendingTransactionForm from "@/transactions/workspace/spending/CreateSpendingTransactionForm";
-import type { FundPlanWithProgress } from "@/goals/types";
+import type { FundPlanWithProgress } from "@/fund-plans/types";
 import type { FundWithBalance } from "@/funds/types";
 import PageLayout from "@/framework/view/PageLayout";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";

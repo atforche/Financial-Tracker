@@ -16,7 +16,7 @@ import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { CreateTransactionRequest } from "@/transactions/types";
 import type { Dayjs } from "dayjs";
-import type { FundPlanWithProgress } from "@/goals/types";
+import type { FundPlanWithProgress } from "@/fund-plans/types";
 import type { FundWithBalance } from "@/funds/types";
 import SpendingTransactionForm from "@/transactions/workspace/spending/SpendingTransactionForm";
 import { useCreateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";

@@ -4,20 +4,20 @@ import type { JSX } from "react";
 import Link from "next/link";
 
 /**
- * Props for the GoalWorkspacePageHeader component.
+ * Props for the FundPlanWorkspacePageHeader component.
  */
-interface GoalWorkspacePageHeaderProps {
+interface FundPlanWorkspacePageHeaderProps {
   readonly backHref: string;
   readonly title: string;
 }
 
 /**
- * Displays the title and return navigation for a goal workspace page.
+ * Displays the title and return navigation for a Funding Plan workspace page.
  */
-const GoalWorkspacePageHeader = function ({
+const FundPlanWorkspacePageHeader = function ({
   backHref,
   title,
-}: GoalWorkspacePageHeaderProps): JSX.Element {
+}: FundPlanWorkspacePageHeaderProps): JSX.Element {
   return (
     <Stack spacing={2.5}>
       <Link
@@ -33,4 +33,4 @@ const GoalWorkspacePageHeader = function ({
   );
 };
 
-export default GoalWorkspacePageHeader;
+export default FundPlanWorkspacePageHeader;

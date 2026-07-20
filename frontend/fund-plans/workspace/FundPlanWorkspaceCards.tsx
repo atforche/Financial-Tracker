@@ -4,36 +4,37 @@ import {
   EndingBalanceStatus,
   type FundPlanWithProgress,
   FundedBalanceStatus,
-} from "@/goals/types";
+} from "@/fund-plans/types";
 import { Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import GoalProgress from "@/goals/workspace/GoalProgress";
-import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
+import FundPlanProgress from "@/fund-plans/workspace/FundPlanProgress";
+import type { FundPlanWorkspaceSearchParams } from "@/fund-plans/workspace/FundPlanWorkspace";
 import type { JSX } from "react";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import WorkspaceCard from "@/framework/view/WorkspaceCard";
 import propertyName from "@/framework/data/propertyName";
-import routes from "@/goals/routes";
+import routes from "@/fund-plans/routes";
 import { useSearchParams } from "next/navigation";
 
 /**
- * Props for the GoalWorkspaceCards component.
+ * Props for the FundPlanWorkspaceCards component.
  */
-interface GoalWorkspaceCardsProps {
+interface FundPlanWorkspaceCardsProps {
   readonly accountingPeriod: AccountingPeriod | null;
   readonly fundPlans: FundPlanWithProgress[];
 }
 
 /**
- * Displays paired goal progress as navigable workspace cards.
+ * Displays Funding Plan progress as navigable workspace cards.
  */
-const GoalWorkspaceCards = function ({
+const FundPlanWorkspaceCards = function ({
   accountingPeriod,
   fundPlans,
-}: GoalWorkspaceCardsProps): JSX.Element {
+}: FundPlanWorkspaceCardsProps): JSX.Element {
   const searchParams = useSearchParams();
   const search = (
-    searchParams.get(propertyName<GoalWorkspaceSearchParams>("search")) ?? ""
+    searchParams.get(propertyName<FundPlanWorkspaceSearchParams>("search")) ??
+    ""
   )
     .trim()
     .toLowerCase();
@@ -43,7 +44,8 @@ const GoalWorkspaceCards = function ({
   if (!filtered.length) {
     return (
       <Typography color="text.secondary">
-        No goals match the selected accounting period and search filters.
+        No Funding Plans match the selected accounting period and search
+        filters.
       </Typography>
     );
   }
@@ -61,14 +63,14 @@ const GoalWorkspaceCards = function ({
             FundedBalanceStatus.WithinRange,
           plan.progress.endingBalance?.status === EndingBalanceStatus.AtTarget,
         ].filter(Boolean).length;
-        const detailSearchParams: GoalWorkspaceSearchParams = {
+        const detailSearchParams: FundPlanWorkspaceSearchParams = {
           ...(accountingPeriod
             ? { accountingPeriodId: accountingPeriod.id }
             : {}),
           ...(search ? { search } : {}),
         };
         const ids = searchParams.getAll(
-          propertyName<GoalWorkspaceSearchParams>("fundIds"),
+          propertyName<FundPlanWorkspaceSearchParams>("fundIds"),
         );
         if (ids.length) {
           detailSearchParams.fundIds = ids;
@@ -91,7 +93,7 @@ const GoalWorkspaceCards = function ({
                 {accountingPeriod?.name ?? "No accounting period"}
               </Typography>
               {plan.progress.contribution ? (
-                <GoalProgress
+                <FundPlanProgress
                   label="Monthly contribution"
                   current={plan.progress.contribution.assignedAmount}
                   target={plan.progress.contribution.targetAmount}
@@ -99,11 +101,11 @@ const GoalWorkspaceCards = function ({
                 />
               ) : (
                 <Typography variant="body2">
-                  No contribution goal configured
+                  No regular contribution configured
                 </Typography>
               )}
               <Typography variant="body2" color="text.secondary">
-                Available goal dimensions: {configured} of 3
+                Plan targets configured: {configured} of 3
               </Typography>
             </Stack>
           </WorkspaceCard>
@@ -112,4 +114,4 @@ const GoalWorkspaceCards = function ({
     </ResponsiveGrid>
   );
 };
-export default GoalWorkspaceCards;
+export default FundPlanWorkspaceCards;

@@ -28,7 +28,7 @@ interface FundPlanSetupSectionProps {
 }
 
 /**
- * Renders the configurable quantities users see as a Fund's goal.
+ * Renders the configurable quantities in a Funding Plan.
  */
 const FundPlanSetupSection = function ({
   color = "primary",
@@ -43,7 +43,7 @@ const FundPlanSetupSection = function ({
   errors,
 }: FundPlanSetupSectionProps): JSX.Element {
   return (
-    <Frame title="Fund Plan Setup" color={color}>
+    <Frame title="Funding Plan Setup" color={color}>
       <Stack spacing={2}>
         <FundPlanAmountOption
           label="Regular Monthly Contribution"

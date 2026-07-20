@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Stack } from "@mui/material";
-import type { FundPlan, UpdateFundPlanRequest } from "@/goals/types";
+import type { FundPlan, UpdateFundPlanRequest } from "@/fund-plans/types";
 import {
   type JSX,
   startTransition,
@@ -14,23 +14,23 @@ import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FundPlanSetupSection from "@/funds/workspace/FundPlanSetupSection";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
-import updateFundPlan from "@/goals/workspace/updateFundPlan";
+import updateFundPlan from "@/fund-plans/workspace/updateFundPlan";
 
 /**
- * Props for the UpdateGoalForm component.
+ * Props for the UpdateFundPlanForm component.
  */
-interface UpdateGoalFormProps {
+interface UpdateFundPlanFormProps {
   readonly fundPlan: FundPlan;
   readonly redirectUrl: string;
 }
 
 /**
- * Opens a dialog for updating both paired goal configurations together.
+ * Opens a dialog for updating a fund plan.
  */
-const UpdateGoalForm = function ({
+const UpdateFundPlanForm = function ({
   fundPlan,
   redirectUrl,
-}: UpdateGoalFormProps): JSX.Element {
+}: UpdateFundPlanFormProps): JSX.Element {
   const [open, setOpen] = useState(false);
   const [regularContribution, setRegularContribution] = useState(
     fundPlan.regularContribution ?? null,
@@ -84,7 +84,7 @@ const UpdateGoalForm = function ({
         open={open}
         fullWidth
         maxWidth="md"
-        title="Update Goal"
+        title="Update Funding Plan"
         {...(pending
           ? {}
           : {
@@ -139,4 +139,4 @@ const UpdateGoalForm = function ({
     </>
   );
 };
-export default UpdateGoalForm;
+export default UpdateFundPlanForm;

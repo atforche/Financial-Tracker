@@ -34,8 +34,9 @@ public sealed class TransactionQueryService(DatabaseContext databaseContext, Tra
     /// </summary>
     public async Task<TransactionModel?> GetByIdAsync(Guid transactionId, CancellationToken cancellationToken = default)
     {
+        var id = new TransactionId(transactionId);
         Transaction? transaction = await databaseContext.Transactions.AsNoTracking()
-            .SingleOrDefaultAsync(item => item.Id.Value == transactionId, cancellationToken);
+            .SingleOrDefaultAsync(item => item.Id == id, cancellationToken);
         return transaction == null ? null : (await transactionModelMapper.MapAsync([transaction], cancellationToken)).Single();
     }
 
@@ -82,8 +83,10 @@ public sealed class TransactionQueryService(DatabaseContext databaseContext, Tra
         TransactionsInAccountingPeriodRangeQueryParameterModel request,
         CancellationToken cancellationToken = default)
     {
+        var startId = new AccountingPeriodId(request.Range.Start);
+        var endId = new AccountingPeriodId(request.Range.End);
         List<AccountingPeriod> endpoints = await databaseContext.AccountingPeriods.AsNoTracking()
-            .Where(period => period.Id.Value == request.Range.Start || period.Id.Value == request.Range.End).ToListAsync(cancellationToken);
+            .Where(period => period.Id == startId || period.Id == endId).ToListAsync(cancellationToken);
         AccountingPeriod? start = endpoints.SingleOrDefault(period => period.Id.Value == request.Range.Start);
         AccountingPeriod? end = endpoints.SingleOrDefault(period => period.Id.Value == request.Range.End);
         if (start == null || end == null || (start.Year * 12) + start.Month > (end.Year * 12) + end.Month)
@@ -92,16 +95,15 @@ public sealed class TransactionQueryService(DatabaseContext databaseContext, Tra
         }
         int startIndex = (start.Year * 12) + start.Month;
         int endIndex = (end.Year * 12) + end.Month;
-        List<Guid> periodIds = await databaseContext.AccountingPeriods.AsNoTracking()
+        List<AccountingPeriodId> periodIds = await databaseContext.AccountingPeriods.AsNoTracking()
             .Where(period => (period.Year * 12) + period.Month >= startIndex && (period.Year * 12) + period.Month <= endIndex)
-            .Select(period => period.Id.Value).ToListAsync(cancellationToken);
+            .Select(period => period.Id).ToListAsync(cancellationToken);
         if (periodIds.Count != endIndex - startIndex + 1)
         {
             return null;
         }
-        var accountingPeriodIds = periodIds.Select(id => new AccountingPeriodId(id)).ToList();
         IQueryable<Transaction> query = ApplyFilter(databaseContext.Transactions.AsNoTracking(), request.Filter)
-            .Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId));
+            .Where(transaction => periodIds.Contains(transaction.AccountingPeriodId));
         RangeContent content = await ExecuteRangeAsync(query, request.Sort, request.Offset, request.Limit, cancellationToken);
         return new TransactionsInAccountingPeriodRangeModel
         {

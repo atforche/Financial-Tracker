@@ -12,7 +12,7 @@ import {
 } from "@/funds/assignmentPlanner/helpers";
 import type { FrameColor } from "@/framework/view/Frame";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
-import type { FundPlanWithProgress } from "@/goals/types";
+import type { FundPlanWithProgress } from "@/fund-plans/types";
 import type { JSX } from "react";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { getUnassignedFund } from "@/funds/helpers";
@@ -87,9 +87,11 @@ const SpendingFundAssignmentPlanner = function ({
           }
           const fund = funds.find((f) => f.id === newFund.id);
           const previousFundBalance = fund?.currentBalance.postedBalance ?? 0;
-          const goal = fundPlans.find((g) => g.fund.id === newFund.id);
+          const fundPlan = fundPlans.find(
+            (plan) => plan.fund.id === newFund.id,
+          );
           const previousPlanAmount =
-            goal?.progress.endingBalance?.variance ?? 0;
+            fundPlan?.progress.endingBalance?.variance ?? 0;
           return {
             fundId: newFund.id,
             fundName: newFund.name,
@@ -115,9 +117,11 @@ const SpendingFundAssignmentPlanner = function ({
         fundAssignments,
         index,
         (assignment) => {
-          const goal = fundPlans.find((g) => g.fund.id === assignment.fundId);
+          const fundPlan = fundPlans.find(
+            (plan) => plan.fund.id === assignment.fundId,
+          );
           const previousPlanAmount =
-            goal?.progress.endingBalance?.variance ?? 0;
+            fundPlan?.progress.endingBalance?.variance ?? 0;
           return {
             ...assignment,
             amount: newAmount ?? 0,

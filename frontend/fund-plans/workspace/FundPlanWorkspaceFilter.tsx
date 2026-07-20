@@ -3,7 +3,7 @@
 import { Button, Stack } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
-import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
+import type { FundPlanWorkspaceSearchParams } from "@/fund-plans/workspace/FundPlanWorkspace";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import SearchBar from "@/framework/listframe/SearchBar";
@@ -12,30 +12,30 @@ import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
 /**
- * Props for the GoalWorkspaceFilter component.
+ * Props for the FundPlanWorkspaceFilter component.
  */
-interface GoalWorkspaceFilterProps {
+interface FundPlanWorkspaceFilterProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly selectedAccountingPeriodId: string | null;
 }
 
 /**
- * Filters the unified goal workspace by period and fund.
+ * Filters the Funding Plan workspace by period and fund.
  */
-const GoalWorkspaceFilter = function ({
+const FundPlanWorkspaceFilter = function ({
   accountingPeriods,
   selectedAccountingPeriodId,
-}: GoalWorkspaceFilterProps): JSX.Element {
+}: FundPlanWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
   const selectedPeriod =
     accountingPeriods.find(
       (period) => period.id === selectedAccountingPeriodId,
     ) ?? null;
-  const searchParamName = propertyName<GoalWorkspaceSearchParams>("search");
+  const searchParamName = propertyName<FundPlanWorkspaceSearchParams>("search");
   const balanceEventPageParamName =
-    propertyName<GoalWorkspaceSearchParams>("balanceEventPage");
+    propertyName<FundPlanWorkspaceSearchParams>("balanceEventPage");
   const accountingPeriodParamName =
-    propertyName<GoalWorkspaceSearchParams>("accountingPeriodId");
+    propertyName<FundPlanWorkspaceSearchParams>("accountingPeriodId");
 
   const updateParams = useSearchParamUpdater([balanceEventPageParamName]);
 
@@ -43,7 +43,7 @@ const GoalWorkspaceFilter = function ({
 
   return (
     <PageFilterFrame
-      title="Goals Workspace"
+      title="Plans"
       actions={
         <Button
           variant="outlined"
@@ -88,4 +88,4 @@ const GoalWorkspaceFilter = function ({
   );
 };
 
-export default GoalWorkspaceFilter;
+export default FundPlanWorkspaceFilter;

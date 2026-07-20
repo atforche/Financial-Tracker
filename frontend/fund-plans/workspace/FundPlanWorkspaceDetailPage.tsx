@@ -7,33 +7,33 @@ import {
   isNotNullOrUndefined,
   isNullOrUndefined,
 } from "@/framework/nullHelpers";
-import GoalWorkspacePageHeader from "@/goals/workspace/GoalWorkspacePageHeader";
-import type { GoalWorkspaceSearchParams } from "@/goals/workspace/GoalWorkspace";
+import FundPlanWorkspacePageHeader from "@/fund-plans/workspace/FundPlanWorkspacePageHeader";
+import type { FundPlanWorkspaceSearchParams } from "@/fund-plans/workspace/FundPlanWorkspace";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import ViewGoalForm from "@/goals/workspace/ViewGoalForm";
+import ViewFundPlanForm from "@/fund-plans/workspace/ViewFundPlanForm";
 import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
-import routes from "@/goals/routes";
+import routes from "@/fund-plans/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
- * Props for the GoalWorkspaceDetailPage component.
+ * Props for the FundPlanWorkspaceDetailPage component.
  */
-interface GoalWorkspaceDetailPageProps {
+interface FundPlanWorkspaceDetailPageProps {
   readonly params: Promise<{ fundId: string }>;
-  readonly searchParams: Promise<GoalWorkspaceSearchParams>;
+  readonly searchParams: Promise<FundPlanWorkspaceSearchParams>;
 }
 
 /**
- * Displays details and recent balance events for a Fund's paired Goals.
+ * Displays details and recent balance events for a Funding Plan.
  */
-const GoalWorkspaceDetailPage = async function ({
+const FundPlanWorkspaceDetailPage = async function ({
   params,
   searchParams,
-}: GoalWorkspaceDetailPageProps): Promise<JSX.Element> {
+}: FundPlanWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { fundId } = await params;
   const { accountingPeriodId, fundIds, search, balanceEventPage } =
     await searchParams;
@@ -77,7 +77,7 @@ const GoalWorkspaceDetailPage = async function ({
         },
       },
     }),
-    "Failed to fetch goal balance events",
+    "Failed to fetch Funding Plan balance events",
   );
   const currentUrl = routes.workspaceDetail(fundId, {
     accountingPeriodId: periodId,
@@ -87,8 +87,11 @@ const GoalWorkspaceDetailPage = async function ({
   });
   return (
     <PageLayout>
-      <GoalWorkspacePageHeader backHref={workspaceUrl} title="Goal Details" />
-      <ViewGoalForm
+      <FundPlanWorkspacePageHeader
+        backHref={workspaceUrl}
+        title="Plan Details"
+      />
+      <ViewFundPlanForm
         fundPlan={fundPlan}
         redirectUrl={currentUrl}
         recentBalanceEvents={events.items}
@@ -104,4 +107,4 @@ const GoalWorkspaceDetailPage = async function ({
     </PageLayout>
   );
 };
-export default GoalWorkspaceDetailPage;
+export default FundPlanWorkspaceDetailPage;

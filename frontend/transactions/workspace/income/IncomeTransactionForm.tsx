@@ -26,7 +26,7 @@ import {
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
-import type { FundPlanWithProgress } from "@/goals/types";
+import type { FundPlanWithProgress } from "@/fund-plans/types";
 import type { FundWithBalance } from "@/funds/types";
 import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFrame";
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
@@ -102,7 +102,7 @@ const IncomeTransactionForm = function <RequestPayload>({
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
   const currentFundPlans = fundPlans.filter(
-    (goal) => goal.accountingPeriod?.id === accountingPeriod?.id,
+    (fundPlan) => fundPlan.accountingPeriod?.id === accountingPeriod?.id,
   );
   const sourceNetAmount = getNetIncomeAmount(source);
   const destinationTotal = destinations.reduce(

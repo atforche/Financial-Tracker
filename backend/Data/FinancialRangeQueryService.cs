@@ -246,7 +246,9 @@ public sealed class FinancialRangeQueryService(DatabaseContext databaseContext)
     /// </summary>
     private async Task<List<AccountingPeriod>?> GetPeriodsAsync(AccountingPeriodRangeModel range, CancellationToken cancellationToken)
     {
-        List<AccountingPeriod> endpoints = await databaseContext.AccountingPeriods.AsNoTracking().Where(period => period.Id.Value == range.Start || period.Id.Value == range.End).ToListAsync(cancellationToken);
+        var startId = new AccountingPeriodId(range.Start);
+        var endId = new AccountingPeriodId(range.End);
+        List<AccountingPeriod> endpoints = await databaseContext.AccountingPeriods.AsNoTracking().Where(period => period.Id == startId || period.Id == endId).ToListAsync(cancellationToken);
         AccountingPeriod? start = endpoints.SingleOrDefault(period => period.Id.Value == range.Start);
         AccountingPeriod? end = endpoints.SingleOrDefault(period => period.Id.Value == range.End);
         if (start == null || end == null)

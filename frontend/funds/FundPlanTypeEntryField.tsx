@@ -2,9 +2,9 @@ import { ComboBoxEntryField } from "@/framework/forms/ComboBoxEntryField";
 import type { JSX } from "react";
 
 /**
- * Props for the FundGoalTypeEntryField component.
+ * Props for the FundPlanTypeEntryField component.
  */
-interface FundGoalTypeEntryFieldProps<T> {
+interface FundPlanTypeEntryFieldProps<T> {
   readonly label: string;
   readonly options: readonly T[];
   readonly value: T | null;
@@ -14,16 +14,16 @@ interface FundGoalTypeEntryFieldProps<T> {
 }
 
 /**
- * Component that presents the user with an entry field where they can select a goal type.
+ * Presents an entry field for selecting a Funding Plan type.
  */
-const FundGoalTypeEntryField = function <T>({
+const FundPlanTypeEntryField = function <T>({
   label,
   options,
   value,
   setValue,
   formatOptionLabel,
   errorMessage = null,
-}: FundGoalTypeEntryFieldProps<T>): JSX.Element {
+}: FundPlanTypeEntryFieldProps<T>): JSX.Element {
   return (
     <ComboBoxEntryField<T>
       label={label}
@@ -51,4 +51,4 @@ const FundGoalTypeEntryField = function <T>({
   );
 };
 
-export default FundGoalTypeEntryField;
+export default FundPlanTypeEntryField;

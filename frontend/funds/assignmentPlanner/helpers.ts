@@ -1,5 +1,5 @@
 import type { Fund } from "@/funds/types";
-import type { FundPlanWithProgress } from "@/goals/types";
+import type { FundPlanWithProgress } from "@/fund-plans/types";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
 import { isUnassignedFund } from "@/funds/helpers";
@@ -176,32 +176,32 @@ const getRemainingAmount = function (
 };
 
 /**
- * Gets the remaining amount for an income goal.
+ * Gets the remaining contribution for a Funding Plan.
  */
 const getContributionRemainingAmount = function (
   fundId: string,
   fundPlans: FundPlanWithProgress[],
   baselineFundAssignments: readonly FundAssignmentDraft[],
 ): number | null {
-  const goal = fundPlans.find((plan) => plan.fund.id === fundId);
+  const fundPlan = fundPlans.find((plan) => plan.fund.id === fundId);
   return getRemainingAmount(
-    goal?.progress.contribution?.remainingAmount,
+    fundPlan?.progress.contribution?.remainingAmount,
     baselineFundAssignments,
     fundId,
   );
 };
 
 /**
- * Gets the remaining amount for a spending goal.
+ * Gets the remaining ending-balance variance for a Funding Plan.
  */
 const getEndingBalanceVariance = function (
   fundId: string,
   fundPlans: FundPlanWithProgress[],
   baselineFundAssignments: readonly FundAssignmentDraft[],
 ): number | null {
-  const goal = fundPlans.find((plan) => plan.fund.id === fundId);
+  const fundPlan = fundPlans.find((plan) => plan.fund.id === fundId);
   return getRemainingAmount(
-    goal?.progress.endingBalance?.variance,
+    fundPlan?.progress.endingBalance?.variance,
     baselineFundAssignments,
     fundId,
   );
@@ -212,13 +212,13 @@ const getEndingBalanceVariance = function (
  */
 const getFundOptionSecondaryLabel = function (
   prefix: string,
-  goalRemainingAmount: number | null,
+  planRemainingAmount: number | null,
 ): string {
-  if (goalRemainingAmount === null) {
-    return "No goal";
+  if (planRemainingAmount === null) {
+    return "No Funding Plan";
   }
 
-  return `${prefix} ${formatCurrency(goalRemainingAmount)}`;
+  return `${prefix} ${formatCurrency(planRemainingAmount)}`;
 };
 
 /**

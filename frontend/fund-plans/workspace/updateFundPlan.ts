@@ -1,6 +1,6 @@
 "use server";
 
-import type { FundPlan, UpdateFundPlanRequest } from "@/goals/types";
+import type { FundPlan, UpdateFundPlanRequest } from "@/fund-plans/types";
 import createApiClient from "@/framework/data/createApiClient";
 import { revalidatePath } from "next/cache";
 

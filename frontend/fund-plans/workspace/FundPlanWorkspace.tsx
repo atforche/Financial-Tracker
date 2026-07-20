@@ -1,5 +1,5 @@
-import GoalWorkspaceCards from "@/goals/workspace/GoalWorkspaceCards";
-import GoalWorkspaceFilter from "@/goals/workspace/GoalWorkspaceFilter";
+import FundPlanWorkspaceCards from "@/fund-plans/workspace/FundPlanWorkspaceCards";
+import FundPlanWorkspaceFilter from "@/fund-plans/workspace/FundPlanWorkspaceFilter";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import createApiClient from "@/framework/data/createApiClient";
@@ -8,9 +8,9 @@ import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
- * Search parameters for the GoalWorkspace component.
+ * Search parameters for the FundPlanWorkspace component.
  */
-interface GoalWorkspaceSearchParams {
+interface FundPlanWorkspaceSearchParams {
   accountingPeriodId?: string;
   fundIds?: string | string[];
   search?: string;
@@ -18,25 +18,25 @@ interface GoalWorkspaceSearchParams {
 }
 
 /**
- * Props for the GoalWorkspace component.
+ * Props for the FundPlanWorkspace component.
  */
-interface GoalWorkspaceProps {
-  readonly searchParams: Promise<GoalWorkspaceSearchParams>;
+interface FundPlanWorkspaceProps {
+  readonly searchParams: Promise<FundPlanWorkspaceSearchParams>;
 }
 
 /**
- * Displays goal progress for one accounting period in a unified card workspace.
+ * Displays Funding Plan progress for one accounting period.
  */
-const GoalWorkspace = async function ({
+const FundPlanWorkspace = async function ({
   searchParams,
-}: GoalWorkspaceProps): Promise<JSX.Element> {
+}: FundPlanWorkspaceProps): Promise<JSX.Element> {
   const { accountingPeriodId, fundIds } = await searchParams;
   const apiClient = createApiClient();
   const periods = unwrapApiResponse(
     await apiClient.GET("/accounting-periods", {
       params: { query: { Limit: 500 } },
     }),
-    "Failed to fetch goal workspace filters",
+    "Failed to fetch Funding Plan workspace filters",
   );
   const selectedAccountingPeriodId = accountingPeriodId ?? periods.items[0]?.id;
   const selectedFundIds = toRepeatedSearchParams(fundIds);
@@ -73,18 +73,18 @@ const GoalWorkspace = async function ({
                   },
                 },
               ),
-              "Failed to fetch goal progress",
+              "Failed to fetch Funding Plan progress",
             ),
           })),
         )
       : [];
   return (
     <PageLayout>
-      <GoalWorkspaceFilter
+      <FundPlanWorkspaceFilter
         accountingPeriods={periods.items}
         selectedAccountingPeriodId={selectedAccountingPeriodId ?? null}
       />
-      <GoalWorkspaceCards
+      <FundPlanWorkspaceCards
         accountingPeriod={
           periods.items.find(
             (period) => period.id === selectedAccountingPeriodId,
@@ -95,5 +95,5 @@ const GoalWorkspace = async function ({
     </PageLayout>
   );
 };
-export type { GoalWorkspaceSearchParams };
-export default GoalWorkspace;
+export type { FundPlanWorkspaceSearchParams };
+export default FundPlanWorkspace;

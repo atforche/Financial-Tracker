@@ -128,13 +128,14 @@ public sealed class AccountingPeriodQueryService(DatabaseContext databaseContext
         {
             return null;
         }
+        var periodId = new AccountingPeriodId(accountingPeriodId);
         CollectionModel<TransactionModel> transactions = await transactionQueryService.GetForAccountingPeriodAsync(accountingPeriodId, request, cancellationToken);
         IQueryable<IncomeTransaction> incomeQuery = databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
-            .Where(transaction => transaction.AccountingPeriodId.Value == accountingPeriodId);
+            .Where(transaction => transaction.AccountingPeriodId == periodId);
         decimal totalIncome = await incomeQuery.SumAsync(transaction => (decimal?)transaction.Amount, cancellationToken) ?? 0;
         decimal trackedIncome = await incomeQuery.SumAsync(transaction => (decimal?)transaction.TrackedAmount, cancellationToken) ?? 0;
         decimal totalSpending = await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
-            .Where(transaction => transaction.AccountingPeriodId.Value == accountingPeriodId)
+            .Where(transaction => transaction.AccountingPeriodId == periodId)
             .SumAsync(transaction => (decimal?)transaction.Amount, cancellationToken) ?? 0;
         return new AccountingPeriodWithTransactionsModel
         {

@@ -1,15 +1,15 @@
 import Frame from "@/framework/view/Frame";
-import type { FundPlan } from "@/goals/types";
+import type { FundPlan } from "@/fund-plans/types";
 import type { JSX } from "react";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import UpdateGoalForm from "@/goals/workspace/UpdateGoalForm";
+import UpdateFundPlanForm from "@/fund-plans/workspace/UpdateFundPlanForm";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
- * Props for the GoalContextFrame component.
+ * Props for the FundPlanContextFrame component.
  */
-interface GoalContextFrameProps {
+interface FundPlanContextFrameProps {
   readonly fundPlan: FundPlan;
   readonly redirectUrl: string;
 }
@@ -23,17 +23,17 @@ const displayAmount = (value: number | null | undefined): string =>
     : formatCurrency(value);
 
 /**
- * Component that displays the context of a goal within a frame, including its details and an update form.
+ * Displays a Funding Plan's context and update action.
  */
-const GoalContextFrame = function ({
+const FundPlanContextFrame = function ({
   fundPlan,
   redirectUrl,
-}: GoalContextFrameProps): JSX.Element {
+}: FundPlanContextFrameProps): JSX.Element {
   return (
     <Frame
-      title="Goal Context"
+      title="Funding Plan"
       headerContent={
-        <UpdateGoalForm fundPlan={fundPlan} redirectUrl={redirectUrl} />
+        <UpdateFundPlanForm fundPlan={fundPlan} redirectUrl={redirectUrl} />
       }
     >
       <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
@@ -71,4 +71,4 @@ const GoalContextFrame = function ({
     </Frame>
   );
 };
-export default GoalContextFrame;
+export default FundPlanContextFrame;

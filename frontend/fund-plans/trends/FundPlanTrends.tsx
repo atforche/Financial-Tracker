@@ -10,28 +10,28 @@ import { formatCurrency } from "@/framework/currencyHelpers";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
 import loadAllPages from "@/framework/data/loadAllPages";
 import { redirect } from "next/navigation";
-import routes from "@/goals/routes";
+import routes from "@/fund-plans/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
- * Search parameters for the GoalTrends component.
+ * Search parameters for the FundPlanTrends component.
  */
-interface GoalTrendsSearchParams {
+interface FundPlanTrendsSearchParams {
   fundName?: string | string[];
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;
 }
-interface GoalTrendsProps {
-  readonly searchParams: Promise<GoalTrendsSearchParams>;
+interface FundPlanTrendsProps {
+  readonly searchParams: Promise<FundPlanTrendsSearchParams>;
 }
 
 /**
- * Component that displays Goal trends.
+ * Displays Funding Plan trends.
  */
-const GoalTrends = async function ({
+const FundPlanTrends = async function ({
   searchParams,
-}: GoalTrendsProps): Promise<JSX.Element> {
+}: FundPlanTrendsProps): Promise<JSX.Element> {
   const params = await searchParams;
   const apiClient = createApiClient();
   const periods = await loadAllPages(async (limit, offset) =>
@@ -83,7 +83,7 @@ const GoalTrends = async function ({
           },
         },
       }),
-      "Failed to load goals",
+      "Failed to load Funding Plans",
     ),
   );
   const visible = plans.filter(
@@ -103,16 +103,17 @@ const GoalTrends = async function ({
   return (
     <PageLayout>
       <ConstrainedContent>
-        <Frame title="Goal Trends">
+        <Frame title="Plan Trends">
           <Stack spacing={2}>
             <Typography color="text.secondary">
-              Review how goal configuration changes across accounting periods.
+              Review how Funding Plan configuration changes across accounting
+              periods.
             </Typography>
             <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
               <Frame title="Plans">
                 <Typography variant="h4">{visible.length}</Typography>
               </Frame>
-              <Frame title="Configured Goals">
+              <Frame title="Configured Plans">
                 <Typography variant="h4">{configured.length}</Typography>
               </Frame>
               <Frame title="Regular Contributions">
@@ -160,5 +161,5 @@ const GoalTrends = async function ({
     </PageLayout>
   );
 };
-export type { GoalTrendsSearchParams };
-export default GoalTrends;
+export type { FundPlanTrendsSearchParams };
+export default FundPlanTrends;

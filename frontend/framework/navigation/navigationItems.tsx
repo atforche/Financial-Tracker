@@ -12,8 +12,8 @@ import {
 import type { NavigationLink } from "./navigationLinkTypes";
 import accountRoutes from "@/accounts/routes";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
+import fundPlanRoutes from "@/fund-plans/routes";
 import fundRoutes from "@/funds/routes";
-import goalRoutes from "@/goals/routes";
 import transactionRoutes from "@/transactions/routes";
 
 /**
@@ -70,16 +70,16 @@ const navigationItems: NavigationLink[] = [
     ],
   },
   {
-    name: "Goals",
-    href: goalRoutes.workspace({}),
+    name: "Plans",
+    href: fundPlanRoutes.workspace({}),
     icon: <EmojiEvents />,
     childLinks: [
       {
         name: "Workspace",
-        href: goalRoutes.workspace({}),
+        href: fundPlanRoutes.workspace({}),
         icon: <Workspaces />,
       },
-      { name: "Trends", href: goalRoutes.trends({}), icon: <Timeline /> },
+      { name: "Trends", href: fundPlanRoutes.trends({}), icon: <Timeline /> },
     ],
   },
   {

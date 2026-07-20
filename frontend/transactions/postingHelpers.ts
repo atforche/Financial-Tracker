@@ -7,7 +7,7 @@ import {
 } from "@/transactions/types";
 import type { AccountBalanceEvent } from "@/accounts/types";
 import type { FundBalanceEvent } from "@/funds/types";
-import type { FundPlanBalanceEvent } from "@/goals/types";
+import type { FundPlanBalanceEvent } from "@/fund-plans/types";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
@@ -114,7 +114,7 @@ const getTransactionFundIds = function (transaction: Transaction): string[] {
 };
 
 /**
- * Gets the Goal balance events captured by the provided Transaction.
+ * Gets the Funding Plan balance events captured by the provided Transaction.
  */
 const getTransactionFundPlanBalanceEvents = function (
   transaction: Transaction,

@@ -2,20 +2,20 @@ import { Alert, AlertTitle } from "@mui/material";
 import type { JSX } from "react";
 
 /**
- * Props for the GoalTypeDescription component.
+ * Props for the FundPlanTypeDescription component.
  */
-interface GoalTypeDescriptionProps {
+interface FundPlanTypeDescriptionProps {
   readonly title: string;
   readonly description: string;
 }
 
 /**
- * Displays an explanation of the selected goal type.
+ * Displays an explanation of the selected Funding Plan type.
  */
-const GoalTypeDescription = function ({
+const FundPlanTypeDescription = function ({
   title,
   description,
-}: GoalTypeDescriptionProps): JSX.Element {
+}: FundPlanTypeDescriptionProps): JSX.Element {
   return (
     <Alert severity="info" variant="outlined" icon={false}>
       <AlertTitle>{title}</AlertTitle>
@@ -24,4 +24,4 @@ const GoalTypeDescription = function ({
   );
 };
 
-export default GoalTypeDescription;
+export default FundPlanTypeDescription;

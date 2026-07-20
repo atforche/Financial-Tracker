@@ -9,7 +9,7 @@ import {
 } from "@/framework/routes/helpers";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import type { FundPlanWithProgress } from "@/goals/types";
+import type { FundPlanWithProgress } from "@/fund-plans/types";
 import type { FundWithBalance } from "@/funds/types";
 import type { Transaction } from "@/transactions/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
@@ -17,7 +17,7 @@ import createApiClient from "@/framework/data/createApiClient";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
- * Represents reference data required for the transaction workspace, including accounting periods, accounts, funds, and goals.
+ * Represents reference data required for the transaction workspace, including accounting periods, accounts, funds, and Funding Plans.
  */
 interface TransactionWorkspaceReferenceData {
   readonly openAccountingPeriods: AccountingPeriod[];
@@ -42,7 +42,7 @@ interface TransactionWorkspaceListData extends TransactionWorkspaceReferenceData
 }
 
 /**
- * Fetches reference data required for the transaction workspace, including accounting periods, accounts, funds, and goals.
+ * Fetches reference data required for the transaction workspace, including accounting periods, accounts, funds, and Funding Plans.
  */
 const getTransactionWorkspaceReferenceData =
   async function (): Promise<TransactionWorkspaceReferenceData> {

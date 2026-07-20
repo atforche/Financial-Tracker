@@ -1,4 +1,6 @@
+using Domain.AccountingPeriods;
 using Domain.FundPlans;
+using Domain.Funds;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.AccountingPeriods;
@@ -20,11 +22,13 @@ public sealed class FundPlanQueryService(DatabaseContext databaseContext)
         IQueryable<FundPlan> query = databaseContext.FundPlans.AsNoTracking();
         if (request.Filter?.FundIds is { Count: > 0 } fundIds)
         {
-            query = query.Where(plan => fundIds.Contains(plan.Fund.Id.Value));
+            var domainFundIds = fundIds.Select(id => new FundId(id)).ToList();
+            query = query.Where(plan => domainFundIds.Contains(plan.Fund.Id));
         }
         if (request.Filter?.AccountingPeriodIds is { Count: > 0 } accountingPeriodIds)
         {
-            query = query.Where(plan => plan.AccountingPeriod != null && accountingPeriodIds.Contains(plan.AccountingPeriod.Id.Value));
+            var domainAccountingPeriodIds = accountingPeriodIds.Select(id => new AccountingPeriodId(id)).ToList();
+            query = query.Where(plan => plan.AccountingPeriod != null && domainAccountingPeriodIds.Contains(plan.AccountingPeriod.Id));
         }
         if (request.Filter?.IncludeOnboarded == false)
         {
@@ -54,11 +58,15 @@ public sealed class FundPlanQueryService(DatabaseContext databaseContext)
     public async Task<FundPlanModel?> GetByFundAndAccountingPeriodAsync(
         Guid fundId,
         Guid? accountingPeriodId,
-        CancellationToken cancellationToken = default) =>
-        ToOptionalModel(await databaseContext.FundPlans.AsNoTracking().SingleOrDefaultAsync(plan =>
-            plan.Fund.Id.Value == fundId && (plan.AccountingPeriod == null
-                ? accountingPeriodId == null
-                : plan.AccountingPeriod.Id.Value == accountingPeriodId), cancellationToken));
+        CancellationToken cancellationToken = default)
+    {
+        var domainFundId = new FundId(fundId);
+        AccountingPeriodId? domainAccountingPeriodId = accountingPeriodId == null ? null : new AccountingPeriodId(accountingPeriodId.Value);
+        return ToOptionalModel(await databaseContext.FundPlans.AsNoTracking().SingleOrDefaultAsync(plan =>
+            plan.Fund.Id == domainFundId && (plan.AccountingPeriod == null
+                ? domainAccountingPeriodId == null
+                : plan.AccountingPeriod.Id == domainAccountingPeriodId), cancellationToken));
+    }
 
     /// <summary>
     /// Converts a Fund Plan to its API model representation
