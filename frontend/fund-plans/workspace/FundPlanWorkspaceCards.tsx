@@ -7,7 +7,7 @@ import {
 } from "@/fund-plans/types";
 import { Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import FundPlanProgress from "@/fund-plans/workspace/FundPlanProgress";
+import FundPlanProgressBars from "@/fund-plans/workspace/FundPlanProgressBars";
 import type { FundPlanWorkspaceSearchParams } from "@/fund-plans/workspace/FundPlanWorkspace";
 import type { JSX } from "react";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
@@ -54,13 +54,20 @@ const FundPlanWorkspaceCards = function ({
       {filtered.map((plan) => {
         const configured = [
           plan.progress.contribution,
-          plan.progress.fundedBalance,
+          plan.progress.fundedBalance?.minimumBalance,
+          plan.progress.fundedBalance?.maximumBalance,
           plan.progress.endingBalance,
-        ].filter(Boolean).length;
+        ].filter((value) => value !== null && value !== undefined).length;
         const satisfied = [
           plan.progress.contribution?.isSatisfied,
-          plan.progress.fundedBalance?.status ===
-            FundedBalanceStatus.WithinRange,
+          plan.progress.fundedBalance?.minimumBalance !== null &&
+            plan.progress.fundedBalance?.minimumBalance !== undefined &&
+            plan.progress.fundedBalance.status !==
+              FundedBalanceStatus.BelowMinimum,
+          plan.progress.fundedBalance?.maximumBalance !== null &&
+            plan.progress.fundedBalance?.maximumBalance !== undefined &&
+            plan.progress.fundedBalance.status !==
+              FundedBalanceStatus.AboveMaximum,
           plan.progress.endingBalance?.status === EndingBalanceStatus.AtTarget,
         ].filter(Boolean).length;
         const detailSearchParams: FundPlanWorkspaceSearchParams = {
@@ -92,21 +99,12 @@ const FundPlanWorkspaceCards = function ({
               <Typography variant="body2" color="text.secondary">
                 {accountingPeriod?.name ?? "No accounting period"}
               </Typography>
-              {plan.progress.contribution ? (
-                <FundPlanProgress
-                  label="Monthly contribution"
-                  current={plan.progress.contribution.assignedAmount}
-                  target={plan.progress.contribution.targetAmount}
-                  satisfied={plan.progress.contribution.isSatisfied}
-                />
-              ) : (
+              <FundPlanProgressBars progress={plan.progress} />
+              {configured === 0 ? (
                 <Typography variant="body2">
-                  No regular contribution configured
+                  No plan targets configured
                 </Typography>
-              )}
-              <Typography variant="body2" color="text.secondary">
-                Plan targets configured: {configured} of 3
-              </Typography>
+              ) : null}
             </Stack>
           </WorkspaceCard>
         );

@@ -2,10 +2,12 @@ import { InputAdornment, TextField } from "@mui/material";
 import { type JSX, useEffect, useState } from "react";
 import {
   currencyEditPattern,
+  formatCurrency,
   formatCurrencyValue,
   parseCurrencyValue,
   sanitizeCurrencyInput,
 } from "@/framework/currencyHelpers";
+import ReadOnlyField from "@/framework/forms/ReadOnlyField";
 
 /**
  * Props for the CurrencyEntryField component.
@@ -40,6 +42,15 @@ const CurrencyEntryField = function ({
 
     setStringValue(value === null ? "" : formatCurrencyValue(value));
   }, [isEditing, value]);
+
+  if (setValue === null && !disabled) {
+    return (
+      <ReadOnlyField
+        label={label}
+        value={value === null ? null : formatCurrency(value)}
+      />
+    );
+  }
 
   return (
     <TextField

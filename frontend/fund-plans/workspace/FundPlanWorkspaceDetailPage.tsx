@@ -64,6 +64,17 @@ const FundPlanWorkspaceDetailPage = async function ({
     planResponse,
     "Failed to fetch the fund plan",
   );
+  const progress = unwrapApiResponse(
+    await apiClient.GET(
+      "/fund-plans/{fundPlanId}/progress/{accountingPeriodId}",
+      {
+        params: {
+          path: { fundPlanId: fundPlan.id, accountingPeriodId: periodId },
+        },
+      },
+    ),
+    "Failed to fetch Funding Plan progress",
+  );
   const events = unwrapApiResponse(
     await apiClient.GET("/balance-events/fund-plans/accounting-period-range", {
       params: {
@@ -93,6 +104,7 @@ const FundPlanWorkspaceDetailPage = async function ({
       />
       <ViewFundPlanForm
         fundPlan={fundPlan}
+        progress={progress}
         redirectUrl={currentUrl}
         recentBalanceEvents={events.items}
         recentBalanceEventCount={events.totalCount}

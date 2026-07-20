@@ -1,4 +1,5 @@
 import { type JSX, useEffect, useState } from "react";
+import ReadOnlyField from "@/framework/forms/ReadOnlyField";
 import { TextField } from "@mui/material";
 
 /**
@@ -27,6 +28,15 @@ const IntegerEntryField = function ({
   useEffect(() => {
     setStringValue(value?.toString() ?? "");
   }, [value]);
+
+  if (setValue === null && !disabled) {
+    return (
+      <ReadOnlyField
+        label={label}
+        value={value === null ? null : value.toLocaleString()}
+      />
+    );
+  }
 
   return (
     <TextField

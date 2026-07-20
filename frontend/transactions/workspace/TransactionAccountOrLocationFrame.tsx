@@ -99,7 +99,8 @@ const TransactionAccountOrLocationFrame = function ({
         <StringEntryField
           label={locationCaption}
           value={location}
-          setValue={readOnly || account !== null ? null : setLocation}
+          setValue={readOnly ? null : setLocation}
+          disabled={!readOnly && account !== null}
         />
       </Box>
     </Stack>

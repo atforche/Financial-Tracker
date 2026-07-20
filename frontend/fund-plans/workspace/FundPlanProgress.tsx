@@ -30,9 +30,7 @@ const FundPlanProgress = function ({
           {label}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          {satisfied
-            ? "Satisfied"
-            : `${formatCurrency(Math.max(target - current, 0))} remaining`}
+          {formatCurrency(target)}
         </Typography>
       </Stack>
       <Box
@@ -52,9 +50,16 @@ const FundPlanProgress = function ({
           }}
         />
       </Box>
-      <Typography variant="caption" color="text.secondary">
-        {formatCurrency(current)} of {formatCurrency(target)}
-      </Typography>
+      <Stack direction="row" justifyContent="space-between" gap={2}>
+        <Typography variant="caption" color="text.secondary">
+          {formatCurrency(current)} of {formatCurrency(target)}
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          {satisfied
+            ? "Satisfied"
+            : `${formatCurrency(Math.max(target - current, 0))} remaining`}
+        </Typography>
+      </Stack>
     </Stack>
   );
 };

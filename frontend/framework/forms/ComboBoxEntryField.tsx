@@ -1,5 +1,6 @@
 import { Autocomplete, Box, TextField, Typography } from "@mui/material";
 import { type JSX, useEffect, useRef, useState } from "react";
+import ReadOnlyField from "@/framework/forms/ReadOnlyField";
 
 /**
  * Interface representing a Combo Box option.
@@ -58,6 +59,10 @@ const ComboBoxEntryField = function <T>({
     setInputValue(value?.label ?? "");
   }, [value]);
 
+  if (setValue === null) {
+    return <ReadOnlyField label={label} value={value?.label ?? null} />;
+  }
+
   return (
     <Autocomplete
       className="combo-box-entry-field"
@@ -65,7 +70,6 @@ const ComboBoxEntryField = function <T>({
       options={options}
       inputValue={inputValue}
       value={value}
-      readOnly={setValue === null}
       isOptionEqualToValue={isOptionEqualToValue}
       renderOption={(props, option) => (
         <Box component="li" {...props}>
@@ -112,7 +116,7 @@ const ComboBoxEntryField = function <T>({
       onChange={(_, newValue) => {
         justSelected.current = true;
         setInputValue(newValue?.label ?? "");
-        setValue?.(newValue);
+        setValue(newValue);
       }}
       onInputChange={(_, newInputValue, reason) => {
         if (reason !== "input") {
@@ -135,7 +139,7 @@ const ComboBoxEntryField = function <T>({
             );
             if (matchingOption) {
               setInputValue(matchingOption.label);
-              setValue?.(matchingOption);
+              setValue(matchingOption);
             }
           }
         }

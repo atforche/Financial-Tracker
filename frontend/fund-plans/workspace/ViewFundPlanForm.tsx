@@ -1,5 +1,9 @@
 "use client";
-import type { FundPlan, FundPlanBalanceEvent } from "@/fund-plans/types";
+import type {
+  FundPlan,
+  FundPlanBalanceEvent,
+  FundPlanProgress,
+} from "@/fund-plans/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import FundPlanBalanceEventsFrame from "@/fund-plans/workspace/FundPlanBalanceEventsFrame";
 import FundPlanContextFrame from "@/fund-plans/workspace/FundPlanContextFrame";
@@ -11,6 +15,7 @@ import PageLayout from "@/framework/view/PageLayout";
  */
 interface ViewFundPlanFormProps {
   readonly fundPlan: FundPlan;
+  readonly progress: FundPlanProgress;
   readonly redirectUrl: string;
   readonly recentBalanceEvents: FundPlanBalanceEvent[];
   readonly recentBalanceEventCount: number;
@@ -28,6 +33,7 @@ const ViewFundPlanForm = function (props: ViewFundPlanFormProps): JSX.Element {
       <PageLayout>
         <FundPlanContextFrame
           fundPlan={props.fundPlan}
+          progress={props.progress}
           redirectUrl={props.redirectUrl}
         />
         <FundPlanBalanceEventsFrame

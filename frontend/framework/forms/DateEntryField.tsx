@@ -1,6 +1,7 @@
 import dayjs, { type Dayjs } from "dayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import type { JSX } from "react/jsx-runtime";
+import ReadOnlyField from "@/framework/forms/ReadOnlyField";
 import { useState } from "react";
 
 /**
@@ -36,6 +37,15 @@ const DateEntryField = function ({
   >(null);
   const effectiveMinDate = minDate ?? defaultMinDate;
   const effectiveMaxDate = maxDate ?? defaultMaxDate;
+
+  if (setValue === null && !disabled) {
+    return (
+      <ReadOnlyField
+        label={label}
+        value={value === null ? null : value.format("MM/DD/YYYY")}
+      />
+    );
+  }
 
   return (
     <DatePicker
