@@ -1,6 +1,6 @@
 import Frame, { type FrameColor } from "@/framework/view/Frame";
+import { type JSX, useRef } from "react";
 import FundPlanAmountOption from "@/funds/workspace/FundPlanAmountOption";
-import type { JSX } from "react";
 import { Stack } from "@mui/material";
 
 /**
@@ -42,33 +42,67 @@ const FundPlanSetupSection = function ({
   setTargetEndingBalance,
   errors,
 }: FundPlanSetupSectionProps): JSX.Element {
+  const autoFilledBalance = useRef<"minimum" | "maximum" | null>(null);
+  const setMinimumFundedBalanceWithDefault =
+    setMinimumFundedBalance === null
+      ? null
+      : (value: number | null): void => {
+          setMinimumFundedBalance(value);
+          if (autoFilledBalance.current === "minimum") {
+            autoFilledBalance.current = null;
+          } else if (value === null) {
+            autoFilledBalance.current = null;
+          } else if (maximumFundedBalance === null) {
+            autoFilledBalance.current = "maximum";
+            setMaximumFundedBalance?.(value);
+          } else if (autoFilledBalance.current === "maximum") {
+            setMaximumFundedBalance?.(value);
+          }
+        };
+  const setMaximumFundedBalanceWithDefault =
+    setMaximumFundedBalance === null
+      ? null
+      : (value: number | null): void => {
+          setMaximumFundedBalance(value);
+          if (autoFilledBalance.current === "maximum") {
+            autoFilledBalance.current = null;
+          } else if (value === null) {
+            autoFilledBalance.current = null;
+          } else if (minimumFundedBalance === null) {
+            autoFilledBalance.current = "minimum";
+            setMinimumFundedBalance?.(value);
+          } else if (autoFilledBalance.current === "minimum") {
+            setMinimumFundedBalance?.(value);
+          }
+        };
+
   return (
     <Frame title="Funding Plan Setup" color={color}>
       <Stack spacing={2}>
         <FundPlanAmountOption
           label="Regular Monthly Contribution"
-          description="The amount you normally plan to add during each accounting period."
+          description="This is a baseline amount that should be contributed to the fund every accounting period."
           value={regularContribution}
           setValue={setRegularContribution}
           errorMessage={errors?.regularContribution ?? null}
         />
         <FundPlanAmountOption
           label="Minimum Funded Amount"
-          description="The lowest balance you want the fund to have immediately after assignments."
+          description="This is the minimum amount that should always be available to spend from this fund every month."
           value={minimumFundedBalance}
-          setValue={setMinimumFundedBalance}
+          setValue={setMinimumFundedBalanceWithDefault}
           errorMessage={errors?.minimumFundedBalance ?? null}
         />
         <FundPlanAmountOption
           label="Maximum Funded Amount"
-          description="The highest balance you want the fund to have immediately after assignments."
+          description="This is the maximum amount that should be available to spend from this fund."
           value={maximumFundedBalance}
-          setValue={setMaximumFundedBalance}
+          setValue={setMaximumFundedBalanceWithDefault}
           errorMessage={errors?.maximumFundedBalance ?? null}
         />
         <FundPlanAmountOption
           label="Target Ending Balance"
-          description="The balance you want remaining at the end of the accounting period."
+          description="The target balance you want remaining at the end of the accounting period."
           value={targetEndingBalance}
           setValue={setTargetEndingBalance}
           errorMessage={errors?.targetEndingBalance ?? null}

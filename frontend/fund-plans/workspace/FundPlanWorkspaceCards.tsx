@@ -7,10 +7,10 @@ import {
 } from "@/fund-plans/types";
 import { Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import CardResponsiveGrid from "@/framework/view/CardResponsiveGrid";
 import FundPlanProgressBars from "@/fund-plans/workspace/FundPlanProgressBars";
 import type { FundPlanWorkspaceSearchParams } from "@/fund-plans/workspace/FundPlanWorkspace";
 import type { JSX } from "react";
-import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import WorkspaceCard from "@/framework/view/WorkspaceCard";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/fund-plans/routes";
@@ -50,7 +50,7 @@ const FundPlanWorkspaceCards = function ({
     );
   }
   return (
-    <ResponsiveGrid minimumColumnWidth={340} spacing={2}>
+    <CardResponsiveGrid minimumColumnWidth={340} spacing={2}>
       {filtered.map((plan) => {
         const configured = [
           plan.progress.contribution,
@@ -109,7 +109,7 @@ const FundPlanWorkspaceCards = function ({
           </WorkspaceCard>
         );
       })}
-    </ResponsiveGrid>
+    </CardResponsiveGrid>
   );
 };
 export default FundPlanWorkspaceCards;

@@ -2,10 +2,10 @@
 
 import { Button, Stack, Typography } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
+import CardResponsiveGrid from "@/framework/view/CardResponsiveGrid";
 import type { FundWithBalance } from "@/funds/types";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
-import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import WorkspaceCard from "@/framework/view/WorkspaceCard";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import propertyName from "@/framework/data/propertyName";
@@ -70,7 +70,7 @@ const FundWorkspaceCards = function ({
   }
 
   return (
-    <ResponsiveGrid minimumColumnWidth={280} spacing={2}>
+    <CardResponsiveGrid minimumColumnWidth={280} spacing={2}>
       {funds.map((fund) => (
         <WorkspaceCard
           key={fund.id}
@@ -93,7 +93,7 @@ const FundWorkspaceCards = function ({
           </Stack>
         </WorkspaceCard>
       ))}
-    </ResponsiveGrid>
+    </CardResponsiveGrid>
   );
 };
 

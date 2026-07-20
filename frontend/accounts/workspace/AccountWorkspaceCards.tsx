@@ -13,8 +13,8 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
+import CardResponsiveGrid from "@/framework/view/CardResponsiveGrid";
 import type { JSX } from "react";
-import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import WorkspaceCard from "@/framework/view/WorkspaceCard";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { getAccountCardColor } from "@/accounts/workspace/helpers";
@@ -88,7 +88,7 @@ const AccountWorkspaceCards = function ({
       ) : null}
     </Stack>
   ) : (
-    <ResponsiveGrid minimumColumnWidth={280} spacing={2}>
+    <CardResponsiveGrid minimumColumnWidth={280} spacing={2}>
       {data.map((account) => (
         <WorkspaceCard
           key={account.id}
@@ -111,7 +111,7 @@ const AccountWorkspaceCards = function ({
           </Stack>
         </WorkspaceCard>
       ))}
-    </ResponsiveGrid>
+    </CardResponsiveGrid>
   );
 };
 
