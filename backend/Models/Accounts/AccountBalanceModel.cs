@@ -19,4 +19,9 @@ public class AccountBalanceModel
     /// Pending Credit Amount for the Account Balance
     /// </summary>
     public required decimal PendingCreditAmount { get; init; }
+
+    /// <summary>
+    /// Balance including pending debit and credit amounts for the Account Balance
+    /// </summary>
+    public required decimal PendingBalance { get; init; }
 }

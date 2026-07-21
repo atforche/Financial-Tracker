@@ -26,6 +26,26 @@ public class AccountBalance
     public decimal PendingCreditAmount { get; }
 
     /// <summary>
+    /// Balance including pending debit and credit amounts for this Account Balance
+    /// </summary>
+    public decimal PendingBalance => CalculatePendingBalance(
+        Account.Type,
+        PostedBalance,
+        PendingDebitAmount,
+        PendingCreditAmount);
+
+    /// <summary>
+    /// Calculates the balance including pending amounts for the provided Account Type
+    /// </summary>
+    internal static decimal CalculatePendingBalance(
+        AccountType accountType,
+        decimal postedBalance,
+        decimal pendingDebitAmount,
+        decimal pendingCreditAmount) => accountType.IsDebt()
+            ? postedBalance + pendingDebitAmount - pendingCreditAmount
+            : postedBalance - pendingDebitAmount + pendingCreditAmount;
+
+    /// <summary>
     /// Adds the provided pending debit amount to the current pending Account Balance
     /// </summary>
     internal AccountBalance AddNewPendingDebitAmount(decimal pendingDebitAmount) =>

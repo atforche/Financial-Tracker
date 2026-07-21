@@ -2262,6 +2262,11 @@ export interface components {
              * @description Pending Credit Amount for the Account Balance
              */
             pendingCreditAmount: number;
+            /**
+             * Format: double
+             * @description Balance including pending debit and credit amounts for the Account Balance
+             */
+            pendingBalance: number;
         };
         /** @description Model representing a summary of account balances for a specific date. */
         AccountBalanceSummaryByDateModel: {

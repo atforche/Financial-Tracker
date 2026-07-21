@@ -63,8 +63,17 @@ public sealed class AccountQueryService(DatabaseContext databaseContext)
             account.Type,
             CurrentBalance = databaseContext.AccountBalanceHistories.Where(history => history.Account.Id == account.Id)
                 .OrderByDescending(history => history.Date).ThenByDescending(history => history.Sequence)
-                .Select(history => new AccountBalanceModel { PostedBalance = history.PostedBalance, PendingDebitAmount = history.PendingDebitAmount, PendingCreditAmount = history.PendingCreditAmount })
-                .FirstOrDefault() ?? new AccountBalanceModel { PostedBalance = account.OnboardedBalance ?? 0, PendingDebitAmount = 0, PendingCreditAmount = 0 },
+                .Select(history => new PersistedAccountBalance
+                {
+                    PostedBalance = history.PostedBalance,
+                    PendingDebitAmount = history.PendingDebitAmount,
+                    PendingCreditAmount = history.PendingCreditAmount,
+                }).FirstOrDefault() ?? new PersistedAccountBalance
+                {
+                    PostedBalance = account.OnboardedBalance ?? 0,
+                    PendingDebitAmount = 0,
+                    PendingCreditAmount = 0,
+                },
         });
         query = request.Sort switch
         {
@@ -83,7 +92,7 @@ public sealed class AccountQueryService(DatabaseContext databaseContext)
             Id = account.Id,
             Name = account.Name,
             Type = ToModel(account.Type),
-            CurrentBalance = account.CurrentBalance,
+            CurrentBalance = ToModel(account.Type, account.CurrentBalance),
         }).ToList();
         return new CollectionModel<AccountWithBalanceModel> { Items = items, TotalCount = totalCount };
     }
@@ -101,6 +110,28 @@ public sealed class AccountQueryService(DatabaseContext databaseContext)
         AccountType.Escrow => AccountTypeModel.Escrow,
         _ => throw new ArgumentOutOfRangeException(nameof(accountType), accountType, "Unrecognized account type."),
     };
+
+    /// <summary>
+    /// Converts an Account Balance to its API model after the database query has been materialized.
+    /// </summary>
+    private static AccountBalanceModel ToModel(AccountType accountType, PersistedAccountBalance persistedBalance) => new()
+    {
+        PostedBalance = persistedBalance.PostedBalance,
+        PendingDebitAmount = persistedBalance.PendingDebitAmount,
+        PendingCreditAmount = persistedBalance.PendingCreditAmount,
+        PendingBalance = AccountBalance.CalculatePendingBalance(
+            accountType,
+            persistedBalance.PostedBalance,
+            persistedBalance.PendingDebitAmount,
+            persistedBalance.PendingCreditAmount),
+    };
+
+    private sealed class PersistedAccountBalance
+    {
+        public decimal PostedBalance { get; init; }
+        public decimal PendingDebitAmount { get; init; }
+        public decimal PendingCreditAmount { get; init; }
+    }
 
     /// <summary>
     /// Applies the filter to the provided query

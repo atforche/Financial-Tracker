@@ -23,11 +23,6 @@ const AccountSummaryFrame = function ({
   account,
   headerContent = null,
 }: AccountSummaryFrameProps): JSX.Element {
-  const pendingBalance =
-    account.currentBalance.postedBalance -
-    account.currentBalance.pendingDebitAmount +
-    account.currentBalance.pendingCreditAmount;
-
   return (
     <Frame title="Account Summary" color="info" headerContent={headerContent}>
       <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
@@ -51,7 +46,7 @@ const AccountSummaryFrame = function ({
         />
         <CurrencyEntryField
           label="Balance Including Pending"
-          value={pendingBalance}
+          value={account.currentBalance.pendingBalance}
           setValue={null}
           errorMessage={null}
         />

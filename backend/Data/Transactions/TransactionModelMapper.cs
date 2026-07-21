@@ -41,9 +41,14 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
                 IsOpen = period.IsOpen,
             }).ToDictionaryAsync(period => period.Id, cancellationToken);
         var fundIds = transactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null)).Distinct().ToList();
-        Dictionary<Guid, FundModel> funds = await databaseContext.Funds.AsNoTracking().Where(fund => fundIds.Contains(fund.Id))
-            .Select(fund => new FundModel { Id = fund.Id.Value, Name = fund.Name, Description = fund.Description })
-            .ToDictionaryAsync(fund => fund.Id, cancellationToken);
+        var fundDetails = await databaseContext.Funds.AsNoTracking().Where(fund => fundIds.Contains(fund.Id))
+            .Select(fund => new
+            {
+                Model = new FundModel { Id = fund.Id.Value, Name = fund.Name, Description = fund.Description },
+                OnboardedBalance = fund.OnboardedBalance ?? 0,
+            }).ToListAsync(cancellationToken);
+        var funds = fundDetails.ToDictionary(fund => fund.Model.Id, fund => fund.Model);
+        var fundOnboardedBalances = fundDetails.ToDictionary(fund => fund.Model.Id, fund => fund.OnboardedBalance);
         var accountIds = transactions.SelectMany(transaction => transaction.GetAllAffectedAccountIds()).Distinct().ToList();
         List<AccountBalanceHistory> accountHistories = await databaseContext.AccountBalanceHistories.AsNoTracking()
             .Where(history => accountIds.Contains(history.Account.Id)).OrderBy(history => history.Date).ThenBy(history => history.Sequence).ToListAsync(cancellationToken);
@@ -52,7 +57,7 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
         List<FundPlanTotalsHistory> planHistories = await databaseContext.FundPlanTotalsHistories.AsNoTracking()
             .Where(history => fundIds.Contains(history.FundId))
             .OrderBy(history => history.Date).ThenBy(history => history.Sequence).ToListAsync(cancellationToken);
-        MappingContext context = new(periods, funds, accountHistories, fundHistories, planHistories);
+        MappingContext context = new(periods, funds, fundOnboardedBalances, accountHistories, fundHistories, planHistories);
         return transactions.Select(transaction => Map(transaction, context)).ToList();
     }
 
@@ -182,8 +187,8 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
             IsPosted = postedDate.HasValue,
             Amount = amount,
             Account = new AccountModel { Id = account.Id.Value, Name = account.Name, Type = (AccountTypeModel)account.Type },
-            PreviousBalance = ToBalance(previous),
-            NewBalance = ToBalance(current),
+            PreviousBalance = ToBalance(account, previous, account.OnboardedBalance ?? 0),
+            NewBalance = ToBalance(account, current),
         };
     }
 
@@ -205,7 +210,7 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
             IsPosted = true,
             Amount = assignment.Amount,
             Fund = context.Funds[assignment.FundId.Value],
-            PreviousBalance = ToBalance(previous),
+            PreviousBalance = ToBalance(previous, context.FundOnboardedBalances[assignment.FundId.Value]),
             NewBalance = ToBalance(current),
         };
     }
@@ -242,19 +247,28 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
     /// <summary>
     /// Maps the provided Account Balance History to an Account Balance Model
     /// </summary>
-    private static AccountBalanceModel ToBalance(AccountBalanceHistory? history) => new()
+    private static AccountBalanceModel ToBalance(Account account, AccountBalanceHistory? history, decimal fallbackPostedBalance = 0)
     {
-        PostedBalance = history?.PostedBalance ?? 0,
-        PendingDebitAmount = history?.PendingDebitAmount ?? 0,
-        PendingCreditAmount = history?.PendingCreditAmount ?? 0,
-    };
+        var balance = new AccountBalance(
+            account,
+            history?.PostedBalance ?? fallbackPostedBalance,
+            history?.PendingDebitAmount ?? 0,
+            history?.PendingCreditAmount ?? 0);
+        return new AccountBalanceModel
+        {
+            PostedBalance = balance.PostedBalance,
+            PendingDebitAmount = balance.PendingDebitAmount,
+            PendingCreditAmount = balance.PendingCreditAmount,
+            PendingBalance = balance.PendingBalance,
+        };
+    }
 
     /// <summary>
     /// Maps the provided Fund Balance History to a Fund Balance Model
     /// </summary>
-    private static FundBalanceModel ToBalance(FundBalanceHistory? history) => new()
+    private static FundBalanceModel ToBalance(FundBalanceHistory? history, decimal fallbackPostedBalance = 0) => new()
     {
-        PostedBalance = history?.PostedBalance ?? 0,
+        PostedBalance = history?.PostedBalance ?? fallbackPostedBalance,
         PendingDebitAmount = history?.PendingDebitAmount ?? 0,
         PendingCreditAmount = history?.PendingCreditAmount ?? 0,
     };
@@ -276,6 +290,7 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
     private sealed record MappingContext(
         Dictionary<Guid, AccountingPeriodModel> Periods,
         Dictionary<Guid, FundModel> Funds,
+        Dictionary<Guid, decimal> FundOnboardedBalances,
         List<AccountBalanceHistory> AccountHistories,
         List<FundBalanceHistory> FundHistories,
         List<FundPlanTotalsHistory> FundPlanHistories);
