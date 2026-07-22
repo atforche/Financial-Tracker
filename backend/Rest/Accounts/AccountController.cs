@@ -76,10 +76,12 @@ public sealed class AccountController(
         [FromQuery] AccountsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        AccountsInAccountingPeriodRangeModel? model = await financialRangeQueryService.GetAccountsAsync(query, cancellationToken);
-        return model == null
+        AccountAccountingPeriodRangeQueryResult result = await accountQueryService.GetAccountingPeriodRangeAsync(
+            accountConverter.ToDomain(query),
+            cancellationToken);
+        return result.Range == null
             ? UnprocessableEntity(new ValidationProblemDetails { Title = "Unable to resolve Accounting Period range.", Status = StatusCodes.Status422UnprocessableEntity })
-            : Ok(model);
+            : Ok(accountConverter.ToModel(result.Range));
     }
 
     /// <summary>

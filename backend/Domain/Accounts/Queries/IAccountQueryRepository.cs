@@ -16,4 +16,24 @@ public interface IAccountQueryRepository
     Task<QueryPage<AccountBalance>> GetBalancesAsync(
         AccountBalanceQuery query,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves Accounts matching the provided range filter.
+    /// </summary>
+    Task<IReadOnlyCollection<Account>> GetRangeAccountsAsync(
+        AccountFilter filter,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves all available Account names.
+    /// </summary>
+    Task<IReadOnlyCollection<string>> GetAllNamesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves Account balance facts for the provided Accounting Periods.
+    /// </summary>
+    Task<IReadOnlyCollection<AccountPeriodBalanceFacts>> GetPeriodBalanceFactsAsync(
+        int startIndex,
+        int endIndex,
+        CancellationToken cancellationToken = default);
 }

@@ -17,56 +17,6 @@ namespace Data;
 public sealed class FinancialRangeQueryService(DatabaseContext databaseContext)
 {
     /// <summary>
-    /// Retrieves Account balances over an Accounting Period range, or null when the range is invalid.
-    /// </summary>
-    public async Task<AccountsInAccountingPeriodRangeModel?> GetAccountsAsync(AccountsInAccountingPeriodRangeQueryParameterModel request, CancellationToken cancellationToken = default)
-    {
-        List<AccountingPeriod>? periods = await GetPeriodsAsync(request.Range, cancellationToken);
-        if (periods == null)
-        {
-            return null;
-        }
-
-        List<AccountingPeriodBalanceHistory> histories = await databaseContext.AccountingPeriodBalanceHistories.AsNoTracking()
-            .Include(history => history.AccountingPeriod)
-            .Include(history => history.AccountBalances).ThenInclude(history => history.Account)
-            .Where(history => periods.Select(period => period.Id).Contains(history.AccountingPeriod.Id))
-            .ToListAsync(cancellationToken);
-        if (histories.Count != periods.Count)
-        {
-            return null;
-        }
-
-        IQueryable<Account> accounts = ApplyFilter(databaseContext.Accounts.AsNoTracking(), request.Filter);
-        List<Account> matching = await accounts.ToListAsync(cancellationToken);
-        var matchingIds = matching.Select(account => account.Id).ToHashSet();
-        AccountingPeriodBalanceHistory first = histories.Single(history => history.AccountingPeriod.Id == periods[0].Id);
-        AccountingPeriodBalanceHistory last = histories.Single(history => history.AccountingPeriod.Id == periods[^1].Id);
-        var rows = matching.Select(account => new AccountWithBalanceRangeModel
-        {
-            Id = account.Id.Value,
-            Name = account.Name,
-            Type = (AccountTypeModel)account.Type,
-            StartingBalance = first.AccountBalances.SingleOrDefault(balance => balance.Account.Id == account.Id)?.OpeningBalance ?? account.OnboardedBalance ?? 0,
-            EndingBalance = last.AccountBalances.SingleOrDefault(balance => balance.Account.Id == account.Id)?.ClosingBalance ?? account.OnboardedBalance ?? 0,
-        }).ToList();
-        rows = Sort(rows, request.Sort).ToList();
-        (IncomeAmountModel income, decimal spending) = await GetTotalsAsync(periods.Select(period => period.Id.Value).ToList(), cancellationToken);
-        return new AccountsInAccountingPeriodRangeModel
-        {
-            Accounts = new CollectionModel<AccountWithBalanceRangeModel> { Items = rows.Skip(request.Offset ?? 0).Take(request.Limit ?? int.MaxValue).ToList(), TotalCount = rows.Count },
-            AvailableAccountNames = await databaseContext.Accounts.AsNoTracking().OrderBy(account => account.Name).Select(account => account.Name).ToListAsync(cancellationToken),
-            TotalIncome = income,
-            TotalSpending = spending,
-            AccountingPeriods = periods.Select(period =>
-            {
-                AccountingPeriodBalanceHistory history = histories.Single(item => item.AccountingPeriod.Id == period.Id);
-                return new AccountBalanceSummaryByPeriodModel { AccountingPeriod = ToModel(period), OpeningBalance = SummarizeAccounts(history.AccountBalances.Where(item => matchingIds.Contains(item.Account.Id)), true), ClosingBalance = SummarizeAccounts(history.AccountBalances.Where(item => matchingIds.Contains(item.Account.Id)), false) };
-            }).ToList(),
-        };
-    }
-
-    /// <summary>
     /// Retrieves Fund balances over an Accounting Period range, or null when the range is invalid.
     /// </summary>
     public async Task<FundsInAccountingPeriodRangeModel?> GetFundsAsync(FundsInAccountingPeriodRangeQueryParameterModel request, CancellationToken cancellationToken = default)
@@ -286,15 +236,6 @@ public sealed class FinancialRangeQueryService(DatabaseContext databaseContext)
     /// Converts the provided accounting period to an Accounting Period Model
     /// </summary>
     private static AccountingPeriodModel ToModel(AccountingPeriod period) => new() { Id = period.Id.Value, Year = period.Year, Month = period.Month, Name = period.Name, IsOpen = period.IsOpen };
-
-    /// <summary>
-    /// Summarizes the provided account balance histories
-    /// </summary>
-    private static AccountBalanceSummaryModel SummarizeAccounts(IEnumerable<AccountingPeriodAccountBalanceHistory> balances, bool opening)
-    {
-        var values = balances.Select(balance => (balance.Account.Type, Amount: (balance.Account.Type.IsDebt() ? -1 : 1) * (opening ? balance.OpeningBalance : balance.ClosingBalance))).ToList();
-        return new AccountBalanceSummaryModel { TotalBalance = values.Sum(item => item.Amount), TotalTrackedBalance = values.Where(item => item.Type.IsTracked()).Sum(item => item.Amount), TotalUntrackedBalance = values.Where(item => !item.Type.IsTracked()).Sum(item => item.Amount), BalanceByAccountType = values.GroupBy(item => item.Type).OrderBy(group => group.Key).Select(group => new AccountTypeBalanceModel { AccountType = (AccountTypeModel)group.Key, TotalBalance = group.Sum(item => item.Amount) }).ToList() };
-    }
 
     /// <summary>
     /// Summarizes the provided fund balance histories

@@ -1,4 +1,5 @@
 using Domain;
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
 using Microsoft.EntityFrameworkCore;
@@ -68,6 +69,37 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
             row.CurrentBalance.PendingDebitAmount,
             row.CurrentBalance.PendingCreditAmount)).ToList();
         return new QueryPage<AccountBalance>(items, totalCount);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<Account>> GetRangeAccountsAsync(
+        AccountFilter filter,
+        CancellationToken cancellationToken = default) =>
+        await ApplyFilter(databaseContext.Accounts.AsNoTracking(), filter).ToListAsync(cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<string>> GetAllNamesAsync(CancellationToken cancellationToken = default) =>
+        await databaseContext.Accounts.AsNoTracking().OrderBy(account => account.Name)
+            .Select(account => account.Name).ToListAsync(cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<AccountPeriodBalanceFacts>> GetPeriodBalanceFactsAsync(
+        int startIndex,
+        int endIndex,
+        CancellationToken cancellationToken = default)
+    {
+        List<AccountingPeriodBalanceHistory> histories = await databaseContext.AccountingPeriodBalanceHistories.AsNoTracking()
+            .Include(history => history.AccountingPeriod)
+            .Include(history => history.AccountBalances).ThenInclude(balance => balance.Account)
+            .Where(history => ((history.AccountingPeriod.Year * 12) + history.AccountingPeriod.Month) >= startIndex
+                && ((history.AccountingPeriod.Year * 12) + history.AccountingPeriod.Month) <= endIndex)
+            .ToListAsync(cancellationToken);
+        return histories.Select(history => new AccountPeriodBalanceFacts(
+            history.AccountingPeriod,
+            history.AccountBalances.Select(balance => new AccountPeriodBalanceFact(
+                balance.Account,
+                balance.OpeningBalance,
+                balance.ClosingBalance)).ToList())).ToList();
     }
 
     /// <summary>
