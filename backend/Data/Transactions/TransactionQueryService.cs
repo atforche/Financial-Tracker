@@ -17,27 +17,6 @@ namespace Data.Transactions;
 public sealed class TransactionQueryService(DatabaseContext databaseContext, TransactionModelMapper transactionModelMapper)
 {
     /// <summary>
-    /// Retrieves Transactions in a date range.
-    /// </summary>
-    public async Task<TransactionsInDateRangeModel> GetInDateRangeAsync(
-        TransactionsInDateRangeQueryParameterModel request,
-        CancellationToken cancellationToken = default)
-    {
-        IQueryable<Transaction> query = ApplyFilter(databaseContext.Transactions.AsNoTracking(), request.Filter)
-            .Where(transaction => transaction.Date >= request.Range.Start && transaction.Date <= request.Range.End);
-        RangeContent content = await ExecuteRangeAsync(query, request.Sort, request.Offset, request.Limit, cancellationToken);
-        return new TransactionsInDateRangeModel
-        {
-            Transactions = content.Transactions,
-            AvailableAccountNames = content.AccountNames,
-            AvailableFundNames = content.FundNames,
-            TransactionTypes = content.TransactionTypes,
-            Limit = request.Limit,
-            Offset = request.Offset,
-        };
-    }
-
-    /// <summary>
     /// Retrieves Transactions in an Accounting Period range, or null when the range is invalid.
     /// </summary>
     public async Task<TransactionsInAccountingPeriodRangeModel?> GetInAccountingPeriodRangeAsync(

@@ -13,16 +13,24 @@ public sealed class TransactionQueryService(ITransactionQueryRepository transact
         CancellationToken cancellationToken = default)
     {
         TransactionQueryFacts facts = await transactionQueryRepository.GetAsync(query, cancellationToken);
-        var periods = facts.AccountingPeriods.ToDictionary(period => period.Id);
-        IReadOnlyCollection<TransactionDetails> items = facts.Transactions.Items.Select(transaction => new TransactionDetails(
-            new TransactionDetailsFacts(
-                transaction,
-                periods[transaction.AccountingPeriodId],
-                facts.Funds,
-                facts.AccountHistories,
-                facts.FundHistories,
-                facts.FundPlanHistories))).ToList();
-        return new QueryPage<TransactionDetails>(items, facts.Transactions.TotalCount);
+        return ToPage(facts);
+    }
+
+    /// <summary>
+    /// Retrieves interpreted Transactions and metadata for a date range.
+    /// </summary>
+    public async Task<TransactionDateRange> GetDateRangeAsync(
+        TransactionDateRangeQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        TransactionDateRangeFacts facts = await transactionQueryRepository.GetDateRangeAsync(query, cancellationToken);
+        return new TransactionDateRange(
+            ToPage(facts.QueryFacts),
+            facts.AvailableAccountNames,
+            facts.AvailableFundNames,
+            facts.TransactionTypes,
+            query.Offset,
+            query.Limit);
     }
 
     /// <summary>
@@ -36,5 +44,22 @@ public sealed class TransactionQueryService(ITransactionQueryRepository transact
             new TransactionId(transactionId),
             cancellationToken);
         return facts == null ? null : new TransactionDetails(facts);
+    }
+
+    /// <summary>
+    /// Interprets a factual Transaction page.
+    /// </summary>
+    private static QueryPage<TransactionDetails> ToPage(TransactionQueryFacts facts)
+    {
+        var periods = facts.AccountingPeriods.ToDictionary(period => period.Id);
+        IReadOnlyCollection<TransactionDetails> items = facts.Transactions.Items.Select(transaction => new TransactionDetails(
+            new TransactionDetailsFacts(
+                transaction,
+                periods[transaction.AccountingPeriodId],
+                facts.Funds,
+                facts.AccountHistories,
+                facts.FundHistories,
+                facts.FundPlanHistories))).ToList();
+        return new QueryPage<TransactionDetails>(items, facts.Transactions.TotalCount);
     }
 }

@@ -1,6 +1,7 @@
 using Domain;
 using Domain.BalanceEvents;
 using Domain.Funds;
+using Domain.Transactions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
@@ -27,10 +28,18 @@ public sealed class TransactionConverter(
     /// Converts an API Transaction query to Domain criteria.
     /// </summary>
     public TransactionQuery ToDomain(TransactionQueryParameterModel model) => new(
-        new TransactionFilter(
-            model.Filter?.AccountingPeriodIds ?? [],
-            model.Filter?.AccountIds ?? [],
-            model.Filter?.FundIds ?? []),
+        ToDomain(model.Filter),
+        ToDomain(model.Sort),
+        model.Offset ?? 0,
+        model.Limit);
+
+    /// <summary>
+    /// Converts an API Transaction date-range query to Domain criteria.
+    /// </summary>
+    public TransactionDateRangeQuery ToDomain(TransactionsInDateRangeQueryParameterModel model) => new(
+        model.Range.Start,
+        model.Range.End,
+        ToDomain(model.Filter),
         ToDomain(model.Sort),
         model.Offset ?? 0,
         model.Limit);
@@ -63,6 +72,39 @@ public sealed class TransactionConverter(
         Items = page.Items.Select(ToModel).ToList(),
         TotalCount = page.TotalCount,
     };
+
+    /// <summary>
+    /// Converts an interpreted Transaction date range to an API model.
+    /// </summary>
+    public TransactionsInDateRangeModel ToModel(TransactionDateRange range) => new()
+    {
+        Transactions = ToModel(range.Transactions),
+        AvailableAccountNames = range.AvailableAccountNames,
+        AvailableFundNames = range.AvailableFundNames,
+        TransactionTypes = range.TransactionTypes.Select(summary => new TransactionSummaryByTypeModel
+        {
+            TransactionType = summary.TransactionType switch
+            {
+                TransactionType.Spending => TransactionTypeModel.Spending,
+                TransactionType.Income => TransactionTypeModel.Income,
+                TransactionType.Account => TransactionTypeModel.Account,
+                TransactionType.Fund => TransactionTypeModel.Fund,
+                _ => throw new ArgumentOutOfRangeException(nameof(summary), summary.TransactionType, null),
+            },
+            TotalCount = summary.TotalCount,
+            TotalAmount = summary.TotalAmount,
+        }).ToList(),
+        Offset = range.Offset,
+        Limit = range.Limit,
+    };
+
+    /// <summary>
+    /// Converts an API Transaction filter to Domain criteria.
+    /// </summary>
+    private static TransactionFilter ToDomain(TransactionFilterModel? filter) => new(
+        filter?.AccountingPeriodIds ?? [],
+        filter?.AccountIds ?? [],
+        filter?.FundIds ?? []);
 
     /// <summary>
     /// Converts interpreted Transaction details to the polymorphic API model.

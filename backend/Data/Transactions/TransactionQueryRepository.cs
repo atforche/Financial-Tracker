@@ -21,30 +21,75 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
     /// <inheritdoc/>
     public async Task<TransactionQueryFacts> GetAsync(
         TransactionQuery query,
+        CancellationToken cancellationToken = default) =>
+        await GetAsync(
+            ApplyFilter(databaseContext.Transactions.AsNoTracking(), query.Filter),
+            query.Sort,
+            query.Offset,
+            query.Limit,
+            cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task<TransactionDateRangeFacts> GetDateRangeAsync(
+        TransactionDateRangeQuery query,
         CancellationToken cancellationToken = default)
     {
-        IQueryable<Transaction> filtered = ApplyFilter(databaseContext.Transactions.AsNoTracking(), query.Filter);
+        IQueryable<Transaction> filtered = ApplyFilter(databaseContext.Transactions.AsNoTracking(), query.Filter)
+            .Where(transaction => transaction.Date >= query.Start && transaction.Date <= query.End);
+        List<TransactionTypeSummary> summaries = await filtered.GroupBy(transaction => transaction.Type)
+            .Select(group => new TransactionTypeSummary(
+                group.Key,
+                group.Count(),
+                group.Sum(transaction => transaction.Amount)))
+            .ToListAsync(cancellationToken);
+        List<string> accountNames = await databaseContext.Accounts.AsNoTracking()
+            .OrderBy(account => account.Name)
+            .Select(account => account.Name)
+            .ToListAsync(cancellationToken);
+        List<string> fundNames = await databaseContext.Funds.AsNoTracking()
+            .OrderBy(fund => fund.Name)
+            .Select(fund => fund.Name)
+            .ToListAsync(cancellationToken);
+        TransactionQueryFacts queryFacts = await GetAsync(
+            filtered,
+            query.Sort,
+            query.Offset,
+            query.Limit,
+            cancellationToken);
+        return new TransactionDateRangeFacts(queryFacts, accountNames, fundNames, summaries);
+    }
+
+    /// <summary>
+    /// Retrieves and enriches a page from an already-filtered Transaction query.
+    /// </summary>
+    private async Task<TransactionQueryFacts> GetAsync(
+        IQueryable<Transaction> filtered,
+        TransactionSort sort,
+        int offset,
+        int? limit,
+        CancellationToken cancellationToken)
+    {
         int totalCount = await filtered.CountAsync(cancellationToken);
         IReadOnlyCollection<Transaction> transactions;
-        if (query.Sort is TransactionSort.AccountingPeriod or TransactionSort.AccountingPeriodDescending
+        if (sort is TransactionSort.AccountingPeriod or TransactionSort.AccountingPeriodDescending
             or TransactionSort.Source or TransactionSort.SourceDescending
             or TransactionSort.Destination or TransactionSort.DestinationDescending)
         {
             List<Transaction> allTransactions = await filtered.ToListAsync(cancellationToken);
-            Dictionary<AccountingPeriodId, int> periodOrder = query.Sort is TransactionSort.AccountingPeriod or TransactionSort.AccountingPeriodDescending
+            Dictionary<AccountingPeriodId, int> periodOrder = sort is TransactionSort.AccountingPeriod or TransactionSort.AccountingPeriodDescending
                 ? await databaseContext.AccountingPeriods.AsNoTracking()
                     .ToDictionaryAsync(period => period.Id, period => (period.Year * 12) + period.Month, cancellationToken)
                 : [];
-            transactions = Sort(allTransactions, query.Sort, periodOrder)
-                .Skip(query.Offset)
-                .Take(query.Limit ?? int.MaxValue)
+            transactions = Sort(allTransactions, sort, periodOrder)
+                .Skip(offset)
+                .Take(limit ?? int.MaxValue)
                 .ToList();
         }
         else
         {
-            transactions = await ApplySort(filtered, query.Sort)
-                .Skip(query.Offset)
-                .Take(query.Limit ?? int.MaxValue)
+            transactions = await ApplySort(filtered, sort)
+                .Skip(offset)
+                .Take(limit ?? int.MaxValue)
                 .ToListAsync(cancellationToken);
         }
 

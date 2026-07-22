@@ -13,6 +13,13 @@ public interface ITransactionQueryRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves Transaction date-range facts and supporting metadata.
+    /// </summary>
+    Task<TransactionDateRangeFacts> GetDateRangeAsync(
+        TransactionDateRangeQuery query,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves all facts required to interpret a Transaction, or null when it does not exist.
     /// </summary>
     Task<TransactionDetailsFacts?> GetDetailsByIdAsync(

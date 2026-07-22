@@ -65,7 +65,9 @@ public sealed class TransactionController(
     public async Task<ActionResult<TransactionsInDateRangeModel>> GetDateRangeAsync(
         [FromQuery] TransactionsInDateRangeQueryParameterModel query,
         CancellationToken cancellationToken) =>
-        Ok(await legacyTransactionQueryService.GetInDateRangeAsync(query, cancellationToken));
+        Ok(transactionConverter.ToModel(await transactionQueryService.GetDateRangeAsync(
+            transactionConverter.ToDomain(query),
+            cancellationToken)));
 
     /// <summary>
     /// Retrieves Transactions in an Accounting Period range.
