@@ -1,3 +1,5 @@
+using Domain.AccountingPeriods;
+
 namespace Domain.Transactions.Queries;
 
 /// <summary>
@@ -17,6 +19,30 @@ public interface ITransactionQueryRepository
     /// </summary>
     Task<TransactionDateRangeFacts> GetDateRangeAsync(
         TransactionDateRangeQuery query,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves Accounting Periods with either requested endpoint ID.
+    /// </summary>
+    Task<IReadOnlyCollection<AccountingPeriod>> GetAccountingPeriodsAsync(
+        Guid startId,
+        Guid endId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves Accounting Periods between the provided chronological indexes.
+    /// </summary>
+    Task<IReadOnlyCollection<AccountingPeriod>> GetAccountingPeriodsAsync(
+        int startIndex,
+        int endIndex,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves Transaction facts for the provided Accounting Period IDs.
+    /// </summary>
+    Task<TransactionAccountingPeriodRangeFacts> GetAccountingPeriodRangeAsync(
+        TransactionAccountingPeriodRangeQuery query,
+        IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds,
         CancellationToken cancellationToken = default);
 
     /// <summary>

@@ -63,8 +63,6 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<ITransactionRepository, TransactionRepository>();
         _ = serviceCollection.AddScoped<TransactionRepository>();
-        _ = serviceCollection.AddScoped<TransactionModelMapper>();
-        _ = serviceCollection.AddScoped<Transactions.TransactionQueryService>();
         _ = serviceCollection.AddScoped<ITransactionQueryRepository, TransactionQueryRepository>();
     }
 }

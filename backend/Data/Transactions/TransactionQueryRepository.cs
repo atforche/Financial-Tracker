@@ -36,6 +36,63 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
     {
         IQueryable<Transaction> filtered = ApplyFilter(databaseContext.Transactions.AsNoTracking(), query.Filter)
             .Where(transaction => transaction.Date >= query.Start && transaction.Date <= query.End);
+        return await GetRangeFactsAsync(filtered, query.Sort, query.Offset, query.Limit, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<AccountingPeriod>> GetAccountingPeriodsAsync(
+        Guid startId,
+        Guid endId,
+        CancellationToken cancellationToken = default)
+    {
+        var start = new AccountingPeriodId(startId);
+        var end = new AccountingPeriodId(endId);
+        return await databaseContext.AccountingPeriods.AsNoTracking()
+            .Where(period => period.Id == start || period.Id == end)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<AccountingPeriod>> GetAccountingPeriodsAsync(
+        int startIndex,
+        int endIndex,
+        CancellationToken cancellationToken = default) =>
+        await databaseContext.AccountingPeriods.AsNoTracking()
+            .Where(period => (period.Year * 12) + period.Month >= startIndex && (period.Year * 12) + period.Month <= endIndex)
+            .OrderBy(period => period.Year).ThenBy(period => period.Month)
+            .ToListAsync(cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task<TransactionAccountingPeriodRangeFacts> GetAccountingPeriodRangeAsync(
+        TransactionAccountingPeriodRangeQuery query,
+        IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<Transaction> filtered = ApplyFilter(databaseContext.Transactions.AsNoTracking(), query.Filter)
+            .Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId));
+        TransactionDateRangeFacts facts = await GetRangeFactsAsync(
+            filtered,
+            query.Sort,
+            query.Offset,
+            query.Limit,
+            cancellationToken);
+        return new TransactionAccountingPeriodRangeFacts(
+            facts.QueryFacts,
+            facts.AvailableAccountNames,
+            facts.AvailableFundNames,
+            facts.TransactionTypes);
+    }
+
+    /// <summary>
+    /// Retrieves Transaction range metadata and an interpreted page's persisted context.
+    /// </summary>
+    private async Task<TransactionDateRangeFacts> GetRangeFactsAsync(
+        IQueryable<Transaction> filtered,
+        TransactionSort sort,
+        int offset,
+        int? limit,
+        CancellationToken cancellationToken)
+    {
         List<TransactionTypeSummary> summaries = await filtered.GroupBy(transaction => transaction.Type)
             .Select(group => new TransactionTypeSummary(
                 group.Key,
@@ -52,9 +109,9 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
             .ToListAsync(cancellationToken);
         TransactionQueryFacts queryFacts = await GetAsync(
             filtered,
-            query.Sort,
-            query.Offset,
-            query.Limit,
+            sort,
+            offset,
+            limit,
             cancellationToken);
         return new TransactionDateRangeFacts(queryFacts, accountNames, fundNames, summaries);
     }

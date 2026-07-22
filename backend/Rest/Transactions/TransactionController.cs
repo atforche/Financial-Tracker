@@ -4,6 +4,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
 using Domain.Transactions;
+using Domain.Transactions.Queries;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
@@ -12,8 +13,6 @@ using Models.Transactions.Create;
 using Models.Transactions.Types;
 using Models.Transactions.Update;
 using Rest.AccountingPeriods;
-using DomainTransactionQueryService = Domain.Transactions.Queries.TransactionQueryService;
-using LegacyTransactionQueryService = Data.Transactions.TransactionQueryService;
 
 namespace Rest.Transactions;
 
@@ -27,8 +26,7 @@ public sealed class TransactionController(
     AccountQueryService accountQueryService,
     AccountingPeriodConverter accountingPeriodConverter,
     TransactionRepository transactionRepository,
-    LegacyTransactionQueryService legacyTransactionQueryService,
-    DomainTransactionQueryService transactionQueryService,
+    TransactionQueryService transactionQueryService,
     TransactionDispatcherService transactionDispatcherService,
     TransactionRequestConverter transactionRequestConverter,
     TransactionConverter transactionConverter) : ControllerBase
@@ -79,10 +77,13 @@ public sealed class TransactionController(
         [FromQuery] TransactionsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        TransactionsInAccountingPeriodRangeModel? model = await legacyTransactionQueryService.GetInAccountingPeriodRangeAsync(query, cancellationToken);
-        return model == null
+        TransactionAccountingPeriodRangeQueryResult result =
+            await transactionQueryService.GetAccountingPeriodRangeAsync(
+                transactionConverter.ToDomain(query),
+                cancellationToken);
+        return result.Range == null
             ? UnprocessableEntity(new ValidationProblemDetails { Title = "Unable to resolve Accounting Period range.", Status = StatusCodes.Status422UnprocessableEntity })
-            : Ok(model);
+            : Ok(transactionConverter.ToModel(result.Range));
     }
 
     /// <summary>

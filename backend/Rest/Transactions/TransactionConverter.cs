@@ -45,6 +45,17 @@ public sealed class TransactionConverter(
         model.Limit);
 
     /// <summary>
+    /// Converts an API Transaction Accounting Period range query to Domain criteria.
+    /// </summary>
+    public TransactionAccountingPeriodRangeQuery ToDomain(TransactionsInAccountingPeriodRangeQueryParameterModel model) => new(
+        model.Range.Start,
+        model.Range.End,
+        ToDomain(model.Filter),
+        ToDomain(model.Sort),
+        model.Offset ?? 0,
+        model.Limit);
+
+    /// <summary>
     /// Converts an API Transaction sort to a Domain sort.
     /// </summary>
     public TransactionSort ToDomain(TransactionSortModel? sort) => sort switch
@@ -81,21 +92,39 @@ public sealed class TransactionConverter(
         Transactions = ToModel(range.Transactions),
         AvailableAccountNames = range.AvailableAccountNames,
         AvailableFundNames = range.AvailableFundNames,
-        TransactionTypes = range.TransactionTypes.Select(summary => new TransactionSummaryByTypeModel
-        {
-            TransactionType = summary.TransactionType switch
-            {
-                TransactionType.Spending => TransactionTypeModel.Spending,
-                TransactionType.Income => TransactionTypeModel.Income,
-                TransactionType.Account => TransactionTypeModel.Account,
-                TransactionType.Fund => TransactionTypeModel.Fund,
-                _ => throw new ArgumentOutOfRangeException(nameof(summary), summary.TransactionType, null),
-            },
-            TotalCount = summary.TotalCount,
-            TotalAmount = summary.TotalAmount,
-        }).ToList(),
+        TransactionTypes = range.TransactionTypes.Select(ToModel).ToList(),
         Offset = range.Offset,
         Limit = range.Limit,
+    };
+
+    /// <summary>
+    /// Converts an interpreted Transaction Accounting Period range to an API model.
+    /// </summary>
+    public TransactionsInAccountingPeriodRangeModel ToModel(TransactionAccountingPeriodRange range) => new()
+    {
+        Transactions = ToModel(range.Transactions),
+        AvailableAccountNames = range.AvailableAccountNames,
+        AvailableFundNames = range.AvailableFundNames,
+        TransactionTypes = range.TransactionTypes.Select(ToModel).ToList(),
+        Offset = range.Offset,
+        Limit = range.Limit,
+    };
+
+    /// <summary>
+    /// Converts a Domain Transaction type summary to an API model.
+    /// </summary>
+    private static TransactionSummaryByTypeModel ToModel(TransactionTypeSummary summary) => new()
+    {
+        TransactionType = summary.TransactionType switch
+        {
+            TransactionType.Spending => TransactionTypeModel.Spending,
+            TransactionType.Income => TransactionTypeModel.Income,
+            TransactionType.Account => TransactionTypeModel.Account,
+            TransactionType.Fund => TransactionTypeModel.Fund,
+            _ => throw new ArgumentOutOfRangeException(nameof(summary), summary.TransactionType, null),
+        },
+        TotalCount = summary.TotalCount,
+        TotalAmount = summary.TotalAmount,
     };
 
     /// <summary>
