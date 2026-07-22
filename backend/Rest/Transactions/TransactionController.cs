@@ -41,7 +41,9 @@ public sealed class TransactionController(
     public async Task<ActionResult<CollectionModel<TransactionModel>>> GetManyAsync(
         [FromQuery] TransactionQueryParameterModel query,
         CancellationToken cancellationToken) =>
-        Ok(await legacyTransactionQueryService.GetAsync(query, cancellationToken));
+        Ok(transactionConverter.ToModel(await transactionQueryService.GetAsync(
+            transactionConverter.ToDomain(query),
+            cancellationToken)));
 
     /// <summary>
     /// Retrieves a Transaction by ID.

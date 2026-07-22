@@ -1,3 +1,4 @@
+using Domain;
 using Domain.BalanceEvents;
 using Domain.Funds;
 using Domain.Transactions.Accounts;
@@ -5,6 +6,7 @@ using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Queries;
 using Domain.Transactions.Spending;
+using Models;
 using Models.Transactions;
 using Models.Transactions.Types;
 using Rest.Accounts;
@@ -21,6 +23,42 @@ public sealed class TransactionConverter(
     FundBalanceEventConverter fundBalanceEventConverter,
     FundPlanBalanceEventConverter fundPlanBalanceEventConverter)
 {
+    /// <summary>
+    /// Converts an API Transaction query to Domain criteria.
+    /// </summary>
+    public TransactionQuery ToDomain(TransactionQueryParameterModel model) => new(
+        new TransactionFilter(
+            model.Filter?.AccountingPeriodIds ?? [],
+            model.Filter?.AccountIds ?? [],
+            model.Filter?.FundIds ?? []),
+        model.Sort switch
+        {
+            TransactionSortModel.Date => TransactionSort.Date,
+            TransactionSortModel.DateDescending => TransactionSort.DateDescending,
+            TransactionSortModel.Description => TransactionSort.Description,
+            TransactionSortModel.DescriptionDescending => TransactionSort.DescriptionDescending,
+            TransactionSortModel.Amount => TransactionSort.Amount,
+            TransactionSortModel.AmountDescending => TransactionSort.AmountDescending,
+            TransactionSortModel.AccountingPeriod => TransactionSort.AccountingPeriod,
+            TransactionSortModel.AccountingPeriodDescending => TransactionSort.AccountingPeriodDescending,
+            TransactionSortModel.Source => TransactionSort.Source,
+            TransactionSortModel.SourceDescending => TransactionSort.SourceDescending,
+            TransactionSortModel.Destination => TransactionSort.Destination,
+            TransactionSortModel.DestinationDescending => TransactionSort.DestinationDescending,
+            _ => TransactionSort.DateDescending,
+        },
+        model.Offset ?? 0,
+        model.Limit);
+
+    /// <summary>
+    /// Converts an interpreted Domain page to an API collection.
+    /// </summary>
+    public CollectionModel<TransactionModel> ToModel(QueryPage<TransactionDetails> page) => new()
+    {
+        Items = page.Items.Select(ToModel).ToList(),
+        TotalCount = page.TotalCount,
+    };
+
     /// <summary>
     /// Converts interpreted Transaction details to the polymorphic API model.
     /// </summary>
