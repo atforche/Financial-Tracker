@@ -1,5 +1,6 @@
 using Data;
 using Domain.AccountingPeriods;
+using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
 using Domain.Validation;
@@ -17,7 +18,7 @@ namespace Rest.Accounts;
 [Route("/accounts")]
 public sealed class AccountController(
     UnitOfWork unitOfWork,
-    AccountingPeriodConverter accountingPeriodConverter,
+    AccountingPeriodQueryService accountingPeriodQueryService,
     AccountService accountService,
     AccountQueryService accountQueryService,
     AccountConverter accountConverter,
@@ -49,7 +50,9 @@ public sealed class AccountController(
         AccountBalanceEventAccountingPeriodRangeQueryResult result = await accountBalanceEventQueryService.GetAsync(
             accountBalanceEventConverter.ToDomain(query),
             cancellationToken);
-        return result.Page == null ? InvalidAccountingPeriodRange() : Ok(accountBalanceEventConverter.ToModel(result.Page));
+        return result.Page == null
+            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Account balance events."))
+            : Ok(accountBalanceEventConverter.ToModel(result.Page));
     }
 
     /// <summary>
@@ -111,7 +114,7 @@ public sealed class AccountController(
             accountConverter.ToDomain(query),
             cancellationToken);
         return result.Range == null
-            ? UnprocessableEntity(new ValidationProblemDetails { Title = "Unable to resolve Accounting Period range.", Status = StatusCodes.Status422UnprocessableEntity })
+            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Account range."))
             : Ok(accountConverter.ToModel(result.Range));
     }
 
@@ -124,7 +127,8 @@ public sealed class AccountController(
     public async Task<IActionResult> CreateAsync(CreateAccountModel createAccountModel)
     {
         Dictionary<string, string[]> errors = [];
-        if (!accountingPeriodConverter.TryToDomain(createAccountModel.OpeningAccountingPeriodId, out AccountingPeriod? accountingPeriod))
+        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetAccountingPeriodByIdAsync(createAccountModel.OpeningAccountingPeriodId);
+        if (accountingPeriod == null)
         {
             errors.Add(nameof(createAccountModel.OpeningAccountingPeriodId), [$"Accounting Period with ID {createAccountModel.OpeningAccountingPeriodId} was not found."]);
         }
@@ -279,13 +283,4 @@ public sealed class AccountController(
         await unitOfWork.SaveChangesAsync();
         return Ok();
     }
-
-    /// <summary>
-    /// Returns a 422 Unprocessable Entity response indicating that the Accounting Period range could not be resolved.
-    /// </summary>
-    private UnprocessableEntityObjectResult InvalidAccountingPeriodRange() => UnprocessableEntity(new ValidationProblemDetails
-    {
-        Title = "Unable to resolve Accounting Period range.",
-        Status = StatusCodes.Status422UnprocessableEntity,
-    });
 }

@@ -1,5 +1,6 @@
 using Domain;
 using Domain.AccountingPeriods;
+using Domain.AccountingPeriods.Queries;
 using Domain.Funds;
 using Domain.Funds.Queries;
 using Domain.Transactions.Income;
@@ -138,13 +139,13 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
             .ToListAsync(cancellationToken);
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<FundDateRangeIncomeFact>> GetDateRangeIncomeFactsAsync(
+    public async Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetDateRangeIncomeFactsAsync(
         DateOnly startDate,
         DateOnly endDate,
         CancellationToken cancellationToken = default) =>
         await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
             .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
-            .SelectMany(transaction => transaction.Destinations.Select(destination => new FundDateRangeIncomeFact(
+            .SelectMany(transaction => transaction.Destinations.Select(destination => new FinancialRangeIncomeFact(
                 destination.Amount,
                 destination.Account.Type,
                 transaction.Source.Account != null,
@@ -152,13 +153,13 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
             .ToListAsync(cancellationToken);
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<FundDateRangeSpendingFact>> GetDateRangeSpendingFactsAsync(
+    public async Task<IReadOnlyCollection<FinancialRangeSpendingFact>> GetDateRangeSpendingFactsAsync(
         DateOnly startDate,
         DateOnly endDate,
         CancellationToken cancellationToken = default) =>
         await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
             .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
-            .Select(transaction => new FundDateRangeSpendingFact(transaction.Amount, transaction.Source.PostedDate))
+            .Select(transaction => new FinancialRangeSpendingFact(transaction.Amount, transaction.Source.PostedDate))
             .ToListAsync(cancellationToken);
 
     /// <summary>

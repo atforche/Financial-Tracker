@@ -1,6 +1,7 @@
 using Data;
 using Data.Transactions;
 using Domain.AccountingPeriods;
+using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
 using Domain.Transactions;
@@ -24,7 +25,7 @@ namespace Rest.Transactions;
 public sealed class TransactionController(
     UnitOfWork unitOfWork,
     AccountQueryService accountQueryService,
-    AccountingPeriodConverter accountingPeriodConverter,
+    AccountingPeriodQueryService accountingPeriodQueryService,
     TransactionRepository transactionRepository,
     TransactionQueryService transactionQueryService,
     TransactionDispatcherService transactionDispatcherService,
@@ -82,7 +83,7 @@ public sealed class TransactionController(
                 transactionConverter.ToDomain(query),
                 cancellationToken);
         return result.Range == null
-            ? UnprocessableEntity(new ValidationProblemDetails { Title = "Unable to resolve Accounting Period range.", Status = StatusCodes.Status422UnprocessableEntity })
+            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Transaction range."))
             : Ok(transactionConverter.ToModel(result.Range));
     }
 
@@ -95,7 +96,8 @@ public sealed class TransactionController(
     public async Task<IActionResult> CreateAsync(CreateTransactionModel createTransactionModel)
     {
         Dictionary<string, string[]> errors = [];
-        if (!accountingPeriodConverter.TryToDomain(createTransactionModel.AccountingPeriodId, out AccountingPeriod? accountingPeriod))
+        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetAccountingPeriodByIdAsync(createTransactionModel.AccountingPeriodId);
+        if (accountingPeriod == null)
         {
             errors.Add(nameof(createTransactionModel.AccountingPeriodId), [$"Accounting Period with ID {createTransactionModel.AccountingPeriodId} was not found."]);
         }
@@ -303,7 +305,7 @@ public sealed class TransactionController(
         Guid transactionId,
         CancellationToken cancellationToken = default)
     {
-        Domain.Transactions.Queries.TransactionDetails? details = await transactionQueryService.GetByIdAsync(
+        TransactionDetails? details = await transactionQueryService.GetByIdAsync(
             transactionId,
             cancellationToken);
         return details == null ? null : transactionConverter.ToModel(details);

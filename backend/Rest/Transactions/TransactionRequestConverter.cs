@@ -13,7 +13,6 @@ using Models.Funds;
 using Models.Transactions;
 using Models.Transactions.Create;
 using Models.Transactions.Update;
-using Rest.Funds;
 
 namespace Rest.Transactions;
 
@@ -22,8 +21,7 @@ namespace Rest.Transactions;
 /// </summary>
 public sealed class TransactionRequestConverter(
     AccountQueryService accountQueryService,
-    FundQueryService fundQueryService,
-    FundAmountConverter fundAmountConverter)
+    FundQueryService fundQueryService)
 {
     /// <summary>
     /// Attempts to convert the provided create model to a domain create request.
@@ -301,14 +299,13 @@ public sealed class TransactionRequestConverter(
 
         foreach ((int index, CreateFundAmountModel fundAmountModel) in models.Index())
         {
-            if (!fundAmountConverter.TryToDomain(fundAmountModel, out FundAmount? fundAmount))
+            if (!TryGetFund(fundAmountModel.FundId, $"{errorKeyPrefix}[{index}]", errors, out Fund? fund))
             {
-                errors.Add($"{errorKeyPrefix}[{index}]", [$"Fund with ID {fundAmountModel.FundId} was not found."]);
                 fundAmounts = null;
                 return false;
             }
 
-            resolvedFundAmounts.Add(fundAmount);
+            resolvedFundAmounts.Add(new FundAmount { FundId = fund.Id, Amount = fundAmountModel.Amount });
         }
 
         fundAmounts = resolvedFundAmounts;

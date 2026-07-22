@@ -9,6 +9,7 @@ using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.FundPlans;
+using Rest.AccountingPeriods;
 
 namespace Rest.FundPlans;
 
@@ -50,7 +51,9 @@ public sealed class FundPlanController(
         FundPlanBalanceEventAccountingPeriodRangeQueryResult result = await fundPlanBalanceEventQueryService.GetAsync(
             fundPlanBalanceEventConverter.ToDomain(query),
             cancellationToken);
-        return result.Page == null ? InvalidAccountingPeriodRange() : Ok(fundPlanBalanceEventConverter.ToModel(result.Page));
+        return result.Page == null
+            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Fund Plan balance events."))
+            : Ok(fundPlanBalanceEventConverter.ToModel(result.Page));
     }
 
     /// <summary>
@@ -206,12 +209,4 @@ public sealed class FundPlanController(
             Status = StatusCodes.Status422UnprocessableEntity,
         });
 
-    /// <summary>
-    /// Returns a 422 Unprocessable Entity response indicating that the Accounting Period range could not be resolved.
-    /// </summary>
-    private UnprocessableEntityObjectResult InvalidAccountingPeriodRange() => UnprocessableEntity(new ValidationProblemDetails
-    {
-        Title = "Unable to resolve Accounting Period range.",
-        Status = StatusCodes.Status422UnprocessableEntity,
-    });
 }

@@ -93,32 +93,11 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         {
             return Ok(accountingPeriodQueryConverter.ToModel(result.Range));
         }
-        Dictionary<string, string[]> errors = [];
-        if (result.Failure.HasFlag(AccountingPeriodRangeQueryFailure.StartNotFound))
-        {
-            errors[nameof(query.Range.Start)] = [$"Accounting Period with ID {query.Range.Start} not found."];
-        }
-
-        if (result.Failure.HasFlag(AccountingPeriodRangeQueryFailure.EndNotFound))
-        {
-            errors[nameof(query.Range.End)] = [$"Accounting Period with ID {query.Range.End} not found."];
-        }
-
-        if (result.Failure.HasFlag(AccountingPeriodRangeQueryFailure.Reversed))
-        {
-            errors[nameof(query.Range)] = ["The start Accounting Period must not occur after the end Accounting Period."];
-        }
-
-        if (result.Failure.HasFlag(AccountingPeriodRangeQueryFailure.NotContiguous))
-        {
-            errors[nameof(query.Range)] = ["The Accounting Period range must be contiguous."];
-        }
-
-        return UnprocessableEntity(new ValidationProblemDetails(errors)
-        {
-            Title = "Unable to retrieve Accounting Period range.",
-            Status = StatusCodes.Status422UnprocessableEntity,
-        });
+        return UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(
+            result.Failure,
+            query.Range.Start,
+            query.Range.End,
+            "Unable to retrieve Accounting Period range."));
     }
 
     /// <summary>

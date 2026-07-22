@@ -1,11 +1,14 @@
 using Domain.AccountingPeriods;
+using Domain.AccountingPeriods.Queries;
 
 namespace Domain.Transactions.Queries;
 
 /// <summary>
 /// Service for querying interpreted Transaction details.
 /// </summary>
-public sealed class TransactionQueryService(ITransactionQueryRepository transactionQueryRepository)
+public sealed class TransactionQueryService(
+    ITransactionQueryRepository transactionQueryRepository,
+    AccountingPeriodRangeService accountingPeriodRangeService)
 {
     /// <summary>
     /// Retrieves interpreted Transactions matching the provided query.
@@ -42,34 +45,16 @@ public sealed class TransactionQueryService(ITransactionQueryRepository transact
         TransactionAccountingPeriodRangeQuery query,
         CancellationToken cancellationToken = default)
     {
-        IReadOnlyCollection<AccountingPeriod> endpoints = await transactionQueryRepository.GetAccountingPeriodsAsync(
+        AccountingPeriodRangeResolution resolution = await accountingPeriodRangeService.ResolveAsync(
             query.StartId,
             query.EndId,
             cancellationToken);
-        AccountingPeriod? start = endpoints.SingleOrDefault(period => period.Id.Value == query.StartId);
-        AccountingPeriod? end = endpoints.SingleOrDefault(period => period.Id.Value == query.EndId);
-        if (start == null || end == null)
+        if (resolution.AccountingPeriods == null)
         {
-            return new TransactionAccountingPeriodRangeQueryResult(null);
+            return new TransactionAccountingPeriodRangeQueryResult(null, resolution.Failure);
         }
 
-        int startIndex = GetChronologicalIndex(start);
-        int endIndex = GetChronologicalIndex(end);
-        if (startIndex > endIndex)
-        {
-            return new TransactionAccountingPeriodRangeQueryResult(null);
-        }
-
-        IReadOnlyCollection<AccountingPeriod> periods = await transactionQueryRepository.GetAccountingPeriodsAsync(
-            startIndex,
-            endIndex,
-            cancellationToken);
-        IReadOnlyCollection<int> persistedIndexes = periods.Select(GetChronologicalIndex).ToList();
-        if (!persistedIndexes.SequenceEqual(Enumerable.Range(startIndex, endIndex - startIndex + 1)))
-        {
-            return new TransactionAccountingPeriodRangeQueryResult(null);
-        }
-
+        IReadOnlyCollection<AccountingPeriod> periods = resolution.AccountingPeriods;
         IReadOnlyCollection<AccountingPeriodId> periodIds = periods.Select(period => period.Id).ToList();
         TransactionAccountingPeriodRangeFacts facts = await transactionQueryRepository.GetAccountingPeriodRangeAsync(
             query,
@@ -82,7 +67,7 @@ public sealed class TransactionQueryService(ITransactionQueryRepository transact
             facts.TransactionTypes,
             query.Offset,
             query.Limit);
-        return new TransactionAccountingPeriodRangeQueryResult(range);
+        return new TransactionAccountingPeriodRangeQueryResult(range, AccountingPeriodRangeQueryFailure.None);
     }
 
     /// <summary>
@@ -114,10 +99,4 @@ public sealed class TransactionQueryService(ITransactionQueryRepository transact
                 facts.FundPlanHistories))).ToList();
         return new QueryPage<TransactionDetails>(items, facts.Transactions.TotalCount);
     }
-
-    /// <summary>
-    /// Calculates the chronological index of an Accounting Period.
-    /// </summary>
-    private static int GetChronologicalIndex(AccountingPeriod period) =>
-        (period.Year * 12) + period.Month;
 }

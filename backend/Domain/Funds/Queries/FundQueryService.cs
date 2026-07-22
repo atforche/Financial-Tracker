@@ -1,6 +1,5 @@
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
-using Domain.Accounts;
 
 namespace Domain.Funds.Queries;
 
@@ -10,7 +9,8 @@ namespace Domain.Funds.Queries;
 public sealed class FundQueryService(
     IFundRepository fundRepository,
     IFundQueryRepository fundQueryRepository,
-    IAccountingPeriodQueryRepository accountingPeriodQueryRepository)
+    IAccountingPeriodQueryRepository accountingPeriodQueryRepository,
+    AccountingPeriodRangeService accountingPeriodRangeService)
 {
     /// <summary>
     /// Retrieves the Fund with the specified ID, or null when it does not exist.
@@ -45,43 +45,26 @@ public sealed class FundQueryService(
         FundAccountingPeriodRangeQuery query,
         CancellationToken cancellationToken = default)
     {
-        IReadOnlyCollection<AccountingPeriod> endpoints = await accountingPeriodQueryRepository.GetEndpointsAsync(
+        AccountingPeriodRangeResolution resolution = await accountingPeriodRangeService.ResolveAsync(
             query.StartId,
             query.EndId,
             cancellationToken);
-        AccountingPeriod? start = endpoints.SingleOrDefault(period => period.Id.Value == query.StartId);
-        AccountingPeriod? end = endpoints.SingleOrDefault(period => period.Id.Value == query.EndId);
-        AccountingPeriodRangeQueryFailure failure = AccountingPeriodRangeQueryFailure.None;
-        if (start == null)
+        if (resolution.AccountingPeriods == null)
         {
-            failure |= AccountingPeriodRangeQueryFailure.StartNotFound;
-        }
-        if (end == null)
-        {
-            failure |= AccountingPeriodRangeQueryFailure.EndNotFound;
-        }
-        if (failure != AccountingPeriodRangeQueryFailure.None)
-        {
-            return new FundAccountingPeriodRangeQueryResult(null, failure);
+            return new FundAccountingPeriodRangeQueryResult(null, resolution.Failure);
         }
 
-        int startIndex = GetChronologicalIndex(start!);
-        int endIndex = GetChronologicalIndex(end!);
-        if (startIndex > endIndex)
-        {
-            return new FundAccountingPeriodRangeQueryResult(null, AccountingPeriodRangeQueryFailure.Reversed);
-        }
-
+        AccountingPeriod start = resolution.AccountingPeriods.First();
+        AccountingPeriod end = resolution.AccountingPeriods.Last();
         IReadOnlyCollection<FundPeriodBalanceFacts> histories = await fundQueryRepository.GetPeriodBalanceFactsAsync(
-            startIndex,
-            endIndex,
+            AccountingPeriodRangeResolver.GetChronologicalIndex(start),
+            AccountingPeriodRangeResolver.GetChronologicalIndex(end),
             cancellationToken);
         IReadOnlyCollection<FundPeriodBalanceFacts> orderedHistories = histories
             .OrderBy(history => history.AccountingPeriod.Year)
             .ThenBy(history => history.AccountingPeriod.Month)
             .ToList();
-        IReadOnlyCollection<int> indexes = orderedHistories.Select(history => GetChronologicalIndex(history.AccountingPeriod)).ToList();
-        if (!indexes.SequenceEqual(Enumerable.Range(startIndex, endIndex - startIndex + 1)))
+        if (!AccountingPeriodRangeResolver.IsContiguous(orderedHistories.Select(history => history.AccountingPeriod), start, end))
         {
             return new FundAccountingPeriodRangeQueryResult(null, AccountingPeriodRangeQueryFailure.NotContiguous);
         }
@@ -99,14 +82,9 @@ public sealed class FundQueryService(
             .Take(query.Limit ?? int.MaxValue)
             .ToList();
         IReadOnlyCollection<Guid> periodIds = orderedHistories.Select(history => history.AccountingPeriod.Id.Value).ToList();
-        IReadOnlyCollection<AccountingPeriodRangeIncomeFact> incomeFacts = await accountingPeriodQueryRepository.GetRangeIncomeFactsAsync(periodIds, cancellationToken);
-        IReadOnlyCollection<AccountingPeriodRangeSpendingFact> spendingFacts = await accountingPeriodQueryRepository.GetRangeSpendingFactsAsync(periodIds, cancellationToken);
-        IReadOnlyCollection<AccountingPeriodRangeIncomeFact> recognizedIncome = incomeFacts
-            .Where(fact => !fact.HasInternalSource || fact.PostedDate != null)
-            .ToList();
-        decimal totalIncome = recognizedIncome.Sum(fact => fact.Amount);
-        decimal trackedIncome = recognizedIncome.Where(fact => fact.AccountType.IsTracked()).Sum(fact => fact.Amount);
-        decimal totalSpending = spendingFacts.Where(fact => fact.PostedDate != null).Sum(fact => fact.Amount);
+        IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await accountingPeriodQueryRepository.GetRangeIncomeFactsAsync(periodIds, cancellationToken);
+        IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await accountingPeriodQueryRepository.GetRangeSpendingFactsAsync(periodIds, cancellationToken);
+        var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
         IReadOnlyCollection<FundPeriodBalanceSummary> summaries = orderedHistories.Select(history => new FundPeriodBalanceSummary(
             history.AccountingPeriod,
             Summarize(history.Balances.Where(balance => matchingIds.Contains(balance.Fund.Id)), true),
@@ -114,9 +92,9 @@ public sealed class FundQueryService(
         var range = new FundAccountingPeriodRange(
             new QueryPage<FundRangeBalance>(items, balances.Count),
             await fundQueryRepository.GetAllNamesAsync(cancellationToken),
-            totalIncome,
-            trackedIncome,
-            totalSpending,
+            totals.TotalIncome,
+            totals.TrackedIncome,
+            totals.TotalSpending,
             summaries);
         return new FundAccountingPeriodRangeQueryResult(range, AccountingPeriodRangeQueryFailure.None);
     }
@@ -134,20 +112,15 @@ public sealed class FundQueryService(
             query.End,
             cancellationToken);
         IReadOnlyCollection<FundDateBalanceFact> history = await fundQueryRepository.GetDateBalanceFactsAsync(query.End, cancellationToken);
-        IReadOnlyCollection<FundDateRangeIncomeFact> incomeFacts = await fundQueryRepository.GetDateRangeIncomeFactsAsync(
+        IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await fundQueryRepository.GetDateRangeIncomeFactsAsync(
             query.Start,
             query.End,
             cancellationToken);
-        IReadOnlyCollection<FundDateRangeSpendingFact> spendingFacts = await fundQueryRepository.GetDateRangeSpendingFactsAsync(
+        IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await fundQueryRepository.GetDateRangeSpendingFactsAsync(
             query.Start,
             query.End,
             cancellationToken);
-        IReadOnlyCollection<FundDateRangeIncomeFact> recognizedIncome = incomeFacts
-            .Where(fact => !fact.HasInternalSource || fact.PostedDate != null)
-            .ToList();
-        decimal totalIncome = recognizedIncome.Sum(fact => fact.Amount);
-        decimal trackedIncome = recognizedIncome.Where(fact => fact.AccountType.IsTracked()).Sum(fact => fact.Amount);
-        decimal totalSpending = spendingFacts.Where(fact => fact.PostedDate != null).Sum(fact => fact.Amount);
+        var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
         IReadOnlyCollection<FundDateBalanceSummary> dates = GetDates(query.Start, query.End)
             .Select(date => new FundDateBalanceSummary(date, SummarizeDate(balances, history, date)))
             .ToList();
@@ -158,16 +131,11 @@ public sealed class FundQueryService(
         return new FundDateRange(
             new QueryPage<FundRangeBalance>(items, balances.Count),
             await fundQueryRepository.GetAllNamesAsync(cancellationToken),
-            totalIncome,
-            trackedIncome,
-            totalSpending,
+            totals.TotalIncome,
+            totals.TrackedIncome,
+            totals.TotalSpending,
             dates);
     }
-
-    /// <summary>
-    /// Gets the chronological index of an Accounting Period, used for sorting and range calculations.
-    /// </summary>
-    private static int GetChronologicalIndex(AccountingPeriod period) => (period.Year * 12) + period.Month;
 
     /// <summary>
     /// Summarizes Fund balances into a FundBalanceSummary.

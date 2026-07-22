@@ -40,29 +40,6 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<AccountingPeriod>> GetAccountingPeriodsAsync(
-        Guid startId,
-        Guid endId,
-        CancellationToken cancellationToken = default)
-    {
-        var start = new AccountingPeriodId(startId);
-        var end = new AccountingPeriodId(endId);
-        return await databaseContext.AccountingPeriods.AsNoTracking()
-            .Where(period => period.Id == start || period.Id == end)
-            .ToListAsync(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<AccountingPeriod>> GetAccountingPeriodsAsync(
-        int startIndex,
-        int endIndex,
-        CancellationToken cancellationToken = default) =>
-        await databaseContext.AccountingPeriods.AsNoTracking()
-            .Where(period => (period.Year * 12) + period.Month >= startIndex && (period.Year * 12) + period.Month <= endIndex)
-            .OrderBy(period => period.Year).ThenBy(period => period.Month)
-            .ToListAsync(cancellationToken);
-
-    /// <inheritdoc/>
     public async Task<TransactionAccountingPeriodRangeFacts> GetAccountingPeriodRangeAsync(
         TransactionAccountingPeriodRangeQuery query,
         IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds,

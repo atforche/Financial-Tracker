@@ -24,21 +24,6 @@ public interface IFundBalanceEventQueryRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves Accounting Periods with the provided IDs.
-    /// </summary>
-    Task<IReadOnlyCollection<AccountingPeriod>> GetAccountingPeriodsAsync(
-        IReadOnlyCollection<AccountingPeriodId> ids,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves Accounting Periods between the provided chronological indexes.
-    /// </summary>
-    Task<IReadOnlyCollection<AccountingPeriod>> GetAccountingPeriodsAsync(
-        int startIndex,
-        int endIndex,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Retrieves Funds with the provided IDs.
     /// </summary>
     Task<IReadOnlyCollection<Fund>> GetFundsAsync(

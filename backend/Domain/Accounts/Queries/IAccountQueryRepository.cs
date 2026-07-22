@@ -1,3 +1,5 @@
+using Domain.AccountingPeriods.Queries;
+
 namespace Domain.Accounts.Queries;
 
 /// <summary>
@@ -56,7 +58,7 @@ public interface IAccountQueryRepository
     /// <summary>
     /// Retrieves income destination facts within the provided date range.
     /// </summary>
-    Task<IReadOnlyCollection<AccountDateRangeIncomeFact>> GetDateRangeIncomeFactsAsync(
+    Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetDateRangeIncomeFactsAsync(
         DateOnly startDate,
         DateOnly endDate,
         CancellationToken cancellationToken = default);
@@ -64,7 +66,7 @@ public interface IAccountQueryRepository
     /// <summary>
     /// Retrieves spending facts within the provided date range.
     /// </summary>
-    Task<IReadOnlyCollection<AccountDateRangeSpendingFact>> GetDateRangeSpendingFactsAsync(
+    Task<IReadOnlyCollection<FinancialRangeSpendingFact>> GetDateRangeSpendingFactsAsync(
         DateOnly startDate,
         DateOnly endDate,
         CancellationToken cancellationToken = default);

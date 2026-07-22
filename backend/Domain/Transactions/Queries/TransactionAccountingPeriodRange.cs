@@ -1,3 +1,5 @@
+using Domain.AccountingPeriods.Queries;
+
 namespace Domain.Transactions.Queries;
 
 /// <summary>
@@ -14,4 +16,6 @@ public sealed record TransactionAccountingPeriodRange(
 /// <summary>
 /// Result of resolving a Transaction Accounting Period range.
 /// </summary>
-public sealed record TransactionAccountingPeriodRangeQueryResult(TransactionAccountingPeriodRange? Range);
+public sealed record TransactionAccountingPeriodRangeQueryResult(
+    TransactionAccountingPeriodRange? Range,
+    AccountingPeriodRangeQueryFailure Failure);

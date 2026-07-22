@@ -9,7 +9,8 @@ namespace Domain.Accounts.Queries;
 public sealed class AccountQueryService(
     IAccountRepository accountRepository,
     IAccountQueryRepository accountQueryRepository,
-    IAccountingPeriodQueryRepository accountingPeriodQueryRepository)
+    IAccountingPeriodQueryRepository accountingPeriodQueryRepository,
+    AccountingPeriodRangeService accountingPeriodRangeService)
 {
     /// <summary>
     /// Retrieves the Account with the specified ID, or null when it does not exist.
@@ -44,43 +45,26 @@ public sealed class AccountQueryService(
         AccountAccountingPeriodRangeQuery query,
         CancellationToken cancellationToken = default)
     {
-        IReadOnlyCollection<AccountingPeriod> endpoints = await accountingPeriodQueryRepository.GetEndpointsAsync(
+        AccountingPeriodRangeResolution resolution = await accountingPeriodRangeService.ResolveAsync(
             query.StartId,
             query.EndId,
             cancellationToken);
-        AccountingPeriod? start = endpoints.SingleOrDefault(period => period.Id.Value == query.StartId);
-        AccountingPeriod? end = endpoints.SingleOrDefault(period => period.Id.Value == query.EndId);
-        AccountingPeriodRangeQueryFailure failure = AccountingPeriodRangeQueryFailure.None;
-        if (start == null)
+        if (resolution.AccountingPeriods == null)
         {
-            failure |= AccountingPeriodRangeQueryFailure.StartNotFound;
-        }
-        if (end == null)
-        {
-            failure |= AccountingPeriodRangeQueryFailure.EndNotFound;
-        }
-        if (failure != AccountingPeriodRangeQueryFailure.None)
-        {
-            return new AccountAccountingPeriodRangeQueryResult(null, failure);
+            return new AccountAccountingPeriodRangeQueryResult(null, resolution.Failure);
         }
 
-        int startIndex = GetChronologicalIndex(start!);
-        int endIndex = GetChronologicalIndex(end!);
-        if (startIndex > endIndex)
-        {
-            return new AccountAccountingPeriodRangeQueryResult(null, AccountingPeriodRangeQueryFailure.Reversed);
-        }
-
+        AccountingPeriod start = resolution.AccountingPeriods.First();
+        AccountingPeriod end = resolution.AccountingPeriods.Last();
         IReadOnlyCollection<AccountPeriodBalanceFacts> histories = await accountQueryRepository.GetPeriodBalanceFactsAsync(
-            startIndex,
-            endIndex,
+            AccountingPeriodRangeResolver.GetChronologicalIndex(start),
+            AccountingPeriodRangeResolver.GetChronologicalIndex(end),
             cancellationToken);
         IReadOnlyCollection<AccountPeriodBalanceFacts> orderedHistories = histories
             .OrderBy(history => history.AccountingPeriod.Year)
             .ThenBy(history => history.AccountingPeriod.Month)
             .ToList();
-        IReadOnlyCollection<int> indexes = orderedHistories.Select(history => GetChronologicalIndex(history.AccountingPeriod)).ToList();
-        if (!indexes.SequenceEqual(Enumerable.Range(startIndex, endIndex - startIndex + 1)))
+        if (!AccountingPeriodRangeResolver.IsContiguous(orderedHistories.Select(history => history.AccountingPeriod), start, end))
         {
             return new AccountAccountingPeriodRangeQueryResult(null, AccountingPeriodRangeQueryFailure.NotContiguous);
         }
@@ -98,14 +82,9 @@ public sealed class AccountQueryService(
             .Take(query.Limit ?? int.MaxValue)
             .ToList();
         IReadOnlyCollection<Guid> periodIds = orderedHistories.Select(history => history.AccountingPeriod.Id.Value).ToList();
-        IReadOnlyCollection<AccountingPeriodRangeIncomeFact> incomeFacts = await accountingPeriodQueryRepository.GetRangeIncomeFactsAsync(periodIds, cancellationToken);
-        IReadOnlyCollection<AccountingPeriodRangeSpendingFact> spendingFacts = await accountingPeriodQueryRepository.GetRangeSpendingFactsAsync(periodIds, cancellationToken);
-        IReadOnlyCollection<AccountingPeriodRangeIncomeFact> recognizedIncome = incomeFacts
-            .Where(fact => !fact.HasInternalSource || fact.PostedDate != null)
-            .ToList();
-        decimal totalIncome = recognizedIncome.Sum(fact => fact.Amount);
-        decimal trackedIncome = recognizedIncome.Where(fact => fact.AccountType.IsTracked()).Sum(fact => fact.Amount);
-        decimal totalSpending = spendingFacts.Where(fact => fact.PostedDate != null).Sum(fact => fact.Amount);
+        IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await accountingPeriodQueryRepository.GetRangeIncomeFactsAsync(periodIds, cancellationToken);
+        IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await accountingPeriodQueryRepository.GetRangeSpendingFactsAsync(periodIds, cancellationToken);
+        var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
         IReadOnlyCollection<AccountPeriodBalanceSummary> summaries = orderedHistories.Select(history => new AccountPeriodBalanceSummary(
             history.AccountingPeriod,
             Summarize(history.Balances.Where(balance => matchingIds.Contains(balance.Account.Id)), true),
@@ -113,9 +92,9 @@ public sealed class AccountQueryService(
         var range = new AccountAccountingPeriodRange(
             new QueryPage<AccountRangeBalance>(items, balances.Count),
             await accountQueryRepository.GetAllNamesAsync(cancellationToken),
-            totalIncome,
-            trackedIncome,
-            totalSpending,
+            totals.TotalIncome,
+            totals.TrackedIncome,
+            totals.TotalSpending,
             summaries);
         return new AccountAccountingPeriodRangeQueryResult(range, AccountingPeriodRangeQueryFailure.None);
     }
@@ -133,20 +112,15 @@ public sealed class AccountQueryService(
             query.End,
             cancellationToken);
         IReadOnlyCollection<AccountDateBalanceFact> history = await accountQueryRepository.GetDateBalanceFactsAsync(query.End, cancellationToken);
-        IReadOnlyCollection<AccountDateRangeIncomeFact> incomeFacts = await accountQueryRepository.GetDateRangeIncomeFactsAsync(
+        IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await accountQueryRepository.GetDateRangeIncomeFactsAsync(
             query.Start,
             query.End,
             cancellationToken);
-        IReadOnlyCollection<AccountDateRangeSpendingFact> spendingFacts = await accountQueryRepository.GetDateRangeSpendingFactsAsync(
+        IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await accountQueryRepository.GetDateRangeSpendingFactsAsync(
             query.Start,
             query.End,
             cancellationToken);
-        IReadOnlyCollection<AccountDateRangeIncomeFact> recognizedIncome = incomeFacts
-            .Where(fact => !fact.HasInternalSource || fact.PostedDate != null)
-            .ToList();
-        decimal totalIncome = recognizedIncome.Sum(fact => fact.Amount);
-        decimal trackedIncome = recognizedIncome.Where(fact => fact.AccountType.IsTracked()).Sum(fact => fact.Amount);
-        decimal totalSpending = spendingFacts.Where(fact => fact.PostedDate != null).Sum(fact => fact.Amount);
+        var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
         IReadOnlyCollection<AccountDateBalanceSummary> dates = GetDates(query.Start, query.End)
             .Select(date => new AccountDateBalanceSummary(date, SummarizeDate(balances, history, date)))
             .ToList();
@@ -157,16 +131,11 @@ public sealed class AccountQueryService(
         return new AccountDateRange(
             new QueryPage<AccountRangeBalance>(items, balances.Count),
             await accountQueryRepository.GetAllNamesAsync(cancellationToken),
-            totalIncome,
-            trackedIncome,
-            totalSpending,
+            totals.TotalIncome,
+            totals.TrackedIncome,
+            totals.TotalSpending,
             dates);
     }
-
-    /// <summary>
-    /// Retrieves the chronological index for the provided Accounting Period.
-    /// </summary>
-    private static int GetChronologicalIndex(AccountingPeriod period) => (period.Year * 12) + period.Month;
 
     /// <summary>
     /// Summarizes the provided Account Period Balances into a single Account Balance Summary.

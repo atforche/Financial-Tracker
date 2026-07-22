@@ -21,19 +21,6 @@ public interface IAccountBalanceEventQueryRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves Accounting Periods with the provided IDs.
-    /// </summary>
-    Task<IReadOnlyCollection<AccountingPeriod>> GetAccountingPeriodsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves Accounting Periods between the provided chronological indexes.
-    /// </summary>
-    Task<IReadOnlyCollection<AccountingPeriod>> GetAccountingPeriodsAsync(
-        int startIndex,
-        int endIndex,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Retrieves ordered Account balance histories for the provided Accounts.
     /// </summary>
     Task<IReadOnlyCollection<AccountBalanceHistory>> GetAccountHistoriesAsync(IReadOnlyCollection<AccountId> ids, CancellationToken cancellationToken = default);

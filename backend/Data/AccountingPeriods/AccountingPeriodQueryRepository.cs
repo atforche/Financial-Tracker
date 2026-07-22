@@ -82,17 +82,29 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<AccountingPeriod>> GetEndpointsAsync(
-        Guid startId,
-        Guid endId,
-        CancellationToken cancellationToken = default)
-    {
-        var start = new AccountingPeriodId(startId);
-        var end = new AccountingPeriodId(endId);
-        return await databaseContext.AccountingPeriods.AsNoTracking()
-            .Where(period => period.Id == start || period.Id == end)
+    public Task<AccountingPeriod?> GetByIdAsync(
+        AccountingPeriodId accountingPeriodId,
+        CancellationToken cancellationToken = default) =>
+        databaseContext.AccountingPeriods.AsNoTracking()
+            .SingleOrDefaultAsync(period => period.Id == accountingPeriodId, cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<AccountingPeriod>> GetRangeAsync(
+        int startIndex,
+        int endIndex,
+        CancellationToken cancellationToken = default) =>
+        await databaseContext.AccountingPeriods.AsNoTracking()
+            .Where(period => (period.Year * 12) + period.Month >= startIndex && (period.Year * 12) + period.Month <= endIndex)
+            .OrderBy(period => period.Year).ThenBy(period => period.Month)
             .ToListAsync(cancellationToken);
-    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<AccountingPeriod>> GetByIdsAsync(
+        IReadOnlyCollection<AccountingPeriodId> ids,
+        CancellationToken cancellationToken = default) =>
+        await databaseContext.AccountingPeriods.AsNoTracking()
+            .Where(period => ids.Contains(period.Id))
+            .ToListAsync(cancellationToken);
 
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<AccountingPeriodBalance>> GetRangeBalancesAsync(
@@ -118,14 +130,14 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<AccountingPeriodRangeIncomeFact>> GetRangeIncomeFactsAsync(
+    public async Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetRangeIncomeFactsAsync(
         IReadOnlyCollection<Guid> accountingPeriodIds,
         CancellationToken cancellationToken = default)
     {
         var ids = accountingPeriodIds.Select(id => new AccountingPeriodId(id)).ToList();
         return await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
             .Where(transaction => ids.Contains(transaction.AccountingPeriodId))
-            .SelectMany(transaction => transaction.Destinations.Select(destination => new AccountingPeriodRangeIncomeFact(
+            .SelectMany(transaction => transaction.Destinations.Select(destination => new FinancialRangeIncomeFact(
                 destination.Amount,
                 destination.Account.Type,
                 transaction.Source.Account != null,
@@ -134,14 +146,14 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<AccountingPeriodRangeSpendingFact>> GetRangeSpendingFactsAsync(
+    public async Task<IReadOnlyCollection<FinancialRangeSpendingFact>> GetRangeSpendingFactsAsync(
         IReadOnlyCollection<Guid> accountingPeriodIds,
         CancellationToken cancellationToken = default)
     {
         var ids = accountingPeriodIds.Select(id => new AccountingPeriodId(id)).ToList();
         return await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
             .Where(transaction => ids.Contains(transaction.AccountingPeriodId))
-            .Select(transaction => new AccountingPeriodRangeSpendingFact(transaction.Amount, transaction.Source.PostedDate))
+            .Select(transaction => new FinancialRangeSpendingFact(transaction.Amount, transaction.Source.PostedDate))
             .ToListAsync(cancellationToken);
     }
 

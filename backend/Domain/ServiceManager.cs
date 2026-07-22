@@ -28,6 +28,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<AccountingPeriodService>();
         _ = serviceCollection.AddScoped<AccountingPeriodBalanceService>();
         _ = serviceCollection.AddScoped<AccountingPeriodQueryService>();
+        _ = serviceCollection.AddScoped<AccountingPeriodRangeService>();
 
         _ = serviceCollection.AddScoped<AccountService>();
         _ = serviceCollection.AddScoped<AccountBalanceService>();

@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using Data.AccountingPeriods;
 using Domain.AccountingPeriods;
 using Models.AccountingPeriods;
 
@@ -8,8 +6,7 @@ namespace Rest.AccountingPeriods;
 /// <summary>
 /// Converter class that handles converting Accounting Periods to Accounting Period Models
 /// </summary>
-public sealed class AccountingPeriodConverter(
-    AccountingPeriodRepository accountingPeriodRepository)
+public sealed class AccountingPeriodConverter
 {
     /// <summary>
     /// Converts the provided Accounting Period to an Accounting Period Model
@@ -22,10 +19,4 @@ public sealed class AccountingPeriodConverter(
         Month = accountingPeriod.Month,
         IsOpen = accountingPeriod.IsOpen,
     };
-
-    /// <summary>
-    /// Attempts to convert the provided ID to an Accounting Period
-    /// </summary>
-    public bool TryToDomain(Guid accountingPeriodId, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod) =>
-        accountingPeriodRepository.TryGetById(accountingPeriodId, out accountingPeriod);
 }
