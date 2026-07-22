@@ -21,6 +21,14 @@ public sealed class AccountBalanceEventQueryRepository(DatabaseContext databaseC
             .ToListAsync(cancellationToken);
 
     /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<Transaction>> GetTransactionsAsync(
+        IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds,
+        CancellationToken cancellationToken = default) =>
+        await databaseContext.Transactions.AsNoTracking()
+            .Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId))
+            .ToListAsync(cancellationToken);
+
+    /// <inheritdoc/>
     public async Task<IReadOnlyCollection<AccountingPeriod>> GetAccountingPeriodsAsync(
         IReadOnlyCollection<Guid> ids,
         CancellationToken cancellationToken = default)
@@ -30,6 +38,16 @@ public sealed class AccountBalanceEventQueryRepository(DatabaseContext databaseC
             .Where(period => periodIds.Contains(period.Id))
             .ToListAsync(cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<AccountingPeriod>> GetAccountingPeriodsAsync(
+        int startIndex,
+        int endIndex,
+        CancellationToken cancellationToken = default) =>
+        await databaseContext.AccountingPeriods.AsNoTracking()
+            .Where(period => (period.Year * 12) + period.Month >= startIndex && (period.Year * 12) + period.Month <= endIndex)
+            .OrderBy(period => period.Year).ThenBy(period => period.Month)
+            .ToListAsync(cancellationToken);
 
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<AccountBalanceHistory>> GetAccountHistoriesAsync(

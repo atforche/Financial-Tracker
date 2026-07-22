@@ -18,16 +18,85 @@ public sealed class AccountBalanceEventQueryService(IAccountBalanceEventQueryRep
     {
         IReadOnlyCollection<Transaction> transactions = await repository.GetTransactionsAsync(query.Start, query.End, cancellationToken);
         IReadOnlyCollection<Guid> periodIds = transactions.Select(transaction => transaction.AccountingPeriodId.Value).Distinct().ToList();
-        var periods = (await repository.GetAccountingPeriodsAsync(periodIds, cancellationToken)).ToDictionary(period => period.Id);
+        IReadOnlyCollection<AccountingPeriods.AccountingPeriod> periods = await repository.GetAccountingPeriodsAsync(periodIds, cancellationToken);
+        return await GetAsync(transactions, periods, query.Filter, query.Sort, query.Offset, query.Limit, cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieves Account balance events in the requested Accounting Period range.
+    /// </summary>
+    public async Task<AccountBalanceEventAccountingPeriodRangeQueryResult> GetAsync(
+        AccountBalanceEventAccountingPeriodRangeQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyCollection<AccountingPeriods.AccountingPeriod> endpoints = await repository.GetAccountingPeriodsAsync(
+            [query.StartId, query.EndId],
+            cancellationToken);
+        AccountingPeriods.AccountingPeriod? start = endpoints.SingleOrDefault(period => period.Id.Value == query.StartId);
+        AccountingPeriods.AccountingPeriod? end = endpoints.SingleOrDefault(period => period.Id.Value == query.EndId);
+        if (start == null || end == null)
+        {
+            return new AccountBalanceEventAccountingPeriodRangeQueryResult(null);
+        }
+
+        int startIndex = GetChronologicalIndex(start);
+        int endIndex = GetChronologicalIndex(end);
+        if (startIndex > endIndex)
+        {
+            return new AccountBalanceEventAccountingPeriodRangeQueryResult(null);
+        }
+
+        IReadOnlyCollection<AccountingPeriods.AccountingPeriod> periods = await repository.GetAccountingPeriodsAsync(
+            startIndex,
+            endIndex,
+            cancellationToken);
+        IReadOnlyCollection<int> persistedIndexes = periods.Select(GetChronologicalIndex).ToList();
+        if (!persistedIndexes.SequenceEqual(Enumerable.Range(startIndex, endIndex - startIndex + 1)))
+        {
+            return new AccountBalanceEventAccountingPeriodRangeQueryResult(null);
+        }
+
+        IReadOnlyCollection<AccountingPeriods.AccountingPeriodId> periodIds = periods.Select(period => period.Id).ToList();
+        IReadOnlyCollection<Transaction> transactions = await repository.GetTransactionsAsync(periodIds, cancellationToken);
+        QueryPage<AccountBalanceEvent> page = await GetAsync(
+            transactions,
+            periods,
+            query.Filter,
+            query.Sort,
+            query.Offset,
+            query.Limit,
+            cancellationToken);
+        return new AccountBalanceEventAccountingPeriodRangeQueryResult(page);
+    }
+
+    /// <summary>
+    /// Interprets and pages Account balance events from the provided facts.
+    /// </summary>
+    private async Task<QueryPage<AccountBalanceEvent>> GetAsync(
+        IReadOnlyCollection<Transaction> transactions,
+        IReadOnlyCollection<AccountingPeriods.AccountingPeriod> accountingPeriods,
+        AccountFilter filter,
+        AccountBalanceEventSort sort,
+        int offset,
+        int? limit,
+        CancellationToken cancellationToken)
+    {
+        var periods = accountingPeriods.ToDictionary(period => period.Id);
         IReadOnlyCollection<AccountId> accountIds = transactions.SelectMany(transaction => transaction.GetAllAffectedAccountIds()).Distinct().ToList();
         IReadOnlyCollection<AccountBalanceHistory> histories = await repository.GetAccountHistoriesAsync(accountIds, cancellationToken);
         IEnumerable<AccountBalanceEvent> events = transactions.SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], histories))
-            .Where(balanceEvent => Matches(balanceEvent.Account, query));
-        var allItems = Sort(events, query.Sort).ToList();
+            .Where(balanceEvent => Matches(balanceEvent.Account, filter));
+        var allItems = Sort(events, sort).ToList();
         return new QueryPage<AccountBalanceEvent>(
-            allItems.Skip(query.Offset).Take(query.Limit ?? int.MaxValue).ToList(),
+            allItems.Skip(offset).Take(limit ?? int.MaxValue).ToList(),
             allItems.Count);
     }
+
+    /// <summary>
+    /// Calculates the chronological index of an Accounting Period.
+    /// </summary>
+    private static int GetChronologicalIndex(AccountingPeriods.AccountingPeriod period) =>
+        (period.Year * 12) + period.Month;
 
     /// <summary>
     /// Retrieves interpreted Account balance events for a Transaction.
@@ -91,10 +160,10 @@ public sealed class AccountBalanceEventQueryService(IAccountBalanceEventQueryRep
     /// <summary>
     /// Determines whether an Account matches the provided query criteria.
     /// </summary>
-    private static bool Matches(Account account, AccountBalanceEventQuery query) =>
-        (string.IsNullOrWhiteSpace(query.Filter.NameSearch) || account.Name.Contains(query.Filter.NameSearch, StringComparison.OrdinalIgnoreCase))
-        && (query.Filter.Names.Count == 0 || query.Filter.Names.Contains(account.Name))
-        && (query.Filter.Types.Count == 0 || query.Filter.Types.Contains(account.Type));
+    private static bool Matches(Account account, AccountFilter filter) =>
+        (string.IsNullOrWhiteSpace(filter.NameSearch) || account.Name.Contains(filter.NameSearch, StringComparison.OrdinalIgnoreCase))
+        && (filter.Names.Count == 0 || filter.Names.Contains(account.Name))
+        && (filter.Types.Count == 0 || filter.Types.Contains(account.Type));
 
     /// <summary>
     /// Sorts a collection of Account balance events by the provided sort order.

@@ -1,5 +1,4 @@
 using Data;
-using Data.Accounts;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
@@ -23,7 +22,6 @@ public sealed class AccountController(
     AccountQueryService accountQueryService,
     AccountConverter accountConverter,
     AccountBalanceEventQueryService accountBalanceEventQueryService,
-    AccountBalanceEventModelQueryService accountBalanceEventModelQueryService,
     AccountBalanceEventConverter accountBalanceEventConverter) : ControllerBase
 {
     /// <summary>
@@ -48,8 +46,10 @@ public sealed class AccountController(
         [FromQuery] AccountBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        CollectionModel<AccountBalanceEventModel>? model = await accountBalanceEventModelQueryService.GetAsync(query, cancellationToken);
-        return model == null ? InvalidAccountingPeriodRange() : Ok(model);
+        AccountBalanceEventAccountingPeriodRangeQueryResult result = await accountBalanceEventQueryService.GetAsync(
+            accountBalanceEventConverter.ToDomain(query),
+            cancellationToken);
+        return result.Page == null ? InvalidAccountingPeriodRange() : Ok(accountBalanceEventConverter.ToModel(result.Page));
     }
 
     /// <summary>

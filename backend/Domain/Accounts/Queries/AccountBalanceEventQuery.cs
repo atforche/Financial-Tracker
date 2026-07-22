@@ -12,6 +12,17 @@ public sealed record AccountBalanceEventQuery(
     int? Limit);
 
 /// <summary>
+/// Criteria for querying Account balance events over an Accounting Period range.
+/// </summary>
+public sealed record AccountBalanceEventAccountingPeriodRangeQuery(
+    Guid StartId,
+    Guid EndId,
+    AccountFilter Filter,
+    AccountBalanceEventSort Sort,
+    int Offset,
+    int? Limit);
+
+/// <summary>
 /// Supported Account balance-event sort orders.
 /// </summary>
 public enum AccountBalanceEventSort
