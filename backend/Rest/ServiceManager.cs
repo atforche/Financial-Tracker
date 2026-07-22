@@ -28,6 +28,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<FundBalanceEventConverter>();
 
         _ = serviceCollection.AddScoped<FundPlanConverter>();
+        _ = serviceCollection.AddScoped<FundPlanBalanceEventConverter>();
 
         _ = serviceCollection.AddScoped<TransactionRequestConverter>();
     }

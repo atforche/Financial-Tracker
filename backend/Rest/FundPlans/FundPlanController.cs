@@ -9,6 +9,8 @@ using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.FundPlans;
+using DomainFundPlanBalanceEventQueryService = Domain.FundPlans.Queries.FundPlanBalanceEventQueryService;
+using LegacyFundPlanBalanceEventQueryService = Data.FundPlans.FundPlanBalanceEventQueryService;
 
 namespace Rest.FundPlans;
 
@@ -25,7 +27,9 @@ public sealed class FundPlanController(
     AccountingPeriodRepository accountingPeriodRepository,
     FundBalanceService fundBalanceService,
     FundPlanService fundPlanService,
-    FundPlanBalanceEventQueryService fundPlanBalanceEventQueryService) : ControllerBase
+    DomainFundPlanBalanceEventQueryService fundPlanBalanceEventQueryService,
+    FundPlanBalanceEventConverter fundPlanBalanceEventConverter,
+    LegacyFundPlanBalanceEventQueryService legacyFundPlanBalanceEventQueryService) : ControllerBase
 {
     /// <summary>
     /// Retrieves Fund Plan balance events in a date range.
@@ -34,7 +38,9 @@ public sealed class FundPlanController(
     public async Task<ActionResult<CollectionModel<FundPlanBalanceEventModel>>> GetBalanceEventsAsync(
         [FromQuery] FundPlanBalanceEventsInDateRangeQueryParameterModel query,
         CancellationToken cancellationToken) =>
-        Ok(await fundPlanBalanceEventQueryService.GetAsync(query, cancellationToken));
+        Ok(fundPlanBalanceEventConverter.ToModel(await fundPlanBalanceEventQueryService.GetAsync(
+            fundPlanBalanceEventConverter.ToDomain(query),
+            cancellationToken)));
 
     /// <summary>
     /// Retrieves Fund Plan balance events in an Accounting Period range.
@@ -44,7 +50,7 @@ public sealed class FundPlanController(
         [FromQuery] FundPlanBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        CollectionModel<FundPlanBalanceEventModel>? model = await fundPlanBalanceEventQueryService.GetAsync(query, cancellationToken);
+        CollectionModel<FundPlanBalanceEventModel>? model = await legacyFundPlanBalanceEventQueryService.GetAsync(query, cancellationToken);
         return model == null ? InvalidAccountingPeriodRange() : Ok(model);
     }
 

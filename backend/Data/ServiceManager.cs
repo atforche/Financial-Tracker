@@ -54,7 +54,8 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<IFundBalanceHistoryRepository, FundBalanceHistoryRepository>();
         _ = serviceCollection.AddScoped<FundBalanceHistoryRepository>();
 
-        _ = serviceCollection.AddScoped<FundPlanBalanceEventQueryService>();
+        _ = serviceCollection.AddScoped<FundPlans.FundPlanBalanceEventQueryService>();
+        _ = serviceCollection.AddScoped<IFundPlanBalanceEventQueryRepository, FundPlanBalanceEventQueryRepository>();
         _ = serviceCollection.AddScoped<IFundPlanRepository, FundPlanRepository>();
         _ = serviceCollection.AddScoped<FundPlanRepository>();
         _ = serviceCollection.AddScoped<IFundPlanQueryRepository, FundPlanQueryRepository>();
