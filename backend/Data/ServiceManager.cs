@@ -9,6 +9,7 @@ using Domain.Accounts;
 using Domain.Accounts.Queries;
 using Domain.FundPlans;
 using Domain.Funds;
+using Domain.Funds.Queries;
 using Domain.Transactions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -46,7 +47,7 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<IFundRepository, FundRepository>();
         _ = serviceCollection.AddScoped<FundRepository>();
-        _ = serviceCollection.AddScoped<FundQueryService>();
+        _ = serviceCollection.AddScoped<IFundQueryRepository, FundQueryRepository>();
 
         _ = serviceCollection.AddScoped<IFundBalanceHistoryRepository, FundBalanceHistoryRepository>();
         _ = serviceCollection.AddScoped<FundBalanceHistoryRepository>();

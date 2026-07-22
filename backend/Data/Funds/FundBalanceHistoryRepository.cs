@@ -11,7 +11,7 @@ public class FundBalanceHistoryRepository(DatabaseContext databaseContext) : IFu
     /// <inheritdoc/>
     public FundBalanceHistory? GetLatestForFund(FundId fundId) =>
         databaseContext.FundBalanceHistories
-            .Where(history => history.FundId == fundId)
+            .Where(history => history.Fund.Id == fundId)
             .OrderByDescending(history => history.Date)
             .ThenByDescending(history => history.Sequence)
             .FirstOrDefault();
@@ -26,12 +26,12 @@ public class FundBalanceHistoryRepository(DatabaseContext databaseContext) : IFu
     /// <inheritdoc/>
     public FundBalanceHistory GetEarliestByTransactionId(FundId fundId, TransactionId transactionId) =>
         databaseContext.FundBalanceHistories
-            .Where(history => history.FundId == fundId && history.TransactionId == transactionId)
+            .Where(history => history.Fund.Id == fundId && history.TransactionId == transactionId)
             .OrderBy(history => history.Date)
             .ThenBy(history => history.Sequence)
             .FirstOrDefault()
         ?? databaseContext.FundBalanceHistories.Local
-            .Where(history => history.FundId == fundId && history.TransactionId == transactionId)
+            .Where(history => history.Fund.Id == fundId && history.TransactionId == transactionId)
             .OrderBy(history => history.Date)
             .ThenBy(history => history.Sequence)
             .First();
@@ -39,7 +39,7 @@ public class FundBalanceHistoryRepository(DatabaseContext databaseContext) : IFu
     /// <inheritdoc/>
     public FundBalanceHistory? GetLatestHistoryEarlierThan(FundId fundId, DateOnly historyDate, int sequenceNumber) =>
         databaseContext.FundBalanceHistories
-            .Where(history => history.FundId == fundId &&
+            .Where(history => history.Fund.Id == fundId &&
                               (history.Date < historyDate ||
                                (history.Date == historyDate && history.Sequence < sequenceNumber)))
             .OrderByDescending(history => history.Date)
@@ -49,7 +49,7 @@ public class FundBalanceHistoryRepository(DatabaseContext databaseContext) : IFu
     /// <inheritdoc/>
     public IReadOnlyCollection<FundBalanceHistory> GetAllHistoriesLaterThan(FundId fundId, DateOnly historyDate, int sequence) =>
         databaseContext.FundBalanceHistories
-            .Where(history => history.FundId == fundId &&
+            .Where(history => history.Fund.Id == fundId &&
                 (history.Date > historyDate || (history.Date == historyDate && history.Sequence > sequence)))
             .OrderBy(history => history.Date)
             .ThenBy(history => history.Sequence)

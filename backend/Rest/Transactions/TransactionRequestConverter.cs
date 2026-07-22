@@ -3,6 +3,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
 using Domain.Funds;
+using Domain.Funds.Queries;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
@@ -21,7 +22,7 @@ namespace Rest.Transactions;
 /// </summary>
 public sealed class TransactionRequestConverter(
     AccountQueryService accountQueryService,
-    FundConverter fundConverter,
+    FundQueryService fundQueryService,
     FundAmountConverter fundAmountConverter)
 {
     /// <summary>
@@ -280,7 +281,8 @@ public sealed class TransactionRequestConverter(
 
     private bool TryGetFund(Guid fundId, string errorKey, Dictionary<string, string[]> errors, [NotNullWhen(true)] out Fund? fund)
     {
-        if (fundConverter.TryToDomain(fundId, out fund))
+        fund = fundQueryService.GetById(fundId);
+        if (fund != null)
         {
             return true;
         }

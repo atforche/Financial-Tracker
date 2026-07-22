@@ -29,7 +29,7 @@ public sealed class FundAmountConverter(FundConverter fundConverter, IFundReposi
     {
         fundAmount = null;
 
-        if (!fundConverter.TryToDomain(fundAmountModel.FundId, out Fund? fund))
+        if (!fundRepository.TryGetById(fundAmountModel.FundId, out Fund? fund))
         {
             return false;
         }

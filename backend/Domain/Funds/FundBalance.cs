@@ -8,7 +8,7 @@ public class FundBalance
     /// <summary>
     /// Fund for this Fund Balance
     /// </summary>
-    public FundId FundId { get; }
+    public Fund Fund { get; }
 
     /// <summary>
     /// Posted Balance for this Fund Balance
@@ -28,29 +28,29 @@ public class FundBalance
     /// <summary>
     /// Adds a new pending debit amount to this Fund Balance.
     /// </summary>
-    internal FundBalance AddNewPendingDebitAmount(decimal amount) => new(FundId, PostedBalance, PendingDebitAmount + amount, PendingCreditAmount);
+    internal FundBalance AddNewPendingDebitAmount(decimal amount) => new(Fund, PostedBalance, PendingDebitAmount + amount, PendingCreditAmount);
 
     /// <summary>
     /// Posts a pending debit amount to this Fund Balance.
     /// </summary>
-    internal FundBalance PostPendingDebitAmount(decimal amount) => new(FundId, PostedBalance - amount, PendingDebitAmount - amount, PendingCreditAmount);
+    internal FundBalance PostPendingDebitAmount(decimal amount) => new(Fund, PostedBalance - amount, PendingDebitAmount - amount, PendingCreditAmount);
 
     /// <summary>
     /// Adds a new pending credit amount to this Fund Balance.
     /// </summary>
-    internal FundBalance AddNewPendingCreditAmount(decimal amount) => new(FundId, PostedBalance, PendingDebitAmount, PendingCreditAmount + amount);
+    internal FundBalance AddNewPendingCreditAmount(decimal amount) => new(Fund, PostedBalance, PendingDebitAmount, PendingCreditAmount + amount);
 
     /// <summary>
     /// Posts a pending credit amount to this Fund Balance.
     /// </summary>
-    internal FundBalance PostPendingCreditAmount(decimal amount) => new(FundId, PostedBalance + amount, PendingDebitAmount, PendingCreditAmount - amount);
+    internal FundBalance PostPendingCreditAmount(decimal amount) => new(Fund, PostedBalance + amount, PendingDebitAmount, PendingCreditAmount - amount);
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal FundBalance(FundId fundId, decimal postedBalance, decimal pendingDebitAmount, decimal pendingCreditAmount)
+    internal FundBalance(Fund fund, decimal postedBalance, decimal pendingDebitAmount, decimal pendingCreditAmount)
     {
-        FundId = fundId;
+        Fund = fund;
         PostedBalance = postedBalance;
         PendingDebitAmount = pendingDebitAmount;
         PendingCreditAmount = pendingCreditAmount;

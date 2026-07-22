@@ -80,12 +80,12 @@ public class FundTransaction : Transaction
     protected override FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse)
     {
         FundBalance newBalance = existingFundBalance;
-        if (existingFundBalance.FundId == Source.Fund.Id)
+        if (existingFundBalance.Fund.Id == Source.Fund.Id)
         {
             newBalance = newBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
             newBalance = newBalance.PostPendingDebitAmount(reverse ? -Amount : Amount);
         }
-        FundTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Fund.Id == existingFundBalance.FundId);
+        FundTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Fund.Id == existingFundBalance.Fund.Id);
         if (destination != null)
         {
             newBalance = newBalance.AddNewPendingCreditAmount(reverse ? -destination.Amount : destination.Amount);

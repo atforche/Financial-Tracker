@@ -37,7 +37,7 @@ public class Fund : Entity<FundId>
     /// <summary>
     /// ID of the Unassigned Fund
     /// </summary>
-    public static readonly FundId UnassignedFundId = new(Guid.Parse("51A70FF9-49DA-4463-88FD-818B17ACF5C4"));
+    public static readonly FundId UnassignedFundId = new(new("51A70FF9-49DA-4463-88FD-818B17ACF5C4"));
 
     /// <summary>
     /// Name of the Unassigned fund

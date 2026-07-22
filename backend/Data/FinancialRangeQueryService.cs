@@ -176,9 +176,9 @@ public sealed class FinancialRangeQueryService(DatabaseContext databaseContext)
             Id = fund.Id.Value,
             Name = fund.Name,
             Description = fund.Description,
-            StartingBalance = databaseContext.FundBalanceHistories.Where(history => history.FundId == fund.Id && history.Date < request.Range.Start)
+            StartingBalance = databaseContext.FundBalanceHistories.Where(history => history.Fund.Id == fund.Id && history.Date < request.Range.Start)
                 .OrderByDescending(history => history.Date).ThenByDescending(history => history.Sequence).Select(history => (decimal?)history.PostedBalance).FirstOrDefault() ?? fund.OnboardedBalance ?? 0,
-            EndingBalance = databaseContext.FundBalanceHistories.Where(history => history.FundId == fund.Id && history.Date <= request.Range.End)
+            EndingBalance = databaseContext.FundBalanceHistories.Where(history => history.Fund.Id == fund.Id && history.Date <= request.Range.End)
                 .OrderByDescending(history => history.Date).ThenByDescending(history => history.Sequence).Select(history => (decimal?)history.PostedBalance).FirstOrDefault() ?? fund.OnboardedBalance ?? 0,
         }).ToListAsync(cancellationToken);
         rows = Sort(rows, request.Sort).ToList();
@@ -193,7 +193,7 @@ public sealed class FinancialRangeQueryService(DatabaseContext databaseContext)
                 var balances = matchingFunds.Select(fund => new
                 {
                     fund.Id,
-                    Balance = histories.LastOrDefault(history => history.FundId == fund.Id && history.Date <= date)?.PostedBalance
+                    Balance = histories.LastOrDefault(history => history.Fund.Id == fund.Id && history.Date <= date)?.PostedBalance
                         ?? fund.OnboardedBalance ?? 0,
                 }).ToList();
                 return new FundBalanceSummaryByDateModel

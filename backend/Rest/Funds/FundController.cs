@@ -1,7 +1,7 @@
 using Data;
-using Data.Funds;
 using Domain.AccountingPeriods;
 using Domain.Funds;
+using Domain.Funds.Queries;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
@@ -29,10 +29,10 @@ public sealed class FundController(
     [HttpGet("{fundId}")]
     [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<FundModel>> GetAsync(Guid fundId, CancellationToken cancellationToken)
+    public ActionResult<FundModel> GetAsync(Guid fundId)
     {
-        FundModel? model = await fundQueryService.GetByIdAsync(fundId, cancellationToken);
-        return model == null ? NotFound() : Ok(model);
+        Fund? fund = fundQueryService.GetById(fundId);
+        return fund == null ? NotFound() : Ok(fundConverter.ToModel(fund));
     }
 
     /// <summary>
@@ -43,7 +43,8 @@ public sealed class FundController(
     public async Task<ActionResult<CollectionModel<FundModel>>> GetManyAsync(
         [FromQuery] FundQueryParameterModel queryParameters,
         CancellationToken cancellationToken) =>
-        Ok(await fundQueryService.GetAsync(queryParameters, cancellationToken));
+        Ok(fundConverter.ToModel(await fundQueryService.GetAsync(
+            fundConverter.ToDomain(queryParameters), cancellationToken)));
 
     /// <summary>
     /// Retrieves Funds with current balances.
@@ -53,7 +54,8 @@ public sealed class FundController(
     public async Task<ActionResult<CollectionModel<FundWithBalanceModel>>> GetWithBalancesAsync(
         [FromQuery] FundWithBalanceQueryParameterModel query,
         CancellationToken cancellationToken) =>
-        Ok(await fundQueryService.GetWithBalancesAsync(query, cancellationToken));
+        Ok(fundConverter.ToModel(await fundQueryService.GetWithBalancesAsync(
+            fundConverter.ToDomain(query), cancellationToken)));
 
     /// <summary>
     /// Retrieves Fund balances over a date range.
@@ -128,7 +130,7 @@ public sealed class FundController(
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(await fundQueryService.GetByIdAsync(newFund.Id.Value));
+        return Ok(fundConverter.ToModel(newFund));
     }
 
     /// <summary>
@@ -161,7 +163,7 @@ public sealed class FundController(
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(await fundQueryService.GetByIdAsync(newFund.Id.Value));
+        return Ok(fundConverter.ToModel(newFund));
     }
 
     /// <summary>
@@ -173,7 +175,8 @@ public sealed class FundController(
     public async Task<IActionResult> UpdateAsync(Guid fundId, UpdateFundModel updateFundModel)
     {
         Dictionary<string, string[]> errors = [];
-        if (!fundConverter.TryToDomain(fundId, out Fund? fundToUpdate))
+        Fund? fundToUpdate = fundQueryService.GetById(fundId);
+        if (fundToUpdate == null)
         {
             errors.Add(nameof(fundId), [$"Fund with ID {fundId} was not found."]);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
@@ -201,7 +204,7 @@ public sealed class FundController(
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(await fundQueryService.GetByIdAsync(fundId));
+        return Ok(fundConverter.ToModel(fundToUpdate));
     }
 
     /// <summary>
@@ -212,7 +215,8 @@ public sealed class FundController(
     public async Task<IActionResult> DeleteAsync(Guid fundId)
     {
         Dictionary<string, string[]> errors = [];
-        if (!fundConverter.TryToDomain(fundId, out Fund? fundToDelete))
+        Fund? fundToDelete = fundQueryService.GetById(fundId);
+        if (fundToDelete == null)
         {
             errors.Add(nameof(fundId), [$"Fund with ID {fundId} was not found."]);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails

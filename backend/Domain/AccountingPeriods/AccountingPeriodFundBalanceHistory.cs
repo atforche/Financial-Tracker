@@ -30,12 +30,12 @@ public class AccountingPeriodFundBalanceHistory : Entity<AccountingPeriodFundBal
     /// <summary>
     /// Gets the opening Fund Balance for this Fund Accounting Period Balance History
     /// </summary>
-    public FundBalance GetOpeningFundBalance() => new(Fund.Id, OpeningBalance, 0, 0);
+    public FundBalance GetOpeningFundBalance() => new(Fund, OpeningBalance, 0, 0);
 
     /// <summary>
     /// Gets the closing Fund Balance for this Fund Accounting Period Balance History
     /// </summary>
-    public FundBalance GetClosingFundBalance() => new(Fund.Id, ClosingBalance, 0, 0);
+    public FundBalance GetClosingFundBalance() => new(Fund, ClosingBalance, 0, 0);
 
     /// <summary>
     /// Constructs a new instance of this class

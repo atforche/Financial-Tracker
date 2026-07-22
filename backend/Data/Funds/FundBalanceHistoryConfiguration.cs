@@ -16,8 +16,12 @@ internal sealed class FundBalanceHistoryConfiguration : IEntityTypeConfiguration
         builder.HasKey(fundBalanceHistory => fundBalanceHistory.Id);
         builder.Property(fundBalanceHistory => fundBalanceHistory.Id).HasConversion(fundBalanceHistoryId => fundBalanceHistoryId.Value, value => new FundBalanceHistoryId(value));
 
-        builder.Property(fundBalanceHistory => fundBalanceHistory.FundId)
-            .HasConversion(fundId => fundId.Value, value => new FundId(value));
+        builder.Property<FundId>("FundId")
+            .IsRequired()
+            .HasConversion(id => id.Value, value => new FundId(value));
+        builder.HasOne(fundBalanceHistory => fundBalanceHistory.Fund).WithMany().HasForeignKey("FundId");
+        builder.Navigation(fundBalanceHistory => fundBalanceHistory.Fund).AutoInclude();
+        builder.HasIndex("FundId", nameof(FundBalanceHistory.Date), nameof(FundBalanceHistory.Sequence)).IsUnique();
 
         builder.Property(fundBalanceHistory => fundBalanceHistory.TransactionId)
             .HasConversion(transactionId => transactionId.Value, value => new TransactionId(value));

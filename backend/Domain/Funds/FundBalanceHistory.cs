@@ -8,9 +8,9 @@ namespace Domain.Funds;
 public class FundBalanceHistory : Entity<FundBalanceHistoryId>
 {
     /// <summary>
-    /// Fund ID for this Fund Balance History
+    /// Fund for this Fund Balance History
     /// </summary>
-    public FundId FundId { get; init; }
+    public Fund Fund { get; init; }
 
     /// <summary>
     /// Transaction ID for this Fund Balance History
@@ -47,7 +47,7 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     /// </summary>
     public void Update(FundBalance fundBalance)
     {
-        if (fundBalance.FundId != FundId)
+        if (fundBalance.Fund.Id != Fund.Id)
         {
             throw new InvalidOperationException("Cannot update Fund Balance History with a Fund Balance for a different Fund");
         }
@@ -59,20 +59,19 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     /// <summary>
     /// Converts this Fund Balance History to a Fund Balance
     /// </summary>
-    /// <returns></returns>
-    public FundBalance ToFundBalance() => new(FundId, PostedBalance, PendingDebitAmount, PendingCreditAmount);
+    public FundBalance ToFundBalance() => new(Fund, PostedBalance, PendingDebitAmount, PendingCreditAmount);
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal FundBalanceHistory(FundId fundId,
+    internal FundBalanceHistory(Fund fund,
         TransactionId transactionId,
         DateOnly date,
         int sequence,
         FundBalance fundBalance)
         : base(new FundBalanceHistoryId(Guid.NewGuid()))
     {
-        FundId = fundId;
+        Fund = fund;
         TransactionId = transactionId;
         Date = date;
         Sequence = sequence;
@@ -84,7 +83,7 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     /// </summary>
     private FundBalanceHistory()
     {
-        FundId = null!;
+        Fund = null!;
         TransactionId = null!;
     }
 }

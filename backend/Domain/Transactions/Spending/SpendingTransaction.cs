@@ -172,7 +172,7 @@ public class SpendingTransaction : Transaction
     protected override FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse)
     {
         var fundAmounts = _destinations.SelectMany(d => d.FundAssignments)
-            .Where(fundAmount => fundAmount.FundId == existingFundBalance.FundId)
+            .Where(fundAmount => fundAmount.FundId == existingFundBalance.Fund.Id)
             .ToList();
         if (fundAmounts.Count == 0)
         {
@@ -193,7 +193,7 @@ public class SpendingTransaction : Transaction
                 .Where(d => d.Account?.Id == accountId)
                 .SelectMany(d => d.FundAssignments);
 
-        fundAmounts = fundAmounts.Where(fundAmount => fundAmount.FundId == existingFundBalance.FundId);
+        fundAmounts = fundAmounts.Where(fundAmount => fundAmount.FundId == existingFundBalance.Fund.Id);
         decimal amount = fundAmounts.Sum(f => f.Amount);
         if (amount == 0)
         {

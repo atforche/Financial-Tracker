@@ -53,7 +53,7 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
         List<AccountBalanceHistory> accountHistories = await databaseContext.AccountBalanceHistories.AsNoTracking()
             .Where(history => accountIds.Contains(history.Account.Id)).OrderBy(history => history.Date).ThenBy(history => history.Sequence).ToListAsync(cancellationToken);
         List<FundBalanceHistory> fundHistories = await databaseContext.FundBalanceHistories.AsNoTracking()
-            .Where(history => fundIds.Contains(history.FundId)).OrderBy(history => history.Date).ThenBy(history => history.Sequence).ToListAsync(cancellationToken);
+            .Where(history => fundIds.Contains(history.Fund.Id)).OrderBy(history => history.Date).ThenBy(history => history.Sequence).ToListAsync(cancellationToken);
         List<FundPlanTotalsHistory> planHistories = await databaseContext.FundPlanTotalsHistories.AsNoTracking()
             .Where(history => fundIds.Contains(history.FundId))
             .OrderBy(history => history.Date).ThenBy(history => history.Sequence).ToListAsync(cancellationToken);
@@ -197,7 +197,7 @@ public sealed class TransactionModelMapper(DatabaseContext databaseContext)
     /// </summary>
     private static FundBalanceEventModel FundEvent(Transaction transaction, MappingContext context, FundAmount assignment, BalanceEventTypeModel type)
     {
-        var histories = context.FundHistories.Where(history => history.FundId == assignment.FundId).ToList();
+        var histories = context.FundHistories.Where(history => history.Fund.Id == assignment.FundId).ToList();
         FundBalanceHistory? current = histories.LastOrDefault(history => history.TransactionId == transaction.Id);
         int index = current == null ? -1 : histories.IndexOf(current);
         FundBalanceHistory? previous = index > 0 ? histories[index - 1] : null;

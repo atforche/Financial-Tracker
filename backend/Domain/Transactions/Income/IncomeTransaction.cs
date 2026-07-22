@@ -167,7 +167,7 @@ public class IncomeTransaction : Transaction
     protected override FundBalance AddToFundBalance(FundBalance existingFundBalance, bool reverse)
     {
         var fundAmounts = _destinations.SelectMany(d => d.FundAssignments)
-            .Where(fundAmount => fundAmount.FundId == existingFundBalance.FundId)
+            .Where(fundAmount => fundAmount.FundId == existingFundBalance.Fund.Id)
             .ToList();
         if (fundAmounts.Count == 0)
         {
@@ -182,7 +182,7 @@ public class IncomeTransaction : Transaction
     {
         var fundAmounts = _destinations.Where(d => d.Account.Id == accountId)
             .SelectMany(d => d.FundAssignments)
-            .Where(fundAmount => fundAmount.FundId == existingFundBalance.FundId)
+            .Where(fundAmount => fundAmount.FundId == existingFundBalance.Fund.Id)
             .ToList();
         if (fundAmounts.Count == 0)
         {

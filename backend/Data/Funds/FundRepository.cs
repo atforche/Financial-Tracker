@@ -9,8 +9,6 @@ namespace Data.Funds;
 /// </summary>
 public class FundRepository(DatabaseContext databaseContext) : IFundRepository
 {
-    #region IFundRepository
-
     /// <inheritdoc/>
     public IReadOnlyCollection<Fund> GetAll() => databaseContext.Funds.ToList();
 
@@ -20,6 +18,13 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
 
     /// <inheritdoc/>
     public Fund GetById(FundId id) => databaseContext.Funds.Single(fund => fund.Id == id);
+
+    /// <inheritdoc/>
+    public bool TryGetById(Guid id, [NotNullWhen(true)] out Fund? fund)
+    {
+        fund = databaseContext.Funds.FirstOrDefault(fund => ((Guid)(object)fund.Id) == id);
+        return fund != null;
+    }
 
     /// <inheritdoc/>
     public Fund? GetUnassignedFund() => databaseContext.Funds.FirstOrDefault(fund => fund.Id == Fund.UnassignedFundId);
@@ -36,15 +41,4 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
 
     /// <inheritdoc/>
     public void Delete(Fund fund) => databaseContext.Remove(fund);
-
-    #endregion
-
-    /// <summary>
-    /// Attempts to get the Fund with the specified ID
-    /// </summary>
-    public bool TryGetById(Guid id, [NotNullWhen(true)] out Fund? fund)
-    {
-        fund = databaseContext.Funds.FirstOrDefault(fund => ((Guid)(object)fund.Id) == id);
-        return fund != null;
-    }
 }

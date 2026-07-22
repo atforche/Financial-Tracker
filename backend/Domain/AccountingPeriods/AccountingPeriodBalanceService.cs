@@ -37,7 +37,7 @@ public class AccountingPeriodBalanceService(
         foreach (Fund fund in fundRepository.GetAll())
         {
             FundBalance currentBalance = fundBalanceService.GetCurrentBalance(fund.Id);
-            currentBalance = new FundBalance(fund.Id, currentBalance.PostedBalance, 0, 0);
+            currentBalance = new FundBalance(fund, currentBalance.PostedBalance, 0, 0);
             fundBalanceHistories = fundBalanceHistories.Append(new AccountingPeriodFundBalanceHistory(
                 fund,
                 newAccountingPeriod,
@@ -79,7 +79,7 @@ public class AccountingPeriodBalanceService(
         while (accountingPeriod != null)
         {
             AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
-            var balance = new FundBalance(newFund.Id, 0, 0, 0);
+            var balance = new FundBalance(newFund, 0, 0, 0);
             balanceHistory.AddFundBalance(new AccountingPeriodFundBalanceHistory(newFund, accountingPeriod, balance, balance));
             if (!newFund.IsUnassignedFund)
             {
@@ -195,7 +195,7 @@ public class AccountingPeriodBalanceService(
                 if (transaction.AccountingPeriodId != accountingPeriod.Id)
                 {
                     openingFundBalance = new FundBalance(
-                        openingFundBalance.FundId,
+                        openingFundBalance.Fund,
                         transaction.ApplyToFundBalance(openingFundBalance, accountId: accountId).PostedBalance,
                         0,
                         0);
@@ -203,7 +203,7 @@ public class AccountingPeriodBalanceService(
                 FundBalance closingFundBalance = fundBalanceHistory.GetClosingFundBalance();
                 closingFundBalance = transaction.AccountingPeriodId != accountingPeriod.Id
                     ? new FundBalance(
-                        closingFundBalance.FundId,
+                        closingFundBalance.Fund,
                         transaction.ApplyToFundBalance(closingFundBalance, accountId: accountId).PostedBalance,
                         0,
                         0)
@@ -252,7 +252,7 @@ public class AccountingPeriodBalanceService(
                     if (transaction.AccountingPeriodId != accountingPeriod.Id)
                     {
                         openingFundBalance = new FundBalance(
-                            openingFundBalance.FundId,
+                            openingFundBalance.Fund,
                             transaction.ApplyToFundBalance(openingFundBalance, accountId: account.Id, reverse: true).PostedBalance,
                             0,
                             0);
@@ -260,7 +260,7 @@ public class AccountingPeriodBalanceService(
                     FundBalance closingFundBalance = fundBalanceHistory.GetClosingFundBalance();
                     closingFundBalance = transaction.AccountingPeriodId != accountingPeriod.Id
                         ? new FundBalance(
-                            closingFundBalance.FundId,
+                            closingFundBalance.Fund,
                             transaction.ApplyToFundBalance(closingFundBalance, accountId: account.Id, reverse: true).PostedBalance,
                             0,
                             0)
