@@ -30,7 +30,6 @@ public static class ServiceManager
     {
         _ = serviceCollection.AddDbContext<DatabaseContext>();
         _ = serviceCollection.AddScoped<UnitOfWork>();
-        _ = serviceCollection.AddScoped<FinancialRangeQueryService>();
         _ = serviceCollection.AddScoped<BalanceEventQueryService>();
 
         _ = serviceCollection.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();

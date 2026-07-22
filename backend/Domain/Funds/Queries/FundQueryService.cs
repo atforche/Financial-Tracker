@@ -122,6 +122,49 @@ public sealed class FundQueryService(
     }
 
     /// <summary>
+    /// Retrieves Fund balances and financial totals over a date range.
+    /// </summary>
+    public async Task<FundDateRange> GetDateRangeAsync(
+        FundDateRangeQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyCollection<FundRangeBalance> balances = await fundQueryRepository.GetDateRangeBalancesAsync(
+            query.Filter,
+            query.Start,
+            query.End,
+            cancellationToken);
+        IReadOnlyCollection<FundDateBalanceFact> history = await fundQueryRepository.GetDateBalanceFactsAsync(query.End, cancellationToken);
+        IReadOnlyCollection<FundDateRangeIncomeFact> incomeFacts = await fundQueryRepository.GetDateRangeIncomeFactsAsync(
+            query.Start,
+            query.End,
+            cancellationToken);
+        IReadOnlyCollection<FundDateRangeSpendingFact> spendingFacts = await fundQueryRepository.GetDateRangeSpendingFactsAsync(
+            query.Start,
+            query.End,
+            cancellationToken);
+        IReadOnlyCollection<FundDateRangeIncomeFact> recognizedIncome = incomeFacts
+            .Where(fact => !fact.HasInternalSource || fact.PostedDate != null)
+            .ToList();
+        decimal totalIncome = recognizedIncome.Sum(fact => fact.Amount);
+        decimal trackedIncome = recognizedIncome.Where(fact => fact.AccountType.IsTracked()).Sum(fact => fact.Amount);
+        decimal totalSpending = spendingFacts.Where(fact => fact.PostedDate != null).Sum(fact => fact.Amount);
+        IReadOnlyCollection<FundDateBalanceSummary> dates = GetDates(query.Start, query.End)
+            .Select(date => new FundDateBalanceSummary(date, SummarizeDate(balances, history, date)))
+            .ToList();
+        IReadOnlyCollection<FundRangeBalance> items = Sort(balances, query.Sort)
+            .Skip(query.Offset)
+            .Take(query.Limit ?? int.MaxValue)
+            .ToList();
+        return new FundDateRange(
+            new QueryPage<FundRangeBalance>(items, balances.Count),
+            await fundQueryRepository.GetAllNamesAsync(cancellationToken),
+            totalIncome,
+            trackedIncome,
+            totalSpending,
+            dates);
+    }
+
+    /// <summary>
     /// Gets the chronological index of an Accounting Period, used for sorting and range calculations.
     /// </summary>
     private static int GetChronologicalIndex(AccountingPeriod period) => (period.Year * 12) + period.Month;
@@ -138,6 +181,39 @@ public sealed class FundQueryService(
             values.Sum(item => item.Amount),
             values.Where(item => item.Id != Fund.UnassignedFundId).Sum(item => item.Amount),
             values.Where(item => item.Id == Fund.UnassignedFundId).Sum(item => item.Amount));
+    }
+
+    /// <summary>
+    /// Summarizes Fund balances into a FundBalanceSummary for a specific date, using the provided history facts.
+    /// </summary>
+    private static FundBalanceSummary SummarizeDate(
+        IEnumerable<FundRangeBalance> balances,
+        IReadOnlyCollection<FundDateBalanceFact> history,
+        DateOnly date)
+    {
+        var values = balances.Select(balance => (
+            balance.Fund.Id,
+            Amount: history.LastOrDefault(item => item.FundId == balance.Fund.Id && item.Date <= date)?.PostedBalance
+                ?? balance.Fund.OnboardedBalance ?? 0)).ToList();
+        return new FundBalanceSummary(
+            values.Sum(item => item.Amount),
+            values.Where(item => item.Id != Fund.UnassignedFundId).Sum(item => item.Amount),
+            values.Where(item => item.Id == Fund.UnassignedFundId).Sum(item => item.Amount));
+    }
+
+    /// <summary>
+    /// Gets the dates between the provided start and end dates, inclusive.
+    /// </summary>
+    private static IEnumerable<DateOnly> GetDates(DateOnly start, DateOnly end)
+    {
+        for (DateOnly date = start; date <= end; date = date.AddDays(1))
+        {
+            yield return date;
+            if (date == end)
+            {
+                yield break;
+            }
+        }
     }
 
     /// <summary>

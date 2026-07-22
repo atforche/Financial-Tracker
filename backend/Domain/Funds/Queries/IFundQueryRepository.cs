@@ -34,4 +34,36 @@ public interface IFundQueryRepository
         int startIndex,
         int endIndex,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves Fund boundary balances for a date range.
+    /// </summary>
+    Task<IReadOnlyCollection<FundRangeBalance>> GetDateRangeBalancesAsync(
+        FundFilter filter,
+        DateOnly startDate,
+        DateOnly endDate,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves Fund balance history facts through the provided date.
+    /// </summary>
+    Task<IReadOnlyCollection<FundDateBalanceFact>> GetDateBalanceFactsAsync(
+        DateOnly endDate,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves income destination facts within the provided date range.
+    /// </summary>
+    Task<IReadOnlyCollection<FundDateRangeIncomeFact>> GetDateRangeIncomeFactsAsync(
+        DateOnly startDate,
+        DateOnly endDate,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves spending facts within the provided date range.
+    /// </summary>
+    Task<IReadOnlyCollection<FundDateRangeSpendingFact>> GetDateRangeSpendingFactsAsync(
+        DateOnly startDate,
+        DateOnly endDate,
+        CancellationToken cancellationToken = default);
 }

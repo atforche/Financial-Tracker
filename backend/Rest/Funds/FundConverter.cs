@@ -68,6 +68,17 @@ public sealed class FundConverter
         model.Limit);
 
     /// <summary>
+    /// Converts the provided Fund date-range query to a Domain query.
+    /// </summary>
+    public FundDateRangeQuery ToDomain(FundsInDateRangeQueryParameterModel model) => new(
+        model.Range.Start,
+        model.Range.End,
+        ToDomain(model.Filter),
+        ToDomain(model.Sort),
+        model.Offset ?? 0,
+        model.Limit);
+
+    /// <summary>
     /// Converts the provided Fund to a Fund Model
     /// </summary>
     public FundModel ToModel(Fund fund) => new()
@@ -140,6 +151,40 @@ public sealed class FundConverter
     };
 
     /// <summary>
+    /// Converts the provided Fund date range to an API model.
+    /// </summary>
+    public FundsInDateRangeModel ToModel(FundDateRange range) => new()
+    {
+        Funds = new CollectionModel<FundWithBalanceRangeModel>
+        {
+            Items = range.Funds.Items.Select(balance => new FundWithBalanceRangeModel
+            {
+                Id = balance.Fund.Id.Value,
+                Name = balance.Fund.Name,
+                Description = balance.Fund.Description,
+                StartingBalance = balance.StartingBalance,
+                EndingBalance = balance.EndingBalance,
+            }).ToList(),
+            TotalCount = range.Funds.TotalCount,
+        },
+        AvailableFundNames = range.AvailableFundNames,
+        TotalIncome = new IncomeAmountModel
+        {
+            Total = range.TotalIncome,
+            Tracked = range.TrackedIncome,
+            Untracked = range.UntrackedIncome,
+        },
+        TotalSpending = range.TotalSpending,
+        Dates = range.Dates.Select(summary => new FundBalanceSummaryByDateModel
+        {
+            Date = summary.Date,
+            TotalBalance = summary.Balance.TotalBalance,
+            TotalAssignedBalance = summary.Balance.TotalAssignedBalance,
+            TotalUnassignedBalance = summary.Balance.TotalUnassignedBalance,
+        }).ToList(),
+    };
+
+    /// <summary>
     /// Converts the provided Fund Period Balance Summary to a model.
     /// </summary>
     private static FundBalanceSummaryByPeriodModel ToModel(FundPeriodBalanceSummary summary) => new()
@@ -164,6 +209,22 @@ public sealed class FundConverter
         TotalBalance = summary.TotalBalance,
         TotalAssignedBalance = summary.TotalAssignedBalance,
         TotalUnassignedBalance = summary.TotalUnassignedBalance,
+    };
+
+    /// <summary>
+    /// Converts the provided Fund With Balance Range Sort model to a Domain sort.
+    /// </summary>
+    private static FundRangeSort ToDomain(FundWithBalanceRangeSortModel? sort) => sort switch
+    {
+        FundWithBalanceRangeSortModel.Name => FundRangeSort.Name,
+        FundWithBalanceRangeSortModel.NameDescending => FundRangeSort.NameDescending,
+        FundWithBalanceRangeSortModel.StartingBalance => FundRangeSort.StartingBalance,
+        FundWithBalanceRangeSortModel.StartingBalanceDescending => FundRangeSort.StartingBalanceDescending,
+        FundWithBalanceRangeSortModel.EndingBalance => FundRangeSort.EndingBalance,
+        FundWithBalanceRangeSortModel.EndingBalanceDescending => FundRangeSort.EndingBalanceDescending,
+        FundWithBalanceRangeSortModel.NetChange => FundRangeSort.NetChange,
+        FundWithBalanceRangeSortModel.NetChangeDescending => FundRangeSort.NetChangeDescending,
+        _ => FundRangeSort.Name,
     };
 
     /// <summary>

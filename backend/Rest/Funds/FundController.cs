@@ -20,7 +20,6 @@ public sealed class FundController(
     AccountingPeriodConverter accountingPeriodConverter,
     FundConverter fundConverter,
     FundQueryService fundQueryService,
-    FinancialRangeQueryService financialRangeQueryService,
     FundService fundService) : ControllerBase
 {
     /// <summary>
@@ -65,7 +64,9 @@ public sealed class FundController(
     public async Task<ActionResult<FundsInDateRangeModel>> GetDateRangeAsync(
         [FromQuery] FundsInDateRangeQueryParameterModel query,
         CancellationToken cancellationToken) =>
-        Ok(await financialRangeQueryService.GetFundsAsync(query, cancellationToken));
+        Ok(fundConverter.ToModel(await fundQueryService.GetDateRangeAsync(
+            fundConverter.ToDomain(query),
+            cancellationToken)));
 
     /// <summary>
     /// Retrieves Fund balances over an Accounting Period range.

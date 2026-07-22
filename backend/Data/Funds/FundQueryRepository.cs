@@ -1,5 +1,7 @@
 using Domain;
 using Domain.AccountingPeriods;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 using Domain.Funds;
 using Domain.Funds.Queries;
 using Microsoft.EntityFrameworkCore;
@@ -102,6 +104,63 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
                 balance.ClosingBalance)).ToList())).ToList();
     }
 
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<FundRangeBalance>> GetDateRangeBalancesAsync(
+        FundFilter filter,
+        DateOnly startDate,
+        DateOnly endDate,
+        CancellationToken cancellationToken = default)
+    {
+        List<FundDateRangeBalanceRow> rows = await ApplyFilter(databaseContext.Funds.AsNoTracking(), filter)
+            .Select(fund => new FundDateRangeBalanceRow
+            {
+                Fund = fund,
+                StartingBalance = databaseContext.FundBalanceHistories
+                    .Where(history => history.Fund.Id == fund.Id && history.Date < startDate)
+                    .OrderByDescending(history => history.Date).ThenByDescending(history => history.Sequence)
+                    .Select(history => (decimal?)history.PostedBalance).FirstOrDefault() ?? fund.OnboardedBalance ?? 0,
+                EndingBalance = databaseContext.FundBalanceHistories
+                    .Where(history => history.Fund.Id == fund.Id && history.Date <= endDate)
+                    .OrderByDescending(history => history.Date).ThenByDescending(history => history.Sequence)
+                    .Select(history => (decimal?)history.PostedBalance).FirstOrDefault() ?? fund.OnboardedBalance ?? 0,
+            }).ToListAsync(cancellationToken);
+        return rows.Select(row => new FundRangeBalance(row.Fund, row.StartingBalance, row.EndingBalance)).ToList();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<FundDateBalanceFact>> GetDateBalanceFactsAsync(
+        DateOnly endDate,
+        CancellationToken cancellationToken = default) =>
+        await databaseContext.FundBalanceHistories.AsNoTracking()
+            .Where(history => history.Date <= endDate)
+            .OrderBy(history => history.Date).ThenBy(history => history.Sequence)
+            .Select(history => new FundDateBalanceFact(history.Fund.Id, history.Date, history.Sequence, history.PostedBalance))
+            .ToListAsync(cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<FundDateRangeIncomeFact>> GetDateRangeIncomeFactsAsync(
+        DateOnly startDate,
+        DateOnly endDate,
+        CancellationToken cancellationToken = default) =>
+        await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
+            .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
+            .SelectMany(transaction => transaction.Destinations.Select(destination => new FundDateRangeIncomeFact(
+                destination.Amount,
+                destination.Account.Type,
+                transaction.Source.Account != null,
+                destination.PostedDate)))
+            .ToListAsync(cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<FundDateRangeSpendingFact>> GetDateRangeSpendingFactsAsync(
+        DateOnly startDate,
+        DateOnly endDate,
+        CancellationToken cancellationToken = default) =>
+        await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
+            .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
+            .Select(transaction => new FundDateRangeSpendingFact(transaction.Amount, transaction.Source.PostedDate))
+            .ToListAsync(cancellationToken);
+
     /// <summary>
     /// Applies the given filter to the given query.
     /// </summary>
@@ -125,6 +184,16 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
     {
         public required Fund Fund { get; init; }
         public required PersistedFundBalance CurrentBalance { get; init; }
+    }
+
+    /// <summary>
+    /// Represents a row of Fund and its starting and ending balances over a date range.
+    /// </summary>
+    private sealed class FundDateRangeBalanceRow
+    {
+        public required Fund Fund { get; init; }
+        public decimal StartingBalance { get; init; }
+        public decimal EndingBalance { get; init; }
     }
 
     /// <summary>
