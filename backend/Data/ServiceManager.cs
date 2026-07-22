@@ -12,6 +12,7 @@ using Domain.FundPlans.Queries;
 using Domain.Funds;
 using Domain.Funds.Queries;
 using Domain.Transactions;
+using Domain.Transactions.Queries;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Data;
@@ -64,6 +65,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<ITransactionRepository, TransactionRepository>();
         _ = serviceCollection.AddScoped<TransactionRepository>();
         _ = serviceCollection.AddScoped<TransactionModelMapper>();
-        _ = serviceCollection.AddScoped<TransactionQueryService>();
+        _ = serviceCollection.AddScoped<Transactions.TransactionQueryService>();
+        _ = serviceCollection.AddScoped<ITransactionQueryRepository, TransactionQueryRepository>();
     }
 }

@@ -49,5 +49,6 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<AccountTransactionService>();
         _ = serviceCollection.AddScoped<FundTransactionService>();
         _ = serviceCollection.AddScoped<TransactionDispatcherService>();
+        _ = serviceCollection.AddScoped<Transactions.Queries.TransactionQueryService>();
     }
 }

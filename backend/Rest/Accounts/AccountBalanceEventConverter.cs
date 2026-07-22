@@ -74,7 +74,7 @@ public sealed class AccountBalanceEventConverter
     /// <summary>
     /// Converts the provided Domain Account balance event to an API model.
     /// </summary>
-    private static AccountBalanceEventModel ToModel(AccountBalanceEvent balanceEvent) => new()
+    public AccountBalanceEventModel ToModel(AccountBalanceEvent balanceEvent) => new()
     {
         AccountingPeriod = new AccountingPeriodModel
         {

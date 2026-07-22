@@ -30,17 +30,6 @@ public sealed class TransactionQueryService(DatabaseContext databaseContext, Tra
     }
 
     /// <summary>
-    /// Retrieves a Transaction by ID.
-    /// </summary>
-    public async Task<TransactionModel?> GetByIdAsync(Guid transactionId, CancellationToken cancellationToken = default)
-    {
-        var id = new TransactionId(transactionId);
-        Transaction? transaction = await databaseContext.Transactions.AsNoTracking()
-            .SingleOrDefaultAsync(item => item.Id == id, cancellationToken);
-        return transaction == null ? null : (await transactionModelMapper.MapAsync([transaction], cancellationToken)).Single();
-    }
-
-    /// <summary>
     /// Retrieves Transactions for an Accounting Period.
     /// </summary>
     public Task<CollectionModel<TransactionModel>> GetForAccountingPeriodAsync(

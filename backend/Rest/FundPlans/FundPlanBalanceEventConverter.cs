@@ -70,7 +70,7 @@ public sealed class FundPlanBalanceEventConverter
     /// <summary>
     /// Converts a Domain Fund Plan balance event to an API model.
     /// </summary>
-    private static FundPlanBalanceEventModel ToModel(FundPlanBalanceEvent balanceEvent) => new()
+    public FundPlanBalanceEventModel ToModel(FundPlanBalanceEvent balanceEvent) => new()
     {
         AccountingPeriod = new AccountingPeriodModel
         {

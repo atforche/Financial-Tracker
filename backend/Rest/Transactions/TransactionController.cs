@@ -12,6 +12,8 @@ using Models.Transactions.Create;
 using Models.Transactions.Types;
 using Models.Transactions.Update;
 using Rest.AccountingPeriods;
+using DomainTransactionQueryService = Domain.Transactions.Queries.TransactionQueryService;
+using LegacyTransactionQueryService = Data.Transactions.TransactionQueryService;
 
 namespace Rest.Transactions;
 
@@ -25,9 +27,11 @@ public sealed class TransactionController(
     AccountQueryService accountQueryService,
     AccountingPeriodConverter accountingPeriodConverter,
     TransactionRepository transactionRepository,
-    TransactionQueryService transactionQueryService,
+    LegacyTransactionQueryService legacyTransactionQueryService,
+    DomainTransactionQueryService transactionQueryService,
     TransactionDispatcherService transactionDispatcherService,
-    TransactionRequestConverter transactionRequestConverter) : ControllerBase
+    TransactionRequestConverter transactionRequestConverter,
+    TransactionConverter transactionConverter) : ControllerBase
 {
     /// <summary>
     /// Retrieves Transactions matching the specified criteria.
@@ -37,7 +41,7 @@ public sealed class TransactionController(
     public async Task<ActionResult<CollectionModel<TransactionModel>>> GetManyAsync(
         [FromQuery] TransactionQueryParameterModel query,
         CancellationToken cancellationToken) =>
-        Ok(await transactionQueryService.GetAsync(query, cancellationToken));
+        Ok(await legacyTransactionQueryService.GetAsync(query, cancellationToken));
 
     /// <summary>
     /// Retrieves a Transaction by ID.
@@ -47,7 +51,7 @@ public sealed class TransactionController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TransactionModel>> GetAsync(Guid transactionId, CancellationToken cancellationToken)
     {
-        TransactionModel? model = await transactionQueryService.GetByIdAsync(transactionId, cancellationToken);
+        TransactionModel? model = await GetModelAsync(transactionId, cancellationToken);
         return model == null ? NotFound() : Ok(model);
     }
 
@@ -59,7 +63,7 @@ public sealed class TransactionController(
     public async Task<ActionResult<TransactionsInDateRangeModel>> GetDateRangeAsync(
         [FromQuery] TransactionsInDateRangeQueryParameterModel query,
         CancellationToken cancellationToken) =>
-        Ok(await transactionQueryService.GetInDateRangeAsync(query, cancellationToken));
+        Ok(await legacyTransactionQueryService.GetInDateRangeAsync(query, cancellationToken));
 
     /// <summary>
     /// Retrieves Transactions in an Accounting Period range.
@@ -71,7 +75,7 @@ public sealed class TransactionController(
         [FromQuery] TransactionsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        TransactionsInAccountingPeriodRangeModel? model = await transactionQueryService.GetInAccountingPeriodRangeAsync(query, cancellationToken);
+        TransactionsInAccountingPeriodRangeModel? model = await legacyTransactionQueryService.GetInAccountingPeriodRangeAsync(query, cancellationToken);
         return model == null
             ? UnprocessableEntity(new ValidationProblemDetails { Title = "Unable to resolve Accounting Period range.", Status = StatusCodes.Status422UnprocessableEntity })
             : Ok(model);
@@ -120,7 +124,7 @@ public sealed class TransactionController(
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(await transactionQueryService.GetByIdAsync(newTransaction.Id.Value));
+        return Ok(await GetModelAsync(newTransaction.Id.Value));
     }
 
     /// <summary>
@@ -166,7 +170,7 @@ public sealed class TransactionController(
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(await transactionQueryService.GetByIdAsync(transactionId));
+        return Ok(await GetModelAsync(transactionId));
     }
 
     /// <summary>
@@ -214,7 +218,7 @@ public sealed class TransactionController(
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(await transactionQueryService.GetByIdAsync(transactionId));
+        return Ok(await GetModelAsync(transactionId));
     }
 
     /// <summary>
@@ -250,7 +254,7 @@ public sealed class TransactionController(
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(await transactionQueryService.GetByIdAsync(transactionId));
+        return Ok(await GetModelAsync(transactionId));
     }
 
     /// <summary>
@@ -285,6 +289,19 @@ public sealed class TransactionController(
         }
         await unitOfWork.SaveChangesAsync();
         return NoContent();
+    }
+
+    /// <summary>
+    /// Retrieves and converts interpreted Transaction details.
+    /// </summary>
+    private async Task<TransactionModel?> GetModelAsync(
+        Guid transactionId,
+        CancellationToken cancellationToken = default)
+    {
+        Domain.Transactions.Queries.TransactionDetails? details = await transactionQueryService.GetByIdAsync(
+            transactionId,
+            cancellationToken);
+        return details == null ? null : transactionConverter.ToModel(details);
     }
 
     private static string ResolveValidationErrorPath(string path) => path switch
