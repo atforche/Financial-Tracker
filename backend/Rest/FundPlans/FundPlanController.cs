@@ -3,6 +3,7 @@ using Data.AccountingPeriods;
 using Data.FundPlans;
 using Domain.AccountingPeriods;
 using Domain.FundPlans;
+using Domain.FundPlans.Queries;
 using Domain.Funds;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +21,7 @@ public sealed class FundPlanController(
     UnitOfWork unitOfWork,
     FundPlanRepository fundPlanRepository,
     FundPlanQueryService fundPlanQueryService,
+    FundPlanConverter fundPlanConverter,
     AccountingPeriodRepository accountingPeriodRepository,
     FundBalanceService fundBalanceService,
     FundPlanService fundPlanService) : ControllerBase
@@ -31,7 +33,9 @@ public sealed class FundPlanController(
     public async Task<ActionResult<CollectionModel<FundPlanModel>>> GetAsync(
         [FromQuery] FundPlanQueryParameterModel query,
         CancellationToken cancellationToken) =>
-        Ok(await fundPlanQueryService.GetAsync(query, cancellationToken));
+        Ok(fundPlanConverter.ToModel(await fundPlanQueryService.GetAsync(
+            fundPlanConverter.ToDomain(query),
+            cancellationToken)));
 
     /// <summary>
     /// Retrieves a Fund Plan by ID.
@@ -39,8 +43,8 @@ public sealed class FundPlanController(
     [HttpGet("{fundPlanId:guid}")]
     public async Task<ActionResult<FundPlanModel>> GetAsync(Guid fundPlanId, CancellationToken cancellationToken)
     {
-        FundPlanModel? model = await fundPlanQueryService.GetByIdAsync(fundPlanId, cancellationToken);
-        return model == null ? NotFound() : Ok(model);
+        FundPlan? fundPlan = await fundPlanQueryService.GetByIdAsync(fundPlanId, cancellationToken);
+        return fundPlan == null ? NotFound() : Ok(fundPlanConverter.ToModel(fundPlan));
     }
 
     /// <summary>
@@ -52,11 +56,11 @@ public sealed class FundPlanController(
         [FromQuery] Guid? accountingPeriodId,
         CancellationToken cancellationToken)
     {
-        FundPlanModel? model = await fundPlanQueryService.GetByFundAndAccountingPeriodAsync(
+        FundPlan? fundPlan = await fundPlanQueryService.GetByFundAndAccountingPeriodAsync(
             fundId,
             accountingPeriodId,
             cancellationToken);
-        return model == null ? NotFound() : Ok(model);
+        return fundPlan == null ? NotFound() : Ok(fundPlanConverter.ToModel(fundPlan));
     }
 
     /// <summary>
@@ -74,7 +78,8 @@ public sealed class FundPlanController(
             return ValidationProblem("Unable to update Fund Plan.", errors);
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(await fundPlanQueryService.GetByIdAsync(fundPlanId, cancellationToken));
+        FundPlan? updatedFundPlan = await fundPlanQueryService.GetByIdAsync(fundPlanId, cancellationToken);
+        return Ok(fundPlanConverter.ToModel(updatedFundPlan!));
     }
 
     /// <summary>

@@ -2,6 +2,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
 using Domain.FundPlans;
+using Domain.FundPlans.Queries;
 using Domain.Funds;
 using Domain.Funds.Queries;
 using Domain.Transactions;
@@ -36,6 +37,7 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<FundPlanService>();
         _ = serviceCollection.AddScoped<FundPlanTotalsHistoryService>();
+        _ = serviceCollection.AddScoped<FundPlanQueryService>();
 
         _ = serviceCollection.AddScoped<SpendingTransactionService>();
         _ = serviceCollection.AddScoped<IncomeTransactionService>();

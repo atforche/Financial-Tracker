@@ -1,5 +1,6 @@
 using Rest.AccountingPeriods;
 using Rest.Accounts;
+using Rest.FundPlans;
 using Rest.Funds;
 using Rest.Transactions;
 
@@ -22,6 +23,8 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<FundConverter>();
         _ = serviceCollection.AddScoped<FundAmountConverter>();
+
+        _ = serviceCollection.AddScoped<FundPlanConverter>();
 
         _ = serviceCollection.AddScoped<TransactionRequestConverter>();
     }
