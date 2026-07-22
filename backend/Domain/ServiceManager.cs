@@ -36,6 +36,7 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<FundService>();
         _ = serviceCollection.AddScoped<FundBalanceService>();
+        _ = serviceCollection.AddScoped<FundBalanceEventQueryService>();
         _ = serviceCollection.AddScoped<FundQueryService>();
 
         _ = serviceCollection.AddScoped<FundPlanService>();

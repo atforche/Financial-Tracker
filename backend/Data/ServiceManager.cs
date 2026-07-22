@@ -46,7 +46,8 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<IAccountBalanceHistoryRepository, AccountBalanceHistoryRepository>();
         _ = serviceCollection.AddScoped<AccountBalanceHistoryRepository>();
 
-        _ = serviceCollection.AddScoped<FundBalanceEventQueryService>();
+        _ = serviceCollection.AddScoped<Funds.FundBalanceEventQueryService>();
+        _ = serviceCollection.AddScoped<IFundBalanceEventQueryRepository, FundBalanceEventQueryRepository>();
         _ = serviceCollection.AddScoped<IFundRepository, FundRepository>();
         _ = serviceCollection.AddScoped<FundRepository>();
         _ = serviceCollection.AddScoped<IFundQueryRepository, FundQueryRepository>();

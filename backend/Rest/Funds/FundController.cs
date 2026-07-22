@@ -1,5 +1,4 @@
 using Data;
-using Data.Funds;
 using Domain.AccountingPeriods;
 using Domain.Funds;
 using Domain.Funds.Queries;
@@ -8,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Funds;
 using Rest.AccountingPeriods;
+using DomainFundBalanceEventQueryService = Domain.Funds.Queries.FundBalanceEventQueryService;
+using LegacyFundBalanceEventQueryService = Data.Funds.FundBalanceEventQueryService;
 
 namespace Rest.Funds;
 
@@ -22,7 +23,9 @@ public sealed class FundController(
     FundConverter fundConverter,
     FundQueryService fundQueryService,
     FundService fundService,
-    FundBalanceEventQueryService fundBalanceEventQueryService) : ControllerBase
+    DomainFundBalanceEventQueryService fundBalanceEventQueryService,
+    FundBalanceEventConverter fundBalanceEventConverter,
+    LegacyFundBalanceEventQueryService legacyFundBalanceEventQueryService) : ControllerBase
 {
     /// <summary>
     /// Retrieves Fund Balance Events in a date range.
@@ -32,7 +35,9 @@ public sealed class FundController(
     public async Task<ActionResult<CollectionModel<FundBalanceEventModel>>> GetBalanceEventsAsync(
         [FromQuery] FundBalanceEventsInDateRangeQueryParameterModel query,
         CancellationToken cancellationToken) =>
-        Ok(await fundBalanceEventQueryService.GetAsync(query, cancellationToken));
+        Ok(fundBalanceEventConverter.ToModel(await fundBalanceEventQueryService.GetAsync(
+            fundBalanceEventConverter.ToDomain(query),
+            cancellationToken)));
 
     /// <summary>
     /// Retrieves Fund Balance Events in an Accounting Period range.
@@ -44,7 +49,7 @@ public sealed class FundController(
         [FromQuery] FundBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        CollectionModel<FundBalanceEventModel>? model = await fundBalanceEventQueryService.GetAsync(query, cancellationToken);
+        CollectionModel<FundBalanceEventModel>? model = await legacyFundBalanceEventQueryService.GetAsync(query, cancellationToken);
         return model == null ? InvalidAccountingPeriodRange() : Ok(model);
     }
 
