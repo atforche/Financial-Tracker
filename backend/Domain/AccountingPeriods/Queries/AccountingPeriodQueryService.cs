@@ -1,11 +1,14 @@
 using Domain.Accounts;
+using Domain.Transactions.Queries;
 
 namespace Domain.AccountingPeriods.Queries;
 
 /// <summary>
 /// Service for querying Accounting Periods and their balances.
 /// </summary>
-public sealed class AccountingPeriodQueryService(IAccountingPeriodQueryRepository accountingPeriodQueryRepository)
+public sealed class AccountingPeriodQueryService(
+    IAccountingPeriodQueryRepository accountingPeriodQueryRepository,
+    TransactionQueryService transactionQueryService)
 {
     /// <summary>
     /// Retrieves Accounting Periods matching the provided query.
@@ -30,6 +33,45 @@ public sealed class AccountingPeriodQueryService(IAccountingPeriodQueryRepositor
         Guid accountingPeriodId,
         CancellationToken cancellationToken = default) =>
         accountingPeriodQueryRepository.GetBalanceByIdAsync(new AccountingPeriodId(accountingPeriodId), cancellationToken);
+
+    /// <summary>
+    /// Retrieves an Accounting Period with its Transactions and interpreted totals.
+    /// </summary>
+    public async Task<AccountingPeriodTransactions?> GetWithTransactionsAsync(
+        AccountingPeriodTransactionsQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        AccountingPeriodBalance? balance = await accountingPeriodQueryRepository.GetBalanceByIdAsync(
+            new AccountingPeriodId(query.AccountingPeriodId),
+            cancellationToken);
+        if (balance == null)
+        {
+            return null;
+        }
+
+        QueryPage<TransactionDetails> transactions = await transactionQueryService.GetAsync(
+            new TransactionQuery(
+                new TransactionFilter([query.AccountingPeriodId], [], []),
+                query.Sort,
+                query.Offset,
+                query.Limit),
+            cancellationToken);
+        IReadOnlyCollection<Guid> ids = [query.AccountingPeriodId];
+        IReadOnlyCollection<AccountingPeriodRangeIncomeFact> incomeFacts = await accountingPeriodQueryRepository.GetRangeIncomeFactsAsync(ids, cancellationToken);
+        IReadOnlyCollection<AccountingPeriodRangeSpendingFact> spendingFacts = await accountingPeriodQueryRepository.GetRangeSpendingFactsAsync(ids, cancellationToken);
+        IReadOnlyCollection<AccountingPeriodRangeIncomeFact> recognizedIncome = incomeFacts
+            .Where(fact => !fact.HasInternalSource || fact.PostedDate != null)
+            .ToList();
+        decimal totalIncome = recognizedIncome.Sum(fact => fact.Amount);
+        decimal trackedIncome = recognizedIncome.Where(fact => fact.AccountType.IsTracked()).Sum(fact => fact.Amount);
+        decimal totalSpending = spendingFacts.Where(fact => fact.PostedDate != null).Sum(fact => fact.Amount);
+        return new AccountingPeriodTransactions(
+            balance,
+            transactions,
+            totalIncome,
+            trackedIncome,
+            totalSpending);
+    }
 
     /// <summary>
     /// Retrieves and interprets the requested Accounting Period range.

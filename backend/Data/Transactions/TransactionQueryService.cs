@@ -17,34 +17,6 @@ namespace Data.Transactions;
 public sealed class TransactionQueryService(DatabaseContext databaseContext, TransactionModelMapper transactionModelMapper)
 {
     /// <summary>
-    /// Retrieves Transactions matching the provided query.
-    /// </summary>
-    public async Task<CollectionModel<TransactionModel>> GetAsync(
-        TransactionQueryParameterModel request,
-        CancellationToken cancellationToken = default)
-    {
-        IQueryable<Transaction> query = ApplyFilter(databaseContext.Transactions.AsNoTracking(), request.Filter);
-        int totalCount = await query.CountAsync(cancellationToken);
-        IReadOnlyCollection<TransactionModel> items = await GetPageAsync(query, request.Sort, request.Offset, request.Limit, cancellationToken);
-        return new CollectionModel<TransactionModel> { Items = items, TotalCount = totalCount };
-    }
-
-    /// <summary>
-    /// Retrieves Transactions for an Accounting Period.
-    /// </summary>
-    public Task<CollectionModel<TransactionModel>> GetForAccountingPeriodAsync(
-        Guid accountingPeriodId,
-        Models.AccountingPeriods.AccountingPeriodWithTransactionsQueryParameterModel request,
-        CancellationToken cancellationToken = default) =>
-        GetAsync(new TransactionQueryParameterModel
-        {
-            Filter = new TransactionFilterModel { AccountingPeriodIds = [accountingPeriodId] },
-            Sort = request.Sort,
-            Limit = request.Limit,
-            Offset = request.Offset,
-        }, cancellationToken);
-
-    /// <summary>
     /// Retrieves Transactions in a date range.
     /// </summary>
     public async Task<TransactionsInDateRangeModel> GetInDateRangeAsync(

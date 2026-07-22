@@ -3,13 +3,14 @@ using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
 using Models;
 using Models.AccountingPeriods;
+using Rest.Transactions;
 
 namespace Rest.AccountingPeriods;
 
 /// <summary>
 /// Converts between Accounting Period API models and Domain query types.
 /// </summary>
-public sealed class AccountingPeriodQueryConverter
+public sealed class AccountingPeriodQueryConverter(TransactionConverter transactionConverter)
 {
     /// <summary>
     /// Converts the provided Accounting Period query model to a Domain query.
@@ -56,6 +57,17 @@ public sealed class AccountingPeriodQueryConverter
         ToDomain(model.Sort),
         model.Offset ?? 0,
         model.Limit);
+
+    /// <summary>
+    /// Converts an Accounting Period Transactions query model to a Domain query.
+    /// </summary>
+    public AccountingPeriodTransactionsQuery ToDomain(
+        Guid accountingPeriodId,
+        AccountingPeriodWithTransactionsQueryParameterModel model) => new(
+            accountingPeriodId,
+            transactionConverter.ToDomain(model.Sort),
+            model.Offset ?? 0,
+            model.Limit);
 
     /// <summary>
     /// Converts the provided Accounting Period to an API model.
@@ -114,6 +126,28 @@ public sealed class AccountingPeriodQueryConverter
             Untracked = range.UntrackedIncome,
         },
         TotalSpending = range.TotalSpending,
+    };
+
+    /// <summary>
+    /// Converts interpreted Accounting Period Transactions to an API model.
+    /// </summary>
+    public AccountingPeriodWithTransactionsModel ToModel(AccountingPeriodTransactions result) => new()
+    {
+        Id = result.Balance.AccountingPeriod.Id.Value,
+        Name = result.Balance.AccountingPeriod.Name,
+        Year = result.Balance.AccountingPeriod.Year,
+        Month = result.Balance.AccountingPeriod.Month,
+        IsOpen = result.Balance.AccountingPeriod.IsOpen,
+        OpeningBalance = result.Balance.OpeningBalance,
+        ClosingBalance = result.Balance.ClosingBalance,
+        Transactions = transactionConverter.ToModel(result.Transactions),
+        TotalIncome = new IncomeAmountModel
+        {
+            Total = result.TotalIncome,
+            Tracked = result.TrackedIncome,
+            Untracked = result.UntrackedIncome,
+        },
+        TotalSpending = result.TotalSpending,
     };
 
     /// <summary>

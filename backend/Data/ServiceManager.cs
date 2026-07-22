@@ -33,7 +33,6 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
         _ = serviceCollection.AddScoped<AccountingPeriodRepository>();
-        _ = serviceCollection.AddScoped<AccountingPeriods.AccountingPeriodQueryService>();
         _ = serviceCollection.AddScoped<IAccountingPeriodQueryRepository, AccountingPeriodQueryRepository>();
 
         _ = serviceCollection.AddScoped<IAccountingPeriodBalanceHistoryRepository, AccountingPeriodBalanceHistoryRepository>();

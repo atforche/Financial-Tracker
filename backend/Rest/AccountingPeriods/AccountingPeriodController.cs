@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.AccountingPeriods;
 using DomainAccountingPeriodQueryService = Domain.AccountingPeriods.Queries.AccountingPeriodQueryService;
-using LegacyAccountingPeriodQueryService = Data.AccountingPeriods.AccountingPeriodQueryService;
 
 namespace Rest.AccountingPeriods;
 
@@ -19,7 +18,6 @@ namespace Rest.AccountingPeriods;
 public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountingPeriodRepository accountingPeriodRepository,
     DomainAccountingPeriodQueryService accountingPeriodQueryService,
-    LegacyAccountingPeriodQueryService legacyAccountingPeriodQueryService,
     AccountingPeriodQueryConverter accountingPeriodQueryConverter,
     AccountingPeriodService accountingPeriodService) : ControllerBase
 {
@@ -72,8 +70,10 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         [FromQuery] AccountingPeriodWithTransactionsQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        AccountingPeriodWithTransactionsModel? model = await legacyAccountingPeriodQueryService.GetWithTransactionsAsync(accountingPeriodId, query, cancellationToken);
-        return model == null ? NotFound() : Ok(model);
+        AccountingPeriodTransactions? result = await accountingPeriodQueryService.GetWithTransactionsAsync(
+            accountingPeriodQueryConverter.ToDomain(accountingPeriodId, query),
+            cancellationToken);
+        return result == null ? NotFound() : Ok(accountingPeriodQueryConverter.ToModel(result));
     }
 
     /// <summary>

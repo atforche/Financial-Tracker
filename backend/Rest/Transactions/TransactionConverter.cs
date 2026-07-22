@@ -31,24 +31,29 @@ public sealed class TransactionConverter(
             model.Filter?.AccountingPeriodIds ?? [],
             model.Filter?.AccountIds ?? [],
             model.Filter?.FundIds ?? []),
-        model.Sort switch
-        {
-            TransactionSortModel.Date => TransactionSort.Date,
-            TransactionSortModel.DateDescending => TransactionSort.DateDescending,
-            TransactionSortModel.Description => TransactionSort.Description,
-            TransactionSortModel.DescriptionDescending => TransactionSort.DescriptionDescending,
-            TransactionSortModel.Amount => TransactionSort.Amount,
-            TransactionSortModel.AmountDescending => TransactionSort.AmountDescending,
-            TransactionSortModel.AccountingPeriod => TransactionSort.AccountingPeriod,
-            TransactionSortModel.AccountingPeriodDescending => TransactionSort.AccountingPeriodDescending,
-            TransactionSortModel.Source => TransactionSort.Source,
-            TransactionSortModel.SourceDescending => TransactionSort.SourceDescending,
-            TransactionSortModel.Destination => TransactionSort.Destination,
-            TransactionSortModel.DestinationDescending => TransactionSort.DestinationDescending,
-            _ => TransactionSort.DateDescending,
-        },
+        ToDomain(model.Sort),
         model.Offset ?? 0,
         model.Limit);
+
+    /// <summary>
+    /// Converts an API Transaction sort to a Domain sort.
+    /// </summary>
+    public TransactionSort ToDomain(TransactionSortModel? sort) => sort switch
+    {
+        TransactionSortModel.Date => TransactionSort.Date,
+        TransactionSortModel.DateDescending => TransactionSort.DateDescending,
+        TransactionSortModel.Description => TransactionSort.Description,
+        TransactionSortModel.DescriptionDescending => TransactionSort.DescriptionDescending,
+        TransactionSortModel.Amount => TransactionSort.Amount,
+        TransactionSortModel.AmountDescending => TransactionSort.AmountDescending,
+        TransactionSortModel.AccountingPeriod => TransactionSort.AccountingPeriod,
+        TransactionSortModel.AccountingPeriodDescending => TransactionSort.AccountingPeriodDescending,
+        TransactionSortModel.Source => TransactionSort.Source,
+        TransactionSortModel.SourceDescending => TransactionSort.SourceDescending,
+        TransactionSortModel.Destination => TransactionSort.Destination,
+        TransactionSortModel.DestinationDescending => TransactionSort.DestinationDescending,
+        _ => TransactionSort.DateDescending,
+    };
 
     /// <summary>
     /// Converts an interpreted Domain page to an API collection.
