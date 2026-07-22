@@ -20,23 +20,44 @@ public sealed class FundBalanceEventConverter
     public FundBalanceEventQuery ToDomain(FundBalanceEventsInDateRangeQueryParameterModel model) => new(
         model.Range.Start,
         model.Range.End,
-        new FundFilter(model.Filter?.NameSearch, model.Filter?.Names ?? []),
-        model.Sort switch
-        {
-            FundBalanceEventSortModel.FundName => FundBalanceEventSort.FundName,
-            FundBalanceEventSortModel.FundNameDescending => FundBalanceEventSort.FundNameDescending,
-            FundBalanceEventSortModel.AccountingPeriodName => FundBalanceEventSort.AccountingPeriod,
-            FundBalanceEventSortModel.AccountingPeriodNameDescending => FundBalanceEventSort.AccountingPeriodDescending,
-            FundBalanceEventSortModel.Date => FundBalanceEventSort.Date,
-            FundBalanceEventSortModel.DateDescending => FundBalanceEventSort.DateDescending,
-            FundBalanceEventSortModel.Type => FundBalanceEventSort.Type,
-            FundBalanceEventSortModel.TypeDescending => FundBalanceEventSort.TypeDescending,
-            FundBalanceEventSortModel.Amount => FundBalanceEventSort.Amount,
-            FundBalanceEventSortModel.AmountDescending => FundBalanceEventSort.AmountDescending,
-            _ => FundBalanceEventSort.DateDescending,
-        },
+        ToDomain(model.Filter),
+        ToDomain(model.Sort),
         model.Offset ?? 0,
         model.Limit);
+
+    /// <summary>
+    /// Converts an API Accounting Period range query to a Domain query.
+    /// </summary>
+    public FundBalanceEventAccountingPeriodRangeQuery ToDomain(FundBalanceEventsInAccountingPeriodRangeQueryParameterModel model) => new(
+        model.Range.Start,
+        model.Range.End,
+        ToDomain(model.Filter),
+        ToDomain(model.Sort),
+        model.Offset ?? 0,
+        model.Limit);
+
+    /// <summary>
+    /// Converts an API Fund filter to a Domain filter.
+    /// </summary>
+    private static FundFilter ToDomain(FundFilterModel? filter) => new(filter?.NameSearch, filter?.Names ?? []);
+
+    /// <summary>
+    /// Converts an API sort to a Domain sort.
+    /// </summary>
+    private static FundBalanceEventSort ToDomain(FundBalanceEventSortModel? sort) => sort switch
+    {
+        FundBalanceEventSortModel.FundName => FundBalanceEventSort.FundName,
+        FundBalanceEventSortModel.FundNameDescending => FundBalanceEventSort.FundNameDescending,
+        FundBalanceEventSortModel.AccountingPeriodName => FundBalanceEventSort.AccountingPeriod,
+        FundBalanceEventSortModel.AccountingPeriodNameDescending => FundBalanceEventSort.AccountingPeriodDescending,
+        FundBalanceEventSortModel.Date => FundBalanceEventSort.Date,
+        FundBalanceEventSortModel.DateDescending => FundBalanceEventSort.DateDescending,
+        FundBalanceEventSortModel.Type => FundBalanceEventSort.Type,
+        FundBalanceEventSortModel.TypeDescending => FundBalanceEventSort.TypeDescending,
+        FundBalanceEventSortModel.Amount => FundBalanceEventSort.Amount,
+        FundBalanceEventSortModel.AmountDescending => FundBalanceEventSort.AmountDescending,
+        _ => FundBalanceEventSort.DateDescending,
+    };
 
     /// <summary>
     /// Converts a Domain page to an API collection.

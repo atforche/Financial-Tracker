@@ -12,6 +12,17 @@ public sealed record FundBalanceEventQuery(
     int? Limit);
 
 /// <summary>
+/// Criteria for querying Fund balance events over an Accounting Period range.
+/// </summary>
+public sealed record FundBalanceEventAccountingPeriodRangeQuery(
+    Guid StartId,
+    Guid EndId,
+    FundFilter Filter,
+    FundBalanceEventSort Sort,
+    int Offset,
+    int? Limit);
+
+/// <summary>
 /// Supported Fund balance-event sort orders.
 /// </summary>
 public enum FundBalanceEventSort

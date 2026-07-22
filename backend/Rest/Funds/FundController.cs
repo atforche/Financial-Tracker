@@ -7,8 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Funds;
 using Rest.AccountingPeriods;
-using DomainFundBalanceEventQueryService = Domain.Funds.Queries.FundBalanceEventQueryService;
-using LegacyFundBalanceEventQueryService = Data.Funds.FundBalanceEventQueryService;
 
 namespace Rest.Funds;
 
@@ -23,9 +21,8 @@ public sealed class FundController(
     FundConverter fundConverter,
     FundQueryService fundQueryService,
     FundService fundService,
-    DomainFundBalanceEventQueryService fundBalanceEventQueryService,
-    FundBalanceEventConverter fundBalanceEventConverter,
-    LegacyFundBalanceEventQueryService legacyFundBalanceEventQueryService) : ControllerBase
+    FundBalanceEventQueryService fundBalanceEventQueryService,
+    FundBalanceEventConverter fundBalanceEventConverter) : ControllerBase
 {
     /// <summary>
     /// Retrieves Fund Balance Events in a date range.
@@ -49,8 +46,10 @@ public sealed class FundController(
         [FromQuery] FundBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        CollectionModel<FundBalanceEventModel>? model = await legacyFundBalanceEventQueryService.GetAsync(query, cancellationToken);
-        return model == null ? InvalidAccountingPeriodRange() : Ok(model);
+        FundBalanceEventAccountingPeriodRangeQueryResult result = await fundBalanceEventQueryService.GetAsync(
+            fundBalanceEventConverter.ToDomain(query),
+            cancellationToken);
+        return result.Page == null ? InvalidAccountingPeriodRange() : Ok(fundBalanceEventConverter.ToModel(result.Page));
     }
 
     /// <summary>
