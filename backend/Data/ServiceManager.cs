@@ -5,6 +5,7 @@ using Data.FundPlans;
 using Data.Funds;
 using Data.Transactions;
 using Domain.AccountingPeriods;
+using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
 using Domain.FundPlans;
@@ -34,7 +35,8 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
         _ = serviceCollection.AddScoped<AccountingPeriodRepository>();
-        _ = serviceCollection.AddScoped<AccountingPeriodQueryService>();
+        _ = serviceCollection.AddScoped<AccountingPeriods.AccountingPeriodQueryService>();
+        _ = serviceCollection.AddScoped<IAccountingPeriodQueryRepository, AccountingPeriodQueryRepository>();
 
         _ = serviceCollection.AddScoped<IAccountingPeriodBalanceHistoryRepository, AccountingPeriodBalanceHistoryRepository>();
         _ = serviceCollection.AddScoped<AccountingPeriodBalanceHistoryRepository>();

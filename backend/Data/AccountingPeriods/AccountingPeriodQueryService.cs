@@ -16,93 +16,9 @@ namespace Data.AccountingPeriods;
 public sealed class AccountingPeriodQueryService(DatabaseContext databaseContext, TransactionQueryService transactionQueryService)
 {
     /// <summary>
-    /// Retrieves Accounting Periods matching the provided query.
-    /// </summary>
-    public async Task<CollectionModel<AccountingPeriodModel>> GetAsync(
-        AccountingPeriodQueryParameterModel request,
-        CancellationToken cancellationToken = default)
-    {
-        IQueryable<AccountingPeriod> query = databaseContext.AccountingPeriods.AsNoTracking();
-        if (request.Filter?.Years is { Count: > 0 } years)
-        {
-            query = query.Where(period => years.Contains(period.Year));
-        }
-        if (request.Filter?.Months is { Count: > 0 } months)
-        {
-            query = query.Where(period => months.Contains(period.Month));
-        }
-
-        query = request.Sort switch
-        {
-            AccountingPeriodSortModel.Date => query.OrderBy(period => period.Year).ThenBy(period => period.Month),
-            AccountingPeriodSortModel.DateDescending => query.OrderByDescending(period => period.Year).ThenByDescending(period => period.Month),
-            AccountingPeriodSortModel.IsOpen => query.OrderBy(period => period.IsOpen).ThenByDescending(period => period.Year).ThenByDescending(period => period.Month),
-            AccountingPeriodSortModel.IsOpenDescending => query.OrderByDescending(period => period.IsOpen).ThenByDescending(period => period.Year).ThenByDescending(period => period.Month),
-            _ => query.OrderByDescending(period => period.Year).ThenByDescending(period => period.Month),
-        };
-
-        int totalCount = await query.CountAsync(cancellationToken);
-        List<AccountingPeriodModel> items = await query.Skip(request.Offset ?? 0).Take(request.Limit ?? int.MaxValue)
-            .Select(period => new AccountingPeriodModel
-            {
-                Id = period.Id.Value,
-                Name = period.Name,
-                Year = period.Year,
-                Month = period.Month,
-                IsOpen = period.IsOpen,
-            }).ToListAsync(cancellationToken);
-        return new CollectionModel<AccountingPeriodModel> { Items = items, TotalCount = totalCount };
-    }
-
-    /// <summary>
-    /// Retrieves Accounting Periods and their balances.
-    /// </summary>
-    public async Task<CollectionModel<AccountingPeriodWithBalanceModel>> GetWithBalancesAsync(
-        AccountingPeriodWithBalanceQueryParameterModel request,
-        CancellationToken cancellationToken = default)
-    {
-        IQueryable<AccountingPeriodWithBalanceModel> query =
-            from history in databaseContext.AccountingPeriodBalanceHistories.AsNoTracking()
-            let period = history.AccountingPeriod
-            select new AccountingPeriodWithBalanceModel
-            {
-                Id = period.Id.Value,
-                Name = period.Name,
-                Year = period.Year,
-                Month = period.Month,
-                IsOpen = period.IsOpen,
-                OpeningBalance = history.OpeningBalance,
-                ClosingBalance = history.ClosingBalance,
-            };
-        if (request.Filter?.Years is { Count: > 0 } years)
-        {
-            query = query.Where(period => years.Contains(period.Year));
-        }
-        if (request.Filter?.Months is { Count: > 0 } months)
-        {
-            query = query.Where(period => months.Contains(period.Month));
-        }
-        query = request.Sort switch
-        {
-            AccountingPeriodWithBalanceSortModel.Date => query.OrderBy(period => period.Year).ThenBy(period => period.Month),
-            AccountingPeriodWithBalanceSortModel.DateDescending => query.OrderByDescending(period => period.Year).ThenByDescending(period => period.Month),
-            AccountingPeriodWithBalanceSortModel.IsOpen => query.OrderBy(period => period.IsOpen).ThenByDescending(period => period.Year).ThenByDescending(period => period.Month),
-            AccountingPeriodWithBalanceSortModel.IsOpenDescending => query.OrderByDescending(period => period.IsOpen).ThenByDescending(period => period.Year).ThenByDescending(period => period.Month),
-            AccountingPeriodWithBalanceSortModel.OpeningBalance => query.OrderBy(period => period.OpeningBalance).ThenBy(period => period.Year).ThenBy(period => period.Month),
-            AccountingPeriodWithBalanceSortModel.OpeningBalanceDescending => query.OrderByDescending(period => period.OpeningBalance).ThenByDescending(period => period.Year).ThenByDescending(period => period.Month),
-            AccountingPeriodWithBalanceSortModel.ClosingBalance => query.OrderBy(period => period.ClosingBalance).ThenBy(period => period.Year).ThenBy(period => period.Month),
-            AccountingPeriodWithBalanceSortModel.ClosingBalanceDescending => query.OrderByDescending(period => period.ClosingBalance).ThenByDescending(period => period.Year).ThenByDescending(period => period.Month),
-            _ => query.OrderByDescending(period => period.Year).ThenByDescending(period => period.Month),
-        };
-        int totalCount = await query.CountAsync(cancellationToken);
-        List<AccountingPeriodWithBalanceModel> items = await query.Skip(request.Offset ?? 0).Take(request.Limit ?? int.MaxValue).ToListAsync(cancellationToken);
-        return new CollectionModel<AccountingPeriodWithBalanceModel> { Items = items, TotalCount = totalCount };
-    }
-
-    /// <summary>
     /// Retrieves an Accounting Period and its balance by ID.
     /// </summary>
-    public Task<AccountingPeriodWithBalanceModel?> GetByIdAsync(Guid accountingPeriodId, CancellationToken cancellationToken = default) =>
+    private Task<AccountingPeriodWithBalanceModel?> GetByIdAsync(Guid accountingPeriodId, CancellationToken cancellationToken = default) =>
         (from history in databaseContext.AccountingPeriodBalanceHistories.AsNoTracking()
          where history.AccountingPeriod.Id == new AccountingPeriodId(accountingPeriodId)
          select new AccountingPeriodWithBalanceModel

@@ -1,10 +1,13 @@
 using Data;
 using Data.AccountingPeriods;
 using Domain.AccountingPeriods;
+using Domain.AccountingPeriods.Queries;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.AccountingPeriods;
+using DomainAccountingPeriodQueryService = Domain.AccountingPeriods.Queries.AccountingPeriodQueryService;
+using LegacyAccountingPeriodQueryService = Data.AccountingPeriods.AccountingPeriodQueryService;
 
 namespace Rest.AccountingPeriods;
 
@@ -15,7 +18,9 @@ namespace Rest.AccountingPeriods;
 [Route("/accounting-periods")]
 public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountingPeriodRepository accountingPeriodRepository,
-    AccountingPeriodQueryService accountingPeriodQueryService,
+    DomainAccountingPeriodQueryService accountingPeriodQueryService,
+    LegacyAccountingPeriodQueryService legacyAccountingPeriodQueryService,
+    AccountingPeriodQueryConverter accountingPeriodQueryConverter,
     AccountingPeriodService accountingPeriodService) : ControllerBase
 {
     /// <summary>
@@ -26,7 +31,9 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     public async Task<ActionResult<CollectionModel<AccountingPeriodModel>>> GetManyAsync(
         [FromQuery] AccountingPeriodQueryParameterModel queryParameters,
         CancellationToken cancellationToken) =>
-        Ok(await accountingPeriodQueryService.GetAsync(queryParameters, cancellationToken));
+        Ok(accountingPeriodQueryConverter.ToModel(await accountingPeriodQueryService.GetAsync(
+            accountingPeriodQueryConverter.ToDomain(queryParameters),
+            cancellationToken)));
 
     /// <summary>
     /// Retrieves snapshot data for the current Accounting Period.
@@ -36,7 +43,9 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     public async Task<ActionResult<CollectionModel<AccountingPeriodWithBalanceModel>>> GetWithBalancesAsync(
         [FromQuery] AccountingPeriodWithBalanceQueryParameterModel queryParameters,
         CancellationToken cancellationToken) =>
-        Ok(await accountingPeriodQueryService.GetWithBalancesAsync(queryParameters, cancellationToken));
+        Ok(accountingPeriodQueryConverter.ToModel(await accountingPeriodQueryService.GetWithBalancesAsync(
+            accountingPeriodQueryConverter.ToDomain(queryParameters),
+            cancellationToken)));
 
     /// <summary>
     /// Retrieves the Accounting Period with the provided ID.
@@ -48,8 +57,8 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         Guid accountingPeriodId,
         CancellationToken cancellationToken)
     {
-        AccountingPeriodWithBalanceModel? model = await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId, cancellationToken);
-        return model == null ? NotFound() : Ok(model);
+        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId, cancellationToken);
+        return balance == null ? NotFound() : Ok(accountingPeriodQueryConverter.ToModel(balance));
     }
 
     /// <summary>
@@ -63,7 +72,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         [FromQuery] AccountingPeriodWithTransactionsQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        AccountingPeriodWithTransactionsModel? model = await accountingPeriodQueryService.GetWithTransactionsAsync(accountingPeriodId, query, cancellationToken);
+        AccountingPeriodWithTransactionsModel? model = await legacyAccountingPeriodQueryService.GetWithTransactionsAsync(accountingPeriodId, query, cancellationToken);
         return model == null ? NotFound() : Ok(model);
     }
 
@@ -77,7 +86,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         [FromQuery] AccountingPeriodsInRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        AccountingPeriodRangeQueryResult result = await accountingPeriodQueryService.GetRangeAsync(query, cancellationToken);
+        AccountingPeriodRangeQueryResult result = await legacyAccountingPeriodQueryService.GetRangeAsync(query, cancellationToken);
         if (result.Model != null)
         {
             return Ok(result.Model);
@@ -138,7 +147,8 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         }
         accountingPeriodRepository.Add(newAccountingPeriod);
         await unitOfWork.SaveChangesAsync();
-        return Ok(await accountingPeriodQueryService.GetByIdAsync(newAccountingPeriod.Id.Value));
+        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetByIdAsync(newAccountingPeriod.Id.Value);
+        return Ok(accountingPeriodQueryConverter.ToModel(balance!));
     }
 
     /// <summary>
@@ -175,7 +185,8 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId));
+        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId);
+        return Ok(accountingPeriodQueryConverter.ToModel(balance!));
     }
 
     /// <summary>
@@ -210,7 +221,8 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId));
+        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId);
+        return Ok(accountingPeriodQueryConverter.ToModel(balance!));
     }
 
     /// <summary>

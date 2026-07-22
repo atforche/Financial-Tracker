@@ -18,6 +18,7 @@ public static class ServiceManager
     public static void Register(IServiceCollection serviceCollection)
     {
         _ = serviceCollection.AddScoped<AccountingPeriodConverter>();
+        _ = serviceCollection.AddScoped<AccountingPeriodQueryConverter>();
 
         _ = serviceCollection.AddScoped<AccountConverter>();
 
