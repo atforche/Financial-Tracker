@@ -86,10 +86,12 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         [FromQuery] AccountingPeriodsInRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        AccountingPeriodRangeQueryResult result = await legacyAccountingPeriodQueryService.GetRangeAsync(query, cancellationToken);
-        if (result.Model != null)
+        AccountingPeriodRangeQueryResult result = await accountingPeriodQueryService.GetRangeAsync(
+            accountingPeriodQueryConverter.ToDomain(query),
+            cancellationToken);
+        if (result.Range != null)
         {
-            return Ok(result.Model);
+            return Ok(accountingPeriodQueryConverter.ToModel(result.Range));
         }
         Dictionary<string, string[]> errors = [];
         if (result.Failure.HasFlag(AccountingPeriodRangeQueryFailure.StartNotFound))

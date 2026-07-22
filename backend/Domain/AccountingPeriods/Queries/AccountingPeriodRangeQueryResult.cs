@@ -1,6 +1,4 @@
-using Models.AccountingPeriods;
-
-namespace Data.AccountingPeriods;
+namespace Domain.AccountingPeriods.Queries;
 
 /// <summary>
 /// Failures that can occur while resolving an Accounting Period range.
@@ -38,5 +36,5 @@ public enum AccountingPeriodRangeQueryFailure
 /// Result of resolving an Accounting Period range.
 /// </summary>
 public sealed record AccountingPeriodRangeQueryResult(
-    AccountingPeriodsInRangeModel? Model,
+    AccountingPeriodRange? Range,
     AccountingPeriodRangeQueryFailure Failure);

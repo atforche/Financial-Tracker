@@ -1,6 +1,8 @@
 using Domain;
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data.AccountingPeriods;
@@ -77,6 +79,70 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
                 ClosingBalance = history.ClosingBalance,
             }).SingleOrDefaultAsync(cancellationToken);
         return row == null ? null : new AccountingPeriodBalance(row.AccountingPeriod, row.OpeningBalance, row.ClosingBalance);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<AccountingPeriod>> GetEndpointsAsync(
+        Guid startId,
+        Guid endId,
+        CancellationToken cancellationToken = default)
+    {
+        var start = new AccountingPeriodId(startId);
+        var end = new AccountingPeriodId(endId);
+        return await databaseContext.AccountingPeriods.AsNoTracking()
+            .Where(period => period.Id == start || period.Id == end)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<AccountingPeriodBalance>> GetRangeBalancesAsync(
+        int startIndex,
+        int endIndex,
+        CancellationToken cancellationToken = default)
+    {
+        List<AccountingPeriodBalanceRow> rows = await databaseContext.AccountingPeriodBalanceHistories.AsNoTracking()
+            .Where(history => ((history.AccountingPeriod.Year * 12) + history.AccountingPeriod.Month) >= startIndex
+                && ((history.AccountingPeriod.Year * 12) + history.AccountingPeriod.Month) <= endIndex)
+            .OrderBy(history => history.AccountingPeriod.Year)
+            .ThenBy(history => history.AccountingPeriod.Month)
+            .Select(history => new AccountingPeriodBalanceRow
+            {
+                AccountingPeriod = history.AccountingPeriod,
+                OpeningBalance = history.OpeningBalance,
+                ClosingBalance = history.ClosingBalance,
+            }).ToListAsync(cancellationToken);
+        return rows.Select(row => new AccountingPeriodBalance(
+            row.AccountingPeriod,
+            row.OpeningBalance,
+            row.ClosingBalance)).ToList();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<AccountingPeriodRangeIncomeFact>> GetRangeIncomeFactsAsync(
+        IReadOnlyCollection<Guid> accountingPeriodIds,
+        CancellationToken cancellationToken = default)
+    {
+        var ids = accountingPeriodIds.Select(id => new AccountingPeriodId(id)).ToList();
+        return await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
+            .Where(transaction => ids.Contains(transaction.AccountingPeriodId))
+            .SelectMany(transaction => transaction.Destinations.Select(destination => new AccountingPeriodRangeIncomeFact(
+                destination.Amount,
+                destination.Account.Type,
+                transaction.Source.Account != null,
+                destination.PostedDate)))
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<AccountingPeriodRangeSpendingFact>> GetRangeSpendingFactsAsync(
+        IReadOnlyCollection<Guid> accountingPeriodIds,
+        CancellationToken cancellationToken = default)
+    {
+        var ids = accountingPeriodIds.Select(id => new AccountingPeriodId(id)).ToList();
+        return await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
+            .Where(transaction => ids.Contains(transaction.AccountingPeriodId))
+            .Select(transaction => new AccountingPeriodRangeSpendingFact(transaction.Amount, transaction.Source.PostedDate))
+            .ToListAsync(cancellationToken);
     }
 
     /// <summary>

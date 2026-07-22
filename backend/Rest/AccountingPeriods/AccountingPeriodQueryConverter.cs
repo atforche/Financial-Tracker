@@ -11,7 +11,9 @@ namespace Rest.AccountingPeriods;
 /// </summary>
 public sealed class AccountingPeriodQueryConverter
 {
-    /// <summary>Converts the provided Accounting Period query model to a Domain query.</summary>
+    /// <summary>
+    /// Converts the provided Accounting Period query model to a Domain query.
+    /// </summary>
     public AccountingPeriodQuery ToDomain(AccountingPeriodQueryParameterModel model) => new(
         ToDomain(model.Filter),
         model.Sort switch
@@ -25,7 +27,9 @@ public sealed class AccountingPeriodQueryConverter
         model.Offset ?? 0,
         model.Limit);
 
-    /// <summary>Converts the provided Accounting Period Balance query model to a Domain query.</summary>
+    /// <summary>
+    /// Converts the provided Accounting Period Balance query model to a Domain query.
+    /// </summary>
     public AccountingPeriodBalanceQuery ToDomain(AccountingPeriodWithBalanceQueryParameterModel model) => new(
         ToDomain(model.Filter),
         model.Sort switch
@@ -43,7 +47,19 @@ public sealed class AccountingPeriodQueryConverter
         model.Offset ?? 0,
         model.Limit);
 
-    /// <summary>Converts the provided Accounting Period to an API model.</summary>
+    /// <summary>
+    /// Converts the provided Accounting Period range query model to a Domain query.
+    /// </summary>
+    public AccountingPeriodRangeQuery ToDomain(AccountingPeriodsInRangeQueryParameterModel model) => new(
+        model.Range.Start,
+        model.Range.End,
+        ToDomain(model.Sort),
+        model.Offset ?? 0,
+        model.Limit);
+
+    /// <summary>
+    /// Converts the provided Accounting Period to an API model.
+    /// </summary>
     public AccountingPeriodModel ToModel(AccountingPeriod accountingPeriod) => new()
     {
         Id = accountingPeriod.Id.Value,
@@ -53,14 +69,18 @@ public sealed class AccountingPeriodQueryConverter
         IsOpen = accountingPeriod.IsOpen,
     };
 
-    /// <summary>Converts the provided Accounting Period page to a collection model.</summary>
+    /// <summary>
+    /// Converts the provided Accounting Period page to a collection model.
+    /// </summary>
     public CollectionModel<AccountingPeriodModel> ToModel(QueryPage<AccountingPeriod> page) => new()
     {
         Items = page.Items.Select(ToModel).ToList(),
         TotalCount = page.TotalCount,
     };
 
-    /// <summary>Converts the provided Accounting Period Balance to an API model.</summary>
+    /// <summary>
+    /// Converts the provided Accounting Period Balance to an API model.
+    /// </summary>
     public AccountingPeriodWithBalanceModel ToModel(AccountingPeriodBalance balance) => new()
     {
         Id = balance.AccountingPeriod.Id.Value,
@@ -72,11 +92,28 @@ public sealed class AccountingPeriodQueryConverter
         ClosingBalance = balance.ClosingBalance,
     };
 
-    /// <summary>Converts the provided Accounting Period Balance page to a collection model.</summary>
+    /// <summary>
+    /// Converts the provided Accounting Period Balance page to a collection model.
+    /// </summary>
     public CollectionModel<AccountingPeriodWithBalanceModel> ToModel(QueryPage<AccountingPeriodBalance> page) => new()
     {
         Items = page.Items.Select(ToModel).ToList(),
         TotalCount = page.TotalCount,
+    };
+
+    /// <summary>
+    /// Converts the provided Accounting Period range to an API model.
+    /// </summary>
+    public AccountingPeriodsInRangeModel ToModel(AccountingPeriodRange range) => new()
+    {
+        AccountingPeriods = ToModel(range.AccountingPeriods),
+        TotalIncome = new IncomeAmountModel
+        {
+            Total = range.TotalIncome,
+            Tracked = range.TrackedIncome,
+            Untracked = range.UntrackedIncome,
+        },
+        TotalSpending = range.TotalSpending,
     };
 
     /// <summary>
@@ -85,4 +122,17 @@ public sealed class AccountingPeriodQueryConverter
     private static AccountingPeriodFilter ToDomain(AccountingPeriodFilterModel? model) => new(
         model?.Years ?? [],
         model?.Months ?? []);
+
+    private static AccountingPeriodBalanceSort ToDomain(AccountingPeriodWithBalanceSortModel? sort) => sort switch
+    {
+        AccountingPeriodWithBalanceSortModel.Date => AccountingPeriodBalanceSort.Date,
+        AccountingPeriodWithBalanceSortModel.DateDescending => AccountingPeriodBalanceSort.DateDescending,
+        AccountingPeriodWithBalanceSortModel.IsOpen => AccountingPeriodBalanceSort.IsOpen,
+        AccountingPeriodWithBalanceSortModel.IsOpenDescending => AccountingPeriodBalanceSort.IsOpenDescending,
+        AccountingPeriodWithBalanceSortModel.OpeningBalance => AccountingPeriodBalanceSort.OpeningBalance,
+        AccountingPeriodWithBalanceSortModel.OpeningBalanceDescending => AccountingPeriodBalanceSort.OpeningBalanceDescending,
+        AccountingPeriodWithBalanceSortModel.ClosingBalance => AccountingPeriodBalanceSort.ClosingBalance,
+        AccountingPeriodWithBalanceSortModel.ClosingBalanceDescending => AccountingPeriodBalanceSort.ClosingBalanceDescending,
+        _ => AccountingPeriodBalanceSort.DateDescending,
+    };
 }

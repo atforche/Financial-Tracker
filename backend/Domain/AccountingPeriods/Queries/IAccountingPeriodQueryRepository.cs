@@ -23,4 +23,34 @@ public interface IAccountingPeriodQueryRepository
     Task<AccountingPeriodBalance?> GetBalanceByIdAsync(
         AccountingPeriodId accountingPeriodId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves Accounting Periods matching either range endpoint ID.
+    /// </summary>
+    Task<IReadOnlyCollection<AccountingPeriod>> GetEndpointsAsync(
+        Guid startId,
+        Guid endId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves Accounting Period balances between the provided chronological indexes.
+    /// </summary>
+    Task<IReadOnlyCollection<AccountingPeriodBalance>> GetRangeBalancesAsync(
+        int startIndex,
+        int endIndex,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves persisted income destination facts for the provided Accounting Periods.
+    /// </summary>
+    Task<IReadOnlyCollection<AccountingPeriodRangeIncomeFact>> GetRangeIncomeFactsAsync(
+        IReadOnlyCollection<Guid> accountingPeriodIds,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves persisted spending facts for the provided Accounting Periods.
+    /// </summary>
+    Task<IReadOnlyCollection<AccountingPeriodRangeSpendingFact>> GetRangeSpendingFactsAsync(
+        IReadOnlyCollection<Guid> accountingPeriodIds,
+        CancellationToken cancellationToken = default);
 }
