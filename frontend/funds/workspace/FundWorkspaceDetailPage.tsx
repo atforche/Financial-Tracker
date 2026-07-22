@@ -54,7 +54,7 @@ const FundWorkspaceDetailPage = async function ({
   }
 
   const balanceEventsResponse = await apiClient.GET(
-    "/balance-events/funds/date-range",
+    "/funds/balance-events/date-range",
     {
       params: {
         query: {

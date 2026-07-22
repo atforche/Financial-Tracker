@@ -1,19 +1,19 @@
-namespace Models.BalanceEvents;
+namespace Models.Funds;
 
 /// <summary>
-/// Enum representing the different ways Account balance events can be sorted.
+/// Enum representing the different ways Fund balance events can be sorted.
 /// </summary>
-public enum AccountBalanceEventSortModel
+public enum FundBalanceEventSortModel
 {
     /// <summary>
-    /// Balance events are sorted by account name in ascending order.
+    /// Balance events are sorted by fund name in ascending order.
     /// </summary>
-    AccountName,
+    FundName,
 
     /// <summary>
-    /// Balance events are sorted by account name in descending order.
+    /// Balance events are sorted by fund name in descending order.
     /// </summary>
-    AccountNameDescending,
+    FundNameDescending,
 
     /// <summary>
     /// Balance events are sorted by Accounting Period name in ascending order.

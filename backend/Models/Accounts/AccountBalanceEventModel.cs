@@ -1,6 +1,6 @@
-using Models.Accounts;
+using Models.BalanceEvents;
 
-namespace Models.BalanceEvents;
+namespace Models.Accounts;
 
 /// <summary>
 /// Model representing a balance event for an account.

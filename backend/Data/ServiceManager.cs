@@ -1,6 +1,5 @@
 using Data.AccountingPeriods;
 using Data.Accounts;
-using Data.BalanceEvents;
 using Data.FundPlans;
 using Data.Funds;
 using Data.Transactions;
@@ -30,7 +29,6 @@ public static class ServiceManager
     {
         _ = serviceCollection.AddDbContext<DatabaseContext>();
         _ = serviceCollection.AddScoped<UnitOfWork>();
-        _ = serviceCollection.AddScoped<BalanceEventQueryService>();
 
         _ = serviceCollection.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
         _ = serviceCollection.AddScoped<AccountingPeriodRepository>();
@@ -40,6 +38,8 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<IAccountingPeriodBalanceHistoryRepository, AccountingPeriodBalanceHistoryRepository>();
         _ = serviceCollection.AddScoped<AccountingPeriodBalanceHistoryRepository>();
 
+        _ = serviceCollection.AddScoped<AccountBalanceEventModelQueryService>();
+        _ = serviceCollection.AddScoped<IAccountBalanceEventQueryRepository, AccountBalanceEventQueryRepository>();
         _ = serviceCollection.AddScoped<IAccountRepository, AccountRepository>();
         _ = serviceCollection.AddScoped<AccountRepository>();
         _ = serviceCollection.AddScoped<IAccountQueryRepository, AccountQueryRepository>();
@@ -47,6 +47,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<IAccountBalanceHistoryRepository, AccountBalanceHistoryRepository>();
         _ = serviceCollection.AddScoped<AccountBalanceHistoryRepository>();
 
+        _ = serviceCollection.AddScoped<FundBalanceEventQueryService>();
         _ = serviceCollection.AddScoped<IFundRepository, FundRepository>();
         _ = serviceCollection.AddScoped<FundRepository>();
         _ = serviceCollection.AddScoped<IFundQueryRepository, FundQueryRepository>();
@@ -54,6 +55,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<IFundBalanceHistoryRepository, FundBalanceHistoryRepository>();
         _ = serviceCollection.AddScoped<FundBalanceHistoryRepository>();
 
+        _ = serviceCollection.AddScoped<FundPlanBalanceEventQueryService>();
         _ = serviceCollection.AddScoped<IFundPlanRepository, FundPlanRepository>();
         _ = serviceCollection.AddScoped<FundPlanRepository>();
         _ = serviceCollection.AddScoped<IFundPlanQueryRepository, FundPlanQueryRepository>();

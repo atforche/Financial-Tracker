@@ -1,4 +1,4 @@
-namespace Models.BalanceEvents;
+namespace Models.FundPlans;
 
 /// <summary>
 /// Available ordering options for Fund Plan balance events.

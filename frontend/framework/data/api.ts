@@ -420,6 +420,111 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/funds/balance-events/date-range": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves Fund Balance Events in a date range. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    "Filter.NameSearch"?: string;
+                    "Filter.Names"?: string[];
+                    /** @description Sort order to apply to the results. */
+                    Sort?: components["schemas"]["FundBalanceEventSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfFundBalanceEventModel"];
+                        "application/json": components["schemas"]["CollectionModelOfFundBalanceEventModel"];
+                        "text/json": components["schemas"]["CollectionModelOfFundBalanceEventModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/funds/balance-events/accounting-period-range": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves Fund Balance Events in an Accounting Period range. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    "Filter.NameSearch"?: string;
+                    "Filter.Names"?: string[];
+                    /** @description Sort order to apply to the results. */
+                    Sort?: components["schemas"]["FundBalanceEventSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfFundBalanceEventModel"];
+                        "application/json": components["schemas"]["CollectionModelOfFundBalanceEventModel"];
+                        "text/json": components["schemas"]["CollectionModelOfFundBalanceEventModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/funds/{fundId}": {
         parameters: {
             query?: never;
@@ -825,6 +930,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/fund-plans/balance-events/date-range": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves Fund Plan balance events in a date range. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    "Filter.FundIds"?: string[];
+                    "Filter.AccountingPeriodIds"?: string[];
+                    "Filter.IncludeOnboarded"?: boolean;
+                    /** @description Optional event ordering. */
+                    Sort?: components["schemas"]["FundPlanBalanceEventSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
+                        "application/json": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
+                        "text/json": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/fund-plans/balance-events/accounting-period-range": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves Fund Plan balance events in an Accounting Period range. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    "Filter.FundIds"?: string[];
+                    "Filter.AccountingPeriodIds"?: string[];
+                    "Filter.IncludeOnboarded"?: boolean;
+                    /** @description Optional event ordering. */
+                    Sort?: components["schemas"]["FundPlanBalanceEventSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
+                        "application/json": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
+                        "text/json": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/fund-plans": {
         parameters: {
             query?: never;
@@ -1060,7 +1261,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/balance-events/accounts/date-range": {
+    "/accounts/balance-events/date-range": {
         parameters: {
             query?: never;
             header?: never;
@@ -1108,7 +1309,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/balance-events/accounts/accounting-period-range": {
+    "/accounts/balance-events/accounting-period-range": {
         parameters: {
             query?: never;
             header?: never;
@@ -1155,207 +1356,6 @@ export interface paths {
                         "text/plain": components["schemas"]["ValidationProblemDetails"];
                         "application/json": components["schemas"]["ValidationProblemDetails"];
                         "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/balance-events/funds/date-range": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves Fund Balance Events in a date range. */
-        get: {
-            parameters: {
-                query?: {
-                    "Range.Start"?: string;
-                    "Range.End"?: string;
-                    "Filter.NameSearch"?: string;
-                    "Filter.Names"?: string[];
-                    /** @description Sort order to apply to the results. */
-                    Sort?: components["schemas"]["FundBalanceEventSortModel"];
-                    Limit?: number;
-                    Offset?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CollectionModelOfFundBalanceEventModel"];
-                        "application/json": components["schemas"]["CollectionModelOfFundBalanceEventModel"];
-                        "text/json": components["schemas"]["CollectionModelOfFundBalanceEventModel"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/balance-events/funds/accounting-period-range": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves Fund Balance Events in an Accounting Period range. */
-        get: {
-            parameters: {
-                query?: {
-                    "Range.Start"?: string;
-                    "Range.End"?: string;
-                    "Filter.NameSearch"?: string;
-                    "Filter.Names"?: string[];
-                    /** @description Sort order to apply to the results. */
-                    Sort?: components["schemas"]["FundBalanceEventSortModel"];
-                    Limit?: number;
-                    Offset?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CollectionModelOfFundBalanceEventModel"];
-                        "application/json": components["schemas"]["CollectionModelOfFundBalanceEventModel"];
-                        "text/json": components["schemas"]["CollectionModelOfFundBalanceEventModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/balance-events/fund-plans/date-range": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves Fund Plan balance events in a date range. */
-        get: {
-            parameters: {
-                query?: {
-                    "Range.Start"?: string;
-                    "Range.End"?: string;
-                    "Filter.FundIds"?: string[];
-                    "Filter.AccountingPeriodIds"?: string[];
-                    "Filter.IncludeOnboarded"?: boolean;
-                    /** @description Optional event ordering. */
-                    Sort?: components["schemas"]["FundPlanBalanceEventSortModel"];
-                    Limit?: number;
-                    Offset?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
-                        "application/json": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
-                        "text/json": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/balance-events/fund-plans/accounting-period-range": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves Fund Plan balance events in an Accounting Period range. */
-        get: {
-            parameters: {
-                query?: {
-                    "Range.Start"?: string;
-                    "Range.End"?: string;
-                    "Filter.FundIds"?: string[];
-                    "Filter.AccountingPeriodIds"?: string[];
-                    "Filter.IncludeOnboarded"?: boolean;
-                    /** @description Optional event ordering. */
-                    Sort?: components["schemas"]["FundPlanBalanceEventSortModel"];
-                    Limit?: number;
-                    Offset?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
-                        "application/json": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
-                        "text/json": components["schemas"]["CollectionModelOfFundPlanBalanceEventModel"];
                     };
                 };
             };

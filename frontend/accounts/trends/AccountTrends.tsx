@@ -176,7 +176,7 @@ const AccountTrends = async function ({
         apiClient.GET("/accounts/date-range", {
           params: { query: { ...accountQuery, ...range } },
         }),
-        apiClient.GET("/balance-events/accounts/date-range", {
+        apiClient.GET("/accounts/balance-events/date-range", {
           params: { query: { ...balanceEventQuery, ...range } },
         }),
       ]);
@@ -200,7 +200,7 @@ const AccountTrends = async function ({
       apiClient.GET("/accounts/accounting-period-range", {
         params: { query: { ...accountQuery, ...range } },
       }),
-      apiClient.GET("/balance-events/accounts/accounting-period-range", {
+      apiClient.GET("/accounts/balance-events/accounting-period-range", {
         params: { query: { ...balanceEventQuery, ...range } },
       }),
     ]);

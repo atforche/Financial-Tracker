@@ -1,6 +1,4 @@
-using Models.Accounts;
-
-namespace Models.BalanceEvents;
+namespace Models.Accounts;
 
 /// <summary>
 /// Model representing the query parameters that can be applied when retrieving Account balance events in an accounting period range

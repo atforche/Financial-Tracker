@@ -158,7 +158,7 @@ const FundTrends = async function ({
         apiClient.GET("/funds/date-range", {
           params: { query: { ...fundQuery, ...range } },
         }),
-        apiClient.GET("/balance-events/funds/date-range", {
+        apiClient.GET("/funds/balance-events/date-range", {
           params: { query: { ...balanceEventQuery, ...range } },
         }),
       ]);
@@ -179,7 +179,7 @@ const FundTrends = async function ({
       apiClient.GET("/funds/accounting-period-range", {
         params: { query: { ...fundQuery, ...range } },
       }),
-      apiClient.GET("/balance-events/funds/accounting-period-range", {
+      apiClient.GET("/funds/balance-events/accounting-period-range", {
         params: { query: { ...balanceEventQuery, ...range } },
       }),
     ]);

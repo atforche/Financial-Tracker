@@ -76,7 +76,7 @@ const FundPlanWorkspaceDetailPage = async function ({
     "Failed to fetch Funding Plan progress",
   );
   const events = unwrapApiResponse(
-    await apiClient.GET("/balance-events/fund-plans/accounting-period-range", {
+    await apiClient.GET("/fund-plans/balance-events/accounting-period-range", {
       params: {
         query: {
           "Range.Start": periodId,

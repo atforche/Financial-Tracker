@@ -1,9 +1,9 @@
 using Domain;
 using Domain.AccountingPeriods;
-using Domain.Transactions.Income;
-using Domain.Transactions.Spending;
 using Domain.Funds;
 using Domain.Funds.Queries;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data.Funds;

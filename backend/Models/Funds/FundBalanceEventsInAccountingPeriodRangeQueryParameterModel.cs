@@ -1,6 +1,4 @@
-using Models.Funds;
-
-namespace Models.BalanceEvents;
+namespace Models.Funds;
 
 /// <summary>
 /// Model representing the query parameters that can be applied when retrieving Fund balance events in an accounting period range.

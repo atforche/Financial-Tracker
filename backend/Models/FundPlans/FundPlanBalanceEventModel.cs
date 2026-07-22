@@ -1,7 +1,7 @@
-using Models.FundPlans;
+using Models.BalanceEvents;
 using Models.Funds;
 
-namespace Models.BalanceEvents;
+namespace Models.FundPlans;
 
 /// <summary>
 /// Balance event showing a Transaction's effect on Fund Plan totals.

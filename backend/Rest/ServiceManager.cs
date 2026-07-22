@@ -21,6 +21,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<AccountingPeriodQueryConverter>();
 
         _ = serviceCollection.AddScoped<AccountConverter>();
+        _ = serviceCollection.AddScoped<AccountBalanceEventConverter>();
 
         _ = serviceCollection.AddScoped<FundConverter>();
         _ = serviceCollection.AddScoped<FundAmountConverter>();

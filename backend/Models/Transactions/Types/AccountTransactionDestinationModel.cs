@@ -1,4 +1,4 @@
-using Models.BalanceEvents;
+using Models.Accounts;
 
 namespace Models.Transactions.Types;
 

@@ -1,4 +1,6 @@
-using Models.BalanceEvents;
+using Models.Accounts;
+using Models.FundPlans;
+using Models.Funds;
 
 namespace Models.Transactions.Types;
 

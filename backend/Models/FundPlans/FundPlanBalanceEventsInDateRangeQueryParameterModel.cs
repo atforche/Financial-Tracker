@@ -1,6 +1,4 @@
-using Models.FundPlans;
-
-namespace Models.BalanceEvents;
+namespace Models.FundPlans;
 
 /// <summary>
 /// Query parameters for Fund Plan balance events in a date range.

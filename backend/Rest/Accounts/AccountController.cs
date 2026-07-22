@@ -1,4 +1,5 @@
 using Data;
+using Data.Accounts;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
@@ -20,8 +21,37 @@ public sealed class AccountController(
     AccountingPeriodConverter accountingPeriodConverter,
     AccountService accountService,
     AccountQueryService accountQueryService,
-    AccountConverter accountConverter) : ControllerBase
+    AccountConverter accountConverter,
+    AccountBalanceEventQueryService accountBalanceEventQueryService,
+    AccountBalanceEventModelQueryService accountBalanceEventModelQueryService,
+    AccountBalanceEventConverter accountBalanceEventConverter) : ControllerBase
 {
+    /// <summary>
+    /// Retrieves Account Balance Events in a date range.
+    /// </summary>
+    [HttpGet("balance-events/date-range")]
+    [ProducesResponseType(typeof(CollectionModel<AccountBalanceEventModel>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<CollectionModel<AccountBalanceEventModel>>> GetBalanceEventsAsync(
+        [FromQuery] AccountBalanceEventsInDateRangeQueryParameterModel query,
+        CancellationToken cancellationToken) =>
+        Ok(accountBalanceEventConverter.ToModel(await accountBalanceEventQueryService.GetAsync(
+            accountBalanceEventConverter.ToDomain(query),
+            cancellationToken)));
+
+    /// <summary>
+    /// Retrieves Account Balance Events in an Accounting Period range.
+    /// </summary>
+    [HttpGet("balance-events/accounting-period-range")]
+    [ProducesResponseType(typeof(CollectionModel<AccountBalanceEventModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<CollectionModel<AccountBalanceEventModel>>> GetBalanceEventsAsync(
+        [FromQuery] AccountBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        CollectionModel<AccountBalanceEventModel>? model = await accountBalanceEventModelQueryService.GetAsync(query, cancellationToken);
+        return model == null ? InvalidAccountingPeriodRange() : Ok(model);
+    }
+
     /// <summary>
     /// Retrieves the Account that matches the provided ID
     /// </summary>
@@ -249,4 +279,13 @@ public sealed class AccountController(
         await unitOfWork.SaveChangesAsync();
         return Ok();
     }
+
+    /// <summary>
+    /// Returns a 422 Unprocessable Entity response indicating that the Accounting Period range could not be resolved.
+    /// </summary>
+    private UnprocessableEntityObjectResult InvalidAccountingPeriodRange() => UnprocessableEntity(new ValidationProblemDetails
+    {
+        Title = "Unable to resolve Accounting Period range.",
+        Status = StatusCodes.Status422UnprocessableEntity,
+    });
 }

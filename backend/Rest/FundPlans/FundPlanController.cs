@@ -24,8 +24,30 @@ public sealed class FundPlanController(
     FundPlanConverter fundPlanConverter,
     AccountingPeriodRepository accountingPeriodRepository,
     FundBalanceService fundBalanceService,
-    FundPlanService fundPlanService) : ControllerBase
+    FundPlanService fundPlanService,
+    FundPlanBalanceEventQueryService fundPlanBalanceEventQueryService) : ControllerBase
 {
+    /// <summary>
+    /// Retrieves Fund Plan balance events in a date range.
+    /// </summary>
+    [HttpGet("balance-events/date-range")]
+    public async Task<ActionResult<CollectionModel<FundPlanBalanceEventModel>>> GetBalanceEventsAsync(
+        [FromQuery] FundPlanBalanceEventsInDateRangeQueryParameterModel query,
+        CancellationToken cancellationToken) =>
+        Ok(await fundPlanBalanceEventQueryService.GetAsync(query, cancellationToken));
+
+    /// <summary>
+    /// Retrieves Fund Plan balance events in an Accounting Period range.
+    /// </summary>
+    [HttpGet("balance-events/accounting-period-range")]
+    public async Task<ActionResult<CollectionModel<FundPlanBalanceEventModel>>> GetBalanceEventsAsync(
+        [FromQuery] FundPlanBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        CollectionModel<FundPlanBalanceEventModel>? model = await fundPlanBalanceEventQueryService.GetAsync(query, cancellationToken);
+        return model == null ? InvalidAccountingPeriodRange() : Ok(model);
+    }
+
     /// <summary>
     /// Retrieves Fund Plans matching the provided query.
     /// </summary>
@@ -178,4 +200,13 @@ public sealed class FundPlanController(
             Errors = ValidationErrorHelper.GroupValidationErrors(errors),
             Status = StatusCodes.Status422UnprocessableEntity,
         });
+
+    /// <summary>
+    /// Returns a 422 Unprocessable Entity response indicating that the Accounting Period range could not be resolved.
+    /// </summary>
+    private UnprocessableEntityObjectResult InvalidAccountingPeriodRange() => UnprocessableEntity(new ValidationProblemDetails
+    {
+        Title = "Unable to resolve Accounting Period range.",
+        Status = StatusCodes.Status422UnprocessableEntity,
+    });
 }
