@@ -12,6 +12,17 @@ public sealed record FundPlanBalanceEventQuery(
     int? Limit);
 
 /// <summary>
+/// Criteria for querying Fund Plan balance events over an Accounting Period range.
+/// </summary>
+public sealed record FundPlanBalanceEventAccountingPeriodRangeQuery(
+    Guid StartId,
+    Guid EndId,
+    FundPlanBalanceEventFilter Filter,
+    FundPlanBalanceEventSort Sort,
+    int Offset,
+    int? Limit);
+
+/// <summary>
 /// Criteria used to filter Fund Plan balance events.
 /// </summary>
 public sealed record FundPlanBalanceEventFilter(IReadOnlyCollection<Guid> FundIds);

@@ -9,8 +9,6 @@ using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.FundPlans;
-using DomainFundPlanBalanceEventQueryService = Domain.FundPlans.Queries.FundPlanBalanceEventQueryService;
-using LegacyFundPlanBalanceEventQueryService = Data.FundPlans.FundPlanBalanceEventQueryService;
 
 namespace Rest.FundPlans;
 
@@ -27,9 +25,8 @@ public sealed class FundPlanController(
     AccountingPeriodRepository accountingPeriodRepository,
     FundBalanceService fundBalanceService,
     FundPlanService fundPlanService,
-    DomainFundPlanBalanceEventQueryService fundPlanBalanceEventQueryService,
-    FundPlanBalanceEventConverter fundPlanBalanceEventConverter,
-    LegacyFundPlanBalanceEventQueryService legacyFundPlanBalanceEventQueryService) : ControllerBase
+    FundPlanBalanceEventQueryService fundPlanBalanceEventQueryService,
+    FundPlanBalanceEventConverter fundPlanBalanceEventConverter) : ControllerBase
 {
     /// <summary>
     /// Retrieves Fund Plan balance events in a date range.
@@ -50,8 +47,10 @@ public sealed class FundPlanController(
         [FromQuery] FundPlanBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        CollectionModel<FundPlanBalanceEventModel>? model = await legacyFundPlanBalanceEventQueryService.GetAsync(query, cancellationToken);
-        return model == null ? InvalidAccountingPeriodRange() : Ok(model);
+        FundPlanBalanceEventAccountingPeriodRangeQueryResult result = await fundPlanBalanceEventQueryService.GetAsync(
+            fundPlanBalanceEventConverter.ToDomain(query),
+            cancellationToken);
+        return result.Page == null ? InvalidAccountingPeriodRange() : Ok(fundPlanBalanceEventConverter.ToModel(result.Page));
     }
 
     /// <summary>

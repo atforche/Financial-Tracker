@@ -21,19 +21,90 @@ public sealed class FundPlanBalanceEventQueryService(IFundPlanBalanceEventQueryR
     {
         IReadOnlyCollection<Transaction> transactions = await repository.GetTransactionsAsync(query.Start, query.End, cancellationToken);
         IReadOnlyCollection<AccountingPeriods.AccountingPeriodId> periodIds = transactions.Select(transaction => transaction.AccountingPeriodId).Distinct().ToList();
-        var periods = (await repository.GetAccountingPeriodsAsync(periodIds, cancellationToken)).ToDictionary(period => period.Id);
+        IReadOnlyCollection<AccountingPeriods.AccountingPeriod> periods = await repository.GetAccountingPeriodsAsync(periodIds, cancellationToken);
+        return await GetAsync(transactions, periods, query.Filter, query.Sort, query.Offset, query.Limit, cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieves Fund Plan balance events in the requested Accounting Period range.
+    /// </summary>
+    public async Task<FundPlanBalanceEventAccountingPeriodRangeQueryResult> GetAsync(
+        FundPlanBalanceEventAccountingPeriodRangeQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyCollection<AccountingPeriods.AccountingPeriodId> endpointIds =
+            [new(query.StartId), new(query.EndId)];
+        IReadOnlyCollection<AccountingPeriods.AccountingPeriod> endpoints = await repository.GetAccountingPeriodsAsync(
+            endpointIds,
+            cancellationToken);
+        AccountingPeriods.AccountingPeriod? start = endpoints.SingleOrDefault(period => period.Id.Value == query.StartId);
+        AccountingPeriods.AccountingPeriod? end = endpoints.SingleOrDefault(period => period.Id.Value == query.EndId);
+        if (start == null || end == null)
+        {
+            return new FundPlanBalanceEventAccountingPeriodRangeQueryResult(null);
+        }
+
+        int startIndex = GetChronologicalIndex(start);
+        int endIndex = GetChronologicalIndex(end);
+        if (startIndex > endIndex)
+        {
+            return new FundPlanBalanceEventAccountingPeriodRangeQueryResult(null);
+        }
+
+        IReadOnlyCollection<AccountingPeriods.AccountingPeriod> periods = await repository.GetAccountingPeriodsAsync(
+            startIndex,
+            endIndex,
+            cancellationToken);
+        IReadOnlyCollection<int> persistedIndexes = periods.Select(GetChronologicalIndex).ToList();
+        if (!persistedIndexes.SequenceEqual(Enumerable.Range(startIndex, endIndex - startIndex + 1)))
+        {
+            return new FundPlanBalanceEventAccountingPeriodRangeQueryResult(null);
+        }
+
+        IReadOnlyCollection<AccountingPeriods.AccountingPeriodId> periodIds = periods.Select(period => period.Id).ToList();
+        IReadOnlyCollection<Transaction> transactions = await repository.GetTransactionsAsync(periodIds, cancellationToken);
+        QueryPage<FundPlanBalanceEvent> page = await GetAsync(
+            transactions,
+            periods,
+            query.Filter,
+            query.Sort,
+            query.Offset,
+            query.Limit,
+            cancellationToken);
+        return new FundPlanBalanceEventAccountingPeriodRangeQueryResult(page);
+    }
+
+    /// <summary>
+    /// Interprets and pages Fund Plan balance events from the provided facts.
+    /// </summary>
+    private async Task<QueryPage<FundPlanBalanceEvent>> GetAsync(
+        IReadOnlyCollection<Transaction> transactions,
+        IReadOnlyCollection<AccountingPeriods.AccountingPeriod> accountingPeriods,
+        FundPlanBalanceEventFilter filter,
+        FundPlanBalanceEventSort sort,
+        int offset,
+        int? limit,
+        CancellationToken cancellationToken)
+    {
+        var periods = accountingPeriods.ToDictionary(period => period.Id);
         IReadOnlyCollection<FundId> fundIds = transactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null))
             .Where(fundId => fundId != Fund.UnassignedFundId).Distinct().ToList();
         var funds = (await repository.GetFundsAsync(fundIds, cancellationToken)).ToDictionary(fund => fund.Id);
         IReadOnlyCollection<FundPlanTotalsHistory> histories = await repository.GetFundPlanHistoriesAsync(fundIds, cancellationToken);
         IEnumerable<FundPlanBalanceEvent> events = transactions
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, histories))
-            .Where(balanceEvent => query.Filter.FundIds.Count == 0 || query.Filter.FundIds.Contains(balanceEvent.Fund.Id.Value));
-        var allItems = Sort(events, query.Sort).ToList();
+            .Where(balanceEvent => filter.FundIds.Count == 0 || filter.FundIds.Contains(balanceEvent.Fund.Id.Value));
+        var allItems = Sort(events, sort).ToList();
         return new QueryPage<FundPlanBalanceEvent>(
-            allItems.Skip(query.Offset).Take(query.Limit ?? int.MaxValue).ToList(),
+            allItems.Skip(offset).Take(limit ?? int.MaxValue).ToList(),
             allItems.Count);
     }
+
+    /// <summary>
+    /// Calculates the chronological index of an Accounting Period.
+    /// </summary>
+    private static int GetChronologicalIndex(AccountingPeriods.AccountingPeriod period) =>
+        (period.Year * 12) + period.Month;
 
     /// <summary>
     /// Retrieves interpreted Fund Plan balance events for a Transaction.
