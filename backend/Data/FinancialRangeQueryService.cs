@@ -4,7 +4,6 @@ using Domain.Transactions.Income;
 using Domain.Transactions.Spending;
 using Microsoft.EntityFrameworkCore;
 using Models;
-using Models.Accounts;
 using Models.Funds;
 
 namespace Data;
@@ -14,64 +13,6 @@ namespace Data;
 /// </summary>
 public sealed class FinancialRangeQueryService(DatabaseContext databaseContext)
 {
-    /// <summary>
-    /// Retrieves Account balances over a date range.
-    /// </summary>
-    public async Task<AccountsInDateRangeModel> GetAccountsAsync(AccountsInDateRangeQueryParameterModel request, CancellationToken cancellationToken = default)
-    {
-        IQueryable<Account> accounts = ApplyFilter(databaseContext.Accounts.AsNoTracking(), request.Filter);
-        List<AccountWithBalanceRangeModel> rows = await accounts.Select(account => new AccountWithBalanceRangeModel
-        {
-            Id = account.Id.Value,
-            Name = account.Name,
-            Type = (AccountTypeModel)account.Type,
-            StartingBalance = databaseContext.AccountBalanceHistories.Where(history => history.Account.Id == account.Id && history.Date < request.Range.Start)
-                .OrderByDescending(history => history.Date).ThenByDescending(history => history.Sequence).Select(history => (decimal?)history.PostedBalance).FirstOrDefault() ?? account.OnboardedBalance ?? 0,
-            EndingBalance = databaseContext.AccountBalanceHistories.Where(history => history.Account.Id == account.Id && history.Date <= request.Range.End)
-                .OrderByDescending(history => history.Date).ThenByDescending(history => history.Sequence).Select(history => (decimal?)history.PostedBalance).FirstOrDefault() ?? account.OnboardedBalance ?? 0,
-        }).ToListAsync(cancellationToken);
-        rows = Sort(rows, request.Sort).ToList();
-        List<AccountBalanceHistory> histories = await databaseContext.AccountBalanceHistories.AsNoTracking()
-            .Where(history => history.Date <= request.Range.End)
-            .OrderBy(history => history.Date).ThenBy(history => history.Sequence)
-            .ToListAsync(cancellationToken);
-        List<Account> matchingAccounts = await accounts.ToListAsync(cancellationToken);
-        IReadOnlyCollection<AccountBalanceSummaryByDateModel> dates = GetDates(request.Range.Start, request.Range.End)
-            .Select(date =>
-            {
-                var balances = matchingAccounts.Select(account =>
-                {
-                    decimal balance = account.DateOpened is DateOnly opened && date < opened
-                        ? 0
-                        : histories.LastOrDefault(history => history.Account.Id == account.Id && history.Date <= date)?.PostedBalance
-                            ?? account.OnboardedBalance ?? 0;
-                    return (account.Type, Balance: account.Type.IsDebt() ? -balance : balance);
-                }).ToList();
-                return new AccountBalanceSummaryByDateModel
-                {
-                    Date = date,
-                    TotalBalance = balances.Sum(item => item.Balance),
-                    TotalTrackedBalance = balances.Where(item => item.Type.IsTracked()).Sum(item => item.Balance),
-                    TotalUntrackedBalance = balances.Where(item => !item.Type.IsTracked()).Sum(item => item.Balance),
-                    BalanceByAccountType = balances.GroupBy(item => item.Type).OrderBy(group => group.Key)
-                        .Select(group => new AccountTypeBalanceModel
-                        {
-                            AccountType = (AccountTypeModel)group.Key,
-                            TotalBalance = group.Sum(item => item.Balance),
-                        }).ToList(),
-                };
-            }).ToList();
-        (IncomeAmountModel income, decimal spending) = await GetTotalsAsync(request.Range.Start, request.Range.End, cancellationToken);
-        return new AccountsInDateRangeModel
-        {
-            Accounts = new CollectionModel<AccountWithBalanceRangeModel> { Items = rows.Skip(request.Offset ?? 0).Take(request.Limit ?? int.MaxValue).ToList(), TotalCount = rows.Count },
-            AvailableAccountNames = await databaseContext.Accounts.AsNoTracking().OrderBy(account => account.Name).Select(account => account.Name).ToListAsync(cancellationToken),
-            TotalIncome = income,
-            TotalSpending = spending,
-            Dates = dates,
-        };
-    }
-
     /// <summary>
     /// Retrieves Fund balances over a date range.
     /// </summary>
@@ -145,27 +86,6 @@ public sealed class FinancialRangeQueryService(DatabaseContext databaseContext)
     /// <summary>
     /// Applies the filter to the provided query
     /// </summary>
-    private static IQueryable<Account> ApplyFilter(IQueryable<Account> query, AccountFilterModel? filter)
-    {
-        if (!string.IsNullOrWhiteSpace(filter?.NameSearch))
-        {
-            query = query.Where(account => account.Name.Contains(filter.NameSearch));
-        }
-        if (filter?.Names is { Count: > 0 } names)
-        {
-            query = query.Where(account => names.Contains(account.Name));
-        }
-        if (filter?.Types is { Count: > 0 } types)
-        {
-            var values = types.Select(type => (AccountType)type).ToList();
-            query = query.Where(account => values.Contains(account.Type));
-        }
-        return query;
-    }
-
-    /// <summary>
-    /// Applies the filter to the provided query
-    /// </summary>
     private static IQueryable<Fund> ApplyFilter(IQueryable<Fund> query, FundFilterModel? filter)
     {
         if (!string.IsNullOrWhiteSpace(filter?.NameSearch))
@@ -180,24 +100,6 @@ public sealed class FinancialRangeQueryService(DatabaseContext databaseContext)
 
         return query;
     }
-
-    /// <summary>
-    /// Sorts the provided account rows based on the specified sort model.
-    /// </summary>
-    private static IEnumerable<AccountWithBalanceRangeModel> Sort(IEnumerable<AccountWithBalanceRangeModel> rows, AccountWithBalanceRangeSortModel? sort) => sort switch
-    {
-        AccountWithBalanceRangeSortModel.NameDescending => rows.OrderByDescending(row => row.Name),
-        AccountWithBalanceRangeSortModel.Type => rows.OrderBy(row => row.Type).ThenBy(row => row.Name),
-        AccountWithBalanceRangeSortModel.TypeDescending => rows.OrderByDescending(row => row.Type).ThenBy(row => row.Name),
-        AccountWithBalanceRangeSortModel.StartingBalance => rows.OrderBy(row => row.StartingBalance).ThenBy(row => row.Name),
-        AccountWithBalanceRangeSortModel.StartingBalanceDescending => rows.OrderByDescending(row => row.StartingBalance).ThenBy(row => row.Name),
-        AccountWithBalanceRangeSortModel.EndingBalance => rows.OrderBy(row => row.EndingBalance).ThenBy(row => row.Name),
-        AccountWithBalanceRangeSortModel.EndingBalanceDescending => rows.OrderByDescending(row => row.EndingBalance).ThenBy(row => row.Name),
-        AccountWithBalanceRangeSortModel.NetChange => rows.OrderBy(row => row.EndingBalance - row.StartingBalance).ThenBy(row => row.Name),
-        AccountWithBalanceRangeSortModel.NetChangeDescending => rows.OrderByDescending(row => row.EndingBalance - row.StartingBalance).ThenBy(row => row.Name),
-        AccountWithBalanceRangeSortModel.Name => rows.OrderBy(row => row.Name),
-        _ => rows.OrderBy(row => row.Name),
-    };
 
     /// <summary>
     /// Sorts the provided fund rows based on the specified sort model.

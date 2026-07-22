@@ -1,7 +1,7 @@
 using Domain;
+using Domain.AccountingPeriods;
 using Domain.Funds;
 using Domain.Funds.Queries;
-using Domain.AccountingPeriods;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data.Funds;

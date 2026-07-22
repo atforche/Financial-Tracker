@@ -70,6 +70,17 @@ public sealed class AccountConverter
         model.Limit);
 
     /// <summary>
+    /// Converts the provided Account date-range query to a Domain query.
+    /// </summary>
+    public AccountDateRangeQuery ToDomain(AccountsInDateRangeQueryParameterModel model) => new(
+        model.Range.Start,
+        model.Range.End,
+        ToDomain(model.Filter),
+        ToDomain(model.Sort),
+        model.Offset ?? 0,
+        model.Limit);
+
+    /// <summary>
     /// Converts the provided Account to an Account model.
     /// </summary>
     public AccountModel ToModel(Account account) => new()
@@ -143,6 +154,45 @@ public sealed class AccountConverter
     };
 
     /// <summary>
+    /// Converts the provided Account date range to an API model.
+    /// </summary>
+    public AccountsInDateRangeModel ToModel(AccountDateRange range) => new()
+    {
+        Accounts = new CollectionModel<AccountWithBalanceRangeModel>
+        {
+            Items = range.Accounts.Items.Select(balance => new AccountWithBalanceRangeModel
+            {
+                Id = balance.Account.Id.Value,
+                Name = balance.Account.Name,
+                Type = AccountTypeConverter.ToModel(balance.Account.Type),
+                StartingBalance = balance.StartingBalance,
+                EndingBalance = balance.EndingBalance,
+            }).ToList(),
+            TotalCount = range.Accounts.TotalCount,
+        },
+        AvailableAccountNames = range.AvailableAccountNames,
+        TotalIncome = new IncomeAmountModel
+        {
+            Total = range.TotalIncome,
+            Tracked = range.TrackedIncome,
+            Untracked = range.UntrackedIncome,
+        },
+        TotalSpending = range.TotalSpending,
+        Dates = range.Dates.Select(summary => new AccountBalanceSummaryByDateModel
+        {
+            Date = summary.Date,
+            TotalBalance = summary.Balance.TotalBalance,
+            TotalTrackedBalance = summary.Balance.TotalTrackedBalance,
+            TotalUntrackedBalance = summary.Balance.TotalUntrackedBalance,
+            BalanceByAccountType = summary.Balance.BalanceByAccountType.Select(balance => new AccountTypeBalanceModel
+            {
+                AccountType = AccountTypeConverter.ToModel(balance.AccountType),
+                TotalBalance = balance.TotalBalance,
+            }).ToList(),
+        }).ToList(),
+    };
+
+    /// <summary>
     /// Converts the provided Account Period Balance Summary to an API model.
     /// </summary>
     private static AccountBalanceSummaryByPeriodModel ToModel(AccountPeriodBalanceSummary summary) => new()
@@ -172,6 +222,24 @@ public sealed class AccountConverter
             AccountType = AccountTypeConverter.ToModel(balance.AccountType),
             TotalBalance = balance.TotalBalance,
         }).ToList(),
+    };
+
+    /// <summary>
+    /// Converts the provided Account with Balance Range sort model to a Domain sort.
+    /// </summary>
+    private static AccountRangeSort ToDomain(AccountWithBalanceRangeSortModel? sort) => sort switch
+    {
+        AccountWithBalanceRangeSortModel.Name => AccountRangeSort.Name,
+        AccountWithBalanceRangeSortModel.NameDescending => AccountRangeSort.NameDescending,
+        AccountWithBalanceRangeSortModel.Type => AccountRangeSort.Type,
+        AccountWithBalanceRangeSortModel.TypeDescending => AccountRangeSort.TypeDescending,
+        AccountWithBalanceRangeSortModel.StartingBalance => AccountRangeSort.StartingBalance,
+        AccountWithBalanceRangeSortModel.StartingBalanceDescending => AccountRangeSort.StartingBalanceDescending,
+        AccountWithBalanceRangeSortModel.EndingBalance => AccountRangeSort.EndingBalance,
+        AccountWithBalanceRangeSortModel.EndingBalanceDescending => AccountRangeSort.EndingBalanceDescending,
+        AccountWithBalanceRangeSortModel.NetChange => AccountRangeSort.NetChange,
+        AccountWithBalanceRangeSortModel.NetChangeDescending => AccountRangeSort.NetChangeDescending,
+        _ => AccountRangeSort.Name,
     };
 
     /// <summary>

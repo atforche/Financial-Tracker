@@ -121,6 +121,49 @@ public sealed class AccountQueryService(
     }
 
     /// <summary>
+    /// Retrieves Account balances and financial totals over a date range.
+    /// </summary>
+    public async Task<AccountDateRange> GetDateRangeAsync(
+        AccountDateRangeQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyCollection<AccountRangeBalance> balances = await accountQueryRepository.GetDateRangeBalancesAsync(
+            query.Filter,
+            query.Start,
+            query.End,
+            cancellationToken);
+        IReadOnlyCollection<AccountDateBalanceFact> history = await accountQueryRepository.GetDateBalanceFactsAsync(query.End, cancellationToken);
+        IReadOnlyCollection<AccountDateRangeIncomeFact> incomeFacts = await accountQueryRepository.GetDateRangeIncomeFactsAsync(
+            query.Start,
+            query.End,
+            cancellationToken);
+        IReadOnlyCollection<AccountDateRangeSpendingFact> spendingFacts = await accountQueryRepository.GetDateRangeSpendingFactsAsync(
+            query.Start,
+            query.End,
+            cancellationToken);
+        IReadOnlyCollection<AccountDateRangeIncomeFact> recognizedIncome = incomeFacts
+            .Where(fact => !fact.HasInternalSource || fact.PostedDate != null)
+            .ToList();
+        decimal totalIncome = recognizedIncome.Sum(fact => fact.Amount);
+        decimal trackedIncome = recognizedIncome.Where(fact => fact.AccountType.IsTracked()).Sum(fact => fact.Amount);
+        decimal totalSpending = spendingFacts.Where(fact => fact.PostedDate != null).Sum(fact => fact.Amount);
+        IReadOnlyCollection<AccountDateBalanceSummary> dates = GetDates(query.Start, query.End)
+            .Select(date => new AccountDateBalanceSummary(date, SummarizeDate(balances, history, date)))
+            .ToList();
+        IReadOnlyCollection<AccountRangeBalance> items = Sort(balances, query.Sort)
+            .Skip(query.Offset)
+            .Take(query.Limit ?? int.MaxValue)
+            .ToList();
+        return new AccountDateRange(
+            new QueryPage<AccountRangeBalance>(items, balances.Count),
+            await accountQueryRepository.GetAllNamesAsync(cancellationToken),
+            totalIncome,
+            trackedIncome,
+            totalSpending,
+            dates);
+    }
+
+    /// <summary>
     /// Retrieves the chronological index for the provided Accounting Period.
     /// </summary>
     private static int GetChronologicalIndex(AccountingPeriod period) => (period.Year * 12) + period.Month;
@@ -139,6 +182,45 @@ public sealed class AccountQueryService(
             values.Where(item => !item.Type.IsTracked()).Sum(item => item.Amount),
             values.GroupBy(item => item.Type).OrderBy(group => group.Key)
                 .Select(group => new AccountTypeBalance(group.Key, group.Sum(item => item.Amount))).ToList());
+    }
+
+    /// <summary>
+    /// Summarizes the provided Account Range Balances and Account Balance Facts into a single Account Balance Summary for the specified date.
+    /// </summary>
+    private static AccountBalanceSummary SummarizeDate(
+        IEnumerable<AccountRangeBalance> balances,
+        IReadOnlyCollection<AccountDateBalanceFact> history,
+        DateOnly date)
+    {
+        var values = balances.Select(balance =>
+        {
+            decimal amount = balance.Account.DateOpened is DateOnly opened && date < opened
+                ? 0
+                : history.LastOrDefault(item => item.AccountId == balance.Account.Id && item.Date <= date)?.PostedBalance
+                    ?? balance.Account.OnboardedBalance ?? 0;
+            return (balance.Account.Type, Amount: balance.Account.Type.IsDebt() ? -amount : amount);
+        }).ToList();
+        return new AccountBalanceSummary(
+            values.Sum(item => item.Amount),
+            values.Where(item => item.Type.IsTracked()).Sum(item => item.Amount),
+            values.Where(item => !item.Type.IsTracked()).Sum(item => item.Amount),
+            values.GroupBy(item => item.Type).OrderBy(group => group.Key)
+                .Select(group => new AccountTypeBalance(group.Key, group.Sum(item => item.Amount))).ToList());
+    }
+
+    /// <summary>
+    /// Generates a sequence of dates from the start date to the end date, inclusive.
+    /// </summary>
+    private static IEnumerable<DateOnly> GetDates(DateOnly start, DateOnly end)
+    {
+        for (DateOnly date = start; date <= end; date = date.AddDays(1))
+        {
+            yield return date;
+            if (date == end)
+            {
+                yield break;
+            }
+        }
     }
 
     /// <summary>

@@ -36,4 +36,36 @@ public interface IAccountQueryRepository
         int startIndex,
         int endIndex,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves Account boundary balances for a date range.
+    /// </summary>
+    Task<IReadOnlyCollection<AccountRangeBalance>> GetDateRangeBalancesAsync(
+        AccountFilter filter,
+        DateOnly startDate,
+        DateOnly endDate,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves Account balance history facts through the provided date.
+    /// </summary>
+    Task<IReadOnlyCollection<AccountDateBalanceFact>> GetDateBalanceFactsAsync(
+        DateOnly endDate,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves income destination facts within the provided date range.
+    /// </summary>
+    Task<IReadOnlyCollection<AccountDateRangeIncomeFact>> GetDateRangeIncomeFactsAsync(
+        DateOnly startDate,
+        DateOnly endDate,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves spending facts within the provided date range.
+    /// </summary>
+    Task<IReadOnlyCollection<AccountDateRangeSpendingFact>> GetDateRangeSpendingFactsAsync(
+        DateOnly startDate,
+        DateOnly endDate,
+        CancellationToken cancellationToken = default);
 }

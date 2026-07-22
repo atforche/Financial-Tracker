@@ -20,7 +20,6 @@ public sealed class AccountController(
     AccountingPeriodConverter accountingPeriodConverter,
     AccountService accountService,
     AccountQueryService accountQueryService,
-    FinancialRangeQueryService financialRangeQueryService,
     AccountConverter accountConverter) : ControllerBase
 {
     /// <summary>
@@ -64,7 +63,9 @@ public sealed class AccountController(
     public async Task<ActionResult<AccountsInDateRangeModel>> GetDateRangeAsync(
         [FromQuery] AccountsInDateRangeQueryParameterModel query,
         CancellationToken cancellationToken) =>
-        Ok(await financialRangeQueryService.GetAccountsAsync(query, cancellationToken));
+        Ok(accountConverter.ToModel(await accountQueryService.GetDateRangeAsync(
+            accountConverter.ToDomain(query),
+            cancellationToken)));
 
     /// <summary>
     /// Retrieves Account balances over an Accounting Period range.

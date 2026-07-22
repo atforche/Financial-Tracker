@@ -2,6 +2,8 @@ using Domain;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
+using Domain.Transactions.Income;
+using Domain.Transactions.Spending;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data.Accounts;
@@ -102,6 +104,63 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
                 balance.ClosingBalance)).ToList())).ToList();
     }
 
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<AccountRangeBalance>> GetDateRangeBalancesAsync(
+        AccountFilter filter,
+        DateOnly startDate,
+        DateOnly endDate,
+        CancellationToken cancellationToken = default)
+    {
+        List<AccountDateRangeBalanceRow> rows = await ApplyFilter(databaseContext.Accounts.AsNoTracking(), filter)
+            .Select(account => new AccountDateRangeBalanceRow
+            {
+                Account = account,
+                StartingBalance = databaseContext.AccountBalanceHistories
+                    .Where(history => history.Account.Id == account.Id && history.Date < startDate)
+                    .OrderByDescending(history => history.Date).ThenByDescending(history => history.Sequence)
+                    .Select(history => (decimal?)history.PostedBalance).FirstOrDefault() ?? account.OnboardedBalance ?? 0,
+                EndingBalance = databaseContext.AccountBalanceHistories
+                    .Where(history => history.Account.Id == account.Id && history.Date <= endDate)
+                    .OrderByDescending(history => history.Date).ThenByDescending(history => history.Sequence)
+                    .Select(history => (decimal?)history.PostedBalance).FirstOrDefault() ?? account.OnboardedBalance ?? 0,
+            }).ToListAsync(cancellationToken);
+        return rows.Select(row => new AccountRangeBalance(row.Account, row.StartingBalance, row.EndingBalance)).ToList();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<AccountDateBalanceFact>> GetDateBalanceFactsAsync(
+        DateOnly endDate,
+        CancellationToken cancellationToken = default) =>
+        await databaseContext.AccountBalanceHistories.AsNoTracking()
+            .Where(history => history.Date <= endDate)
+            .OrderBy(history => history.Date).ThenBy(history => history.Sequence)
+            .Select(history => new AccountDateBalanceFact(history.Account.Id, history.Date, history.Sequence, history.PostedBalance))
+            .ToListAsync(cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<AccountDateRangeIncomeFact>> GetDateRangeIncomeFactsAsync(
+        DateOnly startDate,
+        DateOnly endDate,
+        CancellationToken cancellationToken = default) =>
+        await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
+            .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
+            .SelectMany(transaction => transaction.Destinations.Select(destination => new AccountDateRangeIncomeFact(
+                destination.Amount,
+                destination.Account.Type,
+                transaction.Source.Account != null,
+                destination.PostedDate)))
+            .ToListAsync(cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<AccountDateRangeSpendingFact>> GetDateRangeSpendingFactsAsync(
+        DateOnly startDate,
+        DateOnly endDate,
+        CancellationToken cancellationToken = default) =>
+        await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
+            .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
+            .Select(transaction => new AccountDateRangeSpendingFact(transaction.Amount, transaction.Source.PostedDate))
+            .ToListAsync(cancellationToken);
+
     /// <summary>
     /// Applies the provided filter to the queryable collection of Accounts.
     /// </summary>
@@ -129,6 +188,16 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
     {
         public required Account Account { get; init; }
         public required PersistedAccountBalance CurrentBalance { get; init; }
+    }
+
+    /// <summary>
+    /// Represents a row of account balance data for a specific date range, including the account and its starting and ending balances.
+    /// </summary>
+    private sealed class AccountDateRangeBalanceRow
+    {
+        public required Account Account { get; init; }
+        public decimal StartingBalance { get; init; }
+        public decimal EndingBalance { get; init; }
     }
 
     /// <summary>
