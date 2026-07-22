@@ -16,4 +16,22 @@ public interface IFundQueryRepository
     Task<QueryPage<FundBalance>> GetBalancesAsync(
         FundBalanceQuery query,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves Funds matching the provided range filter.
+    /// </summary>
+    Task<IReadOnlyCollection<Fund>> GetRangeFundsAsync(FundFilter filter, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves all available Fund names.
+    /// </summary>
+    Task<IReadOnlyCollection<string>> GetAllNamesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves Fund balance facts over the provided chronological range.
+    /// </summary>
+    Task<IReadOnlyCollection<FundPeriodBalanceFacts>> GetPeriodBalanceFactsAsync(
+        int startIndex,
+        int endIndex,
+        CancellationToken cancellationToken = default);
 }

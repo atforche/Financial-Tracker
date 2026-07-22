@@ -46,6 +46,28 @@ public sealed class FundConverter
         model.Limit);
 
     /// <summary>
+    /// Converts the provided Fund Accounting Period range query to a Domain query.
+    /// </summary>
+    public FundAccountingPeriodRangeQuery ToDomain(FundsInAccountingPeriodRangeQueryParameterModel model) => new(
+        model.Range.Start,
+        model.Range.End,
+        ToDomain(model.Filter),
+        model.Sort switch
+        {
+            FundWithBalanceRangeSortModel.Name => FundRangeSort.Name,
+            FundWithBalanceRangeSortModel.NameDescending => FundRangeSort.NameDescending,
+            FundWithBalanceRangeSortModel.StartingBalance => FundRangeSort.StartingBalance,
+            FundWithBalanceRangeSortModel.StartingBalanceDescending => FundRangeSort.StartingBalanceDescending,
+            FundWithBalanceRangeSortModel.EndingBalance => FundRangeSort.EndingBalance,
+            FundWithBalanceRangeSortModel.EndingBalanceDescending => FundRangeSort.EndingBalanceDescending,
+            FundWithBalanceRangeSortModel.NetChange => FundRangeSort.NetChange,
+            FundWithBalanceRangeSortModel.NetChangeDescending => FundRangeSort.NetChangeDescending,
+            _ => FundRangeSort.Name,
+        },
+        model.Offset ?? 0,
+        model.Limit);
+
+    /// <summary>
     /// Converts the provided Fund to a Fund Model
     /// </summary>
     public FundModel ToModel(Fund fund) => new()
@@ -87,6 +109,61 @@ public sealed class FundConverter
     {
         Items = page.Items.Select(ToModel).ToList(),
         TotalCount = page.TotalCount,
+    };
+
+    /// <summary>
+    /// Converts the provided Fund Accounting Period range to an API model.
+    /// </summary>
+    public FundsInAccountingPeriodRangeModel ToModel(FundAccountingPeriodRange range) => new()
+    {
+        Funds = new CollectionModel<FundWithBalanceRangeModel>
+        {
+            Items = range.Funds.Items.Select(balance => new FundWithBalanceRangeModel
+            {
+                Id = balance.Fund.Id.Value,
+                Name = balance.Fund.Name,
+                Description = balance.Fund.Description,
+                StartingBalance = balance.StartingBalance,
+                EndingBalance = balance.EndingBalance,
+            }).ToList(),
+            TotalCount = range.Funds.TotalCount,
+        },
+        AvailableFundNames = range.AvailableFundNames,
+        TotalIncome = new IncomeAmountModel
+        {
+            Total = range.TotalIncome,
+            Tracked = range.TrackedIncome,
+            Untracked = range.UntrackedIncome,
+        },
+        TotalSpending = range.TotalSpending,
+        AccountingPeriods = range.AccountingPeriods.Select(ToModel).ToList(),
+    };
+
+    /// <summary>
+    /// Converts the provided Fund Period Balance Summary to a model.
+    /// </summary>
+    private static FundBalanceSummaryByPeriodModel ToModel(FundPeriodBalanceSummary summary) => new()
+    {
+        AccountingPeriod = new Models.AccountingPeriods.AccountingPeriodModel
+        {
+            Id = summary.AccountingPeriod.Id.Value,
+            Name = summary.AccountingPeriod.Name,
+            Year = summary.AccountingPeriod.Year,
+            Month = summary.AccountingPeriod.Month,
+            IsOpen = summary.AccountingPeriod.IsOpen,
+        },
+        OpeningBalance = ToModel(summary.OpeningBalance),
+        ClosingBalance = ToModel(summary.ClosingBalance),
+    };
+
+    /// <summary>
+    /// Converts the provided Fund Balance Summary to a model.
+    /// </summary>
+    private static FundBalanceSummaryModel ToModel(FundBalanceSummary summary) => new()
+    {
+        TotalBalance = summary.TotalBalance,
+        TotalAssignedBalance = summary.TotalAssignedBalance,
+        TotalUnassignedBalance = summary.TotalUnassignedBalance,
     };
 
     /// <summary>

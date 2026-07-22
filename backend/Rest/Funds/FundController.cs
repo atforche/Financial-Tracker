@@ -77,10 +77,12 @@ public sealed class FundController(
         [FromQuery] FundsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        FundsInAccountingPeriodRangeModel? model = await financialRangeQueryService.GetFundsAsync(query, cancellationToken);
-        return model == null
+        FundAccountingPeriodRangeQueryResult result = await fundQueryService.GetAccountingPeriodRangeAsync(
+            fundConverter.ToDomain(query),
+            cancellationToken);
+        return result.Range == null
             ? UnprocessableEntity(new ValidationProblemDetails { Title = "Unable to resolve Accounting Period range.", Status = StatusCodes.Status422UnprocessableEntity })
-            : Ok(model);
+            : Ok(fundConverter.ToModel(result.Range));
     }
 
     /// <summary>

@@ -1,11 +1,9 @@
-using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Spending;
 using Microsoft.EntityFrameworkCore;
 using Models;
-using Models.AccountingPeriods;
 using Models.Accounts;
 using Models.Funds;
 
@@ -16,47 +14,6 @@ namespace Data;
 /// </summary>
 public sealed class FinancialRangeQueryService(DatabaseContext databaseContext)
 {
-    /// <summary>
-    /// Retrieves Fund balances over an Accounting Period range, or null when the range is invalid.
-    /// </summary>
-    public async Task<FundsInAccountingPeriodRangeModel?> GetFundsAsync(FundsInAccountingPeriodRangeQueryParameterModel request, CancellationToken cancellationToken = default)
-    {
-        List<AccountingPeriod>? periods = await GetPeriodsAsync(request.Range, cancellationToken);
-        if (periods == null)
-        {
-            return null;
-        }
-
-        List<AccountingPeriodBalanceHistory> histories = await databaseContext.AccountingPeriodBalanceHistories.AsNoTracking()
-            .Include(history => history.AccountingPeriod)
-            .Include(history => history.FundBalances).ThenInclude(history => history.Fund)
-            .Where(history => periods.Select(period => period.Id).Contains(history.AccountingPeriod.Id)).ToListAsync(cancellationToken);
-        if (histories.Count != periods.Count)
-        {
-            return null;
-        }
-
-        IQueryable<Fund> funds = ApplyFilter(databaseContext.Funds.AsNoTracking(), request.Filter);
-        List<Fund> matching = await funds.ToListAsync(cancellationToken);
-        var matchingIds = matching.Select(fund => fund.Id).ToHashSet();
-        AccountingPeriodBalanceHistory first = histories.Single(history => history.AccountingPeriod.Id == periods[0].Id);
-        AccountingPeriodBalanceHistory last = histories.Single(history => history.AccountingPeriod.Id == periods[^1].Id);
-        var rows = matching.Select(fund => new FundWithBalanceRangeModel { Id = fund.Id.Value, Name = fund.Name, Description = fund.Description, StartingBalance = first.FundBalances.SingleOrDefault(balance => balance.Fund.Id == fund.Id)?.OpeningBalance ?? fund.OnboardedBalance ?? 0, EndingBalance = last.FundBalances.SingleOrDefault(balance => balance.Fund.Id == fund.Id)?.ClosingBalance ?? fund.OnboardedBalance ?? 0 }).ToList();
-        rows = Sort(rows, request.Sort).ToList();
-        (IncomeAmountModel income, decimal spending) = await GetTotalsAsync(periods.Select(period => period.Id.Value).ToList(), cancellationToken);
-        return new FundsInAccountingPeriodRangeModel
-        {
-            Funds = new CollectionModel<FundWithBalanceRangeModel> { Items = rows.Skip(request.Offset ?? 0).Take(request.Limit ?? int.MaxValue).ToList(), TotalCount = rows.Count },
-            AvailableFundNames = await databaseContext.Funds.AsNoTracking().OrderBy(fund => fund.Name).Select(fund => fund.Name).ToListAsync(cancellationToken),
-            TotalIncome = income,
-            TotalSpending = spending,
-            AccountingPeriods = periods.Select(period =>
-            {
-                AccountingPeriodBalanceHistory history = histories.Single(item => item.AccountingPeriod.Id == period.Id);
-                return new FundBalanceSummaryByPeriodModel { AccountingPeriod = ToModel(period), OpeningBalance = SummarizeFunds(history.FundBalances.Where(item => matchingIds.Contains(item.Fund.Id)), true), ClosingBalance = SummarizeFunds(history.FundBalances.Where(item => matchingIds.Contains(item.Fund.Id)), false) };
-            }).ToList(),
-        };
-    }
     /// <summary>
     /// Retrieves Account balances over a date range.
     /// </summary>
@@ -183,67 +140,6 @@ public sealed class FinancialRangeQueryService(DatabaseContext databaseContext)
             .Where(transaction => transaction.Source.PostedDate != null)
             .SumAsync(transaction => (decimal?)transaction.Amount, cancellationToken) ?? 0;
         return (new IncomeAmountModel { Total = total, Tracked = tracked, Untracked = total - tracked }, spending);
-    }
-
-    /// <summary>
-    /// Retrieves the total income and spending over the specified accounting period range.
-    /// </summary>
-    private async Task<(IncomeAmountModel, decimal)> GetTotalsAsync(IReadOnlyCollection<Guid> periodIds, CancellationToken cancellationToken)
-    {
-        var accountingPeriodIds = periodIds.Select(id => new AccountingPeriodId(id)).ToList();
-        List<IncomeTransaction> incomeTransactions = await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
-            .Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId))
-            .ToListAsync(cancellationToken);
-        var incomeDestinations = incomeTransactions.SelectMany(transaction => transaction.Destinations
-            .Where(destination => transaction.Source.Account == null || destination.PostedDate != null))
-            .ToList();
-        decimal total = incomeDestinations.Sum(destination => destination.Amount);
-        decimal tracked = incomeDestinations.Where(destination => destination.Account.Type.IsTracked()).Sum(destination => destination.Amount);
-        decimal spending = await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
-            .Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId))
-            .Where(transaction => transaction.Source.PostedDate != null)
-            .SumAsync(transaction => (decimal?)transaction.Amount, cancellationToken) ?? 0;
-        return (new IncomeAmountModel { Total = total, Tracked = tracked, Untracked = total - tracked }, spending);
-    }
-
-    /// <summary>
-    /// Gets the Accounting Periods over the provided range
-    /// </summary>
-    private async Task<List<AccountingPeriod>?> GetPeriodsAsync(AccountingPeriodRangeModel range, CancellationToken cancellationToken)
-    {
-        var startId = new AccountingPeriodId(range.Start);
-        var endId = new AccountingPeriodId(range.End);
-        List<AccountingPeriod> endpoints = await databaseContext.AccountingPeriods.AsNoTracking().Where(period => period.Id == startId || period.Id == endId).ToListAsync(cancellationToken);
-        AccountingPeriod? start = endpoints.SingleOrDefault(period => period.Id.Value == range.Start);
-        AccountingPeriod? end = endpoints.SingleOrDefault(period => period.Id.Value == range.End);
-        if (start == null || end == null)
-        {
-            return null;
-        }
-
-        int startIndex = (start.Year * 12) + start.Month;
-        int endIndex = (end.Year * 12) + end.Month;
-        if (startIndex > endIndex)
-        {
-            return null;
-        }
-
-        List<AccountingPeriod> periods = await databaseContext.AccountingPeriods.AsNoTracking().Where(period => (period.Year * 12) + period.Month >= startIndex && (period.Year * 12) + period.Month <= endIndex).OrderBy(period => period.Year).ThenBy(period => period.Month).ToListAsync(cancellationToken);
-        return periods.Count == endIndex - startIndex + 1 ? periods : null;
-    }
-
-    /// <summary>
-    /// Converts the provided accounting period to an Accounting Period Model
-    /// </summary>
-    private static AccountingPeriodModel ToModel(AccountingPeriod period) => new() { Id = period.Id.Value, Year = period.Year, Month = period.Month, Name = period.Name, IsOpen = period.IsOpen };
-
-    /// <summary>
-    /// Summarizes the provided fund balance histories
-    /// </summary>
-    private static FundBalanceSummaryModel SummarizeFunds(IEnumerable<AccountingPeriodFundBalanceHistory> balances, bool opening)
-    {
-        var values = balances.Select(balance => (balance.Fund.Id, Amount: opening ? balance.OpeningBalance : balance.ClosingBalance)).ToList();
-        return new FundBalanceSummaryModel { TotalBalance = values.Sum(item => item.Amount), TotalAssignedBalance = values.Where(item => item.Id != Fund.UnassignedFundId).Sum(item => item.Amount), TotalUnassignedBalance = values.Where(item => item.Id == Fund.UnassignedFundId).Sum(item => item.Amount) };
     }
 
     /// <summary>
