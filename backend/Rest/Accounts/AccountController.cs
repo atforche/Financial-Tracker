@@ -1,7 +1,7 @@
 using Data;
-using Data.Accounts;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.Accounts.Queries;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
@@ -29,10 +29,10 @@ public sealed class AccountController(
     [HttpGet("{accountId}")]
     [ProducesResponseType(typeof(AccountModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<AccountModel>> GetAsync(Guid accountId, CancellationToken cancellationToken)
+    public ActionResult<AccountModel> GetAsync(Guid accountId)
     {
-        AccountModel? model = await accountQueryService.GetByIdAsync(accountId, cancellationToken);
-        return model == null ? NotFound() : Ok(model);
+        Account? account = accountQueryService.GetById(accountId);
+        return account == null ? NotFound() : Ok(accountConverter.ToModel(account));
     }
 
     /// <summary>
@@ -43,8 +43,8 @@ public sealed class AccountController(
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<CollectionModel<AccountModel>>> GetManyAsync(
         [FromQuery] AccountQueryParameterModel queryParameters,
-        CancellationToken cancellationToken) =>
-        Ok(await accountQueryService.GetAsync(queryParameters, cancellationToken));
+        CancellationToken cancellationToken) => Ok(accountConverter.ToModel(
+            await accountQueryService.GetAsync(accountConverter.ToDomain(queryParameters), cancellationToken)));
 
     /// <summary>
     /// Retrieves Accounts with current balances.
@@ -53,8 +53,8 @@ public sealed class AccountController(
     [ProducesResponseType(typeof(CollectionModel<AccountWithBalanceModel>), StatusCodes.Status200OK)]
     public async Task<ActionResult<CollectionModel<AccountWithBalanceModel>>> GetWithBalancesAsync(
         [FromQuery] AccountWithBalanceQueryParameterModel query,
-        CancellationToken cancellationToken) =>
-        Ok(await accountQueryService.GetWithBalancesAsync(query, cancellationToken));
+        CancellationToken cancellationToken) => Ok(accountConverter.ToModel(
+            await accountQueryService.GetWithBalancesAsync(accountConverter.ToDomain(query), cancellationToken)));
 
     /// <summary>
     /// Retrieves Account balances over a date range.
@@ -131,7 +131,7 @@ public sealed class AccountController(
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(await accountQueryService.GetByIdAsync(newAccount.Id.Value));
+        return Ok(accountConverter.ToModel(newAccount));
     }
 
     /// <summary>
@@ -175,7 +175,7 @@ public sealed class AccountController(
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(await accountQueryService.GetByIdAsync(newAccount.Id.Value));
+        return Ok(accountConverter.ToModel(newAccount));
     }
 
     /// <summary>
@@ -186,7 +186,8 @@ public sealed class AccountController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UpdateAsync(Guid accountId, UpdateAccountModel updateAccountModel)
     {
-        if (!accountConverter.TryToDomain(accountId, out Account? accountToUpdate))
+        Account? accountToUpdate = accountQueryService.GetById(accountId);
+        if (accountToUpdate == null)
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
@@ -211,7 +212,7 @@ public sealed class AccountController(
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(await accountQueryService.GetByIdAsync(accountId));
+        return Ok(accountConverter.ToModel(accountToUpdate));
     }
 
     /// <summary>
@@ -221,7 +222,8 @@ public sealed class AccountController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> DeleteAsync(Guid accountId)
     {
-        if (!accountConverter.TryToDomain(accountId, out Account? accountToDelete))
+        Account? accountToDelete = accountQueryService.GetById(accountId);
+        if (accountToDelete == null)
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {

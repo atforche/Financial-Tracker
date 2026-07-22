@@ -2,6 +2,7 @@ using Data;
 using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.Accounts.Queries;
 using Domain.Transactions;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,6 @@ using Models.Transactions.Create;
 using Models.Transactions.Types;
 using Models.Transactions.Update;
 using Rest.AccountingPeriods;
-using Rest.Accounts;
 
 namespace Rest.Transactions;
 
@@ -22,7 +22,7 @@ namespace Rest.Transactions;
 [Route("/transactions")]
 public sealed class TransactionController(
     UnitOfWork unitOfWork,
-    AccountConverter accountConverter,
+    AccountQueryService accountQueryService,
     AccountingPeriodConverter accountingPeriodConverter,
     TransactionRepository transactionRepository,
     TransactionQueryService transactionQueryService,
@@ -182,7 +182,8 @@ public sealed class TransactionController(
         {
             errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
         }
-        if (!accountConverter.TryToDomain(postTransactionModel.AccountId, out Account? account))
+        Account? account = accountQueryService.GetById(postTransactionModel.AccountId);
+        if (account == null)
         {
             errors.Add(nameof(postTransactionModel.AccountId), new[] { $"Account with ID {postTransactionModel.AccountId} was not found." });
         }

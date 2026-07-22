@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.Accounts.Queries;
 using Domain.Funds;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
@@ -11,7 +12,6 @@ using Models.Funds;
 using Models.Transactions;
 using Models.Transactions.Create;
 using Models.Transactions.Update;
-using Rest.Accounts;
 using Rest.Funds;
 
 namespace Rest.Transactions;
@@ -20,7 +20,7 @@ namespace Rest.Transactions;
 /// Converter class that handles converting transaction request models to domain transaction requests.
 /// </summary>
 public sealed class TransactionRequestConverter(
-    AccountConverter accountConverter,
+    AccountQueryService accountQueryService,
     FundConverter fundConverter,
     FundAmountConverter fundAmountConverter)
 {
@@ -268,7 +268,8 @@ public sealed class TransactionRequestConverter(
 
     private bool TryGetAccount(Guid accountId, string errorKey, Dictionary<string, string[]> errors, [NotNullWhen(true)] out Account? account)
     {
-        if (accountConverter.TryToDomain(accountId, out account))
+        account = accountQueryService.GetById(accountId);
+        if (account != null)
         {
             return true;
         }
