@@ -40,19 +40,9 @@ public sealed class FundPlanTotalsHistory : Entity<FundPlanTotalsHistoryId>
     public decimal AmountAssigned { get; private set; }
 
     /// <summary>
-    /// Pending amount assigned after the Transaction.
-    /// </summary>
-    public decimal PendingAmountAssigned { get; private set; }
-
-    /// <summary>
     /// Posted amount spent after the Transaction.
     /// </summary>
     public decimal AmountSpent { get; private set; }
-
-    /// <summary>
-    /// Pending amount spent after the Transaction.
-    /// </summary>
-    public decimal PendingAmountSpent { get; private set; }
 
     /// <summary>
     /// Updates the persisted totals.
@@ -64,16 +54,14 @@ public sealed class FundPlanTotalsHistory : Entity<FundPlanTotalsHistoryId>
             throw new InvalidOperationException("Cannot update Fund Plan totals history for a different Fund.");
         }
         AmountAssigned = totals.AmountAssigned;
-        PendingAmountAssigned = totals.PendingAmountAssigned;
         AmountSpent = totals.AmountSpent;
-        PendingAmountSpent = totals.PendingAmountSpent;
     }
 
     /// <summary>
     /// Converts this history entry to Fund Plan totals.
     /// </summary>
     public FundPlanTotals ToTotals() =>
-        new(FundId, AmountAssigned, PendingAmountAssigned, AmountSpent, PendingAmountSpent);
+        new(FundId, AmountAssigned, 0, AmountSpent, 0);
 
     /// <summary>
     /// Constructs a Fund Plan totals history entry.

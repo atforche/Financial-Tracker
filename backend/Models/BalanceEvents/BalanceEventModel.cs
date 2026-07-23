@@ -18,9 +18,24 @@ public class BalanceEventModel
     public required Guid TransactionId { get; init; }
 
     /// <summary>
+    /// Date on which the Transaction was created.
+    /// </summary>
+    public required DateOnly TransactionDate { get; init; }
+
+    /// <summary>
+    /// Sequence of the Transaction on its transaction date.
+    /// </summary>
+    public required int TransactionSequence { get; init; }
+
+    /// <summary>
     /// Event date for the balance event, or null if it's still pending.
     /// </summary>
     public DateOnly? EventDate { get; init; }
+
+    /// <summary>
+    /// Sequence within the event date, or null when the event is pending.
+    /// </summary>
+    public int? EventDateSequence { get; init; }
 
     /// <summary>
     /// Type of balance event.

@@ -49,13 +49,9 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
                 .Select(history => new PersistedFundBalance
                 {
                     PostedBalance = history.PostedBalance,
-                    PendingDebitAmount = history.PendingDebitAmount,
-                    PendingCreditAmount = history.PendingCreditAmount,
                 }).FirstOrDefault() ?? new PersistedFundBalance
                 {
                     PostedBalance = fund.OnboardedBalance ?? 0,
-                    PendingDebitAmount = 0,
-                    PendingCreditAmount = 0,
                 },
         });
         balances = query.Sort switch
@@ -73,8 +69,8 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
         IReadOnlyCollection<FundBalance> items = rows.Select(row => new FundBalance(
             row.Fund,
             row.CurrentBalance.PostedBalance,
-            row.CurrentBalance.PendingDebitAmount,
-            row.CurrentBalance.PendingCreditAmount)).ToList();
+            0,
+            0)).ToList();
         return new QueryPage<FundBalance>(items, totalCount);
     }
 
@@ -207,7 +203,5 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
     private sealed class PersistedFundBalance
     {
         public decimal PostedBalance { get; init; }
-        public decimal PendingDebitAmount { get; init; }
-        public decimal PendingCreditAmount { get; init; }
     }
 }

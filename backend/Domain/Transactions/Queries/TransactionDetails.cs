@@ -60,14 +60,21 @@ public sealed class TransactionDetails(TransactionDetailsFacts facts)
     public FundBalanceEvent GetFundEvent(FundAmount amount, BalanceEventType type)
     {
         Fund fund = _funds[amount.FundId];
+        DateOnly? postedDate = Transaction.GetAllAffectedAccountIds()
+            .Where(accountId => Transaction.GetAllAffectedFundIds(accountId).Contains(amount.FundId))
+            .Select(Transaction.GetPostedDateForAccount)
+            .FirstOrDefault(date => date != null) ?? (Transaction.GetAllAffectedAccountIds().Any() ? null : Transaction.Date);
         var histories = facts.FundHistories.Where(history => history.Fund.Id == amount.FundId).ToList();
-        FundBalanceHistory? current = histories.LastOrDefault(history => history.TransactionId == Transaction.Id);
+        FundBalanceHistory? current = histories.LastOrDefault(history => history.TransactionId == Transaction.Id && history.Date == postedDate);
         int index = current == null ? -1 : histories.IndexOf(current);
         FundBalanceHistory? previous = index > 0 ? histories[index - 1] : null;
         return new FundBalanceEvent(
             AccountingPeriod,
             Transaction.Id,
             Transaction.Date,
+            Transaction.Sequence,
+            postedDate,
+            postedDate == null ? null : current?.Sequence,
             type,
             amount.Amount,
             fund,
@@ -92,7 +99,10 @@ public sealed class TransactionDetails(TransactionDetailsFacts facts)
         return new FundPlanBalanceEvent(
             AccountingPeriod,
             Transaction.Id,
+            Transaction.Date,
+            Transaction.Sequence,
             postedDate,
+            postedDate == null ? null : current?.Sequence,
             type,
             amount.Amount,
             fund,
@@ -119,10 +129,10 @@ public sealed class TransactionDetails(TransactionDetailsFacts facts)
         Fund fund,
         FundBalanceHistory? history,
         decimal fallback = 0) => new(
-            fund,
-            history?.PostedBalance ?? fallback,
-            history?.PendingDebitAmount ?? 0,
-            history?.PendingCreditAmount ?? 0);
+        fund,
+        history?.PostedBalance ?? fallback,
+        0,
+        0);
 
     /// <summary>
     /// Creates Fund Plan totals from persisted history.
@@ -130,7 +140,7 @@ public sealed class TransactionDetails(TransactionDetailsFacts facts)
     private static FundPlanTotals ToFundPlanTotals(FundId fundId, FundPlanTotalsHistory? history) => new(
         fundId,
         history?.AmountAssigned ?? 0,
-        history?.PendingAmountAssigned ?? 0,
+        0,
         history?.AmountSpent ?? 0,
-        history?.PendingAmountSpent ?? 0);
+        0);
 }

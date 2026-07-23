@@ -1,94 +1,86 @@
-using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
 
 namespace Domain.FundPlans;
 
 /// <summary>
-/// Maintains transaction-level Fund Plan totals history.
+/// Maintains posted transaction-level Fund Plan totals history.
 /// </summary>
 public sealed class FundPlanTotalsHistoryService(IFundPlanTotalsHistoryRepository repository)
 {
     /// <summary>
-    /// Adds history for a new Transaction.
+    /// Rebuilds posted histories for a newly added Transaction.
     /// </summary>
-    internal void AddTransaction(Transaction transaction)
-    {
-        foreach (FundId fundId in transaction.GetAllAffectedFundIds(null).Where(id => id != Fund.UnassignedFundId))
-        {
-            FundPlanTotals previous = GetPrevious(fundId, transaction);
-            var history = new FundPlanTotalsHistory(
-                fundId,
-                transaction.AccountingPeriodId,
-                transaction,
-                transaction.ApplyToFundPlanTotals(previous));
-            foreach (FundPlanTotalsHistory later in repository.GetAllLaterThan(
-                fundId, transaction.AccountingPeriodId, transaction.Date, transaction.Sequence))
-            {
-                later.Update(transaction.ApplyToFundPlanTotals(later.ToTotals()));
-            }
-            repository.Add(history);
-        }
-    }
+    internal void AddTransaction(Transaction transaction) => SynchronizePostedHistories(transaction);
 
     /// <summary>
-    /// Applies posting changes to existing history.
+    /// Rebuilds posted histories after a Transaction posts to an Account.
     /// </summary>
-    internal void PostTransaction(Transaction transaction, AccountId accountId) =>
-        ApplyPosting(transaction, accountId, reverse: false);
+    internal void PostTransaction(Transaction transaction) => SynchronizePostedHistories(transaction);
 
     /// <summary>
-    /// Reverses posting changes from existing history.
+    /// Removes posted histories before a Transaction's posted dates are cleared.
     /// </summary>
-    internal void UnpostTransaction(Transaction transaction)
-    {
-        foreach (AccountId accountId in transaction.GetAllAffectedAccountIds()
-            .Where(id => transaction.GetPostedDateForAccount(id) != null))
-        {
-            ApplyPosting(transaction, accountId, reverse: true);
-        }
-    }
+    internal void UnpostTransaction(Transaction transaction) => DeleteTransaction(transaction);
 
     /// <summary>
-    /// Deletes history for a Transaction and reverses its effect from later entries.
+    /// Deletes history for a Transaction and reverses its posted effects from later entries.
     /// </summary>
     internal void DeleteTransaction(Transaction transaction)
     {
-        foreach (FundPlanTotalsHistory history in repository.GetAllByTransaction(transaction.Id))
+        foreach (FundPlanTotalsHistory history in repository.GetAllByTransaction(transaction.Id).ToList())
         {
             foreach (FundPlanTotalsHistory later in repository.GetAllLaterThan(
                 history.FundId, history.AccountingPeriodId, history.Date, history.Sequence))
             {
-                later.Update(transaction.ApplyToFundPlanTotals(later.ToTotals(), reverse: true));
+                later.Update(transaction.ApplyAllPostedEffectsToFundPlanTotals(later.ToTotals(), reverse: true));
             }
             repository.Delete(history);
         }
     }
 
     /// <summary>
-    /// Applies posting changes to existing history for a specific account and reverses them if needed.
+    /// Replaces a Transaction's histories with its current posted Fund Plan effects.
     /// </summary>
-    private void ApplyPosting(Transaction transaction, AccountId accountId, bool reverse)
+    private void SynchronizePostedHistories(Transaction transaction)
     {
-        foreach (FundPlanTotalsHistory history in repository.GetAllByTransaction(transaction.Id)
-            .Where(item => transaction.GetAllAffectedFundIds(accountId).Contains(item.FundId)))
+        DeleteTransaction(transaction);
+        foreach (FundId fundId in transaction.GetAllAffectedFundIds(null).Where(id => id != Fund.UnassignedFundId).Distinct())
         {
-            history.Update(transaction.ApplyToFundPlanTotals(
-                history.ToTotals(), accountId: accountId, reverse: reverse, postingOnly: true));
-            foreach (FundPlanTotalsHistory later in repository.GetAllLaterThan(
-                history.FundId, history.AccountingPeriodId, history.Date, history.Sequence))
+            if (!HasPostedEffect(transaction, fundId))
             {
-                later.Update(transaction.ApplyToFundPlanTotals(
-                    later.ToTotals(), accountId: accountId, reverse: reverse, postingOnly: true));
+                continue;
             }
+            FundPlanTotals previous = GetPrevious(fundId, transaction);
+            var history = new FundPlanTotalsHistory(
+                fundId,
+                transaction.AccountingPeriodId,
+                transaction,
+                transaction.ApplyAllPostedEffectsToFundPlanTotals(previous));
+            foreach (FundPlanTotalsHistory later in repository.GetAllLaterThan(
+                fundId, transaction.AccountingPeriodId, transaction.Date, transaction.Sequence))
+            {
+                later.Update(transaction.ApplyAllPostedEffectsToFundPlanTotals(later.ToTotals()));
+            }
+            repository.Add(history);
         }
+    }
+
+    /// <summary>
+    /// Determines whether the Transaction currently has a posted effect for the Fund.
+    /// </summary>
+    private static bool HasPostedEffect(Transaction transaction, FundId fundId)
+    {
+        var accountIds = transaction.GetAllAffectedAccountIds().ToList();
+        return accountIds.Count == 0 || accountIds.Any(accountId =>
+            transaction.GetPostedDateForAccount(accountId) != null
+            && transaction.GetAllAffectedFundIds(accountId).Contains(fundId));
     }
 
     /// <summary>
     /// Retrieves the most recent Fund Plan totals for a given fund prior to a specific transaction, or returns default totals if none exist.
     /// </summary>
     private FundPlanTotals GetPrevious(FundId fundId, Transaction transaction) =>
-        repository.GetLatestEarlierThan(
-            fundId, transaction.AccountingPeriodId, transaction.Date, transaction.Sequence)?.ToTotals()
+        repository.GetLatestEarlierThan(fundId, transaction.AccountingPeriodId, transaction.Date, transaction.Sequence)?.ToTotals()
         ?? new FundPlanTotals(fundId, 0, 0, 0, 0);
 }

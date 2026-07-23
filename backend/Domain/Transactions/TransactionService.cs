@@ -14,7 +14,9 @@ public abstract class TransactionService(
     PendingAccountBalanceService pendingAccountBalanceService,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
+    PendingFundBalanceService pendingFundBalanceService,
     FundPlanTotalsHistoryService fundPlanTotalsHistoryService,
+    PendingFundPlanTotalsService pendingFundPlanTotalsService,
     IAccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository)
 {
@@ -91,6 +93,8 @@ public abstract class TransactionService(
     {
         AddTransactionToBalanceHistories(transaction);
         pendingAccountBalanceService.SynchronizeTransaction(transaction);
+        pendingFundBalanceService.SynchronizeTransaction(transaction);
+        pendingFundPlanTotalsService.SynchronizeTransaction(transaction);
         transactionRepository.Add(transaction);
     }
 
@@ -170,6 +174,8 @@ public abstract class TransactionService(
 
         AddTransactionToBalanceHistories(transaction);
         pendingAccountBalanceService.SynchronizeTransaction(transaction);
+        pendingFundBalanceService.SynchronizeTransaction(transaction);
+        pendingFundPlanTotalsService.SynchronizeTransaction(transaction);
     }
 
     /// <summary>
@@ -214,9 +220,11 @@ public abstract class TransactionService(
     {
         accountingPeriodBalanceService.PostTransaction(transaction, accountId);
         accountBalanceService.PostTransaction(transaction, accountId);
-        fundBalanceService.PostTransaction(transaction, accountId);
-        fundPlanTotalsHistoryService.PostTransaction(transaction, accountId);
+        fundBalanceService.PostTransaction(transaction);
+        fundPlanTotalsHistoryService.PostTransaction(transaction);
         pendingAccountBalanceService.SynchronizeTransaction(transaction);
+        pendingFundBalanceService.SynchronizeTransaction(transaction);
+        pendingFundPlanTotalsService.SynchronizeTransaction(transaction);
     }
 
     /// <summary>
@@ -252,7 +260,17 @@ public abstract class TransactionService(
     /// Synchronizes pending Account Balance effects after a Transaction's posted dates change.
     /// </summary>
     protected void SynchronizePendingAccountBalanceEffects(Transaction transaction) =>
+        SynchronizePendingBalanceEffects(transaction);
+
+    /// <summary>
+    /// Synchronizes pending balance effects after a Transaction's posted dates change.
+    /// </summary>
+    protected void SynchronizePendingBalanceEffects(Transaction transaction)
+    {
         pendingAccountBalanceService.SynchronizeTransaction(transaction);
+        pendingFundBalanceService.SynchronizeTransaction(transaction);
+        pendingFundPlanTotalsService.SynchronizeTransaction(transaction);
+    }
 
     /// <summary>
     /// Validates the deletion of this Transaction
@@ -279,6 +297,8 @@ public abstract class TransactionService(
     {
         RemoveTransactionFromBalanceHistories(transaction);
         pendingAccountBalanceService.DeleteEffectsForTransaction(transaction.Id);
+        pendingFundBalanceService.DeleteEffectsForTransaction(transaction.Id);
+        pendingFundPlanTotalsService.DeleteEffectsForTransaction(transaction.Id);
         TransactionRepository.Delete(transaction);
     }
 

@@ -2272,21 +2272,6 @@ export interface components {
     schemas: {
         /** @description Model representing a balance event for an account. */
         AccountBalanceEventModel: {
-            /**
-             * Format: date
-             * @description Transaction date for the balance event.
-             */
-            transactionDate: string;
-            /**
-             * Format: int32
-             * @description Transaction sequence for the balance event.
-             */
-            transactionSequence: number;
-            /**
-             * Format: int32
-             * @description Sequence within the event date, or null when the event is unposted.
-             */
-            eventDateSequence?: null | number;
             /** @description Account for the balance event. */
             account: components["schemas"]["AccountModel"];
             /** @description Account balance prior to the balance event. */
@@ -2302,9 +2287,24 @@ export interface components {
             transactionId: string;
             /**
              * Format: date
+             * @description Date on which the Transaction was created.
+             */
+            transactionDate: string;
+            /**
+             * Format: int32
+             * @description Sequence of the Transaction on its transaction date.
+             */
+            transactionSequence: number;
+            /**
+             * Format: date
              * @description Event date for the balance event, or null if it's still pending.
              */
             eventDate?: null | string;
+            /**
+             * Format: int32
+             * @description Sequence within the event date, or null when the event is pending.
+             */
+            eventDateSequence?: null | number;
             /** @description Type of balance event. */
             type: components["schemas"]["BalanceEventTypeModel"];
             /** @description True if the balance event has been posted, false otherwise. */
@@ -3175,9 +3175,24 @@ export interface components {
             transactionId: string;
             /**
              * Format: date
+             * @description Date on which the Transaction was created.
+             */
+            transactionDate: string;
+            /**
+             * Format: int32
+             * @description Sequence of the Transaction on its transaction date.
+             */
+            transactionSequence: number;
+            /**
+             * Format: date
              * @description Event date for the balance event, or null if it's still pending.
              */
             eventDate?: null | string;
+            /**
+             * Format: int32
+             * @description Sequence within the event date, or null when the event is pending.
+             */
+            eventDateSequence?: null | number;
             /** @description Type of balance event. */
             type: components["schemas"]["BalanceEventTypeModel"];
             /** @description True if the balance event has been posted, false otherwise. */
@@ -3322,9 +3337,24 @@ export interface components {
             transactionId: string;
             /**
              * Format: date
+             * @description Date on which the Transaction was created.
+             */
+            transactionDate: string;
+            /**
+             * Format: int32
+             * @description Sequence of the Transaction on its transaction date.
+             */
+            transactionSequence: number;
+            /**
+             * Format: date
              * @description Event date for the balance event, or null if it's still pending.
              */
             eventDate?: null | string;
+            /**
+             * Format: int32
+             * @description Sequence within the event date, or null when the event is pending.
+             */
+            eventDateSequence?: null | number;
             /** @description Type of balance event. */
             type: components["schemas"]["BalanceEventTypeModel"];
             /** @description True if the balance event has been posted, false otherwise. */

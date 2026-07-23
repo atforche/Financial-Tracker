@@ -8,6 +8,7 @@ namespace Domain.Funds.Queries;
 /// </summary>
 public sealed class FundQueryService(
     IFundQueryRepository fundQueryRepository,
+    PendingFundBalanceService pendingFundBalanceService,
     IAccountingPeriodQueryRepository accountingPeriodQueryRepository,
     AccountingPeriodRangeService accountingPeriodRangeService)
 {
@@ -26,10 +27,13 @@ public sealed class FundQueryService(
     /// <summary>
     /// Retrieves Funds and their current balances.
     /// </summary>
-    public Task<QueryPage<FundBalance>> GetWithBalancesAsync(
+    public async Task<QueryPage<FundBalance>> GetWithBalancesAsync(
         FundBalanceQuery query,
-        CancellationToken cancellationToken = default) =>
-        fundQueryRepository.GetBalancesAsync(query, cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        QueryPage<FundBalance> page = await fundQueryRepository.GetBalancesAsync(query, cancellationToken);
+        return new QueryPage<FundBalance>(pendingFundBalanceService.ApplyPendingEffects(page.Items), page.TotalCount);
+    }
 
     /// <summary>
     /// Retrieves Fund balances and financial totals over an Accounting Period range.

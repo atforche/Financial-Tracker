@@ -48,6 +48,11 @@ public class DatabaseContext : DbContext
     internal DbSet<FundBalanceHistory> FundBalanceHistories { get; set; } = default!;
 
     /// <summary>
+    /// Collection of pending Fund Balance effects.
+    /// </summary>
+    internal DbSet<PendingFundBalanceEffect> PendingFundBalanceEffects { get; set; } = default!;
+
+    /// <summary>
     /// Collection of Fund Plans in the database.
     /// </summary>
     internal DbSet<FundPlan> FundPlans { get; set; } = default!;
@@ -56,6 +61,11 @@ public class DatabaseContext : DbContext
     /// Collection of Fund Plan totals history entries in the database.
     /// </summary>
     internal DbSet<FundPlanTotalsHistory> FundPlanTotalsHistories { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of pending Fund Plan totals effects.
+    /// </summary>
+    internal DbSet<PendingFundPlanTotalsEffect> PendingFundPlanTotalsEffects { get; set; } = default!;
 
     /// <summary>
     /// Collection of Transactions in the database

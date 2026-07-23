@@ -10,9 +10,18 @@ namespace Domain.Funds.Queries;
 public sealed record FundBalanceEvent(
     AccountingPeriod AccountingPeriod,
     TransactionId TransactionId,
-    DateOnly EventDate,
+    DateOnly TransactionDate,
+    int TransactionSequence,
+    DateOnly? EventDate,
+    int? EventDateSequence,
     BalanceEventType Type,
     decimal Amount,
     Fund Fund,
     FundBalance PreviousBalance,
-    FundBalance NewBalance);
+    FundBalance NewBalance)
+{
+    /// <summary>
+    /// Gets whether the event has posted.
+    /// </summary>
+    public bool IsPosted => EventDate.HasValue;
+}

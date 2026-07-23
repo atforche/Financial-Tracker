@@ -11,7 +11,10 @@ namespace Domain.FundPlans.Queries;
 public sealed record FundPlanBalanceEvent(
     AccountingPeriod AccountingPeriod,
     TransactionId TransactionId,
+    DateOnly TransactionDate,
+    int TransactionSequence,
     DateOnly? EventDate,
+    int? EventDateSequence,
     BalanceEventType Type,
     decimal Amount,
     Fund Fund,

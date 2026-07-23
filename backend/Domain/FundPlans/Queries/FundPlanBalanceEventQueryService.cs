@@ -80,9 +80,10 @@ public sealed class FundPlanBalanceEventQueryService(
         Dictionary<(FundId FundId, AccountingPeriodId PeriodId), List<FundPlanTotalsHistory>> historiesByFundAndPeriod = histories
             .GroupBy(history => (history.FundId, history.AccountingPeriodId))
             .ToDictionary(group => group.Key, group => group.ToList());
-        IEnumerable<FundPlanBalanceEvent> events = transactions
+        IReadOnlyCollection<FundPlanBalanceEvent> events = transactions
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFundAndPeriod))
-            .Where(balanceEvent => filter.FundIds.Count == 0 || filter.FundIds.Contains(balanceEvent.Fund.Id.Value));
+            .Where(balanceEvent => filter.FundIds.Count == 0 || filter.FundIds.Contains(balanceEvent.Fund.Id.Value)).ToList();
+        events = ProjectPendingEvents(events, transactions, historiesByFundAndPeriod);
         var allItems = Sort(events, sort).ToList();
         return new QueryPage<FundPlanBalanceEvent>(
             allItems.Skip(offset).Take(limit ?? int.MaxValue).ToList(),
@@ -131,7 +132,10 @@ public sealed class FundPlanBalanceEventQueryService(
         return new FundPlanBalanceEvent(
             period,
             transaction.Id,
+            transaction.Date,
+            transaction.Sequence,
             postedDate,
+            postedDate == null ? null : current?.Sequence,
             type,
             amount,
             fund,
@@ -145,9 +149,38 @@ public sealed class FundPlanBalanceEventQueryService(
     private static FundPlanTotals ToTotals(FundId fundId, FundPlanTotalsHistory? history) => new(
         fundId,
         history?.AmountAssigned ?? 0,
-        history?.PendingAmountAssigned ?? 0,
+        0,
         history?.AmountSpent ?? 0,
-        history?.PendingAmountSpent ?? 0);
+        0);
+
+    /// <summary>
+    /// Projects pending events from final posted Fund Plan totals in transaction order.
+    /// </summary>
+    private static List<FundPlanBalanceEvent> ProjectPendingEvents(
+        IReadOnlyCollection<FundPlanBalanceEvent> events,
+        IReadOnlyCollection<Transaction> transactions,
+        IReadOnlyDictionary<(FundId FundId, AccountingPeriodId PeriodId), List<FundPlanTotalsHistory>> histories)
+    {
+        var transactionsById = transactions.ToDictionary(transaction => transaction.Id);
+        var projected = events.ToList();
+        foreach (IGrouping<(FundId FundId, AccountingPeriodId PeriodId), FundPlanBalanceEvent> planEvents in events.Where(item => !item.IsPosted)
+            .GroupBy(item => (item.Fund.Id, item.AccountingPeriod.Id)))
+        {
+            FundPlanTotals totals = ToTotals(planEvents.Key.FundId, histories.GetValueOrDefault(planEvents.Key)?.LastOrDefault());
+            foreach (IGrouping<TransactionId, FundPlanBalanceEvent> transactionEvents in planEvents.GroupBy(item => item.TransactionId)
+                .OrderBy(group => transactionsById[group.Key].Date).ThenBy(group => transactionsById[group.Key].Sequence))
+            {
+                FundPlanTotals previous = totals;
+                totals = transactionsById[transactionEvents.Key].ApplyAsPostedToFundPlanTotals(totals);
+                foreach (FundPlanBalanceEvent balanceEvent in transactionEvents)
+                {
+                    int index = projected.IndexOf(balanceEvent);
+                    projected[index] = balanceEvent with { PreviousTotals = previous, NewTotals = totals };
+                }
+            }
+        }
+        return projected;
+    }
 
     /// <summary>
     /// Sorts Fund Plan balance events by the provided sort order.
@@ -158,12 +191,12 @@ public sealed class FundPlanBalanceEventQueryService(
         {
             FundPlanBalanceEventSort.FundName => events.OrderBy(item => item.Fund.Name).ThenByDescending(item => item.EventDate),
             FundPlanBalanceEventSort.FundNameDescending => events.OrderByDescending(item => item.Fund.Name).ThenByDescending(item => item.EventDate),
-            FundPlanBalanceEventSort.Date => events.OrderBy(item => item.EventDate).ThenBy(item => item.TransactionId),
-            FundPlanBalanceEventSort.DateDescending => events.OrderByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
+            FundPlanBalanceEventSort.Date => events.OrderBy(item => !item.IsPosted).ThenBy(item => item.IsPosted ? item.EventDate : item.TransactionDate).ThenBy(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence).ThenBy(item => item.TransactionId),
+            FundPlanBalanceEventSort.DateDescending => events.OrderByDescending(item => !item.IsPosted).ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate).ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence).ThenBy(item => item.TransactionId),
             FundPlanBalanceEventSort.Type => events.OrderBy(item => item.Type).ThenByDescending(item => item.EventDate),
             FundPlanBalanceEventSort.TypeDescending => events.OrderByDescending(item => item.Type).ThenByDescending(item => item.EventDate),
             FundPlanBalanceEventSort.Amount => events.OrderBy(item => item.Amount).ThenByDescending(item => item.EventDate),
             FundPlanBalanceEventSort.AmountDescending => events.OrderByDescending(item => item.Amount).ThenByDescending(item => item.EventDate),
-            _ => events.OrderByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
+            _ => events.OrderByDescending(item => !item.IsPosted).ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate).ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence).ThenBy(item => item.TransactionId),
         };
 }

@@ -211,12 +211,6 @@ namespace Data.Migrations
                     b.Property<Guid>("FundId")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("PendingAmountAssigned")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("PendingAmountSpent")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("Sequence")
                         .HasColumnType("INTEGER");
 
@@ -258,6 +252,33 @@ namespace Data.Migrations
                     b.ToTable("Funds");
                 });
 
+            modelBuilder.Entity("Domain.FundPlans.PendingFundPlanTotalsEffect", b =>
+                {
+                    b.Property<Guid>("Id").HasColumnType("TEXT");
+                    b.Property<Guid>("AccountingPeriodId").HasColumnType("TEXT");
+                    b.Property<Guid>("FundId").HasColumnType("TEXT");
+                    b.Property<decimal>("PendingAmountAssigned").HasColumnType("TEXT");
+                    b.Property<decimal>("PendingAmountSpent").HasColumnType("TEXT");
+                    b.Property<Guid>("TransactionId").HasColumnType("TEXT");
+                    b.HasKey("Id");
+                    b.HasIndex("FundId", "AccountingPeriodId");
+                    b.HasIndex("TransactionId", "FundId", "AccountingPeriodId").IsUnique();
+                    b.ToTable("PendingFundPlanTotalsEffects");
+                });
+
+            modelBuilder.Entity("Domain.Funds.PendingFundBalanceEffect", b =>
+                {
+                    b.Property<Guid>("Id").HasColumnType("TEXT");
+                    b.Property<Guid>("FundId").HasColumnType("TEXT");
+                    b.Property<decimal>("PendingCreditAmount").HasColumnType("TEXT");
+                    b.Property<decimal>("PendingDebitAmount").HasColumnType("TEXT");
+                    b.Property<Guid>("TransactionId").HasColumnType("TEXT");
+                    b.HasKey("Id");
+                    b.HasIndex("FundId");
+                    b.HasIndex("TransactionId", "FundId").IsUnique();
+                    b.ToTable("PendingFundBalanceEffects");
+                });
+
             modelBuilder.Entity("Domain.Funds.FundBalanceHistory", b =>
                 {
                     b.Property<Guid>("Id")
@@ -267,12 +288,6 @@ namespace Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("FundId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("PendingCreditAmount")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("PendingDebitAmount")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("PostedBalance")
@@ -572,6 +587,17 @@ namespace Data.Migrations
                 });
 
             modelBuilder.Entity("Domain.Funds.FundBalanceHistory", b =>
+                {
+                    b.HasOne("Domain.Funds.Fund", "Fund")
+                        .WithMany()
+                        .HasForeignKey("FundId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Fund");
+                });
+
+            modelBuilder.Entity("Domain.Funds.PendingFundBalanceEffect", b =>
                 {
                     b.HasOne("Domain.Funds.Fund", "Fund")
                         .WithMany()
