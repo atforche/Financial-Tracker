@@ -72,6 +72,14 @@ public abstract class Transaction : Entity<TransactionId>
     }
 
     /// <summary>
+    /// Applies this Transaction's Account effect as a posted balance change.
+    /// </summary>
+    public AccountBalance ApplyAsPostedToAccountBalance(
+        AccountBalance existingAccountBalance,
+        bool reverse = false) =>
+        PostToAccountBalance(AddToAccountBalance(existingAccountBalance, reverse), reverse);
+
+    /// <summary>
     /// Gets all Fund IDs affected by this Transaction for the provided account ID
     /// </summary>
     public abstract IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId);

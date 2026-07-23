@@ -71,7 +71,7 @@ const getTransactionAccountDraftFromTransactionAccount = function (
     accountId: account.account.id,
     accountName: account.account.name,
     accountType: account.account.type,
-    postedDate: account.date ?? null,
+    postedDate: account.eventDate ?? null,
     previousAccountBalance: account.previousBalance.postedBalance,
     newAccountBalance: account.newBalance.postedBalance,
   };

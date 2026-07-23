@@ -12,6 +12,7 @@ namespace Domain.Transactions.Spending;
 /// </summary>
 public class SpendingTransactionService(
     AccountBalanceService accountBalanceService,
+    PendingAccountBalanceService pendingAccountBalanceService,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
     FundPlanTotalsHistoryService fundPlanTotalsHistoryService,
@@ -20,6 +21,7 @@ public class SpendingTransactionService(
     ITransactionRepository transactionRepository) :
     TransactionService(
         accountBalanceService,
+        pendingAccountBalanceService,
         accountingPeriodBalanceService,
         fundBalanceService,
         fundPlanTotalsHistoryService,
@@ -94,6 +96,7 @@ public class SpendingTransactionService(
         }
         UnpostTransaction(transaction);
         transaction.ClearPostedDates();
+        SynchronizePendingAccountBalanceEffects(transaction);
         return true;
     }
 

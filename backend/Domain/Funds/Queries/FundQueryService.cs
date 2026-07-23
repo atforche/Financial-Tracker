@@ -7,7 +7,6 @@ namespace Domain.Funds.Queries;
 /// Service for querying Funds and their Balances.
 /// </summary>
 public sealed class FundQueryService(
-    IFundRepository fundRepository,
     IFundQueryRepository fundQueryRepository,
     IAccountingPeriodQueryRepository accountingPeriodQueryRepository,
     AccountingPeriodRangeService accountingPeriodRangeService)
@@ -15,14 +14,8 @@ public sealed class FundQueryService(
     /// <summary>
     /// Retrieves the Fund with the specified ID, or null when it does not exist.
     /// </summary>
-    public Fund? GetById(Guid fundId)
-    {
-        if (fundRepository.TryGetById(fundId, out Fund? fund))
-        {
-            return fund;
-        }
-        return null;
-    }
+    public Task<Fund?> GetByIdAsync(Guid fundId, CancellationToken cancellationToken = default) =>
+        fundQueryRepository.GetByIdAsync(new FundId(fundId), cancellationToken);
 
     /// <summary>
     /// Retrieves the Funds matching the provided query.

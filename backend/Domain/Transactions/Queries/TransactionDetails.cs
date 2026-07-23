@@ -43,7 +43,10 @@ public sealed class TransactionDetails(TransactionDetailsFacts facts)
         return new AccountBalanceEvent(
             AccountingPeriod,
             Transaction.Id,
+            Transaction.Date,
+            Transaction.Sequence,
             postedDate,
+            postedDate == null ? null : current?.Sequence,
             type,
             amount,
             account,

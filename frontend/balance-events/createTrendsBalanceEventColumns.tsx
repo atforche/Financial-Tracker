@@ -12,7 +12,7 @@ import { formatShortDate } from "@/framework/dateHelpers";
  */
 interface TrendsBalanceEventListItem {
   readonly amount: number;
-  readonly date?: string | null;
+  readonly eventDate?: string | null;
   readonly isPosted: boolean;
   readonly transactionId: string;
   readonly type: BalanceEventType;
@@ -74,8 +74,8 @@ const createTrendsBalanceEventColumns = function <
       name: "date",
       headerContent: "Event Date",
       getBodyContent: (event) =>
-        event.isPosted && typeof event.date === "string"
-          ? formatShortDate(new Date(`${event.date}T00:00:00`))
+        event.isPosted && typeof event.eventDate === "string"
+          ? formatShortDate(new Date(`${event.eventDate}T00:00:00`))
           : "Pending",
       ...getSortProps(dateSort.ascending, dateSort.descending),
       minWidth: 130,

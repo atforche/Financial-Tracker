@@ -121,7 +121,7 @@ const FundTrendsBalanceEventListFrame = function ({
       title="Balance Events"
       columns={columns}
       getId={(balanceEvent) =>
-        `${balanceEvent.transactionId}-${balanceEvent.fund.id}-${balanceEvent.accountingPeriod.id}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
+        `${balanceEvent.transactionId}-${balanceEvent.fund.id}-${balanceEvent.accountingPeriod.id}-${balanceEvent.eventDate}-${balanceEvent.type}-${balanceEvent.amount}`
       }
       data={data ?? null}
       totalCount={totalCount ?? null}

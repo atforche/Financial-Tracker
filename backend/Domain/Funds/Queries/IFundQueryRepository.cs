@@ -8,6 +8,11 @@ namespace Domain.Funds.Queries;
 public interface IFundQueryRepository
 {
     /// <summary>
+    /// Retrieves the Fund with the specified ID, or null when it does not exist.
+    /// </summary>
+    Task<Fund?> GetByIdAsync(FundId fundId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves the Funds matching the provided query.
     /// </summary>
     Task<QueryPage<Fund>> GetAsync(FundQuery query, CancellationToken cancellationToken = default);

@@ -82,7 +82,7 @@ public sealed class FundBalanceEventConverter
             IsOpen = balanceEvent.AccountingPeriod.IsOpen,
         },
         TransactionId = balanceEvent.TransactionId.Value,
-        Date = balanceEvent.Date,
+        EventDate = balanceEvent.EventDate,
         Type = balanceEvent.Type == BalanceEventType.Debit ? BalanceEventTypeModel.Debit : BalanceEventTypeModel.Credit,
         IsPosted = true,
         Amount = balanceEvent.Amount,

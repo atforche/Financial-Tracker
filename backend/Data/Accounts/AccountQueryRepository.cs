@@ -15,6 +15,10 @@ namespace Data.Accounts;
 public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IAccountQueryRepository
 {
     /// <inheritdoc/>
+    public Task<Account?> GetByIdAsync(AccountId accountId, CancellationToken cancellationToken = default) =>
+        databaseContext.Accounts.AsNoTracking().SingleOrDefaultAsync(account => account.Id == accountId, cancellationToken);
+
+    /// <inheritdoc/>
     public async Task<QueryPage<Account>> GetAsync(AccountQuery query, CancellationToken cancellationToken = default)
     {
         IQueryable<Account> accounts = ApplyFilter(databaseContext.Accounts.AsNoTracking(), query.Filter);
@@ -45,13 +49,9 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
                 .Select(history => new PersistedAccountBalance
                 {
                     PostedBalance = history.PostedBalance,
-                    PendingDebitAmount = history.PendingDebitAmount,
-                    PendingCreditAmount = history.PendingCreditAmount,
                 }).FirstOrDefault() ?? new PersistedAccountBalance
                 {
                     PostedBalance = account.OnboardedBalance ?? 0,
-                    PendingDebitAmount = 0,
-                    PendingCreditAmount = 0,
                 },
         });
         balances = query.Sort switch
@@ -69,8 +69,8 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
         IReadOnlyCollection<AccountBalance> items = rows.Select(row => new AccountBalance(
             row.Account,
             row.CurrentBalance.PostedBalance,
-            row.CurrentBalance.PendingDebitAmount,
-            row.CurrentBalance.PendingCreditAmount)).ToList();
+            0,
+            0)).ToList();
         return new QueryPage<AccountBalance>(items, totalCount);
     }
 
@@ -202,12 +202,10 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
     }
 
     /// <summary>
-    /// Represents the persisted balance data for an account, including posted balance and pending amounts.
+    /// Represents the persisted posted balance data for an account.
     /// </summary>
     private sealed class PersistedAccountBalance
     {
         public decimal PostedBalance { get; init; }
-        public decimal PendingDebitAmount { get; init; }
-        public decimal PendingCreditAmount { get; init; }
     }
 }

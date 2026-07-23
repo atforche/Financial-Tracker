@@ -1261,6 +1261,64 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/accounts/{accountId}/balance-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves balance events for the specified Account. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    /** @description Sort order to apply to the results. */
+                    Sort?: components["schemas"]["AccountBalanceEventSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path: {
+                    accountId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfAccountBalanceEventModel"];
+                        "application/json": components["schemas"]["CollectionModelOfAccountBalanceEventModel"];
+                        "text/json": components["schemas"]["CollectionModelOfAccountBalanceEventModel"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/accounts/balance-events/date-range": {
         parameters: {
             query?: never;
@@ -2121,7 +2179,6 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    /** @description ID of the Accounting Period to close */
                     accountingPeriodId: string;
                 };
                 cookie?: never;
@@ -2215,6 +2272,21 @@ export interface components {
     schemas: {
         /** @description Model representing a balance event for an account. */
         AccountBalanceEventModel: {
+            /**
+             * Format: date
+             * @description Transaction date for the balance event.
+             */
+            transactionDate: string;
+            /**
+             * Format: int32
+             * @description Transaction sequence for the balance event.
+             */
+            transactionSequence: number;
+            /**
+             * Format: int32
+             * @description Sequence within the event date, or null when the event is unposted.
+             */
+            eventDateSequence?: null | number;
             /** @description Account for the balance event. */
             account: components["schemas"]["AccountModel"];
             /** @description Account balance prior to the balance event. */
@@ -2230,9 +2302,9 @@ export interface components {
             transactionId: string;
             /**
              * Format: date
-             * @description Date for the balance event, or null if it's still pending.
+             * @description Event date for the balance event, or null if it's still pending.
              */
-            date?: null | string;
+            eventDate?: null | string;
             /** @description Type of balance event. */
             type: components["schemas"]["BalanceEventTypeModel"];
             /** @description True if the balance event has been posted, false otherwise. */
@@ -3103,9 +3175,9 @@ export interface components {
             transactionId: string;
             /**
              * Format: date
-             * @description Date for the balance event, or null if it's still pending.
+             * @description Event date for the balance event, or null if it's still pending.
              */
-            date?: null | string;
+            eventDate?: null | string;
             /** @description Type of balance event. */
             type: components["schemas"]["BalanceEventTypeModel"];
             /** @description True if the balance event has been posted, false otherwise. */
@@ -3250,9 +3322,9 @@ export interface components {
             transactionId: string;
             /**
              * Format: date
-             * @description Date for the balance event, or null if it's still pending.
+             * @description Event date for the balance event, or null if it's still pending.
              */
-            date?: null | string;
+            eventDate?: null | string;
             /** @description Type of balance event. */
             type: components["schemas"]["BalanceEventTypeModel"];
             /** @description True if the balance event has been posted, false otherwise. */

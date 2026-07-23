@@ -41,6 +41,18 @@ const AccountBalanceEventsFrame = function ({
       getNewBalance: (event) => event.newBalance.postedBalance,
     });
 
+  const getId = (balanceEvent: AccountBalanceEvent): string =>
+    `${balanceEvent.transactionId}-${balanceEvent.eventDate}-${balanceEvent.type}-${balanceEvent.amount}`;
+
+  const openTransaction = (balanceEvent: AccountBalanceEvent): void => {
+    router.push(
+      routes.workspaceDetail(balanceEvent.transactionId, {
+        returnUrl,
+      }),
+      { scroll: false },
+    );
+  };
+
   return (
     <ListFrame<AccountBalanceEvent>
       title="Recent Balance Events"
@@ -51,22 +63,13 @@ const AccountBalanceEventsFrame = function ({
         </Button>
       }
       columns={columns}
-      getId={(balanceEvent) =>
-        `${balanceEvent.transactionId}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
-      }
+      getId={getId}
       data={data}
       totalCount={totalCount}
       pageParamName={propertyName<AccountWorkspaceSearchParams>(
         "balanceEventPage",
       )}
-      onRowClick={(balanceEvent) => {
-        router.push(
-          routes.workspaceDetail(balanceEvent.transactionId, {
-            returnUrl,
-          }),
-          { scroll: false },
-        );
-      }}
+      onRowClick={openTransaction}
       hasActiveFilters={false}
       initialEmptyState={{
         title: "No balance events yet",

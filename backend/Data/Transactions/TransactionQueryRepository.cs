@@ -19,6 +19,10 @@ namespace Data.Transactions;
 public sealed class TransactionQueryRepository(DatabaseContext databaseContext) : ITransactionQueryRepository
 {
     /// <inheritdoc/>
+    public Task<Transaction?> GetByIdAsync(TransactionId transactionId, CancellationToken cancellationToken = default) =>
+        databaseContext.Transactions.AsNoTracking().SingleOrDefaultAsync(transaction => transaction.Id == transactionId, cancellationToken);
+
+    /// <inheritdoc/>
     public async Task<TransactionQueryFacts> GetAsync(
         TransactionQuery query,
         CancellationToken cancellationToken = default) =>

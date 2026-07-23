@@ -7,22 +7,16 @@ namespace Domain.Accounts.Queries;
 /// Service for querying Accounts and their Balances.
 /// </summary>
 public sealed class AccountQueryService(
-    IAccountRepository accountRepository,
     IAccountQueryRepository accountQueryRepository,
     IAccountingPeriodQueryRepository accountingPeriodQueryRepository,
-    AccountingPeriodRangeService accountingPeriodRangeService)
+    AccountingPeriodRangeService accountingPeriodRangeService,
+    PendingAccountBalanceService pendingAccountBalanceService)
 {
     /// <summary>
     /// Retrieves the Account with the specified ID, or null when it does not exist.
     /// </summary>
-    public Account? GetById(Guid accountId)
-    {
-        if (accountRepository.TryGetById(accountId, out Account? account))
-        {
-            return account;
-        }
-        return null;
-    }
+    public Task<Account?> GetByIdAsync(Guid accountId, CancellationToken cancellationToken = default) =>
+        accountQueryRepository.GetByIdAsync(new AccountId(accountId), cancellationToken);
 
     /// <summary>
     /// Retrieves the Accounts matching the provided query.
@@ -33,10 +27,15 @@ public sealed class AccountQueryService(
     /// <summary>
     /// Retrieves Accounts and their interpreted current balances.
     /// </summary>
-    public Task<QueryPage<AccountBalance>> GetWithBalancesAsync(
+    public async Task<QueryPage<AccountBalance>> GetWithBalancesAsync(
         AccountBalanceQuery query,
-        CancellationToken cancellationToken = default) =>
-        accountQueryRepository.GetBalancesAsync(query, cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        QueryPage<AccountBalance> page = await accountQueryRepository.GetBalancesAsync(query, cancellationToken);
+        return new QueryPage<AccountBalance>(
+            pendingAccountBalanceService.ApplyPendingEffects(page.Items),
+            page.TotalCount);
+    }
 
     /// <summary>
     /// Retrieves Account balances and financial totals over an Accounting Period range.

@@ -11,7 +11,7 @@ import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
 import ViewAccountForm from "@/accounts/workspace/ViewAccountForm";
 import createApiClient from "@/framework/data/createApiClient";
-import { getTransactionAccountBalanceEvents } from "@/transactions/postingHelpers";
+import dayjs from "dayjs";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
 import transactionRoutes from "@/transactions/routes";
@@ -39,19 +39,28 @@ const AccountWorkspaceDetailPage = async function ({
   const { search, accountType, balanceEventPage } = resolvedSearchParams;
   const apiClient = createApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
-  const [accountsResponse, transactionsResponse] = await Promise.all([
+  const balanceEventOffset = getPageOffset(currentBalanceEventPage);
+  const [accountsResponse, balanceEventsResponse] = await Promise.all([
     apiClient.GET("/accounts/with-balances"),
-    apiClient.GET("/transactions", {
-      params: { query: { "Filter.AccountIds": [accountId] } },
+    apiClient.GET("/accounts/{accountId}/balance-events", {
+      params: {
+        path: { accountId },
+        query: {
+          "Range.Start": dayjs().subtract(60, "day").format("YYYY-MM-DD"),
+          "Range.End": dayjs().format("YYYY-MM-DD"),
+          Limit: rowsPerPage,
+          Offset: balanceEventOffset,
+        },
+      },
     }),
   ]);
   const accounts = unwrapApiResponse(
     accountsResponse,
     "Failed to fetch accounts",
   );
-  const transactions = unwrapApiResponse(
-    transactionsResponse,
-    "Failed to fetch account transactions",
+  const balanceEvents = unwrapApiResponse(
+    balanceEventsResponse,
+    "Failed to fetch account balance events",
   );
   const account = accounts.items.find((item) => item.id === accountId);
 
@@ -68,15 +77,6 @@ const AccountWorkspaceDetailPage = async function ({
   if (typeof account === "undefined") {
     redirect(workspaceUrl);
   }
-
-  const allBalanceEvents = transactions.items
-    .flatMap(getTransactionAccountBalanceEvents)
-    .filter((event) => event.account.id === account.id);
-  const balanceEventOffset = getPageOffset(currentBalanceEventPage);
-  const balanceEvents = allBalanceEvents.slice(
-    balanceEventOffset,
-    balanceEventOffset + rowsPerPage,
-  );
 
   const currentUrl = routes.workspaceDetail(account.id, detailSearchParams);
   const addTransactionHref = transactionRoutes.workspaceCreate({
@@ -100,8 +100,8 @@ const AccountWorkspaceDetailPage = async function ({
       <ViewAccountForm
         account={account}
         redirectUrl={currentUrl}
-        recentBalanceEvents={balanceEvents}
-        recentBalanceEventCount={allBalanceEvents.length}
+        recentBalanceEvents={balanceEvents.items}
+        recentBalanceEventCount={balanceEvents.totalCount}
         addTransactionHref={addTransactionHref}
       />
     </PageLayout>

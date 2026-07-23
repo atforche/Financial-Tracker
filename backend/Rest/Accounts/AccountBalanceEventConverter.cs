@@ -15,6 +15,19 @@ namespace Rest.Accounts;
 public sealed class AccountBalanceEventConverter
 {
     /// <summary>
+    /// Converts the provided API Account balance-event query to a Domain query.
+    /// </summary>
+    public AccountBalanceEventAccountQuery ToDomain(
+        Guid accountId,
+        AccountBalanceEventsQueryParameterModel model) => new(
+            accountId,
+            model.Range.Start,
+            model.Range.End,
+            ToDomain(model.Sort),
+            model.Offset ?? 0,
+            model.Limit);
+
+    /// <summary>
     /// Converts the provided API query to a Domain query.
     /// </summary>
     public AccountBalanceEventQuery ToDomain(AccountBalanceEventsInDateRangeQueryParameterModel model) => new(
@@ -85,7 +98,10 @@ public sealed class AccountBalanceEventConverter
             IsOpen = balanceEvent.AccountingPeriod.IsOpen,
         },
         TransactionId = balanceEvent.TransactionId.Value,
-        Date = balanceEvent.Date,
+        TransactionDate = balanceEvent.TransactionDate,
+        TransactionSequence = balanceEvent.TransactionSequence,
+        EventDate = balanceEvent.EventDate,
+        EventDateSequence = balanceEvent.EventDateSequence,
         Type = balanceEvent.Type == BalanceEventType.Debit ? BalanceEventTypeModel.Debit : BalanceEventTypeModel.Credit,
         IsPosted = balanceEvent.IsPosted,
         Amount = balanceEvent.Amount,

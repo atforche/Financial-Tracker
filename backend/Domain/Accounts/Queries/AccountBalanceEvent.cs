@@ -10,7 +10,10 @@ namespace Domain.Accounts.Queries;
 public sealed record AccountBalanceEvent(
     AccountingPeriod AccountingPeriod,
     TransactionId TransactionId,
-    DateOnly? Date,
+    DateOnly TransactionDate,
+    int TransactionSequence,
+    DateOnly? EventDate,
+    int? EventDateSequence,
     BalanceEventType Type,
     decimal Amount,
     Account Account,
@@ -20,5 +23,5 @@ public sealed record AccountBalanceEvent(
     /// <summary>
     /// Gets whether the event has posted.
     /// </summary>
-    public bool IsPosted => Date.HasValue;
+    public bool IsPosted => EventDate.HasValue;
 }

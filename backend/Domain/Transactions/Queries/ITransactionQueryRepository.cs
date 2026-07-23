@@ -8,6 +8,11 @@ namespace Domain.Transactions.Queries;
 public interface ITransactionQueryRepository
 {
     /// <summary>
+    /// Retrieves the Transaction with the specified ID, or null when it does not exist.
+    /// </summary>
+    Task<Transaction?> GetByIdAsync(TransactionId transactionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves a Transaction page and all facts required to interpret it.
     /// </summary>
     Task<TransactionQueryFacts> GetAsync(

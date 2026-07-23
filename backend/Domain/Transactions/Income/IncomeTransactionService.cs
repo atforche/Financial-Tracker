@@ -12,6 +12,7 @@ namespace Domain.Transactions.Income;
 /// </summary>
 public class IncomeTransactionService(
     AccountBalanceService accountBalanceService,
+    PendingAccountBalanceService pendingAccountBalanceService,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
     FundPlanTotalsHistoryService fundPlanTotalsHistoryService,
@@ -20,6 +21,7 @@ public class IncomeTransactionService(
     ITransactionRepository transactionRepository) :
     TransactionService(
         accountBalanceService,
+        pendingAccountBalanceService,
         accountingPeriodBalanceService,
         fundBalanceService,
         fundPlanTotalsHistoryService,
@@ -97,6 +99,7 @@ public class IncomeTransactionService(
         }
         UnpostTransaction(transaction);
         transaction.ClearPostedDates();
+        SynchronizePendingAccountBalanceEffects(transaction);
         return true;
     }
 

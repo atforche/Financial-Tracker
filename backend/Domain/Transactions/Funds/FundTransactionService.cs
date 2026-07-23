@@ -12,6 +12,7 @@ namespace Domain.Transactions.Funds;
 /// </summary>
 public class FundTransactionService(
     AccountBalanceService accountBalanceService,
+    PendingAccountBalanceService pendingAccountBalanceService,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
     FundPlanTotalsHistoryService fundPlanTotalsHistoryService,
@@ -19,6 +20,7 @@ public class FundTransactionService(
     ITransactionRepository transactionRepository) :
     TransactionService(
         accountBalanceService,
+        pendingAccountBalanceService,
         accountingPeriodBalanceService,
         fundBalanceService,
         fundPlanTotalsHistoryService,

@@ -17,88 +17,84 @@ using Models.Transactions.Update;
 namespace Rest.Transactions;
 
 /// <summary>
-/// Converter class that handles converting transaction request models to domain transaction requests.
+/// Converts REST Transaction request models to Domain Transaction requests.
 /// </summary>
 public sealed class TransactionRequestConverter(
     AccountQueryService accountQueryService,
     FundQueryService fundQueryService)
 {
     /// <summary>
-    /// Attempts to convert the provided create model to a domain create request.
+    /// Converts a REST create model to a Domain create request.
     /// </summary>
-    public bool TryToCreateRequest(
+    public async Task<CreateTransactionRequest?> ToCreateRequestAsync(
         AccountingPeriod accountingPeriod,
         CreateTransactionModel model,
-        [NotNullWhen(true)] out CreateTransactionRequest? request,
-        out Dictionary<string, string[]> errors)
+        Dictionary<string, string[]> errors)
     {
-        errors = [];
-        request = model switch
+        CreateTransactionRequest? request = model switch
         {
-            CreateSpendingTransactionModel spending => BuildSpendingCreateRequest(accountingPeriod, spending, errors),
-            CreateIncomeTransactionModel income => BuildIncomeCreateRequest(accountingPeriod, income, errors),
-            CreateAccountTransactionModel account => BuildAccountCreateRequest(accountingPeriod, account, errors),
-            CreateFundTransactionModel fund => BuildFundCreateRequest(accountingPeriod, fund, errors),
+            CreateSpendingTransactionModel spending => await BuildSpendingCreateRequestAsync(accountingPeriod, spending, errors),
+            CreateIncomeTransactionModel income => await BuildIncomeCreateRequestAsync(accountingPeriod, income, errors),
+            CreateAccountTransactionModel account => await BuildAccountCreateRequestAsync(accountingPeriod, account, errors),
+            CreateFundTransactionModel fund => await BuildFundCreateRequestAsync(accountingPeriod, fund, errors),
             _ => null
         };
         if (request != null)
         {
-            return true;
+            return request;
         }
         if (errors.Count == 0)
         {
             errors.Add("type", [$"Unsupported transaction request type: {model.GetType().Name}."]);
         }
-        return false;
+        return null;
     }
 
     /// <summary>
-    /// Attempts to map the provided update model to a domain update request.
+    /// Converts a REST update model to a Domain update request.
     /// </summary>
-    public bool TryToUpdateRequest(
+    public async Task<UpdateTransactionRequest?> ToUpdateRequestAsync(
         Transaction transaction,
         UpdateTransactionModel model,
-        [NotNullWhen(true)] out UpdateTransactionRequest? request,
-        out Dictionary<string, string[]> errors)
+        Dictionary<string, string[]> errors)
     {
-        errors = [];
-
         TransactionTypeModel requestType = TransactionTypeConverter.ToModel(model);
         if (TransactionTypeConverter.ToModel(transaction.Type) != requestType)
         {
             errors.Add("type", [$"Transaction type {requestType} does not match existing transaction type {transaction.Type}."]);
-            request = null;
-            return false;
+            return null;
         }
-        request = (transaction, model) switch
+        UpdateTransactionRequest? request = (transaction, model) switch
         {
-            (SpendingTransaction, UpdateSpendingTransactionModel spending) => BuildSpendingUpdateRequest(spending, errors),
-            (IncomeTransaction, UpdateIncomeTransactionModel income) => BuildIncomeUpdateRequest(income, errors),
-            (AccountTransaction, UpdateAccountTransactionModel account) => BuildAccountUpdateRequest(account, errors),
-            (FundTransaction, UpdateFundTransactionModel fund) => BuildFundUpdateRequest(fund, errors),
+            (SpendingTransaction, UpdateSpendingTransactionModel spending) => await BuildSpendingUpdateRequestAsync(spending, errors),
+            (IncomeTransaction, UpdateIncomeTransactionModel income) => await BuildIncomeUpdateRequestAsync(income, errors),
+            (AccountTransaction, UpdateAccountTransactionModel account) => await BuildAccountUpdateRequestAsync(account, errors),
+            (FundTransaction, UpdateFundTransactionModel fund) => await BuildFundUpdateRequestAsync(fund, errors),
             _ => null
         };
         if (request != null)
         {
-            return true;
+            return request;
         }
         if (errors.Count == 0)
         {
             errors.Add("type", [$"Request type {model.GetType().Name} is not valid for transaction type {transaction.GetType().Name}."]);
         }
-        return false;
+        return null;
     }
 
-    private CreateSpendingTransactionRequest? BuildSpendingCreateRequest(
+    private async Task<CreateSpendingTransactionRequest?> BuildSpendingCreateRequestAsync(
         AccountingPeriod accountingPeriod,
         CreateSpendingTransactionModel model,
         Dictionary<string, string[]> errors)
     {
-        if (!TryGetSpendingSource(model.Source, nameof(CreateSpendingTransactionModel.Source), errors, out SpendingTransactionSource? source))
+        SpendingTransactionSource? source = await GetSpendingSourceAsync(model.Source, nameof(CreateSpendingTransactionModel.Source), errors);
+        if (source == null)
         {
             return null;
         }
-        if (!TryGetSpendingDestinations(model.Destinations, nameof(CreateSpendingTransactionModel.Destinations), errors, out IReadOnlyCollection<SpendingTransactionDestination>? destinations))
+        IReadOnlyCollection<SpendingTransactionDestination>? destinations = await GetSpendingDestinationsAsync(model.Destinations, nameof(CreateSpendingTransactionModel.Destinations), errors);
+        if (destinations == null)
         {
             return null;
         }
@@ -113,16 +109,18 @@ public sealed class TransactionRequestConverter(
         };
     }
 
-    private CreateIncomeTransactionRequest? BuildIncomeCreateRequest(
+    private async Task<CreateIncomeTransactionRequest?> BuildIncomeCreateRequestAsync(
         AccountingPeriod accountingPeriod,
         CreateIncomeTransactionModel model,
         Dictionary<string, string[]> errors)
     {
-        if (!TryGetIncomeSource(model.Source, nameof(CreateIncomeTransactionModel.Source), errors, out IncomeTransactionSource? source))
+        IncomeTransactionSource? source = await GetIncomeSourceAsync(model.Source, nameof(CreateIncomeTransactionModel.Source), errors);
+        if (source == null)
         {
             return null;
         }
-        if (!TryGetIncomeDestinations(model.Destinations, nameof(CreateIncomeTransactionModel.Destinations), errors, out IReadOnlyCollection<IncomeTransactionDestination>? destinations))
+        IReadOnlyCollection<IncomeTransactionDestination>? destinations = await GetIncomeDestinationsAsync(model.Destinations, nameof(CreateIncomeTransactionModel.Destinations), errors);
+        if (destinations == null)
         {
             return null;
         }
@@ -137,16 +135,18 @@ public sealed class TransactionRequestConverter(
         };
     }
 
-    private CreateAccountTransactionRequest? BuildAccountCreateRequest(
+    private async Task<CreateAccountTransactionRequest?> BuildAccountCreateRequestAsync(
         AccountingPeriod accountingPeriod,
         CreateAccountTransactionModel model,
         Dictionary<string, string[]> errors)
     {
-        if (!TryGetAccountSource(model.Source, nameof(CreateAccountTransactionModel.Source), errors, out AccountTransactionSource? source))
+        AccountTransactionSource? source = await GetAccountSourceAsync(model.Source, nameof(CreateAccountTransactionModel.Source), errors);
+        if (source == null)
         {
             return null;
         }
-        if (!TryGetAccountDestinations(model.Destinations, nameof(CreateAccountTransactionModel.Destinations), errors, out IReadOnlyCollection<AccountTransactionDestination>? destinations))
+        IReadOnlyCollection<AccountTransactionDestination>? destinations = await GetAccountDestinationsAsync(model.Destinations, nameof(CreateAccountTransactionModel.Destinations), errors);
+        if (destinations == null)
         {
             return null;
         }
@@ -161,16 +161,18 @@ public sealed class TransactionRequestConverter(
         };
     }
 
-    private CreateFundTransactionRequest? BuildFundCreateRequest(
+    private async Task<CreateFundTransactionRequest?> BuildFundCreateRequestAsync(
         AccountingPeriod accountingPeriod,
         CreateFundTransactionModel model,
         Dictionary<string, string[]> errors)
     {
-        if (!TryGetFundSource(model.Source, nameof(CreateFundTransactionModel.Source), errors, out FundTransactionSource? source))
+        FundTransactionSource? source = await GetFundSourceAsync(model.Source, nameof(CreateFundTransactionModel.Source), errors);
+        if (source == null)
         {
             return null;
         }
-        if (!TryGetFundDestinations(model.Destinations, nameof(CreateFundTransactionModel.Destinations), errors, out IReadOnlyCollection<FundTransactionDestination>? destinations))
+        IReadOnlyCollection<FundTransactionDestination>? destinations = await GetFundDestinationsAsync(model.Destinations, nameof(CreateFundTransactionModel.Destinations), errors);
+        if (destinations == null)
         {
             return null;
         }
@@ -185,13 +187,15 @@ public sealed class TransactionRequestConverter(
         };
     }
 
-    private UpdateSpendingTransactionRequest? BuildSpendingUpdateRequest(UpdateSpendingTransactionModel model, Dictionary<string, string[]> errors)
+    private async Task<UpdateSpendingTransactionRequest?> BuildSpendingUpdateRequestAsync(UpdateSpendingTransactionModel model, Dictionary<string, string[]> errors)
     {
-        if (!TryGetSpendingSource(model.Source, nameof(UpdateSpendingTransactionModel.Source), errors, out SpendingTransactionSource? source))
+        SpendingTransactionSource? source = await GetSpendingSourceAsync(model.Source, nameof(UpdateSpendingTransactionModel.Source), errors);
+        if (source == null)
         {
             return null;
         }
-        if (!TryGetSpendingDestinations(model.Destinations, nameof(UpdateSpendingTransactionModel.Destinations), errors, out IReadOnlyCollection<SpendingTransactionDestination>? destinations))
+        IReadOnlyCollection<SpendingTransactionDestination>? destinations = await GetSpendingDestinationsAsync(model.Destinations, nameof(UpdateSpendingTransactionModel.Destinations), errors);
+        if (destinations == null)
         {
             return null;
         }
@@ -205,13 +209,15 @@ public sealed class TransactionRequestConverter(
         };
     }
 
-    private UpdateIncomeTransactionRequest? BuildIncomeUpdateRequest(UpdateIncomeTransactionModel model, Dictionary<string, string[]> errors)
+    private async Task<UpdateIncomeTransactionRequest?> BuildIncomeUpdateRequestAsync(UpdateIncomeTransactionModel model, Dictionary<string, string[]> errors)
     {
-        if (!TryGetIncomeSource(model.Source, nameof(UpdateIncomeTransactionModel.Source), errors, out IncomeTransactionSource? source))
+        IncomeTransactionSource? source = await GetIncomeSourceAsync(model.Source, nameof(UpdateIncomeTransactionModel.Source), errors);
+        if (source == null)
         {
             return null;
         }
-        if (!TryGetIncomeDestinations(model.Destinations, nameof(UpdateIncomeTransactionModel.Destinations), errors, out IReadOnlyCollection<IncomeTransactionDestination>? destinations))
+        IReadOnlyCollection<IncomeTransactionDestination>? destinations = await GetIncomeDestinationsAsync(model.Destinations, nameof(UpdateIncomeTransactionModel.Destinations), errors);
+        if (destinations == null)
         {
             return null;
         }
@@ -225,13 +231,15 @@ public sealed class TransactionRequestConverter(
         };
     }
 
-    private UpdateAccountTransactionRequest? BuildAccountUpdateRequest(UpdateAccountTransactionModel model, Dictionary<string, string[]> errors)
+    private async Task<UpdateAccountTransactionRequest?> BuildAccountUpdateRequestAsync(UpdateAccountTransactionModel model, Dictionary<string, string[]> errors)
     {
-        if (!TryGetAccountSource(model.Source, nameof(UpdateAccountTransactionModel.Source), errors, out AccountTransactionSource? source))
+        AccountTransactionSource? source = await GetAccountSourceAsync(model.Source, nameof(UpdateAccountTransactionModel.Source), errors);
+        if (source == null)
         {
             return null;
         }
-        if (!TryGetAccountDestinations(model.Destinations, nameof(UpdateAccountTransactionModel.Destinations), errors, out IReadOnlyCollection<AccountTransactionDestination>? destinations))
+        IReadOnlyCollection<AccountTransactionDestination>? destinations = await GetAccountDestinationsAsync(model.Destinations, nameof(UpdateAccountTransactionModel.Destinations), errors);
+        if (destinations == null)
         {
             return null;
         }
@@ -245,13 +253,15 @@ public sealed class TransactionRequestConverter(
         };
     }
 
-    private UpdateFundTransactionRequest? BuildFundUpdateRequest(UpdateFundTransactionModel model, Dictionary<string, string[]> errors)
+    private async Task<UpdateFundTransactionRequest?> BuildFundUpdateRequestAsync(UpdateFundTransactionModel model, Dictionary<string, string[]> errors)
     {
-        if (!TryGetFundSource(model.Source, nameof(UpdateFundTransactionModel.Source), errors, out FundTransactionSource? source))
+        FundTransactionSource? source = await GetFundSourceAsync(model.Source, nameof(UpdateFundTransactionModel.Source), errors);
+        if (source == null)
         {
             return null;
         }
-        if (!TryGetFundDestinations(model.Destinations, nameof(UpdateFundTransactionModel.Destinations), errors, out IReadOnlyCollection<FundTransactionDestination>? destinations))
+        IReadOnlyCollection<FundTransactionDestination>? destinations = await GetFundDestinationsAsync(model.Destinations, nameof(UpdateFundTransactionModel.Destinations), errors);
+        if (destinations == null)
         {
             return null;
         }
@@ -265,144 +275,130 @@ public sealed class TransactionRequestConverter(
         };
     }
 
-    private bool TryGetAccount(Guid accountId, string errorKey, Dictionary<string, string[]> errors, [NotNullWhen(true)] out Account? account)
+    private async Task<Account?> TryGetAccountAsync(Guid accountId, string errorKey, Dictionary<string, string[]> errors)
     {
-        account = accountQueryService.GetById(accountId);
+        Account? account = await accountQueryService.GetByIdAsync(accountId);
         if (account != null)
         {
-            return true;
+            return account;
         }
-
         errors.Add(errorKey, [$"Account with ID {accountId} was not found."]);
-        return false;
+        return null;
     }
 
-    private bool TryGetFund(Guid fundId, string errorKey, Dictionary<string, string[]> errors, [NotNullWhen(true)] out Fund? fund)
+    private async Task<Fund?> TryGetFundAsync(Guid fundId, string errorKey, Dictionary<string, string[]> errors)
     {
-        fund = fundQueryService.GetById(fundId);
+        Fund? fund = await fundQueryService.GetByIdAsync(fundId);
         if (fund != null)
         {
-            return true;
+            return fund;
         }
-
         errors.Add(errorKey, [$"Fund with ID {fundId} was not found."]);
-        return false;
+        return null;
     }
 
-    private bool TryGetFundAmounts(
+    private async Task<IReadOnlyCollection<FundAmount>?> GetFundAmountsAsync(
         IReadOnlyCollection<CreateFundAmountModel> models,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out IReadOnlyCollection<FundAmount>? fundAmounts)
+        Dictionary<string, string[]> errors)
     {
         List<FundAmount> resolvedFundAmounts = [];
 
         foreach ((int index, CreateFundAmountModel fundAmountModel) in models.Index())
         {
-            if (!TryGetFund(fundAmountModel.FundId, $"{errorKeyPrefix}[{index}]", errors, out Fund? fund))
+            Fund? fund = await TryGetFundAsync(fundAmountModel.FundId, $"{errorKeyPrefix}[{index}]", errors);
+            if (fund == null)
             {
-                fundAmounts = null;
-                return false;
+                return null;
             }
 
             resolvedFundAmounts.Add(new FundAmount { FundId = fund.Id, Amount = fundAmountModel.Amount });
         }
 
-        fundAmounts = resolvedFundAmounts;
-        return true;
+        return resolvedFundAmounts;
     }
 
-    private bool TryGetSpendingSource(
+    private async Task<SpendingTransactionSource?> GetSpendingSourceAsync(
         CreateSpendingTransactionSourceModel model,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out SpendingTransactionSource? source)
+        Dictionary<string, string[]> errors)
     {
-        source = null;
-        if (!TryGetAccount(model.AccountId, $"{errorKeyPrefix}.{nameof(CreateSpendingTransactionSourceModel.AccountId)}", errors, out Account? account))
+        Account? account = await TryGetAccountAsync(model.AccountId, $"{errorKeyPrefix}.{nameof(CreateSpendingTransactionSourceModel.AccountId)}", errors);
+        if (account == null)
         {
-            return false;
+            return null;
         }
-        source = new SpendingTransactionSource(account, null);
-        return true;
+        return new SpendingTransactionSource(account, null);
     }
 
-    private bool TryGetSpendingSource(
+    private async Task<SpendingTransactionSource?> GetSpendingSourceAsync(
         UpdateSpendingTransactionSourceModel model,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out SpendingTransactionSource? source)
+        Dictionary<string, string[]> errors)
     {
-        source = null;
-        if (!TryGetAccount(model.AccountId, $"{errorKeyPrefix}.{nameof(UpdateSpendingTransactionSourceModel.AccountId)}", errors, out Account? account))
+        Account? account = await TryGetAccountAsync(model.AccountId, $"{errorKeyPrefix}.{nameof(UpdateSpendingTransactionSourceModel.AccountId)}", errors);
+        if (account == null)
         {
-            return false;
+            return null;
         }
-        source = new SpendingTransactionSource(account, null);
-        return true;
+        return new SpendingTransactionSource(account, null);
     }
 
-    private bool TryGetSpendingDestinations(
+    private async Task<IReadOnlyCollection<SpendingTransactionDestination>?> GetSpendingDestinationsAsync(
         IReadOnlyCollection<CreateSpendingTransactionDestinationModel> models,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out IReadOnlyCollection<SpendingTransactionDestination>? destinations)
+        Dictionary<string, string[]> errors)
     {
         List<SpendingTransactionDestination> resolvedDestinations = [];
         foreach ((int index, CreateSpendingTransactionDestinationModel model) in models.Index())
         {
-            if (!TryGetSpendingDestination(model.AccountId, model.Location, model.Amount, model.FundAssignments, $"{errorKeyPrefix}[{index}]", errors, out SpendingTransactionDestination? destination))
+            SpendingTransactionDestination? destination = await GetSpendingDestinationAsync(model.AccountId, model.Location, model.Amount, model.FundAssignments, $"{errorKeyPrefix}[{index}]", errors);
+            if (destination == null)
             {
-                destinations = null;
-                return false;
+                return null;
             }
             resolvedDestinations.Add(destination);
         }
-        destinations = resolvedDestinations;
-        return true;
+        return resolvedDestinations;
     }
 
-    private bool TryGetSpendingDestinations(
+    private async Task<IReadOnlyCollection<SpendingTransactionDestination>?> GetSpendingDestinationsAsync(
         IReadOnlyCollection<UpdateSpendingTransactionDestinationModel> models,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out IReadOnlyCollection<SpendingTransactionDestination>? destinations)
+        Dictionary<string, string[]> errors)
     {
         List<SpendingTransactionDestination> resolvedDestinations = [];
         foreach ((int index, UpdateSpendingTransactionDestinationModel model) in models.Index())
         {
-            if (!TryGetSpendingDestination(model.AccountId, model.Location, model.Amount, model.FundAssignments, $"{errorKeyPrefix}[{index}]", errors, out SpendingTransactionDestination? destination))
+            SpendingTransactionDestination? destination = await GetSpendingDestinationAsync(model.AccountId, model.Location, model.Amount, model.FundAssignments, $"{errorKeyPrefix}[{index}]", errors);
+            if (destination == null)
             {
-                destinations = null;
-                return false;
+                return null;
             }
             resolvedDestinations.Add(destination);
         }
-        destinations = resolvedDestinations;
-        return true;
+        return resolvedDestinations;
     }
 
-    private bool TryGetSpendingDestination(
+    private async Task<SpendingTransactionDestination?> GetSpendingDestinationAsync(
         Guid? accountId,
         string? location,
         decimal amount,
         IReadOnlyCollection<CreateFundAmountModel> fundAssignmentModels,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out SpendingTransactionDestination? destination)
+        Dictionary<string, string[]> errors)
     {
-        destination = null;
         Account? account = null;
-        if (accountId != null && !TryGetAccount(accountId.Value, $"{errorKeyPrefix}.AccountId", errors, out account))
+        if (accountId != null && (account = await TryGetAccountAsync(accountId.Value, $"{errorKeyPrefix}.AccountId", errors)) == null)
         {
-            return false;
+            return null;
         }
-        if (!TryGetFundAmounts(fundAssignmentModels, $"{errorKeyPrefix}.FundAssignments", errors, out IReadOnlyCollection<FundAmount>? fundAssignments))
+        IReadOnlyCollection<FundAmount>? fundAssignments = await GetFundAmountsAsync(fundAssignmentModels, $"{errorKeyPrefix}.FundAssignments", errors);
+        if (fundAssignments == null)
         {
-            return false;
+            return null;
         }
-        destination = new SpendingTransactionDestination(account, null, location, amount, fundAssignments.ToList());
-        return true;
+        return new SpendingTransactionDestination(account, null, location, amount, fundAssignments.ToList());
     }
 
     private static bool TryGetIncomeLines(IReadOnlyCollection<CreateIncomeLineModel> models, [NotNullWhen(true)] out IReadOnlyCollection<IncomeLine>? incomeLines)
@@ -429,288 +425,254 @@ public sealed class TransactionRequestConverter(
         return true;
     }
 
-    private bool TryGetIncomeSource(
+    private async Task<IncomeTransactionSource?> GetIncomeSourceAsync(
         CreateIncomeTransactionSourceModel model,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out IncomeTransactionSource? source)
+        Dictionary<string, string[]> errors)
     {
-        source = null;
         Account? account = null;
-        if (model.AccountId != null && !TryGetAccount(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(CreateIncomeTransactionSourceModel.AccountId)}", errors, out account))
+        if (model.AccountId != null && (account = await TryGetAccountAsync(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(CreateIncomeTransactionSourceModel.AccountId)}", errors)) == null)
         {
-            return false;
+            return null;
         }
         if (!TryGetIncomeLines(model.IncomeLines, out IReadOnlyCollection<IncomeLine>? incomeLines))
         {
-            return false;
+            return null;
         }
         if (!TryGetIncomeDeductions(model.IncomeDeductions, out IReadOnlyCollection<IncomeDeduction>? incomeDeductions))
         {
-            return false;
+            return null;
         }
-        source = new IncomeTransactionSource(account, null, model.Location, incomeLines, incomeDeductions);
-        return true;
+        return new IncomeTransactionSource(account, null, model.Location, incomeLines, incomeDeductions);
     }
 
-    private bool TryGetIncomeSource(
+    private async Task<IncomeTransactionSource?> GetIncomeSourceAsync(
         UpdateIncomeTransactionSourceModel model,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out IncomeTransactionSource? source)
+        Dictionary<string, string[]> errors)
     {
-        source = null;
         Account? account = null;
-        if (model.AccountId != null && !TryGetAccount(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(UpdateIncomeTransactionSourceModel.AccountId)}", errors, out account))
+        if (model.AccountId != null && (account = await TryGetAccountAsync(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(UpdateIncomeTransactionSourceModel.AccountId)}", errors)) == null)
         {
-            return false;
+            return null;
         }
         if (!TryGetIncomeLines(model.IncomeLines, out IReadOnlyCollection<IncomeLine>? incomeLines))
         {
-            return false;
+            return null;
         }
         if (!TryGetIncomeDeductions(model.IncomeDeductions, out IReadOnlyCollection<IncomeDeduction>? incomeDeductions))
         {
-            return false;
+            return null;
         }
-        source = new IncomeTransactionSource(account, null, model.Location, incomeLines, incomeDeductions);
-        return true;
+        return new IncomeTransactionSource(account, null, model.Location, incomeLines, incomeDeductions);
     }
 
-    private bool TryGetIncomeDestinations(
+    private async Task<IReadOnlyCollection<IncomeTransactionDestination>?> GetIncomeDestinationsAsync(
         IReadOnlyCollection<CreateIncomeTransactionDestinationModel> models,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out IReadOnlyCollection<IncomeTransactionDestination>? destinations)
+        Dictionary<string, string[]> errors)
     {
         List<IncomeTransactionDestination> resolvedDestinations = [];
         foreach ((int index, CreateIncomeTransactionDestinationModel model) in models.Index())
         {
-            if (!TryGetIncomeDestination(model.AccountId, model.Amount, model.FundAssignments, $"{errorKeyPrefix}[{index}]", errors, out IncomeTransactionDestination? destination))
+            IncomeTransactionDestination? destination = await GetIncomeDestinationAsync(model.AccountId, model.Amount, model.FundAssignments, $"{errorKeyPrefix}[{index}]", errors);
+            if (destination == null)
             {
-                destinations = null;
-                return false;
+                return null;
             }
             resolvedDestinations.Add(destination);
         }
-        destinations = resolvedDestinations;
-        return true;
+        return resolvedDestinations;
     }
 
-    private bool TryGetIncomeDestinations(
+    private async Task<IReadOnlyCollection<IncomeTransactionDestination>?> GetIncomeDestinationsAsync(
         IReadOnlyCollection<UpdateIncomeTransactionDestinationModel> models,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out IReadOnlyCollection<IncomeTransactionDestination>? destinations)
+        Dictionary<string, string[]> errors)
     {
         List<IncomeTransactionDestination> resolvedDestinations = [];
         foreach ((int index, UpdateIncomeTransactionDestinationModel model) in models.Index())
         {
-            if (!TryGetIncomeDestination(model.AccountId, model.Amount, model.FundAssignments, $"{errorKeyPrefix}[{index}]", errors, out IncomeTransactionDestination? destination))
+            IncomeTransactionDestination? destination = await GetIncomeDestinationAsync(model.AccountId, model.Amount, model.FundAssignments, $"{errorKeyPrefix}[{index}]", errors);
+            if (destination == null)
             {
-                destinations = null;
-                return false;
+                return null;
             }
             resolvedDestinations.Add(destination);
         }
-        destinations = resolvedDestinations;
-        return true;
+        return resolvedDestinations;
     }
 
-    private bool TryGetIncomeDestination(
+    private async Task<IncomeTransactionDestination?> GetIncomeDestinationAsync(
         Guid accountId,
         decimal amount,
         IReadOnlyCollection<CreateFundAmountModel> fundAssignmentModels,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out IncomeTransactionDestination? destination)
+        Dictionary<string, string[]> errors)
     {
-        destination = null;
-        if (!TryGetAccount(accountId, $"{errorKeyPrefix}.AccountId", errors, out Account? account))
+        Account? account = await TryGetAccountAsync(accountId, $"{errorKeyPrefix}.AccountId", errors);
+        if (account == null)
         {
-            return false;
+            return null;
         }
-        if (!TryGetFundAmounts(fundAssignmentModels, $"{errorKeyPrefix}.FundAssignments", errors, out IReadOnlyCollection<FundAmount>? fundAssignments))
+        IReadOnlyCollection<FundAmount>? fundAssignments = await GetFundAmountsAsync(fundAssignmentModels, $"{errorKeyPrefix}.FundAssignments", errors);
+        if (fundAssignments == null)
         {
-            return false;
+            return null;
         }
-        destination = new IncomeTransactionDestination(account, amount, null, fundAssignments);
-        return true;
+        return new IncomeTransactionDestination(account, amount, null, fundAssignments);
     }
 
-    private bool TryGetAccountSource(
+    private async Task<AccountTransactionSource?> GetAccountSourceAsync(
         CreateAccountTransactionSourceModel model,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out AccountTransactionSource? source)
+        Dictionary<string, string[]> errors)
     {
-        source = null;
         Account? account = null;
-        if (model.AccountId != null && !TryGetAccount(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(CreateAccountTransactionSourceModel.AccountId)}", errors, out account))
+        if (model.AccountId != null && (account = await TryGetAccountAsync(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(CreateAccountTransactionSourceModel.AccountId)}", errors)) == null)
         {
-            return false;
+            return null;
         }
-        source = new AccountTransactionSource(account, null, model.Location);
-        return true;
+        return new AccountTransactionSource(account, null, model.Location);
     }
 
-    private bool TryGetAccountSource(
+    private async Task<AccountTransactionSource?> GetAccountSourceAsync(
         UpdateAccountTransactionSourceModel model,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out AccountTransactionSource? source)
+        Dictionary<string, string[]> errors)
     {
-        source = null;
         Account? account = null;
-        if (model.AccountId != null && !TryGetAccount(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(UpdateAccountTransactionSourceModel.AccountId)}", errors, out account))
+        if (model.AccountId != null && (account = await TryGetAccountAsync(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(UpdateAccountTransactionSourceModel.AccountId)}", errors)) == null)
         {
-            return false;
+            return null;
         }
-        source = new AccountTransactionSource(account, null, model.Location);
-        return true;
+        return new AccountTransactionSource(account, null, model.Location);
     }
 
-    private bool TryGetAccountDestinations(
+    private async Task<IReadOnlyCollection<AccountTransactionDestination>?> GetAccountDestinationsAsync(
         IReadOnlyCollection<CreateAccountTransactionDestinationModel> models,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out IReadOnlyCollection<AccountTransactionDestination>? destinations)
+        Dictionary<string, string[]> errors)
     {
         List<AccountTransactionDestination> resolvedDestinations = [];
         foreach ((int index, CreateAccountTransactionDestinationModel model) in models.Index())
         {
-            if (!TryGetAccountDestination(model.AccountId, model.Location, model.Amount, $"{errorKeyPrefix}[{index}]", errors, out AccountTransactionDestination? destination))
+            AccountTransactionDestination? destination = await GetAccountDestinationAsync(model.AccountId, model.Location, model.Amount, $"{errorKeyPrefix}[{index}]", errors);
+            if (destination == null)
             {
-                destinations = null;
-                return false;
+                return null;
             }
             resolvedDestinations.Add(destination);
         }
-        destinations = resolvedDestinations;
-        return true;
+        return resolvedDestinations;
     }
 
-    private bool TryGetAccountDestinations(
+    private async Task<IReadOnlyCollection<AccountTransactionDestination>?> GetAccountDestinationsAsync(
         IReadOnlyCollection<UpdateAccountTransactionDestinationModel> models,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out IReadOnlyCollection<AccountTransactionDestination>? destinations)
+        Dictionary<string, string[]> errors)
     {
         List<AccountTransactionDestination> resolvedDestinations = [];
         foreach ((int index, UpdateAccountTransactionDestinationModel model) in models.Index())
         {
-            if (!TryGetAccountDestination(model.AccountId, model.Location, model.Amount, $"{errorKeyPrefix}[{index}]", errors, out AccountTransactionDestination? destination))
+            AccountTransactionDestination? destination = await GetAccountDestinationAsync(model.AccountId, model.Location, model.Amount, $"{errorKeyPrefix}[{index}]", errors);
+            if (destination == null)
             {
-                destinations = null;
-                return false;
+                return null;
             }
             resolvedDestinations.Add(destination);
         }
-        destinations = resolvedDestinations;
-        return true;
+        return resolvedDestinations;
     }
 
-    private bool TryGetAccountDestination(
+    private async Task<AccountTransactionDestination?> GetAccountDestinationAsync(
         Guid? accountId,
         string? location,
         decimal amount,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out AccountTransactionDestination? destination)
+        Dictionary<string, string[]> errors)
     {
-        destination = null;
         Account? account = null;
-        if (accountId != null && !TryGetAccount(accountId.Value, $"{errorKeyPrefix}.AccountId", errors, out account))
+        if (accountId != null && (account = await TryGetAccountAsync(accountId.Value, $"{errorKeyPrefix}.AccountId", errors)) == null)
         {
-            return false;
+            return null;
         }
-        destination = new AccountTransactionDestination(account, null, location, amount);
-        return true;
+        return new AccountTransactionDestination(account, null, location, amount);
     }
 
-    private bool TryGetFundSource(
+    private async Task<FundTransactionSource?> GetFundSourceAsync(
         CreateFundTransactionSourceModel model,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out FundTransactionSource? source)
+        Dictionary<string, string[]> errors)
     {
-        source = null;
-        if (!TryGetFund(model.FundId, $"{errorKeyPrefix}.{nameof(CreateFundTransactionSourceModel.FundId)}", errors, out Fund? fund))
+        Fund? fund = await TryGetFundAsync(model.FundId, $"{errorKeyPrefix}.{nameof(CreateFundTransactionSourceModel.FundId)}", errors);
+        if (fund == null)
         {
-            return false;
+            return null;
         }
-        source = new FundTransactionSource(fund);
-        return true;
+        return new FundTransactionSource(fund);
     }
 
-    private bool TryGetFundSource(
+    private async Task<FundTransactionSource?> GetFundSourceAsync(
         UpdateFundTransactionSourceModel model,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out FundTransactionSource? source)
+        Dictionary<string, string[]> errors)
     {
-        source = null;
-        if (!TryGetFund(model.FundId, $"{errorKeyPrefix}.{nameof(UpdateFundTransactionSourceModel.FundId)}", errors, out Fund? fund))
+        Fund? fund = await TryGetFundAsync(model.FundId, $"{errorKeyPrefix}.{nameof(UpdateFundTransactionSourceModel.FundId)}", errors);
+        if (fund == null)
         {
-            return false;
+            return null;
         }
-        source = new FundTransactionSource(fund);
-        return true;
+        return new FundTransactionSource(fund);
     }
 
-    private bool TryGetFundDestinations(
+    private async Task<IReadOnlyCollection<FundTransactionDestination>?> GetFundDestinationsAsync(
         IReadOnlyCollection<CreateFundTransactionDestinationModel> models,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out IReadOnlyCollection<FundTransactionDestination>? destinations)
+        Dictionary<string, string[]> errors)
     {
         List<FundTransactionDestination> resolvedDestinations = [];
         foreach ((int index, CreateFundTransactionDestinationModel model) in models.Index())
         {
-            if (!TryGetFundDestination(model.FundId, model.Amount, $"{errorKeyPrefix}[{index}]", errors, out FundTransactionDestination? destination))
+            FundTransactionDestination? destination = await GetFundDestinationAsync(model.FundId, model.Amount, $"{errorKeyPrefix}[{index}]", errors);
+            if (destination == null)
             {
-                destinations = null;
-                return false;
+                return null;
             }
             resolvedDestinations.Add(destination);
         }
-        destinations = resolvedDestinations;
-        return true;
+        return resolvedDestinations;
     }
 
-    private bool TryGetFundDestinations(
+    private async Task<IReadOnlyCollection<FundTransactionDestination>?> GetFundDestinationsAsync(
         IReadOnlyCollection<UpdateFundTransactionDestinationModel> models,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out IReadOnlyCollection<FundTransactionDestination>? destinations)
+        Dictionary<string, string[]> errors)
     {
         List<FundTransactionDestination> resolvedDestinations = [];
         foreach ((int index, UpdateFundTransactionDestinationModel model) in models.Index())
         {
-            if (!TryGetFundDestination(model.FundId, model.Amount, $"{errorKeyPrefix}[{index}]", errors, out FundTransactionDestination? destination))
+            FundTransactionDestination? destination = await GetFundDestinationAsync(model.FundId, model.Amount, $"{errorKeyPrefix}[{index}]", errors);
+            if (destination == null)
             {
-                destinations = null;
-                return false;
+                return null;
             }
             resolvedDestinations.Add(destination);
         }
-        destinations = resolvedDestinations;
-        return true;
+        return resolvedDestinations;
     }
 
-    private bool TryGetFundDestination(
+    private async Task<FundTransactionDestination?> GetFundDestinationAsync(
         Guid fundId,
         decimal amount,
         string errorKeyPrefix,
-        Dictionary<string, string[]> errors,
-        [NotNullWhen(true)] out FundTransactionDestination? destination)
+        Dictionary<string, string[]> errors)
     {
-        destination = null;
-        if (!TryGetFund(fundId, $"{errorKeyPrefix}.FundId", errors, out Fund? fund))
+        Fund? fund = await TryGetFundAsync(fundId, $"{errorKeyPrefix}.FundId", errors);
+        if (fund == null)
         {
-            return false;
+            return null;
         }
-        destination = new FundTransactionDestination(fund, amount);
-        return true;
+        return new FundTransactionDestination(fund, amount);
     }
 }

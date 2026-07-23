@@ -1,12 +1,10 @@
 using Data;
-using Data.AccountingPeriods;
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.AccountingPeriods;
-using DomainAccountingPeriodQueryService = Domain.AccountingPeriods.Queries.AccountingPeriodQueryService;
 
 namespace Rest.AccountingPeriods;
 
@@ -16,10 +14,10 @@ namespace Rest.AccountingPeriods;
 [ApiController]
 [Route("/accounting-periods")]
 public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
-    AccountingPeriodRepository accountingPeriodRepository,
-    DomainAccountingPeriodQueryService accountingPeriodQueryService,
     AccountingPeriodQueryConverter accountingPeriodQueryConverter,
-    AccountingPeriodService accountingPeriodService) : ControllerBase
+    AccountingPeriodQueryService accountingPeriodQueryService,
+    AccountingPeriodService accountingPeriodService,
+    IAccountingPeriodRepository accountingPeriodRepository) : ControllerBase
 {
     /// <summary>
     /// Retrieves the Accounting Periods that match the specified criteria
@@ -55,7 +53,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         Guid accountingPeriodId,
         CancellationToken cancellationToken)
     {
-        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId, cancellationToken);
+        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetBalanceByIdAsync(accountingPeriodId, cancellationToken);
         return balance == null ? NotFound() : Ok(accountingPeriodQueryConverter.ToModel(balance));
     }
 
@@ -128,22 +126,21 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         }
         accountingPeriodRepository.Add(newAccountingPeriod);
         await unitOfWork.SaveChangesAsync();
-        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetByIdAsync(newAccountingPeriod.Id.Value);
+        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetBalanceByIdAsync(newAccountingPeriod.Id.Value);
         return Ok(accountingPeriodQueryConverter.ToModel(balance!));
     }
 
     /// <summary>
     /// Closes the Accounting Period with the provided ID
     /// </summary>
-    /// <param name="accountingPeriodId">ID of the Accounting Period to close</param>
-    /// <returns>The closed Accounting Period</returns>
     [HttpPost("{accountingPeriodId}/close")]
     [ProducesResponseType(typeof(AccountingPeriodModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> CloseAsync(Guid accountingPeriodId)
     {
         Dictionary<string, string[]> errors = [];
-        if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out AccountingPeriod? accountingPeriod))
+        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId);
+        if (accountingPeriod == null)
         {
             errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
         }
@@ -166,7 +163,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
             });
         }
         await unitOfWork.SaveChangesAsync();
-        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId);
+        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetBalanceByIdAsync(accountingPeriodId);
         return Ok(accountingPeriodQueryConverter.ToModel(balance!));
     }
 
@@ -179,7 +176,8 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     public async Task<IActionResult> ReopenAsync(Guid accountingPeriodId)
     {
         Dictionary<string, string[]> errors = [];
-        if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out AccountingPeriod? accountingPeriod))
+        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId);
+        if (accountingPeriod == null)
         {
             errors.Add(nameof(accountingPeriodId), [$"Accounting Period with ID {accountingPeriodId} not found."]);
         }
@@ -202,7 +200,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
             });
         }
         await unitOfWork.SaveChangesAsync();
-        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId);
+        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetBalanceByIdAsync(accountingPeriodId);
         return Ok(accountingPeriodQueryConverter.ToModel(balance!));
     }
 
@@ -215,7 +213,8 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     public async Task<IActionResult> DeleteAsync(Guid accountingPeriodId)
     {
         Dictionary<string, string[]> errors = [];
-        if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out AccountingPeriod? accountingPeriod))
+        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId);
+        if (accountingPeriod == null)
         {
             errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
         }

@@ -29,7 +29,7 @@ public sealed class AccountingPeriodQueryService(
     /// <summary>
     /// Retrieves an Accounting Period and its balance by ID, or null when it does not exist.
     /// </summary>
-    public Task<AccountingPeriodBalance?> GetByIdAsync(
+    public Task<AccountingPeriodBalance?> GetBalanceByIdAsync(
         Guid accountingPeriodId,
         CancellationToken cancellationToken = default) =>
         accountingPeriodQueryRepository.GetBalanceByIdAsync(new AccountingPeriodId(accountingPeriodId), cancellationToken);
@@ -37,7 +37,7 @@ public sealed class AccountingPeriodQueryService(
     /// <summary>
     /// Retrieves an Accounting Period by ID, or null when it does not exist.
     /// </summary>
-    public Task<AccountingPeriod?> GetAccountingPeriodByIdAsync(
+    public Task<AccountingPeriod?> GetByIdAsync(
         Guid accountingPeriodId,
         CancellationToken cancellationToken = default) =>
         accountingPeriodQueryRepository.GetByIdAsync(new AccountingPeriodId(accountingPeriodId), cancellationToken);

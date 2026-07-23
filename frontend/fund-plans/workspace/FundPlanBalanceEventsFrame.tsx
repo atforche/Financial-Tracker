@@ -59,7 +59,7 @@ const FundPlanBalanceEventsFrame = function ({
         }
         columns={columns}
         getId={(balanceEvent) =>
-          `${balanceEvent.transactionId}-${balanceEvent.date}-${balanceEvent.type}-${balanceEvent.amount}`
+          `${balanceEvent.transactionId}-${balanceEvent.eventDate}-${balanceEvent.type}-${balanceEvent.amount}`
         }
         data={data}
         totalCount={totalCount}

@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 
 namespace Data.AccountingPeriods;
@@ -8,8 +7,6 @@ namespace Data.AccountingPeriods;
 /// </summary>
 public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAccountingPeriodRepository
 {
-    #region IAccountingPeriodRepository
-
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> GetAll() => databaseContext.AccountingPeriods.ToList();
 
@@ -56,15 +53,4 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
 
     /// <inheritdoc/>
     public void Delete(AccountingPeriod accountingPeriod) => databaseContext.Remove(accountingPeriod);
-
-    #endregion
-
-    /// <summary>
-    /// Attempts to get the Accounting Period with the specified ID.
-    /// </summary>
-    public bool TryGetById(Guid id, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod)
-    {
-        accountingPeriod = databaseContext.AccountingPeriods.FirstOrDefault(accountingPeriod => ((Guid)(object)accountingPeriod.Id) == id);
-        return accountingPeriod != null;
-    }
 }

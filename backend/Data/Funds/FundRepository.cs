@@ -20,13 +20,6 @@ public class FundRepository(DatabaseContext databaseContext) : IFundRepository
     public Fund GetById(FundId id) => databaseContext.Funds.Single(fund => fund.Id == id);
 
     /// <inheritdoc/>
-    public bool TryGetById(Guid id, [NotNullWhen(true)] out Fund? fund)
-    {
-        fund = databaseContext.Funds.FirstOrDefault(fund => ((Guid)(object)fund.Id) == id);
-        return fund != null;
-    }
-
-    /// <inheritdoc/>
     public Fund? GetUnassignedFund() => databaseContext.Funds.FirstOrDefault(fund => fund.Id == Fund.UnassignedFundId);
 
     /// <inheritdoc/>

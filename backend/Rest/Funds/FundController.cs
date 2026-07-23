@@ -61,9 +61,9 @@ public sealed class FundController(
     [HttpGet("{fundId}")]
     [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public ActionResult<FundModel> GetAsync(Guid fundId)
+    public async Task<ActionResult<FundModel>> GetAsync(Guid fundId, CancellationToken cancellationToken)
     {
-        Fund? fund = fundQueryService.GetById(fundId);
+        Fund? fund = await fundQueryService.GetByIdAsync(fundId, cancellationToken);
         return fund == null ? NotFound() : Ok(fundConverter.ToModel(fund));
     }
 
@@ -128,7 +128,7 @@ public sealed class FundController(
     public async Task<IActionResult> CreateAsync(CreateFundModel createFundModel)
     {
         Dictionary<string, string[]> errors = [];
-        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetAccountingPeriodByIdAsync(createFundModel.AccountingPeriodId);
+        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetByIdAsync(createFundModel.AccountingPeriodId);
         if (accountingPeriod == null)
         {
             errors.Add(nameof(createFundModel.AccountingPeriodId), [$"Accounting Period with ID {createFundModel.AccountingPeriodId} was not found."]);
@@ -212,7 +212,7 @@ public sealed class FundController(
     public async Task<IActionResult> UpdateAsync(Guid fundId, UpdateFundModel updateFundModel)
     {
         Dictionary<string, string[]> errors = [];
-        Fund? fundToUpdate = fundQueryService.GetById(fundId);
+        Fund? fundToUpdate = await fundQueryService.GetByIdAsync(fundId);
         if (fundToUpdate == null)
         {
             errors.Add(nameof(fundId), [$"Fund with ID {fundId} was not found."]);
@@ -252,7 +252,7 @@ public sealed class FundController(
     public async Task<IActionResult> DeleteAsync(Guid fundId)
     {
         Dictionary<string, string[]> errors = [];
-        Fund? fundToDelete = fundQueryService.GetById(fundId);
+        Fund? fundToDelete = await fundQueryService.GetByIdAsync(fundId);
         if (fundToDelete == null)
         {
             errors.Add(nameof(fundId), [$"Fund with ID {fundId} was not found."]);

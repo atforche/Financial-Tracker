@@ -11,6 +11,12 @@ public sealed class TransactionQueryService(
     AccountingPeriodRangeService accountingPeriodRangeService)
 {
     /// <summary>
+    /// Retrieves the Transaction with the specified ID, or null when it does not exist.
+    /// </summary>
+    public Task<Transaction?> GetByIdAsync(Guid transactionId, CancellationToken cancellationToken = default) =>
+        transactionQueryRepository.GetByIdAsync(new TransactionId(transactionId), cancellationToken);
+
+    /// <summary>
     /// Retrieves interpreted Transactions matching the provided query.
     /// </summary>
     public async Task<QueryPage<TransactionDetails>> GetAsync(
@@ -73,7 +79,7 @@ public sealed class TransactionQueryService(
     /// <summary>
     /// Retrieves interpreted Transaction details by ID, or null when no Transaction exists.
     /// </summary>
-    public async Task<TransactionDetails?> GetByIdAsync(
+    public async Task<TransactionDetails?> GetDetailsByIdAsync(
         Guid transactionId,
         CancellationToken cancellationToken = default)
     {

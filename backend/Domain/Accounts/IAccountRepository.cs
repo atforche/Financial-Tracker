@@ -24,11 +24,6 @@ public interface IAccountRepository
     Account GetById(AccountId id);
 
     /// <summary>
-    /// Attempts to get the Account with the specified ID
-    /// </summary>
-    bool TryGetById(Guid id, [NotNullWhen(true)] out Account? account);
-
-    /// <summary>
     /// Attempts to get the Account with the specified name
     /// </summary>
     bool TryGetByName(string name, [NotNullWhen(true)] out Account? account);

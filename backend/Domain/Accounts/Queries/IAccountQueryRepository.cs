@@ -8,6 +8,11 @@ namespace Domain.Accounts.Queries;
 public interface IAccountQueryRepository
 {
     /// <summary>
+    /// Retrieves the Account with the specified ID, or null when it does not exist.
+    /// </summary>
+    Task<Account?> GetByIdAsync(AccountId accountId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves the Accounts matching the provided query.
     /// </summary>
     Task<QueryPage<Account>> GetAsync(AccountQuery query, CancellationToken cancellationToken = default);

@@ -310,7 +310,7 @@ const getSourceFromTransaction = function (
     ),
     location: transaction.source.location ?? "",
     amount: transaction.amount,
-    postedDate: transaction.source.account?.date ?? null,
+    postedDate: transaction.source.account?.eventDate ?? null,
     previousAccountBalance:
       transaction.source.account?.previousBalance.postedBalance ?? null,
     newAccountBalance:
@@ -331,7 +331,7 @@ const getDestinationsFromTransaction = function (
       ),
       location: destination.location ?? "",
       amount: destination.amount,
-      postedDate: destination.account?.date ?? null,
+      postedDate: destination.account?.eventDate ?? null,
       previousAccountBalance:
         destination.account?.previousBalance.postedBalance ?? null,
       newAccountBalance: destination.account?.newBalance.postedBalance ?? null,

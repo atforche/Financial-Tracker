@@ -15,6 +15,10 @@ namespace Data.Funds;
 public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFundQueryRepository
 {
     /// <inheritdoc/>
+    public Task<Fund?> GetByIdAsync(FundId fundId, CancellationToken cancellationToken = default) =>
+        databaseContext.Funds.AsNoTracking().SingleOrDefaultAsync(fund => fund.Id == fundId, cancellationToken);
+
+    /// <inheritdoc/>
     public async Task<QueryPage<Fund>> GetAsync(FundQuery query, CancellationToken cancellationToken = default)
     {
         IQueryable<Fund> funds = ApplyFilter(databaseContext.Funds.AsNoTracking(), query.Filter);

@@ -11,7 +11,7 @@ namespace Domain.FundPlans.Queries;
 public sealed record FundPlanBalanceEvent(
     AccountingPeriod AccountingPeriod,
     TransactionId TransactionId,
-    DateOnly? Date,
+    DateOnly? EventDate,
     BalanceEventType Type,
     decimal Amount,
     Fund Fund,
@@ -21,5 +21,5 @@ public sealed record FundPlanBalanceEvent(
     /// <summary>
     /// Gets whether the event has posted.
     /// </summary>
-    public bool IsPosted => Date.HasValue;
+    public bool IsPosted => EventDate.HasValue;
 }

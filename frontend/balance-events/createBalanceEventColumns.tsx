@@ -10,7 +10,7 @@ import { formatLongDate } from "@/framework/dateHelpers";
  */
 interface BalanceEventListItem {
   readonly amount: number;
-  readonly date?: string | null;
+  readonly eventDate?: string | null;
   readonly isPosted: boolean;
   readonly type: BalanceEventType;
 }
@@ -35,8 +35,8 @@ const createBalanceEventColumns = function <T extends BalanceEventListItem>({
       name: "date",
       headerContent: "Event Date",
       getBodyContent: (event) =>
-        event.isPosted && typeof event.date === "string"
-          ? formatLongDate(new Date(`${event.date}T00:00:00`))
+        event.isPosted && typeof event.eventDate === "string"
+          ? formatLongDate(new Date(`${event.eventDate}T00:00:00`))
           : "Pending",
       minWidth: 135,
     },

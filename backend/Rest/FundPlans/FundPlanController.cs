@@ -1,7 +1,6 @@
 using Data;
-using Data.AccountingPeriods;
-using Data.FundPlans;
 using Domain.AccountingPeriods;
+using Domain.AccountingPeriods.Queries;
 using Domain.FundPlans;
 using Domain.FundPlans.Queries;
 using Domain.Funds;
@@ -20,10 +19,9 @@ namespace Rest.FundPlans;
 [Route("/fund-plans")]
 public sealed class FundPlanController(
     UnitOfWork unitOfWork,
-    FundPlanRepository fundPlanRepository,
+    AccountingPeriodQueryService accountingPeriodQueryService,
     FundPlanQueryService fundPlanQueryService,
     FundPlanConverter fundPlanConverter,
-    AccountingPeriodRepository accountingPeriodRepository,
     FundBalanceService fundBalanceService,
     FundPlanService fundPlanService,
     FundPlanBalanceEventQueryService fundPlanBalanceEventQueryService,
@@ -99,7 +97,8 @@ public sealed class FundPlanController(
     [HttpPost("{fundPlanId:guid}")]
     public async Task<IActionResult> UpdateAsync(Guid fundPlanId, UpdateFundPlanModel model, CancellationToken cancellationToken)
     {
-        if (!fundPlanRepository.TryGetById(fundPlanId, out FundPlan? fundPlan))
+        FundPlan? fundPlan = await fundPlanQueryService.GetByIdAsync(fundPlanId, cancellationToken);
+        if (fundPlan == null)
         {
             return NotFound();
         }
@@ -116,10 +115,11 @@ public sealed class FundPlanController(
     /// Retrieves Fund Plan progress for an Accounting Period.
     /// </summary>
     [HttpGet("{fundPlanId:guid}/progress/{accountingPeriodId:guid}")]
-    public ActionResult<FundPlanProgressModel> GetProgress(Guid fundPlanId, Guid accountingPeriodId)
+    public async Task<ActionResult<FundPlanProgressModel>> GetProgress(Guid fundPlanId, Guid accountingPeriodId, CancellationToken cancellationToken)
     {
-        if (!fundPlanRepository.TryGetById(fundPlanId, out FundPlan? fundPlan)
-            || !accountingPeriodRepository.TryGetById(accountingPeriodId, out AccountingPeriod? accountingPeriod))
+        FundPlan? fundPlan = await fundPlanQueryService.GetByIdAsync(fundPlanId, cancellationToken);
+        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId, cancellationToken);
+        if (fundPlan == null || accountingPeriod == null)
         {
             return NotFound();
         }
@@ -132,9 +132,10 @@ public sealed class FundPlanController(
     /// Retrieves current Fund availability.
     /// </summary>
     [HttpGet("{fundPlanId:guid}/availability")]
-    public ActionResult<FundAvailabilityModel> GetAvailability(Guid fundPlanId)
+    public async Task<ActionResult<FundAvailabilityModel>> GetAvailability(Guid fundPlanId, CancellationToken cancellationToken)
     {
-        if (!fundPlanRepository.TryGetById(fundPlanId, out FundPlan? fundPlan))
+        FundPlan? fundPlan = await fundPlanQueryService.GetByIdAsync(fundPlanId, cancellationToken);
+        if (fundPlan == null)
         {
             return NotFound();
         }

@@ -154,16 +154,16 @@ public sealed class FundBalanceEventQueryService(
         IEnumerable<FundBalanceEvent> events,
         FundBalanceEventSort sort) => sort switch
         {
-            FundBalanceEventSort.FundName => events.OrderBy(item => item.Fund.Name).ThenByDescending(item => item.Date).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.FundNameDescending => events.OrderByDescending(item => item.Fund.Name).ThenByDescending(item => item.Date).ThenBy(item => item.TransactionId),
+            FundBalanceEventSort.FundName => events.OrderBy(item => item.Fund.Name).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
+            FundBalanceEventSort.FundNameDescending => events.OrderByDescending(item => item.Fund.Name).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
             FundBalanceEventSort.AccountingPeriod => events.OrderBy(item => item.AccountingPeriod.Year).ThenBy(item => item.AccountingPeriod.Month).ThenBy(item => item.TransactionId),
             FundBalanceEventSort.AccountingPeriodDescending => events.OrderByDescending(item => item.AccountingPeriod.Year).ThenByDescending(item => item.AccountingPeriod.Month).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.Date => events.OrderBy(item => item.Date).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.DateDescending => events.OrderByDescending(item => item.Date).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.Type => events.OrderBy(item => item.Type).ThenByDescending(item => item.Date).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.TypeDescending => events.OrderByDescending(item => item.Type).ThenByDescending(item => item.Date).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.Amount => events.OrderBy(item => item.Amount).ThenByDescending(item => item.Date).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.AmountDescending => events.OrderByDescending(item => item.Amount).ThenByDescending(item => item.Date).ThenBy(item => item.TransactionId),
-            _ => events.OrderByDescending(item => item.Date).ThenBy(item => item.TransactionId),
+            FundBalanceEventSort.Date => events.OrderBy(item => item.EventDate).ThenBy(item => item.TransactionId),
+            FundBalanceEventSort.DateDescending => events.OrderByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
+            FundBalanceEventSort.Type => events.OrderBy(item => item.Type).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
+            FundBalanceEventSort.TypeDescending => events.OrderByDescending(item => item.Type).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
+            FundBalanceEventSort.Amount => events.OrderBy(item => item.Amount).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
+            FundBalanceEventSort.AmountDescending => events.OrderByDescending(item => item.Amount).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
+            _ => events.OrderByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
         };
 }

@@ -1,5 +1,4 @@
 using Data;
-using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
@@ -26,7 +25,6 @@ public sealed class TransactionController(
     UnitOfWork unitOfWork,
     AccountQueryService accountQueryService,
     AccountingPeriodQueryService accountingPeriodQueryService,
-    TransactionRepository transactionRepository,
     TransactionQueryService transactionQueryService,
     TransactionDispatcherService transactionDispatcherService,
     TransactionRequestConverter transactionRequestConverter,
@@ -96,7 +94,7 @@ public sealed class TransactionController(
     public async Task<IActionResult> CreateAsync(CreateTransactionModel createTransactionModel)
     {
         Dictionary<string, string[]> errors = [];
-        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetAccountingPeriodByIdAsync(createTransactionModel.AccountingPeriodId);
+        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetByIdAsync(createTransactionModel.AccountingPeriodId);
         if (accountingPeriod == null)
         {
             errors.Add(nameof(createTransactionModel.AccountingPeriodId), [$"Accounting Period with ID {createTransactionModel.AccountingPeriodId} was not found."]);
@@ -110,7 +108,9 @@ public sealed class TransactionController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!transactionRequestConverter.TryToCreateRequest(accountingPeriod, createTransactionModel, out CreateTransactionRequest? createRequest, out Dictionary<string, string[]> mappingErrors))
+        Dictionary<string, string[]> mappingErrors = [];
+        CreateTransactionRequest? createRequest = await transactionRequestConverter.ToCreateRequestAsync(accountingPeriod, createTransactionModel, mappingErrors);
+        if (createRequest == null)
         {
             MergeErrors(errors, mappingErrors);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
@@ -143,7 +143,8 @@ public sealed class TransactionController(
     public async Task<IActionResult> UpdateAsync(Guid transactionId, UpdateTransactionModel updateTransactionModel)
     {
         Dictionary<string, string[]> errors = [];
-        if (!transactionRepository.TryGetById(transactionId, out Transaction? transaction))
+        Transaction? transaction = await transactionQueryService.GetByIdAsync(transactionId);
+        if (transaction == null)
         {
             errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
         }
@@ -156,7 +157,9 @@ public sealed class TransactionController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!transactionRequestConverter.TryToUpdateRequest(transaction, updateTransactionModel, out UpdateTransactionRequest? updateRequest, out Dictionary<string, string[]> mappingErrors))
+        Dictionary<string, string[]> mappingErrors = [];
+        UpdateTransactionRequest? updateRequest = await transactionRequestConverter.ToUpdateRequestAsync(transaction, updateTransactionModel, mappingErrors);
+        if (updateRequest == null)
         {
             MergeErrors(errors, mappingErrors);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
@@ -188,12 +191,13 @@ public sealed class TransactionController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> PostAsync(Guid transactionId, PostTransactionModel postTransactionModel)
     {
-        Dictionary<string, string[]> errors = [];
-        if (!transactionRepository.TryGetById(transactionId, out Transaction? transaction))
+        Dictionary<string, string[]> errors = new();
+        Transaction? transaction = await transactionQueryService.GetByIdAsync(transactionId);
+        if (transaction == null)
         {
             errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
         }
-        Account? account = accountQueryService.GetById(postTransactionModel.AccountId);
+        Account? account = await accountQueryService.GetByIdAsync(postTransactionModel.AccountId);
         if (account == null)
         {
             errors.Add(nameof(postTransactionModel.AccountId), new[] { $"Account with ID {postTransactionModel.AccountId} was not found." });
@@ -237,7 +241,8 @@ public sealed class TransactionController(
     public async Task<IActionResult> UnpostAsync(Guid transactionId)
     {
         Dictionary<string, string[]> errors = [];
-        if (!transactionRepository.TryGetById(transactionId, out Transaction? transaction))
+        Transaction? transaction = await transactionQueryService.GetByIdAsync(transactionId);
+        if (transaction == null)
         {
             errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
         }
@@ -271,12 +276,9 @@ public sealed class TransactionController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> DeleteAsync(Guid transactionId)
     {
-        Dictionary<string, string[]> errors = [];
-        if (!transactionRepository.TryGetById(transactionId, out Transaction? transaction))
-        {
-            errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
-        }
-        if (errors.Count > 0 || transaction == null)
+        Dictionary<string, string[]> errors = new();
+        Transaction? transaction = await transactionQueryService.GetByIdAsync(transactionId);
+        if (transaction == null)
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
@@ -305,7 +307,7 @@ public sealed class TransactionController(
         Guid transactionId,
         CancellationToken cancellationToken = default)
     {
-        TransactionDetails? details = await transactionQueryService.GetByIdAsync(
+        TransactionDetails? details = await transactionQueryService.GetDetailsByIdAsync(
             transactionId,
             cancellationToken);
         return details == null ? null : transactionConverter.ToModel(details);

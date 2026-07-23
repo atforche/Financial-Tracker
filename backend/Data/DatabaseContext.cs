@@ -23,6 +23,11 @@ public class DatabaseContext : DbContext
     internal DbSet<AccountBalanceHistory> AccountBalanceHistories { get; set; } = default!;
 
     /// <summary>
+    /// Collection of pending Account Balance effects.
+    /// </summary>
+    internal DbSet<PendingAccountBalanceEffect> PendingAccountBalanceEffects { get; set; } = default!;
+
+    /// <summary>
     /// Collection of Accounting Periods in the database
     /// </summary>
     internal DbSet<AccountingPeriod> AccountingPeriods { get; set; } = default!;

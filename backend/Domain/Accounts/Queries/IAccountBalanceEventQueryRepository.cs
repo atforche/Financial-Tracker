@@ -9,6 +9,22 @@ namespace Domain.Accounts.Queries;
 public interface IAccountBalanceEventQueryRepository
 {
     /// <summary>
+    /// Retrieves Transactions affecting the provided Account in the supplied date range.
+    /// </summary>
+    Task<IReadOnlyCollection<Transaction>> GetTransactionsAsync(
+        AccountId accountId,
+        DateOnly startDate,
+        DateOnly endDate,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves currently unposted Transactions affecting the provided Account.
+    /// </summary>
+    Task<IReadOnlyCollection<Transaction>> GetPendingTransactionsAsync(
+        AccountId accountId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves Transactions in the provided date range.
     /// </summary>
     Task<IReadOnlyCollection<Transaction>> GetTransactionsAsync(DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken = default);

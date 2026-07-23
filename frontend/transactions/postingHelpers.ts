@@ -157,7 +157,7 @@ const collectTransactionPostingAccounts = function (
         accounts.set(event.account.id, {
           accountId: event.account.id,
           accountName: event.account.name,
-          postedDate: event.date ?? null,
+          postedDate: event.eventDate ?? null,
         });
         return accounts;
       }, new Map<string, TransactionPostingAccount>())
@@ -196,7 +196,6 @@ const getPostedTransactionAccounts = function (
 
 export {
   getTransactionAccountIds,
-  getTransactionAccountBalanceEvents,
   getTransactionFundIds,
   getTransactionFundBalanceEvents,
   getTransactionFundPlanBalanceEvents,
