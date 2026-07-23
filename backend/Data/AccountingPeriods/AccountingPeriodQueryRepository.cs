@@ -137,11 +137,11 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
         var ids = accountingPeriodIds.Select(id => new AccountingPeriodId(id)).ToList();
         return await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
             .Where(transaction => ids.Contains(transaction.AccountingPeriodId))
-            .SelectMany(transaction => transaction.Destinations.Select(destination => new FinancialRangeIncomeFact(
+            .SelectMany(transaction => transaction.Destinations, (transaction, destination) => new FinancialRangeIncomeFact(
                 destination.Amount,
                 destination.Account.Type,
                 transaction.Source.Account != null,
-                destination.PostedDate)))
+                destination.PostedDate))
             .ToListAsync(cancellationToken);
     }
 

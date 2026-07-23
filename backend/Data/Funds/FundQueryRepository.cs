@@ -145,11 +145,11 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
         CancellationToken cancellationToken = default) =>
         await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
             .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
-            .SelectMany(transaction => transaction.Destinations.Select(destination => new FinancialRangeIncomeFact(
+            .SelectMany(transaction => transaction.Destinations, (transaction, destination) => new FinancialRangeIncomeFact(
                 destination.Amount,
                 destination.Account.Type,
                 transaction.Source.Account != null,
-                destination.PostedDate)))
+                destination.PostedDate))
             .ToListAsync(cancellationToken);
 
     /// <inheritdoc/>

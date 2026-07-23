@@ -1,3 +1,5 @@
+"use client";
+
 import { Box, Paper, Stack, Typography, alpha } from "@mui/material";
 import type { JSX, ReactNode } from "react";
 
