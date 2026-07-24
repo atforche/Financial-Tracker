@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Funds;
 
@@ -12,6 +13,11 @@ public interface IFundPlanRepository
     /// Gets the Fund Plan with the specified ID.
     /// </summary>
     FundPlan GetById(FundPlanId id);
+
+    /// <summary>
+    /// Attempts to get the Fund Plan with the specified ID.
+    /// </summary>
+    bool TryGetById(Guid id, [NotNullWhen(true)] out FundPlan? fundPlan);
 
     /// <summary>
     /// Gets all Fund Plans associated with the specified Fund.

@@ -139,8 +139,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     public async Task<IActionResult> CloseAsync(Guid accountingPeriodId)
     {
         Dictionary<string, string[]> errors = [];
-        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId);
-        if (accountingPeriod == null)
+        if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out AccountingPeriod? accountingPeriod))
         {
             errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
         }
@@ -176,8 +175,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     public async Task<IActionResult> ReopenAsync(Guid accountingPeriodId)
     {
         Dictionary<string, string[]> errors = [];
-        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId);
-        if (accountingPeriod == null)
+        if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out AccountingPeriod? accountingPeriod))
         {
             errors.Add(nameof(accountingPeriodId), [$"Accounting Period with ID {accountingPeriodId} not found."]);
         }
@@ -213,8 +211,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     public async Task<IActionResult> DeleteAsync(Guid accountingPeriodId)
     {
         Dictionary<string, string[]> errors = [];
-        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetByIdAsync(accountingPeriodId);
-        if (accountingPeriod == null)
+        if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out AccountingPeriod? accountingPeriod))
         {
             errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
         }

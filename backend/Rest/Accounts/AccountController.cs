@@ -1,6 +1,5 @@
 using Data;
 using Domain.AccountingPeriods;
-using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
 using Domain.Validation;
@@ -18,7 +17,8 @@ namespace Rest.Accounts;
 [Route("/accounts")]
 public sealed class AccountController(
     UnitOfWork unitOfWork,
-    AccountingPeriodQueryService accountingPeriodQueryService,
+    IAccountingPeriodRepository accountingPeriodRepository,
+    IAccountRepository accountRepository,
     AccountService accountService,
     AccountQueryService accountQueryService,
     AccountConverter accountConverter,
@@ -147,8 +147,7 @@ public sealed class AccountController(
     public async Task<IActionResult> CreateAsync(CreateAccountModel createAccountModel)
     {
         Dictionary<string, string[]> errors = [];
-        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetByIdAsync(createAccountModel.OpeningAccountingPeriodId);
-        if (accountingPeriod == null)
+        if (!accountingPeriodRepository.TryGetById(createAccountModel.OpeningAccountingPeriodId, out AccountingPeriod? accountingPeriod))
         {
             errors.Add(nameof(createAccountModel.OpeningAccountingPeriodId), [$"Accounting Period with ID {createAccountModel.OpeningAccountingPeriodId} was not found."]);
         }
@@ -243,8 +242,7 @@ public sealed class AccountController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UpdateAsync(Guid accountId, UpdateAccountModel updateAccountModel)
     {
-        Account? accountToUpdate = await accountQueryService.GetByIdAsync(accountId);
-        if (accountToUpdate == null)
+        if (!accountRepository.TryGetById(accountId, out Account? accountToUpdate))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
@@ -279,8 +277,7 @@ public sealed class AccountController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> DeleteAsync(Guid accountId)
     {
-        Account? accountToDelete = await accountQueryService.GetByIdAsync(accountId);
-        if (accountToDelete == null)
+        if (!accountRepository.TryGetById(accountId, out Account? accountToDelete))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {

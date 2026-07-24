@@ -21,6 +21,14 @@ public class AccountRepository(DatabaseContext databaseContext) : IAccountReposi
         ?? databaseContext.Accounts.Local.Single(account => account.Id == id);
 
     /// <inheritdoc/>
+    public bool TryGetById(Guid id, [NotNullWhen(true)] out Account? account)
+    {
+        account = databaseContext.Accounts.SingleOrDefault(candidate => candidate.Id == new AccountId(id))
+            ?? databaseContext.Accounts.Local.SingleOrDefault(candidate => candidate.Id == new AccountId(id));
+        return account != null;
+    }
+
+    /// <inheritdoc/>
     public bool TryGetByName(string name, [NotNullWhen(true)] out Account? account)
     {
         account = databaseContext.Accounts.FirstOrDefault(account => account.Name == name);

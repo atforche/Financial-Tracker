@@ -6,12 +6,20 @@ using Domain.Funds;
 namespace Data.FundPlans;
 
 /// <summary>
-/// Repository that allows Transactions to be persisted to the database
+/// Repository that allows Fund Plans to be persisted to the database
 /// </summary>
 public sealed class FundPlanRepository(DatabaseContext databaseContext) : IFundPlanRepository
 {
     /// <inheritdoc/>
     public FundPlan GetById(FundPlanId id) => databaseContext.FundPlans.Single(plan => plan.Id == id);
+
+    /// <inheritdoc/>
+    public bool TryGetById(Guid id, [NotNullWhen(true)] out FundPlan? fundPlan)
+    {
+        fundPlan = databaseContext.FundPlans.SingleOrDefault(plan => plan.Id == new FundPlanId(id))
+            ?? databaseContext.FundPlans.Local.SingleOrDefault(plan => plan.Id == new FundPlanId(id));
+        return fundPlan != null;
+    }
 
     /// <inheritdoc/>
     public IReadOnlyCollection<FundPlan> GetAllByFund(FundId fundId) =>
@@ -45,11 +53,4 @@ public sealed class FundPlanRepository(DatabaseContext databaseContext) : IFundP
 
     /// <inheritdoc/>
     public void Delete(FundPlan fundPlan) => databaseContext.Remove(fundPlan);
-
-    /// <inheritdoc/>
-    public bool TryGetById(Guid id, [NotNullWhen(true)] out FundPlan? fundPlan)
-    {
-        fundPlan = databaseContext.FundPlans.SingleOrDefault(plan => plan.Id == new FundPlanId(id));
-        return fundPlan != null;
-    }
 }

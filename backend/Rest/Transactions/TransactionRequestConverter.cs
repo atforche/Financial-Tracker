@@ -1,9 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Accounts.Queries;
 using Domain.Funds;
-using Domain.Funds.Queries;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
@@ -20,8 +18,8 @@ namespace Rest.Transactions;
 /// Converts REST Transaction request models to Domain Transaction requests.
 /// </summary>
 public sealed class TransactionRequestConverter(
-    AccountQueryService accountQueryService,
-    FundQueryService fundQueryService)
+    IAccountRepository accountRepository,
+    IFundRepository fundRepository)
 {
     /// <summary>
     /// Converts a REST create model to a Domain create request.
@@ -88,7 +86,7 @@ public sealed class TransactionRequestConverter(
         CreateSpendingTransactionModel model,
         Dictionary<string, string[]> errors)
     {
-        SpendingTransactionSource? source = await GetSpendingSourceAsync(model.Source, nameof(CreateSpendingTransactionModel.Source), errors);
+        SpendingTransactionSource? source = GetSpendingSource(model.Source, nameof(CreateSpendingTransactionModel.Source), errors);
         if (source == null)
         {
             return null;
@@ -114,7 +112,7 @@ public sealed class TransactionRequestConverter(
         CreateIncomeTransactionModel model,
         Dictionary<string, string[]> errors)
     {
-        IncomeTransactionSource? source = await GetIncomeSourceAsync(model.Source, nameof(CreateIncomeTransactionModel.Source), errors);
+        IncomeTransactionSource? source = GetIncomeSource(model.Source, nameof(CreateIncomeTransactionModel.Source), errors);
         if (source == null)
         {
             return null;
@@ -140,7 +138,7 @@ public sealed class TransactionRequestConverter(
         CreateAccountTransactionModel model,
         Dictionary<string, string[]> errors)
     {
-        AccountTransactionSource? source = await GetAccountSourceAsync(model.Source, nameof(CreateAccountTransactionModel.Source), errors);
+        AccountTransactionSource? source = GetAccountSource(model.Source, nameof(CreateAccountTransactionModel.Source), errors);
         if (source == null)
         {
             return null;
@@ -166,7 +164,7 @@ public sealed class TransactionRequestConverter(
         CreateFundTransactionModel model,
         Dictionary<string, string[]> errors)
     {
-        FundTransactionSource? source = await GetFundSourceAsync(model.Source, nameof(CreateFundTransactionModel.Source), errors);
+        FundTransactionSource? source = GetFundSource(model.Source, nameof(CreateFundTransactionModel.Source), errors);
         if (source == null)
         {
             return null;
@@ -189,7 +187,7 @@ public sealed class TransactionRequestConverter(
 
     private async Task<UpdateSpendingTransactionRequest?> BuildSpendingUpdateRequestAsync(UpdateSpendingTransactionModel model, Dictionary<string, string[]> errors)
     {
-        SpendingTransactionSource? source = await GetSpendingSourceAsync(model.Source, nameof(UpdateSpendingTransactionModel.Source), errors);
+        SpendingTransactionSource? source = GetSpendingSource(model.Source, nameof(UpdateSpendingTransactionModel.Source), errors);
         if (source == null)
         {
             return null;
@@ -211,7 +209,7 @@ public sealed class TransactionRequestConverter(
 
     private async Task<UpdateIncomeTransactionRequest?> BuildIncomeUpdateRequestAsync(UpdateIncomeTransactionModel model, Dictionary<string, string[]> errors)
     {
-        IncomeTransactionSource? source = await GetIncomeSourceAsync(model.Source, nameof(UpdateIncomeTransactionModel.Source), errors);
+        IncomeTransactionSource? source = GetIncomeSource(model.Source, nameof(UpdateIncomeTransactionModel.Source), errors);
         if (source == null)
         {
             return null;
@@ -233,7 +231,7 @@ public sealed class TransactionRequestConverter(
 
     private async Task<UpdateAccountTransactionRequest?> BuildAccountUpdateRequestAsync(UpdateAccountTransactionModel model, Dictionary<string, string[]> errors)
     {
-        AccountTransactionSource? source = await GetAccountSourceAsync(model.Source, nameof(UpdateAccountTransactionModel.Source), errors);
+        AccountTransactionSource? source = GetAccountSource(model.Source, nameof(UpdateAccountTransactionModel.Source), errors);
         if (source == null)
         {
             return null;
@@ -255,7 +253,7 @@ public sealed class TransactionRequestConverter(
 
     private async Task<UpdateFundTransactionRequest?> BuildFundUpdateRequestAsync(UpdateFundTransactionModel model, Dictionary<string, string[]> errors)
     {
-        FundTransactionSource? source = await GetFundSourceAsync(model.Source, nameof(UpdateFundTransactionModel.Source), errors);
+        FundTransactionSource? source = GetFundSource(model.Source, nameof(UpdateFundTransactionModel.Source), errors);
         if (source == null)
         {
             return null;
@@ -275,10 +273,9 @@ public sealed class TransactionRequestConverter(
         };
     }
 
-    private async Task<Account?> TryGetAccountAsync(Guid accountId, string errorKey, Dictionary<string, string[]> errors)
+    private Account? TryGetAccount(Guid accountId, string errorKey, Dictionary<string, string[]> errors)
     {
-        Account? account = await accountQueryService.GetByIdAsync(accountId);
-        if (account != null)
+        if (accountRepository.TryGetById(accountId, out Account? account))
         {
             return account;
         }
@@ -286,10 +283,9 @@ public sealed class TransactionRequestConverter(
         return null;
     }
 
-    private async Task<Fund?> TryGetFundAsync(Guid fundId, string errorKey, Dictionary<string, string[]> errors)
+    private Fund? TryGetFund(Guid fundId, string errorKey, Dictionary<string, string[]> errors)
     {
-        Fund? fund = await fundQueryService.GetByIdAsync(fundId);
-        if (fund != null)
+        if (fundRepository.TryGetById(fundId, out Fund? fund))
         {
             return fund;
         }
@@ -297,7 +293,7 @@ public sealed class TransactionRequestConverter(
         return null;
     }
 
-    private async Task<IReadOnlyCollection<FundAmount>?> GetFundAmountsAsync(
+    private Task<IReadOnlyCollection<FundAmount>?> GetFundAmountsAsync(
         IReadOnlyCollection<CreateFundAmountModel> models,
         string errorKeyPrefix,
         Dictionary<string, string[]> errors)
@@ -306,24 +302,24 @@ public sealed class TransactionRequestConverter(
 
         foreach ((int index, CreateFundAmountModel fundAmountModel) in models.Index())
         {
-            Fund? fund = await TryGetFundAsync(fundAmountModel.FundId, $"{errorKeyPrefix}[{index}]", errors);
+            Fund? fund = TryGetFund(fundAmountModel.FundId, $"{errorKeyPrefix}[{index}]", errors);
             if (fund == null)
             {
-                return null;
+                return Task.FromResult<IReadOnlyCollection<FundAmount>?>(null);
             }
 
             resolvedFundAmounts.Add(new FundAmount { FundId = fund.Id, Amount = fundAmountModel.Amount });
         }
 
-        return resolvedFundAmounts;
+        return Task.FromResult<IReadOnlyCollection<FundAmount>?>(resolvedFundAmounts);
     }
 
-    private async Task<SpendingTransactionSource?> GetSpendingSourceAsync(
+    private SpendingTransactionSource? GetSpendingSource(
         CreateSpendingTransactionSourceModel model,
         string errorKeyPrefix,
         Dictionary<string, string[]> errors)
     {
-        Account? account = await TryGetAccountAsync(model.AccountId, $"{errorKeyPrefix}.{nameof(CreateSpendingTransactionSourceModel.AccountId)}", errors);
+        Account? account = TryGetAccount(model.AccountId, $"{errorKeyPrefix}.{nameof(CreateSpendingTransactionSourceModel.AccountId)}", errors);
         if (account == null)
         {
             return null;
@@ -331,12 +327,12 @@ public sealed class TransactionRequestConverter(
         return new SpendingTransactionSource(account, null);
     }
 
-    private async Task<SpendingTransactionSource?> GetSpendingSourceAsync(
+    private SpendingTransactionSource? GetSpendingSource(
         UpdateSpendingTransactionSourceModel model,
         string errorKeyPrefix,
         Dictionary<string, string[]> errors)
     {
-        Account? account = await TryGetAccountAsync(model.AccountId, $"{errorKeyPrefix}.{nameof(UpdateSpendingTransactionSourceModel.AccountId)}", errors);
+        Account? account = TryGetAccount(model.AccountId, $"{errorKeyPrefix}.{nameof(UpdateSpendingTransactionSourceModel.AccountId)}", errors);
         if (account == null)
         {
             return null;
@@ -389,7 +385,7 @@ public sealed class TransactionRequestConverter(
         Dictionary<string, string[]> errors)
     {
         Account? account = null;
-        if (accountId != null && (account = await TryGetAccountAsync(accountId.Value, $"{errorKeyPrefix}.AccountId", errors)) == null)
+        if (accountId != null && (account = TryGetAccount(accountId.Value, $"{errorKeyPrefix}.AccountId", errors)) == null)
         {
             return null;
         }
@@ -425,13 +421,13 @@ public sealed class TransactionRequestConverter(
         return true;
     }
 
-    private async Task<IncomeTransactionSource?> GetIncomeSourceAsync(
+    private IncomeTransactionSource? GetIncomeSource(
         CreateIncomeTransactionSourceModel model,
         string errorKeyPrefix,
         Dictionary<string, string[]> errors)
     {
         Account? account = null;
-        if (model.AccountId != null && (account = await TryGetAccountAsync(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(CreateIncomeTransactionSourceModel.AccountId)}", errors)) == null)
+        if (model.AccountId != null && (account = TryGetAccount(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(CreateIncomeTransactionSourceModel.AccountId)}", errors)) == null)
         {
             return null;
         }
@@ -446,13 +442,13 @@ public sealed class TransactionRequestConverter(
         return new IncomeTransactionSource(account, null, model.Location, incomeLines, incomeDeductions);
     }
 
-    private async Task<IncomeTransactionSource?> GetIncomeSourceAsync(
+    private IncomeTransactionSource? GetIncomeSource(
         UpdateIncomeTransactionSourceModel model,
         string errorKeyPrefix,
         Dictionary<string, string[]> errors)
     {
         Account? account = null;
-        if (model.AccountId != null && (account = await TryGetAccountAsync(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(UpdateIncomeTransactionSourceModel.AccountId)}", errors)) == null)
+        if (model.AccountId != null && (account = TryGetAccount(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(UpdateIncomeTransactionSourceModel.AccountId)}", errors)) == null)
         {
             return null;
         }
@@ -510,7 +506,7 @@ public sealed class TransactionRequestConverter(
         string errorKeyPrefix,
         Dictionary<string, string[]> errors)
     {
-        Account? account = await TryGetAccountAsync(accountId, $"{errorKeyPrefix}.AccountId", errors);
+        Account? account = TryGetAccount(accountId, $"{errorKeyPrefix}.AccountId", errors);
         if (account == null)
         {
             return null;
@@ -523,26 +519,26 @@ public sealed class TransactionRequestConverter(
         return new IncomeTransactionDestination(account, amount, null, fundAssignments);
     }
 
-    private async Task<AccountTransactionSource?> GetAccountSourceAsync(
+    private AccountTransactionSource? GetAccountSource(
         CreateAccountTransactionSourceModel model,
         string errorKeyPrefix,
         Dictionary<string, string[]> errors)
     {
         Account? account = null;
-        if (model.AccountId != null && (account = await TryGetAccountAsync(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(CreateAccountTransactionSourceModel.AccountId)}", errors)) == null)
+        if (model.AccountId != null && (account = TryGetAccount(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(CreateAccountTransactionSourceModel.AccountId)}", errors)) == null)
         {
             return null;
         }
         return new AccountTransactionSource(account, null, model.Location);
     }
 
-    private async Task<AccountTransactionSource?> GetAccountSourceAsync(
+    private AccountTransactionSource? GetAccountSource(
         UpdateAccountTransactionSourceModel model,
         string errorKeyPrefix,
         Dictionary<string, string[]> errors)
     {
         Account? account = null;
-        if (model.AccountId != null && (account = await TryGetAccountAsync(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(UpdateAccountTransactionSourceModel.AccountId)}", errors)) == null)
+        if (model.AccountId != null && (account = TryGetAccount(model.AccountId.Value, $"{errorKeyPrefix}.{nameof(UpdateAccountTransactionSourceModel.AccountId)}", errors)) == null)
         {
             return null;
         }
@@ -585,7 +581,7 @@ public sealed class TransactionRequestConverter(
         return resolvedDestinations;
     }
 
-    private async Task<AccountTransactionDestination?> GetAccountDestinationAsync(
+    private Task<AccountTransactionDestination?> GetAccountDestinationAsync(
         Guid? accountId,
         string? location,
         decimal amount,
@@ -593,19 +589,19 @@ public sealed class TransactionRequestConverter(
         Dictionary<string, string[]> errors)
     {
         Account? account = null;
-        if (accountId != null && (account = await TryGetAccountAsync(accountId.Value, $"{errorKeyPrefix}.AccountId", errors)) == null)
+        if (accountId != null && (account = TryGetAccount(accountId.Value, $"{errorKeyPrefix}.AccountId", errors)) == null)
         {
-            return null;
+            return Task.FromResult<AccountTransactionDestination?>(null);
         }
-        return new AccountTransactionDestination(account, null, location, amount);
+        return Task.FromResult<AccountTransactionDestination?>(new AccountTransactionDestination(account, null, location, amount));
     }
 
-    private async Task<FundTransactionSource?> GetFundSourceAsync(
+    private FundTransactionSource? GetFundSource(
         CreateFundTransactionSourceModel model,
         string errorKeyPrefix,
         Dictionary<string, string[]> errors)
     {
-        Fund? fund = await TryGetFundAsync(model.FundId, $"{errorKeyPrefix}.{nameof(CreateFundTransactionSourceModel.FundId)}", errors);
+        Fund? fund = TryGetFund(model.FundId, $"{errorKeyPrefix}.{nameof(CreateFundTransactionSourceModel.FundId)}", errors);
         if (fund == null)
         {
             return null;
@@ -613,12 +609,12 @@ public sealed class TransactionRequestConverter(
         return new FundTransactionSource(fund);
     }
 
-    private async Task<FundTransactionSource?> GetFundSourceAsync(
+    private FundTransactionSource? GetFundSource(
         UpdateFundTransactionSourceModel model,
         string errorKeyPrefix,
         Dictionary<string, string[]> errors)
     {
-        Fund? fund = await TryGetFundAsync(model.FundId, $"{errorKeyPrefix}.{nameof(UpdateFundTransactionSourceModel.FundId)}", errors);
+        Fund? fund = TryGetFund(model.FundId, $"{errorKeyPrefix}.{nameof(UpdateFundTransactionSourceModel.FundId)}", errors);
         if (fund == null)
         {
             return null;
@@ -662,17 +658,17 @@ public sealed class TransactionRequestConverter(
         return resolvedDestinations;
     }
 
-    private async Task<FundTransactionDestination?> GetFundDestinationAsync(
+    private Task<FundTransactionDestination?> GetFundDestinationAsync(
         Guid fundId,
         decimal amount,
         string errorKeyPrefix,
         Dictionary<string, string[]> errors)
     {
-        Fund? fund = await TryGetFundAsync(fundId, $"{errorKeyPrefix}.FundId", errors);
+        Fund? fund = TryGetFund(fundId, $"{errorKeyPrefix}.FundId", errors);
         if (fund == null)
         {
-            return null;
+            return Task.FromResult<FundTransactionDestination?>(null);
         }
-        return new FundTransactionDestination(fund, amount);
+        return Task.FromResult<FundTransactionDestination?>(new FundTransactionDestination(fund, amount));
     }
 }

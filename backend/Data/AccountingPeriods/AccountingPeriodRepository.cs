@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 
 namespace Data.AccountingPeriods;
@@ -19,6 +20,14 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
     public AccountingPeriod GetById(AccountingPeriodId id) => databaseContext.AccountingPeriods
         .SingleOrDefault(accountingPeriod => accountingPeriod.Id == id)
         ?? databaseContext.AccountingPeriods.Local.Single(accountingPeriod => accountingPeriod.Id == id);
+
+    /// <inheritdoc/>
+    public bool TryGetById(Guid id, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod)
+    {
+        accountingPeriod = databaseContext.AccountingPeriods.SingleOrDefault(candidate => candidate.Id == new AccountingPeriodId(id))
+            ?? databaseContext.AccountingPeriods.Local.SingleOrDefault(candidate => candidate.Id == new AccountingPeriodId(id));
+        return accountingPeriod != null;
+    }
 
     /// <inheritdoc/>
     public AccountingPeriod? GetByYearAndMonth(int year, int month) => databaseContext.AccountingPeriods

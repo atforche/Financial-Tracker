@@ -1,6 +1,5 @@
 using Data;
 using Domain.AccountingPeriods;
-using Domain.AccountingPeriods.Queries;
 using Domain.Funds;
 using Domain.Funds.Queries;
 using Domain.Validation;
@@ -18,7 +17,8 @@ namespace Rest.Funds;
 [Route("/funds")]
 public sealed class FundController(
     UnitOfWork unitOfWork,
-    AccountingPeriodQueryService accountingPeriodQueryService,
+    IAccountingPeriodRepository accountingPeriodRepository,
+    IFundRepository fundRepository,
     FundConverter fundConverter,
     FundQueryService fundQueryService,
     FundService fundService,
@@ -128,8 +128,7 @@ public sealed class FundController(
     public async Task<IActionResult> CreateAsync(CreateFundModel createFundModel)
     {
         Dictionary<string, string[]> errors = [];
-        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetByIdAsync(createFundModel.AccountingPeriodId);
-        if (accountingPeriod == null)
+        if (!accountingPeriodRepository.TryGetById(createFundModel.AccountingPeriodId, out AccountingPeriod? accountingPeriod))
         {
             errors.Add(nameof(createFundModel.AccountingPeriodId), [$"Accounting Period with ID {createFundModel.AccountingPeriodId} was not found."]);
         }
@@ -212,8 +211,7 @@ public sealed class FundController(
     public async Task<IActionResult> UpdateAsync(Guid fundId, UpdateFundModel updateFundModel)
     {
         Dictionary<string, string[]> errors = [];
-        Fund? fundToUpdate = await fundQueryService.GetByIdAsync(fundId);
-        if (fundToUpdate == null)
+        if (!fundRepository.TryGetById(fundId, out Fund? fundToUpdate))
         {
             errors.Add(nameof(fundId), [$"Fund with ID {fundId} was not found."]);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
@@ -252,8 +250,7 @@ public sealed class FundController(
     public async Task<IActionResult> DeleteAsync(Guid fundId)
     {
         Dictionary<string, string[]> errors = [];
-        Fund? fundToDelete = await fundQueryService.GetByIdAsync(fundId);
-        if (fundToDelete == null)
+        if (!fundRepository.TryGetById(fundId, out Fund? fundToDelete))
         {
             errors.Add(nameof(fundId), [$"Fund with ID {fundId} was not found."]);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails

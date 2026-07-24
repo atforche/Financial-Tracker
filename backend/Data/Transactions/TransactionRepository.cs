@@ -61,6 +61,14 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     public Transaction GetById(TransactionId id) => databaseContext.Transactions.Single(transaction => transaction.Id == id);
 
     /// <inheritdoc/>
+    public bool TryGetById(Guid id, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out Transaction? transaction)
+    {
+        transaction = databaseContext.Transactions.SingleOrDefault(candidate => candidate.Id == new TransactionId(id))
+            ?? databaseContext.Transactions.Local.SingleOrDefault(candidate => candidate.Id == new TransactionId(id));
+        return transaction != null;
+    }
+
+    /// <inheritdoc/>
     public void Add(Transaction transaction) => databaseContext.Add(transaction);
 
     /// <inheritdoc/>

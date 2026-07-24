@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
@@ -43,6 +44,11 @@ public interface ITransactionRepository
     /// Gets the Transaction with the specified ID.
     /// </summary>
     Transaction GetById(TransactionId id);
+
+    /// <summary>
+    /// Attempts to get the Transaction with the specified ID.
+    /// </summary>
+    bool TryGetById(Guid id, [NotNullWhen(true)] out Transaction? transaction);
 
     /// <summary>
     /// Adds the provided Transaction to the repository

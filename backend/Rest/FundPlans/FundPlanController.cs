@@ -20,6 +20,7 @@ namespace Rest.FundPlans;
 public sealed class FundPlanController(
     UnitOfWork unitOfWork,
     AccountingPeriodQueryService accountingPeriodQueryService,
+    IFundPlanRepository fundPlanRepository,
     FundPlanQueryService fundPlanQueryService,
     FundPlanConverter fundPlanConverter,
     FundBalanceService fundBalanceService,
@@ -97,8 +98,7 @@ public sealed class FundPlanController(
     [HttpPost("{fundPlanId:guid}")]
     public async Task<IActionResult> UpdateAsync(Guid fundPlanId, UpdateFundPlanModel model, CancellationToken cancellationToken)
     {
-        FundPlan? fundPlan = await fundPlanQueryService.GetByIdAsync(fundPlanId, cancellationToken);
-        if (fundPlan == null)
+        if (!fundPlanRepository.TryGetById(fundPlanId, out FundPlan? fundPlan))
         {
             return NotFound();
         }

@@ -1,8 +1,6 @@
 using Data;
 using Domain.AccountingPeriods;
-using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
-using Domain.Accounts.Queries;
 using Domain.Transactions;
 using Domain.Transactions.Queries;
 using Domain.Validation;
@@ -23,8 +21,9 @@ namespace Rest.Transactions;
 [Route("/transactions")]
 public sealed class TransactionController(
     UnitOfWork unitOfWork,
-    AccountQueryService accountQueryService,
-    AccountingPeriodQueryService accountingPeriodQueryService,
+    IAccountRepository accountRepository,
+    IAccountingPeriodRepository accountingPeriodRepository,
+    ITransactionRepository transactionRepository,
     TransactionQueryService transactionQueryService,
     TransactionDispatcherService transactionDispatcherService,
     TransactionRequestConverter transactionRequestConverter,
@@ -94,8 +93,7 @@ public sealed class TransactionController(
     public async Task<IActionResult> CreateAsync(CreateTransactionModel createTransactionModel)
     {
         Dictionary<string, string[]> errors = [];
-        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetByIdAsync(createTransactionModel.AccountingPeriodId);
-        if (accountingPeriod == null)
+        if (!accountingPeriodRepository.TryGetById(createTransactionModel.AccountingPeriodId, out AccountingPeriod? accountingPeriod))
         {
             errors.Add(nameof(createTransactionModel.AccountingPeriodId), [$"Accounting Period with ID {createTransactionModel.AccountingPeriodId} was not found."]);
         }
@@ -143,8 +141,7 @@ public sealed class TransactionController(
     public async Task<IActionResult> UpdateAsync(Guid transactionId, UpdateTransactionModel updateTransactionModel)
     {
         Dictionary<string, string[]> errors = [];
-        Transaction? transaction = await transactionQueryService.GetByIdAsync(transactionId);
-        if (transaction == null)
+        if (!transactionRepository.TryGetById(transactionId, out Transaction? transaction))
         {
             errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
         }
@@ -192,13 +189,11 @@ public sealed class TransactionController(
     public async Task<IActionResult> PostAsync(Guid transactionId, PostTransactionModel postTransactionModel)
     {
         Dictionary<string, string[]> errors = new();
-        Transaction? transaction = await transactionQueryService.GetByIdAsync(transactionId);
-        if (transaction == null)
+        if (!transactionRepository.TryGetById(transactionId, out Transaction? transaction))
         {
             errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
         }
-        Account? account = await accountQueryService.GetByIdAsync(postTransactionModel.AccountId);
-        if (account == null)
+        if (!accountRepository.TryGetById(postTransactionModel.AccountId, out Account? account))
         {
             errors.Add(nameof(postTransactionModel.AccountId), new[] { $"Account with ID {postTransactionModel.AccountId} was not found." });
         }
@@ -241,8 +236,7 @@ public sealed class TransactionController(
     public async Task<IActionResult> UnpostAsync(Guid transactionId)
     {
         Dictionary<string, string[]> errors = [];
-        Transaction? transaction = await transactionQueryService.GetByIdAsync(transactionId);
-        if (transaction == null)
+        if (!transactionRepository.TryGetById(transactionId, out Transaction? transaction))
         {
             errors.Add(nameof(transactionId), [$"Transaction with ID {transactionId} was not found."]);
         }
@@ -277,8 +271,7 @@ public sealed class TransactionController(
     public async Task<IActionResult> DeleteAsync(Guid transactionId)
     {
         Dictionary<string, string[]> errors = new();
-        Transaction? transaction = await transactionQueryService.GetByIdAsync(transactionId);
-        if (transaction == null)
+        if (!transactionRepository.TryGetById(transactionId, out Transaction? transaction))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
