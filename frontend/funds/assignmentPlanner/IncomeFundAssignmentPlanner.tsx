@@ -6,6 +6,7 @@ import {
   createFundAssignmentDraft,
   getContributionRemainingAmount,
   getFundOptionSecondaryLabel,
+  getIncomePlanRemainingAmount,
   deleteFundAssignment as removeFundAssignment,
   sortFundsByRemainingAmount,
   updateFundAssignment,
@@ -91,11 +92,10 @@ const IncomeFundAssignmentPlanner = function ({
           }
           const fund = funds.find((f) => f.id === newFund.id);
           const previousFundBalance = fund?.currentBalance.postedBalance ?? 0;
-          const fundPlan = fundPlans.find(
-            (plan) => plan.fund.id === newFund.id,
+          const previousPlanAmount = getIncomePlanRemainingAmount(
+            newFund.id,
+            fundPlans,
           );
-          const previousPlanAmount =
-            fundPlan?.progress.contribution?.remainingAmount ?? 0;
           return {
             fundId: newFund.id,
             fundName: newFund.name,
@@ -121,11 +121,10 @@ const IncomeFundAssignmentPlanner = function ({
         fundAssignments,
         index,
         (assignment) => {
-          const fundPlan = fundPlans.find(
-            (plan) => plan.fund.id === assignment.fundId,
+          const previousPlanAmount = getIncomePlanRemainingAmount(
+            assignment.fundId,
+            fundPlans,
           );
-          const previousPlanAmount =
-            fundPlan?.progress.contribution?.remainingAmount ?? 0;
           return {
             ...assignment,
             amount: newAmount ?? 0,

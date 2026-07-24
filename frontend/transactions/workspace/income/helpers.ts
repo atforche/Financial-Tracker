@@ -11,14 +11,17 @@ import type {
   UpdateTransactionRequest,
 } from "@/transactions/types";
 import {
+  type FundAssignmentDraft,
+  getIncomePlanRemainingAmount,
+} from "@/funds/assignmentPlanner/helpers";
+import {
   validateDetails,
   validateSummary,
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
-import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 import type { FundBalanceEvent } from "@/funds/types";
-import type { FundPlanBalanceEvent } from "@/fund-plans/types";
+import type { FundPlanWithProgress } from "@/fund-plans/types";
 import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/accountBalanceEventDraft";
 import { hasIncompleteFundAssignments } from "@/funds/helpers";
 import { isTrackedAccountType } from "@/accounts/helpers";
@@ -404,16 +407,22 @@ const getSourceFromTransaction = function (
  */
 const getFundAssignmentFromTransactionFund = (
   assignment: FundBalanceEvent,
-  fundPlan: FundPlanBalanceEvent | null = null,
+  fundPlans: FundPlanWithProgress[],
 ): FundAssignmentDraft => ({
   fundId: assignment.fund.id,
   fundName: assignment.fund.name,
   amount: assignment.amount,
   previousFundBalance: assignment.previousBalance.postedBalance,
   newFundBalance: assignment.newBalance.postedBalance,
-  previousPlanAmount:
-    fundPlan?.previousTotals.amountAssignedIncludingPending ?? 0,
-  newPlanAmount: fundPlan?.newTotals.amountAssignedIncludingPending ?? 0,
+  previousPlanAmount: getIncomePlanRemainingAmount(
+    assignment.fund.id,
+    fundPlans,
+  ),
+  newPlanAmount: Math.max(
+    getIncomePlanRemainingAmount(assignment.fund.id, fundPlans) -
+      assignment.amount,
+    0,
+  ),
 });
 
 /**
@@ -421,6 +430,7 @@ const getFundAssignmentFromTransactionFund = (
  */
 const getDestinationsFromTransaction = function (
   transaction: IncomeTransaction,
+  fundPlans: FundPlanWithProgress[],
 ): IncomeDestinationDraft[] {
   return transaction.destinations.map(
     (destination: IncomeTransactionDestination) => ({
@@ -429,20 +439,10 @@ const getDestinationsFromTransaction = function (
       ),
       amount: destination.amount,
       fundAssignments: destination.fundAssignments.map((assignment) =>
-        getFundAssignmentFromTransactionFund(
-          assignment,
-          destination.fundPlans.find(
-            (fundPlan) => fundPlan.fund.id === assignment.fund.id,
-          ) ?? null,
-        ),
+        getFundAssignmentFromTransactionFund(assignment, fundPlans),
       ),
       baselineFundAssignments: destination.fundAssignments.map((assignment) =>
-        getFundAssignmentFromTransactionFund(
-          assignment,
-          destination.fundPlans.find(
-            (fundPlan) => fundPlan.fund.id === assignment.fund.id,
-          ) ?? null,
-        ),
+        getFundAssignmentFromTransactionFund(assignment, fundPlans),
       ),
     }),
   );

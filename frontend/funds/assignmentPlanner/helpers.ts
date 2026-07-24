@@ -192,6 +192,34 @@ const getContributionRemainingAmount = function (
 };
 
 /**
+ * Gets the remaining contribution amount for a Funding Plan.
+ */
+const getIncomePlanRemainingAmount = function (
+  fundId: string,
+  fundPlans: FundPlanWithProgress[],
+): number {
+  return (
+    fundPlans.find((plan) => plan.fund.id === fundId)?.progress.contribution
+      ?.remainingAmount ?? 0
+  );
+};
+
+/**
+ * Gets the remaining ending-balance amount for a Funding Plan.
+ */
+const getSpendingPlanRemainingAmount = function (
+  fundId: string,
+  fundPlans: FundPlanWithProgress[],
+  fundBalance: number,
+): number {
+  const fundPlan = fundPlans.find((plan) => plan.fund.id === fundId);
+  if (fundPlan === undefined) {
+    return 0;
+  }
+  return fundPlan.progress.endingBalance?.variance ?? fundBalance;
+};
+
+/**
  * Gets the remaining ending-balance variance for a Funding Plan.
  */
 const getEndingBalanceVariance = function (
@@ -330,7 +358,9 @@ export {
   getFundOptionSecondaryLabel,
   getContributionRemainingAmount,
   getEndingBalanceVariance,
+  getIncomePlanRemainingAmount,
   getRemainingFundAmount,
+  getSpendingPlanRemainingAmount,
   getSuggestedAmount,
   sortFundsByRemainingAmount,
   updateFundAssignment,

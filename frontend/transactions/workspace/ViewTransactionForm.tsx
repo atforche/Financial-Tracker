@@ -74,6 +74,10 @@ const ViewTransactionForm = function ({
   editUrl,
   returnUrl = null,
 }: ViewTransactionFormProps): JSX.Element {
+  const currentFundPlans = fundPlans.filter(
+    (fundPlan) =>
+      fundPlan.accountingPeriod?.id === transactionAccountingPeriod.id,
+  );
   const spendingTransaction = asSpendingTransaction(transaction);
   const incomeTransaction = asIncomeTransaction(transaction);
   const accountTransaction = asAccountTransaction(transaction);
@@ -90,8 +94,10 @@ const ViewTransactionForm = function ({
     spendingTransaction !== null
   ) {
     const source = getSpendingSourceFromTransaction(spendingTransaction);
-    const destinations =
-      getSpendingDestinationsFromTransaction(spendingTransaction);
+    const destinations = getSpendingDestinationsFromTransaction(
+      spendingTransaction,
+      currentFundPlans,
+    );
 
     sourceAmount = source.amount;
     destinationAmount = destinations.reduce(
@@ -116,7 +122,7 @@ const ViewTransactionForm = function ({
         index={index}
         accounts={[]}
         funds={funds}
-        fundPlans={fundPlans}
+        fundPlans={currentFundPlans}
         transaction={spendingTransaction}
         account={destination.account}
         setAccount={null}
@@ -134,8 +140,10 @@ const ViewTransactionForm = function ({
     incomeTransaction !== null
   ) {
     const source = getIncomeSourceFromTransaction(incomeTransaction);
-    const destinations =
-      getIncomeDestinationsFromTransaction(incomeTransaction);
+    const destinations = getIncomeDestinationsFromTransaction(
+      incomeTransaction,
+      currentFundPlans,
+    );
 
     sourceAmount = getNetIncomeAmount(source);
     destinationAmount = destinations.reduce(
@@ -164,7 +172,7 @@ const ViewTransactionForm = function ({
         index={index}
         accounts={[]}
         funds={funds}
-        fundPlans={fundPlans}
+        fundPlans={currentFundPlans}
         transaction={incomeTransaction}
         account={destination.account}
         setAccount={null}
