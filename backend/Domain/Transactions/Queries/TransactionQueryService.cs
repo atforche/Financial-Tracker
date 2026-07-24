@@ -1,5 +1,8 @@
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
+using Domain.Accounts.Queries;
+using Domain.FundPlans.Queries;
+using Domain.Funds.Queries;
 
 namespace Domain.Transactions.Queries;
 
@@ -8,7 +11,10 @@ namespace Domain.Transactions.Queries;
 /// </summary>
 public sealed class TransactionQueryService(
     ITransactionQueryRepository transactionQueryRepository,
-    AccountingPeriodRangeService accountingPeriodRangeService)
+    AccountingPeriodRangeService accountingPeriodRangeService,
+    AccountBalanceEventQueryService accountBalanceEventQueryService,
+    FundBalanceEventQueryService fundBalanceEventQueryService,
+    FundPlanBalanceEventQueryService fundPlanBalanceEventQueryService)
 {
     /// <summary>
     /// Retrieves the Transaction with the specified ID, or null when it does not exist.
@@ -24,7 +30,7 @@ public sealed class TransactionQueryService(
         CancellationToken cancellationToken = default)
     {
         TransactionQueryFacts facts = await transactionQueryRepository.GetAsync(query, cancellationToken);
-        return ToPage(facts);
+        return await ToPageAsync(facts, cancellationToken);
     }
 
     /// <summary>
@@ -36,7 +42,7 @@ public sealed class TransactionQueryService(
     {
         TransactionDateRangeFacts facts = await transactionQueryRepository.GetDateRangeAsync(query, cancellationToken);
         return new TransactionDateRange(
-            ToPage(facts.QueryFacts),
+            await ToPageAsync(facts.QueryFacts, cancellationToken),
             facts.AvailableAccountNames,
             facts.AvailableFundNames,
             facts.TransactionTypes,
@@ -67,7 +73,7 @@ public sealed class TransactionQueryService(
             periodIds,
             cancellationToken);
         var range = new TransactionAccountingPeriodRange(
-            ToPage(facts.QueryFacts),
+            await ToPageAsync(facts.QueryFacts, cancellationToken),
             facts.AvailableAccountNames,
             facts.AvailableFundNames,
             facts.TransactionTypes,
@@ -86,23 +92,46 @@ public sealed class TransactionQueryService(
         TransactionDetailsFacts? facts = await transactionQueryRepository.GetDetailsByIdAsync(
             new TransactionId(transactionId),
             cancellationToken);
-        return facts == null ? null : new TransactionDetails(facts);
+        return facts == null ? null : await ToDetailsAsync(facts, cancellationToken);
     }
 
     /// <summary>
     /// Interprets a factual Transaction page.
     /// </summary>
-    private static QueryPage<TransactionDetails> ToPage(TransactionQueryFacts facts)
+    private async Task<QueryPage<TransactionDetails>> ToPageAsync(
+        TransactionQueryFacts facts,
+        CancellationToken cancellationToken)
     {
         var periods = facts.AccountingPeriods.ToDictionary(period => period.Id);
+        IReadOnlyCollection<AccountBalanceEvent> accountEvents = await accountBalanceEventQueryService.GetForTransactionsAsync(
+            facts.Transactions.Items,
+            cancellationToken);
+        IReadOnlyCollection<FundBalanceEvent> fundEvents = await fundBalanceEventQueryService.GetForTransactionsAsync(
+            facts.Transactions.Items,
+            cancellationToken);
+        IReadOnlyCollection<FundPlanBalanceEvent> fundPlanEvents = await fundPlanBalanceEventQueryService.GetForTransactionsAsync(
+            facts.Transactions.Items,
+            cancellationToken);
         IReadOnlyCollection<TransactionDetails> items = facts.Transactions.Items.Select(transaction => new TransactionDetails(
             new TransactionDetailsFacts(
                 transaction,
-                periods[transaction.AccountingPeriodId],
-                facts.Funds,
-                facts.AccountHistories,
-                facts.FundHistories,
-                facts.FundPlanHistories))).ToList();
+                periods[transaction.AccountingPeriodId]),
+                accountEvents.Where(balanceEvent => balanceEvent.TransactionId == transaction.Id).ToList(),
+                fundEvents.Where(balanceEvent => balanceEvent.TransactionId == transaction.Id).ToList(),
+                fundPlanEvents.Where(balanceEvent => balanceEvent.TransactionId == transaction.Id).ToList())).ToList();
         return new QueryPage<TransactionDetails>(items, facts.Transactions.TotalCount);
+    }
+
+    /// <summary>
+    /// Resolves balance events for one Transaction detail response.
+    /// </summary>
+    private async Task<TransactionDetails> ToDetailsAsync(
+        TransactionDetailsFacts facts,
+        CancellationToken cancellationToken)
+    {
+        IReadOnlyCollection<AccountBalanceEvent> accountEvents = await accountBalanceEventQueryService.GetForTransactionsAsync([facts.Transaction], cancellationToken);
+        IReadOnlyCollection<FundBalanceEvent> fundEvents = await fundBalanceEventQueryService.GetForTransactionsAsync([facts.Transaction], cancellationToken);
+        IReadOnlyCollection<FundPlanBalanceEvent> fundPlanEvents = await fundPlanBalanceEventQueryService.GetForTransactionsAsync([facts.Transaction], cancellationToken);
+        return new TransactionDetails(facts, accountEvents, fundEvents, fundPlanEvents);
     }
 }

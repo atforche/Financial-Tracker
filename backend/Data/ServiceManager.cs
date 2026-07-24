@@ -57,6 +57,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<IFundPlanPendingTotalsEffectRepository, PendingFundPlanTotalsEffectRepository>();
 
         _ = serviceCollection.AddScoped<ITransactionRepository, TransactionRepository>();
+        _ = serviceCollection.AddScoped<ITransactionBalanceEventQueryRepository, TransactionBalanceEventQueryRepository>();
         _ = serviceCollection.AddScoped<ITransactionQueryRepository, TransactionQueryRepository>();
     }
 }

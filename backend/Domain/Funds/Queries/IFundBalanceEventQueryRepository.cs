@@ -1,6 +1,3 @@
-using Domain.AccountingPeriods;
-using Domain.Transactions;
-
 namespace Domain.Funds.Queries;
 
 /// <summary>
@@ -8,21 +5,6 @@ namespace Domain.Funds.Queries;
 /// </summary>
 public interface IFundBalanceEventQueryRepository
 {
-    /// <summary>
-    /// Retrieves Transactions in the provided date range.
-    /// </summary>
-    Task<IReadOnlyCollection<Transaction>> GetTransactionsAsync(
-        DateOnly startDate,
-        DateOnly endDate,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves Transactions in the provided Accounting Periods.
-    /// </summary>
-    Task<IReadOnlyCollection<Transaction>> GetTransactionsAsync(
-        IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds,
-        CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Retrieves Funds with the provided IDs.
     /// </summary>

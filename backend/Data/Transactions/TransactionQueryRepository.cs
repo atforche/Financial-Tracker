@@ -1,7 +1,6 @@
 using Domain;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.FundPlans;
 using Domain.Funds;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
@@ -145,33 +144,9 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
         {
             return null;
         }
-
         AccountingPeriod period = await databaseContext.AccountingPeriods.AsNoTracking()
             .SingleAsync(item => item.Id == transaction.AccountingPeriodId, cancellationToken);
-        IReadOnlyCollection<FundId> fundIds = transaction.GetAllAffectedFundIds(null).Distinct().ToList();
-        IReadOnlyCollection<Fund> funds = await databaseContext.Funds.AsNoTracking()
-            .Where(fund => fundIds.Contains(fund.Id))
-            .ToListAsync(cancellationToken);
-        IReadOnlyCollection<AccountId> accountIds = transaction.GetAllAffectedAccountIds().Distinct().ToList();
-        IReadOnlyCollection<AccountBalanceHistory> accountHistories = await databaseContext.AccountBalanceHistories.AsNoTracking()
-            .Where(history => accountIds.Contains(history.Account.Id))
-            .OrderBy(history => history.Date).ThenBy(history => history.Sequence)
-            .ToListAsync(cancellationToken);
-        IReadOnlyCollection<FundBalanceHistory> fundHistories = await databaseContext.FundBalanceHistories.AsNoTracking()
-            .Where(history => fundIds.Contains(history.Fund.Id))
-            .OrderBy(history => history.Date).ThenBy(history => history.Sequence)
-            .ToListAsync(cancellationToken);
-        IReadOnlyCollection<FundPlanTotalsHistory> fundPlanHistories = await databaseContext.FundPlanTotalsHistories.AsNoTracking()
-            .Where(history => fundIds.Contains(history.FundId))
-            .OrderBy(history => history.Date).ThenBy(history => history.Sequence)
-            .ToListAsync(cancellationToken);
-        return new TransactionDetailsFacts(
-            transaction,
-            period,
-            funds,
-            accountHistories,
-            fundHistories,
-            fundPlanHistories);
+        return new TransactionDetailsFacts(transaction, period);
     }
 
     /// <summary>
@@ -186,30 +161,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
         IReadOnlyCollection<AccountingPeriod> periods = await databaseContext.AccountingPeriods.AsNoTracking()
             .Where(period => periodIds.Contains(period.Id))
             .ToListAsync(cancellationToken);
-        IReadOnlyCollection<FundId> fundIds = transactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null)).Distinct().ToList();
-        IReadOnlyCollection<Fund> funds = await databaseContext.Funds.AsNoTracking()
-            .Where(fund => fundIds.Contains(fund.Id))
-            .ToListAsync(cancellationToken);
-        IReadOnlyCollection<AccountId> accountIds = transactions.SelectMany(transaction => transaction.GetAllAffectedAccountIds()).Distinct().ToList();
-        IReadOnlyCollection<AccountBalanceHistory> accountHistories = await databaseContext.AccountBalanceHistories.AsNoTracking()
-            .Where(history => accountIds.Contains(history.Account.Id))
-            .OrderBy(history => history.Date).ThenBy(history => history.Sequence)
-            .ToListAsync(cancellationToken);
-        IReadOnlyCollection<FundBalanceHistory> fundHistories = await databaseContext.FundBalanceHistories.AsNoTracking()
-            .Where(history => fundIds.Contains(history.Fund.Id))
-            .OrderBy(history => history.Date).ThenBy(history => history.Sequence)
-            .ToListAsync(cancellationToken);
-        IReadOnlyCollection<FundPlanTotalsHistory> fundPlanHistories = await databaseContext.FundPlanTotalsHistories.AsNoTracking()
-            .Where(history => fundIds.Contains(history.FundId))
-            .OrderBy(history => history.Date).ThenBy(history => history.Sequence)
-            .ToListAsync(cancellationToken);
-        return new TransactionQueryFacts(
-            new QueryPage<Transaction>(transactions, totalCount),
-            periods,
-            funds,
-            accountHistories,
-            fundHistories,
-            fundPlanHistories);
+        return new TransactionQueryFacts(new QueryPage<Transaction>(transactions, totalCount), periods);
     }
 
     /// <summary>

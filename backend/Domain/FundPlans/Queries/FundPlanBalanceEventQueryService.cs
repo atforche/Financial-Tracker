@@ -5,6 +5,7 @@ using Domain.Funds;
 using Domain.Transactions;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
+using Domain.Transactions.Queries;
 using Domain.Transactions.Spending;
 
 namespace Domain.FundPlans.Queries;
@@ -14,9 +15,41 @@ namespace Domain.FundPlans.Queries;
 /// </summary>
 public sealed class FundPlanBalanceEventQueryService(
     IFundPlanBalanceEventQueryRepository repository,
+    ITransactionBalanceEventQueryRepository transactionQueryRepository,
     IAccountingPeriodQueryRepository accountingPeriodRepository,
     AccountingPeriodRangeService accountingPeriodRangeService)
 {
+    /// <summary>
+    /// Retrieves fully projected Fund Plan balance events for the requested Transactions.
+    /// </summary>
+    public async Task<IReadOnlyCollection<FundPlanBalanceEvent>> GetForTransactionsAsync(
+        IReadOnlyCollection<Transaction> requestedTransactions,
+        CancellationToken cancellationToken = default)
+    {
+        if (requestedTransactions.Count == 0)
+        {
+            return [];
+        }
+        IReadOnlyCollection<FundId> requestedFundIds = requestedTransactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null))
+            .Where(fundId => fundId != Fund.UnassignedFundId).Distinct().ToList();
+        IReadOnlyCollection<Transaction> pendingTransactions = await transactionQueryRepository.GetPendingForFundsAsync(requestedFundIds, cancellationToken);
+        IReadOnlyCollection<Transaction> transactions = requestedTransactions.Concat(pendingTransactions).DistinctBy(transaction => transaction.Id).ToList();
+        IReadOnlyCollection<FundId> fundIds = transactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null))
+            .Where(fundId => fundId != Fund.UnassignedFundId).Distinct().ToList();
+        IReadOnlyCollection<AccountingPeriodId> periodIds = transactions.Select(transaction => transaction.AccountingPeriodId).Distinct().ToList();
+        var periods = (await accountingPeriodRepository.GetByIdsAsync(periodIds, cancellationToken)).ToDictionary(period => period.Id);
+        var funds = (await repository.GetFundsAsync(fundIds, cancellationToken)).ToDictionary(fund => fund.Id);
+        IReadOnlyCollection<FundPlanTotalsHistory> histories = await repository.GetFundPlanHistoriesAsync(fundIds, cancellationToken);
+        var historiesByFundAndPeriod = histories.GroupBy(history => (history.FundId, history.AccountingPeriodId))
+            .ToDictionary(group => group.Key, group => group.ToList());
+        IReadOnlyCollection<FundPlanBalanceEvent> events = transactions
+            .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFundAndPeriod))
+            .Where(balanceEvent => requestedFundIds.Contains(balanceEvent.Fund.Id)).ToList();
+        events = ProjectPendingEvents(events, transactions, historiesByFundAndPeriod);
+        var requestedIds = requestedTransactions.Select(transaction => transaction.Id).ToHashSet();
+        return events.Where(balanceEvent => requestedIds.Contains(balanceEvent.TransactionId)).ToList();
+    }
+
     /// <summary>
     /// Retrieves Fund Plan balance events matching the provided query.
     /// </summary>
@@ -24,7 +57,7 @@ public sealed class FundPlanBalanceEventQueryService(
         FundPlanBalanceEventQuery query,
         CancellationToken cancellationToken = default)
     {
-        IReadOnlyCollection<Transaction> transactions = await repository.GetTransactionsAsync(query.Start, query.End, cancellationToken);
+        IReadOnlyCollection<Transaction> transactions = await transactionQueryRepository.GetAsync(query.Start, query.End, cancellationToken);
         IReadOnlyCollection<AccountingPeriodId> periodIds = transactions.Select(transaction => transaction.AccountingPeriodId).Distinct().ToList();
         IReadOnlyCollection<AccountingPeriod> periods = await accountingPeriodRepository.GetByIdsAsync(periodIds, cancellationToken);
         return await GetAsync(transactions, periods, query.Filter, query.Sort, query.Offset, query.Limit, cancellationToken);
@@ -48,7 +81,7 @@ public sealed class FundPlanBalanceEventQueryService(
 
         IReadOnlyCollection<AccountingPeriod> periods = resolution.AccountingPeriods;
         IReadOnlyCollection<AccountingPeriodId> periodIds = periods.Select(period => period.Id).ToList();
-        IReadOnlyCollection<Transaction> transactions = await repository.GetTransactionsAsync(periodIds, cancellationToken);
+        IReadOnlyCollection<Transaction> transactions = await transactionQueryRepository.GetAsync(periodIds, cancellationToken);
         QueryPage<FundPlanBalanceEvent> page = await GetAsync(
             transactions,
             periods,
