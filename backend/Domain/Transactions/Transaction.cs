@@ -59,10 +59,6 @@ public abstract class Transaction : Entity<TransactionId>
         bool reverse = false)
     {
         AccountBalance newBalance = existingAccountBalance;
-        if (asOfDate == null || Date == asOfDate)
-        {
-            newBalance = AddToAccountBalance(existingAccountBalance, reverse);
-        }
         DateOnly? postedDate = GetPostedDateForAccount(existingAccountBalance.Account.Id);
         if (postedDate != null && (asOfDate == null || postedDate == asOfDate))
         {
@@ -77,7 +73,7 @@ public abstract class Transaction : Entity<TransactionId>
     public AccountBalance ApplyAsPostedToAccountBalance(
         AccountBalance existingAccountBalance,
         bool reverse = false) =>
-        PostToAccountBalance(AddToAccountBalance(existingAccountBalance, reverse), reverse);
+        PostToAccountBalance(existingAccountBalance, reverse);
 
     /// <summary>
     /// Gets all Fund IDs affected by this Transaction for the provided account ID
@@ -249,11 +245,6 @@ public abstract class Transaction : Entity<TransactionId>
         AccountingPeriodId = null!;
         Description = null!;
     }
-
-    /// <summary>
-    /// Adds this Transaction to the provided existing Account Balance
-    /// </summary>
-    protected abstract AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse);
 
     /// <summary>
     /// Posts this Transaction to the provided account balance

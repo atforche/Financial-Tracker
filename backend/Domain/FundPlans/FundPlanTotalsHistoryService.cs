@@ -82,5 +82,5 @@ public sealed class FundPlanTotalsHistoryService(IFundPlanTotalsHistoryRepositor
     /// </summary>
     private FundPlanTotals GetPrevious(FundId fundId, Transaction transaction) =>
         repository.GetLatestEarlierThan(fundId, transaction.AccountingPeriodId, transaction.Date, transaction.Sequence)?.ToTotals()
-        ?? new FundPlanTotals(fundId, 0, 0, 0, 0);
+        ?? new FundPlanTotals(fundId, 0, 0);
 }

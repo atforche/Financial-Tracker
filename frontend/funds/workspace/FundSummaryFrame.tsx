@@ -22,11 +22,6 @@ const FundSummaryFrame = function ({
   fund,
   headerContent,
 }: FundSummaryFrameProps): JSX.Element {
-  const balanceIncludingPending =
-    fund.currentBalance.postedBalance +
-    fund.currentBalance.pendingCreditAmount -
-    fund.currentBalance.pendingDebitAmount;
-
   return (
     <Frame title="Fund Summary" color="info" headerContent={headerContent}>
       <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
@@ -50,7 +45,7 @@ const FundSummaryFrame = function ({
         />
         <CurrencyEntryField
           label="Balance Including Pending"
-          value={balanceIncludingPending}
+          value={fund.currentBalance.balanceIncludingPending}
           setValue={null}
           errorMessage={null}
         />

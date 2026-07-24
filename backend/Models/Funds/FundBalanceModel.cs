@@ -11,12 +11,7 @@ public class FundBalanceModel
     public required decimal PostedBalance { get; init; }
 
     /// <summary>
-    /// Pending Debit Amount for the Fund Balance
+    /// Balance including pending Transaction effects.
     /// </summary>
-    public required decimal PendingDebitAmount { get; init; }
-
-    /// <summary>
-    /// Pending Credit Amount for the Fund Balance
-    /// </summary>
-    public required decimal PendingCreditAmount { get; init; }
+    public required decimal BalanceIncludingPending { get; init; }
 }

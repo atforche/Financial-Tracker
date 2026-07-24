@@ -18,9 +18,9 @@ public sealed class FundPlanTotals
     public decimal AmountAssigned { get; }
 
     /// <summary>
-    /// Pending amount assigned during the Accounting Period.
+    /// Amount assigned after current unposted Transaction effects are applied.
     /// </summary>
-    public decimal PendingAmountAssigned { get; }
+    public decimal AmountAssignedIncludingPending { get; }
 
     /// <summary>
     /// Posted amount spent during the Accounting Period.
@@ -28,33 +28,19 @@ public sealed class FundPlanTotals
     public decimal AmountSpent { get; }
 
     /// <summary>
-    /// Pending amount spent during the Accounting Period.
+    /// Amount spent after current unposted Transaction effects are applied.
     /// </summary>
-    public decimal PendingAmountSpent { get; }
+    public decimal AmountSpentIncludingPending { get; }
 
     /// <summary>
-    /// Adds a new pending amount assigned to the Fund Plan totals.
+    /// Assigns the specified amount to this Fund Plan Totals.
     /// </summary>
-    internal FundPlanTotals AddNewPendingAmountAssigned(decimal amount) =>
-        new(FundId, AmountAssigned, PendingAmountAssigned + amount, AmountSpent, PendingAmountSpent);
+    internal FundPlanTotals Assign(decimal amount) => new(FundId, AmountAssigned + amount, AmountSpent);
 
     /// <summary>
-    /// Posts a pending amount assigned to the Fund Plan totals.
+    /// Spends the specified amount from this Fund Plan Totals.
     /// </summary>
-    internal FundPlanTotals PostPendingAmountAssigned(decimal amount) =>
-        new(FundId, AmountAssigned + amount, PendingAmountAssigned - amount, AmountSpent, PendingAmountSpent);
-
-    /// <summary>
-    /// Adds a new pending amount spent to the Fund Plan totals.
-    /// </summary>
-    internal FundPlanTotals AddNewPendingAmountSpent(decimal amount) =>
-        new(FundId, AmountAssigned, PendingAmountAssigned, AmountSpent, PendingAmountSpent + amount);
-
-    /// <summary>
-    /// Posts a pending amount spent to the Fund Plan totals.
-    /// </summary>
-    internal FundPlanTotals PostPendingAmountSpent(decimal amount) =>
-        new(FundId, AmountAssigned, PendingAmountAssigned, AmountSpent + amount, PendingAmountSpent - amount);
+    internal FundPlanTotals Spend(decimal amount) => new(FundId, AmountAssigned, AmountSpent + amount);
 
     /// <summary>
     /// Constructs a new instance of this class.
@@ -62,14 +48,14 @@ public sealed class FundPlanTotals
     internal FundPlanTotals(
         FundId fundId,
         decimal amountAssigned,
-        decimal pendingAmountAssigned,
         decimal amountSpent,
-        decimal pendingAmountSpent)
+        decimal? amountAssignedIncludingPending = null,
+        decimal? amountSpentIncludingPending = null)
     {
         FundId = fundId;
         AmountAssigned = amountAssigned;
-        PendingAmountAssigned = pendingAmountAssigned;
+        AmountAssignedIncludingPending = amountAssignedIncludingPending ?? amountAssigned;
         AmountSpent = amountSpent;
-        PendingAmountSpent = pendingAmountSpent;
+        AmountSpentIncludingPending = amountSpentIncludingPending ?? amountSpent;
     }
 }

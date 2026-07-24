@@ -19,15 +19,12 @@ public sealed class PendingFundBalanceService(
     /// </summary>
     public IReadOnlyCollection<FundBalance> ApplyPendingEffects(IReadOnlyCollection<FundBalance> postedBalances)
     {
-        var balances = postedBalances.ToDictionary(balance => balance.Fund.Id);
+        var balances = postedBalances.ToDictionary(balance => balance.Fund.Id, balance => balance.BalanceIncludingPending);
         foreach (PendingFundBalanceEffect effect in repository.GetAllByFundIds(balances.Keys.ToList()))
         {
-            FundBalance balance = balances[effect.Fund.Id];
-            balances[effect.Fund.Id] = balance
-                .AddNewPendingDebitAmount(effect.PendingDebitAmount)
-                .AddNewPendingCreditAmount(effect.PendingCreditAmount);
+            balances[effect.Fund.Id] += effect.PendingCreditAmount - effect.PendingDebitAmount;
         }
-        return postedBalances.Select(balance => balances[balance.Fund.Id]).ToList();
+        return postedBalances.Select(balance => new FundBalance(balance.Fund, balance.PostedBalance, balances[balance.Fund.Id])).ToList();
     }
 
     /// <summary>
@@ -39,10 +36,12 @@ public sealed class PendingFundBalanceService(
         foreach (FundId fundId in transaction.GetAllAffectedFundIds(null).Distinct())
         {
             Fund fund = fundRepository.GetById(fundId);
-            FundBalance effect = transaction.ApplyToFundBalance(new FundBalance(fund, 0, 0, 0));
-            if (effect.PendingDebitAmount != 0 || effect.PendingCreditAmount != 0)
+            decimal change = transaction.ApplyAsPostedToFundBalance(new FundBalance(fund, 0)).PostedBalance;
+            decimal pendingDebitAmount = Math.Max(-change, 0);
+            decimal pendingCreditAmount = Math.Max(change, 0);
+            if (pendingDebitAmount != 0 || pendingCreditAmount != 0)
             {
-                repository.Add(new PendingFundBalanceEffect(fund, transaction.Id, effect.PendingDebitAmount, effect.PendingCreditAmount));
+                repository.Add(new PendingFundBalanceEffect(fund, transaction.Id, pendingDebitAmount, pendingCreditAmount));
             }
         }
     }

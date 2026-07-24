@@ -46,7 +46,7 @@ const AccountSummaryFrame = function ({
         />
         <CurrencyEntryField
           label="Balance Including Pending"
-          value={account.currentBalance.pendingBalance}
+          value={account.currentBalance.balanceIncludingPending}
           setValue={null}
           errorMessage={null}
         />

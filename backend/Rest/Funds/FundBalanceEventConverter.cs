@@ -105,7 +105,6 @@ public sealed class FundBalanceEventConverter
     private static FundBalanceModel ToModel(FundBalance balance) => new()
     {
         PostedBalance = balance.PostedBalance,
-        PendingDebitAmount = balance.PendingDebitAmount,
-        PendingCreditAmount = balance.PendingCreditAmount,
+        BalanceIncludingPending = balance.BalanceIncludingPending,
     };
 }

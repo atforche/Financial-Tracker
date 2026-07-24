@@ -15,9 +15,7 @@ public sealed class FundAvailability(FundBalance fundBalance)
     /// <summary>
     /// Balance available after including pending activity.
     /// </summary>
-    public decimal AvailableBalanceIncludingPending { get; } = fundBalance.PostedBalance
-        + fundBalance.PendingCreditAmount
-        - fundBalance.PendingDebitAmount;
+    public decimal AvailableBalanceIncludingPending { get; } = fundBalance.BalanceIncludingPending;
 
     /// <summary>
     /// True when the posted available balance is below zero.

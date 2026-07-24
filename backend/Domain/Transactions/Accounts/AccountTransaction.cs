@@ -115,31 +115,16 @@ public class AccountTransaction : Transaction
     }
 
     /// <inheritdoc/>
-    protected override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
-    {
-        AccountTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Account?.Id == existingAccountBalance.Account.Id);
-        if (destination != null)
-        {
-            return existingAccountBalance.AddNewPendingCreditAmount(reverse ? -destination.Amount : destination.Amount);
-        }
-        if (existingAccountBalance.Account.Id == Source.Account?.Id)
-        {
-            return existingAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
-        }
-        return existingAccountBalance;
-    }
-
-    /// <inheritdoc/>
     protected override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
         AccountTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Account?.Id == existingAccountBalance.Account.Id);
         if (destination != null)
         {
-            return existingAccountBalance.PostPendingCreditAmount(reverse ? -destination.Amount : destination.Amount);
+            return existingAccountBalance.Credit(reverse ? -destination.Amount : destination.Amount);
         }
         if (existingAccountBalance.Account.Id == Source.Account?.Id)
         {
-            return existingAccountBalance.PostPendingDebitAmount(reverse ? -Amount : Amount);
+            return existingAccountBalance.Debit(reverse ? -Amount : Amount);
         }
         return existingAccountBalance;
     }

@@ -24,9 +24,12 @@ public sealed class PendingFundPlanTotalsService(IFundPlanPendingTotalsEffectRep
         foreach (PendingFundPlanTotalsEffect effect in repository.GetAllByFundAndAccountingPeriodIds(totals.Keys.ToList()))
         {
             FundPlanTotals current = totals[(effect.FundId, effect.AccountingPeriodId)];
-            totals[(effect.FundId, effect.AccountingPeriodId)] = current
-                .AddNewPendingAmountAssigned(effect.PendingAmountAssigned)
-                .AddNewPendingAmountSpent(effect.PendingAmountSpent);
+            totals[(effect.FundId, effect.AccountingPeriodId)] = new FundPlanTotals(
+                current.FundId,
+                current.AmountAssigned,
+                current.AmountSpent,
+                current.AmountAssignedIncludingPending + effect.PendingAmountAssigned,
+                current.AmountSpentIncludingPending + effect.PendingAmountSpent);
         }
         return postedTotals.Select(item => totals[(item.Totals.FundId, item.AccountingPeriodId)]).ToList();
     }
@@ -39,15 +42,15 @@ public sealed class PendingFundPlanTotalsService(IFundPlanPendingTotalsEffectRep
         DeleteEffectsForTransaction(transaction.Id);
         foreach (FundId fundId in transaction.GetAllAffectedFundIds(null).Where(id => id != Fund.UnassignedFundId).Distinct())
         {
-            FundPlanTotals effect = transaction.ApplyToFundPlanTotals(new FundPlanTotals(fundId, 0, 0, 0, 0));
-            if (effect.PendingAmountAssigned != 0 || effect.PendingAmountSpent != 0)
+            FundPlanTotals effect = transaction.ApplyAsPostedToFundPlanTotals(new FundPlanTotals(fundId, 0, 0));
+            if (effect.AmountAssigned != 0 || effect.AmountSpent != 0)
             {
                 repository.Add(new PendingFundPlanTotalsEffect(
                     fundId,
                     transaction.AccountingPeriodId,
                     transaction.Id,
-                    effect.PendingAmountAssigned,
-                    effect.PendingAmountSpent));
+                    effect.AmountAssigned,
+                    effect.AmountSpent));
             }
         }
     }

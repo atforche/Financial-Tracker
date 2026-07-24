@@ -2326,19 +2326,9 @@ export interface components {
             postedBalance: number;
             /**
              * Format: double
-             * @description Pending Debit Amount for the Account Balance
-             */
-            pendingDebitAmount: number;
-            /**
-             * Format: double
-             * @description Pending Credit Amount for the Account Balance
-             */
-            pendingCreditAmount: number;
-            /**
-             * Format: double
              * @description Balance including pending debit and credit amounts for the Account Balance
              */
-            pendingBalance: number;
+            balanceIncludingPending: number;
         };
         /** @description Model representing a summary of account balances for a specific date. */
         AccountBalanceSummaryByDateModel: {
@@ -3214,14 +3204,9 @@ export interface components {
             postedBalance: number;
             /**
              * Format: double
-             * @description Pending Debit Amount for the Fund Balance
+             * @description Balance including pending Transaction effects.
              */
-            pendingDebitAmount: number;
-            /**
-             * Format: double
-             * @description Pending Credit Amount for the Fund Balance
-             */
-            pendingCreditAmount: number;
+            balanceIncludingPending: number;
         };
         /** @description Model representing a summary of fund balances for a specific date. */
         FundBalanceSummaryByDateModel: {
@@ -3417,9 +3402,9 @@ export interface components {
             amountAssigned: number;
             /**
              * Format: double
-             * @description Pending amount assigned.
+             * @description Amount assigned including unposted Transaction effects.
              */
-            pendingAmountAssigned: number;
+            amountAssignedIncludingPending: number;
             /**
              * Format: double
              * @description Posted amount spent.
@@ -3427,9 +3412,9 @@ export interface components {
             amountSpent: number;
             /**
              * Format: double
-             * @description Pending amount spent.
+             * @description Amount spent including unposted Transaction effects.
              */
-            pendingAmountSpent: number;
+            amountSpentIncludingPending: number;
         };
         /** @description Model representing the collection of Funds within a specified accounting period range. */
         FundsInAccountingPeriodRangeModel: {

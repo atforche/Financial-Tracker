@@ -104,12 +104,6 @@ namespace Data.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("PendingCreditAmount")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("PendingDebitAmount")
-                        .HasColumnType("TEXT");
-
                     b.Property<decimal>("PostedBalance")
                         .HasColumnType("TEXT");
 
@@ -500,12 +494,6 @@ namespace Data.Migrations
                                 .HasColumnType("TEXT");
 
                             b1.Property<Guid>("FundId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<decimal>("PendingAmountAssigned")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<decimal>("PendingAmountSpent")
                                 .HasColumnType("TEXT");
 
                             b1.HasKey("Id");

@@ -68,9 +68,7 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
         List<FundBalanceRow> rows = await balances.Skip(query.Offset).Take(query.Limit ?? int.MaxValue).ToListAsync(cancellationToken);
         IReadOnlyCollection<FundBalance> items = rows.Select(row => new FundBalance(
             row.Fund,
-            row.CurrentBalance.PostedBalance,
-            0,
-            0)).ToList();
+            row.CurrentBalance.PostedBalance)).ToList();
         return new QueryPage<FundBalance>(items, totalCount);
     }
 

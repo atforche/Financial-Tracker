@@ -110,9 +110,7 @@ public sealed class AccountConverter
         CurrentBalance = new AccountBalanceModel
         {
             PostedBalance = balance.PostedBalance,
-            PendingDebitAmount = balance.PendingDebitAmount,
-            PendingCreditAmount = balance.PendingCreditAmount,
-            PendingBalance = balance.PendingBalance,
+            BalanceIncludingPending = balance.BalanceIncludingPending,
         },
     };
 

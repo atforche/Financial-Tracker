@@ -238,9 +238,7 @@ public sealed class AccountBalanceEventQueryService(
     /// </summary>
     private static AccountBalance ToBalance(Account account, AccountBalanceHistory? history, decimal fallback = 0) => new(
         account,
-        history?.PostedBalance ?? fallback,
-        history?.PendingDebitAmount ?? 0,
-        history?.PendingCreditAmount ?? 0);
+        history?.PostedBalance ?? fallback);
 
     /// <summary>
     /// Projects pending events from the final posted Account balance in transaction order.
@@ -255,7 +253,7 @@ public sealed class AccountBalanceEventQueryService(
         foreach (IGrouping<AccountId, AccountBalanceEvent> accountEvents in events.Where(item => !item.IsPosted).GroupBy(item => item.Account.Id))
         {
             Account account = accountEvents.First().Account;
-            AccountBalance balance = new(account, historiesByAccount.GetValueOrDefault(account.Id)?.LastOrDefault()?.PostedBalance ?? account.OnboardedBalance ?? 0, 0, 0);
+            AccountBalance balance = new(account, historiesByAccount.GetValueOrDefault(account.Id)?.LastOrDefault()?.PostedBalance ?? account.OnboardedBalance ?? 0);
             foreach (IGrouping<TransactionId, AccountBalanceEvent> transactionEvents in accountEvents
                 .GroupBy(item => item.TransactionId)
                 .OrderBy(group => transactionsById[group.Key].Date).ThenBy(group => transactionsById[group.Key].Sequence))

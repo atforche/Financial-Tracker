@@ -18,7 +18,7 @@ public sealed class FundBalanceService(
     {
         Fund fund = fundRepository.GetById(fundId);
         FundBalance postedBalance = fundBalanceHistoryRepository.GetLatestForFund(fundId)?.ToFundBalance()
-            ?? new FundBalance(fund, fund.OnboardedBalance ?? 0, 0, 0);
+            ?? new FundBalance(fund, fund.OnboardedBalance ?? 0);
         return pendingFundBalanceService.ApplyPendingEffects(postedBalance);
     }
 
@@ -154,5 +154,5 @@ public sealed class FundBalanceService(
     /// </summary>
     private FundBalance GetExistingFundBalanceAsOf(Fund fund, DateOnly asOfDate, int asOfSequence) =>
         fundBalanceHistoryRepository.GetLatestHistoryEarlierThan(fund.Id, asOfDate, asOfSequence)?.ToFundBalance()
-        ?? new FundBalance(fund, fund.OnboardedBalance ?? 0, 0, 0);
+        ?? new FundBalance(fund, fund.OnboardedBalance ?? 0);
 }

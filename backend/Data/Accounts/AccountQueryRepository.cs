@@ -68,9 +68,7 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
         List<AccountBalanceRow> rows = await balances.Skip(query.Offset).Take(query.Limit ?? int.MaxValue).ToListAsync(cancellationToken);
         IReadOnlyCollection<AccountBalance> items = rows.Select(row => new AccountBalance(
             row.Account,
-            row.CurrentBalance.PostedBalance,
-            0,
-            0)).ToList();
+            row.CurrentBalance.PostedBalance)).ToList();
         return new QueryPage<AccountBalance>(items, totalCount);
     }
 

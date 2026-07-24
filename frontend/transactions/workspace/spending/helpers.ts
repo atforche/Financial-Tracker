@@ -331,15 +331,11 @@ const getFundAssignmentFromTransactionFund = (
   previousFundBalance: assignment.previousBalance.postedBalance,
   newFundBalance: assignment.newBalance.postedBalance,
   previousPlanAmount:
-    (fundPlan?.previousTotals.amountAssigned ?? 0) +
-    (fundPlan?.previousTotals.pendingAmountAssigned ?? 0) -
-    (fundPlan?.previousTotals.amountSpent ?? 0) -
-    (fundPlan?.previousTotals.pendingAmountSpent ?? 0),
+    (fundPlan?.previousTotals.amountAssignedIncludingPending ?? 0) -
+    (fundPlan?.previousTotals.amountSpentIncludingPending ?? 0),
   newPlanAmount:
-    (fundPlan?.newTotals.amountAssigned ?? 0) +
-    (fundPlan?.newTotals.pendingAmountAssigned ?? 0) -
-    (fundPlan?.newTotals.amountSpent ?? 0) -
-    (fundPlan?.newTotals.pendingAmountSpent ?? 0),
+    (fundPlan?.newTotals.amountAssignedIncludingPending ?? 0) -
+    (fundPlan?.newTotals.amountSpentIncludingPending ?? 0),
 });
 
 /**

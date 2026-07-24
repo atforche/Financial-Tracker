@@ -134,31 +134,16 @@ public class IncomeTransaction : Transaction
     }
 
     /// <inheritdoc/>
-    protected override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
-    {
-        IncomeTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Account.Id == existingAccountBalance.Account.Id);
-        if (destination != null)
-        {
-            return existingAccountBalance.AddNewPendingCreditAmount(reverse ? -destination.Amount : destination.Amount);
-        }
-        if (existingAccountBalance.Account.Id == Source.Account?.Id)
-        {
-            return existingAccountBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
-        }
-        return existingAccountBalance;
-    }
-
-    /// <inheritdoc/>
     protected override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse)
     {
         IncomeTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Account.Id == existingAccountBalance.Account.Id);
         if (destination != null)
         {
-            return existingAccountBalance.PostPendingCreditAmount(reverse ? -destination.Amount : destination.Amount);
+            return existingAccountBalance.Credit(reverse ? -destination.Amount : destination.Amount);
         }
         if (existingAccountBalance.Account.Id == Source.Account?.Id)
         {
-            return existingAccountBalance.PostPendingDebitAmount(reverse ? -Amount : Amount);
+            return existingAccountBalance.Debit(reverse ? -Amount : Amount);
         }
         return existingAccountBalance;
     }
@@ -174,7 +159,7 @@ public class IncomeTransaction : Transaction
             return existingFundBalance;
         }
         decimal amount = fundAmounts.Sum(f => f.Amount);
-        return existingFundBalance.AddNewPendingCreditAmount(reverse ? -amount : amount);
+        return existingFundBalance;
     }
 
     /// <inheritdoc/>
@@ -189,7 +174,7 @@ public class IncomeTransaction : Transaction
             return existingFundBalance;
         }
         decimal amount = fundAmounts.Sum(f => f.Amount);
-        return existingFundBalance.PostPendingCreditAmount(reverse ? -amount : amount);
+        return existingFundBalance.Credit(reverse ? -amount : amount);
     }
 
     /// <inheritdoc/>
@@ -197,7 +182,7 @@ public class IncomeTransaction : Transaction
     {
         decimal amount = _destinations.SelectMany(destination => destination.FundAssignments)
             .Where(assignment => assignment.FundId == existingTotals.FundId).Sum(assignment => assignment.Amount);
-        return amount == 0 ? existingTotals : existingTotals.AddNewPendingAmountAssigned(reverse ? -amount : amount);
+        return existingTotals;
     }
 
     /// <inheritdoc/>
@@ -206,6 +191,6 @@ public class IncomeTransaction : Transaction
         decimal amount = _destinations.Where(destination => destination.Account.Id == accountId)
             .SelectMany(destination => destination.FundAssignments)
             .Where(assignment => assignment.FundId == existingTotals.FundId).Sum(assignment => assignment.Amount);
-        return amount == 0 ? existingTotals : existingTotals.PostPendingAmountAssigned(reverse ? -amount : amount);
+        return amount == 0 ? existingTotals : existingTotals.Assign(reverse ? -amount : amount);
     }
 }

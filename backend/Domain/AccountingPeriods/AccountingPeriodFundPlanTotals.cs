@@ -24,25 +24,15 @@ public sealed class AccountingPeriodFundPlanTotals : Entity<AccountingPeriodFund
     public decimal AmountAssigned { get; private set; }
 
     /// <summary>
-    /// Pending amount assigned during the Accounting Period.
-    /// </summary>
-    public decimal PendingAmountAssigned { get; private set; }
-
-    /// <summary>
     /// Posted amount spent during the Accounting Period.
     /// </summary>
     public decimal AmountSpent { get; private set; }
 
     /// <summary>
-    /// Pending amount spent during the Accounting Period.
-    /// </summary>
-    public decimal PendingAmountSpent { get; private set; }
-
-    /// <summary>
     /// Gets the current Fund Plan totals.
     /// </summary>
     public FundPlanTotals GetTotals() =>
-        new(Fund.Id, AmountAssigned, PendingAmountAssigned, AmountSpent, PendingAmountSpent);
+        new(Fund.Id, AmountAssigned, AmountSpent);
 
     /// <summary>
     /// Updates this Accounting Period totals.
@@ -50,9 +40,7 @@ public sealed class AccountingPeriodFundPlanTotals : Entity<AccountingPeriodFund
     internal void Update(FundPlanTotals totals)
     {
         AmountAssigned = totals.AmountAssigned;
-        PendingAmountAssigned = totals.PendingAmountAssigned;
         AmountSpent = totals.AmountSpent;
-        PendingAmountSpent = totals.PendingAmountSpent;
     }
 
     /// <summary>

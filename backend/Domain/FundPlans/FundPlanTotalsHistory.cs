@@ -61,7 +61,7 @@ public sealed class FundPlanTotalsHistory : Entity<FundPlanTotalsHistoryId>
     /// Converts this history entry to Fund Plan totals.
     /// </summary>
     public FundPlanTotals ToTotals() =>
-        new(FundId, AmountAssigned, 0, AmountSpent, 0);
+        new(FundId, AmountAssigned, AmountSpent);
 
     /// <summary>
     /// Constructs a Fund Plan totals history entry.

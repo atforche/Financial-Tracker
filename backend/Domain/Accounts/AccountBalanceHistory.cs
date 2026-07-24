@@ -33,16 +33,6 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     public decimal PostedBalance { get; private set; }
 
     /// <summary>
-    /// Pending Debit Amount for this Account Balance History
-    /// </summary>
-    public decimal PendingDebitAmount { get; private set; }
-
-    /// <summary>
-    /// Pending Credit Amount for this Account Balance History
-    /// </summary>
-    public decimal PendingCreditAmount { get; private set; }
-
-    /// <summary>
     /// Updates this Account Balance History with a new Account Balance.
     /// </summary>
     public void Update(AccountBalance newBalance)
@@ -52,14 +42,12 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
             throw new ArgumentException("New balance must be for the same account", nameof(newBalance));
         }
         PostedBalance = newBalance.PostedBalance;
-        PendingDebitAmount = newBalance.PendingDebitAmount;
-        PendingCreditAmount = newBalance.PendingCreditAmount;
     }
 
     /// <summary>
     /// Converts this Account Balance History to an Account Balance
     /// </summary>
-    public AccountBalance ToAccountBalance() => new(Account, PostedBalance, PendingDebitAmount, PendingCreditAmount);
+    public AccountBalance ToAccountBalance() => new(Account, PostedBalance);
 
     /// <summary>
     /// Constructs a new instance of this class

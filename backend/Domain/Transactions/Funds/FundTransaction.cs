@@ -71,9 +71,6 @@ public class FundTransaction : Transaction
     }
 
     /// <inheritdoc/>
-    protected override AccountBalance AddToAccountBalance(AccountBalance existingAccountBalance, bool reverse) => existingAccountBalance;
-
-    /// <inheritdoc/>
     protected override AccountBalance PostToAccountBalance(AccountBalance existingAccountBalance, bool reverse) => existingAccountBalance;
 
     /// <inheritdoc/>
@@ -82,14 +79,12 @@ public class FundTransaction : Transaction
         FundBalance newBalance = existingFundBalance;
         if (existingFundBalance.Fund.Id == Source.Fund.Id)
         {
-            newBalance = newBalance.AddNewPendingDebitAmount(reverse ? -Amount : Amount);
-            newBalance = newBalance.PostPendingDebitAmount(reverse ? -Amount : Amount);
+            newBalance = newBalance.Debit(reverse ? -Amount : Amount);
         }
         FundTransactionDestination? destination = _destinations.FirstOrDefault(d => d.Fund.Id == existingFundBalance.Fund.Id);
         if (destination != null)
         {
-            newBalance = newBalance.AddNewPendingCreditAmount(reverse ? -destination.Amount : destination.Amount);
-            newBalance = newBalance.PostPendingCreditAmount(reverse ? -destination.Amount : destination.Amount);
+            newBalance = newBalance.Credit(reverse ? -destination.Amount : destination.Amount);
         }
         return newBalance;
     }
@@ -104,15 +99,13 @@ public class FundTransaction : Transaction
         if (existingTotals.FundId == Source.Fund.Id)
         {
             decimal amount = reverse ? Amount : -Amount;
-            newTotals = newTotals.AddNewPendingAmountAssigned(amount);
-            newTotals = newTotals.PostPendingAmountAssigned(amount);
+            newTotals = newTotals.Assign(amount);
         }
         FundTransactionDestination? destination = _destinations.FirstOrDefault(destination => destination.Fund.Id == existingTotals.FundId);
         if (destination != null)
         {
             decimal amount = reverse ? -destination.Amount : destination.Amount;
-            newTotals = newTotals.AddNewPendingAmountAssigned(amount);
-            newTotals = newTotals.PostPendingAmountAssigned(amount);
+            newTotals = newTotals.Assign(amount);
         }
         return newTotals;
     }

@@ -171,9 +171,7 @@ public sealed class FundBalanceEventQueryService(
     /// </summary>
     private static FundBalance ToBalance(Fund fund, FundBalanceHistory? history, decimal fallback = 0) => new(
         fund,
-        history?.PostedBalance ?? fallback,
-        0,
-        0);
+        history?.PostedBalance ?? fallback);
 
     /// <summary>
     /// Projects pending events from the final posted Fund balance in transaction order.
@@ -188,7 +186,7 @@ public sealed class FundBalanceEventQueryService(
         foreach (IGrouping<FundId, FundBalanceEvent> fundEvents in events.Where(item => !item.IsPosted).GroupBy(item => item.Fund.Id))
         {
             Fund fund = fundEvents.First().Fund;
-            FundBalance balance = new(fund, historiesByFund.GetValueOrDefault(fund.Id)?.LastOrDefault()?.PostedBalance ?? fund.OnboardedBalance ?? 0, 0, 0);
+            FundBalance balance = new(fund, historiesByFund.GetValueOrDefault(fund.Id)?.LastOrDefault()?.PostedBalance ?? fund.OnboardedBalance ?? 0);
             foreach (IGrouping<TransactionId, FundBalanceEvent> transactionEvents in fundEvents
                 .GroupBy(item => item.TransactionId)
                 .OrderBy(group => transactionsById[group.Key].Date).ThenBy(group => transactionsById[group.Key].Sequence))

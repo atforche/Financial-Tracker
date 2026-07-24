@@ -16,43 +16,27 @@ public class FundBalance
     public decimal PostedBalance { get; }
 
     /// <summary>
-    /// Pending Debit Amount for this Fund Balance
+    /// Balance after current unposted Transaction effects are applied.
     /// </summary>
-    public decimal PendingDebitAmount { get; }
+    public decimal BalanceIncludingPending { get; }
 
     /// <summary>
-    /// Pending Credit Amount for this Fund Balance
+    /// Debits the specified amount from this Fund Balance.
     /// </summary>
-    public decimal PendingCreditAmount { get; }
+    internal FundBalance Debit(decimal amount) => new(Fund, PostedBalance - amount);
 
     /// <summary>
-    /// Adds a new pending debit amount to this Fund Balance.
+    /// Credits the specified amount to this Fund Balance.
     /// </summary>
-    internal FundBalance AddNewPendingDebitAmount(decimal amount) => new(Fund, PostedBalance, PendingDebitAmount + amount, PendingCreditAmount);
-
-    /// <summary>
-    /// Posts a pending debit amount to this Fund Balance.
-    /// </summary>
-    internal FundBalance PostPendingDebitAmount(decimal amount) => new(Fund, PostedBalance - amount, PendingDebitAmount - amount, PendingCreditAmount);
-
-    /// <summary>
-    /// Adds a new pending credit amount to this Fund Balance.
-    /// </summary>
-    internal FundBalance AddNewPendingCreditAmount(decimal amount) => new(Fund, PostedBalance, PendingDebitAmount, PendingCreditAmount + amount);
-
-    /// <summary>
-    /// Posts a pending credit amount to this Fund Balance.
-    /// </summary>
-    internal FundBalance PostPendingCreditAmount(decimal amount) => new(Fund, PostedBalance + amount, PendingDebitAmount, PendingCreditAmount - amount);
+    internal FundBalance Credit(decimal amount) => new(Fund, PostedBalance + amount);
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal FundBalance(Fund fund, decimal postedBalance, decimal pendingDebitAmount, decimal pendingCreditAmount)
+    internal FundBalance(Fund fund, decimal postedBalance, decimal? balanceIncludingPending = null)
     {
         Fund = fund;
         PostedBalance = postedBalance;
-        PendingDebitAmount = pendingDebitAmount;
-        PendingCreditAmount = pendingCreditAmount;
+        BalanceIncludingPending = balanceIncludingPending ?? postedBalance;
     }
 }

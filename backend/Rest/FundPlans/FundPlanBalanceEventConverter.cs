@@ -104,8 +104,8 @@ public sealed class FundPlanBalanceEventConverter
     private static FundPlanTotalsModel ToModel(FundPlanTotals totals) => new()
     {
         AmountAssigned = totals.AmountAssigned,
-        PendingAmountAssigned = totals.PendingAmountAssigned,
+        AmountAssignedIncludingPending = totals.AmountAssignedIncludingPending,
         AmountSpent = totals.AmountSpent,
-        PendingAmountSpent = totals.PendingAmountSpent,
+        AmountSpentIncludingPending = totals.AmountSpentIncludingPending,
     };
 }

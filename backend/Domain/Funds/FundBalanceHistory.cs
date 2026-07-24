@@ -47,7 +47,7 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     /// <summary>
     /// Converts this Fund Balance History to a Fund Balance
     /// </summary>
-    public FundBalance ToFundBalance() => new(Fund, PostedBalance, 0, 0);
+    public FundBalance ToFundBalance() => new(Fund, PostedBalance);
 
     /// <summary>
     /// Constructs a new instance of this class

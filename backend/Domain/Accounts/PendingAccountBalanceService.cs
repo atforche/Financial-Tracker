@@ -21,16 +21,15 @@ public sealed class PendingAccountBalanceService(
     public IReadOnlyCollection<AccountBalance> ApplyPendingEffects(
         IReadOnlyCollection<AccountBalance> postedBalances)
     {
-        var balances = postedBalances.ToDictionary(balance => balance.Account.Id);
+        var balances = postedBalances.ToDictionary(balance => balance.Account.Id, balance => balance.BalanceIncludingPending);
         foreach (PendingAccountBalanceEffect effect in pendingAccountBalanceEffectRepository
             .GetAllByAccountIds(balances.Keys.ToList()))
         {
-            AccountBalance balance = balances[effect.Account.Id];
-            balances[effect.Account.Id] = balance
-                .AddNewPendingDebitAmount(effect.PendingDebitAmount)
-                .AddNewPendingCreditAmount(effect.PendingCreditAmount);
+            balances[effect.Account.Id] += effect.Account.Type.IsDebt()
+                ? effect.PendingDebitAmount - effect.PendingCreditAmount
+                : effect.PendingCreditAmount - effect.PendingDebitAmount;
         }
-        return postedBalances.Select(balance => balances[balance.Account.Id]).ToList();
+        return postedBalances.Select(balance => new AccountBalance(balance.Account, balance.PostedBalance, balances[balance.Account.Id])).ToList();
     }
 
     /// <summary>
@@ -43,16 +42,18 @@ public sealed class PendingAccountBalanceService(
             .Where(accountId => transaction.GetPostedDateForAccount(accountId) == null))
         {
             Account account = accountRepository.GetById(accountId);
-            AccountBalance effect = transaction.ApplyToAccountBalance(new AccountBalance(account, 0, 0, 0));
-            if (effect.PendingDebitAmount == 0 && effect.PendingCreditAmount == 0)
+            decimal change = transaction.ApplyAsPostedToAccountBalance(new AccountBalance(account, 0)).PostedBalance;
+            decimal pendingDebitAmount = account.Type.IsDebt() ? Math.Max(change, 0) : Math.Max(-change, 0);
+            decimal pendingCreditAmount = account.Type.IsDebt() ? Math.Max(-change, 0) : Math.Max(change, 0);
+            if (pendingDebitAmount == 0 && pendingCreditAmount == 0)
             {
                 continue;
             }
             pendingAccountBalanceEffectRepository.Add(new PendingAccountBalanceEffect(
                 account,
                 transaction.Id,
-                effect.PendingDebitAmount,
-                effect.PendingCreditAmount));
+                pendingDebitAmount,
+                pendingCreditAmount));
         }
     }
 

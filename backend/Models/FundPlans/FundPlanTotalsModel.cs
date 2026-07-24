@@ -11,9 +11,9 @@ public sealed class FundPlanTotalsModel
     public required decimal AmountAssigned { get; init; }
 
     /// <summary>
-    /// Pending amount assigned.
+    /// Amount assigned including unposted Transaction effects.
     /// </summary>
-    public required decimal PendingAmountAssigned { get; init; }
+    public required decimal AmountAssignedIncludingPending { get; init; }
 
     /// <summary>
     /// Posted amount spent.
@@ -21,7 +21,7 @@ public sealed class FundPlanTotalsModel
     public required decimal AmountSpent { get; init; }
 
     /// <summary>
-    /// Pending amount spent.
+    /// Amount spent including unposted Transaction effects.
     /// </summary>
-    public required decimal PendingAmountSpent { get; init; }
+    public required decimal AmountSpentIncludingPending { get; init; }
 }

@@ -19,9 +19,7 @@ public class AccountBalanceService(
         AccountBalanceHistory? latestHistory = accountBalanceHistoryRepository.GetLatestForAccount(account.Id);
         var postedBalance = new AccountBalance(
             account,
-            latestHistory?.PostedBalance ?? account.OnboardedBalance ?? 0,
-            0,
-            0);
+            latestHistory?.PostedBalance ?? account.OnboardedBalance ?? 0);
         return pendingAccountBalanceService.ApplyPendingEffects(postedBalance);
     }
 
@@ -177,6 +175,6 @@ public class AccountBalanceService(
         {
             return existingHistory.ToAccountBalance();
         }
-        return new AccountBalance(account, account.OnboardedBalance ?? 0, 0, 0);
+        return new AccountBalance(account, account.OnboardedBalance ?? 0);
     }
 }
