@@ -16,6 +16,7 @@ import UpdateAccountForm from "@/accounts/workspace/UpdateAccountForm";
 interface ViewAccountFormProps {
   readonly account: AccountWithBalance;
   readonly redirectUrl: string;
+  readonly deleteRedirectUrl: string;
   readonly recentBalanceEvents: AccountBalanceEvent[];
   readonly recentBalanceEventCount: number;
   readonly addTransactionHref: string;
@@ -27,6 +28,7 @@ interface ViewAccountFormProps {
 const ViewAccountForm = function ({
   account,
   redirectUrl,
+  deleteRedirectUrl,
   recentBalanceEvents,
   recentBalanceEventCount,
   addTransactionHref,
@@ -48,7 +50,10 @@ const ViewAccountForm = function ({
               >
                 Edit
               </Button>
-              <DeleteAccountForm account={account} redirectUrl={redirectUrl} />
+              <DeleteAccountForm
+                account={account}
+                redirectUrl={deleteRedirectUrl}
+              />
             </Stack>
           }
         />

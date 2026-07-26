@@ -100,6 +100,7 @@ const AccountWorkspaceDetailPage = async function ({
       <ViewAccountForm
         account={account}
         redirectUrl={currentUrl}
+        deleteRedirectUrl={workspaceUrl}
         recentBalanceEvents={balanceEvents.items}
         recentBalanceEventCount={balanceEvents.totalCount}
         addTransactionHref={addTransactionHref}

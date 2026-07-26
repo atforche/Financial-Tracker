@@ -1,11 +1,10 @@
 "use client";
 
-import { type JSX, startTransition, useActionState, useEffect } from "react";
+import { type JSX, startTransition, useActionState } from "react";
 import { Button } from "@mui/material";
 import ConfirmActionDialog from "@/framework/dialog/ConfirmActionDialog";
 import type { Fund } from "@/funds/types";
 import deleteFund from "@/funds/workspace/deleteFund";
-import { useRouter } from "next/navigation";
 
 /**
  * Props for the DeleteFundForm component.
@@ -22,14 +21,7 @@ const DeleteFundForm = function ({
   fund,
   redirectUrl,
 }: DeleteFundFormProps): JSX.Element {
-  const router = useRouter();
   const [state, action, pending] = useActionState(deleteFund, {});
-
-  useEffect(() => {
-    if (state.success === true) {
-      router.replace(redirectUrl, { scroll: false });
-    }
-  }, [redirectUrl, router, state.success]);
 
   return (
     <ConfirmActionDialog

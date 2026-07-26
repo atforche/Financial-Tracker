@@ -16,6 +16,7 @@ import UpdateFundForm from "@/funds/workspace/UpdateFundForm";
 interface ViewFundFormProps {
   readonly fund: FundWithBalance;
   readonly redirectUrl: string;
+  readonly deleteRedirectUrl: string;
   readonly recentBalanceEvents: FundBalanceEvent[];
   readonly recentBalanceEventCount: number;
   readonly addTransactionHref: string;
@@ -27,6 +28,7 @@ interface ViewFundFormProps {
 const ViewFundForm = function ({
   fund,
   redirectUrl,
+  deleteRedirectUrl,
   recentBalanceEvents,
   recentBalanceEventCount,
   addTransactionHref,
@@ -48,7 +50,7 @@ const ViewFundForm = function ({
               >
                 Edit
               </Button>
-              <DeleteFundForm fund={fund} redirectUrl={redirectUrl} />
+              <DeleteFundForm fund={fund} redirectUrl={deleteRedirectUrl} />
             </Stack>
           }
         />

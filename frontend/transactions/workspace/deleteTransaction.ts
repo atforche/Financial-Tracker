@@ -5,6 +5,7 @@ import {
   mapTransactionActionError,
 } from "@/transactions/workspace/transactionActionHelpers";
 import createApiClient from "@/framework/data/createApiClient";
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -41,7 +42,7 @@ const deleteTransaction = async function (
     return mapTransactionActionError<never>(error, {});
   }
   revalidatePath(redirectUrl);
-  return { success: true };
+  redirect(redirectUrl);
 };
 
 export default deleteTransaction;

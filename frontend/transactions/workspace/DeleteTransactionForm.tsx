@@ -1,11 +1,10 @@
 "use client";
 
-import { type JSX, startTransition, useActionState, useEffect } from "react";
+import { type JSX, startTransition, useActionState } from "react";
 import { Button } from "@mui/material";
 import ConfirmActionDialog from "@/framework/dialog/ConfirmActionDialog";
 import type { Transaction } from "@/transactions/types";
 import deleteTransaction from "@/transactions/workspace/deleteTransaction";
-import { useRouter } from "next/navigation";
 
 /**
  * Props for the DeleteTransactionForm component.
@@ -22,14 +21,7 @@ const DeleteTransactionForm = function ({
   transaction,
   redirectUrl,
 }: DeleteTransactionFormProps): JSX.Element {
-  const router = useRouter();
   const [state, action, pending] = useActionState(deleteTransaction, {});
-
-  useEffect(() => {
-    if (state.success === true) {
-      router.replace(redirectUrl, { scroll: false });
-    }
-  }, [redirectUrl, router, state.success]);
 
   return (
     <ConfirmActionDialog

@@ -7,6 +7,7 @@ import type {
 import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -43,7 +44,7 @@ const deleteFund = async function (
     throw new Error("An unexpected error occurred", { cause: error });
   }
   revalidatePath(redirectUrl);
-  return { success: true };
+  redirect(redirectUrl);
 };
 
 export default deleteFund;
