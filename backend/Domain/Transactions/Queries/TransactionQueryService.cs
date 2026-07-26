@@ -1,7 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
 using Domain.Accounts.Queries;
-using Domain.FundPlans.Queries;
+using Domain.FundGoals.Queries;
 using Domain.Funds.Queries;
 
 namespace Domain.Transactions.Queries;
@@ -14,7 +14,7 @@ public sealed class TransactionQueryService(
     AccountingPeriodRangeService accountingPeriodRangeService,
     AccountBalanceEventQueryService accountBalanceEventQueryService,
     FundBalanceEventQueryService fundBalanceEventQueryService,
-    FundPlanBalanceEventQueryService fundPlanBalanceEventQueryService)
+    FundGoalBalanceEventQueryService fundGoalBalanceEventQueryService)
 {
     /// <summary>
     /// Retrieves the Transaction with the specified ID, or null when it does not exist.
@@ -109,7 +109,7 @@ public sealed class TransactionQueryService(
         IReadOnlyCollection<FundBalanceEvent> fundEvents = await fundBalanceEventQueryService.GetForTransactionsAsync(
             facts.Transactions.Items,
             cancellationToken);
-        IReadOnlyCollection<FundPlanBalanceEvent> fundPlanEvents = await fundPlanBalanceEventQueryService.GetForTransactionsAsync(
+        IReadOnlyCollection<FundGoalBalanceEvent> fundGoalEvents = await fundGoalBalanceEventQueryService.GetForTransactionsAsync(
             facts.Transactions.Items,
             cancellationToken);
         IReadOnlyCollection<TransactionDetails> items = facts.Transactions.Items.Select(transaction => new TransactionDetails(
@@ -118,7 +118,7 @@ public sealed class TransactionQueryService(
                 periods[transaction.AccountingPeriodId]),
                 accountEvents.Where(balanceEvent => balanceEvent.TransactionId == transaction.Id).ToList(),
                 fundEvents.Where(balanceEvent => balanceEvent.TransactionId == transaction.Id).ToList(),
-                fundPlanEvents.Where(balanceEvent => balanceEvent.TransactionId == transaction.Id).ToList())).ToList();
+                fundGoalEvents.Where(balanceEvent => balanceEvent.TransactionId == transaction.Id).ToList())).ToList();
         return new QueryPage<TransactionDetails>(items, facts.Transactions.TotalCount);
     }
 
@@ -131,7 +131,7 @@ public sealed class TransactionQueryService(
     {
         IReadOnlyCollection<AccountBalanceEvent> accountEvents = await accountBalanceEventQueryService.GetForTransactionsAsync([facts.Transaction], cancellationToken);
         IReadOnlyCollection<FundBalanceEvent> fundEvents = await fundBalanceEventQueryService.GetForTransactionsAsync([facts.Transaction], cancellationToken);
-        IReadOnlyCollection<FundPlanBalanceEvent> fundPlanEvents = await fundPlanBalanceEventQueryService.GetForTransactionsAsync([facts.Transaction], cancellationToken);
-        return new TransactionDetails(facts, accountEvents, fundEvents, fundPlanEvents);
+        IReadOnlyCollection<FundGoalBalanceEvent> fundGoalEvents = await fundGoalBalanceEventQueryService.GetForTransactionsAsync([facts.Transaction], cancellationToken);
+        return new TransactionDetails(facts, accountEvents, fundEvents, fundGoalEvents);
     }
 }

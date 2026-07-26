@@ -1,6 +1,6 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.FundPlans;
+using Domain.FundGoals;
 using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
@@ -53,19 +53,19 @@ public class DatabaseContext : DbContext
     internal DbSet<PendingFundBalanceEffect> PendingFundBalanceEffects { get; set; } = default!;
 
     /// <summary>
-    /// Collection of Fund Plans in the database.
+    /// Collection of Fund Goals in the database.
     /// </summary>
-    internal DbSet<FundPlan> FundPlans { get; set; } = default!;
+    internal DbSet<FundGoal> FundGoals { get; set; } = default!;
 
     /// <summary>
-    /// Collection of Fund Plan totals history entries in the database.
+    /// Collection of Fund Goal totals history entries in the database.
     /// </summary>
-    internal DbSet<FundPlanTotalsHistory> FundPlanTotalsHistories { get; set; } = default!;
+    internal DbSet<FundGoalTotalsHistory> FundGoalTotalsHistories { get; set; } = default!;
 
     /// <summary>
-    /// Collection of pending Fund Plan totals effects.
+    /// Collection of pending Fund Goal totals effects.
     /// </summary>
-    internal DbSet<PendingFundPlanTotalsEffect> PendingFundPlanTotalsEffects { get; set; } = default!;
+    internal DbSet<PendingFundGoalTotalsEffect> PendingFundGoalTotalsEffects { get; set; } = default!;
 
     /// <summary>
     /// Collection of Transactions in the database

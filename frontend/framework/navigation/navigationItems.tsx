@@ -12,7 +12,7 @@ import {
 import type { NavigationLink } from "./navigationLinkTypes";
 import accountRoutes from "@/accounts/routes";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
-import fundPlanRoutes from "@/fund-plans/routes";
+import fundGoalRoutes from "@/fund-goals/routes";
 import fundRoutes from "@/funds/routes";
 import transactionRoutes from "@/transactions/routes";
 
@@ -70,16 +70,16 @@ const navigationItems: NavigationLink[] = [
     ],
   },
   {
-    name: "Plans",
-    href: fundPlanRoutes.workspace({}),
+    name: "Goals",
+    href: fundGoalRoutes.workspace({}),
     icon: <EmojiEvents />,
     childLinks: [
       {
         name: "Workspace",
-        href: fundPlanRoutes.workspace({}),
+        href: fundGoalRoutes.workspace({}),
         icon: <Workspaces />,
       },
-      { name: "Trends", href: fundPlanRoutes.trends({}), icon: <Timeline /> },
+      { name: "Trends", href: fundGoalRoutes.trends({}), icon: <Timeline /> },
     ],
   },
   {

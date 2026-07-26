@@ -7,7 +7,7 @@ import AccountBalanceEventFrame from "@/transactions/workspace/AccountBalanceEve
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
 import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
-import type { FundPlanWithProgress } from "@/fund-plans/types";
+import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import IncomeFundAssignmentPlanner from "@/funds/assignmentPlanner/IncomeFundAssignmentPlanner";
 import type { JSX } from "react";
@@ -23,7 +23,7 @@ interface IncomeTransactionDestinationFrameProps {
   readonly index: number;
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
-  readonly fundPlans: FundPlanWithProgress[];
+  readonly fundGoals: FundGoalWithProgress[];
   readonly transaction?: Transaction | null;
   readonly account: AccountBalanceEventDraft | null;
   readonly setAccount:
@@ -49,7 +49,7 @@ const IncomeTransactionDestinationFrame = function ({
   index,
   accounts,
   funds,
-  fundPlans,
+  fundGoals,
   transaction = null,
   account,
   setAccount,
@@ -88,7 +88,7 @@ const IncomeTransactionDestinationFrame = function ({
       />
       <IncomeFundAssignmentPlanner
         funds={funds}
-        fundPlans={fundPlans}
+        fundGoals={fundGoals}
         totalAmountToAssign={amount}
         fundAssignments={fundAssignments}
         setFundAssignments={readOnly ? null : setFundAssignments}

@@ -25,7 +25,7 @@ import {
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
-import type { FundPlanWithProgress } from "@/fund-plans/types";
+import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import SpendingTransactionDestinationFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFrame";
 import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
@@ -48,7 +48,7 @@ interface SpendingTransactionFormProps<RequestPayload> {
   readonly formRef: RefObject<HTMLDivElement | null>;
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
-  readonly fundPlans: FundPlanWithProgress[];
+  readonly fundGoals: FundGoalWithProgress[];
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
   readonly setAccountingPeriod?: Dispatch<
@@ -80,7 +80,7 @@ const SpendingTransactionForm = function <RequestPayload>({
   formRef,
   accounts,
   funds,
-  fundPlans,
+  fundGoals,
   accountingPeriods,
   accountingPeriod,
   setAccountingPeriod = null,
@@ -102,8 +102,8 @@ const SpendingTransactionForm = function <RequestPayload>({
 }: SpendingTransactionFormProps<RequestPayload>): JSX.Element {
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
-  const currentFundPlans = fundPlans.filter(
-    (fundPlan) => fundPlan.accountingPeriod?.id === accountingPeriod?.id,
+  const currentFundGoals = fundGoals.filter(
+    (fundGoal) => fundGoal.accountingPeriod?.id === accountingPeriod?.id,
   );
 
   const updateDestination = function (
@@ -228,7 +228,7 @@ const SpendingTransactionForm = function <RequestPayload>({
               index={index}
               accounts={accounts}
               funds={funds}
-              fundPlans={currentFundPlans}
+              fundGoals={currentFundGoals}
               transaction={null}
               account={destination.account}
               setAccount={(account): void => {

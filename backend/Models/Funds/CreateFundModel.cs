@@ -21,22 +21,22 @@ public class CreateFundModel
     public required Guid AccountingPeriodId { get; init; }
 
     /// <summary>
-    /// Regular contribution for the Fund Plan.
+    /// Regular contribution for the Fund Goal.
     /// </summary>
     public decimal? RegularContribution { get; init; }
 
     /// <summary>
-    /// Minimum funded balance for the Fund Plan.
+    /// Minimum funded balance for the Fund Goal.
     /// </summary>
     public decimal? MinimumFundedBalance { get; init; }
 
     /// <summary>
-    /// Maximum funded balance for the Fund Plan.
+    /// Maximum funded balance for the Fund Goal.
     /// </summary>
     public decimal? MaximumFundedBalance { get; init; }
 
     /// <summary>
-    /// Target ending balance for the Fund Plan.
+    /// Target ending balance for the Fund Goal.
     /// </summary>
     public decimal? TargetEndingBalance { get; init; }
 }

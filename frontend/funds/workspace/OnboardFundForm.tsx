@@ -17,7 +17,7 @@ import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Frame from "@/framework/view/Frame";
-import FundPlanSetupSection from "@/funds/workspace/FundPlanSetupSection";
+import FundGoalSetupSection from "@/funds/workspace/FundGoalSetupSection";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import { formatCurrency } from "@/framework/currencyHelpers";
@@ -133,7 +133,7 @@ const OnboardFundForm = function ({
           </Stack>
         </Frame>
 
-        <FundPlanSetupSection
+        <FundGoalSetupSection
           color="success"
           regularContribution={regularContribution}
           setRegularContribution={setRegularContribution}

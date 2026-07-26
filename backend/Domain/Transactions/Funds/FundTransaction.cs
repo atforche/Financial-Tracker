@@ -1,5 +1,5 @@
 using Domain.Accounts;
-using Domain.FundPlans;
+using Domain.FundGoals;
 using Domain.Funds;
 
 namespace Domain.Transactions.Funds;
@@ -93,9 +93,9 @@ public class FundTransaction : Transaction
     protected override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse) => existingFundBalance;
 
     /// <inheritdoc/>
-    protected override FundPlanTotals AddToFundPlanTotals(FundPlanTotals existingTotals, bool reverse)
+    protected override FundGoalTotals AddToFundGoalTotals(FundGoalTotals existingTotals, bool reverse)
     {
-        FundPlanTotals newTotals = existingTotals;
+        FundGoalTotals newTotals = existingTotals;
         if (existingTotals.FundId == Source.Fund.Id)
         {
             decimal amount = reverse ? Amount : -Amount;
@@ -111,5 +111,5 @@ public class FundTransaction : Transaction
     }
 
     /// <inheritdoc/>
-    protected override FundPlanTotals PostToFundPlanTotals(FundPlanTotals existingTotals, AccountId accountId, bool reverse) => existingTotals;
+    protected override FundGoalTotals PostToFundGoalTotals(FundGoalTotals existingTotals, AccountId accountId, bool reverse) => existingTotals;
 }

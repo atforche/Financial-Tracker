@@ -18,9 +18,9 @@ const validateOnboardFundSetup = (
 ): boolean => name !== "" && balance !== null;
 
 /**
- * Fields required to build a Fund Plan.
+ * Fields required to build a Fund Goal.
  */
-interface FundPlanFields {
+interface FundGoalFields {
   readonly regularContribution: number | null;
   readonly minimumFundedBalance: number | null;
   readonly maximumFundedBalance: number | null;
@@ -30,7 +30,7 @@ interface FundPlanFields {
 /**
  * Fields required to build a request to create a fund.
  */
-interface CreateFundRequestFields extends FundPlanFields {
+interface CreateFundRequestFields extends FundGoalFields {
   readonly name: string;
   readonly description: string;
   readonly accountingPeriod: AccountingPeriod | null;
@@ -39,7 +39,7 @@ interface CreateFundRequestFields extends FundPlanFields {
 /**
  * Fields required to build a request to onboard a fund.
  */
-interface OnboardFundRequestFields extends FundPlanFields {
+interface OnboardFundRequestFields extends FundGoalFields {
   readonly name: string;
   readonly description: string;
   readonly onboardedBalance: number | null;
@@ -48,7 +48,7 @@ interface OnboardFundRequestFields extends FundPlanFields {
 /**
  * Validates that the minimum and maximum funded balances are in a valid range.
  */
-const validRange = (fields: FundPlanFields): boolean =>
+const validRange = (fields: FundGoalFields): boolean =>
   fields.minimumFundedBalance === null ||
   fields.maximumFundedBalance === null ||
   fields.minimumFundedBalance <= fields.maximumFundedBalance;

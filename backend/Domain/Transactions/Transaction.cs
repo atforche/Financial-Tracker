@@ -1,6 +1,6 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.FundPlans;
+using Domain.FundGoals;
 using Domain.Funds;
 
 namespace Domain.Transactions;
@@ -144,19 +144,19 @@ public abstract class Transaction : Entity<TransactionId>
     }
 
     /// <summary>
-    /// Applies this Transaction to the provided Fund Plan totals.
+    /// Applies this Transaction to the provided Fund Goal totals.
     /// </summary>
-    public FundPlanTotals ApplyToFundPlanTotals(
-        FundPlanTotals existingTotals,
+    public FundGoalTotals ApplyToFundGoalTotals(
+        FundGoalTotals existingTotals,
         DateOnly? asOfDate = null,
         AccountId? accountId = null,
         bool reverse = false,
         bool postingOnly = false)
     {
-        FundPlanTotals newTotals = existingTotals;
+        FundGoalTotals newTotals = existingTotals;
         if (!postingOnly && (asOfDate == null || Date == asOfDate))
         {
-            newTotals = AddToFundPlanTotals(existingTotals, reverse);
+            newTotals = AddToFundGoalTotals(existingTotals, reverse);
         }
         foreach (AccountId affectedAccountId in GetAllAffectedAccountIds())
         {
@@ -167,58 +167,58 @@ public abstract class Transaction : Entity<TransactionId>
             DateOnly? postedDate = GetPostedDateForAccount(affectedAccountId);
             if (postedDate != null && (asOfDate == null || postedDate == asOfDate))
             {
-                newTotals = PostToFundPlanTotals(newTotals, affectedAccountId, reverse);
+                newTotals = PostToFundGoalTotals(newTotals, affectedAccountId, reverse);
             }
         }
         return newTotals;
     }
 
     /// <summary>
-    /// Applies this Transaction's posted Fund Plan effects for the supplied date.
+    /// Applies this Transaction's posted Fund Goal effects for the supplied date.
     /// </summary>
-    public FundPlanTotals ApplyPostedEffectsToFundPlanTotals(
-        FundPlanTotals existingTotals,
+    public FundGoalTotals ApplyPostedEffectsToFundGoalTotals(
+        FundGoalTotals existingTotals,
         DateOnly postedDate,
         bool reverse = false)
     {
         if (!GetAllAffectedAccountIds().Any())
         {
-            return Date == postedDate ? AddToFundPlanTotals(existingTotals, reverse) : existingTotals;
+            return Date == postedDate ? AddToFundGoalTotals(existingTotals, reverse) : existingTotals;
         }
-        FundPlanTotals newTotals = existingTotals;
+        FundGoalTotals newTotals = existingTotals;
         foreach (AccountId accountId in GetAllAffectedAccountIds().Where(accountId => GetPostedDateForAccount(accountId) == postedDate))
         {
-            newTotals = PostToFundPlanTotals(newTotals, accountId, reverse);
+            newTotals = PostToFundGoalTotals(newTotals, accountId, reverse);
         }
         return newTotals;
     }
 
     /// <summary>
-    /// Applies all currently posted Fund Plan effects, regardless of their posting dates.
+    /// Applies all currently posted Fund Goal effects, regardless of their posting dates.
     /// </summary>
-    public FundPlanTotals ApplyAllPostedEffectsToFundPlanTotals(FundPlanTotals existingTotals, bool reverse = false)
+    public FundGoalTotals ApplyAllPostedEffectsToFundGoalTotals(FundGoalTotals existingTotals, bool reverse = false)
     {
         if (!GetAllAffectedAccountIds().Any())
         {
-            return AddToFundPlanTotals(existingTotals, reverse);
+            return AddToFundGoalTotals(existingTotals, reverse);
         }
-        FundPlanTotals newTotals = existingTotals;
+        FundGoalTotals newTotals = existingTotals;
         foreach (AccountId accountId in GetAllAffectedAccountIds().Where(accountId => GetPostedDateForAccount(accountId) != null))
         {
-            newTotals = PostToFundPlanTotals(newTotals, accountId, reverse);
+            newTotals = PostToFundGoalTotals(newTotals, accountId, reverse);
         }
         return newTotals;
     }
 
     /// <summary>
-    /// Applies all of this Transaction's Fund Plan effects as posted totals changes.
+    /// Applies all of this Transaction's Fund Goal effects as posted totals changes.
     /// </summary>
-    public FundPlanTotals ApplyAsPostedToFundPlanTotals(FundPlanTotals existingTotals, bool reverse = false)
+    public FundGoalTotals ApplyAsPostedToFundGoalTotals(FundGoalTotals existingTotals, bool reverse = false)
     {
-        FundPlanTotals newTotals = AddToFundPlanTotals(existingTotals, reverse);
+        FundGoalTotals newTotals = AddToFundGoalTotals(existingTotals, reverse);
         foreach (AccountId accountId in GetAllAffectedAccountIds())
         {
-            newTotals = PostToFundPlanTotals(newTotals, accountId, reverse);
+            newTotals = PostToFundGoalTotals(newTotals, accountId, reverse);
         }
         return newTotals;
     }
@@ -262,14 +262,14 @@ public abstract class Transaction : Entity<TransactionId>
     protected abstract FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse);
 
     /// <summary>
-    /// Adds this Transaction to the provided Fund Plan totals.
+    /// Adds this Transaction to the provided Fund Goal totals.
     /// </summary>
-    protected abstract FundPlanTotals AddToFundPlanTotals(FundPlanTotals existingTotals, bool reverse);
+    protected abstract FundGoalTotals AddToFundGoalTotals(FundGoalTotals existingTotals, bool reverse);
 
     /// <summary>
-    /// Posts this Transaction to the provided Fund Plan totals.
+    /// Posts this Transaction to the provided Fund Goal totals.
     /// </summary>
-    protected abstract FundPlanTotals PostToFundPlanTotals(FundPlanTotals existingTotals, AccountId accountId, bool reverse);
+    protected abstract FundGoalTotals PostToFundGoalTotals(FundGoalTotals existingTotals, AccountId accountId, bool reverse);
 }
 
 /// <summary>

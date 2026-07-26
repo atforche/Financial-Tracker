@@ -1,4 +1,4 @@
-using Models.FundPlans;
+using Models.FundGoals;
 using Models.Funds;
 
 namespace Models.Transactions.Types;
@@ -14,7 +14,7 @@ public sealed class FundTransactionSourceModel
     public required FundBalanceEventModel Fund { get; init; }
 
     /// <summary>
-    /// Fund Plan balance event for the source, when applicable.
+    /// Fund Goal balance event for the source, when applicable.
     /// </summary>
-    public FundPlanBalanceEventModel? FundPlan { get; init; }
+    public FundGoalBalanceEventModel? FundGoal { get; init; }
 }

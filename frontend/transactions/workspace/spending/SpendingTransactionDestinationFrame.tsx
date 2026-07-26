@@ -6,7 +6,7 @@ import type {
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
 import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
-import type { FundPlanWithProgress } from "@/fund-plans/types";
+import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import type { JSX } from "react";
 import SpendingFundAssignmentPlanner from "@/funds/assignmentPlanner/SpendingFundAssignmentPlanner";
@@ -21,7 +21,7 @@ interface SpendingTransactionDestinationFrameProps {
   readonly index: number;
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
-  readonly fundPlans: FundPlanWithProgress[];
+  readonly fundGoals: FundGoalWithProgress[];
   readonly transaction?: Transaction | null;
   readonly account: AccountBalanceEventDraft | null;
   readonly setAccount:
@@ -51,7 +51,7 @@ const SpendingTransactionDestinationFrame = function ({
   index,
   accounts,
   funds,
-  fundPlans,
+  fundGoals,
   transaction = null,
   account,
   setAccount,
@@ -96,7 +96,7 @@ const SpendingTransactionDestinationFrame = function ({
       />
       <SpendingFundAssignmentPlanner
         funds={funds}
-        fundPlans={fundPlans}
+        fundGoals={fundGoals}
         totalAmountToAssign={amount}
         fundAssignments={fundAssignments}
         setFundAssignments={readOnly ? null : setFundAssignments}

@@ -15,7 +15,7 @@ import type {
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import type { FundPlanWithProgress } from "@/fund-plans/types";
+import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import SpendingTransactionForm from "@/transactions/workspace/spending/SpendingTransactionForm";
 import { useUpdateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
@@ -28,7 +28,7 @@ interface UpdateSpendingTransactionFormProps {
   readonly transactionAccountingPeriod: AccountingPeriod;
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
-  readonly fundPlans: FundPlanWithProgress[];
+  readonly fundGoals: FundGoalWithProgress[];
   readonly redirectUrl: string;
 }
 
@@ -40,12 +40,12 @@ const UpdateSpendingTransactionForm = function ({
   transactionAccountingPeriod,
   accounts,
   funds,
-  fundPlans,
+  fundGoals,
   redirectUrl,
 }: UpdateSpendingTransactionFormProps): JSX.Element {
-  const currentFundPlans = fundPlans.filter(
-    (fundPlan) =>
-      fundPlan.accountingPeriod?.id === transactionAccountingPeriod.id,
+  const currentFundGoals = fundGoals.filter(
+    (fundGoal) =>
+      fundGoal.accountingPeriod?.id === transactionAccountingPeriod.id,
   );
   const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
   const [description, setDescription] = useState<string>(
@@ -55,7 +55,7 @@ const UpdateSpendingTransactionForm = function ({
     getSourceFromTransaction(transaction),
   );
   const [destinations, setDestinations] = useState<SpendingDestinationDraft[]>(
-    getDestinationsFromTransaction(transaction, currentFundPlans),
+    getDestinationsFromTransaction(transaction, currentFundGoals),
   );
 
   const { formRef, state, pending, reset, submit } = useUpdateTransactionEditor(
@@ -67,7 +67,7 @@ const UpdateSpendingTransactionForm = function ({
         setDescription(transaction.description);
         setSource(getSourceFromTransaction(transaction));
         setDestinations(
-          getDestinationsFromTransaction(transaction, currentFundPlans),
+          getDestinationsFromTransaction(transaction, currentFundGoals),
         );
       },
     },
@@ -86,7 +86,7 @@ const UpdateSpendingTransactionForm = function ({
       formRef={formRef}
       accounts={accounts}
       funds={funds}
-      fundPlans={fundPlans}
+      fundGoals={fundGoals}
       accountingPeriods={[transactionAccountingPeriod]}
       accountingPeriod={transactionAccountingPeriod}
       setAccountingPeriod={null}

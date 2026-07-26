@@ -1,5 +1,5 @@
 import type { Fund } from "@/funds/types";
-import type { FundPlanWithProgress } from "@/fund-plans/types";
+import type { FundGoalWithProgress } from "@/fund-goals/types";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
 import { isUnassignedFund } from "@/funds/helpers";
@@ -13,8 +13,8 @@ interface FundAssignmentDraft {
   readonly amount: number;
   readonly previousFundBalance: number;
   readonly newFundBalance: number;
-  readonly previousPlanAmount: number;
-  readonly newPlanAmount: number;
+  readonly previousGoalAmount: number;
+  readonly newGoalAmount: number;
 }
 
 /**
@@ -27,8 +27,8 @@ const createFundAssignmentDraft = function (amount = 0): FundAssignmentDraft {
     amount,
     previousFundBalance: 0,
     newFundBalance: 0,
-    previousPlanAmount: 0,
-    newPlanAmount: 0,
+    previousGoalAmount: 0,
+    newGoalAmount: 0,
   };
 };
 
@@ -94,8 +94,8 @@ const updateUnassignedFundAmount = function (
       amount: Math.max(totalAmountToAssign - assignedAmount, 0),
       previousFundBalance: 0,
       newFundBalance: 0,
-      previousPlanAmount: 0,
-      newPlanAmount: 0,
+      previousGoalAmount: 0,
+      newGoalAmount: 0,
     },
     ...explicitFundAssignments,
   ];
@@ -176,64 +176,64 @@ const getRemainingAmount = function (
 };
 
 /**
- * Gets the remaining contribution for a Funding Plan.
+ * Gets the remaining contribution for a Fund Goal.
  */
 const getContributionRemainingAmount = function (
   fundId: string,
-  fundPlans: FundPlanWithProgress[],
+  fundGoals: FundGoalWithProgress[],
   baselineFundAssignments: readonly FundAssignmentDraft[],
 ): number | null {
-  const fundPlan = fundPlans.find((plan) => plan.fund.id === fundId);
+  const fundGoal = fundGoals.find((goal) => goal.fund.id === fundId);
   return getRemainingAmount(
-    fundPlan?.progress.contribution?.remainingAmount,
+    fundGoal?.progress.contribution?.remainingAmount,
     baselineFundAssignments,
     fundId,
   );
 };
 
 /**
- * Gets the remaining contribution amount for a Funding Plan.
+ * Gets the remaining contribution amount for a Fund Goal.
  */
-const getIncomePlanRemainingAmount = function (
+const getIncomeGoalRemainingAmount = function (
   fundId: string,
-  fundPlans: FundPlanWithProgress[],
+  fundGoals: FundGoalWithProgress[],
 ): number {
   return (
-    fundPlans.find((plan) => plan.fund.id === fundId)?.progress.contribution
-      ?.remainingAmount ?? 0
+    fundGoals.find((fundGoal) => fundGoal.fund.id === fundId)?.progress
+      .contribution?.remainingAmount ?? 0
   );
 };
 
 /**
- * Gets the remaining ending-balance amount for a Funding Plan.
+ * Gets the remaining ending-balance amount for a Fund Goal.
  */
-const getSpendingPlanRemainingAmount = function (
+const getSpendingGoalRemainingAmount = function (
   fundId: string,
-  fundPlans: FundPlanWithProgress[],
+  fundGoals: FundGoalWithProgress[],
   fundBalance: number,
 ): number {
-  const fundPlan = fundPlans.find((plan) => plan.fund.id === fundId);
-  if (fundPlan === undefined) {
+  const fundGoal = fundGoals.find((goal) => goal.fund.id === fundId);
+  if (fundGoal === undefined) {
     return 0;
   }
-  return fundPlan.progress.endingBalance?.variance ?? fundBalance;
+  return fundGoal.progress.endingBalance?.variance ?? fundBalance;
 };
 
 /**
- * Gets the remaining ending-balance variance for a Funding Plan.
+ * Gets the remaining ending-balance variance for a Fund Goal.
  */
 const getEndingBalanceVariance = function (
   fundId: string,
-  fundPlans: FundPlanWithProgress[],
+  fundGoals: FundGoalWithProgress[],
   baselineFundAssignments: readonly FundAssignmentDraft[],
   fundBalance: number,
 ): number | null {
-  const fundPlan = fundPlans.find((plan) => plan.fund.id === fundId);
-  if (fundPlan === undefined) {
+  const fundGoal = fundGoals.find((goal) => goal.fund.id === fundId);
+  if (fundGoal === undefined) {
     return null;
   }
   return getRemainingAmount(
-    fundPlan.progress.endingBalance?.variance ?? fundBalance,
+    fundGoal.progress.endingBalance?.variance ?? fundBalance,
     baselineFundAssignments,
     fundId,
   );
@@ -244,12 +244,12 @@ const getEndingBalanceVariance = function (
  */
 const getFundOptionSecondaryLabel = function (
   prefix: string,
-  planRemainingAmount: number | null,
+  goalRemainingAmount: number | null,
 ): string {
-  if (planRemainingAmount === null) {
-    return "No Funding Plan";
+  if (goalRemainingAmount === null) {
+    return "No Fund Goal";
   }
-  return `${prefix} ${formatCurrency(planRemainingAmount)}`;
+  return `${prefix} ${formatCurrency(goalRemainingAmount)}`;
 };
 
 /**
@@ -358,9 +358,9 @@ export {
   getFundOptionSecondaryLabel,
   getContributionRemainingAmount,
   getEndingBalanceVariance,
-  getIncomePlanRemainingAmount,
+  getIncomeGoalRemainingAmount,
   getRemainingFundAmount,
-  getSpendingPlanRemainingAmount,
+  getSpendingGoalRemainingAmount,
   getSuggestedAmount,
   sortFundsByRemainingAmount,
   updateFundAssignment,

@@ -12,7 +12,7 @@ import type {
 } from "@/transactions/types";
 import {
   type FundAssignmentDraft,
-  getIncomePlanRemainingAmount,
+  getIncomeGoalRemainingAmount,
 } from "@/funds/assignmentPlanner/helpers";
 import {
   validateDetails,
@@ -21,7 +21,7 @@ import {
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import type { FundBalanceEvent } from "@/funds/types";
-import type { FundPlanWithProgress } from "@/fund-plans/types";
+import type { FundGoalWithProgress } from "@/fund-goals/types";
 import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/accountBalanceEventDraft";
 import { hasIncompleteFundAssignments } from "@/funds/helpers";
 import { isTrackedAccountType } from "@/accounts/helpers";
@@ -407,19 +407,19 @@ const getSourceFromTransaction = function (
  */
 const getFundAssignmentFromTransactionFund = (
   assignment: FundBalanceEvent,
-  fundPlans: FundPlanWithProgress[],
+  fundGoals: FundGoalWithProgress[],
 ): FundAssignmentDraft => ({
   fundId: assignment.fund.id,
   fundName: assignment.fund.name,
   amount: assignment.amount,
   previousFundBalance: assignment.previousBalance.postedBalance,
   newFundBalance: assignment.newBalance.postedBalance,
-  previousPlanAmount: getIncomePlanRemainingAmount(
+  previousGoalAmount: getIncomeGoalRemainingAmount(
     assignment.fund.id,
-    fundPlans,
+    fundGoals,
   ),
-  newPlanAmount: Math.max(
-    getIncomePlanRemainingAmount(assignment.fund.id, fundPlans) -
+  newGoalAmount: Math.max(
+    getIncomeGoalRemainingAmount(assignment.fund.id, fundGoals) -
       assignment.amount,
     0,
   ),
@@ -430,7 +430,7 @@ const getFundAssignmentFromTransactionFund = (
  */
 const getDestinationsFromTransaction = function (
   transaction: IncomeTransaction,
-  fundPlans: FundPlanWithProgress[],
+  fundGoals: FundGoalWithProgress[],
 ): IncomeDestinationDraft[] {
   return transaction.destinations.map(
     (destination: IncomeTransactionDestination) => ({
@@ -439,10 +439,10 @@ const getDestinationsFromTransaction = function (
       ),
       amount: destination.amount,
       fundAssignments: destination.fundAssignments.map((assignment) =>
-        getFundAssignmentFromTransactionFund(assignment, fundPlans),
+        getFundAssignmentFromTransactionFund(assignment, fundGoals),
       ),
       baselineFundAssignments: destination.fundAssignments.map((assignment) =>
-        getFundAssignmentFromTransactionFund(assignment, fundPlans),
+        getFundAssignmentFromTransactionFund(assignment, fundGoals),
       ),
     }),
   );

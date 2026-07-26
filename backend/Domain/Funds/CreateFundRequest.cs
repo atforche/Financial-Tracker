@@ -23,22 +23,22 @@ public record CreateFundRequest
     public required AccountingPeriod OpeningAccountingPeriod { get; init; }
 
     /// <summary>
-    /// Regular contribution for the Fund Plan.
+    /// Regular contribution for the Fund Goal.
     /// </summary>
     public required decimal? RegularContribution { get; init; }
 
     /// <summary>
-    /// Minimum funded balance for the Fund Plan.
+    /// Minimum funded balance for the Fund Goal.
     /// </summary>
     public required decimal? MinimumFundedBalance { get; init; }
 
     /// <summary>
-    /// Maximum funded balance for the Fund Plan.
+    /// Maximum funded balance for the Fund Goal.
     /// </summary>
     public required decimal? MaximumFundedBalance { get; init; }
 
     /// <summary>
-    /// Target ending balance for the Fund Plan.
+    /// Target ending balance for the Fund Goal.
     /// </summary>
     public required decimal? TargetEndingBalance { get; init; }
 }

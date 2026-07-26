@@ -1,0 +1,235 @@
+using Domain.AccountingPeriods;
+using Domain.AccountingPeriods.Queries;
+using Domain.BalanceEvents;
+using Domain.Funds;
+using Domain.Transactions;
+using Domain.Transactions.Funds;
+using Domain.Transactions.Income;
+using Domain.Transactions.Queries;
+using Domain.Transactions.Spending;
+
+namespace Domain.FundGoals.Queries;
+
+/// <summary>
+/// Service for querying interpreted Fund Goal balance events.
+/// </summary>
+public sealed class FundGoalBalanceEventQueryService(
+    IFundGoalBalanceEventQueryRepository repository,
+    ITransactionBalanceEventQueryRepository transactionQueryRepository,
+    IAccountingPeriodQueryRepository accountingPeriodRepository,
+    AccountingPeriodRangeService accountingPeriodRangeService)
+{
+    /// <summary>
+    /// Retrieves fully projected Fund Goal balance events for the requested Transactions.
+    /// </summary>
+    public async Task<IReadOnlyCollection<FundGoalBalanceEvent>> GetForTransactionsAsync(
+        IReadOnlyCollection<Transaction> requestedTransactions,
+        CancellationToken cancellationToken = default)
+    {
+        if (requestedTransactions.Count == 0)
+        {
+            return [];
+        }
+        IReadOnlyCollection<FundId> requestedFundIds = requestedTransactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null))
+            .Where(fundId => fundId != Fund.UnassignedFundId).Distinct().ToList();
+        IReadOnlyCollection<Transaction> pendingTransactions = await transactionQueryRepository.GetPendingForFundsAsync(requestedFundIds, cancellationToken);
+        IReadOnlyCollection<Transaction> transactions = requestedTransactions.Concat(pendingTransactions).DistinctBy(transaction => transaction.Id).ToList();
+        IReadOnlyCollection<FundId> fundIds = transactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null))
+            .Where(fundId => fundId != Fund.UnassignedFundId).Distinct().ToList();
+        IReadOnlyCollection<AccountingPeriodId> periodIds = transactions.Select(transaction => transaction.AccountingPeriodId).Distinct().ToList();
+        var periods = (await accountingPeriodRepository.GetByIdsAsync(periodIds, cancellationToken)).ToDictionary(period => period.Id);
+        var funds = (await repository.GetFundsAsync(fundIds, cancellationToken)).ToDictionary(fund => fund.Id);
+        IReadOnlyCollection<FundGoalTotalsHistory> histories = await repository.GetFundGoalHistoriesAsync(fundIds, cancellationToken);
+        var historiesByFundAndPeriod = histories.GroupBy(history => (history.FundId, history.AccountingPeriodId))
+            .ToDictionary(group => group.Key, group => group.ToList());
+        IReadOnlyCollection<FundGoalBalanceEvent> events = transactions
+            .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFundAndPeriod))
+            .Where(balanceEvent => requestedFundIds.Contains(balanceEvent.Fund.Id)).ToList();
+        events = ProjectPendingEvents(events, transactions, historiesByFundAndPeriod);
+        var requestedIds = requestedTransactions.Select(transaction => transaction.Id).ToHashSet();
+        return events.Where(balanceEvent => requestedIds.Contains(balanceEvent.TransactionId)).ToList();
+    }
+
+    /// <summary>
+    /// Retrieves Fund Goal balance events matching the provided query.
+    /// </summary>
+    public async Task<QueryPage<FundGoalBalanceEvent>> GetAsync(
+        FundGoalBalanceEventQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyCollection<Transaction> transactions = await transactionQueryRepository.GetAsync(query.Start, query.End, cancellationToken);
+        IReadOnlyCollection<AccountingPeriodId> periodIds = transactions.Select(transaction => transaction.AccountingPeriodId).Distinct().ToList();
+        IReadOnlyCollection<AccountingPeriod> periods = await accountingPeriodRepository.GetByIdsAsync(periodIds, cancellationToken);
+        return await GetAsync(transactions, periods, query.Filter, query.Sort, query.Offset, query.Limit, cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieves Fund Goal balance events in the requested Accounting Period range.
+    /// </summary>
+    public async Task<FundGoalBalanceEventAccountingPeriodRangeQueryResult> GetAsync(
+        FundGoalBalanceEventAccountingPeriodRangeQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        AccountingPeriodRangeResolution resolution = await accountingPeriodRangeService.ResolveAsync(
+            query.StartId,
+            query.EndId,
+            cancellationToken);
+        if (resolution.AccountingPeriods == null)
+        {
+            return new FundGoalBalanceEventAccountingPeriodRangeQueryResult(null, resolution.Failure);
+        }
+
+        IReadOnlyCollection<AccountingPeriod> periods = resolution.AccountingPeriods;
+        IReadOnlyCollection<AccountingPeriodId> periodIds = periods.Select(period => period.Id).ToList();
+        IReadOnlyCollection<Transaction> transactions = await transactionQueryRepository.GetAsync(periodIds, cancellationToken);
+        QueryPage<FundGoalBalanceEvent> page = await GetAsync(
+            transactions,
+            periods,
+            query.Filter,
+            query.Sort,
+            query.Offset,
+            query.Limit,
+            cancellationToken);
+        return new FundGoalBalanceEventAccountingPeriodRangeQueryResult(page, AccountingPeriodRangeQueryFailure.None);
+    }
+
+    /// <summary>
+    /// Interprets and pages Fund Goal balance events from the provided facts.
+    /// </summary>
+    private async Task<QueryPage<FundGoalBalanceEvent>> GetAsync(
+        IReadOnlyCollection<Transaction> transactions,
+        IReadOnlyCollection<AccountingPeriod> accountingPeriods,
+        FundGoalBalanceEventFilter filter,
+        FundGoalBalanceEventSort sort,
+        int offset,
+        int? limit,
+        CancellationToken cancellationToken)
+    {
+        var periods = accountingPeriods.ToDictionary(period => period.Id);
+        IReadOnlyCollection<FundId> fundIds = transactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null))
+            .Where(fundId => fundId != Fund.UnassignedFundId).Distinct().ToList();
+        var funds = (await repository.GetFundsAsync(fundIds, cancellationToken)).ToDictionary(fund => fund.Id);
+        IReadOnlyCollection<FundGoalTotalsHistory> histories = await repository.GetFundGoalHistoriesAsync(fundIds, cancellationToken);
+        Dictionary<(FundId FundId, AccountingPeriodId PeriodId), List<FundGoalTotalsHistory>> historiesByFundAndPeriod = histories
+            .GroupBy(history => (history.FundId, history.AccountingPeriodId))
+            .ToDictionary(group => group.Key, group => group.ToList());
+        IReadOnlyCollection<FundGoalBalanceEvent> events = transactions
+            .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFundAndPeriod))
+            .Where(balanceEvent => filter.FundIds.Count == 0 || filter.FundIds.Contains(balanceEvent.Fund.Id.Value)).ToList();
+        events = ProjectPendingEvents(events, transactions, historiesByFundAndPeriod);
+        var allItems = Sort(events, sort).ToList();
+        return new QueryPage<FundGoalBalanceEvent>(
+            allItems.Skip(offset).Take(limit ?? int.MaxValue).ToList(),
+            allItems.Count);
+    }
+
+    /// <summary>
+    /// Retrieves interpreted Fund Goal balance events for a Transaction.
+    /// </summary>
+    private static IEnumerable<FundGoalBalanceEvent> GetEvents(
+        Transaction transaction,
+        AccountingPeriod period,
+        Dictionary<FundId, Fund> funds,
+        IReadOnlyDictionary<(FundId FundId, AccountingPeriodId PeriodId), List<FundGoalTotalsHistory>> histories) => transaction switch
+        {
+            SpendingTransaction spending => spending.Destinations.SelectMany(destination => destination.FundAssignments
+                .Where(amount => amount.FundId != Fund.UnassignedFundId)
+                .Select(amount => Create(transaction, period, funds[amount.FundId], destination.PostedDate, amount.Amount, BalanceEventType.Debit, histories))),
+            IncomeTransaction income => income.Destinations.SelectMany(destination => destination.FundAssignments
+                .Where(amount => amount.FundId != Fund.UnassignedFundId)
+                .Select(amount => Create(transaction, period, funds[amount.FundId], destination.PostedDate, amount.Amount, BalanceEventType.Credit, histories))),
+            FundTransaction fund => (fund.Source.Fund.Id == Fund.UnassignedFundId
+                    ? Enumerable.Empty<FundGoalBalanceEvent>()
+                    : new[] { Create(transaction, period, fund.Source.Fund, transaction.Date, transaction.Amount, BalanceEventType.Debit, histories) })
+                .Concat(fund.Destinations.Where(destination => destination.Fund.Id != Fund.UnassignedFundId)
+                    .Select(destination => Create(transaction, period, destination.Fund, transaction.Date, destination.Amount, BalanceEventType.Credit, histories))),
+            _ => [],
+        };
+
+    /// <summary>
+    /// Creates an interpreted Fund Goal balance event.
+    /// </summary>
+    private static FundGoalBalanceEvent Create(
+        Transaction transaction,
+        AccountingPeriod period,
+        Fund fund,
+        DateOnly? postedDate,
+        decimal amount,
+        BalanceEventType type,
+        IReadOnlyDictionary<(FundId FundId, AccountingPeriodId PeriodId), List<FundGoalTotalsHistory>> allHistories)
+    {
+        List<FundGoalTotalsHistory> histories = allHistories.GetValueOrDefault((fund.Id, transaction.AccountingPeriodId)) ?? [];
+        FundGoalTotalsHistory? current = histories.SingleOrDefault(history => history.TransactionId == transaction.Id);
+        int index = current == null ? -1 : histories.IndexOf(current);
+        FundGoalTotalsHistory? previous = index > 0 ? histories[index - 1] : null;
+        return new FundGoalBalanceEvent(
+            period,
+            transaction.Id,
+            transaction.Date,
+            transaction.Sequence,
+            postedDate,
+            postedDate == null ? null : current?.Sequence,
+            type,
+            amount,
+            fund,
+            ToTotals(fund.Id, previous),
+            ToTotals(fund.Id, current));
+    }
+
+    /// <summary>
+    /// Creates Fund Goal totals from a history entry.
+    /// </summary>
+    private static FundGoalTotals ToTotals(FundId fundId, FundGoalTotalsHistory? history) => new(
+        fundId,
+        history?.AmountAssigned ?? 0,
+        0,
+        history?.AmountSpent ?? 0,
+        0);
+
+    /// <summary>
+    /// Projects pending events from final posted Fund Goal totals in transaction order.
+    /// </summary>
+    private static List<FundGoalBalanceEvent> ProjectPendingEvents(
+        IReadOnlyCollection<FundGoalBalanceEvent> events,
+        IReadOnlyCollection<Transaction> transactions,
+        IReadOnlyDictionary<(FundId FundId, AccountingPeriodId PeriodId), List<FundGoalTotalsHistory>> histories)
+    {
+        var transactionsById = transactions.ToDictionary(transaction => transaction.Id);
+        var projected = events.ToList();
+        foreach (IGrouping<(FundId FundId, AccountingPeriodId PeriodId), FundGoalBalanceEvent> goalEvents in events.Where(item => !item.IsPosted)
+            .GroupBy(item => (item.Fund.Id, item.AccountingPeriod.Id)))
+        {
+            FundGoalTotals totals = ToTotals(goalEvents.Key.FundId, histories.GetValueOrDefault(goalEvents.Key)?.LastOrDefault());
+            foreach (IGrouping<TransactionId, FundGoalBalanceEvent> transactionEvents in goalEvents.GroupBy(item => item.TransactionId)
+                .OrderBy(group => transactionsById[group.Key].Date).ThenBy(group => transactionsById[group.Key].Sequence))
+            {
+                FundGoalTotals previous = totals;
+                totals = transactionsById[transactionEvents.Key].ApplyAsPostedToFundGoalTotals(totals);
+                foreach (FundGoalBalanceEvent balanceEvent in transactionEvents)
+                {
+                    int index = projected.IndexOf(balanceEvent);
+                    projected[index] = balanceEvent with { PreviousTotals = previous, NewTotals = totals };
+                }
+            }
+        }
+        return projected;
+    }
+
+    /// <summary>
+    /// Sorts Fund Goal balance events by the provided sort order.
+    /// </summary>
+    private static IOrderedEnumerable<FundGoalBalanceEvent> Sort(
+        IEnumerable<FundGoalBalanceEvent> events,
+        FundGoalBalanceEventSort sort) => sort switch
+        {
+            FundGoalBalanceEventSort.FundName => events.OrderBy(item => item.Fund.Name).ThenByDescending(item => item.EventDate),
+            FundGoalBalanceEventSort.FundNameDescending => events.OrderByDescending(item => item.Fund.Name).ThenByDescending(item => item.EventDate),
+            FundGoalBalanceEventSort.Date => events.OrderBy(item => !item.IsPosted).ThenBy(item => item.IsPosted ? item.EventDate : item.TransactionDate).ThenBy(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence).ThenBy(item => item.TransactionId),
+            FundGoalBalanceEventSort.DateDescending => events.OrderByDescending(item => !item.IsPosted).ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate).ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence).ThenBy(item => item.TransactionId),
+            FundGoalBalanceEventSort.Type => events.OrderBy(item => item.Type).ThenByDescending(item => item.EventDate),
+            FundGoalBalanceEventSort.TypeDescending => events.OrderByDescending(item => item.Type).ThenByDescending(item => item.EventDate),
+            FundGoalBalanceEventSort.Amount => events.OrderBy(item => item.Amount).ThenByDescending(item => item.EventDate),
+            FundGoalBalanceEventSort.AmountDescending => events.OrderByDescending(item => item.Amount).ThenByDescending(item => item.EventDate),
+            _ => events.OrderByDescending(item => !item.IsPosted).ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate).ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence).ThenBy(item => item.TransactionId),
+        };
+}

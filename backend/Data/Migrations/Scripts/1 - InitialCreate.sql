@@ -21,28 +21,15 @@ CREATE TABLE "Accounts" (
     "OnboardedBalance" TEXT NULL
 );
 
-CREATE TABLE "FundBalanceHistories" (
-    "Id" TEXT NOT NULL CONSTRAINT "PK_FundBalanceHistories" PRIMARY KEY,
-    "FundId" TEXT NOT NULL,
-    "TransactionId" TEXT NOT NULL,
-    "Date" TEXT NOT NULL,
-    "Sequence" INTEGER NOT NULL,
-    "PostedBalance" TEXT NOT NULL,
-    "PendingDebitAmount" TEXT NOT NULL,
-    "PendingCreditAmount" TEXT NOT NULL
-);
-
-CREATE TABLE "FundPlanTotalsHistories" (
-    "Id" TEXT NOT NULL CONSTRAINT "PK_FundPlanTotalsHistories" PRIMARY KEY,
+CREATE TABLE "FundGoalTotalsHistories" (
+    "Id" TEXT NOT NULL CONSTRAINT "PK_FundGoalTotalsHistories" PRIMARY KEY,
     "FundId" TEXT NOT NULL,
     "AccountingPeriodId" TEXT NOT NULL,
     "TransactionId" TEXT NOT NULL,
     "Date" TEXT NOT NULL,
     "Sequence" INTEGER NOT NULL,
     "AmountAssigned" TEXT NOT NULL,
-    "PendingAmountAssigned" TEXT NOT NULL,
-    "AmountSpent" TEXT NOT NULL,
-    "PendingAmountSpent" TEXT NOT NULL
+    "AmountSpent" TEXT NOT NULL
 );
 
 CREATE TABLE "Funds" (
@@ -51,6 +38,15 @@ CREATE TABLE "Funds" (
     "Description" TEXT NOT NULL,
     "OpeningAccountingPeriodId" TEXT NULL,
     "OnboardedBalance" TEXT NULL
+);
+
+CREATE TABLE "PendingFundGoalTotalsEffects" (
+    "Id" TEXT NOT NULL CONSTRAINT "PK_PendingFundGoalTotalsEffects" PRIMARY KEY,
+    "FundId" TEXT NOT NULL,
+    "AccountingPeriodId" TEXT NOT NULL,
+    "TransactionId" TEXT NOT NULL,
+    "PendingAmountAssigned" TEXT NOT NULL,
+    "PendingAmountSpent" TEXT NOT NULL
 );
 
 CREATE TABLE "AccountingPeriodBalanceHistories" (
@@ -68,21 +64,47 @@ CREATE TABLE "AccountBalanceHistories" (
     "Date" TEXT NOT NULL,
     "Sequence" INTEGER NOT NULL,
     "PostedBalance" TEXT NOT NULL,
-    "PendingDebitAmount" TEXT NOT NULL,
-    "PendingCreditAmount" TEXT NOT NULL,
     CONSTRAINT "FK_AccountBalanceHistories_Accounts_AccountId" FOREIGN KEY ("AccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE "FundPlans" (
-    "Id" TEXT NOT NULL CONSTRAINT "PK_FundPlans" PRIMARY KEY,
+CREATE TABLE "PendingAccountBalanceEffects" (
+    "Id" TEXT NOT NULL CONSTRAINT "PK_PendingAccountBalanceEffects" PRIMARY KEY,
+    "AccountId" TEXT NOT NULL,
+    "TransactionId" TEXT NOT NULL,
+    "PendingDebitAmount" TEXT NOT NULL,
+    "PendingCreditAmount" TEXT NOT NULL,
+    CONSTRAINT "FK_PendingAccountBalanceEffects_Accounts_AccountId" FOREIGN KEY ("AccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE
+);
+
+CREATE TABLE "FundBalanceHistories" (
+    "Id" TEXT NOT NULL CONSTRAINT "PK_FundBalanceHistories" PRIMARY KEY,
+    "FundId" TEXT NOT NULL,
+    "TransactionId" TEXT NOT NULL,
+    "Date" TEXT NOT NULL,
+    "Sequence" INTEGER NOT NULL,
+    "PostedBalance" TEXT NOT NULL,
+    CONSTRAINT "FK_FundBalanceHistories_Funds_FundId" FOREIGN KEY ("FundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE
+);
+
+CREATE TABLE "FundGoals" (
+    "Id" TEXT NOT NULL CONSTRAINT "PK_FundGoals" PRIMARY KEY,
     "FundId" TEXT NOT NULL,
     "AccountingPeriodId" TEXT NULL,
     "RegularContribution" TEXT NULL,
     "MinimumFundedBalance" TEXT NULL,
     "MaximumFundedBalance" TEXT NULL,
     "TargetEndingBalance" TEXT NULL,
-    CONSTRAINT "FK_FundPlans_AccountingPeriods_AccountingPeriodId" FOREIGN KEY ("AccountingPeriodId") REFERENCES "AccountingPeriods" ("Id"),
-    CONSTRAINT "FK_FundPlans_Funds_FundId" FOREIGN KEY ("FundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE
+    CONSTRAINT "FK_FundGoals_AccountingPeriods_AccountingPeriodId" FOREIGN KEY ("AccountingPeriodId") REFERENCES "AccountingPeriods" ("Id"),
+    CONSTRAINT "FK_FundGoals_Funds_FundId" FOREIGN KEY ("FundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE
+);
+
+CREATE TABLE "PendingFundBalanceEffects" (
+    "Id" TEXT NOT NULL CONSTRAINT "PK_PendingFundBalanceEffects" PRIMARY KEY,
+    "FundId" TEXT NOT NULL,
+    "TransactionId" TEXT NOT NULL,
+    "PendingDebitAmount" TEXT NOT NULL,
+    "PendingCreditAmount" TEXT NOT NULL,
+    CONSTRAINT "FK_PendingFundBalanceEffects_Funds_FundId" FOREIGN KEY ("FundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE
 );
 
 CREATE TABLE "Transactions" (
@@ -133,18 +155,16 @@ CREATE TABLE "AccountingPeriodFundBalanceHistory" (
     CONSTRAINT "FK_AccountingPeriodFundBalanceHistory_Funds_FundId" FOREIGN KEY ("FundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE
 );
 
-CREATE TABLE "AccountingPeriodFundPlanTotals" (
-    "Id" TEXT NOT NULL CONSTRAINT "PK_AccountingPeriodFundPlanTotals" PRIMARY KEY,
+CREATE TABLE "AccountingPeriodFundGoalTotals" (
+    "Id" TEXT NOT NULL CONSTRAINT "PK_AccountingPeriodFundGoalTotals" PRIMARY KEY,
     "FundId" TEXT NOT NULL,
     "AccountingPeriodId" TEXT NOT NULL,
     "AmountAssigned" TEXT NOT NULL,
-    "PendingAmountAssigned" TEXT NOT NULL,
     "AmountSpent" TEXT NOT NULL,
-    "PendingAmountSpent" TEXT NOT NULL,
     "AccountingPeriodBalanceHistoryId" TEXT NOT NULL,
-    CONSTRAINT "FK_AccountingPeriodFundPlanTotals_AccountingPeriodBalanceHistories_AccountingPeriodBalanceHistoryId" FOREIGN KEY ("AccountingPeriodBalanceHistoryId") REFERENCES "AccountingPeriodBalanceHistories" ("Id") ON DELETE CASCADE,
-    CONSTRAINT "FK_AccountingPeriodFundPlanTotals_AccountingPeriods_AccountingPeriodId" FOREIGN KEY ("AccountingPeriodId") REFERENCES "AccountingPeriods" ("Id") ON DELETE CASCADE,
-    CONSTRAINT "FK_AccountingPeriodFundPlanTotals_Funds_FundId" FOREIGN KEY ("FundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE
+    CONSTRAINT "FK_AccountingPeriodFundGoalTotals_AccountingPeriodBalanceHistories_AccountingPeriodBalanceHistoryId" FOREIGN KEY ("AccountingPeriodBalanceHistoryId") REFERENCES "AccountingPeriodBalanceHistories" ("Id") ON DELETE CASCADE,
+    CONSTRAINT "FK_AccountingPeriodFundGoalTotals_AccountingPeriods_AccountingPeriodId" FOREIGN KEY ("AccountingPeriodId") REFERENCES "AccountingPeriods" ("Id") ON DELETE CASCADE,
+    CONSTRAINT "FK_AccountingPeriodFundGoalTotals_Funds_FundId" FOREIGN KEY ("FundId") REFERENCES "Funds" ("Id") ON DELETE CASCADE
 );
 
 CREATE TABLE "AccountTransactionDestinations" (
@@ -236,11 +256,11 @@ CREATE INDEX "IX_AccountingPeriodFundBalanceHistory_AccountingPeriodId" ON "Acco
 
 CREATE INDEX "IX_AccountingPeriodFundBalanceHistory_FundId" ON "AccountingPeriodFundBalanceHistory" ("FundId");
 
-CREATE INDEX "IX_AccountingPeriodFundPlanTotals_AccountingPeriodBalanceHistoryId" ON "AccountingPeriodFundPlanTotals" ("AccountingPeriodBalanceHistoryId");
+CREATE INDEX "IX_AccountingPeriodFundGoalTotals_AccountingPeriodBalanceHistoryId" ON "AccountingPeriodFundGoalTotals" ("AccountingPeriodBalanceHistoryId");
 
-CREATE INDEX "IX_AccountingPeriodFundPlanTotals_AccountingPeriodId" ON "AccountingPeriodFundPlanTotals" ("AccountingPeriodId");
+CREATE INDEX "IX_AccountingPeriodFundGoalTotals_AccountingPeriodId" ON "AccountingPeriodFundGoalTotals" ("AccountingPeriodId");
 
-CREATE INDEX "IX_AccountingPeriodFundPlanTotals_FundId" ON "AccountingPeriodFundPlanTotals" ("FundId");
+CREATE INDEX "IX_AccountingPeriodFundGoalTotals_FundId" ON "AccountingPeriodFundGoalTotals" ("FundId");
 
 CREATE INDEX "IX_AccountingPeriods_Name" ON "AccountingPeriods" ("Name");
 
@@ -250,13 +270,15 @@ CREATE INDEX "IX_AccountTransactionDestinations_AccountTransactionId" ON "Accoun
 
 CREATE INDEX "IX_AccountTransactionDestinations_CreditAccountId" ON "AccountTransactionDestinations" ("CreditAccountId");
 
-CREATE INDEX "IX_FundPlans_AccountingPeriodId" ON "FundPlans" ("AccountingPeriodId");
+CREATE UNIQUE INDEX "IX_FundBalanceHistories_FundId_Date_Sequence" ON "FundBalanceHistories" ("FundId", "Date", "Sequence");
 
-CREATE UNIQUE INDEX "IX_FundPlans_FundId" ON "FundPlans" ("FundId") WHERE "AccountingPeriodId" IS NULL;
+CREATE INDEX "IX_FundGoals_AccountingPeriodId" ON "FundGoals" ("AccountingPeriodId");
 
-CREATE UNIQUE INDEX "IX_FundPlans_FundId_AccountingPeriodId" ON "FundPlans" ("FundId", "AccountingPeriodId");
+CREATE UNIQUE INDEX "IX_FundGoals_FundId" ON "FundGoals" ("FundId") WHERE "AccountingPeriodId" IS NULL;
 
-CREATE UNIQUE INDEX "IX_FundPlanTotalsHistories_FundId_AccountingPeriodId_Date_Sequence" ON "FundPlanTotalsHistories" ("FundId", "AccountingPeriodId", "Date", "Sequence");
+CREATE UNIQUE INDEX "IX_FundGoals_FundId_AccountingPeriodId" ON "FundGoals" ("FundId", "AccountingPeriodId");
+
+CREATE UNIQUE INDEX "IX_FundGoalTotalsHistories_FundId_AccountingPeriodId_Date_Sequence" ON "FundGoalTotalsHistories" ("FundId", "AccountingPeriodId", "Date", "Sequence");
 
 CREATE UNIQUE INDEX "IX_Funds_Name" ON "Funds" ("Name");
 
@@ -273,6 +295,18 @@ CREATE INDEX "IX_IncomeTransactionIncomeDestinations_AccountId" ON "IncomeTransa
 CREATE INDEX "IX_IncomeTransactionIncomeDestinations_IncomeTransactionId" ON "IncomeTransactionIncomeDestinations" ("IncomeTransactionId");
 
 CREATE INDEX "IX_IncomeTransactionIncomeLines_IncomeTransactionId" ON "IncomeTransactionIncomeLines" ("IncomeTransactionId");
+
+CREATE INDEX "IX_PendingAccountBalanceEffects_AccountId" ON "PendingAccountBalanceEffects" ("AccountId");
+
+CREATE UNIQUE INDEX "IX_PendingAccountBalanceEffects_TransactionId_AccountId" ON "PendingAccountBalanceEffects" ("TransactionId", "AccountId");
+
+CREATE INDEX "IX_PendingFundBalanceEffects_FundId" ON "PendingFundBalanceEffects" ("FundId");
+
+CREATE UNIQUE INDEX "IX_PendingFundBalanceEffects_TransactionId_FundId" ON "PendingFundBalanceEffects" ("TransactionId", "FundId");
+
+CREATE INDEX "IX_PendingFundGoalTotalsEffects_FundId_AccountingPeriodId" ON "PendingFundGoalTotalsEffects" ("FundId", "AccountingPeriodId");
+
+CREATE UNIQUE INDEX "IX_PendingFundGoalTotalsEffects_TransactionId_FundId_AccountingPeriodId" ON "PendingFundGoalTotalsEffects" ("TransactionId", "FundId", "AccountingPeriodId");
 
 CREATE INDEX "IX_SpendingTransactionDestinationFundAssignments_DestinationId" ON "SpendingTransactionDestinationFundAssignments" ("DestinationId");
 
@@ -291,7 +325,7 @@ CREATE INDEX "IX_Transactions_IncomeTransaction_SourceAccountId" ON "Transaction
 CREATE INDEX "IX_Transactions_SpendingTransaction_DebitAccountId" ON "Transactions" ("SpendingTransaction_DebitAccountId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260720150950_InitialCreate', '10.0.9');
+VALUES ('20260726155805_InitialCreate', '10.0.9');
 
 COMMIT;
 

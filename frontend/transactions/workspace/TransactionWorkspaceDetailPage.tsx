@@ -83,7 +83,7 @@ const TransactionWorkspaceDetailPage = async function ({
         transaction={transaction}
         transactionAccountingPeriod={transactionAccountingPeriod}
         funds={referenceData.funds}
-        fundPlans={referenceData.fundPlans}
+        fundGoals={referenceData.fundGoals}
         currentUrl={routes.workspaceDetail(
           transaction.id,
           workspaceSearchParams,

@@ -22,7 +22,7 @@ const TransactionWorkspaceCreatePage = async function ({
   const resolvedSearchParams = await searchParams;
   const { accountingPeriodIds, accountIds, fundIds, sort, page, returnUrl } =
     resolvedSearchParams;
-  const { openAccountingPeriods, accounts, funds, fundPlans } =
+  const { openAccountingPeriods, accounts, funds, fundGoals } =
     await getTransactionWorkspaceReferenceData();
 
   const workspaceSearchParams: TransactionWorkspaceSearchParams = {
@@ -47,7 +47,7 @@ const TransactionWorkspaceCreatePage = async function ({
         accountingPeriods={openAccountingPeriods}
         accounts={accounts}
         funds={funds}
-        fundPlans={fundPlans}
+        fundGoals={fundGoals}
         redirectUrl={workspaceUrl}
         showHeading={false}
       />

@@ -2,8 +2,8 @@ using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
-using Domain.FundPlans;
-using Domain.FundPlans.Queries;
+using Domain.FundGoals;
+using Domain.FundGoals.Queries;
 using Domain.Funds;
 using Domain.Funds.Queries;
 using Domain.Transactions;
@@ -42,11 +42,11 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<FundBalanceEventQueryService>();
         _ = serviceCollection.AddScoped<FundQueryService>();
 
-        _ = serviceCollection.AddScoped<FundPlanService>();
-        _ = serviceCollection.AddScoped<FundPlanTotalsHistoryService>();
-        _ = serviceCollection.AddScoped<PendingFundPlanTotalsService>();
-        _ = serviceCollection.AddScoped<FundPlanBalanceEventQueryService>();
-        _ = serviceCollection.AddScoped<FundPlanQueryService>();
+        _ = serviceCollection.AddScoped<FundGoalService>();
+        _ = serviceCollection.AddScoped<FundGoalTotalsHistoryService>();
+        _ = serviceCollection.AddScoped<PendingFundGoalTotalsService>();
+        _ = serviceCollection.AddScoped<FundGoalBalanceEventQueryService>();
+        _ = serviceCollection.AddScoped<FundGoalQueryService>();
 
         _ = serviceCollection.AddScoped<SpendingTransactionService>();
         _ = serviceCollection.AddScoped<IncomeTransactionService>();

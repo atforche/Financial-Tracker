@@ -1,4 +1,4 @@
-import FundPlanTrends from "@/fund-plans/trends/FundPlanTrends";
+import FundGoalTrends from "@/fund-goals/trends/FundGoalTrends";
 
 export const dynamic = "force-dynamic";
-export default FundPlanTrends;
+export default FundGoalTrends;

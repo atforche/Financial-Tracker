@@ -2,7 +2,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
 using Domain.BalanceEvents;
-using Domain.FundPlans.Queries;
+using Domain.FundGoals.Queries;
 using Domain.Funds;
 using Domain.Funds.Queries;
 
@@ -15,7 +15,7 @@ public sealed class TransactionDetails(
     TransactionDetailsFacts facts,
     IReadOnlyCollection<AccountBalanceEvent> accountEvents,
     IReadOnlyCollection<FundBalanceEvent> fundEvents,
-    IReadOnlyCollection<FundPlanBalanceEvent> fundPlanEvents)
+    IReadOnlyCollection<FundGoalBalanceEvent> fundGoalEvents)
 {
     /// <summary>
     /// Gets the Transaction.
@@ -49,13 +49,13 @@ public sealed class TransactionDetails(
             && balanceEvent.Type == type);
 
     /// <summary>
-    /// Gets a resolved Fund Plan balance event for the Transaction.
+    /// Gets a resolved Fund Goal balance event for the Transaction.
     /// </summary>
-    public FundPlanBalanceEvent GetFundPlanEvent(
+    public FundGoalBalanceEvent GetFundGoalEvent(
         FundAmount amount,
         DateOnly? postedDate,
         BalanceEventType type)
-        => fundPlanEvents.First(balanceEvent => balanceEvent.Fund.Id == amount.FundId
+        => fundGoalEvents.First(balanceEvent => balanceEvent.Fund.Id == amount.FundId
             && balanceEvent.EventDate == postedDate
             && balanceEvent.Amount == amount.Amount
             && balanceEvent.Type == type);

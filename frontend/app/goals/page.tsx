@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
-import routes from "@/fund-plans/routes";
+import routes from "@/fund-goals/routes";
 
 /**
- * Redirects to the Funding Plans workspace page.
+ * Redirects to the Fund Goals workspace page.
  */
-const FundPlansIndexPage = function (): never {
+const FundGoalsIndexPage = function (): never {
   redirect(routes.workspace({}));
 };
 
 export const dynamic = "force-dynamic";
-export default FundPlansIndexPage;
+export default FundGoalsIndexPage;

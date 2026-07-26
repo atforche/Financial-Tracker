@@ -1,5 +1,5 @@
 using Models.Accounts;
-using Models.FundPlans;
+using Models.FundGoals;
 using Models.Funds;
 
 namespace Models.Transactions.Types;
@@ -35,7 +35,7 @@ public sealed class SpendingTransactionDestinationModel
     public required IReadOnlyCollection<FundBalanceEventModel> FundAssignments { get; init; }
 
     /// <summary>
-    /// Fund Plan balance events for this destination.
+    /// Fund Goal balance events for this destination.
     /// </summary>
-    public required IReadOnlyCollection<FundPlanBalanceEventModel> FundPlans { get; init; }
+    public required IReadOnlyCollection<FundGoalBalanceEventModel> FundGoals { get; init; }
 }

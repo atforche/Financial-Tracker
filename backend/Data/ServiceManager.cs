@@ -1,14 +1,14 @@
 using Data.AccountingPeriods;
 using Data.Accounts;
-using Data.FundPlans;
+using Data.FundGoals;
 using Data.Funds;
 using Data.Transactions;
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
-using Domain.FundPlans;
-using Domain.FundPlans.Queries;
+using Domain.FundGoals;
+using Domain.FundGoals.Queries;
 using Domain.Funds;
 using Domain.Funds.Queries;
 using Domain.Transactions;
@@ -50,11 +50,11 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<IFundBalanceHistoryRepository, FundBalanceHistoryRepository>();
         _ = serviceCollection.AddScoped<IFundPendingBalanceEffectRepository, PendingFundBalanceEffectRepository>();
 
-        _ = serviceCollection.AddScoped<IFundPlanBalanceEventQueryRepository, FundPlanBalanceEventQueryRepository>();
-        _ = serviceCollection.AddScoped<IFundPlanRepository, FundPlanRepository>();
-        _ = serviceCollection.AddScoped<IFundPlanQueryRepository, FundPlanQueryRepository>();
-        _ = serviceCollection.AddScoped<IFundPlanTotalsHistoryRepository, FundPlanTotalsHistoryRepository>();
-        _ = serviceCollection.AddScoped<IFundPlanPendingTotalsEffectRepository, PendingFundPlanTotalsEffectRepository>();
+        _ = serviceCollection.AddScoped<IFundGoalBalanceEventQueryRepository, FundGoalBalanceEventQueryRepository>();
+        _ = serviceCollection.AddScoped<IFundGoalRepository, FundGoalRepository>();
+        _ = serviceCollection.AddScoped<IFundGoalQueryRepository, FundGoalQueryRepository>();
+        _ = serviceCollection.AddScoped<IFundGoalTotalsHistoryRepository, FundGoalTotalsHistoryRepository>();
+        _ = serviceCollection.AddScoped<IFundGoalPendingTotalsEffectRepository, PendingFundGoalTotalsEffectRepository>();
 
         _ = serviceCollection.AddScoped<ITransactionRepository, TransactionRepository>();
         _ = serviceCollection.AddScoped<ITransactionBalanceEventQueryRepository, TransactionBalanceEventQueryRepository>();

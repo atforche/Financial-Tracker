@@ -1,4 +1,4 @@
-import FundPlanWorkspaceDetailPage from "@/fund-plans/workspace/FundPlanWorkspaceDetailPage";
+import FundGoalWorkspaceDetailPage from "@/fund-goals/workspace/FundGoalWorkspaceDetailPage";
 
 export const dynamic = "force-dynamic";
-export default FundPlanWorkspaceDetailPage;
+export default FundGoalWorkspaceDetailPage;

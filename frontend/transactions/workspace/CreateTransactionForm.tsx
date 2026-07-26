@@ -8,7 +8,7 @@ import CreateAccountTransactionForm from "@/transactions/workspace/account/Creat
 import CreateFundTransactionForm from "@/transactions/workspace/fund/CreateFundTransactionForm";
 import CreateIncomeTransactionForm from "@/transactions/workspace/income/CreateIncomeTransactionForm";
 import CreateSpendingTransactionForm from "@/transactions/workspace/spending/CreateSpendingTransactionForm";
-import type { FundPlanWithProgress } from "@/fund-plans/types";
+import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import PageLayout from "@/framework/view/PageLayout";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
@@ -20,7 +20,7 @@ interface CreateTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
-  readonly fundPlans: FundPlanWithProgress[];
+  readonly fundGoals: FundGoalWithProgress[];
   readonly redirectUrl: string;
   readonly showHeading?: boolean;
 }
@@ -32,7 +32,7 @@ const CreateTransactionForm = function ({
   accountingPeriods,
   accounts,
   funds,
-  fundPlans,
+  fundGoals,
   redirectUrl,
   showHeading = true,
 }: CreateTransactionFormProps): JSX.Element {
@@ -68,7 +68,7 @@ const CreateTransactionForm = function ({
           accountingPeriods={accountingPeriods}
           accounts={accounts}
           funds={funds}
-          fundPlans={fundPlans}
+          fundGoals={fundGoals}
           redirectUrl={redirectUrl}
         />
       ) : null}
@@ -77,7 +77,7 @@ const CreateTransactionForm = function ({
           accountingPeriods={accountingPeriods}
           accounts={accounts}
           funds={funds}
-          fundPlans={fundPlans}
+          fundGoals={fundGoals}
           redirectUrl={redirectUrl}
         />
       ) : null}

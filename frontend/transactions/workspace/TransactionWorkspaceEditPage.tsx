@@ -84,7 +84,7 @@ const TransactionWorkspaceEditPage = async function ({
         transactionAccountingPeriod={transactionAccountingPeriod}
         accounts={referenceData.accounts}
         funds={referenceData.funds}
-        fundPlans={referenceData.fundPlans}
+        fundGoals={referenceData.fundGoals}
         redirectUrl={routes.workspaceDetail(
           transaction.id,
           workspaceSearchParams,

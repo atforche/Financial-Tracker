@@ -18,7 +18,7 @@ import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEnt
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import Frame from "@/framework/view/Frame";
-import FundPlanSetupSection from "@/funds/workspace/FundPlanSetupSection";
+import FundGoalSetupSection from "@/funds/workspace/FundGoalSetupSection";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import createFund from "@/funds/workspace/createFund";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
@@ -117,7 +117,7 @@ const CreateFundForm = function ({
           </Stack>
         </Frame>
 
-        <FundPlanSetupSection
+        <FundGoalSetupSection
           color="info"
           regularContribution={regularContribution}
           setRegularContribution={setRegularContribution}

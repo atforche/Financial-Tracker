@@ -148,7 +148,7 @@ namespace Data.Migrations
                     b.ToTable("PendingAccountBalanceEffects");
                 });
 
-            modelBuilder.Entity("Domain.FundPlans.FundPlan", b =>
+            modelBuilder.Entity("Domain.FundGoals.FundGoal", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
@@ -182,10 +182,10 @@ namespace Data.Migrations
                     b.HasIndex("FundId", "AccountingPeriodId")
                         .IsUnique();
 
-                    b.ToTable("FundPlans");
+                    b.ToTable("FundGoals");
                 });
 
-            modelBuilder.Entity("Domain.FundPlans.FundPlanTotalsHistory", b =>
+            modelBuilder.Entity("Domain.FundGoals.FundGoalTotalsHistory", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
@@ -216,7 +216,37 @@ namespace Data.Migrations
                     b.HasIndex("FundId", "AccountingPeriodId", "Date", "Sequence")
                         .IsUnique();
 
-                    b.ToTable("FundPlanTotalsHistories");
+                    b.ToTable("FundGoalTotalsHistories");
+                });
+
+            modelBuilder.Entity("Domain.FundGoals.PendingFundGoalTotalsEffect", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AccountingPeriodId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("FundId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PendingAmountAssigned")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PendingAmountSpent")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("TransactionId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FundId", "AccountingPeriodId");
+
+                    b.HasIndex("TransactionId", "FundId", "AccountingPeriodId")
+                        .IsUnique();
+
+                    b.ToTable("PendingFundGoalTotalsEffects");
                 });
 
             modelBuilder.Entity("Domain.Funds.Fund", b =>
@@ -246,33 +276,6 @@ namespace Data.Migrations
                     b.ToTable("Funds");
                 });
 
-            modelBuilder.Entity("Domain.FundPlans.PendingFundPlanTotalsEffect", b =>
-                {
-                    b.Property<Guid>("Id").HasColumnType("TEXT");
-                    b.Property<Guid>("AccountingPeriodId").HasColumnType("TEXT");
-                    b.Property<Guid>("FundId").HasColumnType("TEXT");
-                    b.Property<decimal>("PendingAmountAssigned").HasColumnType("TEXT");
-                    b.Property<decimal>("PendingAmountSpent").HasColumnType("TEXT");
-                    b.Property<Guid>("TransactionId").HasColumnType("TEXT");
-                    b.HasKey("Id");
-                    b.HasIndex("FundId", "AccountingPeriodId");
-                    b.HasIndex("TransactionId", "FundId", "AccountingPeriodId").IsUnique();
-                    b.ToTable("PendingFundPlanTotalsEffects");
-                });
-
-            modelBuilder.Entity("Domain.Funds.PendingFundBalanceEffect", b =>
-                {
-                    b.Property<Guid>("Id").HasColumnType("TEXT");
-                    b.Property<Guid>("FundId").HasColumnType("TEXT");
-                    b.Property<decimal>("PendingCreditAmount").HasColumnType("TEXT");
-                    b.Property<decimal>("PendingDebitAmount").HasColumnType("TEXT");
-                    b.Property<Guid>("TransactionId").HasColumnType("TEXT");
-                    b.HasKey("Id");
-                    b.HasIndex("FundId");
-                    b.HasIndex("TransactionId", "FundId").IsUnique();
-                    b.ToTable("PendingFundBalanceEffects");
-                });
-
             modelBuilder.Entity("Domain.Funds.FundBalanceHistory", b =>
                 {
                     b.Property<Guid>("Id")
@@ -299,6 +302,33 @@ namespace Data.Migrations
                         .IsUnique();
 
                     b.ToTable("FundBalanceHistories");
+                });
+
+            modelBuilder.Entity("Domain.Funds.PendingFundBalanceEffect", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("FundId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PendingCreditAmount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PendingDebitAmount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("TransactionId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FundId");
+
+                    b.HasIndex("TransactionId", "FundId")
+                        .IsUnique();
+
+                    b.ToTable("PendingFundBalanceEffects");
                 });
 
             modelBuilder.Entity("Domain.Transactions.Transaction", b =>
@@ -476,7 +506,7 @@ namespace Data.Migrations
                             b1.Navigation("Fund");
                         });
 
-                    b.OwnsMany("Domain.AccountingPeriods.AccountingPeriodFundPlanTotals", "FundPlanTotals", b1 =>
+                    b.OwnsMany("Domain.AccountingPeriods.AccountingPeriodFundGoalTotals", "FundGoalTotals", b1 =>
                         {
                             b1.Property<Guid>("Id")
                                 .HasColumnType("TEXT");
@@ -504,7 +534,7 @@ namespace Data.Migrations
 
                             b1.HasIndex("FundId");
 
-                            b1.ToTable("AccountingPeriodFundPlanTotals");
+                            b1.ToTable("AccountingPeriodFundGoalTotals");
 
                             b1.WithOwner()
                                 .HasForeignKey("AccountingPeriodBalanceHistoryId");
@@ -532,7 +562,7 @@ namespace Data.Migrations
 
                     b.Navigation("FundBalances");
 
-                    b.Navigation("FundPlanTotals");
+                    b.Navigation("FundGoalTotals");
                 });
 
             modelBuilder.Entity("Domain.Accounts.AccountBalanceHistory", b =>
@@ -557,7 +587,7 @@ namespace Data.Migrations
                     b.Navigation("Account");
                 });
 
-            modelBuilder.Entity("Domain.FundPlans.FundPlan", b =>
+            modelBuilder.Entity("Domain.FundGoals.FundGoal", b =>
                 {
                     b.HasOne("Domain.AccountingPeriods.AccountingPeriod", "AccountingPeriod")
                         .WithMany()

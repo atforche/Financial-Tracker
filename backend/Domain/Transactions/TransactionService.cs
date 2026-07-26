@@ -1,6 +1,6 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.FundPlans;
+using Domain.FundGoals;
 using Domain.Funds;
 using Domain.Validation;
 
@@ -15,8 +15,8 @@ public abstract class TransactionService(
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
     PendingFundBalanceService pendingFundBalanceService,
-    FundPlanTotalsHistoryService fundPlanTotalsHistoryService,
-    PendingFundPlanTotalsService pendingFundPlanTotalsService,
+    FundGoalTotalsHistoryService fundGoalTotalsHistoryService,
+    PendingFundGoalTotalsService pendingFundGoalTotalsService,
     IAccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository)
 {
@@ -94,7 +94,7 @@ public abstract class TransactionService(
         AddTransactionToBalanceHistories(transaction);
         pendingAccountBalanceService.SynchronizeTransaction(transaction);
         pendingFundBalanceService.SynchronizeTransaction(transaction);
-        pendingFundPlanTotalsService.SynchronizeTransaction(transaction);
+        pendingFundGoalTotalsService.SynchronizeTransaction(transaction);
         transactionRepository.Add(transaction);
     }
 
@@ -175,7 +175,7 @@ public abstract class TransactionService(
         AddTransactionToBalanceHistories(transaction);
         pendingAccountBalanceService.SynchronizeTransaction(transaction);
         pendingFundBalanceService.SynchronizeTransaction(transaction);
-        pendingFundPlanTotalsService.SynchronizeTransaction(transaction);
+        pendingFundGoalTotalsService.SynchronizeTransaction(transaction);
     }
 
     /// <summary>
@@ -221,10 +221,10 @@ public abstract class TransactionService(
         accountingPeriodBalanceService.PostTransaction(transaction, accountId);
         accountBalanceService.PostTransaction(transaction, accountId);
         fundBalanceService.PostTransaction(transaction);
-        fundPlanTotalsHistoryService.PostTransaction(transaction);
+        fundGoalTotalsHistoryService.PostTransaction(transaction);
         pendingAccountBalanceService.SynchronizeTransaction(transaction);
         pendingFundBalanceService.SynchronizeTransaction(transaction);
-        pendingFundPlanTotalsService.SynchronizeTransaction(transaction);
+        pendingFundGoalTotalsService.SynchronizeTransaction(transaction);
     }
 
     /// <summary>
@@ -253,7 +253,7 @@ public abstract class TransactionService(
         accountingPeriodBalanceService.UnpostTransaction(transaction);
         accountBalanceService.UnpostTransaction(transaction);
         fundBalanceService.UnpostTransaction(transaction);
-        fundPlanTotalsHistoryService.UnpostTransaction(transaction);
+        fundGoalTotalsHistoryService.UnpostTransaction(transaction);
     }
 
     /// <summary>
@@ -269,7 +269,7 @@ public abstract class TransactionService(
     {
         pendingAccountBalanceService.SynchronizeTransaction(transaction);
         pendingFundBalanceService.SynchronizeTransaction(transaction);
-        pendingFundPlanTotalsService.SynchronizeTransaction(transaction);
+        pendingFundGoalTotalsService.SynchronizeTransaction(transaction);
     }
 
     /// <summary>
@@ -298,7 +298,7 @@ public abstract class TransactionService(
         RemoveTransactionFromBalanceHistories(transaction);
         pendingAccountBalanceService.DeleteEffectsForTransaction(transaction.Id);
         pendingFundBalanceService.DeleteEffectsForTransaction(transaction.Id);
-        pendingFundPlanTotalsService.DeleteEffectsForTransaction(transaction.Id);
+        pendingFundGoalTotalsService.DeleteEffectsForTransaction(transaction.Id);
         TransactionRepository.Delete(transaction);
     }
 
@@ -309,7 +309,7 @@ public abstract class TransactionService(
     {
         accountingPeriodBalanceService.AddTransaction(transaction);
         fundBalanceService.AddTransaction(transaction);
-        fundPlanTotalsHistoryService.AddTransaction(transaction);
+        fundGoalTotalsHistoryService.AddTransaction(transaction);
     }
 
     /// <summary>
@@ -320,7 +320,7 @@ public abstract class TransactionService(
         accountingPeriodBalanceService.DeleteTransaction(transaction);
         accountBalanceService.DeleteTransaction(transaction);
         fundBalanceService.DeleteTransaction(transaction);
-        fundPlanTotalsHistoryService.DeleteTransaction(transaction);
+        fundGoalTotalsHistoryService.DeleteTransaction(transaction);
     }
 
     /// <summary>

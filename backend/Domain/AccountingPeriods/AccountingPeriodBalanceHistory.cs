@@ -10,7 +10,7 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
 {
     private List<AccountingPeriodAccountBalanceHistory> _accountBalances = [];
     private List<AccountingPeriodFundBalanceHistory> _fundBalances = [];
-    private List<AccountingPeriodFundPlanTotals> _fundPlanTotals = [];
+    private List<AccountingPeriodFundGoalTotals> _fundGoalTotals = [];
 
     /// <summary>
     /// Accounting Period for this Accounting Period Balance History
@@ -46,12 +46,12 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
     }
 
     /// <summary>
-    /// Fund Plan totals for this Accounting Period Balance History.
+    /// Fund Goal totals for this Accounting Period Balance History.
     /// </summary>
-    public IReadOnlyCollection<AccountingPeriodFundPlanTotals> FundPlanTotals
+    public IReadOnlyCollection<AccountingPeriodFundGoalTotals> FundGoalTotals
     {
-        get => _fundPlanTotals;
-        private set => _fundPlanTotals = value.ToList();
+        get => _fundGoalTotals;
+        private set => _fundGoalTotals = value.ToList();
     }
 
     /// <summary>
@@ -61,13 +61,13 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
         AccountingPeriod accountingPeriod,
         IEnumerable<AccountingPeriodAccountBalanceHistory> accountBalances,
         IEnumerable<AccountingPeriodFundBalanceHistory> fundBalances,
-        IEnumerable<AccountingPeriodFundPlanTotals> fundPlanTotals)
+        IEnumerable<AccountingPeriodFundGoalTotals> fundGoalTotals)
         : base(new AccountingPeriodBalanceHistoryId(Guid.NewGuid()))
     {
         AccountingPeriod = accountingPeriod;
         _accountBalances = accountBalances.ToList();
         _fundBalances = fundBalances.ToList();
-        _fundPlanTotals = fundPlanTotals.ToList();
+        _fundGoalTotals = fundGoalTotals.ToList();
         UpdateBalances();
     }
 
@@ -110,15 +110,15 @@ public class AccountingPeriodBalanceHistory : Entity<AccountingPeriodBalanceHist
         _ = _fundBalances.RemoveAll(fundBalance => fundBalance.Fund.Id == fundId);
 
     /// <summary>
-    /// Adds Fund Plan totals to this Accounting Period Balance History.
+    /// Adds Fund Goal totals to this Accounting Period Balance History.
     /// </summary>
-    internal void AddFundPlanTotals(AccountingPeriodFundPlanTotals totals) => _fundPlanTotals.Add(totals);
+    internal void AddFundGoalTotals(AccountingPeriodFundGoalTotals totals) => _fundGoalTotals.Add(totals);
 
     /// <summary>
-    /// Removes Fund Plan totals for the provided Fund from this Accounting Period Balance History.
+    /// Removes Fund Goal totals for the provided Fund from this Accounting Period Balance History.
     /// </summary>
-    internal void RemoveFundPlanTotals(FundId fundId) =>
-        _ = _fundPlanTotals.RemoveAll(totals => totals.Fund.Id == fundId);
+    internal void RemoveFundGoalTotals(FundId fundId) =>
+        _ = _fundGoalTotals.RemoveAll(totals => totals.Fund.Id == fundId);
 
     /// <summary>
     /// Constructs a new default instance of this class

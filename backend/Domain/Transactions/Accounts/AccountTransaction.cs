@@ -1,5 +1,5 @@
 using Domain.Accounts;
-using Domain.FundPlans;
+using Domain.FundGoals;
 using Domain.Funds;
 
 namespace Domain.Transactions.Accounts;
@@ -136,8 +136,8 @@ public class AccountTransaction : Transaction
     protected override FundBalance PostToFundBalance(FundBalance existingFundBalance, AccountId accountId, bool reverse) => existingFundBalance;
 
     /// <inheritdoc/>
-    protected override FundPlanTotals AddToFundPlanTotals(FundPlanTotals existingTotals, bool reverse) => existingTotals;
+    protected override FundGoalTotals AddToFundGoalTotals(FundGoalTotals existingTotals, bool reverse) => existingTotals;
 
     /// <inheritdoc/>
-    protected override FundPlanTotals PostToFundPlanTotals(FundPlanTotals existingTotals, AccountId accountId, bool reverse) => existingTotals;
+    protected override FundGoalTotals PostToFundGoalTotals(FundGoalTotals existingTotals, AccountId accountId, bool reverse) => existingTotals;
 }

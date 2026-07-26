@@ -1,5 +1,5 @@
 using Domain.Accounts;
-using Domain.FundPlans;
+using Domain.FundGoals;
 using Domain.Funds;
 
 namespace Domain.Transactions.Income;
@@ -178,7 +178,7 @@ public class IncomeTransaction : Transaction
     }
 
     /// <inheritdoc/>
-    protected override FundPlanTotals AddToFundPlanTotals(FundPlanTotals existingTotals, bool reverse)
+    protected override FundGoalTotals AddToFundGoalTotals(FundGoalTotals existingTotals, bool reverse)
     {
         decimal amount = _destinations.SelectMany(destination => destination.FundAssignments)
             .Where(assignment => assignment.FundId == existingTotals.FundId).Sum(assignment => assignment.Amount);
@@ -186,7 +186,7 @@ public class IncomeTransaction : Transaction
     }
 
     /// <inheritdoc/>
-    protected override FundPlanTotals PostToFundPlanTotals(FundPlanTotals existingTotals, AccountId accountId, bool reverse)
+    protected override FundGoalTotals PostToFundGoalTotals(FundGoalTotals existingTotals, AccountId accountId, bool reverse)
     {
         decimal amount = _destinations.Where(destination => destination.Account.Id == accountId)
             .SelectMany(destination => destination.FundAssignments)

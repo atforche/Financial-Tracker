@@ -7,7 +7,7 @@ import {
 } from "@/transactions/types";
 import type { AccountBalanceEvent } from "@/accounts/types";
 import type { FundBalanceEvent } from "@/funds/types";
-import type { FundPlanBalanceEvent } from "@/fund-plans/types";
+import type { FundGoalBalanceEvent } from "@/fund-goals/types";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
@@ -114,31 +114,31 @@ const getTransactionFundIds = function (transaction: Transaction): string[] {
 };
 
 /**
- * Gets the Funding Plan balance events captured by the provided Transaction.
+ * Gets the Fund Goal balance events captured by the provided Transaction.
  */
-const getTransactionFundPlanBalanceEvents = function (
+const getTransactionFundGoalBalanceEvents = function (
   transaction: Transaction,
-): FundPlanBalanceEvent[] {
+): FundGoalBalanceEvent[] {
   const spendingTransaction = asSpendingTransaction(transaction);
   if (spendingTransaction !== null) {
     return spendingTransaction.destinations.flatMap(
-      (destination) => destination.fundPlans,
+      (destination) => destination.fundGoals,
     );
   }
 
   const incomeTransaction = asIncomeTransaction(transaction);
   if (incomeTransaction !== null) {
     return incomeTransaction.destinations.flatMap(
-      (destination) => destination.fundPlans,
+      (destination) => destination.fundGoals,
     );
   }
 
   const fundTransaction = asFundTransaction(transaction);
   if (fundTransaction !== null) {
     return [
-      fundTransaction.source.fundPlan,
+      fundTransaction.source.fundGoal,
       ...fundTransaction.destinations.map(
-        (destination) => destination.fundPlan,
+        (destination) => destination.fundGoal,
       ),
     ].filter(isNotNullOrUndefined);
   }
@@ -198,7 +198,7 @@ export {
   getTransactionAccountIds,
   getTransactionFundIds,
   getTransactionFundBalanceEvents,
-  getTransactionFundPlanBalanceEvents,
+  getTransactionFundGoalBalanceEvents,
   getPostableTransactionAccounts,
   getPostedTransactionAccounts,
 };

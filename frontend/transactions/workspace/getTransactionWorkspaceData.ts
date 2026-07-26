@@ -9,7 +9,7 @@ import {
 } from "@/framework/routes/helpers";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import type { FundPlanWithProgress } from "@/fund-plans/types";
+import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import type { Transaction } from "@/transactions/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
@@ -17,14 +17,14 @@ import createApiClient from "@/framework/data/createApiClient";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
- * Represents reference data required for the transaction workspace, including accounting periods, accounts, funds, and Funding Plans.
+ * Represents reference data required for the transaction workspace, including accounting periods, accounts, funds, and Fund Goals.
  */
 interface TransactionWorkspaceReferenceData {
   readonly openAccountingPeriods: AccountingPeriod[];
   readonly allAccountingPeriods: AccountingPeriod[];
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
-  readonly fundPlans: FundPlanWithProgress[];
+  readonly fundGoals: FundGoalWithProgress[];
 }
 
 /**
@@ -42,7 +42,7 @@ interface TransactionWorkspaceListData extends TransactionWorkspaceReferenceData
 }
 
 /**
- * Fetches reference data required for the transaction workspace, including accounting periods, accounts, funds, and Funding Plans.
+ * Fetches reference data required for the transaction workspace, including accounting periods, accounts, funds, and Fund Goals.
  */
 const getTransactionWorkspaceReferenceData =
   async function (): Promise<TransactionWorkspaceReferenceData> {
@@ -78,10 +78,10 @@ const getTransactionWorkspaceReferenceData =
     const openAccountingPeriods = allAccountingPeriods.items.filter(
       (period) => period.isOpen,
     );
-    let fundPlans: FundPlanWithProgress[] = [];
+    let fundGoals: FundGoalWithProgress[] = [];
 
     if (openAccountingPeriods.length > 0) {
-      const planResponse = await apiClient.GET("/fund-plans", {
+      const goalResponse = await apiClient.GET("/fund-goals", {
         params: {
           query: {
             "Filter.AccountingPeriodIds": openAccountingPeriods.map(
@@ -91,26 +91,26 @@ const getTransactionWorkspaceReferenceData =
           },
         },
       });
-      const plans = unwrapApiResponse(
-        planResponse,
-        "Failed to fetch fund plans",
+      const loadedFundGoals = unwrapApiResponse(
+        goalResponse,
+        "Failed to fetch fund goals",
       ).items;
-      fundPlans = await Promise.all(
-        plans.map(async (fundPlan) => ({
-          ...fundPlan,
+      fundGoals = await Promise.all(
+        loadedFundGoals.map(async (fundGoal) => ({
+          ...fundGoal,
           progress: unwrapApiResponse(
             await apiClient.GET(
-              "/fund-plans/{fundPlanId}/progress/{accountingPeriodId}",
+              "/fund-goals/{fundGoalId}/progress/{accountingPeriodId}",
               {
                 params: {
                   path: {
-                    fundPlanId: fundPlan.id,
-                    accountingPeriodId: fundPlan.accountingPeriod?.id ?? "",
+                    fundGoalId: fundGoal.id,
+                    accountingPeriodId: fundGoal.accountingPeriod?.id ?? "",
                   },
                 },
               },
             ),
-            "Failed to fetch fund plan progress",
+            "Failed to fetch fund goal progress",
           ),
         })),
       );
@@ -121,7 +121,7 @@ const getTransactionWorkspaceReferenceData =
       allAccountingPeriods: allAccountingPeriods.items,
       accounts: accounts.items,
       funds: funds.items,
-      fundPlans,
+      fundGoals,
     };
   };
 

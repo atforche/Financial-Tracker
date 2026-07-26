@@ -30,7 +30,7 @@ import AccountTransactionDestinationFrame from "@/transactions/workspace/account
 import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFrame";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import DeleteTransactionForm from "@/transactions/workspace/DeleteTransactionForm";
-import type { FundPlanWithProgress } from "@/fund-plans/types";
+import type { FundGoalWithProgress } from "@/fund-goals/types";
 import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
 import FundTransactionSourceFrame from "@/transactions/workspace/fund/FundTransactionSourceFrame";
 import type { FundWithBalance } from "@/funds/types";
@@ -52,7 +52,7 @@ interface ViewTransactionFormProps {
   readonly transaction: Transaction;
   readonly transactionAccountingPeriod: AccountingPeriod;
   readonly funds: FundWithBalance[];
-  readonly fundPlans: FundPlanWithProgress[];
+  readonly fundGoals: FundGoalWithProgress[];
   readonly currentUrl: string;
   readonly workspaceUrl: string;
   readonly editUrl: string;
@@ -68,15 +68,15 @@ const ViewTransactionForm = function ({
   transaction,
   transactionAccountingPeriod,
   funds,
-  fundPlans,
+  fundGoals,
   currentUrl,
   workspaceUrl,
   editUrl,
   returnUrl = null,
 }: ViewTransactionFormProps): JSX.Element {
-  const currentFundPlans = fundPlans.filter(
-    (fundPlan) =>
-      fundPlan.accountingPeriod?.id === transactionAccountingPeriod.id,
+  const currentFundGoals = fundGoals.filter(
+    (fundGoal) =>
+      fundGoal.accountingPeriod?.id === transactionAccountingPeriod.id,
   );
   const spendingTransaction = asSpendingTransaction(transaction);
   const incomeTransaction = asIncomeTransaction(transaction);
@@ -96,7 +96,7 @@ const ViewTransactionForm = function ({
     const source = getSpendingSourceFromTransaction(spendingTransaction);
     const destinations = getSpendingDestinationsFromTransaction(
       spendingTransaction,
-      currentFundPlans,
+      currentFundGoals,
     );
 
     sourceAmount = source.amount;
@@ -122,7 +122,7 @@ const ViewTransactionForm = function ({
         index={index}
         accounts={[]}
         funds={funds}
-        fundPlans={currentFundPlans}
+        fundGoals={currentFundGoals}
         transaction={spendingTransaction}
         account={destination.account}
         setAccount={null}
@@ -142,7 +142,7 @@ const ViewTransactionForm = function ({
     const source = getIncomeSourceFromTransaction(incomeTransaction);
     const destinations = getIncomeDestinationsFromTransaction(
       incomeTransaction,
-      currentFundPlans,
+      currentFundGoals,
     );
 
     sourceAmount = getNetIncomeAmount(source);
@@ -172,7 +172,7 @@ const ViewTransactionForm = function ({
         index={index}
         accounts={[]}
         funds={funds}
-        fundPlans={currentFundPlans}
+        fundGoals={currentFundGoals}
         transaction={incomeTransaction}
         account={destination.account}
         setAccount={null}

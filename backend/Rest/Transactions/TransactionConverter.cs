@@ -11,7 +11,7 @@ using Models;
 using Models.Transactions;
 using Models.Transactions.Types;
 using Rest.Accounts;
-using Rest.FundPlans;
+using Rest.FundGoals;
 using Rest.Funds;
 
 namespace Rest.Transactions;
@@ -22,7 +22,7 @@ namespace Rest.Transactions;
 public sealed class TransactionConverter(
     AccountBalanceEventConverter accountBalanceEventConverter,
     FundBalanceEventConverter fundBalanceEventConverter,
-    FundPlanBalanceEventConverter fundPlanBalanceEventConverter)
+    FundGoalBalanceEventConverter fundGoalBalanceEventConverter)
 {
     /// <summary>
     /// Converts an API Transaction query to Domain criteria.
@@ -170,8 +170,8 @@ public sealed class TransactionConverter(
                 PostedDate = destination.PostedDate,
                 FundAssignments = destination.FundAssignments.Select(amount =>
                     fundBalanceEventConverter.ToModel(details.GetFundEvent(amount, BalanceEventType.Debit))).ToList(),
-                FundPlans = destination.FundAssignments.Where(amount => amount.FundId != Fund.UnassignedFundId).Select(amount =>
-                    fundPlanBalanceEventConverter.ToModel(details.GetFundPlanEvent(
+                FundGoals = destination.FundAssignments.Where(amount => amount.FundId != Fund.UnassignedFundId).Select(amount =>
+                    fundGoalBalanceEventConverter.ToModel(details.GetFundGoalEvent(
                         amount,
                         destination.PostedDate,
                         BalanceEventType.Debit))).ToList(),
@@ -218,8 +218,8 @@ public sealed class TransactionConverter(
                 PostedDate = destination.PostedDate,
                 FundAssignments = destination.FundAssignments.Select(amount =>
                     fundBalanceEventConverter.ToModel(details.GetFundEvent(amount, BalanceEventType.Credit))).ToList(),
-                FundPlans = destination.FundAssignments.Where(amount => amount.FundId != Fund.UnassignedFundId).Select(amount =>
-                    fundPlanBalanceEventConverter.ToModel(details.GetFundPlanEvent(
+                FundGoals = destination.FundAssignments.Where(amount => amount.FundId != Fund.UnassignedFundId).Select(amount =>
+                    fundGoalBalanceEventConverter.ToModel(details.GetFundGoalEvent(
                         amount,
                         destination.PostedDate,
                         BalanceEventType.Credit))).ToList(),
@@ -271,8 +271,8 @@ public sealed class TransactionConverter(
                 Fund = fundBalanceEventConverter.ToModel(details.GetFundEvent(
                     new FundAmount { FundId = fund.Source.Fund.Id, Amount = fund.Amount },
                     BalanceEventType.Debit)),
-                FundPlan = fund.Source.Fund.Id == Fund.UnassignedFundId ? null : fundPlanBalanceEventConverter.ToModel(
-                    details.GetFundPlanEvent(
+                FundGoal = fund.Source.Fund.Id == Fund.UnassignedFundId ? null : fundGoalBalanceEventConverter.ToModel(
+                    details.GetFundGoalEvent(
                         new FundAmount { FundId = fund.Source.Fund.Id, Amount = fund.Amount },
                         fund.Date,
                         BalanceEventType.Debit)),
@@ -282,8 +282,8 @@ public sealed class TransactionConverter(
                 Fund = fundBalanceEventConverter.ToModel(details.GetFundEvent(
                     new FundAmount { FundId = destination.Fund.Id, Amount = destination.Amount },
                     BalanceEventType.Credit)),
-                FundPlan = destination.Fund.Id == Fund.UnassignedFundId ? null : fundPlanBalanceEventConverter.ToModel(
-                    details.GetFundPlanEvent(
+                FundGoal = destination.Fund.Id == Fund.UnassignedFundId ? null : fundGoalBalanceEventConverter.ToModel(
+                    details.GetFundGoalEvent(
                         new FundAmount { FundId = destination.Fund.Id, Amount = destination.Amount },
                         fund.Date,
                         BalanceEventType.Credit)),

@@ -1,6 +1,6 @@
 using Rest.AccountingPeriods;
 using Rest.Accounts;
-using Rest.FundPlans;
+using Rest.FundGoals;
 using Rest.Funds;
 using Rest.Transactions;
 
@@ -26,8 +26,8 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<FundConverter>();
         _ = serviceCollection.AddScoped<FundBalanceEventConverter>();
 
-        _ = serviceCollection.AddScoped<FundPlanConverter>();
-        _ = serviceCollection.AddScoped<FundPlanBalanceEventConverter>();
+        _ = serviceCollection.AddScoped<FundGoalConverter>();
+        _ = serviceCollection.AddScoped<FundGoalBalanceEventConverter>();
 
         _ = serviceCollection.AddScoped<TransactionRequestConverter>();
         _ = serviceCollection.AddScoped<TransactionConverter>();

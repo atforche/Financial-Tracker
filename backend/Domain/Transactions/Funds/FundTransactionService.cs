@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.FundPlans;
+using Domain.FundGoals;
 using Domain.Funds;
 using Domain.Validation;
 
@@ -16,8 +16,8 @@ public class FundTransactionService(
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
     PendingFundBalanceService pendingFundBalanceService,
-    FundPlanTotalsHistoryService fundPlanTotalsHistoryService,
-    PendingFundPlanTotalsService pendingFundPlanTotalsService,
+    FundGoalTotalsHistoryService fundGoalTotalsHistoryService,
+    PendingFundGoalTotalsService pendingFundGoalTotalsService,
     IAccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository) :
     TransactionService(
@@ -26,8 +26,8 @@ public class FundTransactionService(
         accountingPeriodBalanceService,
         fundBalanceService,
         pendingFundBalanceService,
-        fundPlanTotalsHistoryService,
-        pendingFundPlanTotalsService,
+        fundGoalTotalsHistoryService,
+        pendingFundGoalTotalsService,
         accountingPeriodRepository,
         transactionRepository)
 {
