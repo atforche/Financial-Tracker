@@ -100,11 +100,6 @@ const FundGoalWorkspaceCards = function ({
                 {accountingPeriod?.name ?? "No accounting period"}
               </Typography>
               <FundGoalProgressBars progress={fundGoal.progress} />
-              {configured === 0 ? (
-                <Typography variant="body2">
-                  No fundGoal targets configured
-                </Typography>
-              ) : null}
             </Stack>
           </WorkspaceCard>
         );

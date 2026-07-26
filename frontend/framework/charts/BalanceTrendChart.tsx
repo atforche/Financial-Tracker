@@ -18,9 +18,7 @@ import { type JSX, useId } from "react";
 import { alpha, useTheme } from "@mui/material/styles";
 import {
   chartMargin,
-  xAxisLabelPosition,
   xAxisTick,
-  yAxisLabelPosition,
   yAxisTick,
 } from "@/framework/charts/chartStyles";
 import {
@@ -66,6 +64,9 @@ const BalanceTrendChart = function ({
       title={title}
       emptyMessage={emptyMessage}
       hasData={chartPoints.length > 0}
+      color={color}
+      xAxisLabel={xAxisLabel}
+      yAxisLabel={yAxisLabel}
     >
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartPoints} margin={chartMargin}>
@@ -84,24 +85,16 @@ const BalanceTrendChart = function ({
             axisLine={false}
             dataKey="tickLabel"
             interval="preserveStartEnd"
-            label={{
-              ...xAxisLabelPosition,
-              value: xAxisLabel,
-            }}
             minTickGap={24}
             tick={xAxisTick}
             tickLine={false}
           />
           <YAxis
             axisLine={false}
-            label={{
-              ...yAxisLabelPosition,
-              value: yAxisLabel,
-            }}
             tick={yAxisTick}
             tickFormatter={tickFormatter}
             tickLine={false}
-            width={80}
+            width="auto"
           />
           <Tooltip
             content={(tooltipProps): JSX.Element | null => {
