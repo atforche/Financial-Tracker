@@ -14,6 +14,16 @@ public sealed class FundGoalBalanceEventModel : BalanceEventModel
     public required FundModel Fund { get; init; }
 
     /// <summary>
+    /// Source associated with the balance event's Transaction.
+    /// </summary>
+    public required FundGoalBalanceEventPartyModel Source { get; init; }
+
+    /// <summary>
+    /// Destinations associated with the balance event's Transaction.
+    /// </summary>
+    public required IReadOnlyList<FundGoalBalanceEventPartyModel> Destinations { get; init; }
+
+    /// <summary>
     /// Totals immediately before the Transaction.
     /// </summary>
     public required FundGoalTotalsModel PreviousTotals { get; init; }

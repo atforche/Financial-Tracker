@@ -1,21 +1,19 @@
 import { BalanceEventType } from "@/balance-events/types";
-import type { components } from "@/framework/data/api";
 
-type AccountBalanceEventPartyListItem = Pick<
-  components["schemas"]["AccountBalanceEventModel"],
-  "destinations"
->;
+interface BalanceEventPartyListItem {
+  readonly destinations: readonly { readonly displayName: string }[];
+}
 
-type AccountBalanceEventPartyEvent = Pick<
-  components["schemas"]["AccountBalanceEventModel"],
-  "destinations" | "source" | "type"
->;
+interface BalanceEventPartyEvent extends BalanceEventPartyListItem {
+  readonly source: { readonly displayName: string };
+  readonly type: BalanceEventType;
+}
 
 /**
  * Formats the destinations associated with an Account balance event.
  */
 const formatBalanceEventDestinations = function (
-  event: AccountBalanceEventPartyListItem,
+  event: BalanceEventPartyListItem,
 ): string {
   const destinations = event.destinations.map(
     (destination) => destination.displayName,
@@ -27,7 +25,7 @@ const formatBalanceEventDestinations = function (
  * Formats the party on the other side of an Account balance event.
  */
 const formatBalanceEventCounterparty = function (
-  event: AccountBalanceEventPartyEvent,
+  event: BalanceEventPartyEvent,
 ): string {
   return event.type === BalanceEventType.Debit
     ? formatBalanceEventDestinations(event)

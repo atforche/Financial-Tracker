@@ -55,6 +55,12 @@ public sealed class FundGoalBalanceEventConverter
         FundGoalBalanceEventSortModel.TypeDescending => FundGoalBalanceEventSort.TypeDescending,
         FundGoalBalanceEventSortModel.Amount => FundGoalBalanceEventSort.Amount,
         FundGoalBalanceEventSortModel.AmountDescending => FundGoalBalanceEventSort.AmountDescending,
+        FundGoalBalanceEventSortModel.Counterparty => FundGoalBalanceEventSort.Counterparty,
+        FundGoalBalanceEventSortModel.CounterpartyDescending => FundGoalBalanceEventSort.CounterpartyDescending,
+        FundGoalBalanceEventSortModel.Source => FundGoalBalanceEventSort.Source,
+        FundGoalBalanceEventSortModel.SourceDescending => FundGoalBalanceEventSort.SourceDescending,
+        FundGoalBalanceEventSortModel.Destination => FundGoalBalanceEventSort.Destination,
+        FundGoalBalanceEventSortModel.DestinationDescending => FundGoalBalanceEventSort.DestinationDescending,
         _ => FundGoalBalanceEventSort.DateDescending,
     };
 
@@ -94,8 +100,19 @@ public sealed class FundGoalBalanceEventConverter
             Name = balanceEvent.Fund.Name,
             Description = balanceEvent.Fund.Description,
         },
+        Source = ToModel(balanceEvent.Source),
+        Destinations = balanceEvent.Destinations.Select(ToModel).ToList(),
         PreviousTotals = ToModel(balanceEvent.PreviousTotals),
         NewTotals = ToModel(balanceEvent.NewTotals),
+    };
+
+    /// <summary>
+    /// Converts a Domain Fund Goal balance event party to an API model.
+    /// </summary>
+    private static FundGoalBalanceEventPartyModel ToModel(FundGoalBalanceEventParty party) => new()
+    {
+        DisplayName = party.DisplayName,
+        Amount = party.Amount,
     };
 
     /// <summary>

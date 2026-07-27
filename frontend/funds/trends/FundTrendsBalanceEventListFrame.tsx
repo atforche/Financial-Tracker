@@ -13,6 +13,7 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import createTrendsBalanceEventColumns from "@/balance-events/createTrendsBalanceEventColumns";
+import { formatBalanceEventDestinations } from "@/balance-events/helpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import routes from "@/transactions/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -113,6 +114,28 @@ const FundTrendsBalanceEventListFrame = function ({
       ascending: FundBalanceEventSort.Amount,
       descending: FundBalanceEventSort.AmountDescending,
     },
+    detailColumns: [
+      {
+        name: "source",
+        headerContent: "Source",
+        getBodyContent: (event): string => event.source.displayName,
+        ...getSortProps(
+          FundBalanceEventSort.Source,
+          FundBalanceEventSort.SourceDescending,
+        ),
+        minWidth: 160,
+      },
+      {
+        name: "destination",
+        headerContent: "Destination",
+        getBodyContent: formatBalanceEventDestinations,
+        ...getSortProps(
+          FundBalanceEventSort.Destination,
+          FundBalanceEventSort.DestinationDescending,
+        ),
+        minWidth: 180,
+      },
+    ],
     onOpen: openTransactionWorkspace,
   });
 

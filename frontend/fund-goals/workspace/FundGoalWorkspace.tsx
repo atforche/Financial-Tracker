@@ -1,3 +1,4 @@
+import type { FundGoalBalanceEventSort } from "@/fund-goals/types";
 import FundGoalWorkspaceCards from "@/fund-goals/workspace/FundGoalWorkspaceCards";
 import FundGoalWorkspaceFilter from "@/fund-goals/workspace/FundGoalWorkspaceFilter";
 import type { JSX } from "react";
@@ -15,6 +16,7 @@ interface FundGoalWorkspaceSearchParams {
   fundIds?: string | string[];
   search?: string;
   balanceEventPage?: string;
+  balanceEventSort?: FundGoalBalanceEventSort;
 }
 
 /**

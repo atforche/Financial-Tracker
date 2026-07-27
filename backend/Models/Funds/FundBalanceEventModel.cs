@@ -13,6 +13,16 @@ public class FundBalanceEventModel : BalanceEventModel
     public required FundModel Fund { get; init; }
 
     /// <summary>
+    /// Source associated with the balance event's Transaction.
+    /// </summary>
+    public required FundBalanceEventPartyModel Source { get; init; }
+
+    /// <summary>
+    /// Destinations associated with the balance event's Transaction.
+    /// </summary>
+    public required IReadOnlyList<FundBalanceEventPartyModel> Destinations { get; init; }
+
+    /// <summary>
     /// Fund balance prior to the balance event.
     /// </summary>
     public required FundBalanceModel PreviousBalance { get; init; }

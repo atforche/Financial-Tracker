@@ -1,18 +1,25 @@
 "use client";
 
+import {
+  type FundGoalBalanceEvent,
+  FundGoalBalanceEventSort,
+} from "@/fund-goals/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import type { FundGoalBalanceEvent } from "@/fund-goals/types";
 import type { FundGoalWorkspaceSearchParams } from "@/fund-goals/workspace/FundGoalWorkspace";
 import type { JSX } from "react";
 import Link from "next/link";
 import ListFrame from "@/framework/listframe/ListFrame";
 import { buildUrl } from "@/framework/routes/helpers";
 import createBalanceEventColumns from "@/balance-events/createBalanceEventColumns";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import { formatBalanceEventCounterparty } from "@/balance-events/helpers";
+import parseEnumValue from "@/framework/data/parseEnumValue";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
  * Props for the FundGoalBalanceEventsFrame component.
@@ -39,9 +46,36 @@ const FundGoalBalanceEventsFrame = function ({
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = buildUrl(pathname, new URLSearchParams(searchParams));
+  const pageParamName =
+    propertyName<FundGoalWorkspaceSearchParams>("balanceEventPage");
+  const sortParamName =
+    propertyName<FundGoalWorkspaceSearchParams>("balanceEventSort");
+  const updateParams = useSearchParamUpdater([pageParamName]);
+  const currentSort = parseEnumValue(
+    FundGoalBalanceEventSort,
+    searchParams.get(sortParamName) ?? "",
+  );
+
+  const setSort = function (sort: FundGoalBalanceEventSort | null): void {
+    updateParams((params) => {
+      if (sort === null) {
+        params.delete(sortParamName);
+      } else {
+        params.set(sortParamName, sort);
+      }
+    });
+  };
+
+  const getSortProps = createColumnSortProps(currentSort, setSort);
 
   const columns: readonly ColumnDefinition<FundGoalBalanceEvent>[] =
-    createBalanceEventColumns<FundGoalBalanceEvent>({});
+    createBalanceEventColumns<FundGoalBalanceEvent>({
+      getCounterpartyContent: formatBalanceEventCounterparty,
+      counterpartySortProps: getSortProps(
+        FundGoalBalanceEventSort.Counterparty,
+        FundGoalBalanceEventSort.CounterpartyDescending,
+      ),
+    });
 
   return (
     <ConstrainedContent maxWidth={1200}>
@@ -63,9 +97,7 @@ const FundGoalBalanceEventsFrame = function ({
         }
         data={data}
         totalCount={totalCount}
-        pageParamName={propertyName<FundGoalWorkspaceSearchParams>(
-          "balanceEventPage",
-        )}
+        pageParamName={pageParamName}
         onRowClick={(balanceEvent) => {
           router.push(
             routes.workspaceDetail(balanceEvent.transactionId, {

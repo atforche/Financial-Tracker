@@ -35,8 +35,13 @@ const FundGoalWorkspaceDetailPage = async function ({
   searchParams,
 }: FundGoalWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { fundId } = await params;
-  const { accountingPeriodId, fundIds, search, balanceEventPage } =
-    await searchParams;
+  const {
+    accountingPeriodId,
+    fundIds,
+    search,
+    balanceEventPage,
+    balanceEventSort,
+  } = await searchParams;
   const selectedFundIds = toRepeatedSearchParams(fundIds);
   const apiClient = createApiClient();
   const periods = unwrapApiResponse(
@@ -85,6 +90,9 @@ const FundGoalWorkspaceDetailPage = async function ({
           "Filter.AccountingPeriodIds": [periodId],
           Limit: rowsPerPage,
           Offset: getPageOffset(normalizePageValue(balanceEventPage)),
+          ...(isNotNullOrUndefined(balanceEventSort)
+            ? { Sort: balanceEventSort }
+            : {}),
         },
       },
     }),
@@ -95,6 +103,7 @@ const FundGoalWorkspaceDetailPage = async function ({
     ...(selectedFundIds.length ? { fundIds: selectedFundIds } : {}),
     ...(isNotNullOrUndefined(search) ? { search } : {}),
     ...(isNotNullOrUndefined(balanceEventPage) ? { balanceEventPage } : {}),
+    ...(isNotNullOrUndefined(balanceEventSort) ? { balanceEventSort } : {}),
   });
   return (
     <PageLayout>

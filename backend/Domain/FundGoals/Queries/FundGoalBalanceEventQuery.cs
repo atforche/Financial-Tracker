@@ -71,4 +71,34 @@ public enum FundGoalBalanceEventSort
     /// Sorts by amount descending.
     /// </summary>
     AmountDescending,
+
+    /// <summary>
+    /// Sorts by the other party for the balance-event direction ascending.
+    /// </summary>
+    Counterparty,
+
+    /// <summary>
+    /// Sorts by the other party for the balance-event direction descending.
+    /// </summary>
+    CounterpartyDescending,
+
+    /// <summary>
+    /// Sorts by source ascending.
+    /// </summary>
+    Source,
+
+    /// <summary>
+    /// Sorts by source descending.
+    /// </summary>
+    SourceDescending,
+
+    /// <summary>
+    /// Sorts by destination ascending.
+    /// </summary>
+    Destination,
+
+    /// <summary>
+    /// Sorts by destination descending.
+    /// </summary>
+    DestinationDescending,
 }

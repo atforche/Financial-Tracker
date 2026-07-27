@@ -33,7 +33,7 @@ const FundWorkspaceDetailPage = async function ({
 }: FundWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { fundId } = await params;
   const resolvedSearchParams = await searchParams;
-  const { search, balanceEventPage } = resolvedSearchParams;
+  const { search, balanceEventPage, balanceEventSort } = resolvedSearchParams;
   const apiClient = createApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
   const balanceEventOffset = getPageOffset(currentBalanceEventPage);
@@ -47,6 +47,7 @@ const FundWorkspaceDetailPage = async function ({
   const detailSearchParams: FundWorkspaceSearchParams = {
     ...workspaceSearchParams,
     ...(typeof balanceEventPage !== "undefined" ? { balanceEventPage } : {}),
+    ...(typeof balanceEventSort !== "undefined" ? { balanceEventSort } : {}),
   };
   const workspaceUrl = routes.workspace(workspaceSearchParams);
 
@@ -62,7 +63,7 @@ const FundWorkspaceDetailPage = async function ({
           "Range.Start": dayjs().subtract(60, "day").format("YYYY-MM-DD"),
           "Range.End": dayjs().format("YYYY-MM-DD"),
           "Filter.Names": [fund.name],
-          Sort: FundBalanceEventSort.DateDescending,
+          Sort: balanceEventSort ?? FundBalanceEventSort.DateDescending,
           Limit: rowsPerPage,
           Offset: balanceEventOffset,
         },

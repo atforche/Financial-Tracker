@@ -18,6 +18,8 @@ public sealed record FundGoalBalanceEvent(
     BalanceEventType Type,
     decimal Amount,
     Fund Fund,
+    FundGoalBalanceEventParty Source,
+    IReadOnlyList<FundGoalBalanceEventParty> Destinations,
     FundGoalTotals PreviousTotals,
     FundGoalTotals NewTotals)
 {

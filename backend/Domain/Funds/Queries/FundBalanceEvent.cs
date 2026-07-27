@@ -17,6 +17,8 @@ public sealed record FundBalanceEvent(
     BalanceEventType Type,
     decimal Amount,
     Fund Fund,
+    FundBalanceEventParty Source,
+    IReadOnlyList<FundBalanceEventParty> Destinations,
     FundBalance PreviousBalance,
     FundBalance NewBalance)
 {

@@ -3326,6 +3326,10 @@ export interface components {
         FundBalanceEventModel: {
             /** @description Fund affected by the balance event. */
             fund: components["schemas"]["FundModel"];
+            /** @description Source associated with the balance event's Transaction. */
+            source: components["schemas"]["FundBalanceEventPartyModel"];
+            /** @description Destinations associated with the balance event's Transaction. */
+            destinations: components["schemas"]["FundBalanceEventPartyModel"][];
             /** @description Fund balance prior to the balance event. */
             previousBalance: components["schemas"]["FundBalanceModel"];
             /** @description Fund balance after the balance event. */
@@ -3366,6 +3370,16 @@ export interface components {
              * @description Amount associated with the balance event.
              */
             amount: number;
+        };
+        /** @description Model representing a named source or destination for a Fund balance event. */
+        FundBalanceEventPartyModel: {
+            /** @description Display name for the source or destination. */
+            displayName: string;
+            /**
+             * Format: double
+             * @description Amount associated with the source or destination when applicable.
+             */
+            amount?: null | number;
         };
         /** @enum {unknown} */
         FundBalanceEventSortModel: FundBalanceEventSortModel | null;
@@ -3471,6 +3485,10 @@ export interface components {
         FundGoalBalanceEventModel: {
             /** @description Fund whose fundGoal totals were affected. */
             fund: components["schemas"]["FundModel"];
+            /** @description Source associated with the balance event's Transaction. */
+            source: components["schemas"]["FundGoalBalanceEventPartyModel"];
+            /** @description Destinations associated with the balance event's Transaction. */
+            destinations: components["schemas"]["FundGoalBalanceEventPartyModel"][];
             /** @description Totals immediately before the Transaction. */
             previousTotals: components["schemas"]["FundGoalTotalsModel"];
             /** @description Totals immediately after the Transaction. */
@@ -3511,6 +3529,16 @@ export interface components {
              * @description Amount associated with the balance event.
              */
             amount: number;
+        };
+        /** @description Model representing a named source or destination for a Fund Goal balance event. */
+        FundGoalBalanceEventPartyModel: {
+            /** @description Display name for the source or destination. */
+            displayName: string;
+            /**
+             * Format: double
+             * @description Amount associated with the source or destination when applicable.
+             */
+            amount?: null | number;
         };
         /** @enum {unknown} */
         FundGoalBalanceEventSortModel: FundGoalBalanceEventSortModel | null;
@@ -4487,7 +4515,13 @@ export enum FundBalanceEventSortModel {
     Type = "Type",
     TypeDescending = "TypeDescending",
     Amount = "Amount",
-    AmountDescending = "AmountDescending"
+    AmountDescending = "AmountDescending",
+    Counterparty = "Counterparty",
+    CounterpartyDescending = "CounterpartyDescending",
+    Source = "Source",
+    SourceDescending = "SourceDescending",
+    Destination = "Destination",
+    DestinationDescending = "DestinationDescending"
 }
 export enum FundedBalanceStatusModel {
     BelowMinimum = "BelowMinimum",
@@ -4502,7 +4536,13 @@ export enum FundGoalBalanceEventSortModel {
     Type = "Type",
     TypeDescending = "TypeDescending",
     Amount = "Amount",
-    AmountDescending = "AmountDescending"
+    AmountDescending = "AmountDescending",
+    Counterparty = "Counterparty",
+    CounterpartyDescending = "CounterpartyDescending",
+    Source = "Source",
+    SourceDescending = "SourceDescending",
+    Destination = "Destination",
+    DestinationDescending = "DestinationDescending"
 }
 export enum FundGoalSortModel {
     Fund = "Fund",
