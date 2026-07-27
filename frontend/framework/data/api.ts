@@ -2426,6 +2426,10 @@ export interface components {
         AccountBalanceEventModel: {
             /** @description Account for the balance event. */
             account: components["schemas"]["AccountModel"];
+            /** @description Source of the transaction associated with the balance event. */
+            source: components["schemas"]["AccountBalanceEventPartyModel"];
+            /** @description Destinations of the transaction associated with the balance event. */
+            destinations: components["schemas"]["AccountBalanceEventPartyModel"][];
             /** @description Account balance prior to the balance event. */
             previousBalance: components["schemas"]["AccountBalanceModel"];
             /** @description Account balance after the balance event. */
@@ -2466,6 +2470,16 @@ export interface components {
              * @description Amount associated with the balance event.
              */
             amount: number;
+        };
+        /** @description Model representing a named source or destination for an Account balance event. */
+        AccountBalanceEventPartyModel: {
+            /** @description Display name for the source or destination. */
+            displayName: string;
+            /**
+             * Format: double
+             * @description Amount associated with the source or destination when applicable.
+             */
+            amount?: null | number;
         };
         /** @enum {unknown} */
         AccountBalanceEventSortModel: AccountBalanceEventSortModel | null;
@@ -4384,7 +4398,13 @@ export enum AccountBalanceEventSortModel {
     Type = "Type",
     TypeDescending = "TypeDescending",
     Amount = "Amount",
-    AmountDescending = "AmountDescending"
+    AmountDescending = "AmountDescending",
+    Counterparty = "Counterparty",
+    CounterpartyDescending = "CounterpartyDescending",
+    Source = "Source",
+    SourceDescending = "SourceDescending",
+    Destination = "Destination",
+    DestinationDescending = "DestinationDescending"
 }
 export enum AccountingPeriodSortModel {
     Date = "Date",

@@ -188,18 +188,18 @@ public sealed class AccountBalanceEventQueryService(
         AccountingPeriod period,
         IReadOnlyDictionary<AccountId, List<AccountBalanceHistory>> histories) => transaction switch
         {
-            SpendingTransaction spending => new[] { Create(transaction, period, spending.Source.Account, spending.Source.PostedDate, transaction.Amount, BalanceEventType.Debit, histories) }
+            SpendingTransaction spending => new[] { Create(transaction, period, spending.Source.Account, spending.Source.PostedDate, transaction.Amount, BalanceEventType.Debit, ToParty(spending.Source.Account, null, null), spending.Destinations.Select(destination => ToParty(destination.Account, destination.Location, destination.Amount)).ToList(), histories) }
                 .Concat(spending.Destinations.Where(destination => destination.Account != null)
-                    .Select(destination => Create(transaction, period, destination.Account!, destination.PostedDate, destination.Amount, BalanceEventType.Credit, histories))),
+                    .Select(destination => Create(transaction, period, destination.Account!, destination.PostedDate, destination.Amount, BalanceEventType.Credit, ToParty(spending.Source.Account, null, null), spending.Destinations.Select(item => ToParty(item.Account, item.Location, item.Amount)).ToList(), histories))),
             IncomeTransaction income => (income.Source.Account == null
                     ? Enumerable.Empty<AccountBalanceEvent>()
-                    : new[] { Create(transaction, period, income.Source.Account, income.Source.PostedDate, transaction.Amount, BalanceEventType.Debit, histories) })
-                .Concat(income.Destinations.Select(destination => Create(transaction, period, destination.Account, destination.PostedDate, destination.Amount, BalanceEventType.Credit, histories))),
+                    : new[] { Create(transaction, period, income.Source.Account, income.Source.PostedDate, transaction.Amount, BalanceEventType.Debit, ToParty(income.Source.Account, income.Source.Location, null), income.Destinations.Select(destination => ToParty(destination.Account, null, destination.Amount)).ToList(), histories) })
+                .Concat(income.Destinations.Select(destination => Create(transaction, period, destination.Account, destination.PostedDate, destination.Amount, BalanceEventType.Credit, ToParty(income.Source.Account, income.Source.Location, null), income.Destinations.Select(item => ToParty(item.Account, null, item.Amount)).ToList(), histories))),
             AccountTransaction account => (account.Source.Account == null
                     ? Enumerable.Empty<AccountBalanceEvent>()
-                    : new[] { Create(transaction, period, account.Source.Account, account.Source.PostedDate, transaction.Amount, BalanceEventType.Debit, histories) })
+                    : new[] { Create(transaction, period, account.Source.Account, account.Source.PostedDate, transaction.Amount, BalanceEventType.Debit, ToParty(account.Source.Account, account.Source.Location, null), account.Destinations.Select(destination => ToParty(destination.Account, destination.Location, destination.Amount)).ToList(), histories) })
                 .Concat(account.Destinations.Where(destination => destination.Account != null)
-                    .Select(destination => Create(transaction, period, destination.Account!, destination.PostedDate, destination.Amount, BalanceEventType.Credit, histories))),
+                    .Select(destination => Create(transaction, period, destination.Account!, destination.PostedDate, destination.Amount, BalanceEventType.Credit, ToParty(account.Source.Account, account.Source.Location, null), account.Destinations.Select(item => ToParty(item.Account, item.Location, item.Amount)).ToList(), histories))),
             _ => [],
         };
 
@@ -213,6 +213,8 @@ public sealed class AccountBalanceEventQueryService(
         DateOnly? postedDate,
         decimal amount,
         BalanceEventType type,
+        AccountBalanceEventParty source,
+        IReadOnlyList<AccountBalanceEventParty> destinations,
         IReadOnlyDictionary<AccountId, List<AccountBalanceHistory>> allHistories)
     {
         List<AccountBalanceHistory> histories = allHistories.GetValueOrDefault(account.Id) ?? [];
@@ -229,9 +231,18 @@ public sealed class AccountBalanceEventQueryService(
             type,
             amount,
             account,
+            source,
+            destinations,
             ToBalance(account, previous, account.OnboardedBalance ?? 0),
             ToBalance(account, current));
     }
+
+    /// <summary>
+    /// Creates a displayable source or destination party from its account and location.
+    /// </summary>
+    private static AccountBalanceEventParty ToParty(Account? account, string? location, decimal? amount) => new(
+        account?.Name ?? location ?? "Unspecified",
+        amount);
 
     /// <summary>
     /// Creates an Account balance from an Account and its history.
@@ -299,9 +310,48 @@ public sealed class AccountBalanceEventQueryService(
         AccountBalanceEventSort.TypeDescending => events.OrderByDescending(item => item.Type).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
         AccountBalanceEventSort.Amount => events.OrderBy(item => item.Amount).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
         AccountBalanceEventSort.AmountDescending => events.OrderByDescending(item => item.Amount).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
+        AccountBalanceEventSort.Counterparty => SortByText(events, GetCounterpartySortKey, false),
+        AccountBalanceEventSort.CounterpartyDescending => SortByText(events, GetCounterpartySortKey, true),
+        AccountBalanceEventSort.Source => SortByText(events, item => item.Source.DisplayName, false),
+        AccountBalanceEventSort.SourceDescending => SortByText(events, item => item.Source.DisplayName, true),
+        AccountBalanceEventSort.Destination => SortByText(events, GetDestinationSortKey, false),
+        AccountBalanceEventSort.DestinationDescending => SortByText(events, GetDestinationSortKey, true),
         _ => events.OrderByDescending(item => !item.IsPosted)
             .ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate)
             .ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence)
             .ThenBy(item => item.TransactionId),
     };
+
+    /// <summary>
+    /// Sorts events by a displayed text value, putting events without a value last.
+    /// </summary>
+    private static IOrderedEnumerable<AccountBalanceEvent> SortByText(
+        IEnumerable<AccountBalanceEvent> events,
+        Func<AccountBalanceEvent, string> getSortKey,
+        bool descending) => descending
+            ? events.OrderBy(item => string.IsNullOrWhiteSpace(getSortKey(item)))
+                .ThenByDescending(getSortKey, StringComparer.OrdinalIgnoreCase)
+                .ThenByDescending(item => item.EventDate)
+                .ThenBy(item => item.TransactionId)
+            : events.OrderBy(item => string.IsNullOrWhiteSpace(getSortKey(item)))
+                .ThenBy(getSortKey, StringComparer.OrdinalIgnoreCase)
+                .ThenByDescending(item => item.EventDate)
+                .ThenBy(item => item.TransactionId);
+
+    /// <summary>
+    /// Gets the text displayed for transaction destinations in a balance-event list.
+    /// </summary>
+    private static string GetDestinationSortKey(AccountBalanceEvent balanceEvent) => string.Join(
+        ", ",
+        balanceEvent.Destinations
+            .Select(destination => destination.DisplayName)
+            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Gets the other party relevant to a balance event's debit or credit direction.
+    /// </summary>
+    private static string GetCounterpartySortKey(AccountBalanceEvent balanceEvent) =>
+        balanceEvent.Type == BalanceEventType.Debit
+            ? GetDestinationSortKey(balanceEvent)
+            : balanceEvent.Source.DisplayName;
 }

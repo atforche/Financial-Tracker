@@ -1,6 +1,7 @@
 import { BalanceEventType } from "@/balance-events/types";
 import { Box } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
+import type ColumnSortType from "@/framework/listframe/ColumnSortType";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { formatLongDate } from "@/framework/dateHelpers";
@@ -21,6 +22,11 @@ interface BalanceEventListItem {
 interface CreateBalanceEventColumnsOptions<T extends BalanceEventListItem> {
   readonly getPreviousBalance?: (event: T) => number;
   readonly getNewBalance?: (event: T) => number;
+  readonly getCounterpartyContent?: (event: T) => string;
+  readonly counterpartySortProps?: {
+    readonly sortType: ColumnSortType | null;
+    readonly onSort: (sortType: ColumnSortType | null) => void;
+  };
 }
 
 /**
@@ -29,6 +35,8 @@ interface CreateBalanceEventColumnsOptions<T extends BalanceEventListItem> {
 const createBalanceEventColumns = function <T extends BalanceEventListItem>({
   getPreviousBalance,
   getNewBalance,
+  getCounterpartyContent,
+  counterpartySortProps,
 }: CreateBalanceEventColumnsOptions<T>): readonly ColumnDefinition<T>[] {
   const columns: ColumnDefinition<T>[] = [
     {
@@ -59,14 +67,34 @@ const createBalanceEventColumns = function <T extends BalanceEventListItem>({
       ),
       minWidth: 130,
     },
-    {
-      name: "amount",
-      headerContent: "Amount",
-      getBodyContent: (event) => formatCurrency(event.amount),
-      alignment: "right",
-      minWidth: 120,
-    },
   ];
+
+  if (getCounterpartyContent !== undefined) {
+    if (counterpartySortProps === undefined) {
+      columns.push({
+        name: "counterparty",
+        headerContent: "From / To",
+        getBodyContent: getCounterpartyContent,
+        minWidth: 190,
+      });
+    } else {
+      columns.push({
+        name: "counterparty",
+        headerContent: "From / To",
+        getBodyContent: getCounterpartyContent,
+        ...counterpartySortProps,
+        minWidth: 190,
+      });
+    }
+  }
+
+  columns.push({
+    name: "amount",
+    headerContent: "Amount",
+    getBodyContent: (event) => formatCurrency(event.amount),
+    alignment: "right",
+    minWidth: 120,
+  });
 
   if (getPreviousBalance && getNewBalance) {
     columns.push(

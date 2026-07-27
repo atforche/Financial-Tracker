@@ -50,6 +50,7 @@ interface CreateTrendsBalanceEventColumnsOptions<
   readonly typeSort?: SortPair<TSort>;
   readonly amountSort: SortPair<TSort>;
   readonly onOpen: (event: T) => void;
+  readonly detailColumns?: readonly ColumnDefinition<T>[];
   readonly amountMinWidth?: number;
 }
 
@@ -66,6 +67,7 @@ const createTrendsBalanceEventColumns = function <
   typeSort,
   amountSort,
   onOpen,
+  detailColumns = [],
   amountMinWidth = 120,
 }: CreateTrendsBalanceEventColumnsOptions<T, TSort>): ColumnDefinition<T>[] {
   const columns: ColumnDefinition<T>[] = [
@@ -80,6 +82,7 @@ const createTrendsBalanceEventColumns = function <
       ...getSortProps(dateSort.ascending, dateSort.descending),
       minWidth: 130,
     },
+    ...detailColumns,
   ];
 
   if (typeSort) {

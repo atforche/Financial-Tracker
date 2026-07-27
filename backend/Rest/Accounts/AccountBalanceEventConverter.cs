@@ -72,6 +72,12 @@ public sealed class AccountBalanceEventConverter
         AccountBalanceEventSortModel.TypeDescending => AccountBalanceEventSort.TypeDescending,
         AccountBalanceEventSortModel.Amount => AccountBalanceEventSort.Amount,
         AccountBalanceEventSortModel.AmountDescending => AccountBalanceEventSort.AmountDescending,
+        AccountBalanceEventSortModel.Counterparty => AccountBalanceEventSort.Counterparty,
+        AccountBalanceEventSortModel.CounterpartyDescending => AccountBalanceEventSort.CounterpartyDescending,
+        AccountBalanceEventSortModel.Source => AccountBalanceEventSort.Source,
+        AccountBalanceEventSortModel.SourceDescending => AccountBalanceEventSort.SourceDescending,
+        AccountBalanceEventSortModel.Destination => AccountBalanceEventSort.Destination,
+        AccountBalanceEventSortModel.DestinationDescending => AccountBalanceEventSort.DestinationDescending,
         _ => AccountBalanceEventSort.DateDescending,
     };
 
@@ -111,8 +117,19 @@ public sealed class AccountBalanceEventConverter
             Name = balanceEvent.Account.Name,
             Type = AccountTypeConverter.ToModel(balanceEvent.Account.Type),
         },
+        Source = ToModel(balanceEvent.Source),
+        Destinations = balanceEvent.Destinations.Select(ToModel).ToList(),
         PreviousBalance = ToModel(balanceEvent.PreviousBalance),
         NewBalance = ToModel(balanceEvent.NewBalance),
+    };
+
+    /// <summary>
+    /// Converts a Domain Account balance event party to an API model.
+    /// </summary>
+    private static AccountBalanceEventPartyModel ToModel(AccountBalanceEventParty party) => new()
+    {
+        DisplayName = party.DisplayName,
+        Amount = party.Amount,
     };
 
     /// <summary>

@@ -54,4 +54,34 @@ public enum AccountBalanceEventSortModel
     /// Balance events are sorted by amount in descending order.
     /// </summary>
     AmountDescending,
+
+    /// <summary>
+    /// Balance events are sorted by the direction-relative other party in ascending order.
+    /// </summary>
+    Counterparty,
+
+    /// <summary>
+    /// Balance events are sorted by the direction-relative other party in descending order.
+    /// </summary>
+    CounterpartyDescending,
+
+    /// <summary>
+    /// Balance events are sorted by transaction source in ascending order.
+    /// </summary>
+    Source,
+
+    /// <summary>
+    /// Balance events are sorted by transaction source in descending order.
+    /// </summary>
+    SourceDescending,
+
+    /// <summary>
+    /// Balance events are sorted by transaction destinations in ascending order.
+    /// </summary>
+    Destination,
+
+    /// <summary>
+    /// Balance events are sorted by transaction destinations in descending order.
+    /// </summary>
+    DestinationDescending,
 }

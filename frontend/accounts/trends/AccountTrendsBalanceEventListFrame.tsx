@@ -17,6 +17,7 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import createTrendsBalanceEventColumns from "@/balance-events/createTrendsBalanceEventColumns";
+import { formatBalanceEventDestinations } from "@/balance-events/helpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import routes from "@/transactions/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -102,6 +103,29 @@ const AccountTrendsBalanceEventListFrame = function ({
     });
   }
 
+  const detailColumns: ColumnDefinition<AccountBalanceEvent>[] = [
+    {
+      name: "source",
+      headerContent: "Source",
+      getBodyContent: (balanceEvent) => balanceEvent.source.displayName,
+      ...getSortProps(
+        AccountBalanceEventSort.Source,
+        AccountBalanceEventSort.SourceDescending,
+      ),
+      minWidth: 160,
+    },
+    {
+      name: "destination",
+      headerContent: "Destination",
+      getBodyContent: formatBalanceEventDestinations,
+      ...getSortProps(
+        AccountBalanceEventSort.Destination,
+        AccountBalanceEventSort.DestinationDescending,
+      ),
+      minWidth: 180,
+    },
+  ];
+
   const columns = createTrendsBalanceEventColumns({
     leadingColumns,
     getSortProps,
@@ -117,6 +141,7 @@ const AccountTrendsBalanceEventListFrame = function ({
       ascending: AccountBalanceEventSort.Amount,
       descending: AccountBalanceEventSort.AmountDescending,
     },
+    detailColumns,
     onOpen: openTransactionWorkspace,
   });
 

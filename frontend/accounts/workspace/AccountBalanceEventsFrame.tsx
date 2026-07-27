@@ -1,7 +1,10 @@
 "use client";
 
+import {
+  type AccountBalanceEvent,
+  AccountBalanceEventSort,
+} from "@/accounts/types";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { AccountBalanceEvent } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
 import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -10,8 +13,12 @@ import Link from "next/link";
 import ListFrame from "@/framework/listframe/ListFrame";
 import { buildUrl } from "@/framework/routes/helpers";
 import createBalanceEventColumns from "@/balance-events/createBalanceEventColumns";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import { formatBalanceEventCounterparty } from "@/balance-events/helpers";
+import parseEnumValue from "@/framework/data/parseEnumValue";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
  * Props for the AccountBalanceEventsFrame component.
@@ -34,11 +41,37 @@ const AccountBalanceEventsFrame = function ({
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = buildUrl(pathname, new URLSearchParams(searchParams));
+  const pageParamName =
+    propertyName<AccountWorkspaceSearchParams>("balanceEventPage");
+  const sortParamName =
+    propertyName<AccountWorkspaceSearchParams>("balanceEventSort");
+  const updateParams = useSearchParamUpdater([pageParamName]);
+  const currentSort = parseEnumValue(
+    AccountBalanceEventSort,
+    searchParams.get(sortParamName) ?? "",
+  );
+
+  const setSort = function (sort: AccountBalanceEventSort | null): void {
+    updateParams((params) => {
+      if (sort === null) {
+        params.delete(sortParamName);
+      } else {
+        params.set(sortParamName, sort);
+      }
+    });
+  };
+
+  const getSortProps = createColumnSortProps(currentSort, setSort);
 
   const columns: readonly ColumnDefinition<AccountBalanceEvent>[] =
     createBalanceEventColumns<AccountBalanceEvent>({
       getPreviousBalance: (event) => event.previousBalance.postedBalance,
       getNewBalance: (event) => event.newBalance.postedBalance,
+      getCounterpartyContent: formatBalanceEventCounterparty,
+      counterpartySortProps: getSortProps(
+        AccountBalanceEventSort.Counterparty,
+        AccountBalanceEventSort.CounterpartyDescending,
+      ),
     });
 
   const getId = (balanceEvent: AccountBalanceEvent): string =>
@@ -66,9 +99,7 @@ const AccountBalanceEventsFrame = function ({
       getId={getId}
       data={data}
       totalCount={totalCount}
-      pageParamName={propertyName<AccountWorkspaceSearchParams>(
-        "balanceEventPage",
-      )}
+      pageParamName={pageParamName}
       onRowClick={openTransaction}
       hasActiveFilters={false}
       initialEmptyState={{

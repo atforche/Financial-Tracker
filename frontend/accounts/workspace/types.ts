@@ -1,4 +1,4 @@
-import type { AccountType } from "@/accounts/types";
+import type { AccountBalanceEventSort, AccountType } from "@/accounts/types";
 
 /**
  * Defines the possible actions that can be performed in the Accounts workspace.
@@ -13,6 +13,7 @@ interface AccountWorkspaceSearchParams {
   accountType?: AccountType | readonly AccountType[];
   action?: AccountWorkspaceAction;
   balanceEventPage?: number | string | null;
+  balanceEventSort?: AccountBalanceEventSort;
 }
 
 export type { AccountWorkspaceAction, AccountWorkspaceSearchParams };

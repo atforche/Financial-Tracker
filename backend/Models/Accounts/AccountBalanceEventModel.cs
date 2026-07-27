@@ -13,6 +13,16 @@ public class AccountBalanceEventModel : BalanceEventModel
     public required AccountModel Account { get; init; }
 
     /// <summary>
+    /// Source of the transaction associated with the balance event.
+    /// </summary>
+    public required AccountBalanceEventPartyModel Source { get; init; }
+
+    /// <summary>
+    /// Destinations of the transaction associated with the balance event.
+    /// </summary>
+    public required IReadOnlyList<AccountBalanceEventPartyModel> Destinations { get; init; }
+
+    /// <summary>
     /// Account balance prior to the balance event.
     /// </summary>
     public required AccountBalanceModel PreviousBalance { get; init; }

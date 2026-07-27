@@ -17,6 +17,8 @@ public sealed record AccountBalanceEvent(
     BalanceEventType Type,
     decimal Amount,
     Account Account,
+    AccountBalanceEventParty Source,
+    IReadOnlyList<AccountBalanceEventParty> Destinations,
     AccountBalance PreviousBalance,
     AccountBalance NewBalance)
 {

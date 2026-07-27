@@ -36,7 +36,8 @@ const AccountWorkspaceDetailPage = async function ({
 }: AccountWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { accountId } = await params;
   const resolvedSearchParams = await searchParams;
-  const { search, accountType, balanceEventPage } = resolvedSearchParams;
+  const { search, accountType, balanceEventPage, balanceEventSort } =
+    resolvedSearchParams;
   const apiClient = createApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
   const balanceEventOffset = getPageOffset(currentBalanceEventPage);
@@ -50,6 +51,7 @@ const AccountWorkspaceDetailPage = async function ({
           "Range.End": dayjs().format("YYYY-MM-DD"),
           Limit: rowsPerPage,
           Offset: balanceEventOffset,
+          ...(balanceEventSort === undefined ? {} : { Sort: balanceEventSort }),
         },
       },
     }),
@@ -71,6 +73,7 @@ const AccountWorkspaceDetailPage = async function ({
   const detailSearchParams: AccountWorkspaceSearchParams = {
     ...workspaceSearchParams,
     ...(typeof balanceEventPage !== "undefined" ? { balanceEventPage } : {}),
+    ...(typeof balanceEventSort !== "undefined" ? { balanceEventSort } : {}),
   };
   const workspaceUrl = routes.workspace(workspaceSearchParams);
 
