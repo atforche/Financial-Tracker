@@ -65,9 +65,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["TransactionModel"];
-                        "application/json": components["schemas"]["TransactionModel"];
-                        "text/json": components["schemas"]["TransactionModel"];
+                        "text/plain": components["schemas"]["CreateTransactionResultModel"];
+                        "application/json": components["schemas"]["CreateTransactionResultModel"];
+                        "text/json": components["schemas"]["CreateTransactionResultModel"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -1060,6 +1060,46 @@ export interface paths {
                         "text/plain": components["schemas"]["CollectionModelOfFundGoalModel"];
                         "application/json": components["schemas"]["CollectionModelOfFundGoalModel"];
                         "text/json": components["schemas"]["CollectionModelOfFundGoalModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/fund-goals/progress/{accountingPeriodId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves progress for all Fund Goals in an Accounting Period. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountingPeriodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["FundGoalProgressResultModel"][];
+                        "application/json": components["schemas"]["FundGoalProgressResultModel"][];
+                        "text/json": components["schemas"]["FundGoalProgressResultModel"][];
                     };
                 };
             };
@@ -3094,6 +3134,14 @@ export interface components {
              */
             amount: number;
         };
+        /** @description Model returned after creating a Transaction. */
+        CreateTransactionResultModel: {
+            /**
+             * Format: uuid
+             * @description Gets the ID of the created Transaction.
+             */
+            id: string;
+        };
         /** @description Model describing ending-balance progress. */
         EndingBalanceProgressModel: {
             /**
@@ -3378,6 +3426,16 @@ export interface components {
             contribution?: null | components["schemas"]["ContributionProgressModel"];
             fundedBalance?: null | components["schemas"]["FundedBalanceProgressModel"];
             endingBalance?: null | components["schemas"]["EndingBalanceProgressModel"];
+        };
+        /** @description Model pairing a Fund Goal with its progress for an Accounting Period. */
+        FundGoalProgressResultModel: {
+            /**
+             * Format: uuid
+             * @description Gets the ID of the Fund Goal.
+             */
+            fundGoalId: string;
+            /** @description Gets the calculated progress for the Fund Goal. */
+            progress: components["schemas"]["FundGoalProgressModel"];
         };
         /** @enum {unknown} */
         FundGoalSortModel: FundGoalSortModel | null;

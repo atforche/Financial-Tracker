@@ -88,7 +88,7 @@ public sealed class TransactionController(
     /// Creates a new Transaction with the provided properties
     /// </summary>
     [HttpPost("")]
-    [ProducesResponseType(typeof(TransactionModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CreateTransactionResultModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> CreateAsync(CreateTransactionModel createTransactionModel)
     {
@@ -129,7 +129,7 @@ public sealed class TransactionController(
             });
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok(await GetModelAsync(newTransaction.Id.Value));
+        return Ok(new CreateTransactionResultModel { Id = newTransaction.Id.Value });
     }
 
     /// <summary>

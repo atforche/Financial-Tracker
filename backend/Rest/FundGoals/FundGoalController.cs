@@ -67,6 +67,35 @@ public sealed class FundGoalController(
             cancellationToken)));
 
     /// <summary>
+    /// Retrieves progress for all Fund Goals in an Accounting Period.
+    /// </summary>
+    [HttpGet("progress/{accountingPeriodId:guid}")]
+    public async Task<ActionResult<IReadOnlyCollection<FundGoalProgressResultModel>>> GetProgressesAsync(
+        Guid accountingPeriodId,
+        CancellationToken cancellationToken)
+    {
+        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetByIdAsync(
+            accountingPeriodId,
+            cancellationToken);
+        if (accountingPeriod == null)
+        {
+            return NotFound();
+        }
+        IReadOnlyCollection<FundGoal> fundGoals = fundGoalRepository.GetAllByAccountingPeriod(accountingPeriod.Id);
+        IReadOnlyDictionary<FundGoalId, FundGoalProgress> progressByFundGoalId = fundGoalService.GetProgresses(
+            fundGoals,
+            accountingPeriod);
+        return Ok(fundGoals
+            .Where(fundGoal => progressByFundGoalId.ContainsKey(fundGoal.Id))
+            .Select(fundGoal => new FundGoalProgressResultModel
+            {
+                FundGoalId = fundGoal.Id.Value,
+                Progress = ToModel(progressByFundGoalId[fundGoal.Id]),
+            })
+            .ToList());
+    }
+
+    /// <summary>
     /// Retrieves a Fund Goal by ID.
     /// </summary>
     [HttpGet("{fundGoalId:guid}")]

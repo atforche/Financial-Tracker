@@ -56,28 +56,24 @@ const FundGoalWorkspace = async function ({
     }),
     "Failed to fetch fund goals",
   );
-  const goalsWithProgress =
+  const progressResults =
     typeof selectedAccountingPeriodId === "string"
-      ? await Promise.all(
-          fundGoals.items.map(async (fundGoal) => ({
-            ...fundGoal,
-            progress: unwrapApiResponse(
-              await apiClient.GET(
-                "/fund-goals/{fundGoalId}/progress/{accountingPeriodId}",
-                {
-                  params: {
-                    path: {
-                      fundGoalId: fundGoal.id,
-                      accountingPeriodId: selectedAccountingPeriodId,
-                    },
-                  },
-                },
-              ),
-              "Failed to fetch Fund Goal progress",
-            ),
-          })),
+      ? unwrapApiResponse(
+          await apiClient.GET("/fund-goals/progress/{accountingPeriodId}", {
+            params: {
+              path: { accountingPeriodId: selectedAccountingPeriodId },
+            },
+          }),
+          "Failed to fetch Fund Goal progress",
         )
       : [];
+  const progressByFundGoalId = new Map(
+    progressResults.map((result) => [result.fundGoalId, result.progress]),
+  );
+  const goalsWithProgress = fundGoals.items.flatMap((fundGoal) => {
+    const progress = progressByFundGoalId.get(fundGoal.id);
+    return typeof progress === "undefined" ? [] : [{ ...fundGoal, progress }];
+  });
   return (
     <PageLayout>
       <FundGoalWorkspaceFilter

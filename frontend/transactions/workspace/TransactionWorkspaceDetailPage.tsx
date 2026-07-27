@@ -1,6 +1,6 @@
 import {
   getTransactionById,
-  getTransactionWorkspaceReferenceData,
+  getTransactionWorkspaceDetailReferenceData,
 } from "@/transactions/workspace/getTransactionWorkspaceData";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
@@ -31,10 +31,7 @@ const TransactionWorkspaceDetailPage = async function ({
   const resolvedSearchParams = await searchParams;
   const { accountingPeriodIds, accountIds, fundIds, sort, page, returnUrl } =
     resolvedSearchParams;
-  const [referenceData, transaction] = await Promise.all([
-    getTransactionWorkspaceReferenceData(),
-    getTransactionById(transactionId),
-  ]);
+  const transaction = await getTransactionById(transactionId);
 
   const workspaceSearchParams: TransactionWorkspaceSearchParams = {
     ...(typeof accountingPeriodIds !== "undefined"
@@ -64,14 +61,9 @@ const TransactionWorkspaceDetailPage = async function ({
     );
   }
 
-  const transactionAccountingPeriod =
-    referenceData.allAccountingPeriods.find(
-      (period) => period.id === transaction.accountingPeriodId,
-    ) ?? null;
-
-  if (transactionAccountingPeriod === null) {
-    throw new Error("Failed to find the transaction accounting period");
-  }
+  const referenceData = await getTransactionWorkspaceDetailReferenceData(
+    transaction.accountingPeriodId,
+  );
 
   return (
     <PageLayout>
@@ -81,7 +73,7 @@ const TransactionWorkspaceDetailPage = async function ({
       />
       <ViewTransactionForm
         transaction={transaction}
-        transactionAccountingPeriod={transactionAccountingPeriod}
+        transactionAccountingPeriod={referenceData.accountingPeriod}
         funds={referenceData.funds}
         fundGoals={referenceData.fundGoals}
         currentUrl={routes.workspaceDetail(

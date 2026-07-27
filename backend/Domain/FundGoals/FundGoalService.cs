@@ -163,6 +163,42 @@ public sealed class FundGoalService(
     }
 
     /// <summary>
+    /// Calculates progress for Fund Goals in the same Accounting Period using one balance-history lookup.
+    /// </summary>
+    public IReadOnlyDictionary<FundGoalId, FundGoalProgress> GetProgresses(
+        IReadOnlyCollection<FundGoal> fundGoals,
+        AccountingPeriod accountingPeriod)
+    {
+        AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository
+            .GetForAccountingPeriod(accountingPeriod.Id);
+        var results = new Dictionary<FundGoalId, FundGoalProgress>();
+        foreach (FundGoal fundGoal in fundGoals)
+        {
+            if (fundGoal.AccountingPeriod?.Id != accountingPeriod.Id)
+            {
+                continue;
+            }
+            AccountingPeriodFundBalanceHistory? fundBalanceHistory = balanceHistory.FundBalances.SingleOrDefault(
+                balance => balance.Fund.Id == fundGoal.Fund.Id);
+            AccountingPeriodFundGoalTotals? totals = balanceHistory.FundGoalTotals.SingleOrDefault(
+                item => item.Fund.Id == fundGoal.Fund.Id);
+            if (fundBalanceHistory == null || totals == null)
+            {
+                continue;
+            }
+            results.Add(fundGoal.Id, FundGoalProgressService.Calculate(
+                fundBalanceHistory.OpeningBalance,
+                totals.AmountAssigned,
+                fundBalanceHistory.ClosingBalance,
+                fundGoal.RegularContribution,
+                fundGoal.MinimumFundedBalance,
+                fundGoal.MaximumFundedBalance,
+                fundGoal.TargetEndingBalance));
+        }
+        return results;
+    }
+
+    /// <summary>
     /// Validates configurable Fund Goal quantities.
     /// </summary>
     private static bool Validate(

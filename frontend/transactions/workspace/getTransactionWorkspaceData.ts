@@ -42,6 +42,15 @@ interface TransactionWorkspaceListData extends TransactionWorkspaceReferenceData
 }
 
 /**
+ * Represents the reference data required for a Transaction detail page.
+ */
+interface TransactionWorkspaceDetailReferenceData {
+  readonly accountingPeriod: AccountingPeriod;
+  readonly funds: FundWithBalance[];
+  readonly fundGoals: FundGoalWithProgress[];
+}
+
+/**
  * Fetches reference data required for the transaction workspace, including accounting periods, accounts, funds, and Fund Goals.
  */
 const getTransactionWorkspaceReferenceData =
@@ -95,25 +104,27 @@ const getTransactionWorkspaceReferenceData =
         goalResponse,
         "Failed to fetch fund goals",
       ).items;
-      fundGoals = await Promise.all(
-        loadedFundGoals.map(async (fundGoal) => ({
-          ...fundGoal,
-          progress: unwrapApiResponse(
-            await apiClient.GET(
-              "/fund-goals/{fundGoalId}/progress/{accountingPeriodId}",
-              {
-                params: {
-                  path: {
-                    fundGoalId: fundGoal.id,
-                    accountingPeriodId: fundGoal.accountingPeriod?.id ?? "",
-                  },
-                },
-              },
+      const progressResults = (
+        await Promise.all(
+          openAccountingPeriods.map(async (accountingPeriod) =>
+            unwrapApiResponse(
+              await apiClient.GET("/fund-goals/progress/{accountingPeriodId}", {
+                params: { path: { accountingPeriodId: accountingPeriod.id } },
+              }),
+              "Failed to fetch Fund Goal progress",
             ),
-            "Failed to fetch fund goal progress",
           ),
-        })),
+        )
+      ).flatMap((results) => results);
+      const progressByFundGoalId = new Map(
+        progressResults.map((result) => [result.fundGoalId, result]),
       );
+      fundGoals = loadedFundGoals.flatMap((fundGoal) => {
+        const result = progressByFundGoalId.get(fundGoal.id);
+        return typeof result === "undefined"
+          ? []
+          : [{ ...fundGoal, progress: result.progress }];
+      });
     }
 
     return {
@@ -145,6 +156,68 @@ const getTransactionById = async function (
   }
 
   return unwrapApiResponse(response, "Failed to fetch the transaction");
+};
+
+/**
+ * Fetches only the reference data required for a Transaction detail page.
+ */
+const getTransactionWorkspaceDetailReferenceData = async function (
+  accountingPeriodId: string,
+): Promise<TransactionWorkspaceDetailReferenceData> {
+  const apiClient = createApiClient();
+  const accountingPeriodPromise = apiClient.GET(
+    "/accounting-periods/{accountingPeriodId}",
+    {
+      params: { path: { accountingPeriodId } },
+    },
+  );
+  const fundsPromise = apiClient.GET("/funds/with-balances");
+  const fundGoalsPromise = apiClient.GET("/fund-goals", {
+    params: {
+      query: {
+        "Filter.AccountingPeriodIds": [accountingPeriodId],
+        Limit: 500,
+      },
+    },
+  });
+  const progressPromise = apiClient.GET(
+    "/fund-goals/progress/{accountingPeriodId}",
+    {
+      params: { path: { accountingPeriodId } },
+    },
+  );
+  const [
+    accountingPeriodResponse,
+    fundsResponse,
+    fundGoalsResponse,
+    progressResponse,
+  ] = await Promise.all([
+    accountingPeriodPromise,
+    fundsPromise,
+    fundGoalsPromise,
+    progressPromise,
+  ]);
+  const progressByFundGoalId = new Map(
+    unwrapApiResponse(
+      progressResponse,
+      "Failed to fetch Fund Goal progress",
+    ).map((result) => [result.fundGoalId, result.progress]),
+  );
+
+  return {
+    accountingPeriod: unwrapApiResponse(
+      accountingPeriodResponse,
+      "Failed to fetch accounting period",
+    ),
+    funds: unwrapApiResponse(fundsResponse, "Failed to fetch funds").items,
+    fundGoals: unwrapApiResponse(
+      fundGoalsResponse,
+      "Failed to fetch fund goals",
+    ).items.flatMap((fundGoal) => {
+      const progress = progressByFundGoalId.get(fundGoal.id);
+      return typeof progress === "undefined" ? [] : [{ ...fundGoal, progress }];
+    }),
+  };
 };
 
 /**
@@ -207,6 +280,7 @@ const getTransactionWorkspaceListData = async function (
 
 export {
   getTransactionById,
+  getTransactionWorkspaceDetailReferenceData,
   getTransactionWorkspaceListData,
   getTransactionWorkspaceReferenceData,
 };
