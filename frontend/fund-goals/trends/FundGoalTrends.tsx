@@ -1,12 +1,18 @@
-import { Stack, Typography } from "@mui/material";
+import {
+  type FundGoalMetric,
+  type FundGoalPeriodProgress,
+  buildFundGoalMetricTrendPoints,
+  fundGoalMetricDefinitions,
+} from "@/fund-goals/trends/fundGoalProgressTrends";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import Frame from "@/framework/view/Frame";
+import FundGoalMetricTrendChart from "@/fund-goals/trends/FundGoalMetricTrendChart";
+import FundGoalTrendsFilter from "@/fund-goals/trends/FundGoalTrendsFilter";
+import type { FundGoalTrendsSearchParams } from "@/fund-goals/trends/helpers";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import createApiClient from "@/framework/data/createApiClient";
-import { formatCurrency } from "@/framework/currencyHelpers";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
 import loadAllPages from "@/framework/data/loadAllPages";
 import { redirect } from "next/navigation";
@@ -15,13 +21,8 @@ import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
- * Search parameters for the FundGoalTrends component.
+ * Props for the FundGoalTrends component.
  */
-interface FundGoalTrendsSearchParams {
-  fundName?: string | string[];
-  startAccountingPeriodId?: string;
-  endAccountingPeriodId?: string;
-}
 interface FundGoalTrendsProps {
   readonly searchParams: Promise<FundGoalTrendsSearchParams>;
 }
@@ -59,25 +60,24 @@ const FundGoalTrends = async function ({
   }
   const start = params.startAccountingPeriodId ?? latest?.id;
   const end = params.endAccountingPeriodId ?? latest?.id;
+  const startIndex = periods.findIndex((period) => period.id === start);
+  const endIndex = periods.findIndex((period) => period.id === end);
+  const selectedPeriods =
+    startIndex >= 0 && endIndex >= 0
+      ? periods.slice(
+          Math.min(startIndex, endIndex),
+          Math.max(startIndex, endIndex) + 1,
+        )
+      : [];
   const fundNames = toRepeatedSearchParams(params.fundName);
   const fundGoals = await loadAllPages(async (limit, offset) =>
     unwrapApiResponse(
       await apiClient.GET("/fund-goals", {
         params: {
           query: {
-            "Filter.AccountingPeriodIds": periods
-              .filter(
-                (p) =>
-                  (isNullOrUndefined(start) ||
-                    p.id === start ||
-                    periods.findIndex((x) => x.id === p.id) <=
-                      periods.findIndex((x) => x.id === start)) &&
-                  (isNullOrUndefined(end) ||
-                    p.id === end ||
-                    periods.findIndex((x) => x.id === p.id) >=
-                      periods.findIndex((x) => x.id === end)),
-              )
-              .map((p) => p.id),
+            "Filter.AccountingPeriodIds": selectedPeriods.map(
+              (period) => period.id,
+            ),
             limit,
             offset,
           },
@@ -86,77 +86,77 @@ const FundGoalTrends = async function ({
       "Failed to load Fund Goals",
     ),
   );
-  const visible = fundGoals.filter(
+  const filteredFundGoals = fundGoals.filter(
     (fundGoal) =>
       fundNames.length === 0 || fundNames.includes(fundGoal.fund.name),
   );
-  const configured = visible.filter(
-    (fundGoal) =>
-      fundGoal.regularContribution !== null ||
-      fundGoal.minimumFundedBalance !== null ||
-      fundGoal.maximumFundedBalance !== null ||
-      fundGoal.targetEndingBalance !== null,
+  const progressWithAccountingPeriod = await Promise.all(
+    filteredFundGoals.flatMap((fundGoal) => {
+      const accountingPeriodId = fundGoal.accountingPeriod?.id;
+      return typeof accountingPeriodId === "string"
+        ? [
+            (async (): Promise<FundGoalPeriodProgress> => ({
+              fundGoal,
+              progress: unwrapApiResponse(
+                await apiClient.GET(
+                  "/fund-goals/{fundGoalId}/progress/{accountingPeriodId}",
+                  {
+                    params: {
+                      path: { accountingPeriodId, fundGoalId: fundGoal.id },
+                    },
+                  },
+                ),
+                "Failed to load Fund Goal progress",
+              ),
+            }))(),
+          ]
+        : [];
+    }),
   );
-  const totalContribution = visible.reduce(
-    (sum, fundGoal) => sum + (fundGoal.regularContribution ?? 0),
-    0,
-  );
+  const progressByAccountingPeriodId = new Map<
+    string,
+    FundGoalPeriodProgress[]
+  >();
+  progressWithAccountingPeriod.forEach((goalProgress) => {
+    const accountingPeriodId = goalProgress.fundGoal.accountingPeriod?.id;
+    if (typeof accountingPeriodId === "string") {
+      const progress =
+        progressByAccountingPeriodId.get(accountingPeriodId) ?? [];
+      progress.push(goalProgress);
+      progressByAccountingPeriodId.set(accountingPeriodId, progress);
+    }
+  });
+  const chartPeriods = [...selectedPeriods].reverse();
+  const metrics: readonly FundGoalMetric[] = [
+    "availableBalance",
+    "contribution",
+    "minimumFundedBalance",
+    "maximumFundedBalance",
+    "endingBalance",
+  ];
+
   return (
     <PageLayout>
       <ConstrainedContent>
-        <Frame title="Goal Trends">
-          <Stack spacing={2}>
-            <Typography color="text.secondary">
-              Review how Fund Goal configuration changes across accounting
-              periods.
-            </Typography>
-            <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
-              <Frame title="Goals">
-                <Typography variant="h4">{visible.length}</Typography>
-              </Frame>
-              <Frame title="Configured Goals">
-                <Typography variant="h4">{configured.length}</Typography>
-              </Frame>
-              <Frame title="Regular Contributions">
-                <Typography variant="h4">
-                  {formatCurrency(totalContribution)}
-                </Typography>
-              </Frame>
-            </ResponsiveGrid>
-          </Stack>
-        </Frame>
+        <FundGoalTrendsFilter
+          accountingPeriods={periods}
+          availableFundNames={[
+            ...new Set(fundGoals.map((fundGoal) => fundGoal.fund.name)),
+          ]}
+          defaultAccountingPeriodId={periods[0]?.id ?? null}
+        />
       </ConstrainedContent>
-      <ResponsiveGrid minimumColumnWidth={320} spacing={2}>
-        {visible.map((fundGoal) => (
-          <Frame key={fundGoal.id} title={fundGoal.fund.name}>
-            <Stack spacing={0.75}>
-              <Typography color="text.secondary">
-                {fundGoal.accountingPeriod?.name ?? "Onboarded"}
-              </Typography>
-              <Typography>
-                Regular contribution:{" "}
-                {isNullOrUndefined(fundGoal.regularContribution)
-                  ? "Not configured"
-                  : formatCurrency(fundGoal.regularContribution)}
-              </Typography>
-              <Typography>
-                Funded range:{" "}
-                {isNullOrUndefined(fundGoal.minimumFundedBalance)
-                  ? "No minimum"
-                  : formatCurrency(fundGoal.minimumFundedBalance)}{" "}
-                –{" "}
-                {isNullOrUndefined(fundGoal.maximumFundedBalance)
-                  ? "No maximum"
-                  : formatCurrency(fundGoal.maximumFundedBalance)}
-              </Typography>
-              <Typography>
-                Target ending balance:{" "}
-                {isNullOrUndefined(fundGoal.targetEndingBalance)
-                  ? "Not configured"
-                  : formatCurrency(fundGoal.targetEndingBalance)}
-              </Typography>
-            </Stack>
-          </Frame>
+      <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
+        {metrics.map((metric) => (
+          <FundGoalMetricTrendChart
+            key={metric}
+            definition={fundGoalMetricDefinitions[metric]}
+            chartPoints={buildFundGoalMetricTrendPoints(
+              metric,
+              chartPeriods,
+              progressByAccountingPeriodId,
+            )}
+          />
         ))}
       </ResponsiveGrid>
     </PageLayout>
