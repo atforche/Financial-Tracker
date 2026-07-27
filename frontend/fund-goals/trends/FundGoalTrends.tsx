@@ -90,29 +90,26 @@ const FundGoalTrends = async function ({
     (fundGoal) =>
       fundNames.length === 0 || fundNames.includes(fundGoal.fund.name),
   );
-  const progressWithAccountingPeriod = await Promise.all(
-    filteredFundGoals.flatMap((fundGoal) => {
-      const accountingPeriodId = fundGoal.accountingPeriod?.id;
-      return typeof accountingPeriodId === "string"
-        ? [
-            (async (): Promise<FundGoalPeriodProgress> => ({
-              fundGoal,
-              progress: unwrapApiResponse(
-                await apiClient.GET(
-                  "/fund-goals/{fundGoalId}/progress/{accountingPeriodId}",
-                  {
-                    params: {
-                      path: { accountingPeriodId, fundGoalId: fundGoal.id },
-                    },
-                  },
-                ),
-                "Failed to load Fund Goal progress",
-              ),
-            }))(),
-          ]
-        : [];
-    }),
+  const progressResultsByFundGoalId = new Map(
+    (
+      await Promise.all(
+        selectedPeriods.map(async (accountingPeriod) =>
+          unwrapApiResponse(
+            await apiClient.GET("/fund-goals/progress/{accountingPeriodId}", {
+              params: { path: { accountingPeriodId: accountingPeriod.id } },
+            }),
+            "Failed to load Fund Goal progress",
+          ),
+        ),
+      )
+    )
+      .flatMap((results) => results)
+      .map((result) => [result.fundGoalId, result.progress]),
   );
+  const progressWithAccountingPeriod = filteredFundGoals.flatMap((fundGoal) => {
+    const progress = progressResultsByFundGoalId.get(fundGoal.id);
+    return typeof progress === "undefined" ? [] : [{ fundGoal, progress }];
+  });
   const progressByAccountingPeriodId = new Map<
     string,
     FundGoalPeriodProgress[]

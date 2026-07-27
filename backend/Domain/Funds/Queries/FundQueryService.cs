@@ -108,7 +108,11 @@ public sealed class FundQueryService(
             query.Start,
             query.End,
             cancellationToken);
-        IReadOnlyCollection<FundDateBalanceFact> history = await fundQueryRepository.GetDateBalanceFactsAsync(query.End, cancellationToken);
+        IReadOnlyCollection<FundDateBalanceFact> history = await fundQueryRepository.GetDateBalanceFactsAsync(
+            balances.Select(balance => balance.Fund.Id).ToList(),
+            query.Start,
+            query.End,
+            cancellationToken);
         IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await fundQueryRepository.GetDateRangeIncomeFactsAsync(
             query.Start,
             query.End,
@@ -118,9 +122,11 @@ public sealed class FundQueryService(
             query.End,
             cancellationToken);
         var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
-        IReadOnlyCollection<FundDateBalanceSummary> dates = GetDates(query.Start, query.End)
-            .Select(date => new FundDateBalanceSummary(date, SummarizeDate(balances, history, date)))
-            .ToList();
+        IReadOnlyCollection<FundDateBalanceSummary> dates = SummarizeDates(
+            query.Start,
+            query.End,
+            balances,
+            history);
         IReadOnlyCollection<FundRangeBalance> items = Sort(balances, query.Sort)
             .Skip(query.Offset)
             .Take(query.Limit ?? int.MaxValue)
@@ -149,21 +155,40 @@ public sealed class FundQueryService(
     }
 
     /// <summary>
-    /// Summarizes Fund balances into a FundBalanceSummary for a specific date, using the provided history facts.
+    /// Summarizes Fund balances for each date by advancing through the in-range history once.
     /// </summary>
-    private static FundBalanceSummary SummarizeDate(
+    private static List<FundDateBalanceSummary> SummarizeDates(
+        DateOnly start,
+        DateOnly end,
         IEnumerable<FundRangeBalance> balances,
-        IReadOnlyCollection<FundDateBalanceFact> history,
-        DateOnly date)
+        IReadOnlyCollection<FundDateBalanceFact> history)
     {
-        var values = balances.Select(balance => (
-            balance.Fund.Id,
-            Amount: history.LastOrDefault(item => item.FundId == balance.Fund.Id && item.Date <= date)?.PostedBalance
-                ?? balance.Fund.OnboardedBalance ?? 0)).ToList();
-        return new FundBalanceSummary(
-            values.Sum(item => item.Amount),
-            values.Where(item => item.Id != Fund.UnassignedFundId).Sum(item => item.Amount),
-            values.Where(item => item.Id == Fund.UnassignedFundId).Sum(item => item.Amount));
+        IReadOnlyCollection<FundRangeBalance> rangeBalances = balances.ToList();
+        var currentBalances = rangeBalances.ToDictionary(
+            balance => balance.Fund.Id,
+            balance => balance.StartingBalance);
+        var orderedHistory = history
+            .OrderBy(item => item.Date)
+            .ThenBy(item => item.Sequence)
+            .ToList();
+        int historyIndex = 0;
+        var summaries = new List<FundDateBalanceSummary>();
+        foreach (DateOnly date in GetDates(start, end))
+        {
+            while (historyIndex < orderedHistory.Count && orderedHistory[historyIndex].Date <= date)
+            {
+                FundDateBalanceFact item = orderedHistory[historyIndex++];
+                currentBalances[item.FundId] = item.PostedBalance;
+            }
+            var values = rangeBalances.Select(balance => (
+                balance.Fund.Id,
+                Amount: currentBalances[balance.Fund.Id])).ToList();
+            summaries.Add(new FundDateBalanceSummary(date, new FundBalanceSummary(
+                values.Sum(item => item.Amount),
+                values.Where(item => item.Id != Fund.UnassignedFundId).Sum(item => item.Amount),
+                values.Where(item => item.Id == Fund.UnassignedFundId).Sum(item => item.Amount))));
+        }
+        return summaries;
     }
 
     /// <summary>

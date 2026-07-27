@@ -19,4 +19,9 @@ public class TransactionFilterModel
     /// Fund IDs to filter the Transactions by
     /// </summary>
     public IReadOnlyCollection<Guid>? FundIds { get; init; }
+
+    /// <summary>
+    /// Transaction Types to filter the Transactions by.
+    /// </summary>
+    public IReadOnlyCollection<TransactionTypeModel>? Types { get; init; }
 }

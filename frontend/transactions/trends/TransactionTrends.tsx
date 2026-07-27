@@ -1,8 +1,4 @@
-import type {
-  Transaction,
-  TransactionSort,
-  TransactionType,
-} from "@/transactions/types";
+import type { TransactionSort, TransactionType } from "@/transactions/types";
 import {
   getPageOffset,
   normalizePageValue,
@@ -200,89 +196,61 @@ const TransactionTrends = async function ({
     ...(shouldPersistFundNames(currentFundNames)
       ? { "Filter.FundIds": fundIds }
       : {}),
+    ...(shouldPersistTransactionTypes(currentTransactionTypes)
+      ? { "Filter.Types": [...currentTransactionTypes] }
+      : {}),
     ...(typeof sort === "string" ? { Sort: sort } : {}),
   };
-  const endpoint =
-    currentMode === "date"
-      ? "/transactions/date-range"
-      : "/transactions/accounting-period-range";
-  const listRequest =
-    endpoint === "/transactions/date-range"
-      ? apiClient.GET(endpoint, {
-          params: {
-            query: {
-              ...query,
-              Limit: rowsPerPage,
-              Offset: getPageOffset(currentPage),
-            },
-          },
-        })
-      : apiClient.GET(endpoint, {
-          params: {
-            query: {
-              ...query,
-              Limit: rowsPerPage,
-              Offset: getPageOffset(currentPage),
-            },
-          },
-        });
-  const summaryRequest =
-    endpoint === "/transactions/date-range"
-      ? apiClient.GET(endpoint, { params: { query } })
-      : apiClient.GET(endpoint, { params: { query } });
-  const [listResponse, summaryResponse] = await Promise.all([
-    listRequest,
-    summaryRequest,
-  ]);
-  const listData = unwrapApiResponse(
-    listResponse,
-    "Failed to load transactions",
-  );
-  const summaryData = unwrapApiResponse(
-    summaryResponse,
-    "Failed to load transaction summary",
-  );
-  const allTransactions = summaryData.transactions.items;
-  const filteredTransactions = allTransactions.filter(
-    (transaction) =>
-      !shouldPersistTransactionTypes(currentTransactionTypes) ||
-      currentTransactionTypes.includes(transaction.transactionType),
-  );
-  const transactions = shouldPersistTransactionTypes(currentTransactionTypes)
-    ? {
-        items: filteredTransactions.slice(
-          getPageOffset(currentPage),
-          getPageOffset(currentPage) + rowsPerPage,
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  const { listData, trendsData } = await (async function () {
+    const pagedQuery = {
+      ...query,
+      Limit: rowsPerPage,
+      Offset: getPageOffset(currentPage),
+    };
+    if (currentMode === "date") {
+      const [listResponse, trendsResponse] = await Promise.all([
+        apiClient.GET("/transactions/date-range", {
+          params: { query: pagedQuery },
+        }),
+        apiClient.GET("/transactions/trends/date-range", {
+          params: { query },
+        }),
+      ]);
+      return {
+        listData: unwrapApiResponse(
+          listResponse,
+          "Failed to load transactions",
         ),
-        totalCount: filteredTransactions.length,
-      }
-    : listData.transactions;
-  const groupTransactions = function (
-    getKey: (transaction: Transaction) => string,
-  ): Map<string, Transaction[]> {
-    return Map.groupBy(filteredTransactions, getKey);
-  };
-  const dateSummaries = Array.from(
-    groupTransactions((transaction) => transaction.date),
-    ([date, groupedTransactions]) => ({
-      date,
-      totalAmount: groupedTransactions.reduce(
-        (total, transaction) => total + transaction.amount,
-        0,
+        trendsData: unwrapApiResponse(
+          trendsResponse,
+          "Failed to load transaction trends",
+        ),
+      };
+    }
+    const [listResponse, trendsResponse] = await Promise.all([
+      apiClient.GET("/transactions/accounting-period-range", {
+        params: { query: pagedQuery },
+      }),
+      apiClient.GET("/transactions/trends/accounting-period-range", {
+        params: { query },
+      }),
+    ]);
+    return {
+      listData: unwrapApiResponse(listResponse, "Failed to load transactions"),
+      trendsData: unwrapApiResponse(
+        trendsResponse,
+        "Failed to load transaction trends",
       ),
-      totalCount: groupedTransactions.length,
-    }),
-  );
-  const accountingPeriodSummaries = Array.from(
-    groupTransactions((transaction) => transaction.accountingPeriodId),
-    ([accountingPeriodId, groupedTransactions]) => ({
-      accountingPeriodId,
-      accountingPeriodName: groupedTransactions[0]?.accountingPeriodName ?? "",
-      totalAmount: groupedTransactions.reduce(
-        (total, transaction) => total + transaction.amount,
-        0,
-      ),
-      totalCount: groupedTransactions.length,
+    };
+  })();
+  const dateSummaries = trendsData.dates;
+  const accountingPeriodSummaries = trendsData.accountingPeriods.map(
+    (summary) => ({
+      accountingPeriodId: summary.accountingPeriod.id,
+      accountingPeriodName: summary.accountingPeriod.name,
+      totalAmount: summary.totalAmount,
+      totalCount: summary.totalCount,
     }),
   );
 
@@ -291,14 +259,14 @@ const TransactionTrends = async function ({
       <ConstrainedContent>
         <TransactionTrendsFilter
           accountingPeriods={accountingPeriods.items}
-          availableAccountNames={summaryData.availableAccountNames}
-          availableFundNames={summaryData.availableFundNames}
+          availableAccountNames={trendsData.availableAccountNames}
+          availableFundNames={trendsData.availableFundNames}
           defaultAccountingPeriodId={latestAccountingPeriod?.id ?? null}
           defaultStartDate={defaultStartDate.format("YYYY-MM-DD")}
           defaultEndDate={defaultEndDate.format("YYYY-MM-DD")}
         />
       </ConstrainedContent>
-      <TransactionsByTypeCard transactionTypes={summaryData.transactionTypes} />
+      <TransactionsByTypeCard transactionTypes={trendsData.transactionTypes} />
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
         <TransactionTrendsCountChart
           mode={currentMode === "date" ? "Date" : "AccountingPeriod"}
@@ -312,8 +280,8 @@ const TransactionTrends = async function ({
         />
       </ResponsiveGrid>
       <TransactionTrendsListFrame
-        data={[...transactions.items]}
-        totalCount={transactions.totalCount}
+        data={[...listData.transactions.items]}
+        totalCount={listData.transactions.totalCount}
       />
     </PageLayout>
   );

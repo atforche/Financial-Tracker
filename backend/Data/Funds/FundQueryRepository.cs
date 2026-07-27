@@ -128,10 +128,14 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
 
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<FundDateBalanceFact>> GetDateBalanceFactsAsync(
+        IReadOnlyCollection<FundId> fundIds,
+        DateOnly startDate,
         DateOnly endDate,
         CancellationToken cancellationToken = default) =>
         await databaseContext.FundBalanceHistories.AsNoTracking()
-            .Where(history => history.Date <= endDate)
+            .Where(history => fundIds.Contains(history.Fund.Id)
+                && history.Date >= startDate
+                && history.Date <= endDate)
             .OrderBy(history => history.Date).ThenBy(history => history.Sequence)
             .Select(history => new FundDateBalanceFact(history.Fund.Id, history.Date, history.Sequence, history.PostedBalance))
             .ToListAsync(cancellationToken);

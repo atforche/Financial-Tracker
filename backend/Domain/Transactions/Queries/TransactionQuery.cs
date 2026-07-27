@@ -15,7 +15,8 @@ public sealed record TransactionQuery(
 public sealed record TransactionFilter(
     IReadOnlyCollection<Guid> AccountingPeriodIds,
     IReadOnlyCollection<Guid> AccountIds,
-    IReadOnlyCollection<Guid> FundIds);
+    IReadOnlyCollection<Guid> FundIds,
+    IReadOnlyCollection<TransactionType> Types);
 
 /// <summary>
 /// Supported Transaction sort orders.

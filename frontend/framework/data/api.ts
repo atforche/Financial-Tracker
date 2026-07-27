@@ -18,6 +18,7 @@ export interface paths {
                     "Filter.AccountingPeriodIds"?: string[];
                     "Filter.AccountIds"?: string[];
                     "Filter.FundIds"?: string[];
+                    "Filter.Types"?: components["schemas"]["TransactionTypeModel"][];
                     /** @description Sort to apply to the results */
                     Sort?: components["schemas"]["TransactionSortModel"];
                     Limit?: number;
@@ -221,6 +222,7 @@ export interface paths {
                     "Filter.AccountingPeriodIds"?: string[];
                     "Filter.AccountIds"?: string[];
                     "Filter.FundIds"?: string[];
+                    "Filter.Types"?: components["schemas"]["TransactionTypeModel"][];
                     /** @description Sort to apply to the results */
                     Sort?: components["schemas"]["TransactionSortModel"];
                     Limit?: number;
@@ -269,6 +271,7 @@ export interface paths {
                     "Filter.AccountingPeriodIds"?: string[];
                     "Filter.AccountIds"?: string[];
                     "Filter.FundIds"?: string[];
+                    "Filter.Types"?: components["schemas"]["TransactionTypeModel"][];
                     /** @description Sort to apply to the results */
                     Sort?: components["schemas"]["TransactionSortModel"];
                     Limit?: number;
@@ -289,6 +292,115 @@ export interface paths {
                         "text/plain": components["schemas"]["TransactionsInAccountingPeriodRangeModel"];
                         "application/json": components["schemas"]["TransactionsInAccountingPeriodRangeModel"];
                         "text/json": components["schemas"]["TransactionsInAccountingPeriodRangeModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/transactions/trends/date-range": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves aggregated Transaction trends for a date range. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    "Filter.AccountingPeriodIds"?: string[];
+                    "Filter.AccountIds"?: string[];
+                    "Filter.FundIds"?: string[];
+                    "Filter.Types"?: components["schemas"]["TransactionTypeModel"][];
+                    /** @description Sort to apply to the results */
+                    Sort?: components["schemas"]["TransactionSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionTrendsModel"];
+                        "application/json": components["schemas"]["TransactionTrendsModel"];
+                        "text/json": components["schemas"]["TransactionTrendsModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/transactions/trends/accounting-period-range": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves aggregated Transaction trends for an Accounting Period range. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    "Filter.AccountingPeriodIds"?: string[];
+                    "Filter.AccountIds"?: string[];
+                    "Filter.FundIds"?: string[];
+                    "Filter.Types"?: components["schemas"]["TransactionTypeModel"][];
+                    /** @description Sort to apply to the results */
+                    Sort?: components["schemas"]["TransactionSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionTrendsModel"];
+                        "application/json": components["schemas"]["TransactionTrendsModel"];
+                        "text/json": components["schemas"]["TransactionTrendsModel"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -3936,6 +4048,39 @@ export interface components {
         };
         /** @enum {unknown} */
         TransactionSortModel: TransactionSortModel | null;
+        /** @description Model representing a summary of transactions by date. */
+        TransactionSummaryByDateModel: {
+            /**
+             * Format: date
+             * @description Date for this summary.
+             */
+            date: string;
+            /**
+             * Format: int32
+             * @description Total count of transactions.
+             */
+            totalCount: number;
+            /**
+             * Format: double
+             * @description Total amount of transactions.
+             */
+            totalAmount: number;
+        };
+        /** @description Model representing a summary of transactions for a specific accounting period. */
+        TransactionSummaryByPeriodModel: {
+            /** @description Accounting Period. */
+            accountingPeriod: components["schemas"]["AccountingPeriodModel"];
+            /**
+             * Format: int32
+             * @description Total count of transactions.
+             */
+            totalCount: number;
+            /**
+             * Format: double
+             * @description Total amount of transactions.
+             */
+            totalAmount: number;
+        };
         /** @description Model representing a summary of transactions for a specific transaction type. */
         TransactionSummaryByTypeModel: {
             /** @description Transaction type for this summary. */
@@ -3950,6 +4095,19 @@ export interface components {
              * @description Total amount of transactions.
              */
             totalAmount: number;
+        };
+        /** @description Model containing server-side aggregates required for Transaction trend charts and filters. */
+        TransactionTrendsModel: {
+            /** @description Available Account Names for the current filters. */
+            availableAccountNames: string[];
+            /** @description Available Fund Names for the current filters. */
+            availableFundNames: string[];
+            /** @description Summary counts and amounts for each Transaction Type. */
+            transactionTypes: components["schemas"]["TransactionSummaryByTypeModel"][];
+            /** @description Summary counts and amounts by Transaction date. */
+            dates: components["schemas"]["TransactionSummaryByDateModel"][];
+            /** @description Summary counts and amounts by Accounting Period. */
+            accountingPeriods: components["schemas"]["TransactionSummaryByPeriodModel"][];
         };
         /**
          * @description Enum representing the different transaction types exposed by the REST API.

@@ -54,9 +54,11 @@ public interface IAccountQueryRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves Account balance history facts through the provided date.
+    /// Retrieves Account balance history facts for the provided date range and Accounts.
     /// </summary>
     Task<IReadOnlyCollection<AccountDateBalanceFact>> GetDateBalanceFactsAsync(
+        IReadOnlyCollection<AccountId> accountIds,
+        DateOnly startDate,
         DateOnly endDate,
         CancellationToken cancellationToken = default);
 

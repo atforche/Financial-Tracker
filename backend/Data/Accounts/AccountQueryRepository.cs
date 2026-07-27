@@ -128,10 +128,14 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
 
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<AccountDateBalanceFact>> GetDateBalanceFactsAsync(
+        IReadOnlyCollection<AccountId> accountIds,
+        DateOnly startDate,
         DateOnly endDate,
         CancellationToken cancellationToken = default) =>
         await databaseContext.AccountBalanceHistories.AsNoTracking()
-            .Where(history => history.Date <= endDate)
+            .Where(history => accountIds.Contains(history.Account.Id)
+                && history.Date >= startDate
+                && history.Date <= endDate)
             .OrderBy(history => history.Date).ThenBy(history => history.Sequence)
             .Select(history => new AccountDateBalanceFact(history.Account.Id, history.Date, history.Sequence, history.PostedBalance))
             .ToListAsync(cancellationToken);

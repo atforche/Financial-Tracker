@@ -52,9 +52,11 @@ public interface IFundQueryRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves Fund balance history facts through the provided date.
+    /// Retrieves Fund balance history facts for the provided date range and Funds.
     /// </summary>
     Task<IReadOnlyCollection<FundDateBalanceFact>> GetDateBalanceFactsAsync(
+        IReadOnlyCollection<FundId> fundIds,
+        DateOnly startDate,
         DateOnly endDate,
         CancellationToken cancellationToken = default);
 

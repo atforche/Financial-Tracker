@@ -82,6 +82,46 @@ public sealed class TransactionQueryService(
     }
 
     /// <summary>
+    /// Retrieves aggregated Transaction trends for a date range.
+    /// </summary>
+    public Task<TransactionTrendFacts> GetTrendFactsAsync(
+        TransactionDateRangeQuery query,
+        CancellationToken cancellationToken = default) =>
+        transactionQueryRepository.GetTrendFactsAsync(
+            query.Filter,
+            query.Start,
+            query.End,
+            null,
+            cancellationToken);
+
+    /// <summary>
+    /// Retrieves aggregated Transaction trends for an Accounting Period range.
+    /// </summary>
+    public async Task<TransactionAccountingPeriodRangeTrendQueryResult> GetTrendFactsAsync(
+        TransactionAccountingPeriodRangeQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        AccountingPeriodRangeResolution resolution = await accountingPeriodRangeService.ResolveAsync(
+            query.StartId,
+            query.EndId,
+            cancellationToken);
+        if (resolution.AccountingPeriods == null)
+        {
+            return new TransactionAccountingPeriodRangeTrendQueryResult(null, resolution.Failure);
+        }
+
+        TransactionTrendFacts facts = await transactionQueryRepository.GetTrendFactsAsync(
+            query.Filter,
+            null,
+            null,
+            resolution.AccountingPeriods.Select(period => period.Id).ToList(),
+            cancellationToken);
+        return new TransactionAccountingPeriodRangeTrendQueryResult(
+            new TransactionAccountingPeriodTrendFacts(facts, resolution.AccountingPeriods),
+            AccountingPeriodRangeQueryFailure.None);
+    }
+
+    /// <summary>
     /// Retrieves interpreted Transaction details by ID, or null when no Transaction exists.
     /// </summary>
     public async Task<TransactionDetails?> GetDetailsByIdAsync(

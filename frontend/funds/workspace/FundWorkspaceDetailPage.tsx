@@ -10,6 +10,7 @@ import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ViewFundForm from "@/funds/workspace/ViewFundForm";
 import createApiClient from "@/framework/data/createApiClient";
+import dayjs from "dayjs";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 import transactionRoutes from "@/transactions/routes";
@@ -58,8 +59,8 @@ const FundWorkspaceDetailPage = async function ({
     {
       params: {
         query: {
-          "Range.Start": "0001-01-01",
-          "Range.End": "9999-12-31",
+          "Range.Start": dayjs().subtract(60, "day").format("YYYY-MM-DD"),
+          "Range.End": dayjs().format("YYYY-MM-DD"),
           "Filter.Names": [fund.name],
           Sort: FundBalanceEventSort.DateDescending,
           Limit: rowsPerPage,
