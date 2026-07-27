@@ -1,17 +1,12 @@
 "use client";
 
-import {
-  EndingBalanceStatus,
-  type FundGoalWithProgress,
-  FundedBalanceStatus,
-} from "@/fund-goals/types";
-import { Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CardResponsiveGrid from "@/framework/view/CardResponsiveGrid";
-import FundGoalProgressBars from "@/fund-goals/workspace/FundGoalProgressBars";
+import type { FundGoalWithProgress } from "@/fund-goals/types";
+import FundGoalWorkspaceCard from "@/fund-goals/workspace/FundGoalWorkspaceCard";
 import type { FundGoalWorkspaceSearchParams } from "@/fund-goals/workspace/FundGoalWorkspace";
 import type { JSX } from "react";
-import WorkspaceCard from "@/framework/view/WorkspaceCard";
+import { Typography } from "@mui/material";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/fund-goals/routes";
 import { useSearchParams } from "next/navigation";
@@ -51,25 +46,6 @@ const FundGoalWorkspaceCards = function ({
   return (
     <CardResponsiveGrid minimumColumnWidth={340} spacing={2}>
       {filtered.map((fundGoal) => {
-        const configured = [
-          fundGoal.progress.contribution,
-          fundGoal.progress.fundedBalance?.minimumBalance,
-          fundGoal.progress.fundedBalance?.maximumBalance,
-          fundGoal.progress.endingBalance,
-        ].filter((value) => value !== null && value !== undefined).length;
-        const satisfied = [
-          fundGoal.progress.contribution?.isSatisfied,
-          fundGoal.progress.fundedBalance?.minimumBalance !== null &&
-            fundGoal.progress.fundedBalance?.minimumBalance !== undefined &&
-            fundGoal.progress.fundedBalance.status !==
-              FundedBalanceStatus.BelowMinimum,
-          fundGoal.progress.fundedBalance?.maximumBalance !== null &&
-            fundGoal.progress.fundedBalance?.maximumBalance !== undefined &&
-            fundGoal.progress.fundedBalance.status !==
-              FundedBalanceStatus.AboveMaximum,
-          fundGoal.progress.endingBalance?.status ===
-            EndingBalanceStatus.AtTarget,
-        ].filter(Boolean).length;
         const detailSearchParams: FundGoalWorkspaceSearchParams = {
           ...(accountingPeriod
             ? { accountingPeriodId: accountingPeriod.id }
@@ -83,25 +59,15 @@ const FundGoalWorkspaceCards = function ({
           detailSearchParams.fundIds = ids;
         }
         return (
-          <WorkspaceCard
+          <FundGoalWorkspaceCard
             key={fundGoal.id}
-            title={fundGoal.fund.name}
-            href={routes.workspaceDetail(fundGoal.fund.id, detailSearchParams)}
-            color={
-              configured === 0
-                ? "info"
-                : satisfied === configured
-                  ? "success"
-                  : "warning"
-            }
-          >
-            <Stack spacing={2}>
-              <Typography variant="body2" color="text.secondary">
-                {accountingPeriod?.name ?? "No accounting period"}
-              </Typography>
-              <FundGoalProgressBars progress={fundGoal.progress} />
-            </Stack>
-          </WorkspaceCard>
+            accountingPeriod={accountingPeriod}
+            fundGoal={fundGoal}
+            detailHref={routes.workspaceDetail(
+              fundGoal.fund.id,
+              detailSearchParams,
+            )}
+          />
         );
       })}
     </CardResponsiveGrid>

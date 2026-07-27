@@ -4,6 +4,7 @@ import {
   type FundGoalProgress as FundGoalProgressModel,
   FundedBalanceStatus,
 } from "@/fund-goals/types";
+import FundGoalAvailableBalance from "@/fund-goals/workspace/FundGoalAvailableBalance";
 import FundGoalProgress from "@/fund-goals/workspace/FundGoalProgress";
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
@@ -15,8 +16,9 @@ import { isNotNullOrUndefined } from "@/framework/nullHelpers";
  * Props for the FundGoalProgressBars component.
  */
 interface FundGoalProgressBarsProps {
-  readonly fundGoal?: FundGoal;
+  readonly fundGoal: FundGoal;
   readonly progress: FundGoalProgressModel;
+  readonly showAvailableBalance?: boolean;
   readonly showUnconfigured?: boolean;
 }
 
@@ -31,24 +33,17 @@ const displayAmount = (value: number | null | undefined): string =>
 const FundGoalProgressBars = function ({
   fundGoal,
   progress,
+  showAvailableBalance = true,
   showUnconfigured = false,
 }: FundGoalProgressBarsProps): JSX.Element {
   return (
     <Stack spacing={2}>
-      <FundGoalProgress
-        label="Available Balance"
-        current={progress.availableBalance.currentBalance}
-        target={progress.availableBalance.minimumBalance}
-        satisfied={progress.availableBalance.isSatisfied}
-        percent={progress.availableBalance.isSatisfied ? 100 : 0}
-        currentDescription={`${formatCurrency(progress.availableBalance.currentBalance)} available`}
-        statusDescription={
-          progress.availableBalance.isSatisfied
-            ? "Healthy"
-            : `${formatCurrency(progress.availableBalance.shortfall)} overdrawn`
-        }
-      />
-      {isNotNullOrUndefined(fundGoal?.regularContribution) &&
+      {showAvailableBalance ? (
+        <FundGoalAvailableBalance
+          availableBalance={progress.availableBalance}
+        />
+      ) : null}
+      {isNotNullOrUndefined(fundGoal.regularContribution) &&
       progress.contribution ? (
         <FundGoalProgress
           label="Regular Monthly Contribution"
@@ -59,7 +54,7 @@ const FundGoalProgressBars = function ({
       ) : showUnconfigured ? (
         <StringEntryField
           label="Regular Monthly Contribution"
-          value={displayAmount(fundGoal?.regularContribution)}
+          value={displayAmount(fundGoal.regularContribution)}
           setValue={null}
         />
       ) : null}
@@ -76,7 +71,7 @@ const FundGoalProgressBars = function ({
       ) : showUnconfigured ? (
         <StringEntryField
           label="Minimum Funded Amount"
-          value={displayAmount(fundGoal?.minimumFundedBalance)}
+          value={displayAmount(fundGoal.minimumFundedBalance)}
           setValue={null}
         />
       ) : null}
@@ -93,7 +88,7 @@ const FundGoalProgressBars = function ({
       ) : showUnconfigured ? (
         <StringEntryField
           label="Maximum Funded Amount"
-          value={displayAmount(fundGoal?.maximumFundedBalance)}
+          value={displayAmount(fundGoal.maximumFundedBalance)}
           setValue={null}
         />
       ) : null}
@@ -109,7 +104,7 @@ const FundGoalProgressBars = function ({
       ) : showUnconfigured ? (
         <StringEntryField
           label="Target Ending Balance"
-          value={displayAmount(fundGoal?.targetEndingBalance)}
+          value={displayAmount(fundGoal.targetEndingBalance)}
           setValue={null}
         />
       ) : null}
