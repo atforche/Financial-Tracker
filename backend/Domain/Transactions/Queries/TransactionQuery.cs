@@ -81,4 +81,14 @@ public enum TransactionSort
     /// Sorts by destination descending.
     /// </summary>
     DestinationDescending,
+
+    /// <summary>
+    /// Sorts by fully posted status ascending.
+    /// </summary>
+    FullyPosted,
+
+    /// <summary>
+    /// Sorts by fully posted status descending.
+    /// </summary>
+    FullyPostedDescending,
 }

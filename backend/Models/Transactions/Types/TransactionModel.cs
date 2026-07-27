@@ -51,4 +51,9 @@ public abstract class TransactionModel
     /// Amount for the Transaction.
     /// </summary>
     public required decimal Amount { get; init; }
+
+    /// <summary>
+    /// Whether the Transaction is posted to every affected Account.
+    /// </summary>
+    public required bool FullyPosted { get; init; }
 }

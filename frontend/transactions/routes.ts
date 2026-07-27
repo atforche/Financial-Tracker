@@ -43,7 +43,6 @@ const transactionWorkspaceSearchParamsToSearchParams = function (
  * App routes related to accounting periods.
  */
 const routes = {
-  current: (): Route => "/transactions/current",
   trends: (searchParams: TransactionTrendsSearchParams): Route =>
     buildUrl(
       "/transactions/trends",

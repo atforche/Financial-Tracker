@@ -72,6 +72,8 @@ public sealed class TransactionConverter(
         TransactionSortModel.SourceDescending => TransactionSort.SourceDescending,
         TransactionSortModel.Destination => TransactionSort.Destination,
         TransactionSortModel.DestinationDescending => TransactionSort.DestinationDescending,
+        TransactionSortModel.FullyPosted => TransactionSort.FullyPosted,
+        TransactionSortModel.FullyPostedDescending => TransactionSort.FullyPostedDescending,
         _ => TransactionSort.DateDescending,
     };
 
@@ -150,6 +152,7 @@ public sealed class TransactionConverter(
             Sequence = spending.Sequence,
             Description = spending.Description,
             Amount = spending.Amount,
+            FullyPosted = IsFullyPosted(spending),
             Source = new SpendingTransactionSourceModel
             {
                 Account = accountBalanceEventConverter.ToModel(details.GetAccountEvent(
@@ -187,6 +190,7 @@ public sealed class TransactionConverter(
             Sequence = income.Sequence,
             Description = income.Description,
             Amount = income.Amount,
+            FullyPosted = IsFullyPosted(income),
             TrackedAmount = income.TrackedAmount,
             Source = new IncomeTransactionSourceModel
             {
@@ -235,6 +239,7 @@ public sealed class TransactionConverter(
             Sequence = account.Sequence,
             Description = account.Description,
             Amount = account.Amount,
+            FullyPosted = IsFullyPosted(account),
             Source = new AccountTransactionSourceModel
             {
                 Account = account.Source.Account == null ? null : accountBalanceEventConverter.ToModel(details.GetAccountEvent(
@@ -266,6 +271,7 @@ public sealed class TransactionConverter(
             Sequence = fund.Sequence,
             Description = fund.Description,
             Amount = fund.Amount,
+            FullyPosted = IsFullyPosted(fund),
             Source = new FundTransactionSourceModel
             {
                 Fund = fundBalanceEventConverter.ToModel(details.GetFundEvent(
@@ -291,4 +297,10 @@ public sealed class TransactionConverter(
         },
         _ => throw new InvalidOperationException($"Unrecognized Transaction type '{details.Transaction.GetType().Name}'."),
     };
+
+    /// <summary>
+    /// Determines whether a Transaction is posted to every affected Account.
+    /// </summary>
+    private static bool IsFullyPosted(Transaction transaction) => transaction.GetAllAffectedAccountIds()
+        .All(accountId => transaction.GetPostedDateForAccount(accountId) != null);
 }

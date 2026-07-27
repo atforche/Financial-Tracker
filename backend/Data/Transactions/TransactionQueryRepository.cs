@@ -110,7 +110,8 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
         IReadOnlyCollection<Transaction> transactions;
         if (sort is TransactionSort.AccountingPeriod or TransactionSort.AccountingPeriodDescending
             or TransactionSort.Source or TransactionSort.SourceDescending
-            or TransactionSort.Destination or TransactionSort.DestinationDescending)
+            or TransactionSort.Destination or TransactionSort.DestinationDescending
+            or TransactionSort.FullyPosted or TransactionSort.FullyPostedDescending)
         {
             List<Transaction> allTransactions = await filtered.ToListAsync(cancellationToken);
             Dictionary<AccountingPeriodId, int> periodOrder = sort is TransactionSort.AccountingPeriod or TransactionSort.AccountingPeriodDescending
@@ -214,7 +215,8 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
         TransactionSort.AmountDescending => transactions.OrderByDescending(transaction => transaction.Amount).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),
         TransactionSort.AccountingPeriod or TransactionSort.AccountingPeriodDescending
             or TransactionSort.Source or TransactionSort.SourceDescending
-            or TransactionSort.Destination or TransactionSort.DestinationDescending =>
+            or TransactionSort.Destination or TransactionSort.DestinationDescending
+            or TransactionSort.FullyPosted or TransactionSort.FullyPostedDescending =>
             transactions.OrderByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),
         _ => throw new ArgumentOutOfRangeException(nameof(sort), sort, null),
     };
@@ -233,6 +235,8 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
             TransactionSort.SourceDescending => transactions.OrderByDescending(GetSource).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),
             TransactionSort.Destination => transactions.OrderBy(GetDestination).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),
             TransactionSort.DestinationDescending => transactions.OrderByDescending(GetDestination).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),
+            TransactionSort.FullyPosted => transactions.OrderBy(IsFullyPosted).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),
+            TransactionSort.FullyPostedDescending => transactions.OrderByDescending(IsFullyPosted).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),
             TransactionSort.Date or TransactionSort.DateDescending
                 or TransactionSort.Description or TransactionSort.DescriptionDescending
                 or TransactionSort.Amount or TransactionSort.AmountDescending =>
@@ -263,4 +267,10 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
         FundTransaction fund => string.Join(", ", fund.Destinations.Select(destination => destination.Fund.Name).Distinct(StringComparer.OrdinalIgnoreCase)),
         _ => string.Empty,
     };
+
+    /// <summary>
+    /// Determines whether a Transaction is posted to every affected Account.
+    /// </summary>
+    private static bool IsFullyPosted(Transaction transaction) => transaction.GetAllAffectedAccountIds()
+        .All(accountId => transaction.GetPostedDateForAccount(accountId) != null);
 }

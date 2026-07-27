@@ -64,4 +64,14 @@ public enum TransactionSortModel
     /// Transactions are sorted by amount in descending order
     /// </summary>
     AmountDescending,
+
+    /// <summary>
+    /// Transactions are sorted by fully posted status in ascending order
+    /// </summary>
+    FullyPosted,
+
+    /// <summary>
+    /// Transactions are sorted by fully posted status in descending order
+    /// </summary>
+    FullyPostedDescending,
 }

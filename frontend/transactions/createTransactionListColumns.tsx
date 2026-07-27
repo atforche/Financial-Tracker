@@ -2,7 +2,7 @@ import { type Transaction, TransactionSort } from "@/transactions/types";
 import {
   getTransactionDestinationLabel,
   getTransactionSourceLabel,
-} from "@/transactions/current/helpers";
+} from "@/transactions/transactionListHelpers";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
@@ -17,6 +17,7 @@ interface CreateTransactionListColumnsOptions {
   readonly setSort: (sort: TransactionSort | null) => void;
   readonly openTransaction: (transaction: Transaction) => void;
   readonly includeAccountingPeriod?: boolean;
+  readonly includeFullyPosted?: boolean;
 }
 
 /**
@@ -27,6 +28,7 @@ const createTransactionListColumns = function ({
   setSort,
   openTransaction,
   includeAccountingPeriod = false,
+  includeFullyPosted = false,
 }: CreateTransactionListColumnsOptions): ColumnDefinition<Transaction>[] {
   const getSortProps = createColumnSortProps(currentSort, setSort);
   const columns: ColumnDefinition<Transaction>[] = [
@@ -104,6 +106,19 @@ const createTransactionListColumns = function ({
         TransactionSort.AccountingPeriodDescending,
       ),
       minWidth: 165,
+    });
+  }
+
+  if (includeFullyPosted) {
+    columns.splice(-1, 0, {
+      name: "fullyPosted",
+      headerContent: "Fully Posted",
+      getBodyContent: (transaction) => (transaction.fullyPosted ? "Yes" : "No"),
+      ...getSortProps(
+        TransactionSort.FullyPosted,
+        TransactionSort.FullyPostedDescending,
+      ),
+      minWidth: 125,
     });
   }
 

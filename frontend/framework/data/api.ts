@@ -3700,6 +3700,8 @@ export interface components {
              * @description Amount for the Transaction.
              */
             amount: number;
+            /** @description Whether the Transaction is posted to every affected Account. */
+            fullyPosted: boolean;
         };
         /** @description Model representing a fund transaction. */
         TransactionModelFundTransactionModel: {
@@ -3740,6 +3742,8 @@ export interface components {
              * @description Amount for the Transaction.
              */
             amount: number;
+            /** @description Whether the Transaction is posted to every affected Account. */
+            fullyPosted: boolean;
         };
         /** @description Model representing an income transaction. */
         TransactionModelIncomeTransactionModel: {
@@ -3785,6 +3789,8 @@ export interface components {
              * @description Amount for the Transaction.
              */
             amount: number;
+            /** @description Whether the Transaction is posted to every affected Account. */
+            fullyPosted: boolean;
         };
         /** @description Model representing a spending transaction. */
         TransactionModelSpendingTransactionModel: {
@@ -3825,6 +3831,8 @@ export interface components {
              * @description Amount for the Transaction.
              */
             amount: number;
+            /** @description Whether the Transaction is posted to every affected Account. */
+            fullyPosted: boolean;
         };
         /** @description Model representing the collection of Transactions within a specified accounting period range. */
         TransactionsInAccountingPeriodRangeModel: {
@@ -4312,7 +4320,9 @@ export enum TransactionSortModel {
     Destination = "Destination",
     DestinationDescending = "DestinationDescending",
     Amount = "Amount",
-    AmountDescending = "AmountDescending"
+    AmountDescending = "AmountDescending",
+    FullyPosted = "FullyPosted",
+    FullyPostedDescending = "FullyPostedDescending"
 }
 export enum TransactionTypeModel {
     Spending = "Spending",

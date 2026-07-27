@@ -84,19 +84,18 @@ const navigationItems: NavigationLink[] = [
   },
   {
     name: "Transactions",
-    href: transactionRoutes.current(),
+    href: transactionRoutes.workspace({}),
     icon: <ReceiptLong />,
     childLinks: [
-      { name: "Current", href: transactionRoutes.current(), icon: <Today /> },
-      {
-        name: "Trends",
-        href: transactionRoutes.trends({}),
-        icon: <Timeline />,
-      },
       {
         name: "Workspace",
         href: transactionRoutes.workspace({}),
         icon: <Workspaces />,
+      },
+      {
+        name: "Trends",
+        href: transactionRoutes.trends({}),
+        icon: <Timeline />,
       },
     ],
   },

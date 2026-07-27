@@ -83,6 +83,7 @@ const TransactionWorkspaceListFrame = function ({
     currentSort,
     openTransaction,
     setSort,
+    includeFullyPosted: true,
   });
 
   return (

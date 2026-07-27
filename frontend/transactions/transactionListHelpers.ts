@@ -48,11 +48,7 @@ const getTransactionSourceLabel = function (transaction: Transaction): string {
   }
 
   const fundTransaction = asFundTransaction(transaction);
-  if (fundTransaction !== null) {
-    return fundTransaction.source.fund.fund.name;
-  }
-
-  return "";
+  return fundTransaction?.source.fund.fund.name ?? "";
 };
 
 /**
@@ -91,15 +87,13 @@ const getTransactionDestinationLabel = function (
   }
 
   const fundTransaction = asFundTransaction(transaction);
-  if (fundTransaction !== null) {
-    return summarizeValues(
-      fundTransaction.destinations.map(
-        (destination) => destination.fund.fund.name,
-      ),
-    );
-  }
-
-  return "";
+  return fundTransaction === null
+    ? ""
+    : summarizeValues(
+        fundTransaction.destinations.map(
+          (destination) => destination.fund.fund.name,
+        ),
+      );
 };
 
-export { getTransactionSourceLabel, getTransactionDestinationLabel };
+export { getTransactionDestinationLabel, getTransactionSourceLabel };
