@@ -6,7 +6,6 @@ import {
   GridView,
   ReceiptLong,
   Timeline,
-  Today,
   Workspaces,
 } from "@mui/icons-material";
 import type { NavigationLink } from "./navigationLinkTypes";
@@ -23,23 +22,18 @@ const navigationItems: NavigationLink[] = [
   { name: "Overview", href: "/", icon: <GridView /> },
   {
     name: "Accounting Periods",
-    href: accountingPeriodRoutes.current({}),
+    href: accountingPeriodRoutes.workspace({}),
     icon: <CalendarMonth />,
     childLinks: [
       {
-        name: "Current",
-        href: accountingPeriodRoutes.current({}),
-        icon: <Today />,
+        name: "Workspace",
+        href: accountingPeriodRoutes.workspace({}),
+        icon: <Workspaces />,
       },
       {
         name: "Trends",
         href: accountingPeriodRoutes.trends({}),
         icon: <Timeline />,
-      },
-      {
-        name: "Workspace",
-        href: accountingPeriodRoutes.workspace({}),
-        icon: <Workspaces />,
       },
     ],
   },

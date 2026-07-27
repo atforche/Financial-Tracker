@@ -6,7 +6,7 @@ import { Paper } from "@mui/material";
  */
 interface ContentSurfaceProps {
   readonly children: ReactNode;
-  readonly prominent?: boolean;
+  readonly sticky?: boolean;
 }
 
 /**
@@ -14,14 +14,21 @@ interface ContentSurfaceProps {
  */
 const ContentSurface = function ({
   children,
-  prominent = false,
+  sticky = false,
 }: ContentSurfaceProps): JSX.Element {
   return (
     <Paper
       sx={{
+        position: sticky ? "sticky" : "relative",
+        top: sticky ? 10 : undefined,
+        zIndex: sticky
+          ? (theme): number | undefined => theme.zIndex.appBar - 1
+          : undefined,
         border: "1px solid",
         borderColor: "divider",
-        p: prominent ? { xs: 3, md: 4 } : 3,
+        borderRadius: 3,
+        bgcolor: "background.paper",
+        p: { xs: 2, md: 2.5 },
       }}
     >
       {children}

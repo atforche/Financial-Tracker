@@ -2,10 +2,10 @@ import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 
 /**
- * Redirects to the accounting periods trends.
+ * Redirects to the accounting periods workspace.
  */
 const AccountingPeriodsIndexPage = function (): never {
-  redirect(routes.current({}));
+  redirect(routes.workspace({}));
 };
 
 export const dynamic = "force-dynamic";

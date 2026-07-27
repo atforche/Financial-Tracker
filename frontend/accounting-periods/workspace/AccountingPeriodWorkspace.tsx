@@ -16,10 +16,8 @@ import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/works
 import AccountingPeriodWorkspaceActions from "@/accounting-periods/workspace/AccountingPeriodWorkspaceActions";
 import AccountingPeriodWorkspaceFilter from "@/accounting-periods/workspace/AccountingPeriodWorkspaceFilter";
 import AccountingPeriodWorkspaceListFrame from "@/accounting-periods/workspace/AccountingPeriodWorkspaceListFrame";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
@@ -72,10 +70,26 @@ const AccountingPeriodWorkspace = async function ({
       },
     },
   );
+  const latestAccountingPeriodResponse = await apiClient.GET(
+    "/accounting-periods",
+    {
+      params: {
+        query: {
+          Sort: AccountingPeriodSort.DateDescending,
+          Limit: 1,
+        },
+      },
+    },
+  );
   const firstAccountingPeriod = unwrapApiResponse(
     firstAccountingPeriodResponse,
     "Failed to fetch the first accounting period",
   );
+  const latestAccountingPeriod =
+    unwrapApiResponse(
+      latestAccountingPeriodResponse,
+      "Failed to fetch the latest accounting period",
+    ).items[0] ?? null;
   const firstAccountingPeriodYear =
     firstAccountingPeriod.items[0]?.year ?? currentYear;
   const normalizedYears = normalizeIntegerSearchParams(
@@ -129,23 +143,22 @@ const AccountingPeriodWorkspace = async function ({
 
   return (
     <PageLayout>
-      <ConstrainedContent>
-        <AccountingPeriodWorkspaceFilter
-          firstAccountingPeriod={firstAccountingPeriod.items[0] ?? null}
-        />
-      </ConstrainedContent>
-      <ResponsiveGrid minimumColumnWidth={600}>
-        <AccountingPeriodWorkspaceListFrame
-          data={accountingPeriods.items}
-          totalCount={accountingPeriods.totalCount}
-          selectedAccountingPeriodId={selectedAccountingPeriodId ?? null}
-        />
-        <AccountingPeriodWorkspaceActions
-          isInOnboardingMode={isInOnboardingMode}
-          selectedAccountingPeriod={selectedAccountingPeriod}
-          requestedAction={action ?? null}
-        />
-      </ResponsiveGrid>
+      <AccountingPeriodWorkspaceFilter
+        firstAccountingPeriod={firstAccountingPeriod.items[0] ?? null}
+        isInOnboardingMode={isInOnboardingMode}
+        selectedAccountingPeriod={selectedAccountingPeriod}
+      />
+      <AccountingPeriodWorkspaceListFrame
+        data={accountingPeriods.items}
+        totalCount={accountingPeriods.totalCount}
+        selectedAccountingPeriodId={selectedAccountingPeriodId ?? null}
+      />
+      <AccountingPeriodWorkspaceActions
+        isInOnboardingMode={isInOnboardingMode}
+        latestAccountingPeriod={latestAccountingPeriod}
+        selectedAccountingPeriod={selectedAccountingPeriod}
+        requestedAction={action ?? null}
+      />
     </PageLayout>
   );
 };

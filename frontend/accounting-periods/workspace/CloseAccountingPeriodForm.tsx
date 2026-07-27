@@ -10,6 +10,8 @@ import closeAccountingPeriod from "@/accounting-periods/workspace/closeAccountin
  */
 interface CloseAccountingPeriodFormProps {
   readonly accountingPeriod: AccountingPeriod;
+  readonly open: boolean;
+  readonly onClose: () => void;
   readonly redirectUrl: string;
 }
 
@@ -18,11 +20,15 @@ interface CloseAccountingPeriodFormProps {
  */
 const CloseAccountingPeriodForm = function ({
   accountingPeriod,
+  open,
+  onClose,
   redirectUrl,
 }: CloseAccountingPeriodFormProps): JSX.Element {
   return (
     <AccountingPeriodConfirmationForm
       accountingPeriod={accountingPeriod}
+      open={open}
+      onClose={onClose}
       redirectUrl={redirectUrl}
       action={closeAccountingPeriod}
       actionLabel="Close"

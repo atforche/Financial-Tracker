@@ -1,5 +1,6 @@
 "use client";
 
+import { Button, Stack } from "@mui/material";
 import {
   accountingPeriodMonths,
   formatAccountingPeriodMonth,
@@ -9,8 +10,8 @@ import {
   selectAvailableSearchParamValues,
 } from "@/framework/routes/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/workspace/helpers";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
-import { Button } from "@mui/material";
 import type { JSX } from "react";
 import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
@@ -23,6 +24,8 @@ import { useSearchParams } from "next/navigation";
  */
 interface AccountingPeriodWorkspaceFilterProps {
   readonly firstAccountingPeriod: AccountingPeriod | null;
+  readonly isInOnboardingMode: boolean;
+  readonly selectedAccountingPeriod: AccountingPeriod | null;
 }
 
 /**
@@ -30,6 +33,8 @@ interface AccountingPeriodWorkspaceFilterProps {
  */
 const AccountingPeriodWorkspaceFilter = function ({
   firstAccountingPeriod,
+  isInOnboardingMode,
+  selectedAccountingPeriod,
 }: AccountingPeriodWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
@@ -43,6 +48,8 @@ const AccountingPeriodWorkspaceFilter = function ({
     propertyName<AccountingPeriodWorkspaceSearchParams>(
       "selectedAccountingPeriodId",
     );
+  const actionParamName =
+    propertyName<AccountingPeriodWorkspaceSearchParams>("action");
 
   const currentYear = new Date().getFullYear();
   const firstAccountingPeriodYear = firstAccountingPeriod?.year ?? currentYear;
@@ -100,8 +107,63 @@ const AccountingPeriodWorkspaceFilter = function ({
     });
   };
 
+  const setAction = function (action: AccountingPeriodWorkspaceAction): void {
+    updateParams((params) => {
+      params.set(actionParamName, action);
+    });
+  };
+
+  const selectedAction =
+    selectedAccountingPeriod === null
+      ? null
+      : selectedAccountingPeriod.isOpen
+        ? "close"
+        : "reopen";
+
   return (
-    <PageFilterFrame title="Accounting Periods Workspace">
+    <PageFilterFrame
+      title="Accounting Periods Workspace"
+      actions={
+        <Stack direction="row" spacing={1.5} useFlexGap flexWrap="wrap">
+          <Button
+            variant="outlined"
+            onClick={clearView}
+            disabled={!hasActiveView}
+          >
+            Reset Filters
+          </Button>
+          {selectedAction === null ? null : (
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setAction(selectedAction);
+              }}
+            >
+              {selectedAction === "close" ? "Close Period" : "Reopen Period"}
+            </Button>
+          )}
+          {selectedAccountingPeriod === null ? null : (
+            <Button
+              color="error"
+              variant="outlined"
+              onClick={() => {
+                setAction("delete");
+              }}
+            >
+              Delete Period
+            </Button>
+          )}
+          <Button
+            variant="contained"
+            onClick={() => {
+              setAction("create");
+            }}
+          >
+            {isInOnboardingMode ? "Create First Period" : "Create Next Period"}
+          </Button>
+        </Stack>
+      }
+    >
       <MultiSelectAutocompleteFilter
         label="Years"
         options={availableYears}
@@ -134,14 +196,6 @@ const AccountingPeriodWorkspaceFilter = function ({
         }}
         getOptionLabel={formatAccountingPeriodMonth}
       />
-      <Button
-        variant="outlined"
-        onClick={clearView}
-        disabled={!hasActiveView}
-        sx={{ flexShrink: 0 }}
-      >
-        Reset filters
-      </Button>
     </PageFilterFrame>
   );
 };

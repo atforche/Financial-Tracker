@@ -1,5 +1,6 @@
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import type { JSX, ReactNode } from "react";
+import ContentSurface from "@/framework/view/ContentSurface";
 
 /**
  * Props for the PageFilterFrame component.
@@ -25,20 +26,7 @@ const PageFilterFrame = function ({
   sticky = true,
 }: PageFilterFrameProps): JSX.Element {
   return (
-    <Paper
-      sx={{
-        position: sticky ? "sticky" : "relative",
-        top: sticky ? 10 : undefined,
-        zIndex: sticky
-          ? (theme): number | undefined => theme.zIndex.appBar - 1
-          : undefined,
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 3,
-        bgcolor: "background.paper",
-        p: { xs: 2, md: 2.5 },
-      }}
-    >
+    <ContentSurface sticky={sticky}>
       <Stack spacing={2}>
         <Stack
           direction={{ xs: "column", lg: "row" }}
@@ -69,7 +57,7 @@ const PageFilterFrame = function ({
           )}
         </Stack>
       </Stack>
-    </Paper>
+    </ContentSurface>
   );
 };
 

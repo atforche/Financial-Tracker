@@ -5,7 +5,6 @@ import {
 } from "@/framework/routes/helpers";
 import type { AccountingPeriodTrendsSearchParams } from "@/accounting-periods/trends/AccountingPeriodTrends";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
-import type { CurrentAccountingPeriodSearchParams } from "@/accounting-periods/current/CurrentAccountingPeriod";
 import type { Route } from "next";
 
 /**
@@ -27,8 +26,6 @@ const accountingPeriodWorkspaceSearchParamsToSearchParams = function (
  * App routes related to accounting periods.
  */
 const routes = {
-  current: (searchParams: CurrentAccountingPeriodSearchParams): Route =>
-    buildUrl("/accounting-periods/current", objectToSearchParams(searchParams)),
   trends: (searchParams: AccountingPeriodTrendsSearchParams): Route =>
     buildUrl("/accounting-periods/trends", objectToSearchParams(searchParams)),
   workspace: (searchParams: AccountingPeriodWorkspaceSearchParams): Route =>

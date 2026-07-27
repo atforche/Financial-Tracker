@@ -10,6 +10,8 @@ import deleteAccountingPeriod from "@/accounting-periods/workspace/deleteAccount
  */
 interface DeleteAccountingPeriodFormProps {
   readonly accountingPeriod: AccountingPeriod;
+  readonly open: boolean;
+  readonly onClose: () => void;
   readonly redirectUrl: string;
 }
 
@@ -18,11 +20,15 @@ interface DeleteAccountingPeriodFormProps {
  */
 const DeleteAccountingPeriodForm = function ({
   accountingPeriod,
+  open,
+  onClose,
   redirectUrl,
 }: DeleteAccountingPeriodFormProps): JSX.Element {
   return (
     <AccountingPeriodConfirmationForm
       accountingPeriod={accountingPeriod}
+      open={open}
+      onClose={onClose}
       redirectUrl={redirectUrl}
       action={deleteAccountingPeriod}
       actionLabel="Delete"

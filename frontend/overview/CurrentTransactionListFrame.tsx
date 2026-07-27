@@ -8,9 +8,9 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriodWithTransactions } from "@/accounting-periods/types";
 import { Button } from "@mui/material";
-import type { CurrentAccountingPeriodSearchParams } from "@/accounting-periods/current/CurrentAccountingPeriod";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import type { OverviewSearchParams } from "@/overview/OverviewView";
 import createTransactionListColumns from "@/transactions/createTransactionListColumns";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import propertyName from "@/framework/data/propertyName";
@@ -18,25 +18,26 @@ import routes from "@/transactions/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
- * Props for the CurrentAccountingPeriodTransactionListFrame component.
+ * Props for the CurrentTransactionListFrame component.
  */
-interface CurrentAccountingPeriodTransactionListFrameProps {
+interface CurrentTransactionListFrameProps {
   readonly accountingPeriod: AccountingPeriodWithTransactions | null;
 }
 
 /**
- * List frame displaying transactions for the current accounting period page.
+ * Lists transactions in the current accounting period on the overview page.
  */
-const CurrentAccountingPeriodTransactionListFrame = function ({
+const CurrentTransactionListFrame = function ({
   accountingPeriod,
-}: CurrentAccountingPeriodTransactionListFrameProps): JSX.Element {
+}: CurrentTransactionListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const router = useRouter();
-
-  const sortParamName =
-    propertyName<CurrentAccountingPeriodSearchParams>("transactionSort");
-  const pageParamName =
-    propertyName<CurrentAccountingPeriodSearchParams>("transactionPage");
+  const sortParamName = propertyName<OverviewSearchParams>(
+    "currentTransactionSort",
+  );
+  const pageParamName = propertyName<OverviewSearchParams>(
+    "currentTransactionPage",
+  );
   const updateParams = useSearchParamUpdater([pageParamName]);
 
   const setSort = function (sort: TransactionSort | null): void {
@@ -49,11 +50,6 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
     });
   };
 
-  const currentSort = parseEnumValue(
-    TransactionSort,
-    searchParams.get(sortParamName) ?? "",
-  );
-
   const openTransactionWorkspace = function (transaction: Transaction): void {
     router.push(
       routes.workspace({
@@ -65,6 +61,10 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
     );
   };
 
+  const currentSort = parseEnumValue(
+    TransactionSort,
+    searchParams.get(sortParamName) ?? "",
+  );
   const columns = createTransactionListColumns({
     currentSort,
     setSort,
@@ -75,8 +75,8 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
     <ListFrame<Transaction>
       title={
         accountingPeriod === null
-          ? "Transactions"
-          : `Transactions in ${accountingPeriod.name}`
+          ? "Current Transactions"
+          : `Current Transactions (${accountingPeriod.name})`
       }
       columns={columns}
       getId={(transaction) => transaction.id}
@@ -103,4 +103,4 @@ const CurrentAccountingPeriodTransactionListFrame = function ({
   );
 };
 
-export default CurrentAccountingPeriodTransactionListFrame;
+export default CurrentTransactionListFrame;
