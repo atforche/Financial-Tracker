@@ -76,7 +76,7 @@ const createEmptyDestination = function (): AccountDestinationDraft {
 const validateSource = function (source: AccountSourceDraft): boolean {
   const hasAccount = source.account !== null;
   const hasLocation = source.location.trim() !== "";
-  if (!hasAccount && !hasLocation) {
+  if ((hasAccount && hasLocation) || (!hasAccount && !hasLocation)) {
     return false;
   }
   return source.amount !== null && source.amount > 0;
@@ -136,12 +136,17 @@ const validateRequest = function (
     (total, destination) => total + (destination.amount ?? 0),
     0,
   );
+  const destinationAccountIds = destinations.flatMap((destination) =>
+    destination.account === null ? [] : [destination.account.accountId],
+  );
+  const destinationLocations = destinations.flatMap((destination) => {
+    const location = destination.location.trim();
+    return location === "" ? [] : [location];
+  });
   const hasUniqueDestinationAccounts =
-    new Set(destinations.map((d) => d.account?.accountId ?? null)).size ===
-    destinations.length;
+    new Set(destinationAccountIds).size === destinationAccountIds.length;
   const hasUniqueDestinationLocations =
-    new Set(destinations.map((d) => d.location.trim() || null)).size ===
-    destinations.length;
+    new Set(destinationLocations).size === destinationLocations.length;
   const areDestinationsComplete = destinations.every((d) =>
     validateDestination(d, source.account),
   );
