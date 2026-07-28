@@ -112,7 +112,7 @@ const AccountBalanceEventFrame = function ({
   if (postedDate !== null) {
     helperContent = (
       <Typography variant="caption" color="text.secondary" sx={{ px: 1.75 }}>
-        Posted on {formatLongDate(new Date(postedDate))}
+        Posted on {formatLongDate(new Date(`${postedDate}T00:00:00`))}
       </Typography>
     );
   } else if (setAccount === null) {
