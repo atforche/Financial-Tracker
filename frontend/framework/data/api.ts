@@ -4428,11 +4428,7 @@ export enum AccountBalanceEventSortModel {
     Amount = "Amount",
     AmountDescending = "AmountDescending",
     Counterparty = "Counterparty",
-    CounterpartyDescending = "CounterpartyDescending",
-    Source = "Source",
-    SourceDescending = "SourceDescending",
-    Destination = "Destination",
-    DestinationDescending = "DestinationDescending"
+    CounterpartyDescending = "CounterpartyDescending"
 }
 export enum AccountingPeriodSortModel {
     Date = "Date",
@@ -4517,11 +4513,7 @@ export enum FundBalanceEventSortModel {
     Amount = "Amount",
     AmountDescending = "AmountDescending",
     Counterparty = "Counterparty",
-    CounterpartyDescending = "CounterpartyDescending",
-    Source = "Source",
-    SourceDescending = "SourceDescending",
-    Destination = "Destination",
-    DestinationDescending = "DestinationDescending"
+    CounterpartyDescending = "CounterpartyDescending"
 }
 export enum FundedBalanceStatusModel {
     BelowMinimum = "BelowMinimum",

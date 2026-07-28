@@ -58,10 +58,6 @@ public sealed class FundBalanceEventConverter
         FundBalanceEventSortModel.AmountDescending => FundBalanceEventSort.AmountDescending,
         FundBalanceEventSortModel.Counterparty => FundBalanceEventSort.Counterparty,
         FundBalanceEventSortModel.CounterpartyDescending => FundBalanceEventSort.CounterpartyDescending,
-        FundBalanceEventSortModel.Source => FundBalanceEventSort.Source,
-        FundBalanceEventSortModel.SourceDescending => FundBalanceEventSort.SourceDescending,
-        FundBalanceEventSortModel.Destination => FundBalanceEventSort.Destination,
-        FundBalanceEventSortModel.DestinationDescending => FundBalanceEventSort.DestinationDescending,
         _ => FundBalanceEventSort.DateDescending,
     };
 

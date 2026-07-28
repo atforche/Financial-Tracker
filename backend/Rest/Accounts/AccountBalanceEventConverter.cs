@@ -74,10 +74,6 @@ public sealed class AccountBalanceEventConverter
         AccountBalanceEventSortModel.AmountDescending => AccountBalanceEventSort.AmountDescending,
         AccountBalanceEventSortModel.Counterparty => AccountBalanceEventSort.Counterparty,
         AccountBalanceEventSortModel.CounterpartyDescending => AccountBalanceEventSort.CounterpartyDescending,
-        AccountBalanceEventSortModel.Source => AccountBalanceEventSort.Source,
-        AccountBalanceEventSortModel.SourceDescending => AccountBalanceEventSort.SourceDescending,
-        AccountBalanceEventSortModel.Destination => AccountBalanceEventSort.Destination,
-        AccountBalanceEventSortModel.DestinationDescending => AccountBalanceEventSort.DestinationDescending,
         _ => AccountBalanceEventSort.DateDescending,
     };
 

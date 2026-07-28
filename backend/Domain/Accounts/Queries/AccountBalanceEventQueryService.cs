@@ -312,10 +312,6 @@ public sealed class AccountBalanceEventQueryService(
         AccountBalanceEventSort.AmountDescending => events.OrderByDescending(item => item.Amount).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
         AccountBalanceEventSort.Counterparty => SortByText(events, GetCounterpartySortKey, false),
         AccountBalanceEventSort.CounterpartyDescending => SortByText(events, GetCounterpartySortKey, true),
-        AccountBalanceEventSort.Source => SortByText(events, item => item.Source.DisplayName, false),
-        AccountBalanceEventSort.SourceDescending => SortByText(events, item => item.Source.DisplayName, true),
-        AccountBalanceEventSort.Destination => SortByText(events, GetDestinationSortKey, false),
-        AccountBalanceEventSort.DestinationDescending => SortByText(events, GetDestinationSortKey, true),
         _ => events.OrderByDescending(item => !item.IsPosted)
             .ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate)
             .ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence)

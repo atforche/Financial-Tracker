@@ -13,7 +13,7 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import createTrendsBalanceEventColumns from "@/balance-events/createTrendsBalanceEventColumns";
-import { formatBalanceEventDestinations } from "@/balance-events/helpers";
+import { formatBalanceEventCounterparty } from "@/balance-events/helpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import routes from "@/transactions/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -73,21 +73,20 @@ const FundTrendsBalanceEventListFrame = function ({
 
   const getSortProps = createColumnSortProps(currentSort, setSort);
 
-  const leadingColumns: ColumnDefinition<FundBalanceEvent>[] = [
-    {
-      name: "fundName",
-      headerContent: "Fund",
-      getBodyContent: (balanceEvent) => balanceEvent.fund.name,
-      ...getSortProps(
-        FundBalanceEventSort.FundName,
-        FundBalanceEventSort.FundNameDescending,
-      ),
-      minWidth: 140,
-    },
-  ];
+  const fundColumn: ColumnDefinition<FundBalanceEvent> = {
+    name: "fundName",
+    headerContent: "Fund",
+    getBodyContent: (balanceEvent) => balanceEvent.fund.name,
+    ...getSortProps(
+      FundBalanceEventSort.FundName,
+      FundBalanceEventSort.FundNameDescending,
+    ),
+    minWidth: 140,
+  };
+  const leadingColumns: ColumnDefinition<FundBalanceEvent>[] = [];
 
   if (mode === "AccountingPeriod") {
-    leadingColumns.splice(1, 0, {
+    leadingColumns.push({
       name: "accountingPeriodName",
       headerContent: "Accounting Period",
       getBodyContent: (balanceEvent) => balanceEvent.accountingPeriod.name,
@@ -101,6 +100,7 @@ const FundTrendsBalanceEventListFrame = function ({
 
   const columns = createTrendsBalanceEventColumns({
     leadingColumns,
+    afterDateColumns: [fundColumn],
     getSortProps,
     dateSort: {
       ascending: FundBalanceEventSort.Date,
@@ -110,30 +110,21 @@ const FundTrendsBalanceEventListFrame = function ({
       ascending: FundBalanceEventSort.Type,
       descending: FundBalanceEventSort.TypeDescending,
     },
+    typeBeforeDetailColumns: true,
     amountSort: {
       ascending: FundBalanceEventSort.Amount,
       descending: FundBalanceEventSort.AmountDescending,
     },
     detailColumns: [
       {
-        name: "source",
-        headerContent: "Source",
-        getBodyContent: (event): string => event.source.displayName,
+        name: "flow",
+        headerContent: "To / From",
+        getBodyContent: formatBalanceEventCounterparty,
         ...getSortProps(
-          FundBalanceEventSort.Source,
-          FundBalanceEventSort.SourceDescending,
+          FundBalanceEventSort.Counterparty,
+          FundBalanceEventSort.CounterpartyDescending,
         ),
-        minWidth: 160,
-      },
-      {
-        name: "destination",
-        headerContent: "Destination",
-        getBodyContent: formatBalanceEventDestinations,
-        ...getSortProps(
-          FundBalanceEventSort.Destination,
-          FundBalanceEventSort.DestinationDescending,
-        ),
-        minWidth: 180,
+        minWidth: 190,
       },
     ],
     onOpen: openTransactionWorkspace,

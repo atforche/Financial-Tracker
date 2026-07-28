@@ -87,23 +87,4 @@ public enum AccountBalanceEventSort
     /// </summary>
     CounterpartyDescending,
 
-    /// <summary>
-    /// Sorts by transaction source ascending.
-    /// </summary>
-    Source,
-
-    /// <summary>
-    /// Sorts by transaction source descending.
-    /// </summary>
-    SourceDescending,
-
-    /// <summary>
-    /// Sorts by transaction destinations ascending.
-    /// </summary>
-    Destination,
-
-    /// <summary>
-    /// Sorts by transaction destinations descending.
-    /// </summary>
-    DestinationDescending,
 }

@@ -129,11 +129,47 @@ public sealed class FundBalanceEventQueryService(
         IReadOnlyDictionary<FundId, List<FundBalanceHistory>> histories) => transaction switch
         {
             SpendingTransaction spending => spending.Destinations.SelectMany(destination => destination.FundAssignments)
-                .Select(amount => Create(transaction, period, funds[amount.FundId], GetPostedDate(spending, amount.FundId), amount.Amount, BalanceEventType.Debit, ToParty(spending.Source.Account, null, null), spending.Destinations.Select(item => ToParty(item.Account, item.Location, item.Amount)).ToList(), histories)),
-            IncomeTransaction income => income.Destinations.SelectMany(destination => destination.FundAssignments)
-                .Select(amount => Create(transaction, period, funds[amount.FundId], GetPostedDate(income, amount.FundId), amount.Amount, BalanceEventType.Credit, ToParty(income.Source.Account, income.Source.Location, null), income.Destinations.Select(item => ToParty(item.Account, null, item.Amount)).ToList(), histories)),
-            FundTransaction fund => new[] { Create(transaction, period, fund.Source.Fund, transaction.Date, transaction.Amount, BalanceEventType.Debit, new FundBalanceEventParty(fund.Source.Fund.Name, null), fund.Destinations.Select(item => new FundBalanceEventParty(item.Fund.Name, item.Amount)).ToList(), histories) }
-                .Concat(fund.Destinations.Select(destination => Create(transaction, period, destination.Fund, transaction.Date, destination.Amount, BalanceEventType.Credit, new FundBalanceEventParty(fund.Source.Fund.Name, null), fund.Destinations.Select(item => new FundBalanceEventParty(item.Fund.Name, item.Amount)).ToList(), histories))),
+                .Select(amount => Create(
+                    transaction,
+                    period,
+                    funds[amount.FundId],
+                    GetPostedDate(spending, amount.FundId),
+                    amount.Amount,
+                    BalanceEventType.Debit,
+                    ToParty(spending.Source.Account, null, null),
+                    [ToParty(spending.Source.Account, null, null)],
+                    histories)),
+            IncomeTransaction income => income.Destinations.SelectMany(destination => destination.FundAssignments
+                .Select(amount => Create(
+                    transaction,
+                    period,
+                    funds[amount.FundId],
+                    GetPostedDate(income, amount.FundId),
+                    amount.Amount,
+                    BalanceEventType.Credit,
+                    ToParty(destination.Account, null, destination.Amount),
+                    [ToParty(destination.Account, null, destination.Amount)],
+                    histories))),
+            FundTransaction fund => new[] { Create(
+                transaction,
+                period,
+                fund.Source.Fund,
+                transaction.Date,
+                transaction.Amount,
+                BalanceEventType.Debit,
+                new FundBalanceEventParty(fund.Source.Fund.Name, null),
+                fund.Destinations.Select(item => new FundBalanceEventParty(item.Fund.Name, item.Amount)).ToList(),
+                histories) }
+                .Concat(fund.Destinations.Select(destination => Create(
+                    transaction,
+                    period,
+                    destination.Fund,
+                    transaction.Date,
+                    destination.Amount,
+                    BalanceEventType.Credit,
+                    new FundBalanceEventParty(fund.Source.Fund.Name, null),
+                    fund.Destinations.Select(item => new FundBalanceEventParty(item.Fund.Name, item.Amount)).ToList(),
+                    histories))),
             _ => [],
         };
 
@@ -240,19 +276,24 @@ public sealed class FundBalanceEventQueryService(
             FundBalanceEventSort.FundNameDescending => events.OrderByDescending(item => item.Fund.Name).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
             FundBalanceEventSort.AccountingPeriod => events.OrderBy(item => item.AccountingPeriod.Year).ThenBy(item => item.AccountingPeriod.Month).ThenBy(item => item.TransactionId),
             FundBalanceEventSort.AccountingPeriodDescending => events.OrderByDescending(item => item.AccountingPeriod.Year).ThenByDescending(item => item.AccountingPeriod.Month).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.Date => events.OrderBy(item => !item.IsPosted).ThenBy(item => item.IsPosted ? item.EventDate : item.TransactionDate).ThenBy(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.DateDescending => events.OrderByDescending(item => !item.IsPosted).ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate).ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence).ThenBy(item => item.TransactionId),
+            FundBalanceEventSort.Date => events.OrderBy(item => !item.IsPosted)
+                .ThenBy(item => item.IsPosted ? item.EventDate : item.TransactionDate)
+                .ThenBy(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence)
+                .ThenBy(item => item.TransactionId),
+            FundBalanceEventSort.DateDescending => events.OrderByDescending(item => !item.IsPosted)
+                .ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate)
+                .ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence)
+                .ThenBy(item => item.TransactionId),
             FundBalanceEventSort.Type => events.OrderBy(item => item.Type).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
             FundBalanceEventSort.TypeDescending => events.OrderByDescending(item => item.Type).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
             FundBalanceEventSort.Amount => events.OrderBy(item => item.Amount).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
             FundBalanceEventSort.AmountDescending => events.OrderByDescending(item => item.Amount).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
             FundBalanceEventSort.Counterparty => SortByText(events, GetCounterpartySortKey, false),
             FundBalanceEventSort.CounterpartyDescending => SortByText(events, GetCounterpartySortKey, true),
-            FundBalanceEventSort.Source => SortByText(events, item => item.Source.DisplayName, false),
-            FundBalanceEventSort.SourceDescending => SortByText(events, item => item.Source.DisplayName, true),
-            FundBalanceEventSort.Destination => SortByText(events, GetDestinationSortKey, false),
-            FundBalanceEventSort.DestinationDescending => SortByText(events, GetDestinationSortKey, true),
-            _ => events.OrderByDescending(item => !item.IsPosted).ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate).ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence).ThenBy(item => item.TransactionId),
+            _ => events.OrderByDescending(item => !item.IsPosted)
+                .ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate)
+                .ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence)
+                .ThenBy(item => item.TransactionId),
         };
 
     /// <summary>

@@ -135,15 +135,51 @@ public sealed class FundGoalBalanceEventQueryService(
         {
             SpendingTransaction spending => spending.Destinations.SelectMany(destination => destination.FundAssignments
                 .Where(amount => amount.FundId != Fund.UnassignedFundId)
-                .Select(amount => Create(transaction, period, funds[amount.FundId], destination.PostedDate, amount.Amount, BalanceEventType.Debit, ToParty(spending.Source.Account, null, null), spending.Destinations.Select(item => ToParty(item.Account, item.Location, item.Amount)).ToList(), histories))),
+                .Select(amount => Create(
+                    transaction,
+                    period,
+                    funds[amount.FundId],
+                    destination.PostedDate,
+                    amount.Amount,
+                    BalanceEventType.Debit,
+                    ToParty(spending.Source.Account, null, null),
+                    [ToParty(spending.Source.Account, null, null)],
+                    histories))),
             IncomeTransaction income => income.Destinations.SelectMany(destination => destination.FundAssignments
                 .Where(amount => amount.FundId != Fund.UnassignedFundId)
-                .Select(amount => Create(transaction, period, funds[amount.FundId], destination.PostedDate, amount.Amount, BalanceEventType.Credit, ToParty(income.Source.Account, income.Source.Location, null), income.Destinations.Select(item => ToParty(item.Account, null, item.Amount)).ToList(), histories))),
+                .Select(amount => Create(
+                    transaction,
+                    period,
+                    funds[amount.FundId],
+                    destination.PostedDate,
+                    amount.Amount,
+                    BalanceEventType.Credit,
+                    ToParty(destination.Account, null, destination.Amount),
+                    [ToParty(destination.Account, null, destination.Amount)],
+                    histories))),
             FundTransaction fund => (fund.Source.Fund.Id == Fund.UnassignedFundId
                     ? Enumerable.Empty<FundGoalBalanceEvent>()
-                    : new[] { Create(transaction, period, fund.Source.Fund, transaction.Date, transaction.Amount, BalanceEventType.Debit, new FundGoalBalanceEventParty(fund.Source.Fund.Name, null), fund.Destinations.Select(item => new FundGoalBalanceEventParty(item.Fund.Name, item.Amount)).ToList(), histories) })
+                    : new[] { Create(
+                        transaction,
+                        period,
+                        fund.Source.Fund,
+                        transaction.Date,
+                        transaction.Amount,
+                        BalanceEventType.Debit,
+                        new FundGoalBalanceEventParty(fund.Source.Fund.Name, null),
+                        fund.Destinations.Select(item => new FundGoalBalanceEventParty(item.Fund.Name, item.Amount)).ToList(),
+                        histories) })
                 .Concat(fund.Destinations.Where(destination => destination.Fund.Id != Fund.UnassignedFundId)
-                    .Select(destination => Create(transaction, period, destination.Fund, transaction.Date, destination.Amount, BalanceEventType.Credit, new FundGoalBalanceEventParty(fund.Source.Fund.Name, null), fund.Destinations.Select(item => new FundGoalBalanceEventParty(item.Fund.Name, item.Amount)).ToList(), histories))),
+                    .Select(destination => Create(
+                        transaction,
+                        period,
+                        destination.Fund,
+                        transaction.Date,
+                        destination.Amount,
+                        BalanceEventType.Credit,
+                        new FundGoalBalanceEventParty(fund.Source.Fund.Name, null),
+                        fund.Destinations.Select(item => new FundGoalBalanceEventParty(item.Fund.Name, item.Amount)).ToList(),
+                        histories))),
             _ => [],
         };
 
@@ -236,8 +272,14 @@ public sealed class FundGoalBalanceEventQueryService(
         {
             FundGoalBalanceEventSort.FundName => events.OrderBy(item => item.Fund.Name).ThenByDescending(item => item.EventDate),
             FundGoalBalanceEventSort.FundNameDescending => events.OrderByDescending(item => item.Fund.Name).ThenByDescending(item => item.EventDate),
-            FundGoalBalanceEventSort.Date => events.OrderBy(item => !item.IsPosted).ThenBy(item => item.IsPosted ? item.EventDate : item.TransactionDate).ThenBy(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence).ThenBy(item => item.TransactionId),
-            FundGoalBalanceEventSort.DateDescending => events.OrderByDescending(item => !item.IsPosted).ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate).ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence).ThenBy(item => item.TransactionId),
+            FundGoalBalanceEventSort.Date => events.OrderBy(item => !item.IsPosted)
+                .ThenBy(item => item.IsPosted ? item.EventDate : item.TransactionDate)
+                .ThenBy(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence)
+                .ThenBy(item => item.TransactionId),
+            FundGoalBalanceEventSort.DateDescending => events.OrderByDescending(item => !item.IsPosted)
+                .ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate)
+                .ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence)
+                .ThenBy(item => item.TransactionId),
             FundGoalBalanceEventSort.Type => events.OrderBy(item => item.Type).ThenByDescending(item => item.EventDate),
             FundGoalBalanceEventSort.TypeDescending => events.OrderByDescending(item => item.Type).ThenByDescending(item => item.EventDate),
             FundGoalBalanceEventSort.Amount => events.OrderBy(item => item.Amount).ThenByDescending(item => item.EventDate),
@@ -248,7 +290,9 @@ public sealed class FundGoalBalanceEventQueryService(
             FundGoalBalanceEventSort.SourceDescending => SortByText(events, item => item.Source.DisplayName, true),
             FundGoalBalanceEventSort.Destination => SortByText(events, GetDestinationSortKey, false),
             FundGoalBalanceEventSort.DestinationDescending => SortByText(events, GetDestinationSortKey, true),
-            _ => events.OrderByDescending(item => !item.IsPosted).ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate).ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence).ThenBy(item => item.TransactionId),
+            _ => events.OrderByDescending(item => !item.IsPosted).ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate)
+                .ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence)
+                .ThenBy(item => item.TransactionId),
         };
 
     /// <summary>

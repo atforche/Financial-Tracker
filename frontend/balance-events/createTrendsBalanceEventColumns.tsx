@@ -42,6 +42,7 @@ interface CreateTrendsBalanceEventColumnsOptions<
   TSort,
 > {
   readonly leadingColumns: readonly ColumnDefinition<T>[];
+  readonly afterDateColumns?: readonly ColumnDefinition<T>[];
   readonly getSortProps: (
     ascendingSort: TSort,
     descendingSort: TSort,
@@ -51,6 +52,7 @@ interface CreateTrendsBalanceEventColumnsOptions<
   readonly amountSort: SortPair<TSort>;
   readonly onOpen: (event: T) => void;
   readonly detailColumns?: readonly ColumnDefinition<T>[];
+  readonly typeBeforeDetailColumns?: boolean;
   readonly amountMinWidth?: number;
 }
 
@@ -62,14 +64,39 @@ const createTrendsBalanceEventColumns = function <
   TSort,
 >({
   leadingColumns,
+  afterDateColumns = [],
   getSortProps,
   dateSort,
   typeSort,
   amountSort,
   onOpen,
   detailColumns = [],
+  typeBeforeDetailColumns = false,
   amountMinWidth = 120,
 }: CreateTrendsBalanceEventColumnsOptions<T, TSort>): ColumnDefinition<T>[] {
+  const typeColumn: ColumnDefinition<T> | null = typeSort
+    ? {
+        name: "type",
+        headerContent: "Type",
+        getBodyContent: (event) => (
+          <Box
+            component="span"
+            sx={{
+              color:
+                event.type === BalanceEventType.Debit
+                  ? "warning.dark"
+                  : "info.dark",
+              fontWeight: 600,
+            }}
+          >
+            {event.type === BalanceEventType.Debit ? "Debit" : "Credit"}
+          </Box>
+        ),
+        ...getSortProps(typeSort.ascending, typeSort.descending),
+        minWidth: 90,
+      }
+    : null;
+
   const columns: ColumnDefinition<T>[] = [
     ...leadingColumns,
     {
@@ -82,30 +109,13 @@ const createTrendsBalanceEventColumns = function <
       ...getSortProps(dateSort.ascending, dateSort.descending),
       minWidth: 130,
     },
+    ...afterDateColumns,
+    ...(typeBeforeDetailColumns && typeColumn ? [typeColumn] : []),
     ...detailColumns,
   ];
 
-  if (typeSort) {
-    columns.push({
-      name: "type",
-      headerContent: "Type",
-      getBodyContent: (event) => (
-        <Box
-          component="span"
-          sx={{
-            color:
-              event.type === BalanceEventType.Debit
-                ? "warning.dark"
-                : "info.dark",
-            fontWeight: 600,
-          }}
-        >
-          {event.type === BalanceEventType.Debit ? "Debit" : "Credit"}
-        </Box>
-      ),
-      ...getSortProps(typeSort.ascending, typeSort.descending),
-      minWidth: 90,
-    });
+  if (!typeBeforeDetailColumns && typeColumn) {
+    columns.push(typeColumn);
   }
 
   columns.push(

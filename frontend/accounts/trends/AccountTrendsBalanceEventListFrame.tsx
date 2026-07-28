@@ -17,7 +17,7 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import createTrendsBalanceEventColumns from "@/balance-events/createTrendsBalanceEventColumns";
-import { formatBalanceEventDestinations } from "@/balance-events/helpers";
+import { formatBalanceEventCounterparty } from "@/balance-events/helpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import routes from "@/transactions/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -77,18 +77,17 @@ const AccountTrendsBalanceEventListFrame = function ({
 
   const getSortProps = createColumnSortProps(currentSort, setSort);
 
-  const leadingColumns: ColumnDefinition<AccountBalanceEvent>[] = [
-    {
-      name: "accountName",
-      headerContent: "Account",
-      getBodyContent: (balanceEvent) => balanceEvent.account.name,
-      ...getSortProps(
-        AccountBalanceEventSort.AccountName,
-        AccountBalanceEventSort.AccountNameDescending,
-      ),
-      minWidth: 140,
-    },
-  ];
+  const accountColumn: ColumnDefinition<AccountBalanceEvent> = {
+    name: "accountName",
+    headerContent: "Account",
+    getBodyContent: (balanceEvent) => balanceEvent.account.name,
+    ...getSortProps(
+      AccountBalanceEventSort.AccountName,
+      AccountBalanceEventSort.AccountNameDescending,
+    ),
+    minWidth: 140,
+  };
+  const leadingColumns: ColumnDefinition<AccountBalanceEvent>[] = [];
 
   if (mode === "AccountingPeriod") {
     leadingColumns.push({
@@ -105,29 +104,20 @@ const AccountTrendsBalanceEventListFrame = function ({
 
   const detailColumns: ColumnDefinition<AccountBalanceEvent>[] = [
     {
-      name: "source",
-      headerContent: "Source",
-      getBodyContent: (balanceEvent) => balanceEvent.source.displayName,
+      name: "flow",
+      headerContent: "To / From",
+      getBodyContent: formatBalanceEventCounterparty,
       ...getSortProps(
-        AccountBalanceEventSort.Source,
-        AccountBalanceEventSort.SourceDescending,
+        AccountBalanceEventSort.Counterparty,
+        AccountBalanceEventSort.CounterpartyDescending,
       ),
-      minWidth: 160,
-    },
-    {
-      name: "destination",
-      headerContent: "Destination",
-      getBodyContent: formatBalanceEventDestinations,
-      ...getSortProps(
-        AccountBalanceEventSort.Destination,
-        AccountBalanceEventSort.DestinationDescending,
-      ),
-      minWidth: 180,
+      minWidth: 190,
     },
   ];
 
   const columns = createTrendsBalanceEventColumns({
     leadingColumns,
+    afterDateColumns: [accountColumn],
     getSortProps,
     dateSort: {
       ascending: AccountBalanceEventSort.Date,
@@ -142,6 +132,7 @@ const AccountTrendsBalanceEventListFrame = function ({
       descending: AccountBalanceEventSort.AmountDescending,
     },
     detailColumns,
+    typeBeforeDetailColumns: true,
     onOpen: openTransactionWorkspace,
   });
 

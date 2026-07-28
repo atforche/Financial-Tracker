@@ -65,23 +65,4 @@ public enum FundBalanceEventSortModel
     /// </summary>
     CounterpartyDescending,
 
-    /// <summary>
-    /// Balance events are sorted by source.
-    /// </summary>
-    Source,
-
-    /// <summary>
-    /// Balance events are sorted by source descending.
-    /// </summary>
-    SourceDescending,
-
-    /// <summary>
-    /// Balance events are sorted by destination.
-    /// </summary>
-    Destination,
-
-    /// <summary>
-    /// Balance events are sorted by destination descending.
-    /// </summary>
-    DestinationDescending,
 }
