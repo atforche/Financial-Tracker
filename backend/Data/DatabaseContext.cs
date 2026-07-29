@@ -10,7 +10,7 @@ namespace Data;
 /// <summary>
 /// Main DbContext for this application
 /// </summary>
-public class DatabaseContext : DbContext
+public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbContext(options)
 {
     /// <summary>
     /// Collection of Accounts in the database
@@ -101,8 +101,13 @@ public class DatabaseContext : DbContext
     }
 
     /// <inheritdoc/>
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.UseSqlite($"Data Source={DatabasePath}");
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            _ = optionsBuilder.UseSqlite($"Data Source={DatabasePath}");
+        }
+    }
 
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>

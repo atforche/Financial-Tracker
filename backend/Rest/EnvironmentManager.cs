@@ -39,7 +39,9 @@ public class EnvironmentManager : Data.EnvironmentVariableManager
     /// The REST API project is launched by various design-time tools (like MSBuild) to generate OpenAPI specs and other tasks.
     /// However, we don't want the API to actually start up in those cases since we don't have the full environment defined.
     /// </remarks>
-    public static bool ShouldLaunchAPI() => Environment.GetEnvironmentVariable("MSBuildSDKsPath") is null;
+    public static bool ShouldLaunchAPI() =>
+        Environment.GetEnvironmentVariable("MSBuildSDKsPath") is null &&
+        !string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"), "Testing", StringComparison.Ordinal);
 
     /// <summary>
     /// Constructs a new instance of this class
