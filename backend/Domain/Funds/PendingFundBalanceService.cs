@@ -36,7 +36,7 @@ public sealed class PendingFundBalanceService(
         foreach (FundId fundId in transaction.GetAllAffectedFundIds(null).Distinct())
         {
             Fund fund = fundRepository.GetById(fundId);
-            decimal change = transaction.ApplyAsPostedToFundBalance(new FundBalance(fund, 0)).PostedBalance;
+            decimal change = transaction.ApplyUnpostedEffectsToFundBalance(new FundBalance(fund, 0)).PostedBalance;
             decimal pendingDebitAmount = Math.Max(-change, 0);
             decimal pendingCreditAmount = Math.Max(change, 0);
             if (pendingDebitAmount != 0 || pendingCreditAmount != 0)

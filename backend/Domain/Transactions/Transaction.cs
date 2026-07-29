@@ -144,6 +144,19 @@ public abstract class Transaction : Entity<TransactionId>
     }
 
     /// <summary>
+    /// Applies this Transaction's Fund effects that have not yet posted to an Account.
+    /// </summary>
+    public FundBalance ApplyUnpostedEffectsToFundBalance(FundBalance existingFundBalance, bool reverse = false)
+    {
+        FundBalance newBalance = existingFundBalance;
+        foreach (AccountId accountId in GetAllAffectedAccountIds().Where(accountId => GetPostedDateForAccount(accountId) == null))
+        {
+            newBalance = PostToFundBalance(newBalance, accountId, reverse);
+        }
+        return newBalance;
+    }
+
+    /// <summary>
     /// Applies this Transaction to the provided Fund Goal totals.
     /// </summary>
     public FundGoalTotals ApplyToFundGoalTotals(
