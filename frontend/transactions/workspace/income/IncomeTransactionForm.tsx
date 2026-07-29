@@ -31,6 +31,7 @@ import type { FundWithBalance } from "@/funds/types";
 import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFrame";
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
+import { isTrackedAccountType } from "@/accounts/helpers";
 
 /**
  * Represents the state of the income transaction form.
@@ -254,6 +255,12 @@ const IncomeTransactionForm = function <RequestPayload>({
                 updateDestination(index, (currentDestination) => ({
                   ...currentDestination,
                   account,
+                  fundAssignments:
+                    account?.accountType !== null &&
+                    account?.accountType !== undefined &&
+                    isTrackedAccountType(account.accountType)
+                      ? currentDestination.fundAssignments
+                      : [],
                 }));
               }}
               amount={destination.amount}

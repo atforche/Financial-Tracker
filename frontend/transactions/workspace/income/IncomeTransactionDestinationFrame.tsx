@@ -13,6 +13,7 @@ import IncomeFundAssignmentPlanner from "@/funds/assignmentPlanner/IncomeFundAss
 import type { JSX } from "react";
 import type { Transaction } from "@/transactions/types";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
+import { isTrackedAccountType } from "@/accounts/helpers";
 
 const emptyFundAmounts: FundAssignmentDraft[] = [];
 
@@ -65,6 +66,11 @@ const IncomeTransactionDestinationFrame = function ({
   fundAssignmentsValid = true,
   readOnly = false,
 }: IncomeTransactionDestinationFrameProps): JSX.Element {
+  const supportsFundAssignments =
+    account?.accountType !== null &&
+    account?.accountType !== undefined &&
+    isTrackedAccountType(account.accountType);
+
   return (
     <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
@@ -86,16 +92,18 @@ const IncomeTransactionDestinationFrame = function ({
         value={amount}
         setValue={readOnly ? null : setAmount}
       />
-      <IncomeFundAssignmentPlanner
-        funds={funds}
-        fundGoals={fundGoals}
-        totalAmountToAssign={amount}
-        fundAssignments={fundAssignments}
-        setFundAssignments={readOnly ? null : setFundAssignments}
-        baselineFundAssignments={baselineFundAssignments}
-        frameColor={fundAssignmentsValid ? "info" : "error"}
-        readOnly={readOnly}
-      />
+      {supportsFundAssignments ? (
+        <IncomeFundAssignmentPlanner
+          funds={funds}
+          fundGoals={fundGoals}
+          totalAmountToAssign={amount}
+          fundAssignments={fundAssignments}
+          setFundAssignments={readOnly ? null : setFundAssignments}
+          baselineFundAssignments={baselineFundAssignments}
+          frameColor={fundAssignmentsValid ? "info" : "error"}
+          readOnly={readOnly}
+        />
+      ) : null}
     </TransactionSourceOrDestinationFrame>
   );
 };
