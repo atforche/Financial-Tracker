@@ -24,6 +24,11 @@ internal sealed class TestApiClient(HttpClient client) : IDisposable
     }
 
     /// <summary>
+    /// Sends a GET request and returns the response for status-code assertions.
+    /// </summary>
+    public Task<HttpResponseMessage> GetResponseAsync(string uri) => client.GetAsync(new Uri(uri, UriKind.Relative));
+
+    /// <summary>
     /// Sends a POST request and returns its required response body.
     /// </summary>
     public async Task<TResponse> PostAsync<TRequest, TResponse>(string uri, TRequest request)
@@ -44,6 +49,12 @@ internal sealed class TestApiClient(HttpClient client) : IDisposable
     }
 
     /// <summary>
+    /// Sends a POST request and returns the response for status-code assertions.
+    /// </summary>
+    public Task<HttpResponseMessage> PostResponseAsync<TRequest>(string uri, TRequest request) =>
+        client.PostAsJsonAsync(uri, request, JsonOptions);
+
+    /// <summary>
     /// Sends a POST request with no request body.
     /// </summary>
     public async Task PostAsync(string uri)
@@ -60,6 +71,11 @@ internal sealed class TestApiClient(HttpClient client) : IDisposable
         using HttpResponseMessage response = await client.DeleteAsync(new Uri(uri, UriKind.Relative));
         _ = response.EnsureSuccessStatusCode();
     }
+
+    /// <summary>
+    /// Sends a DELETE request and returns the response for status-code assertions.
+    /// </summary>
+    public Task<HttpResponseMessage> DeleteResponseAsync(string uri) => client.DeleteAsync(new Uri(uri, UriKind.Relative));
 
     /// <inheritdoc/>
     public void Dispose() => client.Dispose();

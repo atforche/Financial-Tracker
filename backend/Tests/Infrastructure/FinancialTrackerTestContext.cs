@@ -12,52 +12,57 @@ namespace Tests.Infrastructure;
 internal sealed class FinancialTrackerTestContext : IAsyncDisposable
 {
     private readonly FinancialTrackerApplicationFactory _factory = new();
-    private readonly TestApiClient _apiClient;
+    private TestApiClient ApiClient { get; }
 
     private FinancialTrackerTestContext()
     {
-        _apiClient = new TestApiClient(_factory.CreateClient());
+        ApiClient = new TestApiClient(_factory.CreateClient());
     }
 
     /// <summary>
     /// Gets account setup commands.
     /// </summary>
-    public AccountBuilderFactory Accounts => new(_apiClient);
+    public AccountBuilderFactory Accounts => new(ApiClient);
 
     /// <summary>
     /// Gets accounting-period setup commands.
     /// </summary>
-    public AccountingPeriodBuilderFactory Periods => new(_apiClient);
+    public AccountingPeriodBuilderFactory Periods => new(ApiClient);
 
     /// <summary>
     /// Gets fund setup commands.
     /// </summary>
-    public FundBuilderFactory Funds => new(_apiClient);
+    public FundBuilderFactory Funds => new(ApiClient);
 
     /// <summary>
     /// Gets transaction setup commands.
     /// </summary>
-    public TransactionBuilderFactory Transactions => new(_apiClient);
+    public TransactionBuilderFactory Transactions => new(ApiClient);
+
+    /// <summary>
+    /// Gets the raw API client for response-contract assertions.
+    /// </summary>
+    public TestApiClient Api => ApiClient;
 
     /// <summary>
     /// Gets account queries.
     /// </summary>
-    public AccountQueries AccountQueries => new(_apiClient);
+    public AccountQueries AccountQueries => new(ApiClient);
 
     /// <summary>
     /// Gets accounting-period queries.
     /// </summary>
-    public AccountingPeriodQueries AccountingPeriodQueries => new(_apiClient);
+    public AccountingPeriodQueries AccountingPeriodQueries => new(ApiClient);
 
     /// <summary>
     /// Gets fund queries.
     /// </summary>
-    public FundQueries FundQueries => new(_apiClient);
+    public FundQueries FundQueries => new(ApiClient);
 
     /// <summary>
     /// Gets fund-goal queries.
     /// </summary>
-    public FundGoalQueries FundGoalQueries => new(_apiClient);
+    public FundGoalQueries FundGoalQueries => new(ApiClient);
 
     /// <summary>
     /// Creates an empty test context backed by the full application stack.
@@ -80,7 +85,7 @@ internal sealed class FinancialTrackerTestContext : IAsyncDisposable
     /// <inheritdoc/>
     public ValueTask DisposeAsync()
     {
-        _apiClient.Dispose();
+        ApiClient.Dispose();
         _factory.Dispose();
         return ValueTask.CompletedTask;
     }
