@@ -1,10 +1,12 @@
 using System.Net;
 using Models;
 using Models.AccountingPeriods;
+using Models.Accounts;
 using Models.Funds;
 using Tests.Accounts;
 using Tests.Funds;
 using Tests.Infrastructure;
+using Tests.Transactions;
 
 namespace Tests.AccountingPeriods;
 
@@ -54,6 +56,37 @@ public sealed class AccountingPeriodLifecycleTests
     }
 
     /// <summary>
+    /// Snapshots current posted Account and Fund balances when a later Accounting Period is created.
+    /// </summary>
+    [Fact]
+    public async Task CreateAsyncCarriesPostedBalancesIntoTheNextPeriodOpening()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle income = await test.Funds.Create("Income").In(july).CreateAsync();
+        TransactionHandle transaction = await test.Transactions.Income()
+            .In(july)
+            .On(new DateOnly(2026, 7, 15))
+            .For(40m)
+            .From("Employer")
+            .To(cash, income)
+            .CreateAsync();
+        await test.Transactions.PostAsync(transaction, cash, new DateOnly(2026, 7, 15));
+
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        AccountsInAccountingPeriodRangeModel accounts = await test.Api.GetAsync<AccountsInAccountingPeriodRangeModel>(
+            $"/accounts/accounting-period-range?range.start={july.Id}&range.end={august.Id}");
+        FundsInAccountingPeriodRangeModel funds = await test.Api.GetAsync<FundsInAccountingPeriodRangeModel>(
+            $"/funds/accounting-period-range?range.start={july.Id}&range.end={august.Id}");
+
+        Assert.Equal(140m, Assert.Single(accounts.AccountingPeriods,
+            item => item.AccountingPeriod.Id == august.Id).OpeningBalance.TotalBalance);
+        Assert.Equal(40m, Assert.Single(funds.AccountingPeriods,
+            item => item.AccountingPeriod.Id == august.Id).OpeningBalance.TotalAssignedBalance);
+    }
+
+    /// <summary>
     /// Allows a posted period to close and reopen, while preventing duplicate close operations.
     /// </summary>
     [Fact]
@@ -69,6 +102,28 @@ public sealed class AccountingPeriodLifecycleTests
         Assert.Equal(HttpStatusCode.OK, close.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, repeatClose.StatusCode);
         Assert.Equal(HttpStatusCode.OK, reopen.StatusCode);
+    }
+
+    /// <summary>
+    /// Requires later closed periods to reopen before an earlier closed period can reopen.
+    /// </summary>
+    [Fact]
+    public async Task ReopenAsyncRequiresLaterClosedPeriodsToReopenFirst()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+
+        await test.Api.PostAsync($"/accounting-periods/{july.Id}/close");
+        await test.Api.PostAsync($"/accounting-periods/{august.Id}/close");
+
+        using HttpResponseMessage reopenJulyFirst = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/reopen", new { });
+        using HttpResponseMessage reopenAugust = await test.Api.PostResponseAsync($"/accounting-periods/{august.Id}/reopen", new { });
+        using HttpResponseMessage reopenJuly = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/reopen", new { });
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, reopenJulyFirst.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, reopenAugust.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, reopenJuly.StatusCode);
     }
 
     /// <summary>

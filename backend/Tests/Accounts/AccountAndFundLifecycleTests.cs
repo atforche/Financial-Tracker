@@ -1,5 +1,6 @@
 using System.Net;
 using Models.Accounts;
+using Models.FundGoals;
 using Models.Funds;
 using Tests.AccountingPeriods;
 using Tests.Funds;
@@ -133,5 +134,55 @@ public sealed class AccountAndFundLifecycleTests
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, invalidDate.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, lateOnboarding.StatusCode);
+    }
+
+    /// <summary>
+    /// Adds and removes resources from every existing period history when their opening period has successors.
+    /// </summary>
+    [Fact]
+    public async Task CreateAndDeleteAsyncMaintainResourceMembershipAcrossLaterPeriods()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        AccountModel account = await test.Api.PostAsync<CreateAccountModel, AccountModel>("/accounts", new CreateAccountModel
+        {
+            Name = "Savings",
+            Type = AccountTypeModel.Standard,
+            OpeningAccountingPeriodId = july.Id,
+            DateOpened = new DateOnly(2026, 7, 1)
+        });
+        FundModel fund = await test.Api.PostAsync<CreateFundModel, FundModel>("/funds", new CreateFundModel
+        {
+            Name = "Travel",
+            Description = "Travel",
+            AccountingPeriodId = july.Id
+        });
+        FundGoalModel julyGoal = await test.Api.GetAsync<FundGoalModel>($"/fund-goals/fund/{fund.Id}?accountingPeriodId={july.Id}");
+        FundGoalModel augustGoal = await test.Api.GetAsync<FundGoalModel>($"/fund-goals/fund/{fund.Id}?accountingPeriodId={august.Id}");
+
+        AccountsInAccountingPeriodRangeModel accounts = await test.Api.GetAsync<AccountsInAccountingPeriodRangeModel>(
+            $"/accounts/accounting-period-range?range.start={july.Id}&range.end={august.Id}");
+        FundsInAccountingPeriodRangeModel funds = await test.Api.GetAsync<FundsInAccountingPeriodRangeModel>(
+            $"/funds/accounting-period-range?range.start={july.Id}&range.end={august.Id}");
+
+        Assert.Contains(accounts.Accounts.Items, item => item.Id == account.Id);
+        Assert.Contains(funds.Funds.Items, item => item.Id == fund.Id);
+        Assert.NotEqual(julyGoal.Id, augustGoal.Id);
+
+        await test.Api.DeleteAsync($"/accounts/{account.Id}");
+        await test.Api.DeleteAsync($"/funds/{fund.Id}");
+        using HttpResponseMessage missingJulyGoal = await test.Api.GetResponseAsync($"/fund-goals/fund/{fund.Id}?accountingPeriodId={july.Id}");
+        using HttpResponseMessage missingAugustGoal = await test.Api.GetResponseAsync($"/fund-goals/fund/{fund.Id}?accountingPeriodId={august.Id}");
+
+        accounts = await test.Api.GetAsync<AccountsInAccountingPeriodRangeModel>(
+            $"/accounts/accounting-period-range?range.start={july.Id}&range.end={august.Id}");
+        funds = await test.Api.GetAsync<FundsInAccountingPeriodRangeModel>(
+            $"/funds/accounting-period-range?range.start={july.Id}&range.end={august.Id}");
+
+        Assert.DoesNotContain(accounts.Accounts.Items, item => item.Id == account.Id);
+        Assert.DoesNotContain(funds.Funds.Items, item => item.Id == fund.Id);
+        Assert.Equal(HttpStatusCode.NotFound, missingJulyGoal.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, missingAugustGoal.StatusCode);
     }
 }

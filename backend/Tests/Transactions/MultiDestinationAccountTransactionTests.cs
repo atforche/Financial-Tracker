@@ -1,3 +1,4 @@
+using System.Net;
 using Models.Transactions;
 using Models.Transactions.Create;
 using Tests.AccountingPeriods;
@@ -74,5 +75,36 @@ public sealed class MultiDestinationAccountTransactionTests
         Assert.Equal(1000m, (await test.AccountQueries.GetBalanceAsync(source)).IncludingPending);
         Assert.Equal(0m, (await test.AccountQueries.GetBalanceAsync(firstDestination)).IncludingPending);
         Assert.Equal(0m, (await test.AccountQueries.GetBalanceAsync(secondDestination)).IncludingPending);
+    }
+
+    /// <summary>
+    /// Prevents closing an Accounting Period until every affected Account has posted its transaction effect.
+    /// </summary>
+    [Fact]
+    public async Task CloseAsyncRequiresEveryAffectedAccountToPost()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle source = await test.Accounts.Onboard("Source").WithOpeningBalance(100m).CreateAsync();
+        AccountHandle destination = await test.Accounts.Onboard("Destination").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        CreateTransactionResultModel created = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", new CreateAccountTransactionModel
+        {
+            AccountingPeriodId = july.Id,
+            Date = new DateOnly(2026, 7, 15),
+            Description = "Transfer",
+            Amount = 20m,
+            Source = new CreateAccountTransactionSourceModel { AccountId = source.Id },
+            Destinations = [new CreateAccountTransactionDestinationModel { AccountId = destination.Id, Amount = 20m }]
+        });
+        TransactionHandle transaction = new(created.Id);
+
+        await test.Transactions.PostAsync(transaction, source, new DateOnly(2026, 7, 15));
+        using HttpResponseMessage partiallyPostedClose = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/close", new { });
+
+        await test.Transactions.PostAsync(transaction, destination, new DateOnly(2026, 7, 15));
+        using HttpResponseMessage fullyPostedClose = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/close", new { });
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, partiallyPostedClose.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, fullyPostedClose.StatusCode);
     }
 }

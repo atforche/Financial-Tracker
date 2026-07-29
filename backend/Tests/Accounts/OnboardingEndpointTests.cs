@@ -1,3 +1,4 @@
+using System.Net;
 using Models;
 using Models.Accounts;
 using Models.FundGoals;
@@ -45,5 +46,71 @@ public sealed class OnboardingEndpointTests
         Assert.Equal(50m, goal.MinimumFundedBalance);
         Assert.Equal(100m, goal.MaximumFundedBalance);
         Assert.Equal(75m, goal.TargetEndingBalance);
+    }
+
+    /// <summary>
+    /// Keeps onboarding allocations within the unassigned balance and restores that balance when a Fund is deleted.
+    /// </summary>
+    [Fact]
+    public async Task FundOnboardingAsyncTransfersAndRestoresUnassignedBalance()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        _ = await test.Api.PostAsync<OnboardAccountModel, AccountModel>("/accounts/onboard", new OnboardAccountModel
+        {
+            Name = "Cash",
+            Type = AccountTypeModel.Standard,
+            OnboardedBalance = 100m
+        });
+
+        using HttpResponseMessage insufficient = await test.Api.PostResponseAsync("/funds/onboard", new OnboardFundModel
+        {
+            Name = "Too much",
+            Description = "Too much",
+            OnboardedBalance = 101m
+        });
+        FundModel fund = await test.Api.PostAsync<OnboardFundModel, FundModel>("/funds/onboard", new OnboardFundModel
+        {
+            Name = "Emergency",
+            Description = "Emergency",
+            OnboardedBalance = 70m
+        });
+
+        CollectionModel<FundWithBalanceModel> afterOnboarding = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, insufficient.StatusCode);
+        Assert.Equal(30m, Assert.Single(afterOnboarding.Items, item => item.Name == "Unassigned").CurrentBalance.PostedBalance);
+
+        await test.Api.DeleteAsync($"/funds/{fund.Id}");
+
+        CollectionModel<FundWithBalanceModel> afterDeletion = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
+        Assert.Equal(100m, Assert.Single(afterDeletion.Items, item => item.Name == "Unassigned").CurrentBalance.PostedBalance);
+    }
+
+    /// <summary>
+    /// Applies the inverse unassigned-balance effect for onboarded debt Accounts and restores it on deletion.
+    /// </summary>
+    [Fact]
+    public async Task DebtAccountOnboardingAsyncUpdatesAndRestoresUnassignedBalance()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        _ = await test.Api.PostAsync<OnboardAccountModel, AccountModel>("/accounts/onboard", new OnboardAccountModel
+        {
+            Name = "Cash",
+            Type = AccountTypeModel.Standard,
+            OnboardedBalance = 100m
+        });
+        AccountModel card = await test.Api.PostAsync<OnboardAccountModel, AccountModel>("/accounts/onboard", new OnboardAccountModel
+        {
+            Name = "Card",
+            Type = AccountTypeModel.CreditCard,
+            OnboardedBalance = 40m
+        });
+
+        CollectionModel<FundWithBalanceModel> afterOnboarding = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
+        Assert.Equal(60m, Assert.Single(afterOnboarding.Items, item => item.Name == "Unassigned").CurrentBalance.PostedBalance);
+
+        await test.Api.DeleteAsync($"/accounts/{card.Id}");
+
+        CollectionModel<FundWithBalanceModel> afterDeletion = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
+        Assert.Equal(100m, Assert.Single(afterDeletion.Items, item => item.Name == "Unassigned").CurrentBalance.PostedBalance);
     }
 }

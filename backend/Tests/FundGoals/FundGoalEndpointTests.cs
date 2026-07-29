@@ -62,4 +62,23 @@ public sealed class FundGoalEndpointTests
         Assert.Equal(HttpStatusCode.UnprocessableEntity, negative.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, inverted.StatusCode);
     }
+
+    /// <summary>
+    /// Prevents configuration changes to a Fund Goal owned by a closed Accounting Period.
+    /// </summary>
+    [Fact]
+    public async Task UpdateAsyncRejectsGoalsInClosedAccountingPeriods()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        await test.Api.PostAsync($"/accounting-periods/{july.Id}/close");
+
+        using HttpResponseMessage response = await test.Api.PostResponseAsync($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel
+        {
+            RegularContribution = 50m
+        });
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
 }

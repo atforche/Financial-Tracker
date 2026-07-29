@@ -1,5 +1,6 @@
 using System.Net;
 using Models;
+using Models.Accounts;
 using Models.Funds;
 using Models.Transactions;
 using Models.Transactions.Create;
@@ -214,5 +215,52 @@ public sealed class TransactionValidationMatrixTests
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, unknownFund.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, mismatchedType.StatusCode);
+    }
+
+    /// <summary>
+    /// Rejects Accounts and Funds whose opening period is later than the transaction period.
+    /// </summary>
+    [Fact]
+    public async Task CreateAsyncRejectsResourcesThatDidNotExistInTheTransactionPeriod()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        AccountModel laterAccount = await test.Api.PostAsync<CreateAccountModel, AccountModel>("/accounts", new CreateAccountModel
+        {
+            Name = "Later account",
+            Type = AccountTypeModel.Standard,
+            OpeningAccountingPeriodId = august.Id,
+            DateOpened = new DateOnly(2026, 8, 1)
+        });
+        FundHandle laterFund = await test.Funds.Create("Later fund").In(august).CreateAsync();
+
+        using HttpResponseMessage accountResponse = await test.Api.PostResponseAsync<CreateTransactionModel>("/transactions", new CreateAccountTransactionModel
+        {
+            AccountingPeriodId = july.Id,
+            Date = new DateOnly(2026, 7, 15),
+            Description = "Early transfer",
+            Amount = 10m,
+            Source = new CreateAccountTransactionSourceModel { AccountId = cash.Id },
+            Destinations = [new CreateAccountTransactionDestinationModel { AccountId = laterAccount.Id, Amount = 10m }]
+        });
+        using HttpResponseMessage fundResponse = await test.Api.PostResponseAsync<CreateTransactionModel>("/transactions", new CreateSpendingTransactionModel
+        {
+            AccountingPeriodId = july.Id,
+            Date = new DateOnly(2026, 7, 15),
+            Description = "Early spending",
+            Amount = 10m,
+            Source = new CreateSpendingTransactionSourceModel { AccountId = cash.Id },
+            Destinations = [new CreateSpendingTransactionDestinationModel
+            {
+                Location = "Market",
+                Amount = 10m,
+                FundAssignments = [new CreateFundAmountModel { FundId = laterFund.Id, Amount = 10m }]
+            }]
+        });
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, accountResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, fundResponse.StatusCode);
     }
 }
