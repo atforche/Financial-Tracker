@@ -39,7 +39,8 @@ if (shouldLaunchAPI || isTesting)
         // Configure logging
         _ = builder.Host.UseSerilog((context, configuration) =>
         {
-            _ = configuration.WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+            _ = configuration.ReadFrom.Configuration(context.Configuration)
+                .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
                 .WriteTo.File(Rest.EnvironmentManager.Instance.LogDirectory + "/api-log-.log",
                     rollingInterval: RollingInterval.Day,
                     formatProvider: CultureInfo.InvariantCulture);

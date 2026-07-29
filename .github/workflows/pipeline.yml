@@ -40,6 +40,10 @@ jobs:
       run: |
         python3 backend_scripts.py build
 
+    - name: Test Backend Solution
+      run: |
+        python3 backend_scripts.py test
+
     - name: Install Frontend Dependencies
       run: python3 frontend_scripts.py install
 

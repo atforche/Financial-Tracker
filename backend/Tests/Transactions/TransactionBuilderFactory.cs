@@ -1,6 +1,6 @@
-using Tests.Infrastructure;
-using Tests.Accounts;
 using Models.Transactions;
+using Tests.Accounts;
+using Tests.Infrastructure;
 
 namespace Tests.Transactions;
 
