@@ -284,14 +284,12 @@ public class IncomeTransactionService(
         {
             exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(0), "Income Transactions must have at least one income destination"));
         }
+        if (destinations.Count > 0 && !destinations.Any(destination => destination.Account.Type.IsTracked()))
+        {
+            exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(0), "Income Transactions must have at least one tracked destination account"));
+        }
         foreach ((int index, IncomeTransactionDestination destination) in destinations.Index())
         {
-            if (!destination.Account.Type.IsTracked())
-            {
-                exceptions = exceptions.Append(new ValidationError(
-                    destinationsPathBuilder(index).Append(nameof(IncomeTransactionDestination.Account)),
-                    "Income Transactions must deposit into a tracked account"));
-            }
             if (source.Account != null && destination.Account?.Id == source.Account.Id)
             {
                 exceptions = exceptions.Append(new ValidationError(

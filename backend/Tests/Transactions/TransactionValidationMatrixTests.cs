@@ -120,6 +120,65 @@ public sealed class TransactionValidationMatrixTests
     }
 
     /// <summary>
+    /// Allows income to be split between tracked and untracked Accounts, while requiring at least one tracked destination.
+    /// </summary>
+    [Fact]
+    public async Task CreateAsyncAllowsUntrackedIncomeDestinationsAlongsideTrackedDestination()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountModel debt = await test.Api.PostAsync<CreateAccountModel, AccountModel>("/accounts", new CreateAccountModel
+        {
+            Name = "Debt",
+            Type = AccountTypeModel.Debt,
+            OpeningAccountingPeriodId = july.Id,
+            DateOpened = new DateOnly(2026, 7, 1)
+        });
+        FundHandle income = await test.Funds.Create("Income").In(july).CreateAsync();
+
+        CreateTransactionResultModel created = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", new CreateIncomeTransactionModel
+        {
+            AccountingPeriodId = july.Id,
+            Date = new DateOnly(2026, 7, 15),
+            Description = "Split pay",
+            Amount = 100m,
+            Source = new CreateIncomeTransactionSourceModel
+            {
+                Location = "Employer",
+                IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = 100m }],
+                IncomeDeductions = []
+            },
+            Destinations = [
+                new CreateIncomeTransactionDestinationModel
+                {
+                    AccountId = cash.Id,
+                    Amount = 60m,
+                    FundAssignments = [new CreateFundAmountModel { FundId = income.Id, Amount = 60m }]
+                },
+                new CreateIncomeTransactionDestinationModel { AccountId = debt.Id, Amount = 40m, FundAssignments = [] }
+            ]
+        });
+        using HttpResponseMessage onlyUntracked = await test.Api.PostResponseAsync<CreateTransactionModel>("/transactions", new CreateIncomeTransactionModel
+        {
+            AccountingPeriodId = july.Id,
+            Date = new DateOnly(2026, 7, 15),
+            Description = "Debt payment",
+            Amount = 100m,
+            Source = new CreateIncomeTransactionSourceModel
+            {
+                Location = "Employer",
+                IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = 100m }],
+                IncomeDeductions = []
+            },
+            Destinations = [new CreateIncomeTransactionDestinationModel { AccountId = debt.Id, Amount = 100m, FundAssignments = [] }]
+        });
+
+        Assert.NotEqual(Guid.Empty, created.Id);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, onlyUntracked.StatusCode);
+    }
+
+    /// <summary>
     /// Rejects transfers that use the same source and destination resource.
     /// </summary>
     [Fact]
