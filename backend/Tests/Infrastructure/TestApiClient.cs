@@ -34,6 +34,33 @@ internal sealed class TestApiClient(HttpClient client) : IDisposable
         return body ?? throw new InvalidOperationException($"No response body was returned for {uri}.");
     }
 
+    /// <summary>
+    /// Sends a POST request that does not require a response body.
+    /// </summary>
+    public async Task PostAsync<TRequest>(string uri, TRequest request)
+    {
+        using HttpResponseMessage response = await client.PostAsJsonAsync(uri, request, JsonOptions);
+        _ = response.EnsureSuccessStatusCode();
+    }
+
+    /// <summary>
+    /// Sends a POST request with no request body.
+    /// </summary>
+    public async Task PostAsync(string uri)
+    {
+        using HttpResponseMessage response = await client.PostAsync(new Uri(uri, UriKind.Relative), null);
+        _ = response.EnsureSuccessStatusCode();
+    }
+
+    /// <summary>
+    /// Sends a DELETE request.
+    /// </summary>
+    public async Task DeleteAsync(string uri)
+    {
+        using HttpResponseMessage response = await client.DeleteAsync(new Uri(uri, UriKind.Relative));
+        _ = response.EnsureSuccessStatusCode();
+    }
+
     /// <inheritdoc/>
     public void Dispose() => client.Dispose();
 }

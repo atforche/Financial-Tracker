@@ -121,12 +121,10 @@ public sealed class FundBalanceService(
     /// </summary>
     private void DeleteExistingBalanceHistory(Transaction transaction, FundBalanceHistory history)
     {
-        FundBalance existingBalance = GetExistingFundBalanceAsOf(history.Fund, history.Date, history.Sequence);
         foreach (FundBalanceHistory later in fundBalanceHistoryRepository.GetAllHistoriesLaterThan(history.Fund.Id, history.Date, history.Sequence))
         {
-            FundBalance updated = transaction.ApplyPostedEffectsToFundBalance(existingBalance, history.Date, reverse: true);
+            FundBalance updated = transaction.ApplyPostedEffectsToFundBalance(later.ToFundBalance(), history.Date, reverse: true);
             later.Update(updated);
-            existingBalance = updated;
         }
     }
 

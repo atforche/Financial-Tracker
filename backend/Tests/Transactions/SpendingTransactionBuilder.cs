@@ -1,6 +1,7 @@
 using Models.Funds;
 using Models.Transactions;
 using Models.Transactions.Create;
+using Models.Transactions.Update;
 using Tests.AccountingPeriods;
 using Tests.Accounts;
 using Tests.Funds;
@@ -98,5 +99,36 @@ internal sealed class SpendingTransactionBuilder(TestApiClient apiClient)
         };
         CreateTransactionResultModel model = await apiClient.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", request);
         return new TransactionHandle(model.Id);
+    }
+
+    /// <summary>
+    /// Updates an unposted spending transaction with this builder's values.
+    /// </summary>
+    public async Task UpdateAsync(TransactionHandle transaction)
+    {
+        AccountHandle source = _source ?? throw new InvalidOperationException("A spending transaction must have a source account.");
+        string location = _location ?? throw new InvalidOperationException("A spending transaction must have a destination location.");
+        FundHandle fund = _fund ?? throw new InvalidOperationException("A spending transaction must have a fund assignment.");
+        UpdateTransactionModel request = new UpdateSpendingTransactionModel
+        {
+            Date = _date,
+            Description = location,
+            Amount = _amount,
+            Source = new UpdateSpendingTransactionSourceModel
+            {
+                AccountId = source.Id
+            },
+            Destinations = [new UpdateSpendingTransactionDestinationModel
+            {
+                Location = location,
+                Amount = _amount,
+                FundAssignments = [new CreateFundAmountModel
+                {
+                    FundId = fund.Id,
+                    Amount = _amount
+                }]
+            }]
+        };
+        await apiClient.PostAsync($"/transactions/{transaction.Id}", request);
     }
 }
