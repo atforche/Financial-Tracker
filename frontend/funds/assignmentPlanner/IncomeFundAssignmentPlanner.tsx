@@ -6,6 +6,7 @@ import {
   createFundAssignmentDraft,
   getContributionRemainingAmount,
   getFundOptionSecondaryLabel,
+  getSuggestedAmount,
   deleteFundAssignment as removeFundAssignment,
   sortFundsByRemainingAmount,
   updateFundAssignment,
@@ -91,13 +92,18 @@ const IncomeFundAssignmentPlanner = function ({
           }
           const fund = funds.find((f) => f.id === newFund.id);
           const previousFundBalance = fund?.currentBalance.postedBalance ?? 0;
-          const recommendedAmount =
+          const previousGoalAmount =
             getContributionRemainingAmount(
               newFund.id,
               fundGoals,
               baselineFundAssignments,
             ) ?? 0;
-          const previousGoalAmount = recommendedAmount;
+          const recommendedAmount = getSuggestedAmount(
+            totalAmountToAssign,
+            fundAssignments,
+            index,
+            previousGoalAmount,
+          );
           return {
             fundId: newFund.id,
             fundName: newFund.name,
@@ -105,7 +111,7 @@ const IncomeFundAssignmentPlanner = function ({
             previousFundBalance,
             newFundBalance: previousFundBalance + recommendedAmount,
             previousGoalAmount,
-            newGoalAmount: 0,
+            newGoalAmount: Math.max(previousGoalAmount - recommendedAmount, 0),
           };
         },
       ),
