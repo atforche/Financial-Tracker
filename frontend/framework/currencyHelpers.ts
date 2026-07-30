@@ -77,15 +77,45 @@ const formatSignedCurrency = function (value: number): string {
 };
 
 /**
+ * Converts a currency amount to whole cents.
+ */
+const getCurrencyCents = function (amount: number): number {
+  return Math.round(amount * 100);
+};
+
+/**
+ * Sums currency amounts using whole cents.
+ */
+const getCurrencyTotal = function (
+  amounts: readonly (number | null | undefined)[],
+): number {
+  const totalInCents = amounts.reduce<number>(
+    (total, amount) => total + getCurrencyCents(amount ?? 0),
+    0,
+  );
+  return totalInCents === 0 ? 0 : totalInCents / 100;
+};
+
+/**
  * Gets the difference between two currency amounts using whole cents.
  */
 const getCurrencyDifference = function (
   sourceAmount: number,
   destinationAmount: number,
 ): number {
-  const differenceInCents =
-    Math.round(sourceAmount * 100) - Math.round(destinationAmount * 100);
-  return differenceInCents === 0 ? 0 : differenceInCents / 100;
+  return getCurrencyTotal([sourceAmount, -destinationAmount]);
+};
+
+/**
+ * Gets the lower of two currency amounts using whole cents.
+ */
+const getMinimumCurrencyAmount = function (
+  leftAmount: number,
+  rightAmount: number,
+): number {
+  return (
+    Math.min(getCurrencyCents(leftAmount), getCurrencyCents(rightAmount)) / 100
+  );
 };
 
 /**
@@ -118,6 +148,8 @@ export {
   formatCurrencyValue,
   formatSignedCurrency,
   getCurrencyDifference,
+  getCurrencyTotal,
+  getMinimumCurrencyAmount,
   parseCurrencyValue,
   sanitizeCurrencyInput,
 };

@@ -14,6 +14,7 @@ import {
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
+import { getCurrencyTotal } from "@/framework/currencyHelpers";
 import { getTransactionFundDraftFromTransactionFund } from "@/transactions/workspace/fundBalanceEventDraft";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 
@@ -86,9 +87,8 @@ const validateRequest = function (
   source: FundSourceDraft,
   destinations: FundDestinationDraft[],
 ): boolean {
-  const destinationTotal = destinations.reduce(
-    (total, destination) => total + (destination.amount ?? 0),
-    0,
+  const destinationTotal = getCurrencyTotal(
+    destinations.map((destination) => destination.amount),
   );
   const destinationFundIds = destinations
     .map((destination) => destination.fund?.fundId ?? null)

@@ -30,6 +30,7 @@ import type { FundWithBalance } from "@/funds/types";
 import SpendingTransactionDestinationFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFrame";
 import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
+import { getCurrencyTotal } from "@/framework/currencyHelpers";
 
 /**
  * Represents the state of the spending transaction form.
@@ -144,9 +145,8 @@ const SpendingTransactionForm = function <RequestPayload>({
     };
   };
 
-  const destinationTotal = destinations.reduce(
-    (total, destination) => total + (destination.amount ?? 0),
-    0,
+  const destinationTotal = getCurrencyTotal(
+    destinations.map((destination) => destination.amount),
   );
 
   const addDestination = function (): void {

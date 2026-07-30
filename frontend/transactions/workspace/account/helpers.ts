@@ -15,6 +15,7 @@ import {
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
+import { getCurrencyTotal } from "@/framework/currencyHelpers";
 import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/accountBalanceEventDraft";
 import { isTrackedAccountType } from "@/accounts/helpers";
 
@@ -132,9 +133,8 @@ const validateRequest = function (
   source: AccountSourceDraft,
   destinations: AccountDestinationDraft[],
 ): boolean {
-  const destinationTotal = destinations.reduce(
-    (total, destination) => total + (destination.amount ?? 0),
-    0,
+  const destinationTotal = getCurrencyTotal(
+    destinations.map((destination) => destination.amount),
   );
   const destinationAccountIds = destinations.flatMap((destination) =>
     destination.account === null ? [] : [destination.account.accountId],

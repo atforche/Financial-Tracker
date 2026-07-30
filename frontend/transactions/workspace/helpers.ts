@@ -1,8 +1,11 @@
 import dayjs, { type Dayjs } from "dayjs";
+import {
+  getCurrencyDifference,
+  getCurrencyTotal,
+} from "@/framework/currencyHelpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import { buildUrl } from "@/framework/routes/helpers";
-import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import propertyName from "@/framework/data/propertyName";
 
@@ -128,11 +131,13 @@ const appendDestinationWithAutofilledAmount = function <
   if (sourceAmount === null) {
     return [...destinations, newDestination];
   }
-  const allocatedAmount = destinations.reduce(
-    (total, destination) => total + (destination.amount ?? 0),
+  const allocatedAmount = getCurrencyTotal(
+    destinations.map((destination) => destination.amount),
+  );
+  const remainingAmount = Math.max(
+    getCurrencyDifference(sourceAmount, allocatedAmount),
     0,
   );
-  const remainingAmount = Math.max(sourceAmount - allocatedAmount, 0);
   return [...destinations, setAmount(newDestination, remainingAmount)];
 };
 

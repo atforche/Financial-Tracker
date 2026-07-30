@@ -15,6 +15,10 @@ import {
   getSpendingGoalRemainingAmount,
 } from "@/funds/assignmentPlanner/helpers";
 import {
+  getCurrencyDifference,
+  getCurrencyTotal,
+} from "@/framework/currencyHelpers";
+import {
   hasIncompleteFundAssignments,
   isUnassignedFund,
 } from "@/funds/helpers";
@@ -103,10 +107,14 @@ const validateFundAssignments = function (
 ): boolean {
   return (
     !hasIncompleteFundAssignments(destination.fundAssignments) &&
-    destination.fundAssignments
-      .filter((assignment) => !isUnassignedFund(assignment.fundName))
-      .reduce((total, assignment) => total + assignment.amount, 0) ===
-      (destination.amount ?? 0)
+    getCurrencyDifference(
+      getCurrencyTotal(
+        destination.fundAssignments
+          .filter((assignment) => !isUnassignedFund(assignment.fundName))
+          .map((assignment) => assignment.amount),
+      ),
+      destination.amount ?? 0,
+    ) === 0
   );
 };
 
@@ -156,9 +164,8 @@ const validateRequest = function (
   source: SpendingSourceDraft,
   destinations: SpendingDestinationDraft[],
 ): boolean {
-  const destinationTotal = destinations.reduce(
-    (total, destination) => total + (destination.amount ?? 0),
-    0,
+  const destinationTotal = getCurrencyTotal(
+    destinations.map((destination) => destination.amount),
   );
   return (
     validateDetails(accountingPeriod, date, defaultDate, description) &&

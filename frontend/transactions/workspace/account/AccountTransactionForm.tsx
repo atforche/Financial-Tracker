@@ -23,6 +23,7 @@ import AccountTransactionSourceFrame from "@/transactions/workspace/account/Acco
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
+import { getCurrencyTotal } from "@/framework/currencyHelpers";
 
 /**
  * Represents the state of the account transaction form.
@@ -110,9 +111,8 @@ const AccountTransactionForm = function <RequestPayload>({
     );
   };
 
-  const destinationTotal = destinations.reduce(
-    (total, destination) => total + (destination.amount ?? 0),
-    0,
+  const destinationTotal = getCurrencyTotal(
+    destinations.map((destination) => destination.amount),
   );
 
   const addDestination = function (): void {

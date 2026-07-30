@@ -15,6 +15,10 @@ import {
   getIncomeGoalRemainingAmount,
 } from "@/funds/assignmentPlanner/helpers";
 import {
+  getCurrencyDifference,
+  getCurrencyTotal,
+} from "@/framework/currencyHelpers";
+import {
   validateDetails,
   validateSummary,
 } from "@/transactions/workspace/helpers";
@@ -118,15 +122,13 @@ const createEmptyDestination = function (): IncomeDestinationDraft {
  * Gets the net income amount for an income source.
  */
 const getNetIncomeAmount = function (source: IncomeSourceDraft): number {
-  const incomeLineTotal = source.incomeLines.reduce(
-    (total, line) => total + (line.amount ?? 0),
-    0,
+  const incomeLineTotal = getCurrencyTotal(
+    source.incomeLines.map((line) => line.amount),
   );
-  const incomeDeductionTotal = source.incomeDeductions.reduce(
-    (total, deduction) => total + (deduction.amount ?? 0),
-    0,
+  const incomeDeductionTotal = getCurrencyTotal(
+    source.incomeDeductions.map((deduction) => deduction.amount),
   );
-  return incomeLineTotal - incomeDeductionTotal;
+  return getCurrencyDifference(incomeLineTotal, incomeDeductionTotal);
 };
 
 /**
@@ -186,10 +188,12 @@ const validateFundAssignments = function (
   return (
     !hasIncompleteFundAssignments(destination.fundAssignments) &&
     destination.amount !== null &&
-    destination.fundAssignments.reduce(
-      (total, assignment) => total + assignment.amount,
-      0,
-    ) <= destination.amount
+    getCurrencyDifference(
+      getCurrencyTotal(
+        destination.fundAssignments.map((assignment) => assignment.amount),
+      ),
+      destination.amount,
+    ) <= 0
   );
 };
 
@@ -218,9 +222,8 @@ const validateRequest = function (
   source: IncomeSourceDraft,
   destinations: IncomeDestinationDraft[],
 ): boolean {
-  const destinationTotal = destinations.reduce(
-    (total, destination) => total + (destination.amount ?? 0),
-    0,
+  const destinationTotal = getCurrencyTotal(
+    destinations.map((destination) => destination.amount),
   );
   return (
     validateDetails(accountingPeriod, date, defaultDate, description) &&

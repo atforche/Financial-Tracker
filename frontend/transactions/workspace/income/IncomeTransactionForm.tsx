@@ -31,6 +31,7 @@ import type { FundWithBalance } from "@/funds/types";
 import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFrame";
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
+import { getCurrencyTotal } from "@/framework/currencyHelpers";
 import { isTrackedAccountType } from "@/accounts/helpers";
 
 /**
@@ -106,9 +107,8 @@ const IncomeTransactionForm = function <RequestPayload>({
     (fundGoal) => fundGoal.accountingPeriod?.id === accountingPeriod?.id,
   );
   const sourceNetAmount = getNetIncomeAmount(source);
-  const destinationTotal = destinations.reduce(
-    (total, destination) => total + (destination.amount ?? 0),
-    0,
+  const destinationTotal = getCurrencyTotal(
+    destinations.map((destination) => destination.amount),
   );
 
   const updateDestination = function (
