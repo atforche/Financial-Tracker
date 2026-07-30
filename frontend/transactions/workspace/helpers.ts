@@ -2,6 +2,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import { buildUrl } from "@/framework/routes/helpers";
+import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import propertyName from "@/framework/data/propertyName";
 
@@ -77,7 +78,7 @@ const validateSummary = function (
   return (
     isNotNullOrUndefined(sourceAmount) &&
     destinationCount > 0 &&
-    sourceAmount === destinationAmount
+    getCurrencyDifference(sourceAmount, destinationAmount) === 0
   );
 };
 

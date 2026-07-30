@@ -1,9 +1,12 @@
 import { Box, Stack, Typography, alpha } from "@mui/material";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
+import {
+  formatCurrency,
+  getCurrencyDifference,
+} from "@/framework/currencyHelpers";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for the TransactionSourceDestinationSummary component.
@@ -22,7 +25,7 @@ const TransactionSourceDestinationSummary = function ({
   destinationAmount,
   isValid,
 }: TransactionSourceDestinationSummaryProps): JSX.Element {
-  const difference = sourceAmount - destinationAmount;
+  const difference = getCurrencyDifference(sourceAmount, destinationAmount);
   const isBalanced = difference === 0;
   const summaryColor: FrameColor = isValid ? "info" : "error";
   const summaryCards = [

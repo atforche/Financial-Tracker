@@ -77,6 +77,18 @@ const formatSignedCurrency = function (value: number): string {
 };
 
 /**
+ * Gets the difference between two currency amounts using whole cents.
+ */
+const getCurrencyDifference = function (
+  sourceAmount: number,
+  destinationAmount: number,
+): number {
+  const differenceInCents =
+    Math.round(sourceAmount * 100) - Math.round(destinationAmount * 100);
+  return differenceInCents === 0 ? 0 : differenceInCents / 100;
+};
+
+/**
  * Removes currency display characters from an entry field value.
  */
 const sanitizeCurrencyInput = function (value: string): string {
@@ -105,6 +117,7 @@ export {
   formatCurrency,
   formatCurrencyValue,
   formatSignedCurrency,
+  getCurrencyDifference,
   parseCurrencyValue,
   sanitizeCurrencyInput,
 };
