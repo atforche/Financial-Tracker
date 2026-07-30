@@ -31,15 +31,26 @@ const { auth, handlers, signIn, signOut } = nextAuth({
       clientSecret: process.env["GOOGLE_CLIENT_SECRET"] ?? "",
     }),
   ],
+  pages: {
+    signIn: "/login",
+  },
   callbacks: {
     signIn({ profile }) {
-      return (
-        typeof profile?.sub === "string" &&
-        allowedGoogleSubjects.includes(profile.sub)
-      );
+      const subject = typeof profile?.sub === "string" ? profile.sub : null;
+      const isAllowed =
+        subject !== null && allowedGoogleSubjects.includes(subject);
+
+      if (!isAllowed && subject !== null) {
+        // eslint-disable-next-line no-console
+        console.warn("Rejected Google sign-in for unapproved subject", {
+          subject,
+        });
+      }
+
+      return isAllowed;
     },
-    authorized({ auth: session }) {
-      return session !== null;
+    authorized({ auth: session, request }) {
+      return request.nextUrl.pathname === "/login" || session !== null;
     },
     jwt({ token, account }) {
       if (typeof account?.id_token === "string") {
@@ -47,6 +58,12 @@ const { auth, handlers, signIn, signOut } = nextAuth({
         tokenWithIdToken.idToken = account.id_token;
       }
       return token;
+    },
+    session({ session, token }) {
+      if (typeof token.idToken === "string") {
+        session.idToken = token.idToken;
+      }
+      return session;
     },
   },
 });

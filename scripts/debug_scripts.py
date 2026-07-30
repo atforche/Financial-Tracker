@@ -2,6 +2,7 @@
 """Helper scripts for debugging the Financial Tracker"""
 
 import os
+import re
 import shutil
 from deploy_scripts import CreateInstanceDirectory, CreateEmptyDatabase, ApplyMigrations
 from shared.command import Command
@@ -35,6 +36,17 @@ def get_debug_configuration() -> Configuration:
         google_allowed_subjects=os.environ.get("GOOGLE_ALLOWED_SUBJECTS", ""),
         auth_secret=os.environ.get("AUTH_SECRET", "")
     )
+
+def get_debug_environment() -> dict[str, str]:
+    """Returns the current environment augmented with the debug instance settings."""
+
+    environment = os.environ.copy()
+    with open(get_debug_configuration().get_environment_file_path(), "r", encoding="utf-8") as file:
+        for line in file:
+            variable_match = re.fullmatch(r'([A-Z][A-Z0-9_]*)="(.*)"\n?', line)
+            if variable_match is not None:
+                environment[variable_match.group(1)] = variable_match.group(2)
+    return environment
 
 class CreateDebugEnvironment(Command):
     """Command class that creates the debug environment"""
@@ -81,7 +93,7 @@ class RunDebugFrontend(Command):
         """Runs the frontend for the debug environment"""
 
         os.chdir("../frontend")
-        environment = os.environ.copy()
+        environment = get_debug_environment()
         environment["API_URL"] = f"http://localhost:{get_debug_configuration().backend_port}"
         self.run_subprocess(f"npx next dev --port {get_debug_configuration().frontend_port}", env=environment)
 
@@ -98,12 +110,14 @@ class RunDebugBackend(Command):
         """Runs the backend for the debug environment"""
 
         configuration = get_debug_configuration()
+        environment = get_debug_environment()
+        environment["ASPNETCORE_ENVIRONMENT"] = configuration.environment.value
+        environment["ASPNETCORE_HTTP_PORTS"] = str(configuration.backend_port)
+        environment["DATABASE_PATH"] = configuration.get_database_file_path()
+        environment["LOG_DIRECTORY"] = f"{configuration.path}/logs"
+        environment["FRONTEND_ORIGIN"] = f"http://localhost:{configuration.frontend_port}"
         os.chdir("../backend/Rest")
-        self.run_subprocess((f"dotnet run --environment ASPNETCORE_ENVIRONMENT={configuration.environment.value}"
-                             f" --environment ASPNETCORE_HTTP_PORTS={configuration.backend_port}"
-                             f" --environment DATABASE_PATH={configuration.get_database_file_path()}"
-                             f" --environment LOG_DIRECTORY={configuration.path}/logs"
-                             f" --environment FRONTEND_ORIGIN=http://localhost:{configuration.frontend_port}"))
+        self.run_subprocess("dotnet run", env=environment)
 
 if __name__ == "__main__":
     main()

@@ -26,6 +26,7 @@ Microsoft.AspNetCore.Authentication.AuthenticationBuilder authenticationBuilder 
 _ = authenticationBuilder.AddJwtBearer(options =>
     {
         options.Authority = "https://accounts.google.com";
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,

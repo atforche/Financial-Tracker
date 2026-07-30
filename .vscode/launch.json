@@ -7,6 +7,7 @@
       "request": "launch",
       "cwd": "${workspaceFolder}/frontend",
       "command": "npx next dev --port 3001 --inspect",
+      "envFile": "${workspaceFolder}/debug/.env",
       "env": {
         "API_URL": "http://localhost:8081"
       },
@@ -29,6 +30,7 @@
       "program": "${workspaceFolder}/backend/.artifacts/bin/Rest/Rest.dll",
       "args": [],
       "cwd": "${workspaceFolder}/backend/Rest",
+      "envFile": "${workspaceFolder}/debug/.env",
       "serverReadyAction": {
         "pattern": "\\bNow listening on:\\s+https?://.+:([0-9]+)", // Pattern to detect when the server is ready
         "action": "openExternally",
@@ -51,6 +53,7 @@
       "program": "${workspaceFolder}/backend/.artifacts/bin/Rest/Rest.dll",
       "args": [],
       "cwd": "${workspaceFolder}/backend/Rest",
+      "envFile": "${workspaceFolder}/debug/.env",
       "serverReadyAction": {
         "pattern": "\\bNow listening on:\\s+https?://.+:", // Pattern to detect when the server is ready
         "action": "openExternally",
