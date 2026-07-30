@@ -10,6 +10,9 @@ from shared.command_collection import CommandCollection
 from shared.configuration import Configuration, Environment
 from shared.step import Step
 
+DEBUG_BACKEND_PORT = 8081
+DEBUG_FRONTEND_PORT = 3001
+
 def main():
     """Builds and runs the command collection for this script"""
 
@@ -28,9 +31,8 @@ def get_debug_configuration() -> Configuration:
         name="Debug",
         path=os.path.join(os.path.dirname(__file__), "..", "debug"),
         environment=Environment.DEVELOPMENT,
-        backend_port=8081,
-        frontend_port=3001,
         database_revision=0,
+        public_origin="https://localhost:3001",
         google_client_id=os.environ.get("GOOGLE_CLIENT_ID", ""),
         google_client_secret=os.environ.get("GOOGLE_CLIENT_SECRET", ""),
         google_allowed_subjects=os.environ.get("GOOGLE_ALLOWED_SUBJECTS", ""),
@@ -94,8 +96,8 @@ class RunDebugFrontend(Command):
 
         os.chdir("../frontend")
         environment = get_debug_environment()
-        environment["API_URL"] = f"http://localhost:{get_debug_configuration().backend_port}"
-        self.run_subprocess(f"npx next dev --port {get_debug_configuration().frontend_port}", env=environment)
+        environment["API_URL"] = f"http://localhost:{DEBUG_BACKEND_PORT}"
+        self.run_subprocess(f"npx next dev --port {DEBUG_FRONTEND_PORT}", env=environment)
 
 class RunDebugBackend(Command):
     """Command class that runs the backend for the debug environment"""
@@ -112,10 +114,10 @@ class RunDebugBackend(Command):
         configuration = get_debug_configuration()
         environment = get_debug_environment()
         environment["ASPNETCORE_ENVIRONMENT"] = configuration.environment.value
-        environment["ASPNETCORE_HTTP_PORTS"] = str(configuration.backend_port)
+        environment["ASPNETCORE_HTTP_PORTS"] = str(DEBUG_BACKEND_PORT)
         environment["DATABASE_PATH"] = configuration.get_database_file_path()
         environment["LOG_DIRECTORY"] = f"{configuration.path}/logs"
-        environment["FRONTEND_ORIGIN"] = f"http://localhost:{configuration.frontend_port}"
+        environment["FRONTEND_ORIGIN"] = f"http://localhost:{DEBUG_FRONTEND_PORT}"
         os.chdir("../backend/Rest")
         self.run_subprocess("dotnet run", env=environment)
 

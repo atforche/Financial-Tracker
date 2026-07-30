@@ -22,4 +22,4 @@ COPY --from=production-dependencies --chown=node:node /app/node_modules ./node_m
 COPY --from=build --chown=node:node /app/.next ./.next
 
 USER node
-ENTRYPOINT ["sh", "-c", "exec ./node_modules/.bin/next start --port \"$FRONTEND_PORT\""]
+ENTRYPOINT ["./node_modules/.bin/next", "start", "--port", "3000"]

@@ -28,6 +28,12 @@ def get_scripts_dir() -> Path:
     return SCRIPTS_DIR
 
 
+def get_caddy_file_path() -> Path:
+    """Gets the Caddy configuration file path for the repository root."""
+
+    return PROJECT_ROOT / "Caddyfile"
+
+
 def main():
     """Builds and runs the command collection for this script"""
 
@@ -48,6 +54,7 @@ class CreateCommand(Command):
         self.steps.append(Step("Create Configuration", "Configuration created", self.build_configuration))
         self.steps.append(Step("", "", lambda: CreateInstanceDirectory(self.configuration).run([])))
         self.steps.append(Step("Copy Docker Compose File", "Docker compose file copied", self.copy_compose_file))
+        self.steps.append(Step("Copy Caddy Configuration", "Caddy configuration copied", self.copy_caddy_file))
         self.steps.append(Step("Create Environment File", "Environment file created", self.create_environment_file))
         self.steps.append(Step("", "", lambda: CopyScripts(self.configuration).run([])))
         self.steps.append(Step("", "", lambda: CreateEmptyDatabase(self.configuration).run([])))
@@ -80,6 +87,12 @@ class CreateCommand(Command):
         print(f"Writing the environment file to {self.configuration.get_environment_file_path()}")
         self.configuration.write_to_file()
 
+    def copy_caddy_file(self) -> None:
+        """Copies the Caddy configuration to the instance directory."""
+
+        print(f"Copying Caddyfile to {self.configuration.path}/Caddyfile")
+        shutil.copy(get_caddy_file_path(), f"{self.configuration.path}/Caddyfile")
+
 class DeployCommand(Command):
     """Command class that deploys a new version to an existing instance of the Financial Tracker"""
 
@@ -93,6 +106,8 @@ class DeployCommand(Command):
         super().__init__("deploy", "Deploys a new version to an existing instance of the Financial Tracker")
         self.steps.append(Step("Build Configuration", "Configuration built", self.build_configuration))
         self.steps.append(Step("Write Environment File", "Environment file updated", self.write_environment_file))
+        self.steps.append(Step("Copy Docker Compose File", "Docker compose file copied", self.copy_compose_file))
+        self.steps.append(Step("Copy Caddy Configuration", "Caddy configuration copied", self.copy_caddy_file))
         self.steps.append(Step("Stop Instance", "Instance stopped", lambda: StopCommand().stop_instance(self.configuration.get_compose_file_path())))
         self.steps.append(Step("", "", lambda: CopyScripts(self.configuration).run([])))
         self.steps.append(Step("", "", lambda: ApplyMigrations(self.configuration).run([])))
@@ -113,6 +128,18 @@ class DeployCommand(Command):
         """Writes the complete configuration, including newly added authentication values, to the instance environment file."""
 
         self.configuration.write_to_file()
+
+    def copy_compose_file(self) -> None:
+        """Copies the current Docker Compose file to the instance directory."""
+
+        print(f"Copying compose.yaml file to {self.configuration.get_compose_file_path()}")
+        shutil.copy(get_compose_file_path(), self.configuration.get_compose_file_path())
+
+    def copy_caddy_file(self) -> None:
+        """Copies the current Caddy configuration to the instance directory."""
+
+        print(f"Copying Caddyfile to {self.configuration.path}/Caddyfile")
+        shutil.copy(get_caddy_file_path(), f"{self.configuration.path}/Caddyfile")
 
 class CreateInstanceDirectory(Command):
     """Command class that creates the instance directory"""

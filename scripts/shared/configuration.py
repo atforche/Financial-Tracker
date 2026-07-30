@@ -3,6 +3,7 @@
 from enum import Enum
 import secrets
 from typing import Any
+from urllib.parse import urlsplit
 from shared.environment_variable import EnvironmentVariable
 
 class Environment(Enum):
@@ -17,16 +18,15 @@ class Configuration:
     name: str
     path: str
     environment: Environment
-    backend_port: int
-    frontend_port: int
     database_revision: int
+    public_origin: str
     google_client_id: str
     google_client_secret: str
     google_allowed_subjects: str
     auth_secret: str
 
-    def __init__(self, name: str, path: str, environment: Environment, backend_port: int, frontend_port: int,
-                 database_revision: int, google_client_id: str, google_client_secret: str,
+    def __init__(self, name: str, path: str, environment: Environment, database_revision: int, public_origin: str,
+                 google_client_id: str, google_client_secret: str,
                  google_allowed_subjects: str, auth_secret: str) -> None:
         """Constructs a new instance of this class
         
@@ -34,9 +34,8 @@ class Configuration:
             name (str): Name for this instance of the Financial Tracker
             path (str): Path to the directory where this instance is located
             environment (Environment): Type of environment for this instance. Must be one of Development or Production
-            backend_port (int): Port for the backend REST API to be exposed on
-            frontend_port (int): Port for the frontend to be exposed on
             database_revision (int): Revision number of the database schema
+            public_origin (str): Public HTTPS origin used to access the instance
             google_client_id (str): Client ID from the Google OpenID Connect application registration
             google_client_secret (str): Client secret from the Google OpenID Connect application registration
             google_allowed_subjects (str): Comma-separated immutable Google subjects allowed to access the instance
@@ -46,9 +45,8 @@ class Configuration:
         self.name = name
         self.path = path
         self.environment = environment
-        self.backend_port = backend_port
-        self.frontend_port = frontend_port
         self.database_revision = database_revision
+        self.public_origin = public_origin
         self.google_client_id = google_client_id
         self.google_client_secret = google_client_secret
         self.google_allowed_subjects = google_allowed_subjects
@@ -57,25 +55,54 @@ class Configuration:
     def write_to_file(self) -> None:
         """Writes the current configuration to the specified file"""
 
+        public_host = self.get_public_host()
+        public_port = self.get_public_port()
+
         with open(self.get_environment_file_path(), "w", encoding="utf-8") as file:
             file.write(f'INSTANCE_NAME="{self.name}"\n')
             file.write(f'INSTANCE_DIR="{self.path}"\n')
             file.write(f'ENVIRONMENT="{self.environment.value}"\n')
-            file.write(f'BACKEND_PORT="{self.backend_port}"\n')
-            file.write(f'FRONTEND_PORT="{self.frontend_port}"\n')
+            file.write(f'PUBLIC_ORIGIN="{self.public_origin}"\n')
             file.write(f'DATABASE_REVISION="{self.database_revision}"\n')
             file.write("\n")
             file.write(f'ASPNETCORE_ENVIRONMENT="{self.environment.value}"\n')
             file.write('ASPNETCORE_HTTP_PORTS="8080"\n')
             file.write('DATABASE_PATH="/data/database.db"\n')
-            file.write(f'FRONTEND_ORIGIN="http://localhost:{self.frontend_port}"\n')
-            file.write('API_URL="http://backend:8080"\n')
             file.write('LOG_DIRECTORY="/logs"\n')
+            file.write('\n')
+            file.write(f'FRONTEND_ORIGIN="{self.public_origin}"\n')
+            file.write('API_URL="http://backend:8080"\n')
+            file.write(f'PUBLIC_HOST="{public_host}"\n')
+            file.write(f'PUBLIC_PORT="{public_port}"\n')
             file.write('\n')
             file.write(f'GOOGLE_CLIENT_ID="{self.google_client_id}"\n')
             file.write(f'GOOGLE_CLIENT_SECRET="{self.google_client_secret}"\n')
             file.write(f'GOOGLE_ALLOWED_SUBJECTS="{self.google_allowed_subjects}"\n')
+            file.write('\n')
+            file.write(f'AUTH_URL="{self.public_origin}"\n')
+            file.write('AUTH_TRUST_HOST="true"\n')
             file.write(f'AUTH_SECRET="{self.auth_secret}"\n')
+
+    def get_public_host(self) -> str:
+        """Returns the hostname from the public HTTPS origin"""
+
+        parsed_origin = urlsplit(self.public_origin)
+        if parsed_origin.scheme != "https" or parsed_origin.hostname is None:
+            raise ValueError("PUBLIC_ORIGIN must be an HTTPS origin with a hostname")
+
+        return parsed_origin.hostname
+
+    def get_public_port(self) -> int:
+        """Returns the HTTPS port from the public origin"""
+
+        parsed_origin = urlsplit(self.public_origin)
+        if parsed_origin.scheme != "https" or parsed_origin.hostname is None:
+            raise ValueError("PUBLIC_ORIGIN must be an HTTPS origin with a hostname")
+
+        try:
+            return parsed_origin.port or 443
+        except ValueError as error:
+            raise ValueError("PUBLIC_ORIGIN must use a valid HTTPS port") from error
 
     def get_database_file_path(self) -> str:
         """Returns the path to the database file"""
@@ -121,17 +148,19 @@ class Configuration:
         if environment is not None:
             results["ENVIRONMENT"] = environment
 
-        backend_port = EnvironmentVariable.try_read_from_file(environment_file_path, "BACKEND_PORT", int)
-        if backend_port is not None:
-            results["BACKEND_PORT"] = backend_port
-
-        frontend_port = EnvironmentVariable.try_read_from_file(environment_file_path, "FRONTEND_PORT", int)
-        if frontend_port is not None:
-            results["FRONTEND_PORT"] = frontend_port
-
         database_revision = EnvironmentVariable.try_read_from_file(environment_file_path, "DATABASE_REVISION", int)
         if database_revision is not None:
             results["DATABASE_REVISION"] = database_revision
+
+        public_origin = EnvironmentVariable.try_read_from_file(environment_file_path, "PUBLIC_ORIGIN", str)
+        if public_origin is None:
+            public_domain = EnvironmentVariable.try_read_from_file(environment_file_path, "PUBLIC_DOMAIN", str)
+            if public_domain is not None:
+                public_origin = EnvironmentVariable(
+                    environment_file_path, "PUBLIC_ORIGIN", f"https://{public_domain.value}")
+
+        if public_origin is not None:
+            results["PUBLIC_ORIGIN"] = public_origin
 
         google_client_id = EnvironmentVariable.try_read_from_file(environment_file_path, "GOOGLE_CLIENT_ID", str)
         if google_client_id is not None:
@@ -189,34 +218,20 @@ class Configuration:
         else:
             environment = existing_environment.value
 
-        existing_backend_port = existing_values.get("BACKEND_PORT")
-        if existing_backend_port is None:
-            backend_port = int(input("Enter the backend port: "))
-        elif change_configuration:
-            backend_port = int(input(f"Enter the backend port [{existing_backend_port.value}]: ") or existing_backend_port.value)
-        else:
-            backend_port = existing_backend_port.value
-
-        existing_frontend_port = existing_values.get("FRONTEND_PORT")
-        if existing_frontend_port is None:
-            frontend_port = int(input("Enter the frontend port: "))
-        elif change_configuration:
-            frontend_port = int(input(f"Enter the frontend port [{existing_frontend_port.value}]: ") or existing_frontend_port.value)
-        else:
-            frontend_port = existing_frontend_port.value
-
         existing_database_revision = existing_values.get("DATABASE_REVISION")
         if existing_database_revision is None:
             database_revision = 0
         else:
             database_revision = existing_database_revision.value
 
+        public_origin = cls.get_required_string(existing_values, "PUBLIC_ORIGIN", "public HTTPS origin", change_configuration)
+
         google_client_id = cls.get_required_string(existing_values, "GOOGLE_CLIENT_ID", "Google OAuth client ID", change_configuration)
         google_client_secret = cls.get_required_string(existing_values, "GOOGLE_CLIENT_SECRET", "Google OAuth client secret", change_configuration, True)
         google_allowed_subjects = cls.get_required_string(existing_values, "GOOGLE_ALLOWED_SUBJECTS", "comma-separated Google subjects allowed to access this instance", change_configuration)
         auth_secret = cls.get_auth_secret(existing_values)
 
-        return Configuration(name, path, environment, backend_port, frontend_port, database_revision,
+        return Configuration(name, path, environment, database_revision, public_origin,
                              google_client_id, google_client_secret, google_allowed_subjects, auth_secret)
 
     @staticmethod

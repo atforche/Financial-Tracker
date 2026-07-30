@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Models;
@@ -52,6 +54,30 @@ if (!isTesting && allowedGoogleSubjects.Length > 0)
     _ = authorizationPolicyBuilder.RequireClaim("sub", allowedGoogleSubjects);
 }
 _ = builder.Services.AddAuthorizationBuilder().SetFallbackPolicy(authorizationPolicyBuilder.Build());
+_ = builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+    {
+        bool isReadRequest = HttpMethods.IsGet(context.Request.Method)
+            || HttpMethods.IsHead(context.Request.Method)
+            || HttpMethods.IsOptions(context.Request.Method);
+        int permitLimit = isReadRequest ? 120 : 30;
+        string subject = context.User.FindFirst("sub")?.Value
+            ?? context.Connection.RemoteIpAddress?.ToString()
+            ?? "unknown";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            $"{subject}:{permitLimit}",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = permitLimit,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            });
+    });
+});
 
 // Configure the JSON serializer to serialize enums as their string values
 _ = builder.Services.AddControllers().AddJsonOptions(options =>
@@ -130,8 +156,22 @@ if (app.Environment.IsDevelopment())
     _ = app.MapOpenApi();
     _ = app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Financial Tracker API"));
 }
+if (shouldLaunchAPI)
+{
+    // The backend is reachable only through Caddy, which supplies these headers.
+    // Clearing the defaults permits Caddy's dynamically assigned Compose address.
+    ForwardedHeadersOptions forwardedHeadersOptions = new()
+    {
+        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+        ForwardLimit = 1
+    };
+    forwardedHeadersOptions.KnownIPNetworks.Clear();
+    forwardedHeadersOptions.KnownProxies.Clear();
+    _ = app.UseForwardedHeaders(forwardedHeadersOptions);
+}
 app.UseHttpsRedirection();
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 app.UseCors();
 app.MapControllers();
