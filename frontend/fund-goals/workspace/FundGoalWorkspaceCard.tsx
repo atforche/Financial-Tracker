@@ -44,27 +44,39 @@ const FundGoalWorkspaceCard = function ({
   const toggleLabel = expanded
     ? "Hide progress details"
     : "Show progress details";
-  const configured = [
-    fundGoal.progress.availableBalance,
-    isNotNullOrUndefined(fundGoal.regularContribution) &&
-      fundGoal.progress.contribution,
-    fundGoal.progress.fundedBalance?.minimumBalance,
-    fundGoal.progress.fundedBalance?.maximumBalance,
-    fundGoal.progress.endingBalance,
-  ].filter(Boolean).length;
-  const satisfied = [
-    fundGoal.progress.availableBalance.isSatisfied,
-    fundGoal.progress.contribution?.isSatisfied,
-    fundGoal.progress.fundedBalance?.minimumBalance !== null &&
-      fundGoal.progress.fundedBalance?.minimumBalance !== undefined &&
-      fundGoal.progress.fundedBalance.status !==
-        FundedBalanceStatus.BelowMinimum,
-    fundGoal.progress.fundedBalance?.maximumBalance !== null &&
-      fundGoal.progress.fundedBalance?.maximumBalance !== undefined &&
-      fundGoal.progress.fundedBalance.status !==
-        FundedBalanceStatus.AboveMaximum,
-    fundGoal.progress.endingBalance?.status === EndingBalanceStatus.AtTarget,
-  ].filter(Boolean).length;
+  const { fundedBalance } = fundGoal.progress;
+  const goals = [
+    {
+      configured: true,
+      satisfied: fundGoal.progress.availableBalance.isSatisfied,
+    },
+    {
+      configured: isNotNullOrUndefined(fundGoal.regularContribution),
+      satisfied: fundGoal.progress.contribution?.isSatisfied === true,
+    },
+    {
+      configured: isNotNullOrUndefined(fundGoal.minimumFundedBalance),
+      satisfied:
+        isNotNullOrUndefined(fundedBalance) &&
+        fundedBalance.status !== FundedBalanceStatus.BelowMinimum,
+    },
+    {
+      configured: isNotNullOrUndefined(fundGoal.maximumFundedBalance),
+      satisfied:
+        isNotNullOrUndefined(fundedBalance) &&
+        fundedBalance.status !== FundedBalanceStatus.AboveMaximum,
+    },
+    {
+      configured: isNotNullOrUndefined(fundGoal.targetEndingBalance),
+      satisfied:
+        fundGoal.progress.endingBalance?.status ===
+        EndingBalanceStatus.AtTarget,
+    },
+  ];
+  const configured = goals.filter((goal) => goal.configured).length;
+  const satisfied = goals.filter(
+    (goal) => goal.configured && goal.satisfied,
+  ).length;
   const color: FrameColor =
     configured === 0
       ? "primary"
