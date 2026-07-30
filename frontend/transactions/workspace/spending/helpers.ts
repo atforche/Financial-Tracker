@@ -15,6 +15,7 @@ import {
   getSpendingGoalRemainingAmount,
 } from "@/funds/assignmentPlanner/helpers";
 import {
+  compareCurrencyAmounts,
   getCurrencyDifference,
   getCurrencyTotal,
 } from "@/framework/currencyHelpers";
@@ -96,7 +97,7 @@ const validateSource = function (source: SpendingSourceDraft): boolean {
   ) {
     return false;
   }
-  return source.amount !== null && source.amount > 0;
+  return source.amount !== null && compareCurrencyAmounts(source.amount, 0) > 0;
 };
 
 /**
@@ -128,7 +129,10 @@ const validateDestination = function (
   const normalizedLocation = destination.location?.trim() ?? "";
   const hasAccount = destination.account !== null;
   const hasLocation = normalizedLocation !== "";
-  if (destination.amount === null || destination.amount <= 0) {
+  if (
+    destination.amount === null ||
+    compareCurrencyAmounts(destination.amount, 0) <= 0
+  ) {
     return false;
   }
   if ((hasAccount && hasLocation) || (!hasAccount && !hasLocation)) {
@@ -345,12 +349,14 @@ const getFundAssignmentFromTransactionFund = (
     fundGoals,
     assignment.previousBalance.postedBalance,
   ),
-  newGoalAmount:
+  newGoalAmount: getCurrencyDifference(
     getSpendingGoalRemainingAmount(
       assignment.fund.id,
       fundGoals,
       assignment.previousBalance.postedBalance,
-    ) - assignment.amount,
+    ),
+    assignment.amount,
+  ),
 });
 
 /**

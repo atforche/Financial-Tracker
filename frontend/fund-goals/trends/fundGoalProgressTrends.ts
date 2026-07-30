@@ -4,6 +4,10 @@ import {
   type FundGoalProgress,
   FundedBalanceStatus,
 } from "@/fund-goals/types";
+import {
+  compareCurrencyAmounts,
+  getCurrencyTotal,
+} from "@/framework/currencyHelpers";
 
 /**
  * A Fund Goal paired with its progress for the Fund Goal's Accounting Period.
@@ -98,8 +102,7 @@ const fundGoalMetricDefinitions: Readonly<
   },
 };
 
-const sum = (values: readonly number[]): number =>
-  values.reduce((total, value) => total + value, 0);
+const sum = (values: readonly number[]): number => getCurrencyTotal(values);
 
 /**
  * Aggregates a configured Fund Goal metric for every Accounting Period in the range.
@@ -122,7 +125,11 @@ const buildFundGoalMetricTrendPoints = function (
             {
               currentAmount: goalProgress.availableBalance.currentBalance,
               targetAmount: goalProgress.availableBalance.minimumBalance,
-              isSatisfied: goalProgress.availableBalance.currentBalance > 0,
+              isSatisfied:
+                compareCurrencyAmounts(
+                  goalProgress.availableBalance.currentBalance,
+                  0,
+                ) > 0,
             },
           ];
         case "contribution":

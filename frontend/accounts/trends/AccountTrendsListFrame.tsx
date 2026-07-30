@@ -14,6 +14,10 @@ import {
   formatAccountType,
   isPositiveChangeInBalance,
 } from "@/accounts/helpers";
+import {
+  formatCurrency,
+  getCurrencyDifference,
+} from "@/framework/currencyHelpers";
 import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -22,7 +26,6 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
-import { formatCurrency } from "@/framework/currencyHelpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import routes from "@/accounts/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -131,7 +134,10 @@ const AccountTrendsListFrame = function ({
       name: "change",
       headerContent: "Net Change",
       getBodyContent: (account): JSX.Element => {
-        const changeInBalance = account.endingBalance - account.startingBalance;
+        const changeInBalance = getCurrencyDifference(
+          account.endingBalance,
+          account.startingBalance,
+        );
         const isPositive = isPositiveChangeInBalance(
           account.type,
           changeInBalance,

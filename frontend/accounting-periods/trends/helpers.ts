@@ -8,6 +8,7 @@ import {
 } from "@/framework/charts/barMetricHelpers";
 import type { BalanceTrendChartPoint } from "@/framework/charts/balanceTrendHelpers";
 import { createAccountingPeriodMetricPoint } from "@/framework/charts/chartPointHelpers";
+import { getCurrencyDifference } from "@/framework/currencyHelpers";
 
 /**
  * Builds the chart points for the balance trend chart based on the provided accounting periods.
@@ -43,8 +44,10 @@ const buildChangeChartPoints = function (
   accountingPeriods: readonly AccountingPeriodWithBalance[],
 ): BarMetricChartPoint[] {
   return accountingPeriods.map((accountingPeriod) => {
-    const value =
-      accountingPeriod.closingBalance - accountingPeriod.openingBalance;
+    const value = getCurrencyDifference(
+      accountingPeriod.closingBalance,
+      accountingPeriod.openingBalance,
+    );
 
     return createAccountingPeriodMetricPoint(
       { name: accountingPeriod.name, value },

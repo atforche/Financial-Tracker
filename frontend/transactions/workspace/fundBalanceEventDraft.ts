@@ -4,6 +4,10 @@ import type {
   FundBalanceEventDraft,
   FundWithBalance,
 } from "@/funds/types";
+import {
+  getCurrencyDifference,
+  getCurrencyTotal,
+} from "@/framework/currencyHelpers";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
@@ -12,7 +16,10 @@ import { isNullOrUndefined } from "@/framework/nullHelpers";
 const getTransactionFundDraftBalanceChange = function (
   fund: FundBalanceEventDraft | null,
 ): number {
-  return (fund?.newFundBalance ?? 0) - (fund?.previousFundBalance ?? 0);
+  return getCurrencyDifference(
+    fund?.newFundBalance ?? 0,
+    fund?.previousFundBalance ?? 0,
+  );
 };
 
 /**
@@ -27,7 +34,10 @@ const setTransactionFundDraftBalanceChange = function (
   }
   return {
     ...fund,
-    newFundBalance: (fund.previousFundBalance ?? 0) + (balanceChange ?? 0),
+    newFundBalance: getCurrencyTotal([
+      fund.previousFundBalance ?? 0,
+      balanceChange ?? 0,
+    ]),
   };
 };
 
@@ -43,7 +53,7 @@ const createTransactionFundDraftFromFund = function (
     fundId: fund.id,
     fundName: fund.name,
     previousFundBalance: previousPostedBalance,
-    newFundBalance: previousPostedBalance + balanceChange,
+    newFundBalance: getCurrencyTotal([previousPostedBalance, balanceChange]),
   };
 };
 

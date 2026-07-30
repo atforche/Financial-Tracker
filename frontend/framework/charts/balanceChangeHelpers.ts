@@ -7,6 +7,7 @@ import {
   createDateMetricPoint,
 } from "@/framework/charts/chartPointHelpers";
 import type { ChartRangeMode } from "@/framework/charts/chartTypes";
+import { getCurrencyDifference } from "@/framework/currencyHelpers";
 
 /**
  * Type representing a summary of balances for a specific accounting period or date.
@@ -39,7 +40,7 @@ const buildBalanceChangeChartPoints = function ({
 }): BarMetricChartPoint[] {
   if (mode === "AccountingPeriod") {
     return accountingPeriods.map(({ name, openingBalance, closingBalance }) => {
-      const value = closingBalance - openingBalance;
+      const value = getCurrencyDifference(closingBalance, openingBalance);
       return createAccountingPeriodMetricPoint(
         { name, value },
         getSignedChartColor(value),
@@ -55,7 +56,10 @@ const buildBalanceChangeChartPoints = function ({
   }
 
   return dates.slice(1).map((summary, index) => {
-    const value = summary.balance - (dates[index]?.balance ?? 0);
+    const value = getCurrencyDifference(
+      summary.balance,
+      dates[index]?.balance ?? 0,
+    );
     return createDateMetricPoint(
       { date: summary.date, value },
       getSignedChartColor(value),

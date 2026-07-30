@@ -15,6 +15,7 @@ import {
   getIncomeGoalRemainingAmount,
 } from "@/funds/assignmentPlanner/helpers";
 import {
+  compareCurrencyAmounts,
   getCurrencyDifference,
   getCurrencyTotal,
 } from "@/framework/currencyHelpers";
@@ -139,7 +140,7 @@ const validateIncomeLine = function (incomeLine: IncomeLineDraft): boolean {
     incomeLine.description !== null &&
     incomeLine.description.trim() !== "" &&
     incomeLine.amount !== null &&
-    incomeLine.amount > 0
+    compareCurrencyAmounts(incomeLine.amount, 0) > 0
   );
 };
 
@@ -153,7 +154,7 @@ const validateIncomeDeduction = function (
     incomeDeduction.description !== null &&
     incomeDeduction.description.trim() !== "" &&
     incomeDeduction.amount !== null &&
-    incomeDeduction.amount > 0
+    compareCurrencyAmounts(incomeDeduction.amount, 0) > 0
   );
 };
 
@@ -175,7 +176,7 @@ const validateSource = function (source: IncomeSourceDraft): boolean {
   return (
     hasValidIncomeLines &&
     hasValidIncomeDeductions &&
-    getNetIncomeAmount(source) >= 0
+    compareCurrencyAmounts(getNetIncomeAmount(source), 0) >= 0
   );
 };
 
@@ -206,7 +207,7 @@ const validateDestination = function (
   return (
     destination.account !== null &&
     destination.amount !== null &&
-    destination.amount > 0 &&
+    compareCurrencyAmounts(destination.amount, 0) > 0 &&
     validateFundAssignments(destination)
   );
 };

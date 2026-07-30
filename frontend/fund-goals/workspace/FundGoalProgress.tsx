@@ -1,6 +1,10 @@
 import { Box, Stack, Typography } from "@mui/material";
+import {
+  formatCurrency,
+  getCurrencyDifference,
+  getMaximumCurrencyAmount,
+} from "@/framework/currencyHelpers";
 import type { JSX } from "react";
-import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for the FundGoalProgress component.
@@ -66,7 +70,12 @@ const FundGoalProgress = function ({
           {statusDescription ??
             (satisfied
               ? "Satisfied"
-              : `${formatCurrency(Math.max(target - current, 0))} remaining`)}
+              : `${formatCurrency(
+                  getMaximumCurrencyAmount(
+                    getCurrencyDifference(target, current),
+                    0,
+                  ),
+                )} remaining`)}
         </Typography>
       </Stack>
     </Stack>

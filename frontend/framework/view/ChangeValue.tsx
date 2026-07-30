@@ -1,6 +1,9 @@
+import {
+  formatCurrency,
+  getCurrencyDifference,
+} from "@/framework/currencyHelpers";
 import { Box } from "@mui/material";
 import type { JSX } from "react";
-import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for the ChangeValue component.
@@ -19,7 +22,9 @@ const ChangeValue = function ({
   endingValue,
   change,
 }: ChangeValueProps): JSX.Element {
-  const netChange = change ?? (endingValue ?? startingValue) - startingValue;
+  const netChange =
+    change ??
+    getCurrencyDifference(endingValue ?? startingValue, startingValue);
   const percentChange =
     startingValue === 0 ? 0 : (netChange / Math.abs(startingValue)) * 100;
 

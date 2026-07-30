@@ -1,4 +1,5 @@
 import { AccountType } from "@/accounts/types";
+import { compareCurrencyAmounts } from "@/framework/currencyHelpers";
 
 /**
  * Determines if the provided account type supports tracked fund assignments.
@@ -35,9 +36,9 @@ const isPositiveChangeInBalance = function (
   changeInBalance: number,
 ): boolean {
   if (accountType === AccountType.Debt) {
-    return changeInBalance <= 0;
+    return compareCurrencyAmounts(changeInBalance, 0) <= 0;
   }
-  return changeInBalance >= 0;
+  return compareCurrencyAmounts(changeInBalance, 0) >= 0;
 };
 
 /**

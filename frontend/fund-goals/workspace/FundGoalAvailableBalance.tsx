@@ -1,7 +1,10 @@
 import { Stack, Typography } from "@mui/material";
+import {
+  compareCurrencyAmounts,
+  formatCurrency,
+} from "@/framework/currencyHelpers";
 import type { FundGoalProgress } from "@/fund-goals/types";
 import type { JSX } from "react";
-import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for the FundGoalAvailableBalance component.
@@ -25,7 +28,9 @@ const FundGoalAvailableBalance = function ({
         variant="body2"
         fontWeight={700}
         color={
-          availableBalance.currentBalance >= 0 ? "success.main" : "error.main"
+          compareCurrencyAmounts(availableBalance.currentBalance, 0) >= 0
+            ? "success.main"
+            : "error.main"
         }
       >
         {formatCurrency(availableBalance.currentBalance)}

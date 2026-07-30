@@ -13,6 +13,11 @@ import {
   buildOnboardFundRequest,
   validateOnboardFundSetup,
 } from "@/funds/workspace/helpers";
+import {
+  compareCurrencyAmounts,
+  formatCurrency,
+  getCurrencyDifference,
+} from "@/framework/currencyHelpers";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
@@ -20,7 +25,6 @@ import Frame from "@/framework/view/Frame";
 import FundGoalSetupSection from "@/funds/workspace/FundGoalSetupSection";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
-import { formatCurrency } from "@/framework/currencyHelpers";
 import onboardFund from "@/funds/workspace/onboardFund";
 import useFundSetupState from "@/funds/workspace/useFundSetupState";
 import { useRouter } from "next/navigation";
@@ -77,7 +81,7 @@ const OnboardFundForm = function ({
   const remainingUnassignedAmount =
     unassignedBalance === null
       ? null
-      : unassignedBalance - (onboardedBalance ?? 0);
+      : getCurrencyDifference(unassignedBalance, onboardedBalance ?? 0);
 
   const fundSetupIsComplete = validateOnboardFundSetup(name, onboardedBalance);
   const request = buildOnboardFundRequest({
@@ -121,7 +125,7 @@ const OnboardFundForm = function ({
                 variant="body2"
                 sx={{
                   color:
-                    remainingUnassignedAmount < 0
+                    compareCurrencyAmounts(remainingUnassignedAmount, 0) < 0
                       ? "error.main"
                       : "text.secondary",
                 }}

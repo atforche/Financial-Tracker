@@ -4,6 +4,10 @@ import type {
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
+import {
+  getCurrencyDifference,
+  getCurrencyTotal,
+} from "@/framework/currencyHelpers";
 import { isDebtAccountType } from "@/accounts/helpers";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
 
@@ -13,8 +17,9 @@ import { isNullOrUndefined } from "@/framework/nullHelpers";
 const getTransactionAccountDraftBalanceChange = function (
   account: AccountBalanceEventDraft | null,
 ): number {
-  return (
-    (account?.newAccountBalance ?? 0) - (account?.previousAccountBalance ?? 0)
+  return getCurrencyDifference(
+    account?.newAccountBalance ?? 0,
+    account?.previousAccountBalance ?? 0,
   );
 };
 
@@ -35,8 +40,10 @@ const setTransactionAccountDraftBalanceChange = function (
   }
   return {
     ...account,
-    newAccountBalance:
-      (account.previousAccountBalance ?? 0) + nextBalanceChange,
+    newAccountBalance: getCurrencyTotal([
+      account.previousAccountBalance ?? 0,
+      nextBalanceChange,
+    ]),
   };
 };
 
@@ -54,7 +61,7 @@ const createTransactionAccountDraftFromAccount = function (
     accountType: account.type,
     postedDate: null,
     previousAccountBalance: previousPostedBalance,
-    newAccountBalance: previousPostedBalance + balanceChange,
+    newAccountBalance: getCurrencyTotal([previousPostedBalance, balanceChange]),
   };
 };
 

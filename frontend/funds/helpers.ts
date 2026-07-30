@@ -1,4 +1,5 @@
 import type { Fund, FundAmount } from "@/funds/types";
+import { compareCurrencyAmounts } from "@/framework/currencyHelpers";
 
 /**
  * Determines if a given fund name corresponds to the special "Unassigned" fund.
@@ -24,8 +25,9 @@ const hasIncompleteFundAssignments = function (
     (fundAmount) =>
       fundAmount.fundId === "" ||
       fundAmount.fundName === "" ||
-      fundAmount.amount < 0 ||
-      (fundAmount.amount === 0 && !isUnassignedFund(fundAmount.fundName)),
+      compareCurrencyAmounts(fundAmount.amount, 0) < 0 ||
+      (compareCurrencyAmounts(fundAmount.amount, 0) === 0 &&
+        !isUnassignedFund(fundAmount.fundName)),
   );
 };
 

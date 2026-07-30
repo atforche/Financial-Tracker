@@ -11,11 +11,16 @@ import {
   sortFundsByRemainingAmount,
   updateFundAssignment,
 } from "@/funds/assignmentPlanner/helpers";
+import {
+  compareCurrencyAmounts,
+  formatCurrency,
+  getCurrencyTotal,
+  getMaximumCurrencyAmount,
+} from "@/framework/currencyHelpers";
 import type { FrameColor } from "@/framework/view/Frame";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { JSX } from "react";
-import { formatCurrency } from "@/framework/currencyHelpers";
 import { getUnassignedFund } from "@/funds/helpers";
 
 /**
@@ -109,9 +114,15 @@ const IncomeFundAssignmentPlanner = function ({
             fundName: newFund.name,
             amount: recommendedAmount,
             previousFundBalance,
-            newFundBalance: previousFundBalance + recommendedAmount,
+            newFundBalance: getCurrencyTotal([
+              previousFundBalance,
+              recommendedAmount,
+            ]),
             previousGoalAmount,
-            newGoalAmount: Math.max(previousGoalAmount - recommendedAmount, 0),
+            newGoalAmount: getMaximumCurrencyAmount(
+              getCurrencyTotal([previousGoalAmount, -recommendedAmount]),
+              0,
+            ),
           };
         },
       ),
@@ -138,8 +149,14 @@ const IncomeFundAssignmentPlanner = function ({
           return {
             ...assignment,
             amount: newAmount ?? 0,
-            newFundBalance: assignment.previousFundBalance + (newAmount ?? 0),
-            newGoalAmount: Math.max(previousGoalAmount - (newAmount ?? 0), 0),
+            newFundBalance: getCurrencyTotal([
+              assignment.previousFundBalance,
+              newAmount ?? 0,
+            ]),
+            newGoalAmount: getMaximumCurrencyAmount(
+              getCurrencyTotal([previousGoalAmount, -(newAmount ?? 0)]),
+              0,
+            ),
           };
         },
       ),
@@ -159,7 +176,11 @@ const IncomeFundAssignmentPlanner = function ({
           label={`Previous remaining to assign ${formatCurrency(assignment.previousGoalAmount)}`}
         />
         <Chip
-          color={assignment.newGoalAmount <= 0 ? "success" : "default"}
+          color={
+            compareCurrencyAmounts(assignment.newGoalAmount, 0) <= 0
+              ? "success"
+              : "default"
+          }
           label={`New remaining to assign ${formatCurrency(assignment.newGoalAmount)}`}
         />
         <Chip
@@ -167,7 +188,11 @@ const IncomeFundAssignmentPlanner = function ({
           label={`Previous balance ${formatCurrency(assignment.previousFundBalance)}`}
         />
         <Chip
-          color={assignment.newFundBalance >= 0 ? "success" : "error"}
+          color={
+            compareCurrencyAmounts(assignment.newFundBalance, 0) >= 0
+              ? "success"
+              : "error"
+          }
           label={`New balance ${formatCurrency(assignment.newFundBalance)}`}
         />
       </Stack>
@@ -188,7 +213,9 @@ const IncomeFundAssignmentPlanner = function ({
         if (remainingAmount === null) {
           return "default";
         }
-        return remainingAmount === 0 ? "success" : "info";
+        return compareCurrencyAmounts(remainingAmount, 0) === 0
+          ? "success"
+          : "info";
       }}
       getFundOptionSecondaryLabel={(fund) =>
         getFundOptionSecondaryLabel(

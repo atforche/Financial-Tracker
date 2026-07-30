@@ -1,8 +1,10 @@
-import dayjs, { type Dayjs } from "dayjs";
 import {
+  compareCurrencyAmounts,
   getCurrencyDifference,
   getCurrencyTotal,
+  getMaximumCurrencyAmount,
 } from "@/framework/currencyHelpers";
+import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import { buildUrl } from "@/framework/routes/helpers";
@@ -106,7 +108,10 @@ const syncDestinationAmountsToSource = function <
   const [destination] = destinations;
   if (
     typeof destination === "undefined" ||
-    (destination.amount !== 0 && destination.amount !== previousSourceAmount)
+    (compareCurrencyAmounts(destination.amount ?? 0, 0) !== 0 &&
+      previousSourceAmount !== null &&
+      compareCurrencyAmounts(destination.amount ?? 0, previousSourceAmount) !==
+        0)
   ) {
     return destinations;
   }
@@ -134,7 +139,7 @@ const appendDestinationWithAutofilledAmount = function <
   const allocatedAmount = getCurrencyTotal(
     destinations.map((destination) => destination.amount),
   );
-  const remainingAmount = Math.max(
+  const remainingAmount = getMaximumCurrencyAmount(
     getCurrencyDifference(sourceAmount, allocatedAmount),
     0,
   );

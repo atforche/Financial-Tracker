@@ -43,6 +43,7 @@ import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/Sp
 import TransactionForm from "@/transactions/workspace/TransactionForm";
 import UnpostTransactionForm from "@/transactions/workspace/UnpostTransactionForm";
 import dayjs from "dayjs";
+import { getCurrencyTotal } from "@/framework/currencyHelpers";
 import { getPostedTransactionAccounts } from "@/transactions/postingHelpers";
 
 /**
@@ -100,9 +101,8 @@ const ViewTransactionForm = function ({
     );
 
     sourceAmount = source.amount;
-    destinationAmount = destinations.reduce(
-      (total, destination) => total + (destination.amount ?? 0),
-      0,
+    destinationAmount = getCurrencyTotal(
+      destinations.map((destination) => destination.amount),
     );
     sourceContent = (
       <SpendingTransactionSourceFrame
@@ -146,9 +146,8 @@ const ViewTransactionForm = function ({
     );
 
     sourceAmount = getNetIncomeAmount(source);
-    destinationAmount = destinations.reduce(
-      (total, destination) => total + (destination.amount ?? 0),
-      0,
+    destinationAmount = getCurrencyTotal(
+      destinations.map((destination) => destination.amount),
     );
     sourceContent = (
       <IncomeTransactionSourceFrame
@@ -192,9 +191,8 @@ const ViewTransactionForm = function ({
       getAccountDestinationsFromTransaction(accountTransaction);
 
     sourceAmount = source.amount;
-    destinationAmount = destinations.reduce(
-      (total, destination) => total + (destination.amount ?? 0),
-      0,
+    destinationAmount = getCurrencyTotal(
+      destinations.map((destination) => destination.amount),
     );
     sourceContent = (
       <AccountTransactionSourceFrame
@@ -232,9 +230,8 @@ const ViewTransactionForm = function ({
     const destinations = getFundDestinationsFromTransaction(fundTransaction);
 
     sourceAmount = source.amount;
-    destinationAmount = destinations.reduce(
-      (total, destination) => total + (destination.amount ?? 0),
-      0,
+    destinationAmount = getCurrencyTotal(
+      destinations.map((destination) => destination.amount),
     );
     sourceContent = (
       <FundTransactionSourceFrame

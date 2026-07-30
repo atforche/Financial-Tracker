@@ -1,6 +1,13 @@
+import {
+  compareCurrencyAmounts,
+  formatCurrency,
+  getCurrencyDifference,
+  getCurrencyTotal,
+  getMaximumCurrencyAmount,
+  getMinimumCurrencyAmount,
+} from "@/framework/currencyHelpers";
 import type { Fund } from "@/funds/types";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
-import { formatCurrency } from "@/framework/currencyHelpers";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
 import { isUnassignedFund } from "@/funds/helpers";
 
@@ -49,9 +56,10 @@ const getExplicitFundAssignments = function (
 const getAssignedFundAmount = function (
   fundAssignments: readonly FundAssignmentDraft[],
 ): number {
-  return getExplicitFundAssignments(fundAssignments).reduce(
-    (acc, fundAssignment) => acc + fundAssignment.amount,
-    0,
+  return getCurrencyTotal(
+    getExplicitFundAssignments(fundAssignments).map(
+      (fundAssignment) => fundAssignment.amount,
+    ),
   );
 };
 
@@ -66,7 +74,10 @@ const getRemainingFundAmount = function (
     return null;
   }
 
-  return totalAmountToAssign - getAssignedFundAmount(fundAssignments);
+  return getCurrencyTotal([
+    totalAmountToAssign,
+    -getAssignedFundAmount(fundAssignments),
+  ]);
 };
 
 /**
@@ -82,16 +93,18 @@ const updateUnassignedFundAmount = function (
     return explicitFundAssignments;
   }
 
-  const assignedAmount = explicitFundAssignments.reduce(
-    (acc, fundAssignment) => acc + fundAssignment.amount,
-    0,
+  const assignedAmount = getCurrencyTotal(
+    explicitFundAssignments.map((fundAssignment) => fundAssignment.amount),
   );
 
   return [
     {
       fundId: unassignedFund.id,
       fundName: unassignedFund.name,
-      amount: Math.max(totalAmountToAssign - assignedAmount, 0),
+      amount: getMaximumCurrencyAmount(
+        getCurrencyTotal([totalAmountToAssign, -assignedAmount]),
+        0,
+      ),
       previousFundBalance: 0,
       newFundBalance: 0,
       previousGoalAmount: 0,
@@ -172,7 +185,7 @@ const getRemainingAmount = function (
   const baselineAssignedAmount =
     baselineFundAssignments.find((assignment) => assignment.fundId === fundId)
       ?.amount ?? 0;
-  return remainingAmount + baselineAssignedAmount;
+  return getCurrencyTotal([remainingAmount, baselineAssignedAmount]);
 };
 
 /**
@@ -275,8 +288,8 @@ const sortFundsByRemainingAmount = function (
     return -1;
   }
 
-  if (leftRemainingAmount !== rightRemainingAmount) {
-    return rightRemainingAmount - leftRemainingAmount;
+  if (compareCurrencyAmounts(leftRemainingAmount, rightRemainingAmount) !== 0) {
+    return getCurrencyDifference(rightRemainingAmount, leftRemainingAmount);
   }
 
   return left.name.localeCompare(right.name);
@@ -295,13 +308,16 @@ const getTransactionRemainingAmount = function (
     return explicitFundAssignments[index]?.amount ?? 0;
   }
 
-  const amountAssignedElsewhere = explicitFundAssignments.reduce(
-    (acc, assignment, assignmentIndex) =>
-      assignmentIndex === index ? acc : acc + assignment.amount,
-    0,
+  const amountAssignedElsewhere = getCurrencyTotal(
+    explicitFundAssignments.flatMap((assignment, assignmentIndex) =>
+      assignmentIndex === index ? [] : [assignment.amount],
+    ),
   );
 
-  return Math.max(totalAmountToAssign - amountAssignedElsewhere, 0);
+  return getMaximumCurrencyAmount(
+    getCurrencyTotal([totalAmountToAssign, -amountAssignedElsewhere]),
+    0,
+  );
 };
 
 /**
@@ -323,7 +339,10 @@ const getSuggestedAmount = function (
     return transactionRemainingAmount;
   }
 
-  return Math.min(transactionRemainingAmount, Math.max(maximumAmount, 0));
+  return getMinimumCurrencyAmount(
+    transactionRemainingAmount,
+    getMaximumCurrencyAmount(maximumAmount, 0),
+  );
 };
 
 /**

@@ -10,12 +10,15 @@ import {
   UpdateTransactionModelUpdateAccountTransactionModelType,
 } from "@/framework/data/api";
 import {
+  compareCurrencyAmounts,
+  getCurrencyTotal,
+} from "@/framework/currencyHelpers";
+import {
   validateDetails,
   validateSummary,
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
-import { getCurrencyTotal } from "@/framework/currencyHelpers";
 import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/accountBalanceEventDraft";
 import { isTrackedAccountType } from "@/accounts/helpers";
 
@@ -80,7 +83,7 @@ const validateSource = function (source: AccountSourceDraft): boolean {
   if ((hasAccount && hasLocation) || (!hasAccount && !hasLocation)) {
     return false;
   }
-  return source.amount !== null && source.amount > 0;
+  return source.amount !== null && compareCurrencyAmounts(source.amount, 0) > 0;
 };
 
 /**
@@ -99,7 +102,10 @@ const validateDestination = function (
     destination.account.accountType !== null &&
     isTrackedAccountType(destination.account.accountType);
 
-  if (destination.amount === null || destination.amount <= 0) {
+  if (
+    destination.amount === null ||
+    compareCurrencyAmounts(destination.amount, 0) <= 0
+  ) {
     return false;
   }
   if ((hasAccount && hasLocation) || (!hasAccount && !hasLocation)) {

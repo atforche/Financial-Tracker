@@ -1,13 +1,16 @@
 "use client";
 
 import { Button, Stack, Typography } from "@mui/material";
+import {
+  compareCurrencyAmounts,
+  formatCurrency,
+} from "@/framework/currencyHelpers";
 import { useRouter, useSearchParams } from "next/navigation";
 import CardResponsiveGrid from "@/framework/view/CardResponsiveGrid";
 import type { FundWithBalance } from "@/funds/types";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
 import WorkspaceCard from "@/framework/view/WorkspaceCard";
-import { formatCurrency } from "@/framework/currencyHelpers";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/funds/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -75,7 +78,11 @@ const FundWorkspaceCards = function ({
         <WorkspaceCard
           key={fund.id}
           title={fund.name}
-          color={fund.currentBalance.postedBalance >= 0 ? "info" : "error"}
+          color={
+            compareCurrencyAmounts(fund.currentBalance.postedBalance, 0) >= 0
+              ? "info"
+              : "error"
+          }
           onClick={() => {
             openFund(fund.id);
           }}

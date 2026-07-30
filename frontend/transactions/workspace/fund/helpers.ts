@@ -9,12 +9,15 @@ import type {
 } from "@/transactions/types";
 import type { Fund, FundBalanceEventDraft } from "@/funds/types";
 import {
+  compareCurrencyAmounts,
+  getCurrencyTotal,
+} from "@/framework/currencyHelpers";
+import {
   validateDetails,
   validateSummary,
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
-import { getCurrencyTotal } from "@/framework/currencyHelpers";
 import { getTransactionFundDraftFromTransactionFund } from "@/transactions/workspace/fundBalanceEventDraft";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 
@@ -58,7 +61,11 @@ const createEmptyDestination = function (): FundDestinationDraft {
  * Validates the source of a fund transaction.
  */
 const validateSource = function (source: FundSourceDraft): boolean {
-  return source.fund !== null && source.amount !== null && source.amount > 0;
+  return (
+    source.fund !== null &&
+    source.amount !== null &&
+    compareCurrencyAmounts(source.amount, 0) > 0
+  );
 };
 
 /**
@@ -71,7 +78,7 @@ const validateDestination = function (
   return (
     destination.fund !== null &&
     destination.amount !== null &&
-    destination.amount > 0 &&
+    compareCurrencyAmounts(destination.amount, 0) > 0 &&
     destination.fund.fundId !== sourceFund?.fundId
   );
 };

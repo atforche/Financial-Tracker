@@ -11,11 +11,15 @@ import {
   sortFundsByRemainingAmount,
   updateFundAssignment,
 } from "@/funds/assignmentPlanner/helpers";
+import {
+  compareCurrencyAmounts,
+  formatCurrency,
+  getCurrencyDifference,
+} from "@/framework/currencyHelpers";
 import type { FrameColor } from "@/framework/view/Frame";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { JSX } from "react";
-import { formatCurrency } from "@/framework/currencyHelpers";
 import { getUnassignedFund } from "@/funds/helpers";
 
 /**
@@ -104,9 +108,15 @@ const SpendingFundAssignmentPlanner = function ({
             fundName: newFund.name,
             amount: assignment.amount,
             previousFundBalance,
-            newFundBalance: previousFundBalance - assignment.amount,
+            newFundBalance: getCurrencyDifference(
+              previousFundBalance,
+              assignment.amount,
+            ),
             previousGoalAmount,
-            newGoalAmount: previousGoalAmount - assignment.amount,
+            newGoalAmount: getCurrencyDifference(
+              previousGoalAmount,
+              assignment.amount,
+            ),
           };
         },
       ),
@@ -132,8 +142,14 @@ const SpendingFundAssignmentPlanner = function ({
           return {
             ...assignment,
             amount: newAmount ?? 0,
-            newFundBalance: assignment.previousFundBalance - (newAmount ?? 0),
-            newGoalAmount: previousGoalAmount - (newAmount ?? 0),
+            newFundBalance: getCurrencyDifference(
+              assignment.previousFundBalance,
+              newAmount ?? 0,
+            ),
+            newGoalAmount: getCurrencyDifference(
+              previousGoalAmount,
+              newAmount ?? 0,
+            ),
           };
         },
       ),
@@ -153,7 +169,11 @@ const SpendingFundAssignmentPlanner = function ({
           label={`Previous remaining to spend ${formatCurrency(assignment.previousGoalAmount)}`}
         />
         <Chip
-          color={assignment.newGoalAmount >= 0 ? "success" : "error"}
+          color={
+            compareCurrencyAmounts(assignment.newGoalAmount, 0) >= 0
+              ? "success"
+              : "error"
+          }
           label={`New remaining to spend ${formatCurrency(assignment.newGoalAmount)}`}
         />
       </Stack>
@@ -175,7 +195,7 @@ const SpendingFundAssignmentPlanner = function ({
           return "default";
         }
 
-        if (remainingAmount === 0) {
+        if (compareCurrencyAmounts(remainingAmount, 0) === 0) {
           return "success";
         }
 

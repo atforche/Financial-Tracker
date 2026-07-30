@@ -10,6 +10,11 @@ import {
   fundTrendsParamNames,
   hasActiveFundTrendsFilters,
 } from "@/funds/trends/helpers";
+import {
+  compareCurrencyAmounts,
+  formatCurrency,
+  getCurrencyDifference,
+} from "@/framework/currencyHelpers";
 import { useRouter, useSearchParams } from "next/navigation";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -18,7 +23,6 @@ import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
-import { formatCurrency } from "@/framework/currencyHelpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import routes from "@/funds/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -113,8 +117,11 @@ const FundTrendsListFrame = function ({
       name: "change",
       headerContent: "Net Change",
       getBodyContent: (fund): JSX.Element => {
-        const changeInBalance = fund.endingBalance - fund.startingBalance;
-        const isPositive = changeInBalance >= 0;
+        const changeInBalance = getCurrencyDifference(
+          fund.endingBalance,
+          fund.startingBalance,
+        );
+        const isPositive = compareCurrencyAmounts(changeInBalance, 0) >= 0;
         return (
           <Box
             component="span"

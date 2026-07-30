@@ -4,6 +4,7 @@ import type {
 } from "@/overview/types";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { FundWithBalance } from "@/funds/types";
+import { getCurrencyTotal } from "@/framework/currencyHelpers";
 import { isDebtAccountType } from "@/accounts/helpers";
 import { isUnassignedFund } from "@/funds/helpers";
 
@@ -23,17 +24,15 @@ const summarizeAccounts = function (
     Map.groupBy(balances, (balance) => balance.accountType),
     ([accountType, groupedBalances]) => ({
       accountType,
-      totalBalance: groupedBalances.reduce(
-        (total, balance) => total + balance.totalBalance,
-        0,
+      totalBalance: getCurrencyTotal(
+        groupedBalances.map((balance) => balance.totalBalance),
       ),
     }),
   );
 
   return {
-    totalBalance: balances.reduce(
-      (total, balance) => total + balance.totalBalance,
-      0,
+    totalBalance: getCurrencyTotal(
+      balances.map((balance) => balance.totalBalance),
     ),
     balanceByAccountType,
   };
@@ -48,13 +47,14 @@ const summarizeFunds = function (
   const unassignedFund = funds.find((fund) => isUnassignedFund(fund.name));
 
   return {
-    totalBalance: funds.reduce(
-      (total, fund) => total + fund.currentBalance.postedBalance,
-      0,
+    totalBalance: getCurrencyTotal(
+      funds.map((fund) => fund.currentBalance.postedBalance),
     ),
-    totalAssignedBalance: funds
-      .filter((fund) => !isUnassignedFund(fund.name))
-      .reduce((total, fund) => total + fund.currentBalance.postedBalance, 0),
+    totalAssignedBalance: getCurrencyTotal(
+      funds
+        .filter((fund) => !isUnassignedFund(fund.name))
+        .map((fund) => fund.currentBalance.postedBalance),
+    ),
     totalUnassignedBalance: unassignedFund?.currentBalance.postedBalance ?? 0,
   };
 };

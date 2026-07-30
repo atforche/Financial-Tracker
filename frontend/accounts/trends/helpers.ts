@@ -8,6 +8,7 @@ import type {
 } from "@/accounts/types";
 import type { TrendRangeMode } from "@/framework/routes/trendRange";
 import { formatShortDate } from "@/framework/dateHelpers";
+import { getCurrencyDifference } from "@/framework/currencyHelpers";
 
 /**
  * Search parameters supported by the account trends page.
@@ -136,12 +137,14 @@ const getAccountTypeBreakdownDetails = function (
         accountType,
         startingBalance,
         endingBalance,
-        netChange: endingBalance - startingBalance,
+        netChange: getCurrencyDifference(endingBalance, startingBalance),
       };
     })
-    .sort(
-      (left, right) =>
-        Math.abs(right.endingBalance) - Math.abs(left.endingBalance),
+    .sort((left, right) =>
+      getCurrencyDifference(
+        Math.abs(right.endingBalance),
+        Math.abs(left.endingBalance),
+      ),
     );
 };
 

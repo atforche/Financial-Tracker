@@ -2,10 +2,10 @@
 
 import { type JSX, useState } from "react";
 import { formatAccountType, isTrackedAccountType } from "@/accounts/helpers";
+import { formatCurrency, getCurrencyTotal } from "@/framework/currencyHelpers";
 import type { AccountOverviewSummary } from "@/overview/types";
 import AccountSummaryCard from "@/accounts/AccountSummaryCard";
 import type { BreakdownDetailRow } from "@/framework/view/BreakdownSection";
-import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for the AccountOverview component.
@@ -38,7 +38,7 @@ const AccountOverview = function ({
       value: formatCurrency(totalBalance),
     }));
   const total = (balances: typeof summary.balanceByAccountType): number =>
-    balances.reduce((sum, { totalBalance }) => sum + totalBalance, 0);
+    getCurrencyTotal(balances.map(({ totalBalance }) => totalBalance));
 
   return (
     <AccountSummaryCard

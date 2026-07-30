@@ -67,20 +67,31 @@ const formatCompactCurrency = function (
 };
 
 /**
- * Formats a currency value with an explicit sign when it is non-zero.
- */
-const formatSignedCurrency = function (value: number): string {
-  if (value === 0) {
-    return formatCurrency(value);
-  }
-  return `${value > 0 ? "+" : "-"}${formatCurrency(Math.abs(value))}`;
-};
-
-/**
  * Converts a currency amount to whole cents.
  */
 const getCurrencyCents = function (amount: number): number {
   return Math.round(amount * 100);
+};
+
+/**
+ * Compares two currency amounts at cent precision.
+ */
+const compareCurrencyAmounts = function (
+  leftAmount: number,
+  rightAmount: number,
+): number {
+  return getCurrencyCents(leftAmount) - getCurrencyCents(rightAmount);
+};
+
+/**
+ * Formats a currency value with an explicit sign when it is non-zero.
+ */
+const formatSignedCurrency = function (value: number): string {
+  const comparisonToZero = compareCurrencyAmounts(value, 0);
+  if (comparisonToZero === 0) {
+    return formatCurrency(value);
+  }
+  return `${comparisonToZero > 0 ? "+" : "-"}${formatCurrency(Math.abs(value))}`;
 };
 
 /**
@@ -113,9 +124,25 @@ const getMinimumCurrencyAmount = function (
   leftAmount: number,
   rightAmount: number,
 ): number {
-  return (
-    Math.min(getCurrencyCents(leftAmount), getCurrencyCents(rightAmount)) / 100
+  const minimumInCents = Math.min(
+    getCurrencyCents(leftAmount),
+    getCurrencyCents(rightAmount),
   );
+  return minimumInCents === 0 ? 0 : minimumInCents / 100;
+};
+
+/**
+ * Gets the greater of two currency amounts using whole cents.
+ */
+const getMaximumCurrencyAmount = function (
+  leftAmount: number,
+  rightAmount: number,
+): number {
+  const maximumInCents = Math.max(
+    getCurrencyCents(leftAmount),
+    getCurrencyCents(rightAmount),
+  );
+  return maximumInCents === 0 ? 0 : maximumInCents / 100;
 };
 
 /**
@@ -142,6 +169,7 @@ const parseCurrencyValue = function (value: string): number | null {
 };
 
 export {
+  compareCurrencyAmounts,
   currencyEditPattern,
   formatCompactCurrency,
   formatCurrency,
@@ -149,6 +177,7 @@ export {
   formatSignedCurrency,
   getCurrencyDifference,
   getCurrencyTotal,
+  getMaximumCurrencyAmount,
   getMinimumCurrencyAmount,
   parseCurrencyValue,
   sanitizeCurrencyInput,
