@@ -49,7 +49,7 @@ const createTransaction = async function (
   _: ActionState,
   { redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const client = createApiClient();
+  const client = await createApiClient();
   const { data, error } = await client.POST("/transactions", {
     body: request,
   });

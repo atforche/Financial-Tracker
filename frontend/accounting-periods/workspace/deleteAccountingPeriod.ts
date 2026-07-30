@@ -17,7 +17,7 @@ const deleteAccountingPeriod = async function (
   _: AccountingPeriodActionState,
   { accountingPeriodId, redirectUrl }: AccountingPeriodActionPayload,
 ): Promise<AccountingPeriodActionState> {
-  const client = createApiClient();
+  const client = await createApiClient();
   const { error } = await client.DELETE(
     "/accounting-periods/{accountingPeriodId}",
     {

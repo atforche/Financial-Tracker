@@ -38,7 +38,7 @@ const onboardFund = async function (
   _: ActionState,
   { redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const { error } = await apiClient.POST("/funds/onboard", { body: request });
   if (error) {
     if (isApiError(error)) {

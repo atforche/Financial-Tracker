@@ -1,6 +1,7 @@
 """Class representing the configuration for the Financial Tracker"""
 
 from enum import Enum
+import secrets
 from typing import Any
 from shared.environment_variable import EnvironmentVariable
 
@@ -19,8 +20,14 @@ class Configuration:
     backend_port: int
     frontend_port: int
     database_revision: int
+    google_client_id: str
+    google_client_secret: str
+    google_allowed_subjects: str
+    auth_secret: str
 
-    def __init__(self, name: str, path: str, environment: Environment, backend_port: int, frontend_port: int, database_revision: int) -> None:
+    def __init__(self, name: str, path: str, environment: Environment, backend_port: int, frontend_port: int,
+                 database_revision: int, google_client_id: str, google_client_secret: str,
+                 google_allowed_subjects: str, auth_secret: str) -> None:
         """Constructs a new instance of this class
         
         Args:
@@ -30,6 +37,10 @@ class Configuration:
             backend_port (int): Port for the backend REST API to be exposed on
             frontend_port (int): Port for the frontend to be exposed on
             database_revision (int): Revision number of the database schema
+            google_client_id (str): Client ID from the Google OpenID Connect application registration
+            google_client_secret (str): Client secret from the Google OpenID Connect application registration
+            google_allowed_subjects (str): Comma-separated immutable Google subjects allowed to access the instance
+            auth_secret (str): Secret used to encrypt Auth.js sessions
         """
 
         self.name = name
@@ -38,6 +49,10 @@ class Configuration:
         self.backend_port = backend_port
         self.frontend_port = frontend_port
         self.database_revision = database_revision
+        self.google_client_id = google_client_id
+        self.google_client_secret = google_client_secret
+        self.google_allowed_subjects = google_allowed_subjects
+        self.auth_secret = auth_secret
 
     def write_to_file(self) -> None:
         """Writes the current configuration to the specified file"""
@@ -55,7 +70,12 @@ class Configuration:
             file.write('DATABASE_PATH="/data/database.db"\n')
             file.write(f'FRONTEND_ORIGIN="http://localhost:{self.frontend_port}"\n')
             file.write('API_URL="http://backend:8080"\n')
-            file.write('LOG_DIRECTORY="/logs"\n')  
+            file.write('LOG_DIRECTORY="/logs"\n')
+            file.write('\n')
+            file.write(f'GOOGLE_CLIENT_ID="{self.google_client_id}"\n')
+            file.write(f'GOOGLE_CLIENT_SECRET="{self.google_client_secret}"\n')
+            file.write(f'GOOGLE_ALLOWED_SUBJECTS="{self.google_allowed_subjects}"\n')
+            file.write(f'AUTH_SECRET="{self.auth_secret}"\n')
 
     def get_database_file_path(self) -> str:
         """Returns the path to the database file"""
@@ -112,6 +132,27 @@ class Configuration:
         database_revision = EnvironmentVariable.try_read_from_file(environment_file_path, "DATABASE_REVISION", int)
         if database_revision is not None:
             results["DATABASE_REVISION"] = database_revision
+
+        google_client_id = EnvironmentVariable.try_read_from_file(environment_file_path, "GOOGLE_CLIENT_ID", str)
+        if google_client_id is not None:
+            results["GOOGLE_CLIENT_ID"] = google_client_id
+
+        google_client_secret = EnvironmentVariable.try_read_from_file(environment_file_path, "GOOGLE_CLIENT_SECRET", str)
+        if google_client_secret is not None:
+            results["GOOGLE_CLIENT_SECRET"] = google_client_secret
+
+        google_allowed_subjects = EnvironmentVariable.try_read_from_file(environment_file_path, "GOOGLE_ALLOWED_SUBJECTS", str)
+        if google_allowed_subjects is not None:
+            results["GOOGLE_ALLOWED_SUBJECTS"] = google_allowed_subjects
+        else:
+            google_allowed_subject = EnvironmentVariable.try_read_from_file(environment_file_path, "GOOGLE_ALLOWED_SUBJECT", str)
+            if google_allowed_subject is not None:
+                results["GOOGLE_ALLOWED_SUBJECTS"] = EnvironmentVariable(
+                    environment_file_path, "GOOGLE_ALLOWED_SUBJECTS", google_allowed_subject.value)
+
+        auth_secret = EnvironmentVariable.try_read_from_file(environment_file_path, "AUTH_SECRET", str)
+        if auth_secret is not None:
+            results["AUTH_SECRET"] = auth_secret
 
         return Configuration.build_from_user_input(results, change_configuration)
 
@@ -170,4 +211,39 @@ class Configuration:
         else:
             database_revision = existing_database_revision.value
 
-        return Configuration(name, path, environment, backend_port, frontend_port, database_revision)
+        google_client_id = cls.get_required_string(existing_values, "GOOGLE_CLIENT_ID", "Google OAuth client ID", change_configuration)
+        google_client_secret = cls.get_required_string(existing_values, "GOOGLE_CLIENT_SECRET", "Google OAuth client secret", change_configuration, True)
+        google_allowed_subjects = cls.get_required_string(existing_values, "GOOGLE_ALLOWED_SUBJECTS", "comma-separated Google subjects allowed to access this instance", change_configuration)
+        auth_secret = cls.get_auth_secret(existing_values)
+
+        return Configuration(name, path, environment, backend_port, frontend_port, database_revision,
+                             google_client_id, google_client_secret, google_allowed_subjects, auth_secret)
+
+    @staticmethod
+    def get_required_string(existing_values: dict[str, EnvironmentVariable[Any]], name: str, prompt: str,
+                            change_configuration: bool, secret: bool = False) -> str:
+        """Gets a required string value, preserving an existing secret unless it is replaced."""
+
+        existing_value = existing_values.get(name)
+        if existing_value is None:
+            value = input(f"Enter the {prompt}: ")
+        elif change_configuration:
+            default = "configured" if secret else existing_value.value
+            value = input(f"Enter the {prompt} [{default}]: ") or existing_value.value
+        else:
+            value = existing_value.value
+
+        if value.strip() == "":
+            raise ValueError(f"{name} must not be empty")
+        return value
+
+    @staticmethod
+    def get_auth_secret(existing_values: dict[str, EnvironmentVariable[Any]]) -> str:
+        """Returns the existing Auth.js secret or securely generates one for a new instance."""
+
+        existing_secret = existing_values.get("AUTH_SECRET")
+        if existing_secret is not None:
+            return existing_secret.value
+
+        print("Generating a new Auth.js session secret")
+        return secrets.token_urlsafe(48)

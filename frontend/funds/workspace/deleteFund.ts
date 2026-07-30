@@ -29,7 +29,7 @@ const deleteFund = async function (
   _: ActionState,
   { fundId, redirectUrl }: ActionPayload,
 ): Promise<ActionState> {
-  const client = createApiClient();
+  const client = await createApiClient();
   const { error } = await client.DELETE("/funds/{fundId}", {
     params: {
       path: {

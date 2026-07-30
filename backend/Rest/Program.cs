@@ -1,5 +1,7 @@
 using System.Globalization;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Models;
 using Serilog;
@@ -7,6 +9,48 @@ using Serilog;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 bool shouldLaunchAPI = Rest.EnvironmentManager.ShouldLaunchAPI();
 bool isTesting = builder.Environment.IsEnvironment("Testing");
+string? googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+string[] allowedGoogleSubjects = (Environment.GetEnvironmentVariable("GOOGLE_ALLOWED_SUBJECTS") ?? "")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+if (shouldLaunchAPI && (string.IsNullOrWhiteSpace(googleClientId) || allowedGoogleSubjects.Length == 0))
+{
+    throw new InvalidOperationException("GOOGLE_CLIENT_ID and GOOGLE_ALLOWED_SUBJECTS must be configured before launching the API.");
+}
+
+_ = builder.Services.AddHttpContextAccessor();
+Microsoft.AspNetCore.Authentication.AuthenticationBuilder authenticationBuilder = builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = isTesting ? Rest.Authentication.TestAuthenticationDefaults.Scheme : JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = isTesting ? Rest.Authentication.TestAuthenticationDefaults.Scheme : JwtBearerDefaults.AuthenticationScheme;
+});
+_ = authenticationBuilder.AddJwtBearer(options =>
+    {
+        options.Authority = "https://accounts.google.com";
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuers = ["https://accounts.google.com", "accounts.google.com"],
+            ValidateAudience = true,
+            ValidAudience = googleClientId,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
+            NameClaimType = "sub",
+        };
+    });
+if (isTesting)
+{
+    _ = authenticationBuilder.AddScheme<Rest.Authentication.TestAuthenticationOptions, Rest.Authentication.TestAuthenticationHandler>(
+        Rest.Authentication.TestAuthenticationDefaults.Scheme,
+        _ => { });
+}
+Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder authorizationPolicyBuilder =
+    new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder().RequireAuthenticatedUser();
+if (!isTesting && allowedGoogleSubjects.Length > 0)
+{
+    _ = authorizationPolicyBuilder.RequireClaim("sub", allowedGoogleSubjects);
+}
+_ = builder.Services.AddAuthorizationBuilder().SetFallbackPolicy(authorizationPolicyBuilder.Build());
 
 // Configure the JSON serializer to serialize enums as their string values
 _ = builder.Services.AddControllers().AddJsonOptions(options =>
@@ -86,6 +130,7 @@ if (app.Environment.IsDevelopment())
     _ = app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Financial Tracker API"));
 }
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors();
 app.MapControllers();

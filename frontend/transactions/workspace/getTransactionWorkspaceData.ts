@@ -55,7 +55,7 @@ interface TransactionWorkspaceDetailReferenceData {
  */
 const getTransactionWorkspaceReferenceData =
   async function (): Promise<TransactionWorkspaceReferenceData> {
-    const apiClient = createApiClient();
+    const apiClient = await createApiClient();
 
     const allAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
       params: {
@@ -142,7 +142,7 @@ const getTransactionWorkspaceReferenceData =
 const getTransactionById = async function (
   transactionId: string,
 ): Promise<Transaction | null> {
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const response = await apiClient.GET("/transactions/{transactionId}", {
     params: {
       path: {
@@ -164,7 +164,7 @@ const getTransactionById = async function (
 const getTransactionWorkspaceDetailReferenceData = async function (
   accountingPeriodId: string,
 ): Promise<TransactionWorkspaceDetailReferenceData> {
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const accountingPeriodPromise = apiClient.GET(
     "/accounting-periods/{accountingPeriodId}",
     {
@@ -227,7 +227,7 @@ const getTransactionWorkspaceListData = async function (
   searchParams: TransactionWorkspaceSearchParams,
 ): Promise<TransactionWorkspaceListData> {
   const { accountingPeriodIds, accountIds, fundIds, sort, page } = searchParams;
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const currentPage = normalizePageValue(page);
   const normalizedAccountingPeriodIds = normalizeStringSearchParams(
     toRepeatedSearchParams(accountingPeriodIds),

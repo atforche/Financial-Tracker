@@ -29,7 +29,11 @@ def get_debug_configuration() -> Configuration:
         environment=Environment.DEVELOPMENT,
         backend_port=8081,
         frontend_port=3001,
-        database_revision=0
+        database_revision=0,
+        google_client_id=os.environ.get("GOOGLE_CLIENT_ID", ""),
+        google_client_secret=os.environ.get("GOOGLE_CLIENT_SECRET", ""),
+        google_allowed_subjects=os.environ.get("GOOGLE_ALLOWED_SUBJECTS", ""),
+        auth_secret=os.environ.get("AUTH_SECRET", "")
     )
 
 class CreateDebugEnvironment(Command):

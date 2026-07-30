@@ -26,7 +26,7 @@ import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
  * Loads all data required by the overview page.
  */
 const getOverviewData = async function (): Promise<OverviewData> {
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const accountSummaryPromise = apiClient.GET("/accounts/with-balances");
   const fundSummaryPromise = apiClient.GET("/funds/with-balances");
   const accountingPeriodsPromise = loadAllPages(async (limit, offset) =>
@@ -93,7 +93,7 @@ const OverviewView = async function ({
   const { currentTransactionPage, currentTransactionSort } = await searchParams;
   const data = await getOverviewData();
   const currentPage = normalizePageValue(currentTransactionPage);
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const currentTransactions: AccountingPeriodWithTransactions | null =
     data.currentAccountingPeriod === null
       ? null

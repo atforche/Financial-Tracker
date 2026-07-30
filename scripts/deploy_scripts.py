@@ -92,6 +92,7 @@ class DeployCommand(Command):
 
         super().__init__("deploy", "Deploys a new version to an existing instance of the Financial Tracker")
         self.steps.append(Step("Build Configuration", "Configuration built", self.build_configuration))
+        self.steps.append(Step("Write Environment File", "Environment file updated", self.write_environment_file))
         self.steps.append(Step("Stop Instance", "Instance stopped", lambda: StopCommand().stop_instance(self.configuration.get_compose_file_path())))
         self.steps.append(Step("", "", lambda: CopyScripts(self.configuration).run([])))
         self.steps.append(Step("", "", lambda: ApplyMigrations(self.configuration).run([])))
@@ -107,6 +108,11 @@ class DeployCommand(Command):
         """Builds the configuration from the existing instance directory, prompting for new options as necessary"""
 
         self.configuration = Configuration.build_from_existing_instance(self.path, self.change_configuration)
+
+    def write_environment_file(self) -> None:
+        """Writes the complete configuration, including newly added authentication values, to the instance environment file."""
+
+        self.configuration.write_to_file()
 
 class CreateInstanceDirectory(Command):
     """Command class that creates the instance directory"""

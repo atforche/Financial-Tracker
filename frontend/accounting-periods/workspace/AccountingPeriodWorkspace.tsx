@@ -48,7 +48,7 @@ interface AccountingPeriodWorkspaceProps {
 const AccountingPeriodWorkspace = async function ({
   searchParams,
 }: AccountingPeriodWorkspaceProps): Promise<JSX.Element> {
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const { years, months, sort, page, selectedAccountingPeriodId, action } =
     await searchParams;
   const currentPage = normalizePageValue(page);

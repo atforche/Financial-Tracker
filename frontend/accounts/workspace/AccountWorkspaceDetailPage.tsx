@@ -38,7 +38,7 @@ const AccountWorkspaceDetailPage = async function ({
   const resolvedSearchParams = await searchParams;
   const { search, accountType, balanceEventPage, balanceEventSort } =
     resolvedSearchParams;
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
   const balanceEventOffset = getPageOffset(currentBalanceEventPage);
   const [accountsResponse, balanceEventsResponse] = await Promise.all([

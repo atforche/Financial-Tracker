@@ -29,7 +29,7 @@ const unpostTransaction = async function (
   _: ActionState,
   { transactionId, redirectUrl }: ActionPayload,
 ): Promise<ActionState> {
-  const client = createApiClient();
+  const client = await createApiClient();
   const { error } = await client.POST("/transactions/{transactionId}/unpost", {
     params: {
       path: {

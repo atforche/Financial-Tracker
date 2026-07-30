@@ -43,7 +43,7 @@ const FundGoalWorkspaceDetailPage = async function ({
     balanceEventSort,
   } = await searchParams;
   const selectedFundIds = toRepeatedSearchParams(fundIds);
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const periods = unwrapApiResponse(
     await apiClient.GET("/accounting-periods", {
       params: { query: { Limit: 1 } },

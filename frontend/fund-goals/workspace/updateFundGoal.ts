@@ -27,7 +27,9 @@ const updateFundGoal = async function (
   _: ActionState,
   payload: ActionPayload,
 ): Promise<ActionState> {
-  await createApiClient().POST("/fund-goals/{fundGoalId}", {
+  await (
+    await createApiClient()
+  ).POST("/fund-goals/{fundGoalId}", {
     params: { path: { fundGoalId: payload.fundGoal.id } },
     body: payload.request,
   });

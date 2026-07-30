@@ -8,3 +8,4 @@ __pycache__
 debug
 .next
 tsconfig.tsbuildinfo
+.env

@@ -29,7 +29,7 @@ const deleteAccount = async function (
   _: ActionState,
   { accountId, redirectUrl }: ActionPayload,
 ): Promise<ActionState> {
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const { error } = await apiClient.DELETE("/accounts/{accountId}", {
     params: {
       path: {

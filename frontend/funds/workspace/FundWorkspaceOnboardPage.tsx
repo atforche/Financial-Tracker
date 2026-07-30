@@ -28,7 +28,7 @@ const FundWorkspaceOnboardPage = async function ({
     ...(typeof search !== "undefined" ? { search } : {}),
   };
   const workspaceUrl = routes.workspace(workspaceSearchParams);
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const [accountingPeriodsResponse, fundsResponse] = await Promise.all([
     apiClient.GET("/accounting-periods", {
       params: {

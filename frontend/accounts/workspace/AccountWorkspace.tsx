@@ -26,7 +26,7 @@ const AccountWorkspace = async function ({
   searchParams,
 }: AccountWorkspaceProps): Promise<JSX.Element> {
   const { search, accountType, action } = await searchParams;
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const currentAccountTypes = normalizeAccountTypes(
     toRepeatedSearchParams(accountType),
   );

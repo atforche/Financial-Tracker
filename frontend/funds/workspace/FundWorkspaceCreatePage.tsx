@@ -27,7 +27,7 @@ const FundWorkspaceCreatePage = async function ({
     ...(typeof search !== "undefined" ? { search } : {}),
   };
   const workspaceUrl = routes.workspace(workspaceSearchParams);
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
 
   const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
     params: { query: { Limit: 500 } },
