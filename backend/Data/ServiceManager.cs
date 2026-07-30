@@ -1,13 +1,18 @@
 using Data.AccountingPeriods;
 using Data.Accounts;
+using Data.FundGoals;
 using Data.Funds;
-using Data.Goals;
 using Data.Transactions;
 using Domain.AccountingPeriods;
+using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
+using Domain.Accounts.Queries;
+using Domain.FundGoals;
+using Domain.FundGoals.Queries;
 using Domain.Funds;
-using Domain.Goals;
+using Domain.Funds.Queries;
 using Domain.Transactions;
+using Domain.Transactions.Queries;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Data;
@@ -27,27 +32,32 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<UnitOfWork>();
 
         _ = serviceCollection.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
-        _ = serviceCollection.AddScoped<AccountingPeriodRepository>();
+        _ = serviceCollection.AddScoped<IAccountingPeriodQueryRepository, AccountingPeriodQueryRepository>();
 
         _ = serviceCollection.AddScoped<IAccountingPeriodBalanceHistoryRepository, AccountingPeriodBalanceHistoryRepository>();
         _ = serviceCollection.AddScoped<AccountingPeriodBalanceHistoryRepository>();
 
+        _ = serviceCollection.AddScoped<IAccountBalanceEventQueryRepository, AccountBalanceEventQueryRepository>();
         _ = serviceCollection.AddScoped<IAccountRepository, AccountRepository>();
-        _ = serviceCollection.AddScoped<AccountRepository>();
+        _ = serviceCollection.AddScoped<IAccountQueryRepository, AccountQueryRepository>();
 
         _ = serviceCollection.AddScoped<IAccountBalanceHistoryRepository, AccountBalanceHistoryRepository>();
-        _ = serviceCollection.AddScoped<AccountBalanceHistoryRepository>();
+        _ = serviceCollection.AddScoped<IAccountPendingBalanceEffectRepository, PendingAccountBalanceEffectRepository>();
 
+        _ = serviceCollection.AddScoped<IFundBalanceEventQueryRepository, FundBalanceEventQueryRepository>();
         _ = serviceCollection.AddScoped<IFundRepository, FundRepository>();
-        _ = serviceCollection.AddScoped<FundRepository>();
-
+        _ = serviceCollection.AddScoped<IFundQueryRepository, FundQueryRepository>();
         _ = serviceCollection.AddScoped<IFundBalanceHistoryRepository, FundBalanceHistoryRepository>();
-        _ = serviceCollection.AddScoped<FundBalanceHistoryRepository>();
+        _ = serviceCollection.AddScoped<IFundPendingBalanceEffectRepository, PendingFundBalanceEffectRepository>();
 
-        _ = serviceCollection.AddScoped<IGoalRepository, GoalRepository>();
-        _ = serviceCollection.AddScoped<GoalRepository>();
+        _ = serviceCollection.AddScoped<IFundGoalBalanceEventQueryRepository, FundGoalBalanceEventQueryRepository>();
+        _ = serviceCollection.AddScoped<IFundGoalRepository, FundGoalRepository>();
+        _ = serviceCollection.AddScoped<IFundGoalQueryRepository, FundGoalQueryRepository>();
+        _ = serviceCollection.AddScoped<IFundGoalTotalsHistoryRepository, FundGoalTotalsHistoryRepository>();
+        _ = serviceCollection.AddScoped<IFundGoalPendingTotalsEffectRepository, PendingFundGoalTotalsEffectRepository>();
 
         _ = serviceCollection.AddScoped<ITransactionRepository, TransactionRepository>();
-        _ = serviceCollection.AddScoped<TransactionRepository>();
+        _ = serviceCollection.AddScoped<ITransactionBalanceEventQueryRepository, TransactionBalanceEventQueryRepository>();
+        _ = serviceCollection.AddScoped<ITransactionQueryRepository, TransactionQueryRepository>();
     }
 }

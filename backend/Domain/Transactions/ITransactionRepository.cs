@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
@@ -25,6 +26,16 @@ public interface ITransactionRepository
     IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId);
 
     /// <summary>
+    /// Gets all the Income Transactions that were posted to their credit accounts during the specified date range (inclusive)
+    /// </summary>
+    IReadOnlyCollection<Transaction> GetAllIncomeTransactionsByDateRange(DateOnly startDate, DateOnly endDate);
+
+    /// <summary>
+    /// Gets all the Spending Transactions that were posted to their debit accounts during the specified date range (inclusive)
+    /// </summary>
+    IReadOnlyCollection<Transaction> GetAllSpendingTransactionsByDateRange(DateOnly startDate, DateOnly endDate);
+
+    /// <summary>
     /// Checks if any Transactions exist for the specified Fund
     /// </summary>
     bool DoAnyTransactionsExistForFund(FundId fundId);
@@ -33,6 +44,11 @@ public interface ITransactionRepository
     /// Gets the Transaction with the specified ID.
     /// </summary>
     Transaction GetById(TransactionId id);
+
+    /// <summary>
+    /// Attempts to get the Transaction with the specified ID.
+    /// </summary>
+    bool TryGetById(Guid id, [NotNullWhen(true)] out Transaction? transaction);
 
     /// <summary>
     /// Adds the provided Transaction to the repository

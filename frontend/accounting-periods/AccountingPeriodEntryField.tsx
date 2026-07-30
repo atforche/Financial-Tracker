@@ -7,10 +7,11 @@ import type { JSX } from "react";
  */
 interface AccountingPeriodEntryFieldProps {
   readonly label: string;
-  readonly options: AccountingPeriod[];
+  readonly options: readonly AccountingPeriod[];
   readonly value: AccountingPeriod | null;
   readonly setValue?: ((newValue: AccountingPeriod | null) => void) | null;
   readonly errorMessage?: string | null;
+  readonly size?: "small" | "medium";
 }
 
 /**
@@ -22,6 +23,7 @@ const AccountingPeriodEntryField = function ({
   value,
   setValue = null,
   errorMessage = null,
+  size = "medium",
 }: AccountingPeriodEntryFieldProps): JSX.Element {
   return (
     <ComboBoxEntryField<AccountingPeriod>
@@ -35,6 +37,9 @@ const AccountingPeriodEntryField = function ({
           ? { label: "", value: null }
           : { label: value.name, value }
       }
+      isOptionEqualToValue={(option, selectedValue) =>
+        option.value?.id === selectedValue.value?.id
+      }
       setValue={
         setValue !== null
           ? (newValue): void => {
@@ -43,6 +48,7 @@ const AccountingPeriodEntryField = function ({
           : null
       }
       errorMessage={errorMessage}
+      size={size}
     />
   );
 };

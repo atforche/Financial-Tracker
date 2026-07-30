@@ -15,8 +15,6 @@ interface ColumnHeaderProps<T> {
 
 /**
  * Component that presents the header of a column in the list frame.
- * @param props - Props for the ColumnHeader component.
- * @returns JSX element representing the ColumnHeader.
  */
 const ColumnHeader = function <T>({
   column,
@@ -25,26 +23,30 @@ const ColumnHeader = function <T>({
     <TableCell
       key={column.name}
       align={column.alignment ?? "left"}
-      sx={{
-        maxWidth: column.maxWidth ?? defaultColumnWidth,
-        minWidth: column.minWidth,
-        backgroundColor: "primary.main",
-        color: "white",
-      }}
+      sx={[
+        {
+          maxWidth: column.maxWidth ?? defaultColumnWidth,
+          minWidth: column.minWidth,
+          backgroundColor: "primary.main",
+          color: "white",
+        },
+        column.sx ?? false,
+      ]}
     >
-      {(column.sortType ?? null) !== null || column.onSort ? (
+      {column.onSort ? (
         <TableSortLabel
           active={(column.sortType ?? null) !== null}
           direction={
             column.sortType === ColumnSortType.Ascending ? "asc" : "desc"
           }
           onClick={(): void => {
-            if (column.sortType === null) {
-              column.onSort?.(ColumnSortType.Ascending);
-            } else if (column.sortType === ColumnSortType.Ascending) {
-              column.onSort?.(ColumnSortType.Descending);
+            const sortType = column.sortType ?? null;
+            if (sortType === null) {
+              column.onSort(ColumnSortType.Ascending);
+            } else if (sortType === ColumnSortType.Ascending) {
+              column.onSort(ColumnSortType.Descending);
             } else {
-              column.onSort?.(null);
+              column.onSort(null);
             }
           }}
         >

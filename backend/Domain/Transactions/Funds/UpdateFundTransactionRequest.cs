@@ -5,4 +5,13 @@ namespace Domain.Transactions.Funds;
 /// </summary>
 public record UpdateFundTransactionRequest : UpdateTransactionRequest
 {
+    /// <summary>
+    /// Source for this Fund Transaction
+    /// </summary>
+    public required FundTransactionSource Source { get; init; }
+
+    /// <summary>
+    /// Destinations for this Fund Transaction
+    /// </summary>
+    public required IReadOnlyCollection<FundTransactionDestination> Destinations { get; init; }
 }

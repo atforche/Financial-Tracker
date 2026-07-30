@@ -1,4 +1,5 @@
 import type { JSX } from "react";
+import ReadOnlyField from "@/framework/forms/ReadOnlyField";
 import { TextField } from "@mui/material";
 
 /**
@@ -6,9 +7,10 @@ import { TextField } from "@mui/material";
  */
 interface StringEntryFieldProps {
   readonly label: string;
-  readonly value: string;
-  readonly setValue: (newValue: string) => void;
+  readonly value: string | null;
+  readonly setValue?: ((newValue: string) => void) | null;
   readonly errorMessage?: string | null;
+  readonly disabled?: boolean;
 }
 
 /**
@@ -17,19 +19,31 @@ interface StringEntryFieldProps {
 const StringEntryField = function ({
   label,
   value,
-  setValue,
+  setValue = null,
   errorMessage = null,
+  disabled = false,
 }: StringEntryFieldProps): JSX.Element {
+  if (setValue === null && !disabled) {
+    return <ReadOnlyField label={label} value={value} />;
+  }
+
   return (
     <TextField
       label={label}
       variant="outlined"
-      value={value}
+      value={value ?? ""}
+      disabled={disabled}
+      slotProps={{
+        input: {
+          readOnly: setValue === null,
+        },
+      }}
       onChange={(event) => {
-        setValue(event.target.value);
+        setValue?.(event.target.value);
       }}
       error={errorMessage !== null}
       helperText={errorMessage ?? null}
+      sx={{ width: "100%" }}
     />
   );
 };

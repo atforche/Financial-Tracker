@@ -8,8 +8,6 @@ namespace Data.AccountingPeriods;
 /// </summary>
 public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAccountingPeriodRepository
 {
-    #region IAccountingPeriodRepository
-
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> GetAll() => databaseContext.AccountingPeriods.ToList();
 
@@ -22,6 +20,14 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
     public AccountingPeriod GetById(AccountingPeriodId id) => databaseContext.AccountingPeriods
         .SingleOrDefault(accountingPeriod => accountingPeriod.Id == id)
         ?? databaseContext.AccountingPeriods.Local.Single(accountingPeriod => accountingPeriod.Id == id);
+
+    /// <inheritdoc/>
+    public bool TryGetById(Guid id, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod)
+    {
+        accountingPeriod = databaseContext.AccountingPeriods.SingleOrDefault(candidate => candidate.Id == new AccountingPeriodId(id))
+            ?? databaseContext.AccountingPeriods.Local.SingleOrDefault(candidate => candidate.Id == new AccountingPeriodId(id));
+        return accountingPeriod != null;
+    }
 
     /// <inheritdoc/>
     public AccountingPeriod? GetByYearAndMonth(int year, int month) => databaseContext.AccountingPeriods
@@ -56,15 +62,4 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
 
     /// <inheritdoc/>
     public void Delete(AccountingPeriod accountingPeriod) => databaseContext.Remove(accountingPeriod);
-
-    #endregion
-
-    /// <summary>
-    /// Attempts to get the Accounting Period with the specified ID.
-    /// </summary>
-    public bool TryGetById(Guid id, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod)
-    {
-        accountingPeriod = databaseContext.AccountingPeriods.FirstOrDefault(accountingPeriod => ((Guid)(object)accountingPeriod.Id) == id);
-        return accountingPeriod != null;
-    }
 }

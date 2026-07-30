@@ -1,12 +1,11 @@
 using Data;
-using Data.Funds;
 using Domain.AccountingPeriods;
-using Domain.Exceptions;
 using Domain.Funds;
+using Domain.Funds.Queries;
+using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Funds;
-using Models.Transactions;
 using Rest.AccountingPeriods;
 
 namespace Rest.Funds;
@@ -18,31 +17,54 @@ namespace Rest.Funds;
 [Route("/funds")]
 public sealed class FundController(
     UnitOfWork unitOfWork,
-    AccountingPeriodConverter accountingPeriodConverter,
+    IAccountingPeriodRepository accountingPeriodRepository,
+    IFundRepository fundRepository,
     FundConverter fundConverter,
-    FundGetter fundGetter,
-    FundRepository fundRepository,
+    FundQueryService fundQueryService,
     FundService fundService,
-    FundTransactionGetter fundTransactionGetter) : ControllerBase
+    FundBalanceEventQueryService fundBalanceEventQueryService,
+    FundBalanceEventConverter fundBalanceEventConverter) : ControllerBase
 {
+    /// <summary>
+    /// Retrieves Fund Balance Events in a date range.
+    /// </summary>
+    [HttpGet("balance-events/date-range")]
+    [ProducesResponseType(typeof(CollectionModel<FundBalanceEventModel>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<CollectionModel<FundBalanceEventModel>>> GetBalanceEventsAsync(
+        [FromQuery] FundBalanceEventsInDateRangeQueryParameterModel query,
+        CancellationToken cancellationToken) =>
+        Ok(fundBalanceEventConverter.ToModel(await fundBalanceEventQueryService.GetAsync(
+            fundBalanceEventConverter.ToDomain(query),
+            cancellationToken)));
+
+    /// <summary>
+    /// Retrieves Fund Balance Events in an Accounting Period range.
+    /// </summary>
+    [HttpGet("balance-events/accounting-period-range")]
+    [ProducesResponseType(typeof(CollectionModel<FundBalanceEventModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<CollectionModel<FundBalanceEventModel>>> GetBalanceEventsAsync(
+        [FromQuery] FundBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        FundBalanceEventAccountingPeriodRangeQueryResult result = await fundBalanceEventQueryService.GetAsync(
+            fundBalanceEventConverter.ToDomain(query),
+            cancellationToken);
+        return result.Page == null
+            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Fund balance events."))
+            : Ok(fundBalanceEventConverter.ToModel(result.Page));
+    }
+
     /// <summary>
     /// Retrieves the Fund that matches the provided ID
     /// </summary>
     [HttpGet("{fundId}")]
     [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult Get(Guid fundId)
+    public async Task<ActionResult<FundModel>> GetAsync(Guid fundId, CancellationToken cancellationToken)
     {
-        if (!fundConverter.TryToDomain(fundId, out Fund? fund))
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Fund.",
-                Errors = { [nameof(fundId)] = new[] { $"Fund with ID {fundId} not found." } },
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-        return Ok(fundConverter.ToModel(fund));
+        Fund? fund = await fundQueryService.GetByIdAsync(fundId, cancellationToken);
+        return fund == null ? NotFound() : Ok(fundConverter.ToModel(fund));
     }
 
     /// <summary>
@@ -50,58 +72,51 @@ public sealed class FundController(
     /// </summary>
     [HttpGet("")]
     [ProducesResponseType(typeof(CollectionModel<FundModel>), StatusCodes.Status200OK)]
-    public IActionResult GetMany([FromQuery] FundQueryParameterModel queryParameters) =>
-        Ok(fundGetter.Get(queryParameters));
+    public async Task<ActionResult<CollectionModel<FundModel>>> GetManyAsync(
+        [FromQuery] FundQueryParameterModel queryParameters,
+        CancellationToken cancellationToken) =>
+        Ok(fundConverter.ToModel(await fundQueryService.GetAsync(
+            fundConverter.ToDomain(queryParameters), cancellationToken)));
 
     /// <summary>
-    /// Retrieves the unassigned Fund
+    /// Retrieves Funds with current balances.
     /// </summary>
-    [HttpGet("unassigned")]
-    [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetUnassigned()
-    {
-        Fund? unassignedFund = fundRepository.GetUnassignedFund();
-        if (unassignedFund == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Fund.",
-                Errors = { [""] = ["The unassigned fund was not found."] },
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-        return Ok(fundConverter.ToModel(unassignedFund));
-    }
+    [HttpGet("with-balances")]
+    [ProducesResponseType(typeof(CollectionModel<FundWithBalanceModel>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<CollectionModel<FundWithBalanceModel>>> GetWithBalancesAsync(
+        [FromQuery] FundWithBalanceQueryParameterModel query,
+        CancellationToken cancellationToken) =>
+        Ok(fundConverter.ToModel(await fundQueryService.GetWithBalancesAsync(
+            fundConverter.ToDomain(query), cancellationToken)));
 
     /// <summary>
-    /// Retrieves the Transactions for the Fund that match the specified criteria
+    /// Retrieves Fund balances over a date range.
     /// </summary>
-    [HttpGet("{fundId}/transactions")]
-    [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
+    [HttpGet("date-range")]
+    [ProducesResponseType(typeof(FundsInDateRangeModel), StatusCodes.Status200OK)]
+    public async Task<ActionResult<FundsInDateRangeModel>> GetDateRangeAsync(
+        [FromQuery] FundsInDateRangeQueryParameterModel query,
+        CancellationToken cancellationToken) =>
+        Ok(fundConverter.ToModel(await fundQueryService.GetDateRangeAsync(
+            fundConverter.ToDomain(query),
+            cancellationToken)));
+
+    /// <summary>
+    /// Retrieves Fund balances over an Accounting Period range.
+    /// </summary>
+    [HttpGet("accounting-period-range")]
+    [ProducesResponseType(typeof(FundsInAccountingPeriodRangeModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetManyTransactions(Guid fundId, [FromQuery] FundTransactionQueryParameterModel queryParameters)
+    public async Task<ActionResult<FundsInAccountingPeriodRangeModel>> GetAccountingPeriodRangeAsync(
+        [FromQuery] FundsInAccountingPeriodRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
     {
-        Dictionary<string, string[]> errors = [];
-        if (!fundConverter.TryToDomain(fundId, out Fund? fund))
-        {
-            errors.Add(nameof(fundId), new[] { $"Fund with ID {fundId} not found." });
-        }
-        AccountingPeriod? accountingPeriod = null;
-        if (queryParameters.AccountingPeriodId != null && !accountingPeriodConverter.TryToDomain(queryParameters.AccountingPeriodId.Value, out accountingPeriod))
-        {
-            errors.Add(nameof(queryParameters.AccountingPeriodId), new[] { $"Accounting Period with ID {queryParameters.AccountingPeriodId.Value} not found." });
-        }
-        if (errors.Count > 0 || fund == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Fund Transactions.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        return Ok(fundTransactionGetter.Get(fund.Id, queryParameters, accountingPeriod?.Id));
+        FundAccountingPeriodRangeQueryResult result = await fundQueryService.GetAccountingPeriodRangeAsync(
+            fundConverter.ToDomain(query),
+            cancellationToken);
+        return result.Range == null
+            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Fund range."))
+            : Ok(fundConverter.ToModel(result.Range));
     }
 
     /// <summary>
@@ -113,7 +128,7 @@ public sealed class FundController(
     public async Task<IActionResult> CreateAsync(CreateFundModel createFundModel)
     {
         Dictionary<string, string[]> errors = [];
-        if (!accountingPeriodConverter.TryToDomain(createFundModel.AccountingPeriodId, out AccountingPeriod? accountingPeriod))
+        if (!accountingPeriodRepository.TryGetById(createFundModel.AccountingPeriodId, out AccountingPeriod? accountingPeriod))
         {
             errors.Add(nameof(createFundModel.AccountingPeriodId), [$"Accounting Period with ID {createFundModel.AccountingPeriodId} was not found."]);
         }
@@ -133,24 +148,23 @@ public sealed class FundController(
                 Name = createFundModel.Name,
                 Description = createFundModel.Description,
                 OpeningAccountingPeriod = accountingPeriod,
+                RegularContribution = createFundModel.RegularContribution,
+                MinimumFundedBalance = createFundModel.MinimumFundedBalance,
+                MaximumFundedBalance = createFundModel.MaximumFundedBalance,
+                TargetEndingBalance = createFundModel.TargetEndingBalance,
             },
             out Fund? newFund,
-            out IEnumerable<Exception> exceptions))
+            out IEnumerable<ValidationError> validationErrors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to create Fund.",
-                Errors = exceptions.GroupBy(exception => exception switch
-                {
-                    InvalidNameException => nameof(createFundModel.Name),
-                    InvalidAccountingPeriodException => nameof(createFundModel.AccountingPeriodId),
-                    InvalidFundException => string.Empty,
-                    _ => string.Empty,
-                }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray()),
+                Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors, path => path == nameof(CreateFundRequest.OpeningAccountingPeriod)
+                    ? nameof(CreateFundModel.AccountingPeriodId)
+                    : path),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        fundRepository.Add(newFund);
         await unitOfWork.SaveChangesAsync();
         return Ok(fundConverter.ToModel(newFund));
     }
@@ -168,22 +182,19 @@ public sealed class FundController(
             {
                 Name = onboardFundModel.Name,
                 Description = onboardFundModel.Description,
-                OnboardedBalance = onboardFundModel.OnboardedBalance
+                OnboardedBalance = onboardFundModel.OnboardedBalance,
+                RegularContribution = onboardFundModel.RegularContribution,
+                MinimumFundedBalance = onboardFundModel.MinimumFundedBalance,
+                MaximumFundedBalance = onboardFundModel.MaximumFundedBalance,
+                TargetEndingBalance = onboardFundModel.TargetEndingBalance,
             },
             out Fund? newFund,
-            out IEnumerable<Exception> exceptions))
+            out IEnumerable<ValidationError> validationErrors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to onboard Fund.",
-                Errors = exceptions.GroupBy(exception => exception switch
-                {
-                    InvalidNameException => nameof(onboardFundModel.Name),
-                    InvalidAmountException => nameof(onboardFundModel.OnboardedBalance),
-                    InvalidAccountingPeriodException => string.Empty,
-                    InvalidFundException => string.Empty,
-                    _ => string.Empty,
-                }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray()),
+                Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
@@ -200,7 +211,7 @@ public sealed class FundController(
     public async Task<IActionResult> UpdateAsync(Guid fundId, UpdateFundModel updateFundModel)
     {
         Dictionary<string, string[]> errors = [];
-        if (!fundConverter.TryToDomain(fundId, out Fund? fundToUpdate))
+        if (!fundRepository.TryGetById(fundId, out Fund? fundToUpdate))
         {
             errors.Add(nameof(fundId), [$"Fund with ID {fundId} was not found."]);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
@@ -210,13 +221,16 @@ public sealed class FundController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!fundService.TryUpdate(fundToUpdate, updateFundModel.Name, updateFundModel.Description, out IEnumerable<Exception> exceptions))
+        if (!fundService.TryUpdate(
+                fundToUpdate,
+                new UpdateFundRequest
+                {
+                    Name = updateFundModel.Name,
+                    Description = updateFundModel.Description,
+                },
+                out IEnumerable<ValidationError> validationErrors))
         {
-            errors = exceptions.GroupBy(e => e switch
-            {
-                InvalidNameException => nameof(updateFundModel.Name),
-                _ => string.Empty
-            }).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray());
+            errors = ValidationErrorHelper.GroupValidationErrors(validationErrors);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to update Fund.",
@@ -236,7 +250,7 @@ public sealed class FundController(
     public async Task<IActionResult> DeleteAsync(Guid fundId)
     {
         Dictionary<string, string[]> errors = [];
-        if (!fundConverter.TryToDomain(fundId, out Fund? fundToDelete))
+        if (!fundRepository.TryGetById(fundId, out Fund? fundToDelete))
         {
             errors.Add(nameof(fundId), [$"Fund with ID {fundId} was not found."]);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
@@ -246,14 +260,12 @@ public sealed class FundController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!fundService.TryDelete(fundToDelete, out IEnumerable<Exception> exceptions))
+        if (!fundService.TryDelete(fundToDelete, out IEnumerable<ValidationError> validationErrors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to delete Fund.",
-                Errors = {
-                    { string.Empty, exceptions.Select(e => e.Message).ToArray() }
-                },
+                Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }

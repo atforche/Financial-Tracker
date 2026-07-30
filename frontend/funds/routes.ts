@@ -1,38 +1,44 @@
-import type {
-  DeleteFundViewParams,
-  DeleteFundViewSearchParams,
-} from "@/funds/DeleteFundView";
-import type { FundViewParams, FundViewSearchParams } from "@/funds/FundView";
-import type {
-  UpdateFundViewParams,
-  UpdateFundViewSearchParams,
-} from "@/funds/UpdateFundView";
-import type { CreateFundViewSearchParams } from "@/funds/CreateFundView";
-import type { FundsViewSearchParams } from "@/funds/FundsView";
+import {
+  appendRepeatedSearchParam,
+  buildUrl,
+  objectToSearchParams,
+} from "@/framework/routes/helpers";
+import type { FundTrendsSearchParams } from "@/funds/trends/helpers";
+import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { Route } from "next";
-import { objectToSearchParams } from "@/framework/routes";
+
+/**
+ * Converts the provided Fund Trends Search Params to URL search params.
+ */
+const fundTrendsSearchParamsToSearchParams = function (
+  searchParams: FundTrendsSearchParams,
+): URLSearchParams {
+  const { fundName, ...remainingSearchParams } = searchParams;
+  const params = objectToSearchParams(remainingSearchParams);
+  appendRepeatedSearchParam(params, "fundName", fundName);
+  return params;
+};
 
 /**
  * App routes related to funds.
  */
 const routes = {
-  index: (searchParams: FundsViewSearchParams): Route =>
-    `/funds?${objectToSearchParams(searchParams).toString()}` as Route,
-  create: (searchParams: CreateFundViewSearchParams): Route =>
-    `/funds/create?${objectToSearchParams(searchParams).toString()}` as Route,
-  onboard: "/funds/onboard" as Route,
-  detail: (params: FundViewParams, searchParams: FundViewSearchParams): Route =>
-    `/funds/${params.id}?${objectToSearchParams(searchParams).toString()}` as Route,
-  update: (
-    params: UpdateFundViewParams,
-    searchParams: UpdateFundViewSearchParams,
+  trends: (searchParams: FundTrendsSearchParams): Route =>
+    buildUrl(
+      "/funds/trends",
+      fundTrendsSearchParamsToSearchParams(searchParams),
+    ),
+  workspace: (searchParams: FundWorkspaceSearchParams): Route =>
+    buildUrl("/funds/workspace", objectToSearchParams(searchParams)),
+  workspaceDetail: (
+    fundId: string,
+    searchParams: FundWorkspaceSearchParams,
   ): Route =>
-    `/funds/${params.id}/update?${objectToSearchParams(searchParams).toString()}` as Route,
-  delete: (
-    params: DeleteFundViewParams,
-    searchParams: DeleteFundViewSearchParams,
-  ): Route =>
-    `/funds/${params.id}/delete?${objectToSearchParams(searchParams).toString()}` as Route,
+    buildUrl(`/funds/workspace/${fundId}`, objectToSearchParams(searchParams)),
+  workspaceCreate: (searchParams: FundWorkspaceSearchParams): Route =>
+    buildUrl("/funds/workspace/create", objectToSearchParams(searchParams)),
+  workspaceOnboard: (searchParams: FundWorkspaceSearchParams): Route =>
+    buildUrl("/funds/workspace/onboard", objectToSearchParams(searchParams)),
 };
 
 export default routes;

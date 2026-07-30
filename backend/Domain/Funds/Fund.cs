@@ -5,11 +5,6 @@ namespace Domain.Funds;
 /// <summary>
 /// Entity class representing a Fund
 /// </summary>
-/// <remarks>
-/// A Fund represents a collection of money that the user has allocated for a specific purpose. 
-/// Funds can be used to track savings goals, monthly expenses, or any other financial goal the user may have. 
-/// Each Fund can optionally be marked as a system fund when it is managed by the application rather than by the user.
-/// </remarks>
 public class Fund : Entity<FundId>
 {
     /// <summary>
@@ -33,6 +28,18 @@ public class Fund : Entity<FundId>
     public decimal? OnboardedBalance { get; internal set; }
 
     /// <summary>
+    /// True if this Fund was created during onboarding, false otherwise
+    /// </summary>
+    public bool IsOnboarded => OpeningAccountingPeriodId == null;
+
+    #region Unassigned Fund
+
+    /// <summary>
+    /// ID of the Unassigned Fund
+    /// </summary>
+    public static readonly FundId UnassignedFundId = new(new("51A70FF9-49DA-4463-88FD-818B17ACF5C4"));
+
+    /// <summary>
     /// Name of the Unassigned fund
     /// </summary>
     public const string UnassignedFundName = "Unassigned";
@@ -40,17 +47,14 @@ public class Fund : Entity<FundId>
     /// <summary>
     /// Description of the Unassigned fund
     /// </summary>
-    public const string UnassignedFundDescription = "Fund that tracks money that has not been assigned to a specific fund";
+    public const string UnassignedFundDescription = "Money that has not been assigned to a specific fund";
 
     /// <summary>
     /// True if this Fund is the Unassigned fund, false otherwise
     /// </summary>
-    public bool IsUnassignedFund => Name == UnassignedFundName;
+    public bool IsUnassignedFund => Id == UnassignedFundId;
 
-    /// <summary>
-    /// True if this Fund was created during onboarding, false otherwise
-    /// </summary>
-    public bool IsOnboarded => OpeningAccountingPeriodId == null;
+    #endregion
 
     /// <summary>
     /// Constructs a new instance of this class
@@ -72,6 +76,30 @@ public class Fund : Entity<FundId>
     {
         Name = name;
         Description = description;
+        OpeningAccountingPeriodId = null;
+        OnboardedBalance = onboardedBalance;
+    }
+
+    /// <summary>
+    /// Constructs a new instance of this class representing the unassigned fund
+    /// </summary>
+    internal Fund(AccountingPeriodId openingAccountingPeriodId)
+        : base(UnassignedFundId)
+    {
+        Name = UnassignedFundName;
+        Description = UnassignedFundDescription;
+        OpeningAccountingPeriodId = openingAccountingPeriodId;
+        OnboardedBalance = null;
+    }
+
+    /// <summary>
+    /// Constructs a new instance of this class representing the unassigned fund
+    /// </summary>
+    internal Fund(decimal onboardedBalance)
+        : base(UnassignedFundId)
+    {
+        Name = UnassignedFundName;
+        Description = UnassignedFundDescription;
         OpeningAccountingPeriodId = null;
         OnboardedBalance = onboardedBalance;
     }

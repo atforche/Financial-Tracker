@@ -14,6 +14,7 @@ def main():
 
     commands = CommandCollection("Helper scripts for debugging the Financial Tracker")
     commands.commands.append(CreateDebugEnvironment())
+    commands.commands.append(UpgradeDebugEnvironment())
     commands.commands.append(DestroyDebugEnvironment())
     commands.commands.append(RunDebugFrontend())
     commands.commands.append(RunDebugBackend())
@@ -43,6 +44,16 @@ class CreateDebugEnvironment(Command):
         self.steps.append(Step("", "", lambda: CreateInstanceDirectory(get_debug_configuration()).run([])))
         self.steps.append(Step("", "", lambda: CreateEmptyDatabase(get_debug_configuration()).run([])))
         self.steps.append(Step("", "", lambda: ApplyMigrations(get_debug_configuration()).run([])))
+
+class UpgradeDebugEnvironment(Command):
+    """Command class that upgrades the debug environment"""
+
+    def __init__(self):
+        """Constructs a new instance of this class"""
+
+        super().__init__("upgrade", "Upgrades the debug environment")
+        config_path = get_debug_configuration().path
+        self.steps.append(Step("", "", lambda: ApplyMigrations(Configuration.build_from_existing_instance(config_path, False)).run([])))
 
 class DestroyDebugEnvironment(Command):
     """Command class that destroys the debug environment"""

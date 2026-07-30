@@ -1,5 +1,3 @@
-using Domain.Accounts;
-
 namespace Domain.Transactions.Accounts;
 
 /// <summary>
@@ -8,27 +6,12 @@ namespace Domain.Transactions.Accounts;
 public record CreateAccountTransactionRequest : CreateTransactionRequest
 {
     /// <summary>
-    /// Debit Account for this Account Transaction
+    /// Source for this Account Transaction
     /// </summary>
-    public required Account? DebitAccount { get; init; }
+    public required AccountTransactionSource Source { get; init; }
 
     /// <summary>
-    /// Posted Date for the Debit Account of this Account Transaction
+    /// Destinations for this Account Transaction
     /// </summary>
-    public DateOnly? DebitPostedDate { get; init; }
-
-    /// <summary>
-    /// Credit Account for this Account Transaction
-    /// </summary>
-    public required Account? CreditAccount { get; init; }
-
-    /// <summary>
-    /// Posted Date for the Credit Account of this Account Transaction
-    /// </summary>
-    public DateOnly? CreditPostedDate { get; init; }
-
-    /// <summary>
-    /// Account ID of the Account that generated this transaction when it was created, or null
-    /// </summary>
-    public AccountId? GeneratedByAccountId { get; init; }
+    public required IReadOnlyCollection<AccountTransactionDestination> Destinations { get; init; }
 }

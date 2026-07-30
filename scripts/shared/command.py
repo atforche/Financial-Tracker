@@ -1,6 +1,7 @@
 """Class representing a standalone command used in a script"""
 
 from inspect import get_annotations
+import shlex
 import subprocess
 import sys
 from typing import Any, List, get_args
@@ -100,7 +101,7 @@ class Command:
 
         if not suppress_output:
             print(f"Running subprocess: '{command_string}'")
-        result = subprocess.run(command_string.split(),
+        result = subprocess.run(shlex.split(command_string),
                                 text=True,
                                 input=process_input,
                                 check=False,

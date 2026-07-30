@@ -6,27 +6,27 @@ import type { components } from "@/framework/data/api";
 type ApiError = components["schemas"]["ValidationProblemDetails"];
 
 /**
- * Type representing the details of an API error.
- */
-type ApiErrorDetail = string[];
-
-/**
- * Checks if the given object is an ApiError.
- * @param obj - The object to check.
- * @returns True if the object is an ApiError, false otherwise.
+ * Checks whether a value is a validation problem returned by the API.
  */
 const isApiError = function (obj: unknown): obj is ApiError {
   if (typeof obj !== "object" || obj === null) {
     return false;
   }
+  if (!("errors" in obj)) {
+    return false;
+  }
+
+  const { errors } = obj;
   return (
-    "title" in obj &&
-    typeof obj.title === "string" &&
-    "status" in obj &&
-    typeof obj.status === "number" &&
-    "errors" in obj &&
-    typeof obj.errors === "object"
+    typeof errors === "object" &&
+    errors !== null &&
+    !Array.isArray(errors) &&
+    Object.values(errors).every(
+      (details) =>
+        Array.isArray(details) &&
+        details.every((detail) => typeof detail === "string"),
+    )
   );
 };
 
-export { type ApiError, type ApiErrorDetail, isApiError };
+export { isApiError, type ApiError };

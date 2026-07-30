@@ -8,9 +8,9 @@ namespace Domain.Funds;
 public class FundBalanceHistory : Entity<FundBalanceHistoryId>
 {
     /// <summary>
-    /// Fund ID for this Fund Balance History
+    /// Fund for this Fund Balance History
     /// </summary>
-    public FundId FundId { get; init; }
+    public Fund Fund { get; init; }
 
     /// <summary>
     /// Transaction ID for this Fund Balance History
@@ -25,9 +25,6 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     /// <summary>
     /// Sequence number for this Fund Balance History
     /// </summary>
-    /// <remarks>
-    /// The sequence number is used to order multiple balance history records for the same date.
-    /// </remarks>
     public int Sequence { get; internal set; }
 
     /// <summary>
@@ -36,58 +33,33 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     public decimal PostedBalance { get; private set; }
 
     /// <summary>
-    /// Amount Assigned for this Fund Balance History
-    /// </summary>
-    public decimal AmountAssigned { get; private set; }
-
-    /// <summary>
-    /// Pending Amount Assigned for this Fund Balance History
-    /// </summary>
-    public decimal PendingAmountAssigned { get; private set; }
-
-    /// <summary>
-    /// Amount Spent for this Fund Balance History
-    /// </summary>
-    public decimal AmountSpent { get; private set; }
-
-    /// <summary>
-    /// Pending Amount Spent for this Fund Balance History
-    /// </summary>
-    public decimal PendingAmountSpent { get; private set; }
-
-    /// <summary>
     /// Updates this Fund Balance History with a new Fund Balance.
     /// </summary>
     public void Update(FundBalance fundBalance)
     {
-        if (fundBalance.FundId != FundId)
+        if (fundBalance.Fund.Id != Fund.Id)
         {
             throw new InvalidOperationException("Cannot update Fund Balance History with a Fund Balance for a different Fund");
         }
         PostedBalance = fundBalance.PostedBalance;
-        AmountAssigned = fundBalance.AmountAssigned;
-        PendingAmountAssigned = fundBalance.PendingAmountAssigned;
-        AmountSpent = fundBalance.AmountSpent;
-        PendingAmountSpent = fundBalance.PendingAmountSpent;
     }
 
     /// <summary>
     /// Converts this Fund Balance History to a Fund Balance
     /// </summary>
-    /// <returns></returns>
-    public FundBalance ToFundBalance() => new(FundId, PostedBalance, AmountAssigned, PendingAmountAssigned, AmountSpent, PendingAmountSpent);
+    public FundBalance ToFundBalance() => new(Fund, PostedBalance);
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal FundBalanceHistory(FundId fundId,
+    internal FundBalanceHistory(Fund fund,
         TransactionId transactionId,
         DateOnly date,
         int sequence,
         FundBalance fundBalance)
         : base(new FundBalanceHistoryId(Guid.NewGuid()))
     {
-        FundId = fundId;
+        Fund = fund;
         TransactionId = transactionId;
         Date = date;
         Sequence = sequence;
@@ -99,7 +71,7 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     /// </summary>
     private FundBalanceHistory()
     {
-        FundId = null!;
+        Fund = null!;
         TransactionId = null!;
     }
 }

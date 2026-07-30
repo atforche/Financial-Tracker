@@ -50,5 +50,22 @@ internal sealed class AccountingPeriodBalanceHistoryConfiguration : IEntityTypeC
             builder.Navigation(fundBalance => fundBalance.AccountingPeriod).AutoInclude();
         });
         builder.Navigation(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.FundBalances).AutoInclude();
+
+        builder.OwnsMany(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.FundGoalTotals, builder =>
+        {
+            builder.WithOwner().HasForeignKey("AccountingPeriodBalanceHistoryId");
+
+            builder.HasKey(totals => totals.Id);
+            builder.Property(totals => totals.Id)
+                .HasConversion(id => id.Value, value => new AccountingPeriodFundGoalTotalsId(value));
+
+            builder.HasOne(totals => totals.Fund).WithMany();
+            builder.Navigation(totals => totals.Fund).AutoInclude();
+
+            builder.HasOne(totals => totals.AccountingPeriod).WithMany();
+            builder.Navigation(totals => totals.AccountingPeriod).AutoInclude();
+        });
+        builder.Navigation(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.FundGoalTotals).AutoInclude();
+
     }
 }

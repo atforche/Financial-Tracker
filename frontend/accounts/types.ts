@@ -1,7 +1,7 @@
 import {
-  AccountSortOrderModel,
-  AccountTransactionSortOrderModel,
+  AccountBalanceEventSortModel,
   AccountTypeModel,
+  AccountWithBalanceRangeSortModel,
   type components,
 } from "@/framework/data/api";
 
@@ -11,12 +11,66 @@ import {
 type Account = components["schemas"]["AccountModel"];
 
 /**
- * Interface representing an identifier for an Account.
+ * Type representing an Account along with its current balance.
  */
-interface AccountIdentifier {
-  id: string;
-  name: string;
+type AccountWithBalance = components["schemas"]["AccountWithBalanceModel"];
+
+/**
+ * Type representing an Account with a balance range.
+ */
+type AccountWithBalanceRange =
+  components["schemas"]["AccountWithBalanceRangeModel"];
+
+/**
+ * Type representing an Account balance summary.
+ */
+type AccountBalanceSummary =
+  components["schemas"]["AccountBalanceSummaryModel"];
+
+/**
+ * Type representing an Account balance summary by date.
+ */
+type AccountBalanceSummaryByDate =
+  components["schemas"]["AccountBalanceSummaryByDateModel"];
+
+/**
+ * Type representing an Account balance summary by period.
+ */
+type AccountBalanceSummaryByPeriod =
+  components["schemas"]["AccountBalanceSummaryByPeriodModel"];
+
+/**
+ * Type representing an account balance event..
+ */
+type AccountBalanceEvent = components["schemas"]["AccountBalanceEventModel"];
+
+/**
+ * Interface representing a draft of an account balance event.
+ */
+interface AccountBalanceEventDraft {
+  readonly accountId: string | null;
+  readonly accountName: string | null;
+  readonly accountType: AccountTypeModel | null;
+  readonly postedDate: string | null;
+  readonly previousAccountBalance: number | null;
+  readonly newAccountBalance: number | null;
 }
+
+/**
+ * Type representing a collection of accounts in a date range.
+ */
+type AccountsInDateRange = components["schemas"]["AccountsInDateRangeModel"];
+
+/**
+ * Type representing a collection of accounts in an accounting period range.
+ */
+type AccountsInAccountingPeriodRange =
+  components["schemas"]["AccountsInAccountingPeriodRangeModel"];
+
+/**
+ * Type representing an Account Type balance summary.
+ */
+type AccountTypeBalance = components["schemas"]["AccountTypeBalanceModel"];
 
 /**
  * Type representing a request to create an account.
@@ -33,80 +87,22 @@ type OnboardAccountRequest = components["schemas"]["OnboardAccountModel"];
  */
 type UpdateAccountRequest = components["schemas"]["UpdateAccountModel"];
 
-/**
- * Determines if the provided account type supports tracked fund assignments.
- */
-const isTrackedAccountType = function (accountType: AccountTypeModel): boolean {
-  switch (accountType) {
-    case AccountTypeModel.Standard:
-    case AccountTypeModel.CreditCard:
-    case AccountTypeModel.Investment:
-      return true;
-    case AccountTypeModel.Debt:
-    case AccountTypeModel.Retirement:
-    case AccountTypeModel.Escrow:
-      return false;
-    default:
-      return false;
-  }
-};
-
-/**
- * Determines if the provided account type is a debt account type.
- */
-const isDebtAccountType = function (accountType: AccountTypeModel): boolean {
-  return (
-    accountType === AccountTypeModel.Debt ||
-    accountType === AccountTypeModel.CreditCard
-  );
-};
-
-/**
- * Determines if the provided change in balance is "positive" based on the provided account type.
- */
-const isPositiveChangeInBalance = function (
-  accountType: AccountTypeModel,
-  changeInBalance: number,
-): boolean {
-  if (accountType === AccountTypeModel.Debt) {
-    return changeInBalance <= 0;
-  }
-  return changeInBalance >= 0;
-};
-
-/**
- * Formats the provided account type into a readable string.
- */
-const formatAccountType = function (accountType: AccountTypeModel): string {
-  switch (accountType) {
-    case AccountTypeModel.Standard:
-      return "Standard";
-    case AccountTypeModel.CreditCard:
-      return "Credit Card";
-    case AccountTypeModel.Investment:
-      return "Investment";
-    case AccountTypeModel.Debt:
-      return "Debt";
-    case AccountTypeModel.Retirement:
-      return "Retirement";
-    case AccountTypeModel.Escrow:
-      return "Escrow";
-    default:
-      return accountType;
-  }
-};
-
 export {
   type Account,
-  type AccountIdentifier,
+  type AccountWithBalance,
+  type AccountWithBalanceRange,
+  AccountWithBalanceRangeSortModel as AccountWithBalanceRangeSort,
+  type AccountBalanceSummary,
+  type AccountBalanceSummaryByDate,
+  type AccountBalanceSummaryByPeriod,
+  type AccountBalanceEvent,
+  type AccountBalanceEventDraft,
+  AccountBalanceEventSortModel as AccountBalanceEventSort,
+  type AccountsInDateRange,
+  type AccountsInAccountingPeriodRange,
+  type AccountTypeBalance,
   type CreateAccountRequest,
   type OnboardAccountRequest,
   type UpdateAccountRequest,
-  AccountSortOrderModel as AccountSortOrder,
-  AccountTransactionSortOrderModel as AccountTransactionSortOrder,
   AccountTypeModel as AccountType,
-  isTrackedAccountType,
-  isDebtAccountType,
-  isPositiveChangeInBalance,
-  formatAccountType,
 };

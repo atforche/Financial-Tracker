@@ -1,14 +1,4 @@
-import type { JSX } from "react";
+import OverviewView from "@/overview/OverviewView";
 
-/**
- * Component that displays the Overview view.
- */
-const OverviewView = function (): JSX.Element {
-  return (
-    <div>
-      <p>This is the overview view</p>
-    </div>
-  );
-};
-
+export const dynamic = "force-dynamic";
 export default OverviewView;

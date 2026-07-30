@@ -11,11 +11,6 @@ public abstract record UpdateTransactionRequest
     public required DateOnly TransactionDate { get; init; }
 
     /// <summary>
-    /// Location for the Transaction
-    /// </summary>
-    public required string Location { get; init; }
-
-    /// <summary>
     /// Description for the Transaction
     /// </summary>
     public required string Description { get; init; }

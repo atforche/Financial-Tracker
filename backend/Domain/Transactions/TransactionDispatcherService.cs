@@ -1,10 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.Accounts;
-using Domain.Exceptions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Spending;
+using Domain.Validation;
 
 namespace Domain.Transactions;
 
@@ -23,7 +22,7 @@ public sealed class TransactionDispatcherService(
     public bool TryCreate(
         CreateTransactionRequest request,
         [NotNullWhen(true)] out Transaction? transaction,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
         switch (request)
         {
@@ -60,7 +59,7 @@ public sealed class TransactionDispatcherService(
                 transaction = null;
                 return false;
             default:
-                exceptions = [new InvalidOperationException($"Unrecognized create request type: {request.GetType().Name}")];
+                exceptions = [new ValidationError(ValidationErrorPath.Empty, $"Unrecognized create request type: {request.GetType().Name}")];
                 transaction = null;
                 return false;
         }
@@ -69,7 +68,7 @@ public sealed class TransactionDispatcherService(
     /// <summary>
     /// Attempts to update the provided transaction using the provided concrete request.
     /// </summary>
-    public bool TryUpdate(Transaction transaction, UpdateTransactionRequest request, out IEnumerable<Exception> exceptions) =>
+    public bool TryUpdate(Transaction transaction, UpdateTransactionRequest request, out IEnumerable<ValidationError> exceptions) =>
         (transaction, request) switch
         {
             (SpendingTransaction spendingTransaction, UpdateSpendingTransactionRequest spendingRequest) =>
@@ -86,45 +85,48 @@ public sealed class TransactionDispatcherService(
     /// <summary>
     /// Attempts to post the provided transaction to the provided account.
     /// </summary>
-    public bool TryPost(Transaction transaction, AccountId accountId, DateOnly postedDate, out IEnumerable<Exception> exceptions) =>
+    public bool TryPost(Transaction transaction, PostTransactionRequest request, out IEnumerable<ValidationError> exceptions) =>
         transaction switch
         {
-            SpendingTransaction spendingTransaction => spendingTransactionService.TryPost(spendingTransaction, accountId, postedDate, out exceptions),
-            IncomeTransaction incomeTransaction => incomeTransactionService.TryPost(incomeTransaction, accountId, postedDate, out exceptions),
-            AccountTransaction accountTransaction => accountTransactionService.TryPost(accountTransaction, accountId, postedDate, out exceptions),
-            FundTransaction => Fail(out exceptions, "Fund transactions cannot be posted to an account.", exceptionFactory: message => new UnableToPostException(message)),
+            SpendingTransaction spendingTransaction => spendingTransactionService.TryPost(spendingTransaction, request, out exceptions),
+            IncomeTransaction incomeTransaction => incomeTransactionService.TryPost(incomeTransaction, request, out exceptions),
+            AccountTransaction accountTransaction => accountTransactionService.TryPost(accountTransaction, request, out exceptions),
+            FundTransaction => Fail(out exceptions, "Fund transactions cannot be posted to an account."),
             _ => Fail(out exceptions, $"Unrecognized transaction type: {transaction.GetType().Name}")
         };
 
     /// <summary>
     /// Attempts to unpost the provided transaction.
     /// </summary>
-    public bool TryUnpost(Transaction transaction, out IEnumerable<Exception> exceptions) =>
+    public bool TryUnpost(Transaction transaction, out IEnumerable<ValidationError> exceptions) =>
         transaction switch
         {
             SpendingTransaction spendingTransaction => spendingTransactionService.TryUnpost(spendingTransaction, out exceptions),
             IncomeTransaction incomeTransaction => incomeTransactionService.TryUnpost(incomeTransaction, out exceptions),
             AccountTransaction accountTransaction => accountTransactionService.TryUnpost(accountTransaction, out exceptions),
-            FundTransaction => Fail(out exceptions, "Fund transactions cannot be unposted.", exceptionFactory: message => new UnableToUnpostException(message)),
+            FundTransaction => Fail(out exceptions, "Fund transactions cannot be unposted."),
             _ => Fail(out exceptions, $"Unrecognized transaction type: {transaction.GetType().Name}")
         };
 
     /// <summary>
     /// Attempts to delete the provided transaction.
     /// </summary>
-    public bool TryDelete(Transaction transaction, out IEnumerable<Exception> exceptions) =>
+    public bool TryDelete(Transaction transaction, out IEnumerable<ValidationError> exceptions) =>
         transaction switch
         {
             SpendingTransaction spendingTransaction => spendingTransactionService.TryDelete(spendingTransaction, out exceptions),
             IncomeTransaction incomeTransaction => incomeTransactionService.TryDelete(incomeTransaction, out exceptions),
             AccountTransaction accountTransaction => accountTransactionService.TryDelete(accountTransaction, out exceptions),
             FundTransaction fundTransaction => fundTransactionService.TryDelete(fundTransaction, out exceptions),
-            _ => Fail(out exceptions, $"Unrecognized transaction type: {transaction.GetType().Name}", exceptionFactory: message => new UnableToDeleteException(message))
+            _ => Fail(out exceptions, $"Unrecognized transaction type: {transaction.GetType().Name}")
         };
 
-    private static bool Fail(out IEnumerable<Exception> exceptions, string message, Func<string, Exception>? exceptionFactory = null)
+    /// <summary>
+    /// Helper method to fail with a single exception message.
+    /// </summary>
+    private static bool Fail(out IEnumerable<ValidationError> exceptions, string message)
     {
-        exceptions = [exceptionFactory?.Invoke(message) ?? new InvalidOperationException(message)];
+        exceptions = [new ValidationError(ValidationErrorPath.Empty, message)];
         return false;
     }
 }

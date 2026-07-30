@@ -1,6 +1,8 @@
-import { AccountType, formatAccountType } from "@/accounts/types";
+import { AccountType } from "@/accounts/types";
 import { ComboBoxEntryField } from "@/framework/forms/ComboBoxEntryField";
 import type { JSX } from "react";
+import enumValues from "@/framework/data/enumValues";
+import { formatAccountType } from "@/accounts/helpers";
 
 /**
  * Props for the AccountTypeEntryField component.
@@ -8,7 +10,7 @@ import type { JSX } from "react";
 interface AccountTypeEntryFieldProps {
   readonly label: string;
   readonly value: AccountType | null;
-  readonly setValue: (newValue: AccountType | null) => void;
+  readonly setValue?: ((newValue: AccountType | null) => void) | null;
   readonly errorMessage?: string | null;
 }
 
@@ -18,13 +20,13 @@ interface AccountTypeEntryFieldProps {
 const AccountTypeEntryField = function ({
   label,
   value,
-  setValue,
+  setValue = null,
   errorMessage = null,
 }: AccountTypeEntryFieldProps): JSX.Element {
   return (
     <ComboBoxEntryField<AccountType>
       label={label}
-      options={Object.values(AccountType).map((type) => ({
+      options={enumValues(AccountType).map((type) => ({
         label: formatAccountType(type),
         value: type,
       }))}
@@ -33,9 +35,13 @@ const AccountTypeEntryField = function ({
           ? { label: "", value: null }
           : { label: formatAccountType(value), value }
       }
-      setValue={(newValue): void => {
-        setValue(newValue?.value ?? null);
-      }}
+      setValue={
+        setValue !== null
+          ? (newValue): void => {
+              setValue(newValue?.value ?? null);
+            }
+          : null
+      }
       errorMessage={errorMessage}
     />
   );

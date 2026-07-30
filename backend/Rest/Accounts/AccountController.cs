@@ -1,11 +1,11 @@
 using Data;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Exceptions;
+using Domain.Accounts.Queries;
+using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Accounts;
-using Models.Transactions;
 using Rest.AccountingPeriods;
 
 namespace Rest.Accounts;
@@ -17,30 +17,74 @@ namespace Rest.Accounts;
 [Route("/accounts")]
 public sealed class AccountController(
     UnitOfWork unitOfWork,
-    AccountingPeriodConverter accountingPeriodConverter,
+    IAccountingPeriodRepository accountingPeriodRepository,
+    IAccountRepository accountRepository,
     AccountService accountService,
-    AccountGetter accountGetter,
+    AccountQueryService accountQueryService,
     AccountConverter accountConverter,
-    AccountTransactionGetter accountTransactionGetter) : ControllerBase
+    AccountBalanceEventQueryService accountBalanceEventQueryService,
+    AccountBalanceEventConverter accountBalanceEventConverter) : ControllerBase
 {
+    /// <summary>
+    /// Retrieves balance events for the specified Account.
+    /// </summary>
+    [HttpGet("{accountId}/balance-events")]
+    [ProducesResponseType(typeof(CollectionModel<AccountBalanceEventModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<CollectionModel<AccountBalanceEventModel>>> GetBalanceEventsAsync(
+        Guid accountId,
+        [FromQuery] AccountBalanceEventsQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        if (await accountQueryService.GetByIdAsync(accountId, cancellationToken) == null)
+        {
+            return NotFound();
+        }
+        return Ok(accountBalanceEventConverter.ToModel(await accountBalanceEventQueryService.GetAsync(
+            accountBalanceEventConverter.ToDomain(accountId, query),
+            cancellationToken)));
+    }
+
+    /// <summary>
+    /// Retrieves Account Balance Events in a date range.
+    /// </summary>
+    [HttpGet("balance-events/date-range")]
+    [ProducesResponseType(typeof(CollectionModel<AccountBalanceEventModel>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<CollectionModel<AccountBalanceEventModel>>> GetBalanceEventsAsync(
+        [FromQuery] AccountBalanceEventsInDateRangeQueryParameterModel query,
+        CancellationToken cancellationToken) =>
+        Ok(accountBalanceEventConverter.ToModel(await accountBalanceEventQueryService.GetAsync(
+            accountBalanceEventConverter.ToDomain(query),
+            cancellationToken)));
+
+    /// <summary>
+    /// Retrieves Account Balance Events in an Accounting Period range.
+    /// </summary>
+    [HttpGet("balance-events/accounting-period-range")]
+    [ProducesResponseType(typeof(CollectionModel<AccountBalanceEventModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<CollectionModel<AccountBalanceEventModel>>> GetBalanceEventsAsync(
+        [FromQuery] AccountBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        AccountBalanceEventAccountingPeriodRangeQueryResult result = await accountBalanceEventQueryService.GetAsync(
+            accountBalanceEventConverter.ToDomain(query),
+            cancellationToken);
+        return result.Page == null
+            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Account balance events."))
+            : Ok(accountBalanceEventConverter.ToModel(result.Page));
+    }
+
     /// <summary>
     /// Retrieves the Account that matches the provided ID
     /// </summary>
     [HttpGet("{accountId}")]
     [ProducesResponseType(typeof(AccountModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult Get(Guid accountId)
+    public async Task<ActionResult<AccountModel>> GetAsync(Guid accountId, CancellationToken cancellationToken)
     {
-        if (!accountConverter.TryToDomain(accountId, out Account? account))
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Account.",
-                Errors = { [nameof(accountId)] = new[] { $"Account with ID {accountId} not found." } },
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
-        }
-        return Ok(accountConverter.ToModel(account));
+        Account? account = await accountQueryService.GetByIdAsync(accountId, cancellationToken);
+        return account == null ? NotFound() : Ok(accountConverter.ToModel(account));
     }
 
     /// <summary>
@@ -49,32 +93,49 @@ public sealed class AccountController(
     [HttpGet("")]
     [ProducesResponseType(typeof(CollectionModel<AccountModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public IActionResult GetMany([FromQuery] AccountQueryParameterModel queryParameters) =>
-        Ok(accountGetter.Get(queryParameters));
+    public async Task<ActionResult<CollectionModel<AccountModel>>> GetManyAsync(
+        [FromQuery] AccountQueryParameterModel queryParameters,
+        CancellationToken cancellationToken) => Ok(accountConverter.ToModel(
+            await accountQueryService.GetAsync(accountConverter.ToDomain(queryParameters), cancellationToken)));
 
     /// <summary>
-    /// Retrieves the Transactions for the Account that matches the provided ID
+    /// Retrieves Accounts with current balances.
     /// </summary>
-    [HttpGet("{accountId}/transactions")]
-    [ProducesResponseType(typeof(CollectionModel<TransactionModel>), StatusCodes.Status200OK)]
+    [HttpGet("with-balances")]
+    [ProducesResponseType(typeof(CollectionModel<AccountWithBalanceModel>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<CollectionModel<AccountWithBalanceModel>>> GetWithBalancesAsync(
+        [FromQuery] AccountWithBalanceQueryParameterModel query,
+        CancellationToken cancellationToken) => Ok(accountConverter.ToModel(
+            await accountQueryService.GetWithBalancesAsync(accountConverter.ToDomain(query), cancellationToken)));
+
+    /// <summary>
+    /// Retrieves Account balances over a date range.
+    /// </summary>
+    [HttpGet("date-range")]
+    [ProducesResponseType(typeof(AccountsInDateRangeModel), StatusCodes.Status200OK)]
+    public async Task<ActionResult<AccountsInDateRangeModel>> GetDateRangeAsync(
+        [FromQuery] AccountsInDateRangeQueryParameterModel query,
+        CancellationToken cancellationToken) =>
+        Ok(accountConverter.ToModel(await accountQueryService.GetDateRangeAsync(
+            accountConverter.ToDomain(query),
+            cancellationToken)));
+
+    /// <summary>
+    /// Retrieves Account balances over an Accounting Period range.
+    /// </summary>
+    [HttpGet("accounting-period-range")]
+    [ProducesResponseType(typeof(AccountsInAccountingPeriodRangeModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult GetTransactions(Guid accountId, [FromQuery] AccountTransactionQueryParameterModel queryParameters)
+    public async Task<ActionResult<AccountsInAccountingPeriodRangeModel>> GetAccountingPeriodRangeAsync(
+        [FromQuery] AccountsInAccountingPeriodRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
     {
-        Dictionary<string, string[]> errors = [];
-        if (!accountConverter.TryToDomain(accountId, out Account? account))
-        {
-            errors.Add(nameof(accountId), [$"Account with ID {accountId} was not found."]);
-        }
-        if (errors.Count > 0 || account == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to retrieve Account Transactions.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        return Ok(accountTransactionGetter.Get(account.Id, queryParameters));
+        AccountAccountingPeriodRangeQueryResult result = await accountQueryService.GetAccountingPeriodRangeAsync(
+            accountConverter.ToDomain(query),
+            cancellationToken);
+        return result.Range == null
+            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Account range."))
+            : Ok(accountConverter.ToModel(result.Range));
     }
 
     /// <summary>
@@ -86,7 +147,7 @@ public sealed class AccountController(
     public async Task<IActionResult> CreateAsync(CreateAccountModel createAccountModel)
     {
         Dictionary<string, string[]> errors = [];
-        if (!accountingPeriodConverter.TryToDomain(createAccountModel.OpeningAccountingPeriodId, out AccountingPeriod? accountingPeriod))
+        if (!accountingPeriodRepository.TryGetById(createAccountModel.OpeningAccountingPeriodId, out AccountingPeriod? accountingPeriod))
         {
             errors.Add(nameof(createAccountModel.OpeningAccountingPeriodId), [$"Accounting Period with ID {createAccountModel.OpeningAccountingPeriodId} was not found."]);
         }
@@ -113,15 +174,11 @@ public sealed class AccountController(
                 DateOpened = createAccountModel.DateOpened
             },
             out Account? newAccount,
-            out IEnumerable<Exception> exceptions))
+            out IEnumerable<ValidationError> validationErrors))
         {
-            errors = exceptions.GroupBy(e => e switch
-            {
-                InvalidNameException => nameof(createAccountModel.Name),
-                InvalidAccountingPeriodException => nameof(createAccountModel.OpeningAccountingPeriodId),
-                InvalidDateException => nameof(createAccountModel.DateOpened),
-                _ => string.Empty
-            }).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray());
+            errors = ValidationErrorHelper.GroupValidationErrors(validationErrors, path => path == nameof(CreateAccountRequest.OpeningAccountingPeriod)
+                ? nameof(CreateAccountModel.OpeningAccountingPeriodId)
+                : path);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to create Account.",
@@ -163,16 +220,9 @@ public sealed class AccountController(
                 OnboardedBalance = onboardAccountModel.OnboardedBalance
             },
             out Account? newAccount,
-            out IEnumerable<Exception> exceptions))
+            out IEnumerable<ValidationError> validationErrors))
         {
-            errors = exceptions.GroupBy(exception => exception switch
-            {
-                InvalidNameException => nameof(onboardAccountModel.Name),
-                InvalidAmountException => nameof(onboardAccountModel.OnboardedBalance),
-                InvalidAccountingPeriodException => string.Empty,
-                InvalidFundException => string.Empty,
-                _ => string.Empty
-            }).ToDictionary(grouping => grouping.Key, grouping => grouping.Select(exception => exception.Message).ToArray());
+            errors = ValidationErrorHelper.GroupValidationErrors(validationErrors);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to onboard Account.",
@@ -192,7 +242,7 @@ public sealed class AccountController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UpdateAsync(Guid accountId, UpdateAccountModel updateAccountModel)
     {
-        if (!accountConverter.TryToDomain(accountId, out Account? accountToUpdate))
+        if (!accountRepository.TryGetById(accountId, out Account? accountToUpdate))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
@@ -203,13 +253,12 @@ public sealed class AccountController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!accountService.TryUpdate(accountToUpdate, updateAccountModel.Name, out IEnumerable<Exception> exceptions))
+        if (!accountService.TryUpdate(
+                accountToUpdate,
+                new UpdateAccountRequest { Name = updateAccountModel.Name },
+                out IEnumerable<ValidationError> validationErrors))
         {
-            var errors = exceptions.GroupBy(e => e switch
-            {
-                InvalidNameException => nameof(updateAccountModel.Name),
-                _ => string.Empty
-            }).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray());
+            Dictionary<string, string[]> errors = ValidationErrorHelper.GroupValidationErrors(validationErrors);
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to update Account.",
@@ -228,7 +277,7 @@ public sealed class AccountController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> DeleteAsync(Guid accountId)
     {
-        if (!accountConverter.TryToDomain(accountId, out Account? accountToDelete))
+        if (!accountRepository.TryGetById(accountId, out Account? accountToDelete))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
@@ -239,14 +288,12 @@ public sealed class AccountController(
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }
-        if (!accountService.TryDelete(accountToDelete, out IEnumerable<Exception> exceptions))
+        if (!accountService.TryDelete(accountToDelete, out IEnumerable<ValidationError> validationErrors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
                 Title = "Unable to delete Account.",
-                Errors = {
-                    { string.Empty, exceptions.Select(e => e.Message).ToArray() }
-                },
+                Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors),
                 Status = StatusCodes.Status422UnprocessableEntity
             });
         }

@@ -2,11 +2,11 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import { Box, Stack } from "@mui/material";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import ApplicationShell from "@/framework/navigation/ApplicationShell";
+import DateLocalizationProvider from "@/framework/forms/DateLocalizationProvider";
 import type { JSX } from "react";
 import type { Metadata } from "next";
-import Navigation from "@/app/Navigation";
 
 /**
  * Metadata for the application, including title and description.
@@ -28,10 +28,9 @@ const RootLayout = function ({
     <html lang="en">
       <body>
         <AppRouterCacheProvider>
-          <Stack direction="row">
-            <Navigation />
-            <Box sx={{ padding: "25px", width: "100%" }}>{children}</Box>
-          </Stack>
+          <DateLocalizationProvider>
+            <ApplicationShell>{children}</ApplicationShell>
+          </DateLocalizationProvider>
         </AppRouterCacheProvider>
       </body>
     </html>

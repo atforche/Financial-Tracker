@@ -25,30 +25,12 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     /// <summary>
     /// Sequence number for this Account Balance History
     /// </summary>
-    /// <remarks>
-    /// The sequence number is used to order multiple balance history records for the same date.
-    /// </remarks>
     public int Sequence { get; internal set; }
 
     /// <summary>
     /// Posted Balance for this Account Balance History
     /// </summary>
     public decimal PostedBalance { get; private set; }
-
-    /// <summary>
-    /// Pending Debit Amount for this Account Balance History
-    /// </summary>
-    public decimal PendingDebitAmount { get; private set; }
-
-    /// <summary>
-    /// Pending Credit Amount for this Account Balance History
-    /// </summary>
-    public decimal PendingCreditAmount { get; private set; }
-
-    /// <summary>
-    /// Available to Spend for this Account Balance History
-    /// </summary>
-    public decimal? AvailableToSpend { get; private set; }
 
     /// <summary>
     /// Updates this Account Balance History with a new Account Balance.
@@ -60,16 +42,12 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
             throw new ArgumentException("New balance must be for the same account", nameof(newBalance));
         }
         PostedBalance = newBalance.PostedBalance;
-        PendingDebitAmount = newBalance.PendingDebitAmount;
-        PendingCreditAmount = newBalance.PendingCreditAmount;
-        AvailableToSpend = newBalance.AvailableToSpend;
     }
 
     /// <summary>
     /// Converts this Account Balance History to an Account Balance
     /// </summary>
-    /// <returns></returns>
-    public AccountBalance ToAccountBalance() => new(Account, PostedBalance, PendingDebitAmount, PendingCreditAmount);
+    public AccountBalance ToAccountBalance() => new(Account, PostedBalance);
 
     /// <summary>
     /// Constructs a new instance of this class

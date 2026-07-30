@@ -5,6 +5,8 @@ using Models;
 using Serilog;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+bool shouldLaunchAPI = Rest.EnvironmentManager.ShouldLaunchAPI();
+bool isTesting = builder.Environment.IsEnvironment("Testing");
 
 // Configure the JSON serializer to serialize enums as their string values
 _ = builder.Services.AddControllers().AddJsonOptions(options =>
@@ -13,33 +15,41 @@ _ = builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
-if (Rest.EnvironmentManager.ShouldLaunchAPI())
+if (shouldLaunchAPI || isTesting)
 {
     // Register needed DI services
     Data.ServiceManager.Register(builder.Services);
     Domain.ServiceManager.Register(builder.Services);
     Rest.ServiceManager.Register(builder.Services);
 
-    // Configure CORS to allow requests from select origins
-    _ = builder.Services.AddCors(options =>
+    if (shouldLaunchAPI)
     {
-        options.AddDefaultPolicy(
-            policy =>
-            {
-                _ = policy.WithOrigins(Rest.EnvironmentManager.Instance.FrontendOrigin)
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
-            });
-    });
+        // Configure CORS to allow requests from select origins
+        _ = builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(
+                policy =>
+                {
+                    _ = policy.WithOrigins(Rest.EnvironmentManager.Instance.FrontendOrigin)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+        });
 
-    // Configure logging
-    _ = builder.Host.UseSerilog((context, configuration) =>
+        // Configure logging
+        _ = builder.Host.UseSerilog((context, configuration) =>
+        {
+            _ = configuration.ReadFrom.Configuration(context.Configuration)
+                .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+                .WriteTo.File(Rest.EnvironmentManager.Instance.LogDirectory + "/api-log-.log",
+                    rollingInterval: RollingInterval.Day,
+                    formatProvider: CultureInfo.InvariantCulture);
+        });
+    }
+    else
     {
-        _ = configuration.WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
-            .WriteTo.File(Rest.EnvironmentManager.Instance.LogDirectory + "/api-log-.log",
-                rollingInterval: RollingInterval.Day,
-                formatProvider: CultureInfo.InvariantCulture);
-    });
+        _ = builder.Services.AddCors();
+    }
 }
 
 // Configure OpenAPI document generation
@@ -80,7 +90,7 @@ app.UseAuthorization();
 app.UseCors();
 app.MapControllers();
 
-if (Rest.EnvironmentManager.ShouldLaunchAPI())
+if (shouldLaunchAPI)
 {
     // Ensure the database is healthy and the environment variables are all defined
     using IServiceScope serviceScope = app.Services.CreateScope();
@@ -89,5 +99,9 @@ if (Rest.EnvironmentManager.ShouldLaunchAPI())
     Data.EnvironmentManager.Instance.PrintEnvironment();
     Rest.EnvironmentManager.Instance.PrintEnvironment();
 
+    app.Run();
+}
+else if (isTesting)
+{
     app.Run();
 }

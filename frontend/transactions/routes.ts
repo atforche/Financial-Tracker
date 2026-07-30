@@ -1,58 +1,79 @@
-import type {
-  DeleteTransactionViewParams,
-  DeleteTransactionViewSearchParams,
-} from "@/transactions/DeleteTransactionView";
-import type {
-  PostTransactionViewParams,
-  PostTransactionViewSearchParams,
-} from "@/transactions/PostTransactionView";
-import type {
-  TransactionViewParams,
-  TransactionViewSearchParams,
-} from "@/transactions/TransactionView";
-import type {
-  UnpostTransactionViewParams,
-  UnpostTransactionViewSearchParams,
-} from "@/transactions/UnpostTransactionView";
-import type {
-  UpdateTransactionViewParams,
-  UpdateTransactionViewSearchParams,
-} from "@/transactions/UpdateTransactionView";
-import type { CreateTransactionViewSearchParams } from "@/transactions/CreateTransactionView";
+import {
+  appendRepeatedSearchParam,
+  buildUrl,
+  objectToSearchParams,
+} from "@/framework/routes/helpers";
 import type { Route } from "next";
-import { objectToSearchParams } from "@/framework/routes";
+import type { TransactionTrendsSearchParams } from "@/transactions/trends/TransactionTrends";
+import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 
 /**
- * App routes related to transactions.
+ * Converts the provided Transaction Trends Search Params to URL Search Params.
+ */
+const transactionTrendsSearchParamsToSearchParams = function (
+  searchParams: TransactionTrendsSearchParams,
+): URLSearchParams {
+  const { transactionType, accountName, fundName, ...remainingSearchParams } =
+    searchParams;
+  const params = objectToSearchParams(remainingSearchParams);
+
+  appendRepeatedSearchParam(params, "transactionType", transactionType);
+  appendRepeatedSearchParam(params, "accountName", accountName);
+  appendRepeatedSearchParam(params, "fundName", fundName);
+  return params;
+};
+
+/**
+ * Converts the provided Transaction Workspace Search Params to URL Search Params.
+ */
+const transactionWorkspaceSearchParamsToSearchParams = function (
+  searchParams: TransactionWorkspaceSearchParams,
+): URLSearchParams {
+  const { accountingPeriodIds, accountIds, fundIds, ...remainingSearchParams } =
+    searchParams;
+  const params = objectToSearchParams(remainingSearchParams);
+
+  appendRepeatedSearchParam(params, "accountingPeriodIds", accountingPeriodIds);
+  appendRepeatedSearchParam(params, "accountIds", accountIds);
+  appendRepeatedSearchParam(params, "fundIds", fundIds);
+  return params;
+};
+
+/**
+ * App routes related to accounting periods.
  */
 const routes = {
-  create: (searchParams: CreateTransactionViewSearchParams): Route =>
-    `/transactions/create?${objectToSearchParams(searchParams).toString()}` as Route,
-  detail: (
-    params: TransactionViewParams,
-    searchParams: TransactionViewSearchParams,
+  trends: (searchParams: TransactionTrendsSearchParams): Route =>
+    buildUrl(
+      "/transactions/trends",
+      transactionTrendsSearchParamsToSearchParams(searchParams),
+    ),
+  workspace: (searchParams: TransactionWorkspaceSearchParams): Route =>
+    buildUrl(
+      "/transactions/workspace",
+      transactionWorkspaceSearchParamsToSearchParams(searchParams),
+    ),
+  workspaceCreate: (searchParams: TransactionWorkspaceSearchParams): Route =>
+    buildUrl(
+      "/transactions/workspace/create",
+      transactionWorkspaceSearchParamsToSearchParams(searchParams),
+    ),
+  workspaceDetail: (
+    transactionId: string,
+    searchParams: TransactionWorkspaceSearchParams,
   ): Route =>
-    `/transactions/${params.id}?${objectToSearchParams(searchParams).toString()}` as Route,
-  update: (
-    params: UpdateTransactionViewParams,
-    searchParams: UpdateTransactionViewSearchParams,
+    buildUrl(
+      `/transactions/workspace/${transactionId}`,
+      transactionWorkspaceSearchParamsToSearchParams(searchParams),
+    ),
+  workspaceEdit: (
+    transactionId: string,
+    searchParams: TransactionWorkspaceSearchParams,
   ): Route =>
-    `/transactions/${params.id}/update?${objectToSearchParams(searchParams).toString()}` as Route,
-  post: (
-    params: PostTransactionViewParams,
-    searchParams: PostTransactionViewSearchParams,
-  ): Route =>
-    `/transactions/${params.id}/post?${objectToSearchParams(searchParams).toString()}` as Route,
-  unpost: (
-    params: UnpostTransactionViewParams,
-    searchParams: UnpostTransactionViewSearchParams,
-  ): Route =>
-    `/transactions/${params.id}/unpost?${objectToSearchParams(searchParams).toString()}` as Route,
-  delete: (
-    params: DeleteTransactionViewParams,
-    searchParams: DeleteTransactionViewSearchParams,
-  ): Route =>
-    `/transactions/${params.id}/delete?${objectToSearchParams(searchParams).toString()}` as Route,
+    buildUrl(
+      `/transactions/workspace/${transactionId}/edit`,
+      transactionWorkspaceSearchParamsToSearchParams(searchParams),
+    ),
 };
 
 export default routes;

@@ -1,5 +1,6 @@
 using Domain.Transactions;
 using Models.Transactions;
+using Models.Transactions.Update;
 
 namespace Rest.Transactions;
 
@@ -30,5 +31,17 @@ internal static class TransactionTypeConverter
         UpdateAccountTransactionModel => TransactionTypeModel.Account,
         UpdateFundTransactionModel => TransactionTypeModel.Fund,
         _ => throw new InvalidOperationException($"Unrecognized transaction model type: {transactionModel.GetType().Name}")
+    };
+
+    /// <summary>
+    /// Converts the provided REST model transaction type to a domain transaction type.
+    /// </summary>
+    public static TransactionType ToDomain(TransactionTypeModel transactionType) => transactionType switch
+    {
+        TransactionTypeModel.Spending => TransactionType.Spending,
+        TransactionTypeModel.Income => TransactionType.Income,
+        TransactionTypeModel.Account => TransactionType.Account,
+        TransactionTypeModel.Fund => TransactionType.Fund,
+        _ => throw new InvalidOperationException($"Unrecognized transaction type: {transactionType}")
     };
 }

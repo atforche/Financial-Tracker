@@ -1,5 +1,3 @@
-using Domain.Funds;
-
 namespace Domain.Transactions.Funds;
 
 /// <summary>
@@ -8,12 +6,12 @@ namespace Domain.Transactions.Funds;
 public record CreateFundTransactionRequest : CreateTransactionRequest
 {
     /// <summary>
-    /// Debit Fund for this Fund Transaction
+    /// Source for this Fund Transaction
     /// </summary>
-    public required Fund DebitFund { get; init; }
+    public required FundTransactionSource Source { get; init; }
 
     /// <summary>
-    /// Credit Fund for this Fund Transaction
+    /// Destinations for this Fund Transaction
     /// </summary>
-    public required Fund CreditFund { get; init; }
+    public required IReadOnlyCollection<FundTransactionDestination> Destinations { get; init; }
 }

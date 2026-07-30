@@ -24,6 +24,11 @@ public interface IFundRepository
     Fund GetById(FundId id);
 
     /// <summary>
+    /// Attempts to get the Fund with the specified ID.
+    /// </summary>
+    bool TryGetById(Guid id, [NotNullWhen(true)] out Fund? fund);
+
+    /// <summary>
     /// Gets the unassigned Fund
     /// </summary>
     Fund? GetUnassignedFund();

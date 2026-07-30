@@ -1,6 +1,6 @@
 import {
-  FundSortOrderModel,
-  FundTransactionSortOrderModel,
+  FundBalanceEventSortModel,
+  FundWithBalanceRangeSortModel,
   type components,
 } from "@/framework/data/api";
 
@@ -10,12 +10,57 @@ import {
 type Fund = components["schemas"]["FundModel"];
 
 /**
- * Interface representing a Fund identifier with its ID and name.
+ * Type representing a Fund along with its current balance.
  */
-interface FundIdentifier {
-  readonly id: string;
-  readonly name: string;
+type FundWithBalance = components["schemas"]["FundWithBalanceModel"];
+
+/**
+ * Type representing a Fund with a balance range.
+ */
+type FundWithBalanceRange = components["schemas"]["FundWithBalanceRangeModel"];
+
+/**
+ * Type representing Fund summary balances.
+ */
+type FundBalanceSummary = components["schemas"]["FundBalanceSummaryModel"];
+
+/**
+ * Type representing a Fund summary balance for a specific date.
+ */
+type FundBalanceSummaryByDate =
+  components["schemas"]["FundBalanceSummaryByDateModel"];
+
+/**
+ * Type representing a Fund summary balance for a specific accounting period.
+ */
+type FundBalanceSummaryByPeriod =
+  components["schemas"]["FundBalanceSummaryByPeriodModel"];
+
+/**
+ * Type representing a balance event on the Fund workspace page.
+ */
+type FundBalanceEvent = components["schemas"]["FundBalanceEventModel"];
+
+/**
+ * Interface representing a draft of a fund balance event.
+ */
+interface FundBalanceEventDraft {
+  readonly fundId: string | null;
+  readonly fundName: string | null;
+  readonly previousFundBalance: number | null;
+  readonly newFundBalance: number | null;
 }
+
+/**
+ * Type representing a collection of Funds within a specified date range.
+ */
+type FundsInDateRange = components["schemas"]["FundsInDateRangeModel"];
+
+/**
+ * Type representing a collection of Funds within a specified accounting period range.
+ */
+type FundsInAccountingPeriodRange =
+  components["schemas"]["FundsInAccountingPeriodRangeModel"];
 
 /**
  * Type representing a request to create a Fund.
@@ -37,29 +82,21 @@ type UpdateFundRequest = components["schemas"]["UpdateFundModel"];
  */
 type FundAmount = components["schemas"]["FundAmountModel"];
 
-/**
- * Determines whether any fund assignments are incomplete.
- */
-const hasIncompleteFundAssignments = function (
-  fundAssignments: FundAmount[],
-): boolean {
-  return fundAssignments.some(
-    (fundAmount) =>
-      fundAmount.fundId === "" ||
-      fundAmount.fundName === "" ||
-      fundAmount.amount < 0 ||
-      (fundAmount.amount === 0 && fundAmount.fundName !== "Unassigned"),
-  );
-};
-
 export {
   type Fund,
-  type FundIdentifier,
+  type FundWithBalance,
+  type FundWithBalanceRange,
+  FundWithBalanceRangeSortModel as FundWithBalanceRangeSort,
+  type FundBalanceSummary,
+  type FundBalanceSummaryByDate,
+  type FundBalanceSummaryByPeriod,
+  type FundBalanceEvent,
+  type FundBalanceEventDraft,
+  FundBalanceEventSortModel as FundBalanceEventSort,
+  type FundsInDateRange,
+  type FundsInAccountingPeriodRange,
   type CreateFundRequest,
   type OnboardFundRequest,
   type UpdateFundRequest,
   type FundAmount,
-  FundSortOrderModel as FundSortOrder,
-  FundTransactionSortOrderModel as FundTransactionSortOrder,
-  hasIncompleteFundAssignments,
 };

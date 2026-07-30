@@ -1,7 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
+using Domain.FundGoals;
 using Domain.Funds;
-using Domain.Goals;
 using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +10,7 @@ namespace Data;
 /// <summary>
 /// Main DbContext for this application
 /// </summary>
-public class DatabaseContext : DbContext
+public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbContext(options)
 {
     /// <summary>
     /// Collection of Accounts in the database
@@ -21,6 +21,11 @@ public class DatabaseContext : DbContext
     /// Collection of Account Balance Histories in the database
     /// </summary>
     internal DbSet<AccountBalanceHistory> AccountBalanceHistories { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of pending Account Balance effects.
+    /// </summary>
+    internal DbSet<PendingAccountBalanceEffect> PendingAccountBalanceEffects { get; set; } = default!;
 
     /// <summary>
     /// Collection of Accounting Periods in the database
@@ -43,9 +48,24 @@ public class DatabaseContext : DbContext
     internal DbSet<FundBalanceHistory> FundBalanceHistories { get; set; } = default!;
 
     /// <summary>
-    /// Collection of Goals in the database
+    /// Collection of pending Fund Balance effects.
     /// </summary>
-    internal DbSet<Goal> Goals { get; set; } = default!;
+    internal DbSet<PendingFundBalanceEffect> PendingFundBalanceEffects { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of Fund Goals in the database.
+    /// </summary>
+    internal DbSet<FundGoal> FundGoals { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of Fund Goal totals history entries in the database.
+    /// </summary>
+    internal DbSet<FundGoalTotalsHistory> FundGoalTotalsHistories { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of pending Fund Goal totals effects.
+    /// </summary>
+    internal DbSet<PendingFundGoalTotalsEffect> PendingFundGoalTotalsEffects { get; set; } = default!;
 
     /// <summary>
     /// Collection of Transactions in the database
@@ -81,8 +101,13 @@ public class DatabaseContext : DbContext
     }
 
     /// <inheritdoc/>
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.UseSqlite($"Data Source={DatabasePath}");
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            _ = optionsBuilder.UseSqlite($"Data Source={DatabasePath}");
+        }
+    }
 
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>

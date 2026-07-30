@@ -30,12 +30,12 @@ public class AccountingPeriodAccountBalanceHistory : Entity<AccountingPeriodAcco
     /// <summary>
     /// Gets the opening Account Balance for this Accounting Period Account Balance History
     /// </summary>
-    public AccountBalance GetOpeningAccountBalance() => new(Account, OpeningBalance, 0, 0);
+    public AccountBalance GetOpeningAccountBalance() => new(Account, OpeningBalance);
 
     /// <summary>
     /// Gets the closing Account Balance for this Accounting Period Account Balance History
     /// </summary>
-    public AccountBalance GetClosingAccountBalance() => new(Account, ClosingBalance, 0, 0);
+    public AccountBalance GetClosingAccountBalance() => new(Account, ClosingBalance);
 
     /// <summary>
     /// Constructs a new instance of this class

@@ -1,4 +1,4 @@
-import type { AccountIdentifier } from "@/accounts/types";
+import type { Account } from "@/accounts/types";
 import { ComboBoxEntryField } from "@/framework/forms/ComboBoxEntryField";
 import type { JSX } from "react";
 
@@ -7,11 +7,11 @@ import type { JSX } from "react";
  */
 interface AccountEntryFieldProps {
   readonly label: string;
-  readonly options: AccountIdentifier[];
-  readonly value: AccountIdentifier | null;
-  readonly setValue: ((newValue: AccountIdentifier | null) => void) | null;
+  readonly options: Account[];
+  readonly value: Account | null;
+  readonly setValue: ((newValue: Account | null) => void) | null;
   readonly errorMessage?: string | null;
-  readonly filter?: ((account: AccountIdentifier) => boolean) | null;
+  readonly filter?: ((account: Account) => boolean) | null;
 }
 
 /**
@@ -26,18 +26,21 @@ const AccountEntryField = function ({
   filter = null,
 }: AccountEntryFieldProps): JSX.Element {
   return (
-    <ComboBoxEntryField<AccountIdentifier>
+    <ComboBoxEntryField<Account>
       label={label}
       options={options
         .filter((account) => (filter ? filter(account) : true))
         .map((account) => ({
           label: account.name,
-          value: { id: account.id, name: account.name },
+          value: account,
         }))}
       value={
         value === null
           ? { label: "", value: null }
           : { label: value.name, value }
+      }
+      isOptionEqualToValue={(option, selectedValue) =>
+        option.value?.id === selectedValue.value?.id
       }
       setValue={
         setValue === null

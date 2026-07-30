@@ -1,27 +1,17 @@
 namespace Models.AccountingPeriods;
 
 /// <summary>
-/// Model representing the query parameters that can be provided when retrieving Accounting Periods
+/// Model representing the query parameters for retrieving Accounting Periods.
 /// </summary>
-public class AccountingPeriodQueryParameterModel
+public class AccountingPeriodQueryParameterModel : PaginationModel
 {
     /// <summary>
-    /// Search string to apply to the results
+    /// Filters to apply to the results
     /// </summary>
-    public string? Search { get; init; }
+    public AccountingPeriodFilterModel? Filter { get; init; }
 
     /// <summary>
     /// Sort to apply to the results
     /// </summary>
-    public AccountingPeriodSortOrderModel? Sort { get; init; }
-
-    /// <summary>
-    /// Maximum number of results to return
-    /// </summary>
-    public int? Limit { get; init; }
-
-    /// <summary>
-    /// Number of results to skip
-    /// </summary>
-    public int? Offset { get; init; }
+    public AccountingPeriodSortModel? Sort { get; init; }
 }

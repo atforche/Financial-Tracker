@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Domain.AccountingPeriods;
 
 /// <summary>
@@ -19,6 +21,11 @@ public interface IAccountingPeriodRepository
     /// Gets the Accounting Period with the specified ID.
     /// </summary>
     AccountingPeriod GetById(AccountingPeriodId id);
+
+    /// <summary>
+    /// Attempts to get the Accounting Period with the specified ID.
+    /// </summary>
+    bool TryGetById(Guid id, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod);
 
     /// <summary>
     /// Gets the Accounting Period with the specified year and month, or null if it doesn't exist.

@@ -8,7 +8,7 @@ public class FundBalance
     /// <summary>
     /// Fund for this Fund Balance
     /// </summary>
-    public FundId FundId { get; }
+    public Fund Fund { get; }
 
     /// <summary>
     /// Posted Balance for this Fund Balance
@@ -16,65 +16,27 @@ public class FundBalance
     public decimal PostedBalance { get; }
 
     /// <summary>
-    /// Amount assigned for this Fund Balance
+    /// Balance after current unposted Transaction effects are applied.
     /// </summary>
-    public decimal AmountAssigned { get; }
+    public decimal BalanceIncludingPending { get; }
 
     /// <summary>
-    /// Pending amount assigned for this Fund Balance
+    /// Debits the specified amount from this Fund Balance.
     /// </summary>
-    public decimal PendingAmountAssigned { get; }
+    internal FundBalance Debit(decimal amount) => new(Fund, PostedBalance - amount);
 
     /// <summary>
-    /// Amount spent for this Fund Balance
+    /// Credits the specified amount to this Fund Balance.
     /// </summary>
-    public decimal AmountSpent { get; }
-
-    /// <summary>
-    /// Pending amount spent for this Fund Balance
-    /// </summary>
-    public decimal PendingAmountSpent { get; }
-
-    /// <summary>
-    /// Adds the provided pending amount assigned to the current pending Fund Balance
-    /// </summary>
-    internal FundBalance AddNewPendingAmountAssigned(decimal pendingAmountAssigned) =>
-        new(FundId, PostedBalance, AmountAssigned, PendingAmountAssigned + pendingAmountAssigned, AmountSpent, PendingAmountSpent);
-
-    /// <summary>
-    /// Posts the provided pending amount assigned to the current posted Fund Balance
-    /// </summary>
-    internal FundBalance PostPendingAmountAssigned(decimal pendingAmountAssigned) =>
-        new(FundId, PostedBalance + pendingAmountAssigned, AmountAssigned, PendingAmountAssigned - pendingAmountAssigned, AmountSpent, PendingAmountSpent);
-
-    /// <summary>
-    /// Adds the provided pending amount spent to the current pending Fund Balance
-    /// </summary>
-    internal FundBalance AddNewPendingAmountSpent(decimal pendingAmountSpent) =>
-        new(FundId, PostedBalance, AmountAssigned, PendingAmountAssigned, AmountSpent, PendingAmountSpent + pendingAmountSpent);
-
-    /// <summary>
-    /// Posts the provided pending amount spent to the current posted Fund Balance
-    /// </summary>
-    internal FundBalance PostPendingAmountSpent(decimal pendingAmountSpent) =>
-        new(FundId, PostedBalance - pendingAmountSpent, AmountAssigned, PendingAmountAssigned, AmountSpent, PendingAmountSpent - pendingAmountSpent);
+    internal FundBalance Credit(decimal amount) => new(Fund, PostedBalance + amount);
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal FundBalance(
-        FundId fundId,
-        decimal postedBalance,
-        decimal amountAssigned,
-        decimal pendingAmountAssigned,
-        decimal amountSpent,
-        decimal pendingAmountSpent)
+    internal FundBalance(Fund fund, decimal postedBalance, decimal? balanceIncludingPending = null)
     {
-        FundId = fundId;
+        Fund = fund;
         PostedBalance = postedBalance;
-        AmountAssigned = amountAssigned;
-        PendingAmountAssigned = pendingAmountAssigned;
-        AmountSpent = amountSpent;
-        PendingAmountSpent = pendingAmountSpent;
+        BalanceIncludingPending = balanceIncludingPending ?? postedBalance;
     }
 }

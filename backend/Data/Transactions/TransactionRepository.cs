@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
@@ -15,8 +14,6 @@ namespace Data.Transactions;
 /// </summary>
 public class TransactionRepository(DatabaseContext databaseContext) : ITransactionRepository
 {
-    #region ITransactionRepository
-
     /// <inheritdoc/>
     public int GetNextSequenceForDate(DateOnly transactionDate)
     {
@@ -29,78 +26,51 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     /// <inheritdoc/>
     public bool DoAnyTransactionsExistForAccount(Account account) =>
         databaseContext.Transactions.OfType<SpendingTransaction>()
-            .Any(t => t.DebitAccountId == account.Id || t.CreditAccountId == account.Id) ||
+            .Any(t => t.Source.Account.Id == account.Id || t.Destinations.Any(d => d.Account != null && d.Account.Id == account.Id)) ||
         databaseContext.Transactions.OfType<IncomeTransaction>()
-            .Any(t => t.DebitAccountId == account.Id || t.CreditAccountId == account.Id) ||
+            .Any(t => (t.Source.Account != null && t.Source.Account.Id == account.Id) || t.Destinations.Any(d => d.Account.Id == account.Id)) ||
         databaseContext.Transactions.OfType<AccountTransaction>()
-            .Any(t => t.DebitAccountId == account.Id || t.CreditAccountId == account.Id);
+            .Any(t => (t.Source.Account != null && t.Source.Account.Id == account.Id) || t.Destinations.Any(d => d.Account != null && d.Account.Id == account.Id));
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
         databaseContext.Transactions.Where(transaction => transaction.AccountingPeriodId == accountingPeriodId).ToList();
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<Transaction> GetAllIncomeTransactionsByDateRange(DateOnly startDate, DateOnly endDate) =>
+        databaseContext.Transactions.OfType<IncomeTransaction>()
+            .Where(t => t.Destinations.Any(d => d.PostedDate != null && d.PostedDate >= startDate && d.PostedDate <= endDate))
+            .ToList();
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<Transaction> GetAllSpendingTransactionsByDateRange(DateOnly startDate, DateOnly endDate) =>
+        databaseContext.Transactions.OfType<SpendingTransaction>()
+            .Where(t => t.Source.PostedDate != null && t.Source.PostedDate >= startDate && t.Source.PostedDate <= endDate)
+            .ToList();
+
+    /// <inheritdoc/>
     public bool DoAnyTransactionsExistForFund(FundId fundId) =>
         databaseContext.Transactions.OfType<SpendingTransaction>()
-            .Any(t => t.FundAssignments.Any(f => f.FundId == fundId)) ||
+            .Any(t => t.Destinations.Any(d => d.FundAssignments.Any(f => f.FundId == fundId))) ||
         databaseContext.Transactions.OfType<IncomeTransaction>()
-            .Any(t => t.FundAssignments.Any(f => f.FundId == fundId)) ||
+            .Any(t => t.Destinations.Any(d => d.FundAssignments.Any(f => f.FundId == fundId))) ||
         databaseContext.Transactions.OfType<FundTransaction>()
-            .Any(t => (t.DebitFundId == fundId) || (t.CreditFundId == fundId));
+            .Any(t => t.Source.Fund.Id == fundId || t.Destinations.Any(d => d.Fund.Id == fundId));
 
     /// <inheritdoc/>
     public Transaction GetById(TransactionId id) => databaseContext.Transactions.Single(transaction => transaction.Id == id);
+
+    /// <inheritdoc/>
+    public bool TryGetById(Guid id, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out Transaction? transaction)
+    {
+        transaction = databaseContext.Transactions.SingleOrDefault(candidate => candidate.Id == new TransactionId(id))
+            ?? databaseContext.Transactions.Local.SingleOrDefault(candidate => candidate.Id == new TransactionId(id));
+        return transaction != null;
+    }
 
     /// <inheritdoc/>
     public void Add(Transaction transaction) => databaseContext.Add(transaction);
 
     /// <inheritdoc/>
     public void Delete(Transaction transaction) => databaseContext.Remove(transaction);
-
-    #endregion
-
-    /// <summary>
-    /// Attempts to get the Transaction with the specified ID
-    /// </summary>
-    public bool TryGetById(Guid id, [NotNullWhen(true)] out Transaction? transaction)
-    {
-        transaction = databaseContext.Transactions.FirstOrDefault(transaction => ((Guid)(object)transaction.Id) == id);
-        return transaction != null;
-    }
-
-    /// <summary>
-    /// Gets all the Transactions that are associated with the specified Account, optionally filtered by Accounting Period
-    /// </summary>
-    public IReadOnlyCollection<Transaction> GetAllByAccount(AccountId accountId, AccountingPeriodId? accountingPeriodId = null)
-    {
-        IQueryable<Transaction> transactions = databaseContext.Transactions;
-        if (accountingPeriodId != null)
-        {
-            transactions = transactions.Where(transaction => transaction.AccountingPeriodId == accountingPeriodId);
-        }
-        var transactionsList = transactions.ToList();
-        return transactionsList.Where(transaction =>
-            (transaction is SpendingTransaction spendingTransaction && (spendingTransaction.DebitAccountId == accountId || spendingTransaction.CreditAccountId == accountId)) ||
-            (transaction is IncomeTransaction incomeTransaction && (incomeTransaction.DebitAccountId == accountId || incomeTransaction.CreditAccountId == accountId)) ||
-            (transaction is AccountTransaction accountTransaction && (accountTransaction.DebitAccountId == accountId || accountTransaction.CreditAccountId == accountId)))
-            .ToList();
-    }
-
-    /// <summary>
-    /// Gets all the Transactions that are associated with the specified Fund, optionally filtered by Accounting Period
-    /// </summary>
-    public IReadOnlyCollection<Transaction> GetAllByFund(FundId fundId, AccountingPeriodId? accountingPeriodId = null)
-    {
-        IQueryable<Transaction> transactions = databaseContext.Transactions;
-        if (accountingPeriodId != null)
-        {
-            transactions = transactions.Where(transaction => transaction.AccountingPeriodId == accountingPeriodId);
-        }
-        var transactionsList = transactions.ToList();
-        return transactionsList.Where(transaction =>
-            (transaction is SpendingTransaction spendingTransaction && spendingTransaction.FundAssignments.Any(f => f.FundId == fundId)) ||
-            (transaction is IncomeTransaction incomeTransaction && incomeTransaction.FundAssignments.Any(f => f.FundId == fundId)) ||
-            (transaction is FundTransaction fundTransaction && (fundTransaction.DebitFundId == fundId || fundTransaction.CreditFundId == fundId)))
-            .ToList();
-    }
 }

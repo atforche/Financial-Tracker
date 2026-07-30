@@ -1,5 +1,5 @@
 import { ComboBoxEntryField } from "@/framework/forms/ComboBoxEntryField";
-import type { FundIdentifier } from "@/funds/types";
+import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
 
 /**
@@ -7,10 +7,12 @@ import type { JSX } from "react";
  */
 interface FundEntryFieldProps {
   readonly label: string;
-  readonly options: FundIdentifier[];
-  readonly value: FundIdentifier | null;
-  readonly setValue: ((newValue: FundIdentifier | null) => void) | null;
-  readonly filter: ((fund: FundIdentifier) => boolean) | null;
+  readonly options: Fund[];
+  readonly value: Fund | null;
+  readonly setValue: ((newValue: Fund | null) => void) | null;
+  readonly filter: ((fund: Fund) => boolean) | null;
+  readonly getOptionSecondaryLabel?: ((fund: Fund) => string | null) | null;
+  readonly sortComparator?: ((left: Fund, right: Fund) => number) | null;
   readonly autoFocus?: boolean;
 }
 
@@ -23,21 +25,33 @@ const FundEntryField = function ({
   value,
   setValue,
   filter,
+  getOptionSecondaryLabel = null,
+  sortComparator = null,
   autoFocus = false,
 }: FundEntryFieldProps): JSX.Element {
+  const filteredOptions = options.filter((fund) =>
+    filter ? filter(fund) : true,
+  );
+  const orderedOptions =
+    sortComparator === null
+      ? filteredOptions
+      : [...filteredOptions].sort(sortComparator);
+
   return (
-    <ComboBoxEntryField<FundIdentifier>
+    <ComboBoxEntryField<Fund>
       label={label}
-      options={options
-        .filter((fund) => (filter ? filter(fund) : true))
-        .map((fund) => ({
-          label: fund.name,
-          value: fund,
-        }))}
+      options={orderedOptions.map((fund) => ({
+        label: fund.name,
+        secondaryLabel: getOptionSecondaryLabel?.(fund) ?? null,
+        value: fund,
+      }))}
       value={
         value === null
           ? { label: "", value: null }
           : { label: value.name, value }
+      }
+      isOptionEqualToValue={(option, selectedValue) =>
+        option.value?.id === selectedValue.value?.id
       }
       setValue={
         setValue === null

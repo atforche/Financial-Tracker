@@ -1,4 +1,5 @@
-import type { JSX } from "react";
+import { type JSX, useEffect, useState } from "react";
+import ReadOnlyField from "@/framework/forms/ReadOnlyField";
 import { TextField } from "@mui/material";
 
 /**
@@ -7,8 +8,9 @@ import { TextField } from "@mui/material";
 interface IntegerEntryFieldProps {
   readonly label: string;
   readonly value: number | null;
-  readonly setValue: (value: number | null) => void;
+  readonly setValue?: ((value: number | null) => void) | null;
   readonly errorMessage?: string | null;
+  readonly disabled?: boolean;
 }
 
 /**
@@ -17,28 +19,50 @@ interface IntegerEntryFieldProps {
 const IntegerEntryField = function ({
   label,
   value,
-  setValue,
-  errorMessage,
+  setValue = null,
+  errorMessage = null,
+  disabled = false,
 }: IntegerEntryFieldProps): JSX.Element {
+  const [stringValue, setStringValue] = useState(value?.toString() ?? "");
+
+  useEffect(() => {
+    setStringValue(value?.toString() ?? "");
+  }, [value]);
+
+  if (setValue === null && !disabled) {
+    return (
+      <ReadOnlyField
+        label={label}
+        value={value === null ? null : value.toLocaleString()}
+      />
+    );
+  }
+
   return (
     <TextField
       label={label}
       variant="outlined"
-      value={value ?? ""}
-      error={(errorMessage ?? null) !== null}
+      value={stringValue}
+      disabled={disabled}
+      error={errorMessage !== null}
       helperText={errorMessage}
       slotProps={{
         input: {
           inputMode: "numeric",
+          readOnly: setValue === null,
         },
         htmlInput: {
           pattern: "[0-9]*",
         },
       }}
-      onChange={(e) => {
-        const newValue =
-          e.target.value === "" ? null : parseInt(e.target.value, 10);
-        setValue(newValue);
+      onChange={(event) => {
+        const nextValue = event.target.value;
+        if (!/^\d*$/u.test(nextValue)) {
+          return;
+        }
+
+        setStringValue(nextValue);
+        setValue?.(nextValue === "" ? null : Number(nextValue));
       }}
     />
   );

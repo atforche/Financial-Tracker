@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
-using Domain.Exceptions;
 using Domain.Funds;
 using Domain.Transactions;
+using Domain.Validation;
 
 namespace Domain.Accounts;
 
@@ -23,11 +23,11 @@ public class AccountService(
     public bool TryCreate(
         CreateAccountRequest request,
         [NotNullWhen(true)] out Account? account,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> errors)
     {
         account = null;
 
-        if (!ValidateCreate(request, out exceptions))
+        if (!ValidateCreate(request, out errors))
         {
             return false;
         }
@@ -43,66 +43,57 @@ public class AccountService(
     public bool TryOnboard(
         OnboardAccountRequest request,
         [NotNullWhen(true)] out Account? account,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> errors)
     {
         account = null;
 
-        if (!ValidateOnboard(request, out exceptions))
+        if (!ValidateOnboard(request, out errors))
         {
             return false;
         }
-        account = new Account(request.Name, request.Type, request.OnboardedBalance);
-        accountRepository.Add(account);
         if (request.Type.IsTracked())
         {
             Fund? unassignedFund = fundRepository.GetUnassignedFund();
             if (unassignedFund == null)
             {
-                if (!fundService.TryOnboard(new OnboardFundRequest
+                if (!fundService.TryOnboardUnassignedFund(0, out Fund? newUnassignedFund, out IEnumerable<ValidationError> unassignedFundErrors))
                 {
-                    Name = Fund.UnassignedFundName,
-                    Description = Fund.UnassignedFundDescription,
-                    OnboardedBalance = 0,
-                }, out Fund? newUnassignedFund, out IEnumerable<Exception> unassignedFundExceptions))
-                {
-                    exceptions = exceptions.Concat(unassignedFundExceptions);
+                    errors = errors.Concat(unassignedFundErrors);
                     return false;
                 }
-                fundRepository.Add(newUnassignedFund);
                 unassignedFund = newUnassignedFund;
             }
             decimal changeInUnassignedBalance = request.Type.IsDebt() ? -request.OnboardedBalance : request.OnboardedBalance;
             unassignedFund.OnboardedBalance += changeInUnassignedBalance;
         }
+        account = new Account(request.Name, request.Type, request.OnboardedBalance);
+        accountRepository.Add(account);
         return true;
     }
 
     /// <summary>
     /// Attempts to update an existing Account
     /// </summary>
-    /// <param name="account">Account to be updated</param>
-    /// <param name="name">New name for the Account</param>
-    /// <param name="exceptions">List of exceptions encountered during update</param>
-    /// <returns>True if update was successful, false otherwise</returns>
-    public bool TryUpdate(Account account, string name, out IEnumerable<Exception> exceptions)
+    public bool TryUpdate(Account account, UpdateAccountRequest request, out IEnumerable<ValidationError> errors)
     {
-        if (!ValidateAccountName(name, out exceptions))
+        if (!ValidateAccountName(
+                request.Name,
+                new ValidationErrorPath(nameof(UpdateAccountRequest.Name)),
+                account,
+                out errors))
         {
             return false;
         }
-        account.Name = name;
+        account.Name = request.Name;
         return true;
     }
 
     /// <summary>
     /// Attempts to delete an existing Account
     /// </summary>
-    /// <param name="account">Account to be deleted</param>
-    /// <param name="exceptions">List of exceptions encountered during deletion</param>
-    /// <returns>True if deletion was successful, false otherwise</returns>
-    public bool TryDelete(Account account, out IEnumerable<Exception> exceptions)
+    public bool TryDelete(Account account, out IEnumerable<ValidationError> errors)
     {
-        if (!ValidateDelete(account, out exceptions))
+        if (!ValidateDelete(account, out errors))
         {
             return false;
         }
@@ -120,97 +111,130 @@ public class AccountService(
     /// <summary>
     /// Validates the name for this Account
     /// </summary>
-    private bool ValidateAccountName(string name, out IEnumerable<Exception> exceptions)
+    private bool ValidateAccountName(
+        string name,
+        ValidationErrorPath namePath,
+        Account? existingAccount,
+        out IEnumerable<ValidationError> errors)
     {
-        exceptions = [];
+        errors = [];
 
-        if (string.IsNullOrEmpty(name))
+        if (string.IsNullOrWhiteSpace(name))
         {
-            exceptions = exceptions.Append(new InvalidNameException("Account name cannot be empty"));
+            errors = errors.Append(new ValidationError(namePath, "Account name cannot be empty"));
         }
-        if (accountRepository.TryGetByName(name, out _))
+        if (accountRepository.TryGetByName(name, out Account? accountWithName) && accountWithName != existingAccount)
         {
-            exceptions = exceptions.Append(new InvalidNameException("Account name must be unique"));
+            errors = errors.Append(new ValidationError(namePath, "Account name must be unique"));
         }
-        return !exceptions.Any();
+        return !errors.Any();
     }
 
     /// <summary>
     /// Validates a request to create an Account
     /// </summary>
-    private bool ValidateCreate(CreateAccountRequest request, out IEnumerable<Exception> exceptions)
+    private bool ValidateCreate(CreateAccountRequest request, out IEnumerable<ValidationError> errors)
     {
-        exceptions = [];
+        errors = [];
 
-        if (!ValidateAccountName(request.Name, out IEnumerable<Exception> nameExceptions))
+        if (!ValidateAccountName(
+                request.Name,
+                new ValidationErrorPath(nameof(CreateAccountRequest.Name)),
+                null,
+                out IEnumerable<ValidationError> nameErrors))
         {
-            exceptions = exceptions.Concat(nameExceptions);
+            errors = errors.Concat(nameErrors);
         }
         if (!request.OpeningAccountingPeriod.IsOpen)
         {
-            exceptions = exceptions.Append(new InvalidAccountingPeriodException("The provided accounting period is closed."));
+            errors = errors.Append(new ValidationError(
+                new ValidationErrorPath(nameof(CreateAccountRequest.OpeningAccountingPeriod)),
+                "The provided accounting period is closed."));
         }
         if (!request.OpeningAccountingPeriod.IsDateInPeriod(request.DateOpened))
         {
-            exceptions = exceptions.Append(new InvalidDateException("The provided date opened is not within the provided accounting period."));
+            errors = errors.Append(new ValidationError(
+                new ValidationErrorPath(nameof(CreateAccountRequest.DateOpened)),
+                "The provided date opened is not within the provided accounting period."));
         }
-        return !exceptions.Any();
+        if (!Enum.IsDefined(request.Type))
+        {
+            errors = errors.Append(new ValidationError(
+                new ValidationErrorPath(nameof(CreateAccountRequest.Type)),
+                "The provided account type is invalid."));
+        }
+        return !errors.Any();
     }
 
     /// <summary>
     /// Validates a request to onboard an Account.
     /// </summary>
-    private bool ValidateOnboard(OnboardAccountRequest request, out IEnumerable<Exception> exceptions)
+    private bool ValidateOnboard(OnboardAccountRequest request, out IEnumerable<ValidationError> errors)
     {
-        exceptions = [];
+        errors = [];
 
-        if (!ValidateAccountName(request.Name, out IEnumerable<Exception> nameExceptions))
+        if (!ValidateAccountName(
+                request.Name,
+                new ValidationErrorPath(nameof(OnboardAccountRequest.Name)),
+                null,
+                out IEnumerable<ValidationError> nameErrors))
         {
-            exceptions = exceptions.Concat(nameExceptions);
+            errors = errors.Concat(nameErrors);
         }
         if (accountingPeriodRepository.GetAll().Count > 0)
         {
-            exceptions = exceptions.Append(new InvalidAccountingPeriodException("Accounts can only be onboarded before any Accounting Periods have been created."));
+            errors = errors.Append(new ValidationError(ValidationErrorPath.Empty, "Accounts can only be onboarded before any Accounting Periods have been created."));
         }
         if (request.OnboardedBalance < 0)
         {
-            exceptions = exceptions.Append(new InvalidAmountException("Account balance cannot be negative."));
+            errors = errors.Append(new ValidationError(
+                new ValidationErrorPath(nameof(OnboardAccountRequest.OnboardedBalance)),
+                "Account balance cannot be negative."));
         }
-        if (request.Type.IsTracked())
+        bool hasValidAccountType = Enum.IsDefined(request.Type);
+        if (!hasValidAccountType)
+        {
+            errors = errors.Append(new ValidationError(
+                new ValidationErrorPath(nameof(OnboardAccountRequest.Type)),
+                "The provided account type is invalid."));
+        }
+        if (hasValidAccountType && request.Type.IsTracked())
         {
             decimal startingUnassignedBalance = fundRepository.GetUnassignedFund()?.OnboardedBalance ?? 0;
             decimal updatedUnassignedBalance = startingUnassignedBalance + (request.Type.IsDebt() ? -request.OnboardedBalance : request.OnboardedBalance);
             if (updatedUnassignedBalance < 0)
             {
-                exceptions = exceptions.Append(new InvalidFundException("Onboarding this Account would cause the unassigned fund balance to go negative."));
+                errors = errors.Append(new ValidationError(ValidationErrorPath.Empty, "Onboarding this Account would cause the unassigned fund balance to go negative."));
             }
         }
-        return !exceptions.Any();
+        return !errors.Any();
     }
 
     /// <summary>
     /// Validates a request to delete an Account.
     /// </summary>
-    private bool ValidateDelete(Account account, out IEnumerable<Exception> exceptions)
+    private bool ValidateDelete(Account account, out IEnumerable<ValidationError> errors)
     {
-        exceptions = [];
+        errors = [];
 
         if (account.IsOnboarded && accountingPeriodRepository.GetLatestAccountingPeriod() != null)
         {
-            exceptions = exceptions.Append(new UnableToDeleteException("Cannot delete an onboarded Account."));
+            errors = errors.Append(new ValidationError(ValidationErrorPath.Empty, "Cannot delete an onboarded Account."));
         }
         if (transactionRepository.DoAnyTransactionsExistForAccount(account))
         {
-            exceptions = exceptions.Append(new UnableToDeleteException("Cannot delete an Account that has Transactions."));
+            errors = errors.Append(new ValidationError(ValidationErrorPath.Empty, "Cannot delete an Account that has Transactions."));
         }
         if (account.OnboardedBalance != null && !account.Type.IsDebt())
         {
             Fund unassignedFund = fundRepository.GetUnassignedFund() ?? throw new InvalidOperationException();
             if (unassignedFund.OnboardedBalance - account.OnboardedBalance < 0)
             {
-                exceptions = exceptions.Append(new InvalidFundException("Deleting this Account would cause the unassigned fund balance to go negative."));
+                errors = errors.Append(new ValidationError(
+                    ValidationErrorPath.Empty,
+                    "Deleting this Account would cause the unassigned fund balance to go negative."));
             }
         }
-        return !exceptions.Any();
+        return !errors.Any();
     }
 }

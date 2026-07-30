@@ -1,8 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
-using Domain.Exceptions;
+using Domain.FundGoals;
 using Domain.Funds;
+using Domain.Validation;
 
 namespace Domain.Transactions.Accounts;
 
@@ -11,15 +12,22 @@ namespace Domain.Transactions.Accounts;
 /// </summary>
 public class AccountTransactionService(
     AccountBalanceService accountBalanceService,
+    PendingAccountBalanceService pendingAccountBalanceService,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundBalanceService fundBalanceService,
-    IAccountRepository accountRepository,
+    PendingFundBalanceService pendingFundBalanceService,
+    FundGoalTotalsHistoryService fundGoalTotalsHistoryService,
+    PendingFundGoalTotalsService pendingFundGoalTotalsService,
     IAccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository) :
     TransactionService(
         accountBalanceService,
+        pendingAccountBalanceService,
         accountingPeriodBalanceService,
         fundBalanceService,
+        pendingFundBalanceService,
+        fundGoalTotalsHistoryService,
+        pendingFundGoalTotalsService,
         accountingPeriodRepository,
         transactionRepository)
 {
@@ -29,7 +37,7 @@ public class AccountTransactionService(
     public bool TryCreate(
         CreateAccountTransactionRequest request,
         [NotNullWhen(true)] out AccountTransaction? transaction,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
         transaction = null;
 
@@ -40,25 +48,6 @@ public class AccountTransactionService(
         int sequence = TransactionRepository.GetNextSequenceForDate(request.TransactionDate);
         transaction = new AccountTransaction(request, sequence);
         AddTransaction(transaction);
-        if (transaction.DebitAccountId != null && request.DebitPostedDate.HasValue)
-        {
-            if (!TryPost(transaction, transaction.DebitAccountId, request.DebitPostedDate.Value, out IEnumerable<Exception> postingExceptions))
-            {
-                exceptions = exceptions.Concat(postingExceptions);
-            }
-        }
-        if (transaction.CreditAccountId != null && request.CreditPostedDate.HasValue)
-        {
-            if (!TryPost(transaction, transaction.CreditAccountId, request.CreditPostedDate.Value, out IEnumerable<Exception> postingExceptions))
-            {
-                exceptions = exceptions.Concat(postingExceptions);
-            }
-        }
-        if (exceptions.Any())
-        {
-            transaction = null;
-            return false;
-        }
         return true;
     }
 
@@ -68,28 +57,21 @@ public class AccountTransactionService(
     public bool TryUpdate(
         AccountTransaction transaction,
         UpdateAccountTransactionRequest request,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
         if (!ValidateUpdate(transaction, request, out exceptions))
         {
             return false;
         }
-        UpdateTransaction(transaction, request);
-        if (transaction.DebitAccountId != null && request.DebitPostedDate.HasValue)
-        {
-            if (!TryPost(transaction, transaction.DebitAccountId, request.DebitPostedDate.Value, out IEnumerable<Exception> postingExceptions))
+        UpdateTransaction(
+            transaction,
+            request,
+            () =>
             {
-                exceptions = exceptions.Concat(postingExceptions);
-            }
-        }
-        if (transaction.CreditAccountId != null && request.CreditPostedDate.HasValue)
-        {
-            if (!TryPost(transaction, transaction.CreditAccountId, request.CreditPostedDate.Value, out IEnumerable<Exception> postingExceptions))
-            {
-                exceptions = exceptions.Concat(postingExceptions);
-            }
-        }
-        return !exceptions.Any();
+                transaction.UpdateAccountSource(request.Source);
+                transaction.UpdateAccountDestinations(request.Destinations);
+            });
+        return true;
     }
 
     /// <summary>
@@ -97,45 +79,37 @@ public class AccountTransactionService(
     /// </summary>
     public bool TryPost(
         AccountTransaction transaction,
-        AccountId accountId,
-        DateOnly postedDate,
-        out IEnumerable<Exception> exceptions)
+        PostTransactionRequest request,
+        out IEnumerable<ValidationError> exceptions)
     {
-        if (!ValidatePosting(transaction, accountId, postedDate, out exceptions))
+        if (!ValidatePosting(transaction, request, out exceptions))
         {
             return false;
         }
-        if (accountId == transaction.DebitAccountId)
-        {
-            transaction.DebitPostedDate = postedDate;
-        }
-        else if (accountId == transaction.CreditAccountId)
-        {
-            transaction.CreditPostedDate = postedDate;
-        }
-        PostTransaction(transaction, accountId);
+        transaction.SetPostedDate(request.AccountId, request.PostedDate);
+        PostTransaction(transaction, request.AccountId);
         return true;
     }
 
     /// <summary>
     /// Attempts to unpost an existing Account Transaction
     /// </summary>
-    public bool TryUnpost(AccountTransaction transaction, out IEnumerable<Exception> exceptions)
+    public bool TryUnpost(AccountTransaction transaction, out IEnumerable<ValidationError> exceptions)
     {
         if (!ValidateUnposting(transaction, out exceptions))
         {
             return false;
         }
-        transaction.DebitPostedDate = null;
-        transaction.CreditPostedDate = null;
         UnpostTransaction(transaction);
+        transaction.ClearPostedDates();
+        SynchronizePendingAccountBalanceEffects(transaction);
         return true;
     }
 
     /// <summary>
     /// Attempts to delete an existing Account Transaction
     /// </summary>
-    public bool TryDelete(AccountTransaction transaction, out IEnumerable<Exception> exceptions)
+    public bool TryDelete(AccountTransaction transaction, out IEnumerable<ValidationError> exceptions)
     {
         if (!ValidateDelete(transaction, out exceptions))
         {
@@ -148,28 +122,40 @@ public class AccountTransactionService(
     /// <summary>
     /// Validates a request to create a new Account Transaction
     /// </summary>
-    private bool ValidateCreate(CreateAccountTransactionRequest request, out IEnumerable<Exception> exceptions)
+    private bool ValidateCreate(CreateAccountTransactionRequest request, out IEnumerable<ValidationError> exceptions)
     {
         _ = ValidateCreate(
-                request,
-                new List<Account?> { request.DebitAccount, request.CreditAccount }.OfType<Account>().ToList(),
-                [],
-                out exceptions);
+            request,
+            request.Source.Account,
+            new ValidationErrorPath(nameof(CreateAccountTransactionRequest.Source)).Append(nameof(AccountTransactionSource.Account)),
+            request.Destinations.Select(destination => destination.Account).ToList(),
+            (index) => new ValidationErrorPath(nameof(CreateAccountTransactionRequest.Destinations), index).Append(nameof(AccountTransactionDestination.Account)),
+            [],
+            (i) => ValidationErrorPath.Empty,
+            [],
+            (i, j) => ValidationErrorPath.Empty,
+            out exceptions);
 
-        if (!ValidateAccounts(request, out IEnumerable<Exception> accountExceptions))
+        if (request.Source.PostedDate.HasValue || request.Destinations.Any(destination => destination.PostedDate.HasValue))
+        {
+            exceptions = exceptions.Append(new ValidationError(new ValidationErrorPath(nameof(CreateAccountTransactionRequest.Source)), "Posted dates cannot be set directly when creating an account transaction"));
+        }
+        if (!ValidateAccounts(
+                request.Source,
+                new ValidationErrorPath(nameof(CreateAccountTransactionRequest.Source)),
+                request.Destinations,
+                index => new ValidationErrorPath(nameof(CreateAccountTransactionRequest.Destinations), index),
+                out IEnumerable<ValidationError> accountExceptions))
         {
             exceptions = exceptions.Concat(accountExceptions);
         }
-        AccountingPeriod accountingPeriod = AccountingPeriodRepository.GetById(request.AccountingPeriodId);
-        if (!ValidatePostedDates(
-                accountingPeriod,
-                request.DebitAccount,
-                request.DebitPostedDate,
-                request.CreditAccount,
-                request.CreditPostedDate,
-                out IEnumerable<Exception> postedDateExceptions))
+        if (!ValidateAmounts(
+                request.Amount,
+                request.Destinations,
+                index => new ValidationErrorPath(nameof(CreateAccountTransactionRequest.Destinations), index),
+                out IEnumerable<ValidationError> amountExceptions))
         {
-            exceptions = exceptions.Concat(postedDateExceptions);
+            exceptions = exceptions.Concat(amountExceptions);
         }
         return !exceptions.Any();
     }
@@ -180,26 +166,45 @@ public class AccountTransactionService(
     private bool ValidateUpdate(
         AccountTransaction transaction,
         UpdateAccountTransactionRequest request,
-        out IEnumerable<Exception> exceptions)
+        out IEnumerable<ValidationError> exceptions)
     {
-        AccountingPeriod accountingPeriod = AccountingPeriodRepository.GetById(transaction.AccountingPeriodId);
-        Account? debitAccount = transaction.DebitAccountId != null ? accountRepository.GetById(transaction.DebitAccountId) : null;
-        Account? creditAccount = transaction.CreditAccountId != null ? accountRepository.GetById(transaction.CreditAccountId) : null;
-        _ = ValidateUpdate(transaction, request, new List<Account?> { debitAccount, creditAccount }.OfType<Account>().ToList(), out exceptions);
+        _ = ValidateUpdate(
+            transaction,
+            request,
+            request.Source.Account,
+            new ValidationErrorPath(nameof(UpdateAccountTransactionRequest.Source)).Append(nameof(AccountTransactionSource.Account)),
+            request.Destinations.Select(destination => destination.Account).ToList(),
+            (index) => new ValidationErrorPath(nameof(UpdateAccountTransactionRequest.Destinations), index).Append(nameof(AccountTransactionDestination.Account)),
+            [],
+            (i) => ValidationErrorPath.Empty,
+            [],
+            (i, j) => ValidationErrorPath.Empty,
+            out exceptions);
 
-        if (!ValidatePostedDates(
-                accountingPeriod,
-                debitAccount,
-                request.DebitPostedDate,
-                creditAccount,
-                request.CreditPostedDate,
-                out IEnumerable<Exception> postedDateExceptions))
+        if (transaction.Source.PostedDate.HasValue || transaction.Destinations.Any(destination => destination.PostedDate.HasValue))
         {
-            exceptions = exceptions.Concat(postedDateExceptions);
+            exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "Transaction has already been posted and cannot be updated"));
         }
-        if (transaction.DebitPostedDate.HasValue || transaction.CreditPostedDate.HasValue)
+        if (request.Source.PostedDate.HasValue || request.Destinations.Any(destination => destination.PostedDate.HasValue))
         {
-            exceptions = exceptions.Append(new UnableToUpdateException("Transaction has already been posted and cannot be updated"));
+            exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "Posted dates cannot be set directly when updating an account transaction"));
+        }
+        if (!ValidateAccounts(
+                request.Source,
+                new ValidationErrorPath(nameof(UpdateAccountTransactionRequest.Source)),
+                request.Destinations,
+                index => new ValidationErrorPath(nameof(UpdateAccountTransactionRequest.Destinations), index),
+                out IEnumerable<ValidationError> accountExceptions))
+        {
+            exceptions = exceptions.Concat(accountExceptions);
+        }
+        if (!ValidateAmounts(
+                request.Amount,
+                request.Destinations,
+                index => new ValidationErrorPath(nameof(UpdateAccountTransactionRequest.Destinations), index),
+                out IEnumerable<ValidationError> amountExceptions))
+        {
+            exceptions = exceptions.Concat(amountExceptions);
         }
         return !exceptions.Any();
     }
@@ -207,71 +212,133 @@ public class AccountTransactionService(
     /// <summary>
     /// Validates the Accounts for this Account Transaction
     /// </summary>
-    private static bool ValidateAccounts(CreateAccountTransactionRequest request, out IEnumerable<Exception> exceptions)
+    private static bool ValidateAccounts(
+        AccountTransactionSource source,
+        ValidationErrorPath sourcePath,
+        IReadOnlyCollection<AccountTransactionDestination> destinations,
+        Func<int, ValidationErrorPath> destinationsPathBuilder,
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
-        if (request.DebitAccount != null && request.CreditAccount != null)
+        if (source.Account == null && string.IsNullOrWhiteSpace(source.Location))
         {
-            if (request.DebitAccount.Id == request.CreditAccount.Id)
-            {
-                exceptions = exceptions.Append(new InvalidAccountException("Debit and Credit Accounts must be different"));
-            }
-            if (request.DebitAccount.Type.IsTracked() && !request.CreditAccount.Type.IsTracked())
-            {
-                exceptions = exceptions.Append(new InvalidAccountException("An Account Transaction cannot transfer between a tracked account and an untracked account"));
-            }
-            if (!request.DebitAccount.Type.IsTracked() && request.CreditAccount.Type.IsTracked())
-            {
-                exceptions = exceptions.Append(new InvalidAccountException("An Account Transaction cannot transfer between a tracked account and an untracked account"));
-            }
+            exceptions = exceptions.Append(new ValidationError(
+                sourcePath.Append(nameof(AccountTransactionSource.Account)),
+                "Account Transactions must have either a Source Account or a Source Location"));
+            exceptions = exceptions.Append(new ValidationError(
+                sourcePath.Append(nameof(AccountTransactionSource.Location)),
+                "Account Transactions must have either a Source Account or a Source Location"));
         }
-        else if (request.DebitAccount != null || request.CreditAccount != null)
+        if (source.Account != null && !string.IsNullOrWhiteSpace(source.Location))
         {
-            if (request.DebitAccount != null && !request.DebitAccount.Type.IsTracked())
-            {
-                exceptions = exceptions.Append(new InvalidAccountException("A one-sided Account Transaction cannot debit money from an untracked account"));
-            }
-            if (request.CreditAccount != null && !request.CreditAccount.Type.IsTracked())
-            {
-                exceptions = exceptions.Append(new InvalidAccountException("A one-sided Account Transaction cannot credit money to an untracked account"));
-            }
+            exceptions = exceptions.Append(new ValidationError(
+                sourcePath.Append(nameof(AccountTransactionSource.Account)),
+                "Account Transactions cannot have both a Source Account and a Source Location"));
+            exceptions = exceptions.Append(new ValidationError(
+                sourcePath.Append(nameof(AccountTransactionSource.Location)),
+                "Account Transactions cannot have both a Source Account and a Source Location"));
         }
-        else
+        if (destinations.Count == 0)
         {
-            exceptions = exceptions.Append(new InvalidAccountException("At least one account must be provided"));
+            exceptions = exceptions.Append(new ValidationError(
+                destinationsPathBuilder(0),
+                "Account Transactions must have at least one account destination"));
+        }
+        foreach ((int index, AccountTransactionDestination destination) in destinations.Index())
+        {
+            if (destination.Account == null && string.IsNullOrWhiteSpace(destination.Location))
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    destinationsPathBuilder(index).Append(nameof(AccountTransactionDestination.Account)),
+                    "Account Transactions must have either a Destination Account or a Destination Location"));
+                exceptions = exceptions.Append(new ValidationError(
+                    destinationsPathBuilder(index).Append(nameof(AccountTransactionDestination.Location)),
+                    "Account Transactions must have either a Destination Account or a Destination Location"));
+            }
+            if (destination.Account != null && !string.IsNullOrWhiteSpace(destination.Location))
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    destinationsPathBuilder(index).Append(nameof(AccountTransactionDestination.Account)),
+                    "Account Transactions cannot have both a Destination Account and a Destination Location"));
+                exceptions = exceptions.Append(new ValidationError(
+                    destinationsPathBuilder(index).Append(nameof(AccountTransactionDestination.Location)),
+                    "Account Transactions cannot have both a Destination Account and a Destination Location"));
+            }
+            if (destination.Account?.Id == source.Account?.Id)
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    destinationsPathBuilder(index).Append(nameof(AccountTransactionDestination.Account)),
+                    "Source and destination accounts cannot be the same"));
+            }
+            if (source.Account != null && destination.Account != null &&
+                source.Account.Type.IsTracked() != destination.Account.Type.IsTracked())
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    destinationsPathBuilder(index).Append(nameof(AccountTransactionDestination.Account)),
+                    "An Account Transaction cannot transfer between a tracked account and an untracked account"));
+            }
+            if (source.Account != null && source.Account.Type.IsTracked() && destination.Account == null)
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    sourcePath.Append(nameof(AccountTransactionSource.Account)),
+                    "A one-sided Account Transaction cannot debit money from a tracked account"));
+            }
+            if (source.Account == null && destination.Account != null && destination.Account.Type.IsTracked())
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    destinationsPathBuilder(index).Append(nameof(AccountTransactionDestination.Account)),
+                    "A one-sided Account Transaction cannot credit money to a tracked account"));
+            }
+            if (destination.Account != null && destinations.Index().Any(pair =>
+                pair.Index != index && pair.Item.Account?.Id == destination.Account.Id))
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    destinationsPathBuilder(index).Append(nameof(AccountTransactionDestination.Account)),
+                    "Duplicate destination accounts are not allowed"));
+            }
+            if (!string.IsNullOrWhiteSpace(destination.Location) && destinations.Index().Any(pair =>
+                pair.Index != index && pair.Item.Location == destination.Location))
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    destinationsPathBuilder(index).Append(nameof(AccountTransactionDestination.Location)),
+                    "Duplicate destination locations are not allowed"));
+            }
         }
         return !exceptions.Any();
     }
 
     /// <summary>
-    /// Validates the Posted Dates for this Account Transaction
+    /// Validates the accounts for this Account Transaction
     /// </summary>
-    private static bool ValidatePostedDates(
-        AccountingPeriod accountingPeriod,
-        Account? debitAccount,
-        DateOnly? debitPostedDate,
-        Account? creditAccount,
-        DateOnly? creditPostedDate,
-        out IEnumerable<Exception> exceptions)
+    private static bool ValidateAmounts(
+        decimal amount,
+        IReadOnlyCollection<AccountTransactionDestination> destinations,
+        Func<int, ValidationErrorPath> destinationsPathBuilder,
+        out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
-        if (debitPostedDate.HasValue && debitAccount == null)
+        if (destinations.Count == 0)
         {
-            exceptions = exceptions.Append(new InvalidDateException("A posted date cannot be provided for the debit account if no debit account is provided"));
+            exceptions = exceptions.Append(new ValidationError(
+                destinationsPathBuilder(0),
+                "Account Transactions must have at least one account destination"));
         }
-        if (creditPostedDate.HasValue && creditAccount == null)
+        foreach ((int index, AccountTransactionDestination destination) in destinations.Index())
         {
-            exceptions = exceptions.Append(new InvalidDateException("A posted date cannot be provided for the credit account if no credit account is provided"));
-        }
-        if (debitAccount != null && !ValidatePostedDate(accountingPeriod, debitAccount, debitPostedDate, out IEnumerable<Exception> debitPostedDateExceptions))
-        {
-            exceptions = exceptions.Concat(debitPostedDateExceptions);
-        }
-        if (creditAccount != null && !ValidatePostedDate(accountingPeriod, creditAccount, creditPostedDate, out IEnumerable<Exception> creditPostedDateExceptions))
-        {
-            exceptions = exceptions.Concat(creditPostedDateExceptions);
+            if (destination.Amount <= 0)
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    destinationsPathBuilder(index).Append(nameof(AccountTransactionDestination.Amount)),
+                    "Account destination amounts must be positive"));
+            }
+            if (Math.Round(destinations.Sum(destination => destination.Amount), 2) != Math.Round(amount, 2))
+            {
+                exceptions = exceptions.Append(new ValidationError(
+                    destinationsPathBuilder(index).Append(nameof(AccountTransactionDestination.Amount)),
+                    "Account destination amounts must equal the transaction amount"));
+            }
         }
         return !exceptions.Any();
     }

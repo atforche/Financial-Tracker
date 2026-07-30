@@ -5,9 +5,6 @@ namespace Domain.AccountingPeriods;
 /// <summary>
 /// Entity class representing an Accounting Period
 /// </summary>
-/// <remarks>
-/// An Accounting Period represents a month-long period used to organize transactions and track balances and funds.
-/// </remarks>
 public class AccountingPeriod : Entity<AccountingPeriodId>
 {
     /// <summary>
@@ -33,11 +30,6 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
     /// <summary>
     /// Is Open flag for this Accounting Period
     /// </summary>
-    /// <remarks>
-    /// Once an Accounting Period has been closed, no changes can be made to anything that falls within 
-    /// that Accounting Period. Multiple Accounting Periods can be open at the same time, assuming all 
-    /// the open periods represent a contiguous period of time. Only the earliest open period can be closed.
-    /// </remarks>
     public bool IsOpen { get; internal set; }
 
     /// <summary>
@@ -53,13 +45,11 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
     /// <summary>
     /// Gets the maximum date that falls within this Accounting Period
     /// </summary>
-    public DateOnly GetMaximumDateInPeriod() => new DateOnly(Year, Month, 1).AddMonths(1).AddDays(-1);
+    public DateOnly GetMaximumDateInPeriod() => new DateOnly(Year, Month, 1).AddMonths(2).AddDays(-1);
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    /// <param name="year">Year for this Accounting Period</param>
-    /// <param name="month">Month for this Accounting Period</param>
     internal AccountingPeriod(int year, int month)
         : base(new AccountingPeriodId(Guid.NewGuid()))
     {

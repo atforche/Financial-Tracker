@@ -6,12 +6,12 @@ namespace Domain.Transactions.Accounts;
 public record UpdateAccountTransactionRequest : UpdateTransactionRequest
 {
     /// <summary>
-    /// Posted Date for the Debit Account of this Account Transaction
+    /// Source for this Account Transaction
     /// </summary>
-    public DateOnly? DebitPostedDate { get; init; }
+    public required AccountTransactionSource Source { get; init; }
 
     /// <summary>
-    /// Posted Date for the Credit Account of this Account Transaction
+    /// Destinations for this Account Transaction
     /// </summary>
-    public DateOnly? CreditPostedDate { get; init; }
+    public required IReadOnlyCollection<AccountTransactionDestination> Destinations { get; init; }
 }

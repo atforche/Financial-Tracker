@@ -9,8 +9,6 @@ namespace Data.Accounts;
 /// </summary>
 public class AccountRepository(DatabaseContext databaseContext) : IAccountRepository
 {
-    #region IAccountRepository
-
     /// <inheritdoc/>
     public IReadOnlyCollection<Account> GetAll() => databaseContext.Accounts.ToList();
 
@@ -21,6 +19,14 @@ public class AccountRepository(DatabaseContext databaseContext) : IAccountReposi
     /// <inheritdoc/>
     public Account GetById(AccountId id) => databaseContext.Accounts.SingleOrDefault(account => account.Id == id)
         ?? databaseContext.Accounts.Local.Single(account => account.Id == id);
+
+    /// <inheritdoc/>
+    public bool TryGetById(Guid id, [NotNullWhen(true)] out Account? account)
+    {
+        account = databaseContext.Accounts.SingleOrDefault(candidate => candidate.Id == new AccountId(id))
+            ?? databaseContext.Accounts.Local.SingleOrDefault(candidate => candidate.Id == new AccountId(id));
+        return account != null;
+    }
 
     /// <inheritdoc/>
     public bool TryGetByName(string name, [NotNullWhen(true)] out Account? account)
@@ -34,15 +40,4 @@ public class AccountRepository(DatabaseContext databaseContext) : IAccountReposi
 
     /// <inheritdoc/>
     public void Delete(Account account) => databaseContext.Remove(account);
-
-    #endregion
-
-    /// <summary>
-    /// Attempts to get the Account with the specified ID
-    /// </summary>
-    public bool TryGetById(Guid id, [NotNullWhen(true)] out Account? account)
-    {
-        account = databaseContext.Accounts.FirstOrDefault(account => ((Guid)(object)account.Id) == id);
-        return account != null;
-    }
 }

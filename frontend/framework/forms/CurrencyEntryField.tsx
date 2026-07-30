@@ -1,5 +1,13 @@
 import { InputAdornment, TextField } from "@mui/material";
-import { type JSX, useState } from "react";
+import { type JSX, useEffect, useState } from "react";
+import {
+  currencyEditPattern,
+  formatCurrency,
+  formatCurrencyValue,
+  parseCurrencyValue,
+  sanitizeCurrencyInput,
+} from "@/framework/currencyHelpers";
+import ReadOnlyField from "@/framework/forms/ReadOnlyField";
 
 /**
  * Props for the CurrencyEntryField component.
@@ -9,6 +17,7 @@ interface CurrencyEntryFieldProps {
   readonly value: number | null;
   readonly setValue?: ((newValue: number | null) => void) | null;
   readonly errorMessage?: string | null;
+  readonly disabled?: boolean;
 }
 
 /**
@@ -19,60 +28,68 @@ const CurrencyEntryField = function ({
   value,
   setValue = null,
   errorMessage = null,
+  disabled = false,
 }: CurrencyEntryFieldProps): JSX.Element {
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [stringValue, setStringValue] = useState<string>(
-    value === null
-      ? ""
-      : value.toLocaleString([], {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }),
+    value === null ? "" : formatCurrencyValue(value),
   );
-  if ((value ?? 0) !== Number(stringValue.replaceAll(",", ""))) {
-    setStringValue(
-      value === null
-        ? ""
-        : value.toLocaleString([], {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }),
+
+  useEffect(() => {
+    if (isEditing) {
+      return;
+    }
+
+    setStringValue(value === null ? "" : formatCurrencyValue(value));
+  }, [isEditing, value]);
+
+  if (setValue === null && !disabled) {
+    return (
+      <ReadOnlyField
+        label={label}
+        value={value === null ? null : formatCurrency(value)}
+      />
     );
   }
+
   return (
     <TextField
       className="currency-entry-field"
       label={label}
       variant="outlined"
       value={stringValue}
+      disabled={disabled}
       slotProps={{
         input: {
-          disabled: setValue === null,
+          readOnly: setValue === null,
           startAdornment: <InputAdornment position="start">$</InputAdornment>,
         },
       }}
+      onFocus={() => {
+        setIsEditing(true);
+        setStringValue((currentValue) => sanitizeCurrencyInput(currentValue));
+      }}
       onChange={(event) => {
-        if (event.target.value === "") {
+        const nextValue = sanitizeCurrencyInput(event.target.value);
+        if (!currencyEditPattern.test(nextValue)) {
+          return;
+        }
+
+        setStringValue(nextValue);
+        setValue?.(parseCurrencyValue(nextValue));
+      }}
+      onBlur={() => {
+        setIsEditing(false);
+
+        const parsedValue = parseCurrencyValue(stringValue);
+        if (parsedValue === null) {
           setStringValue("");
           setValue?.(null);
-        } else {
-          if (event.target.value.includes(".")) {
-            const [prefix, suffix] = event.target.value.split(".");
-            setStringValue(
-              `${Number(prefix?.replaceAll(",", "")).toLocaleString()}.${suffix?.slice(0, 2)}`,
-            );
-          } else {
-            setStringValue(
-              Number(event.target.value.replaceAll(",", "")).toLocaleString(),
-            );
-          }
-          setValue?.(
-            Number(
-              event.target.value
-                .replaceAll(",", "")
-                .replace(/\.(\d{2})\d*/u, ".$1"),
-            ),
-          );
+          return;
         }
+
+        setStringValue(formatCurrencyValue(parsedValue));
+        setValue?.(parsedValue);
       }}
       error={errorMessage !== null}
       helperText={errorMessage ?? null}

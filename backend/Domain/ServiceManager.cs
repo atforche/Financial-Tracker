@@ -1,7 +1,11 @@
 using Domain.AccountingPeriods;
+using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
+using Domain.Accounts.Queries;
+using Domain.FundGoals;
+using Domain.FundGoals.Queries;
 using Domain.Funds;
-using Domain.Goals;
+using Domain.Funds.Queries;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
@@ -23,15 +27,32 @@ public static class ServiceManager
     {
         _ = serviceCollection.AddScoped<AccountingPeriodService>();
         _ = serviceCollection.AddScoped<AccountingPeriodBalanceService>();
+        _ = serviceCollection.AddScoped<AccountingPeriodQueryService>();
+        _ = serviceCollection.AddScoped<AccountingPeriodRangeService>();
+
         _ = serviceCollection.AddScoped<AccountService>();
         _ = serviceCollection.AddScoped<AccountBalanceService>();
+        _ = serviceCollection.AddScoped<PendingAccountBalanceService>();
+        _ = serviceCollection.AddScoped<AccountBalanceEventQueryService>();
+        _ = serviceCollection.AddScoped<AccountQueryService>();
+
         _ = serviceCollection.AddScoped<FundService>();
         _ = serviceCollection.AddScoped<FundBalanceService>();
-        _ = serviceCollection.AddScoped<GoalService>();
+        _ = serviceCollection.AddScoped<PendingFundBalanceService>();
+        _ = serviceCollection.AddScoped<FundBalanceEventQueryService>();
+        _ = serviceCollection.AddScoped<FundQueryService>();
+
+        _ = serviceCollection.AddScoped<FundGoalService>();
+        _ = serviceCollection.AddScoped<FundGoalTotalsHistoryService>();
+        _ = serviceCollection.AddScoped<PendingFundGoalTotalsService>();
+        _ = serviceCollection.AddScoped<FundGoalBalanceEventQueryService>();
+        _ = serviceCollection.AddScoped<FundGoalQueryService>();
+
         _ = serviceCollection.AddScoped<SpendingTransactionService>();
         _ = serviceCollection.AddScoped<IncomeTransactionService>();
         _ = serviceCollection.AddScoped<AccountTransactionService>();
         _ = serviceCollection.AddScoped<FundTransactionService>();
         _ = serviceCollection.AddScoped<TransactionDispatcherService>();
+        _ = serviceCollection.AddScoped<Transactions.Queries.TransactionQueryService>();
     }
 }

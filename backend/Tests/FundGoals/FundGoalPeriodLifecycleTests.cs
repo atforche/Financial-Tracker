@@ -1,0 +1,82 @@
+using System.Net;
+using Models.FundGoals;
+using Tests.AccountingPeriods;
+using Tests.Accounts;
+using Tests.Funds;
+using Tests.Infrastructure;
+using Tests.Transactions;
+
+namespace Tests.FundGoals;
+
+/// <summary>
+/// Covers Fund Goal configuration copied into subsequent Accounting Periods.
+/// </summary>
+public sealed class FundGoalPeriodLifecycleTests
+{
+    /// <summary>
+    /// Copies configured goals forward and exposes them through period-scoped lookup and progress APIs.
+    /// </summary>
+    [Fact]
+    public async Task CreatingNextPeriodCopiesGoalConfigurationAndExposesAllProgresses()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel
+        {
+            RegularContribution = 50m,
+            MinimumFundedBalance = 100m,
+            MaximumFundedBalance = 200m,
+            TargetEndingBalance = 150m
+        });
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+
+        FundGoalModel copied = await test.Api.GetAsync<FundGoalModel>($"/fund-goals/fund/{groceries.Id}?accountingPeriodId={august.Id}");
+        IReadOnlyCollection<FundGoalProgressResultModel> progresses = await test.Api.GetAsync<IReadOnlyCollection<FundGoalProgressResultModel>>(
+            $"/fund-goals/progress/{august.Id}");
+        using HttpResponseMessage missing = await test.Api.GetResponseAsync($"/fund-goals/progress/{Guid.NewGuid()}");
+
+        Assert.Equal(50m, copied.RegularContribution);
+        Assert.Equal(100m, copied.MinimumFundedBalance);
+        Assert.Equal(200m, copied.MaximumFundedBalance);
+        Assert.Equal(150m, copied.TargetEndingBalance);
+        Assert.Contains(progresses, item => item.FundGoalId == copied.Id && item.Progress.Contribution != null);
+        Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+    }
+
+    /// <summary>
+    /// Calculates period progress from posted activity while availability retains pending effects.
+    /// </summary>
+    [Fact]
+    public async Task ProgressReflectsPostedAndPendingFundActivity()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel
+        {
+            RegularContribution = 50m,
+            MinimumFundedBalance = 25m,
+            TargetEndingBalance = 40m
+        });
+        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(60m).From("Employer").To(cash, groceries).CreateAsync();
+        _ = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(20m).From(cash).To("Market", groceries).CreateAsync();
+        await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
+
+        FundGoalProgressModel progress = await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{groceries.Goal.Id}/progress/{july.Id}");
+        FundGoalAvailabilitySnapshot availability = await test.FundGoalQueries.GetAvailabilityAsync(groceries.Goal);
+
+        Assert.True(progress.AvailableBalance.IsSatisfied);
+        Assert.Equal(60m, progress.AvailableBalance.CurrentBalance);
+        Assert.Equal(60m, availability.Posted);
+        Assert.Equal(40m, availability.IncludingPending);
+        Assert.NotNull(progress.Contribution);
+        Assert.Equal(50m, progress.Contribution.TargetAmount);
+        Assert.Equal(60m, progress.Contribution.AssignedAmount);
+        Assert.NotNull(progress.FundedBalance);
+        Assert.Equal(60m, progress.FundedBalance.Balance);
+        Assert.NotNull(progress.EndingBalance);
+        Assert.Equal(60m, progress.EndingBalance.CurrentBalance);
+    }
+}

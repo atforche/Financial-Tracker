@@ -2,7 +2,9 @@
 """Helper scripts for developing the Financial Tracker backend"""
 
 import os
+from pathlib import Path
 from typing import Annotated
+from xml.etree import ElementTree
 from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.migration_script import MigrationScript
@@ -16,6 +18,7 @@ def main():
     commands.commands.append(FormatBackendSolution())
     commands.commands.append(BuildBackendSolution())
     commands.commands.append(TestBackendSolution())
+    commands.commands.append(GetBackendCoverage())
     commands.commands.append(RunBackendApi())
     commands.commands.append(CreateMigration())
     commands.run()
@@ -64,10 +67,50 @@ class TestBackendSolution(Command):
 
         if self.use_database:
             print("Running database integration tests")
-            self.run_subprocess("dotnet test ../backend/Backend.sln --no-build --verbosity normal --environment USE_DATABASE=TRUE")
+            self.run_subprocess("dotnet test ../backend/Backend.sln --no-build --verbosity minimal --environment USE_DATABASE=TRUE")
         else:
             print("Running unit tests")
-            self.run_subprocess("dotnet test ../backend/Backend.sln --no-build --verbosity normal")
+            self.run_subprocess("dotnet test ../backend/Backend.sln --no-build --verbosity minimal")
+
+class GetBackendCoverage(Command):
+    """Command class that runs the backend tests and reports code coverage"""
+
+    use_database: Annotated[bool, "If provided, runs the tests against an actual database"]
+
+    def __init__(self):
+        """Constructs a new instance of this class"""
+
+        super().__init__("coverage", "Runs backend tests and reports code coverage metrics")
+        self.steps.append(Step("Get Backend Coverage", "Coverage metrics reported", self.get_coverage))
+
+    def get_coverage(self):
+        """Runs the tests with coverage collection and prints the collected metrics"""
+
+        results_directory = Path("../backend/.artifacts/TestResults")
+        command = ("dotnet test ../backend/Backend.sln --no-build --verbosity minimal "
+                   "--collect \"XPlat Code Coverage\" "
+                   f"--results-directory {results_directory}")
+        if self.use_database:
+            print("Running database integration tests with coverage collection")
+            command += " --environment USE_DATABASE=TRUE"
+        else:
+            print("Running unit tests with coverage collection")
+
+        self.run_subprocess(command)
+        coverage_files = list(results_directory.glob("**/coverage.cobertura.xml"))
+        if not coverage_files:
+            raise RuntimeError("Coverage collection completed without producing a Cobertura report")
+
+        coverage_file = max(coverage_files, key=lambda path: path.stat().st_mtime)
+        coverage = ElementTree.parse(coverage_file).getroot()
+        print(f"Line coverage: {float(coverage.attrib['line-rate']) * 100:.2f}%")
+        print(f"Branch coverage: {float(coverage.attrib['branch-rate']) * 100:.2f}%")
+        print("Coverage by assembly:")
+        for assembly in sorted(coverage.findall("./packages/package"), key=lambda package: package.attrib["name"]):
+            print(f"  {assembly.attrib['name']}: "
+                  f"{float(assembly.attrib['line-rate']) * 100:.2f}% line, "
+                  f"{float(assembly.attrib['branch-rate']) * 100:.2f}% branch")
+        print(f"Coverage report: {coverage_file.resolve()}")
 
 class RunBackendApi(Command):
     """Command class that runs the backend API"""

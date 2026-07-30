@@ -1,36 +1,43 @@
 "use client";
 
 import { InputAdornment, TextField } from "@mui/material";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { JSX } from "react";
 import { Search } from "@mui/icons-material";
+import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import { useDebouncedCallback } from "use-debounce";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useSearchParams } from "next/navigation";
 
 /**
  * Props for the SearchBar component.
  */
 interface SearchBarProps {
-  readonly paramName: string;
+  readonly searchParamName: string;
+  readonly pageParamName?: string;
 }
 
 /**
  * Component that renders a search bar that syncs its value with URL search parameters.
  */
-const SearchBar = function ({ paramName }: SearchBarProps): JSX.Element {
+const SearchBar = function ({
+  searchParamName,
+  pageParamName,
+}: SearchBarProps): JSX.Element {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
+  const updateParams = useSearchParamUpdater(
+    isNotNullOrUndefined(pageParamName) ? [pageParamName] : [],
+  );
 
   const handleChange = useDebouncedCallback(
     (event: React.ChangeEvent<HTMLInputElement>): void => {
-      const params = new URLSearchParams(searchParams.toString());
       const { value } = event.target;
-      if (value) {
-        params.set(paramName, value);
-      } else {
-        params.delete(paramName);
-      }
-      router.replace(`${pathname}?${params.toString()}`);
+      updateParams((params) => {
+        if (value) {
+          params.set(searchParamName, value);
+        } else {
+          params.delete(searchParamName);
+        }
+      });
     },
     300,
   );
@@ -39,8 +46,13 @@ const SearchBar = function ({ paramName }: SearchBarProps): JSX.Element {
     <TextField
       size="small"
       placeholder="Search..."
-      defaultValue={searchParams.get(paramName) ?? ""}
+      defaultValue={searchParams.get(searchParamName) ?? ""}
       onChange={handleChange}
+      fullWidth
+      sx={{
+        flex: "1 1 280px",
+        minWidth: 0,
+      }}
       slotProps={{
         input: {
           startAdornment: (
@@ -48,9 +60,6 @@ const SearchBar = function ({ paramName }: SearchBarProps): JSX.Element {
               <Search />
             </InputAdornment>
           ),
-          sx: {
-            maxWidth: "500px",
-          },
         },
       }}
     />

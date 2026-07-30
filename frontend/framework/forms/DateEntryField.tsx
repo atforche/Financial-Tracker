@@ -1,8 +1,7 @@
 import dayjs, { type Dayjs } from "dayjs";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import type { JSX } from "react/jsx-runtime";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import ReadOnlyField from "@/framework/forms/ReadOnlyField";
 import { useState } from "react";
 
 /**
@@ -17,6 +16,9 @@ interface DateEntryFieldProps {
   readonly maxDate?: Dayjs | null;
   readonly disabled?: boolean;
 }
+
+const defaultMinDate = dayjs("1900-01-01");
+const defaultMaxDate = dayjs("2100-12-31");
 
 /**
  * Component that presents the user with an entry field where they can enter date values.
@@ -33,31 +35,43 @@ const DateEntryField = function ({
   const [internalErrorMessage, setInternalErrorMessage] = useState<
     string | null
   >(null);
-  return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <DatePicker
+  const effectiveMinDate = minDate ?? defaultMinDate;
+  const effectiveMaxDate = maxDate ?? defaultMaxDate;
+
+  if (setValue === null && !disabled) {
+    return (
+      <ReadOnlyField
         label={label}
-        value={value}
-        disabled={disabled}
-        readOnly={setValue === null}
-        onChange={(newValue: Dayjs | null) => setValue?.(newValue)}
-        minDate={minDate ?? dayjs("1900-01-01")}
-        maxDate={maxDate ?? dayjs("2100-12-31")}
-        onError={(internalError) => {
-          setInternalErrorMessage(
-            internalError === "maxDate" || internalError === "minDate"
-              ? `Please pick a date between ${minDate?.format("MM/DD/YYYY")} and ${maxDate?.format("MM/DD/YYYY")}`
-              : null,
-          );
-        }}
-        slotProps={{
-          textField: {
-            error: errorMessage !== null || internalErrorMessage !== null,
-            helperText: internalErrorMessage ?? errorMessage,
-          },
-        }}
+        value={value === null ? null : value.format("MM/DD/YYYY")}
       />
-    </LocalizationProvider>
+    );
+  }
+
+  return (
+    <DatePicker
+      label={label}
+      value={value}
+      disabled={disabled}
+      readOnly={setValue === null}
+      onChange={(newValue: Dayjs | null) => setValue?.(newValue)}
+      minDate={effectiveMinDate}
+      maxDate={effectiveMaxDate}
+      onError={(internalError) => {
+        setInternalErrorMessage(
+          internalError === "maxDate" || internalError === "minDate"
+            ? `Please pick a date between ${effectiveMinDate.format("MM/DD/YYYY")} and ${effectiveMaxDate.format("MM/DD/YYYY")}`
+            : internalError === "invalidDate"
+              ? "Please enter a valid date"
+              : null,
+        );
+      }}
+      slotProps={{
+        textField: {
+          error: errorMessage !== null || internalErrorMessage !== null,
+          helperText: internalErrorMessage ?? errorMessage,
+        },
+      }}
+    />
   );
 };
 
