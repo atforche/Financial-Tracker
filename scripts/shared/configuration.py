@@ -59,13 +59,13 @@ class Configuration:
         self.frontend_image = frontend_image
         self.migrator_image = migrator_image
 
-    def write_to_file(self) -> None:
+    def write_to_file(self, environment_file_path: str | None = None) -> None:
         """Writes the current configuration to the specified file"""
 
         public_host = self.get_public_host()
         public_port = self.get_public_port()
 
-        with open(self.get_environment_file_path(), "w", encoding="utf-8") as file:
+        with open(environment_file_path or self.get_environment_file_path(), "w", encoding="utf-8") as file:
             file.write(f'INSTANCE_NAME="{self.name}"\n')
             file.write(f'INSTANCE_DIR="{self.path}"\n')
             file.write(f'ENVIRONMENT="{self.environment.value}"\n')
