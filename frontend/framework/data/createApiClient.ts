@@ -1,7 +1,7 @@
 import "server-only";
 
 import createClient, { type Client } from "openapi-fetch";
-import { auth } from "@/auth";
+import getGoogleIdToken from "@/framework/data/getGoogleIdToken";
 import type { paths } from "@/framework/data/api";
 
 /**
@@ -13,9 +13,8 @@ const createApiClient = async function (): Promise<Client<paths>> {
     throw new Error("API_URL must be configured before using the API client.");
   }
 
-  const session: { idToken?: string } | null = await auth();
-  const idToken = session?.idToken;
-  if (typeof idToken !== "string" || idToken === "") {
+  const idToken = await getGoogleIdToken();
+  if (idToken === null || idToken === "") {
     throw new Error(
       "An authenticated Google session is required before using the API client.",
     );

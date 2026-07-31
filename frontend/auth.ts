@@ -1,12 +1,6 @@
 import Google from "next-auth/providers/google";
 import NextAuth from "next-auth";
 
-declare module "next-auth" {
-  interface Session {
-    idToken?: string;
-  }
-}
-
 declare module "@auth/core/jwt" {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   interface JWT {
@@ -58,12 +52,6 @@ const { auth, handlers, signIn, signOut } = nextAuth({
         tokenWithIdToken.idToken = account.id_token;
       }
       return token;
-    },
-    session({ session, token }) {
-      if (typeof token.idToken === "string") {
-        session.idToken = token.idToken;
-      }
-      return session;
     },
   },
 });
