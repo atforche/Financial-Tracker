@@ -2,7 +2,7 @@ name: "$INSTANCE_NAME"
 
 services:
   proxy:
-    image: caddy:2.11.4-alpine
+    image: caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
     container_name: "proxy-$INSTANCE_NAME"
     ports:
       - "$PUBLIC_PORT:443"
@@ -11,6 +11,13 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     env_file: ".env"
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
 
   backend:
     image: "backend-$INSTANCE_NAME"
@@ -21,6 +28,13 @@ services:
       - $INSTANCE_DIR/database.db:$DATABASE_PATH
       - $INSTANCE_DIR/logs:$LOG_DIRECTORY
     env_file: ".env"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
 
   frontend:
     image: "frontend-$INSTANCE_NAME"
@@ -28,6 +42,13 @@ services:
     expose:
       - "3000"
     env_file: ".env"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
 
 volumes:
   caddy_data:

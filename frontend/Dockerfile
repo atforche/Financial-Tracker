@@ -1,10 +1,10 @@
-FROM node:22-alpine AS dependencies
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS dependencies
 WORKDIR /app
 
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
 
-FROM node:22-alpine AS build
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS build
 WORKDIR /app
 
 COPY --from=dependencies /app/node_modules ./node_modules
@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/app/.next/cache npm run build
 FROM build AS production-dependencies
 RUN npm prune --omit=dev
 
-FROM node:22-alpine AS runtime
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
