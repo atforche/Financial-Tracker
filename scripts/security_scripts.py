@@ -91,6 +91,7 @@ class ScanContainerImages(Command):
         super().__init__("scan-images", "Scans deployable container images for high and critical vulnerabilities")
         self.steps.append(Step("Scan Backend Image", "Backend image scanned", self.scan_backend_image))
         self.steps.append(Step("Scan Frontend Image", "Frontend image scanned", self.scan_frontend_image))
+        self.steps.append(Step("Scan Migrator Image", "Migrator image scanned", self.scan_migrator_image))
         self.steps.append(Step("Scan Proxy Image", "Proxy image scanned", self.scan_proxy_image))
 
     def scan_backend_image(self) -> None:
@@ -102,6 +103,11 @@ class ScanContainerImages(Command):
         """Fails when Trivy finds a high or critical frontend image vulnerability."""
 
         self.scan_image("financial-tracker-frontend:workflow")
+
+    def scan_migrator_image(self) -> None:
+        """Fails when Trivy finds a high or critical migrator image vulnerability."""
+
+        self.scan_image("financial-tracker-migrator:workflow")
 
     def scan_proxy_image(self) -> None:
         """Reports high and critical reverse-proxy image vulnerabilities without failing the pipeline."""

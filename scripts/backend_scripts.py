@@ -7,7 +7,6 @@ from typing import Annotated
 from xml.etree import ElementTree
 from shared.command import Command
 from shared.command_collection import CommandCollection
-from shared.migration_script import MigrationScript
 from shared.step import Step
 
 def main():
@@ -155,24 +154,6 @@ class CreateMigration(Command):
         os.environ["DATABASE_PATH"] = ""
         self.run_subprocess(f"dotnet ef migrations add {self.name} \
                             --project ../backend/Data/Data.csproj --msbuildprojectextensionspath ../backend/.artifacts/obj/Data")
-
-        if not os.path.isdir(MigrationScript.directory):
-            print(f"Creating migration scripts directory at {MigrationScript.directory}")
-            os.makedirs(MigrationScript.directory)
-
-        migrations = MigrationScript.get_all()
-        if len(migrations) == 0:
-            new_migration = MigrationScript(1, self.name)
-            last_migration = None
-        else:
-            last_migration = max(migrations, key=lambda migration: migration.id)
-            new_migration = MigrationScript(last_migration.id + 1, self.name)
-
-        print(f"Creating new migration script {new_migration.file_name}")
-        self.run_subprocess(f'dotnet ef migrations script \
-                                {last_migration.name if last_migration is not None else ""} \
-                                --project ../backend/Data/Data.csproj \
-                                --output "{MigrationScript.directory}/{new_migration.file_name}"')
 
 if __name__ == "__main__":
     main()

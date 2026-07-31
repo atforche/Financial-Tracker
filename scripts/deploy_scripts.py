@@ -2,14 +2,16 @@
 """Helper scripts for deploying the Financial Tracker"""
 
 import os
+import shlex
 import shutil
+import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Annotated
 from instance_scripts import StopCommand
 from shared.configuration import Configuration
 from shared.command import Command
 from shared.command_collection import CommandCollection
-from shared.migration_script import MigrationScript
 from shared.step import Step
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -58,8 +60,8 @@ class CreateCommand(Command):
         self.steps.append(Step("Create Environment File", "Environment file created", self.create_environment_file))
         self.steps.append(Step("", "", lambda: CopyScripts(self.configuration).run([])))
         self.steps.append(Step("", "", lambda: CreateEmptyDatabase(self.configuration).run([])))
-        self.steps.append(Step("", "", lambda: ApplyMigrations(self.configuration).run([])))
         self.steps.append(Step("", "", lambda: BuildContainerImages(self.configuration).run([])))
+        self.steps.append(Step("", "", lambda: ApplyMigrations(self.configuration).run([])))
         
     def build_configuration(self) -> None:
         """Builds the configuration from user input"""
@@ -71,6 +73,9 @@ class CreateCommand(Command):
         
         if self.run_subprocess(f"docker image inspect {self.configuration.frontend_image}", throw_on_error=False, suppress_output=True) == 0:
             raise ValueError(f"Frontend image {self.configuration.frontend_image} is already in use")
+
+        if self.run_subprocess(f"docker image inspect {self.configuration.migrator_image}", throw_on_error=False, suppress_output=True) == 0:
+            raise ValueError(f"Migrator image {self.configuration.migrator_image} is already in use")
         
         if os.path.isdir(self.configuration.path):
             raise ValueError(f"Directory '{self.configuration.path}' already exists")
@@ -110,8 +115,8 @@ class DeployCommand(Command):
         self.steps.append(Step("Copy Caddy Configuration", "Caddy configuration copied", self.copy_caddy_file))
         self.steps.append(Step("Stop Instance", "Instance stopped", lambda: StopCommand().stop_instance(self.configuration.get_compose_file_path())))
         self.steps.append(Step("", "", lambda: CopyScripts(self.configuration).run([])))
-        self.steps.append(Step("", "", lambda: ApplyMigrations(self.configuration).run([])))
         self.steps.append(Step("", "", lambda: BuildContainerImages(self.configuration).run([])))
+        self.steps.append(Step("", "", lambda: ApplyMigrations(self.configuration).run([])))
 
     def validate_arguments(self):
         """Runs additional validation on the provided arguments"""
@@ -219,6 +224,7 @@ class CreateEmptyDatabase(Command):
         print(f"Creating database file at {self.configuration.get_database_file_path()}")
         with open(self.configuration.get_database_file_path(), 'w', encoding="utf-8") as _:
             pass
+        os.chmod(self.configuration.get_database_file_path(), 0o666)
 
 class ApplyMigrations(Command):
     """Command class that applies all missing migrations to the database"""
@@ -240,35 +246,31 @@ class ApplyMigrations(Command):
         """Applies all the missing migrations to the instance database"""
 
         print(f"Applying all missing migrations to database {self.configuration.get_database_file_path()}")
+        database_file_path = self.configuration.get_database_file_path()
+        upgrade_directory = tempfile.mkdtemp(prefix=".migration-", dir=self.configuration.path)
+        os.chmod(upgrade_directory, 0o777)
+        upgrade_database_file_path = f"{upgrade_directory}/database.db"
+        shutil.copy(database_file_path, upgrade_database_file_path)
+        os.chmod(upgrade_database_file_path, 0o666)
 
-        print(f"Last migration applied {self.configuration.database_revision}")
+        try:
+            self.run_subprocess(
+                "docker run --rm --read-only --cap-drop ALL "
+                "--security-opt no-new-privileges:true "
+                f"--volume {shlex.quote(upgrade_directory)}:/data "
+                "--env DATABASE_PATH=/data/database.db "
+                f"{shlex.quote(self.configuration.migrator_image)}")
+        except Exception:
+            shutil.rmtree(upgrade_directory)
+            raise
 
-        migrations_to_run = [migration for migration in MigrationScript.get_all() if migration.id > self.configuration.database_revision]
-        if len(migrations_to_run) == 0:
-            print("No migrations to run")
-            return
-
-        upgrade_database_file_path = f"{self.configuration.path}/database-upgrade.db"
-        print(f"Creating copy of database for migrations at {upgrade_database_file_path}")
-        shutil.copy(self.configuration.get_database_file_path(), upgrade_database_file_path)
-
-        for migration in migrations_to_run:
-            print(f"Applying migration {migration.file_name}")
-
-            with open(f"{MigrationScript.directory}/{migration.file_name}", "r", encoding="utf-8") as file:
-                self.run_subprocess(f'sqlite3 {upgrade_database_file_path}', file.read())
-
-        if not os.path.isdir(f"{self.configuration.path}/archive"):
-            print(f"Creating the archive directory for old databases at {self.configuration.path}/archive")
-            os.mkdir(f"{self.configuration.path}/archive")
-
-        print(f"Archiving the old database to '{self.configuration.path}/archive/database - {self.configuration.database_revision}.db'")
-        shutil.move(self.configuration.get_database_file_path(), f"{self.configuration.path}/archive/database - {self.configuration.database_revision}.db")
-
-        print(f"Moving upgraded database from {upgrade_database_file_path} to {self.configuration.get_database_file_path()}")
-        shutil.move(upgrade_database_file_path, self.configuration.get_database_file_path())
-        self.configuration.database_revision = migrations_to_run[-1].id
-        self.configuration.write_to_file()
+        archive_directory = f"{self.configuration.path}/archive"
+        os.makedirs(archive_directory, exist_ok=True)
+        archive_timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        archive_database_file_path = f"{archive_directory}/database-{archive_timestamp}.db"
+        shutil.copy2(database_file_path, archive_database_file_path)
+        os.replace(upgrade_database_file_path, database_file_path)
+        shutil.rmtree(upgrade_directory)
 
 class BuildContainerImages(Command):
     """Command class that builds a new set of container images for the Financial Tracker"""
@@ -293,6 +295,10 @@ class BuildContainerImages(Command):
         self.run_subprocess(f"docker build {PROJECT_ROOT / 'backend'} -t {self.configuration.backend_image}")
         print("Building the frontend container image")
         self.run_subprocess(f"docker build {PROJECT_ROOT / 'frontend'} -t {self.configuration.frontend_image}")
+        print("Building the database migrator container image")
+        self.run_subprocess(
+            f"docker build {PROJECT_ROOT / 'backend'} --file {PROJECT_ROOT / 'backend' / 'Migrator.Dockerfile'} "
+            f"-t {self.configuration.migrator_image}")
 
 if __name__ == "__main__":
     main()

@@ -4,7 +4,7 @@
 import os
 import re
 import shutil
-from deploy_scripts import CreateInstanceDirectory, CreateEmptyDatabase, ApplyMigrations
+from deploy_scripts import CreateInstanceDirectory, CreateEmptyDatabase
 from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.configuration import Configuration, Environment
@@ -31,14 +31,14 @@ def get_debug_configuration() -> Configuration:
         name="Debug",
         path=os.path.join(os.path.dirname(__file__), "..", "debug"),
         environment=Environment.DEVELOPMENT,
-        database_revision=0,
         public_origin="https://localhost:3001",
         google_client_id=os.environ.get("GOOGLE_CLIENT_ID", ""),
         google_client_secret=os.environ.get("GOOGLE_CLIENT_SECRET", ""),
         google_allowed_subjects=os.environ.get("GOOGLE_ALLOWED_SUBJECTS", ""),
         auth_secret=os.environ.get("AUTH_SECRET", ""),
         backend_image="backend-Debug",
-        frontend_image="frontend-Debug"
+        frontend_image="frontend-Debug",
+        migrator_image="migrator-Debug"
     )
 
 def get_debug_environment() -> dict[str, str]:
@@ -63,7 +63,7 @@ class CreateDebugEnvironment(Command):
             return
         self.steps.append(Step("", "", lambda: CreateInstanceDirectory(get_debug_configuration()).run([])))
         self.steps.append(Step("", "", lambda: CreateEmptyDatabase(get_debug_configuration()).run([])))
-        self.steps.append(Step("", "", lambda: ApplyMigrations(get_debug_configuration()).run([])))
+        self.steps.append(Step("", "", lambda: ApplyDebugMigrations().run([])))
 
 class UpgradeDebugEnvironment(Command):
     """Command class that upgrades the debug environment"""
@@ -72,8 +72,23 @@ class UpgradeDebugEnvironment(Command):
         """Constructs a new instance of this class"""
 
         super().__init__("upgrade", "Upgrades the debug environment")
-        config_path = get_debug_configuration().path
-        self.steps.append(Step("", "", lambda: ApplyMigrations(Configuration.build_from_existing_instance(config_path, False)).run([])))
+        self.steps.append(Step("", "", lambda: ApplyDebugMigrations().run([])))
+
+class ApplyDebugMigrations(Command):
+    """Applies compiled EF migrations to the debug database."""
+
+    def __init__(self):
+        """Constructs a new instance of this class."""
+
+        super().__init__("apply-migrations", "Applies compiled EF migrations to the debug database")
+        self.steps.append(Step("Apply Debug Migrations", "Debug database migrated", self.apply_migrations))
+
+    def apply_migrations(self) -> None:
+        """Runs the migrator project against the debug database."""
+
+        environment = os.environ.copy()
+        environment["DATABASE_PATH"] = get_debug_configuration().get_database_file_path()
+        self.run_subprocess("dotnet run --project ../backend/Migrator/Migrator.csproj", env=environment)
 
 class DestroyDebugEnvironment(Command):
     """Command class that destroys the debug environment"""

@@ -13,9 +13,6 @@ from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.step import Step
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-
-
 def main():
     """Builds and runs the command collection for this script."""
 
@@ -31,9 +28,10 @@ class BuildContainerImages(Command):
     def __init__(self):
         """Constructs a new instance of this class."""
 
-        super().__init__("build", "Builds the deployable backend and frontend container images")
+        super().__init__("build", "Builds the deployable application and migrator container images")
         self.steps.append(Step("Build Backend Image", "Backend image built", self.build_backend_image))
         self.steps.append(Step("Build Frontend Image", "Frontend image built", self.build_frontend_image))
+        self.steps.append(Step("Build Migrator Image", "Migrator image built", self.build_migrator_image))
 
     def build_backend_image(self) -> None:
         """Builds the backend image used by verification and release workflows."""
@@ -44,6 +42,12 @@ class BuildContainerImages(Command):
         """Builds the frontend image used by verification and release workflows."""
 
         self.run_subprocess("docker build ../frontend --tag financial-tracker-frontend:workflow")
+
+    def build_migrator_image(self) -> None:
+        """Builds the database migrator image used by verification and release workflows."""
+
+        self.run_subprocess(
+            "docker build ../backend --file ../backend/Migrator.Dockerfile --tag financial-tracker-migrator:workflow")
 
 
 class SmokeTestContainerImages(Command):
@@ -72,15 +76,11 @@ class SmokeTestContainerImages(Command):
             logs = directory / "logs"
             database.touch(mode=0o666)
             logs.mkdir(mode=0o777)
+            os.chmod(directory, 0o777)
             os.chmod(database, 0o666)
 
-            migration_directory = PROJECT_ROOT / "backend/Data/Migrations/Scripts"
-            migration_paths = sorted(
-                migration_directory.glob("*.sql"),
-                key=lambda path: int(path.name.split(" ", maxsplit=1)[0]))
-            for migration_path in migration_paths:
-                migration = migration_path.read_text(encoding="utf-8")
-                subprocess.run(["sqlite3", str(database)], input=migration, check=True, text=True)
+            self.run_migrator(database)
+            self.run_migrator(database)
 
             self.run_docker(["network", "create", network])
             try:
@@ -140,6 +140,18 @@ class SmokeTestContainerImages(Command):
         """Runs a Docker command and fails when it does not succeed."""
 
         subprocess.run(["docker", *arguments], check=True)
+
+    @staticmethod
+    def run_migrator(database: Path) -> None:
+        """Runs the release-owned migrator against a database file."""
+
+        subprocess.run([
+            "docker", "run", "--rm", "--read-only",
+            "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true",
+            "--volume", f"{database.parent}:/data",
+            "--env", "DATABASE_PATH=/data/database.db",
+            "financial-tracker-migrator:workflow",
+        ], check=True)
 
     @staticmethod
     def get_published_port(container: str, container_port: int) -> int:

@@ -18,7 +18,6 @@ class Configuration:
     name: str
     path: str
     environment: Environment
-    database_revision: int
     public_origin: str
     google_client_id: str
     google_client_secret: str
@@ -26,18 +25,18 @@ class Configuration:
     auth_secret: str
     backend_image: str
     frontend_image: str
+    migrator_image: str
 
-    def __init__(self, name: str, path: str, environment: Environment, database_revision: int, public_origin: str,
+    def __init__(self, name: str, path: str, environment: Environment, public_origin: str,
                  google_client_id: str, google_client_secret: str,
                  google_allowed_subjects: str, auth_secret: str,
-                 backend_image: str, frontend_image: str) -> None:
+                 backend_image: str, frontend_image: str, migrator_image: str) -> None:
         """Constructs a new instance of this class
         
         Args:
             name (str): Name for this instance of the Financial Tracker
             path (str): Path to the directory where this instance is located
             environment (Environment): Type of environment for this instance. Must be one of Development or Production
-            database_revision (int): Revision number of the database schema
             public_origin (str): Public HTTPS origin used to access the instance
             google_client_id (str): Client ID from the Google OpenID Connect application registration
             google_client_secret (str): Client secret from the Google OpenID Connect application registration
@@ -45,12 +44,12 @@ class Configuration:
             auth_secret (str): Secret used to encrypt Auth.js sessions
             backend_image (str): Container image reference for the backend
             frontend_image (str): Container image reference for the frontend
+            migrator_image (str): Container image reference for the database migrator
         """
 
         self.name = name
         self.path = path
         self.environment = environment
-        self.database_revision = database_revision
         self.public_origin = public_origin
         self.google_client_id = google_client_id
         self.google_client_secret = google_client_secret
@@ -58,6 +57,7 @@ class Configuration:
         self.auth_secret = auth_secret
         self.backend_image = backend_image
         self.frontend_image = frontend_image
+        self.migrator_image = migrator_image
 
     def write_to_file(self) -> None:
         """Writes the current configuration to the specified file"""
@@ -72,10 +72,10 @@ class Configuration:
             file.write(f'PUBLIC_ORIGIN="{self.public_origin}"\n')
             file.write(f'PUBLIC_HOST="{public_host}"\n')
             file.write(f'PUBLIC_PORT="{public_port}"\n')
-            file.write(f'DATABASE_REVISION="{self.database_revision}"\n')
             file.write("\n")
             file.write(f'BACKEND_IMAGE="{self.backend_image}"\n')
             file.write(f'FRONTEND_IMAGE="{self.frontend_image}"\n')
+            file.write(f'MIGRATOR_IMAGE="{self.migrator_image}"\n')
             file.write('\n')
             file.write(f'GOOGLE_CLIENT_ID="{self.google_client_id}"\n')
             file.write(f'GOOGLE_CLIENT_SECRET="{self.google_client_secret}"\n')
@@ -148,10 +148,6 @@ class Configuration:
         if environment is not None:
             results["ENVIRONMENT"] = environment
 
-        database_revision = EnvironmentVariable.try_read_from_file(environment_file_path, "DATABASE_REVISION", int)
-        if database_revision is not None:
-            results["DATABASE_REVISION"] = database_revision
-
         public_origin = EnvironmentVariable.try_read_from_file(environment_file_path, "PUBLIC_ORIGIN", str)
         if public_origin is None:
             public_domain = EnvironmentVariable.try_read_from_file(environment_file_path, "PUBLIC_DOMAIN", str)
@@ -191,6 +187,10 @@ class Configuration:
         if frontend_image is not None:
             results["FRONTEND_IMAGE"] = frontend_image
 
+        migrator_image = EnvironmentVariable.try_read_from_file(environment_file_path, "MIGRATOR_IMAGE", str)
+        if migrator_image is not None:
+            results["MIGRATOR_IMAGE"] = migrator_image
+
         return Configuration.build_from_user_input(results, change_configuration)
 
     @classmethod
@@ -226,12 +226,6 @@ class Configuration:
         else:
             environment = existing_environment.value
 
-        existing_database_revision = existing_values.get("DATABASE_REVISION")
-        if existing_database_revision is None:
-            database_revision = 0
-        else:
-            database_revision = existing_database_revision.value
-
         public_origin = cls.get_required_string(existing_values, "PUBLIC_ORIGIN", "public HTTPS origin", change_configuration)
 
         google_client_id = cls.get_required_string(existing_values, "GOOGLE_CLIENT_ID", "Google OAuth client ID", change_configuration)
@@ -242,10 +236,12 @@ class Configuration:
         backend_image = existing_backend_image.value if existing_backend_image is not None else f"backend-{name}"
         existing_frontend_image = existing_values.get("FRONTEND_IMAGE")
         frontend_image = existing_frontend_image.value if existing_frontend_image is not None else f"frontend-{name}"
+        existing_migrator_image = existing_values.get("MIGRATOR_IMAGE")
+        migrator_image = existing_migrator_image.value if existing_migrator_image is not None else f"migrator-{name}"
 
-        return Configuration(name, path, environment, database_revision, public_origin,
+        return Configuration(name, path, environment, public_origin,
                              google_client_id, google_client_secret, google_allowed_subjects, auth_secret,
-                             backend_image, frontend_image)
+                             backend_image, frontend_image, migrator_image)
 
     @staticmethod
     def get_required_string(existing_values: dict[str, EnvironmentVariable[Any]], name: str, prompt: str,
