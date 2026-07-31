@@ -20,8 +20,30 @@ def main():
     """Builds and runs the command collection for this script."""
 
     commands = CommandCollection("Helper scripts for verifying Financial Tracker container images")
+    commands.commands.append(BuildContainerImages())
     commands.commands.append(SmokeTestContainerImages())
     commands.run()
+
+
+class BuildContainerImages(Command):
+    """Builds the deployable backend and frontend container images."""
+
+    def __init__(self):
+        """Constructs a new instance of this class."""
+
+        super().__init__("build", "Builds the deployable backend and frontend container images")
+        self.steps.append(Step("Build Backend Image", "Backend image built", self.build_backend_image))
+        self.steps.append(Step("Build Frontend Image", "Frontend image built", self.build_frontend_image))
+
+    def build_backend_image(self) -> None:
+        """Builds the backend image used by verification and release workflows."""
+
+        self.run_subprocess("docker build ../backend --tag financial-tracker-backend:workflow")
+
+    def build_frontend_image(self) -> None:
+        """Builds the frontend image used by verification and release workflows."""
+
+        self.run_subprocess("docker build ../frontend --tag financial-tracker-frontend:workflow")
 
 
 class SmokeTestContainerImages(Command):
@@ -75,7 +97,7 @@ class SmokeTestContainerImages(Command):
                     "--env", "FRONTEND_ORIGIN=https://localhost",
                     "--env", "GOOGLE_CLIENT_ID=container-smoke-test",
                     "--env", "GOOGLE_ALLOWED_SUBJECTS=container-smoke-test",
-                    "financial-tracker-backend:security-scan",
+                    "financial-tracker-backend:workflow",
                 ])
                 backend_port = self.get_published_port(backend, 8080)
                 self.wait_for_url(f"http://127.0.0.1:{backend_port}/health/ready")
@@ -93,7 +115,7 @@ class SmokeTestContainerImages(Command):
                     "--env", "AUTH_URL=https://localhost",
                     "--env", "AUTH_TRUST_HOST=true",
                     "--env", f"AUTH_SECRET={identifier}{identifier}",
-                    "financial-tracker-frontend:security-scan",
+                    "financial-tracker-frontend:workflow",
                 ])
                 frontend_port = self.get_published_port(frontend, 3000)
                 self.wait_for_url(f"http://127.0.0.1:{frontend_port}/login")

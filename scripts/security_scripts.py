@@ -14,25 +14,21 @@ CADDY_IMAGE = "caddy:2.11.4-alpine"
 def main():
     """Builds and runs the command collection for this script."""
 
-    commands = CommandCollection("Helper scripts for scanning Financial Tracker security dependencies")
-    commands.commands.append(ScanSecurity())
+    commands = CommandCollection("Helper scripts for scanning Financial Tracker dependencies and container images")
+    commands.commands.append(ScanDependencies())
+    commands.commands.append(ScanContainerImages())
     commands.run()
 
 
-class ScanSecurity(Command):
-    """Scans application dependencies and the deployable container images."""
+class ScanDependencies(Command):
+    """Scans application dependencies for known vulnerabilities."""
 
     def __init__(self):
         """Constructs a new instance of this class."""
 
-        super().__init__("scan", "Scans dependencies and container images for high and critical vulnerabilities")
+        super().__init__("scan-dependencies", "Scans dependencies for high and critical vulnerabilities")
         self.steps.append(Step("Scan Frontend Dependencies", "Frontend dependencies scanned", self.scan_frontend_dependencies))
         self.steps.append(Step("Scan Backend Dependencies", "Backend dependencies scanned", self.scan_backend_dependencies))
-        self.steps.append(Step("Build Backend Image", "Backend image built", self.build_backend_image))
-        self.steps.append(Step("Build Frontend Image", "Frontend image built", self.build_frontend_image))
-        self.steps.append(Step("Scan Backend Image", "Backend image scanned", self.scan_backend_image))
-        self.steps.append(Step("Scan Frontend Image", "Frontend image scanned", self.scan_frontend_image))
-        self.steps.append(Step("Scan Proxy Image", "Proxy image scanned", self.scan_proxy_image))
 
     def scan_frontend_dependencies(self) -> None:
         """Fails when npm reports a high or critical dependency vulnerability."""
@@ -68,25 +64,44 @@ class ScanSecurity(Command):
             raise RuntimeError(
                 "NuGet reported vulnerable packages: " + ", ".join(sorted(vulnerabilities)))
 
-    def build_backend_image(self) -> None:
-        """Builds the backend image that will be scanned."""
+    @staticmethod
+    def get_vulnerabilities(value: Any) -> set[str]:
+        """Extracts package identifiers from NuGet's vulnerability report."""
 
-        self.run_subprocess("docker build ../backend --tag financial-tracker-backend:security-scan")
+        if isinstance(value, list):
+            return set().union(*(ScanDependencies.get_vulnerabilities(item) for item in value))
+        if not isinstance(value, dict):
+            return set()
 
-    def build_frontend_image(self) -> None:
-        """Builds the frontend image that will be scanned."""
+        vulnerabilities = value.get("vulnerabilities")
+        package_id = value.get("id")
+        package_version = value.get("resolvedVersion") or value.get("requestedVersion")
+        if isinstance(vulnerabilities, list) and vulnerabilities and isinstance(package_id, str):
+            return {f"{package_id} {package_version or ''}".strip()}
 
-        self.run_subprocess("docker build ../frontend --tag financial-tracker-frontend:security-scan")
+        return set().union(*(ScanDependencies.get_vulnerabilities(item) for item in value.values()))
+
+
+class ScanContainerImages(Command):
+    """Scans already-built deployable container images."""
+
+    def __init__(self):
+        """Constructs a new instance of this class."""
+
+        super().__init__("scan-images", "Scans deployable container images for high and critical vulnerabilities")
+        self.steps.append(Step("Scan Backend Image", "Backend image scanned", self.scan_backend_image))
+        self.steps.append(Step("Scan Frontend Image", "Frontend image scanned", self.scan_frontend_image))
+        self.steps.append(Step("Scan Proxy Image", "Proxy image scanned", self.scan_proxy_image))
 
     def scan_backend_image(self) -> None:
         """Fails when Trivy finds a high or critical backend image vulnerability."""
 
-        self.scan_image("financial-tracker-backend:security-scan")
+        self.scan_image("financial-tracker-backend:workflow")
 
     def scan_frontend_image(self) -> None:
         """Fails when Trivy finds a high or critical frontend image vulnerability."""
 
-        self.scan_image("financial-tracker-frontend:security-scan")
+        self.scan_image("financial-tracker-frontend:workflow")
 
     def scan_proxy_image(self) -> None:
         """Reports high and critical reverse-proxy image vulnerabilities without failing the pipeline."""
@@ -103,23 +118,6 @@ class ScanSecurity(Command):
 
         self.run_subprocess(
             f"trivy image --exit-code 1 --severity HIGH,CRITICAL --scanners vuln {image}")
-
-    @staticmethod
-    def get_vulnerabilities(value: Any) -> set[str]:
-        """Extracts package identifiers from NuGet's vulnerability report."""
-
-        if isinstance(value, list):
-            return set().union(*(ScanSecurity.get_vulnerabilities(item) for item in value))
-        if not isinstance(value, dict):
-            return set()
-
-        vulnerabilities = value.get("vulnerabilities")
-        package_id = value.get("id")
-        package_version = value.get("resolvedVersion") or value.get("requestedVersion")
-        if isinstance(vulnerabilities, list) and vulnerabilities and isinstance(package_id, str):
-            return {f"{package_id} {package_version or ''}".strip()}
-
-        return set().union(*(ScanSecurity.get_vulnerabilities(item) for item in value.values()))
 
 
 if __name__ == "__main__":

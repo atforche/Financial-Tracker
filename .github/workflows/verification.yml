@@ -1,0 +1,148 @@
+name: Verification
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verification-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-verification:
+    name: Backend Build and Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./scripts
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.x.x
+
+      - name: Restore Backend Solution
+        run: python3 backend_scripts.py restore
+
+      - name: Build Backend Solution
+        run: python3 backend_scripts.py build
+
+      - name: Test Backend Solution
+        run: python3 backend_scripts.py test
+
+      - name: Upload OpenAPI Contract
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-contract
+          path: backend/.artifacts/obj/Rest/Financial-Tracker-API.json
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 1
+
+  frontend-verification:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./scripts
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.5.1
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        run: python3 frontend_scripts.py install
+
+      - name: Build Frontend
+        run: python3 frontend_scripts.py build
+
+  api-contract-verification:
+    name: Generated API Contract
+    needs: backend-verification
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./scripts
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.5.1
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        run: python3 frontend_scripts.py install
+
+      - name: Download OpenAPI Contract
+        uses: actions/download-artifact@v4
+        with:
+          name: openapi-contract
+          path: backend/.artifacts/obj/Rest
+
+      - name: Verify Frontend Models
+        run: python3 frontend_scripts.py verify-models
+
+  container-verification:
+    name: Container Security and Smoke Tests
+    needs:
+      - backend-verification
+      - frontend-verification
+      - api-contract-verification
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./scripts
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.x.x
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.5.1
+
+      - name: Setup Trivy
+        uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567 # v0.3.1
+        with:
+          version: v0.71.0
+
+      - name: Restore Backend Solution
+        run: python3 backend_scripts.py restore
+
+      - name: Scan Dependencies
+        run: python3 security_scripts.py scan-dependencies
+
+      - name: Build Container Images
+        run: python3 container_scripts.py build
+
+      - name: Scan Container Images
+        run: python3 security_scripts.py scan-images
+
+      - name: Smoke Test Container Images
+        run: python3 container_scripts.py smoke-test

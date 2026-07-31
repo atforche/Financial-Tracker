@@ -1,0 +1,62 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: code-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-formatting:
+    name: Backend Formatting
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./scripts
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.x.x
+
+      - name: Restore Backend Solution
+        run: python3 backend_scripts.py restore
+
+      - name: Verify Backend Formatting
+        run: python3 backend_scripts.py format
+
+  frontend-quality:
+    name: Frontend Formatting and Linting
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./scripts
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.5.1
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        run: python3 frontend_scripts.py install
+
+      - name: Verify Frontend Formatting
+        run: python3 frontend_scripts.py format
+
+      - name: Lint Frontend
+        run: python3 frontend_scripts.py lint
