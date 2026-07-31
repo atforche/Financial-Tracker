@@ -1,10 +1,10 @@
-FROM node:22-alpine AS dependencies
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS dependencies
 WORKDIR /app
 
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
 
-FROM node:22-alpine AS build
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS build
 WORKDIR /app
 
 COPY --from=dependencies /app/node_modules ./node_modules
@@ -14,12 +14,15 @@ RUN --mount=type=cache,target=/app/.next/cache npm run build
 FROM build AS production-dependencies
 RUN npm prune --omit=dev
 
-FROM node:22-alpine AS runtime
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
 COPY --from=production-dependencies --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/.next ./.next
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 USER node
-ENTRYPOINT ["sh", "-c", "exec ./node_modules/.bin/next start --port \"$FRONTEND_PORT\""]
+HEALTHCHECK --interval=10s --timeout=3s --start-period=15s --retries=3 \
+    CMD ["node", "-e", "fetch('http://127.0.0.1:3000/login').then(response => { if (!response.ok) process.exit(1) }).catch(() => process.exit(1))"]
+ENTRYPOINT ["./node_modules/.bin/next", "start", "--port", "3000"]

@@ -34,7 +34,7 @@ const updateFund = async function (
   _: ActionState,
   { fundId, redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const client = createApiClient();
+  const client = await createApiClient();
   const { error } = await client.POST("/funds/{fundId}", {
     params: {
       path: {

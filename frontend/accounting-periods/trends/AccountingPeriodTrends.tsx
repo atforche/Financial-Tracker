@@ -58,7 +58,7 @@ const AccountingPeriodTrends = async function ({
     endAccountingPeriodId,
   } = await searchParams;
 
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
     params: {
       query: {

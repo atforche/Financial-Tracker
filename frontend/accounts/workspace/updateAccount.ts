@@ -33,7 +33,7 @@ const updateAccount = async function (
   _: ActionState,
   { accountId, redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const { error } = await apiClient.POST("/accounts/{accountId}", {
     params: {
       path: {

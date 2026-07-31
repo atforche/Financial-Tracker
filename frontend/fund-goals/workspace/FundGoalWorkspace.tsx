@@ -33,7 +33,7 @@ const FundGoalWorkspace = async function ({
   searchParams,
 }: FundGoalWorkspaceProps): Promise<JSX.Element> {
   const { accountingPeriodId, fundIds } = await searchParams;
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const periods = unwrapApiResponse(
     await apiClient.GET("/accounting-periods", {
       params: { query: { Limit: 500 } },

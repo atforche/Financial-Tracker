@@ -34,7 +34,7 @@ const postTransaction = async function (
   _: ActionState,
   { transactionId, redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const client = createApiClient();
+  const client = await createApiClient();
   const { error } = await client.POST("/transactions/{transactionId}/post", {
     params: {
       path: {

@@ -12,12 +12,20 @@ import { type JSX, type ReactNode, useState } from "react";
 import Image from "next/image";
 import Menu from "@mui/icons-material/Menu";
 import Navigation from "@/framework/navigation/Navigation";
+import { usePathname } from "next/navigation";
 
 /**
  * Props for the ApplicationShell component.
  */
 interface ApplicationShellProps {
   readonly children: ReactNode;
+  readonly user:
+    | {
+        readonly name?: string | null;
+        readonly email?: string | null;
+        readonly image?: string | null;
+      }
+    | undefined;
 }
 
 /**
@@ -25,8 +33,19 @@ interface ApplicationShellProps {
  */
 const ApplicationShell = function ({
   children,
+  user,
 }: ApplicationShellProps): JSX.Element {
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/login";
+
+  if (isLoginPage) {
+    return (
+      <Box component="main" sx={{ minHeight: "100vh" }}>
+        {children}
+      </Box>
+    );
+  }
 
   return (
     <Stack direction="row" sx={{ minHeight: "100vh" }}>
@@ -63,8 +82,9 @@ const ApplicationShell = function ({
           </Typography>
         </Toolbar>
       </AppBar>
-      <Navigation visibility="desktop" />
+      <Navigation user={user} visibility="desktop" />
       <Navigation
+        user={user}
         variant="temporary"
         open={mobileNavigationOpen}
         onClose={() => {

@@ -21,7 +21,7 @@ const FundWorkspace = async function ({
   searchParams,
 }: FundWorkspaceProps): Promise<JSX.Element> {
   const { search } = await searchParams;
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const anyAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: { query: { Limit: 1 } },
   });

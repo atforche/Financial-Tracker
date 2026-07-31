@@ -19,7 +19,7 @@ interface AccountingPeriodOverviewProps {
 const AccountingPeriodOverview = async function ({
   latestAccountingPeriod,
 }: AccountingPeriodOverviewProps): Promise<JSX.Element> {
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const rangeResponse =
     latestAccountingPeriod === null
       ? null

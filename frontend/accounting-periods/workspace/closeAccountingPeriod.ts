@@ -16,7 +16,7 @@ const closeAccountingPeriod = async function (
   _: AccountingPeriodActionState,
   { accountingPeriodId, redirectUrl }: AccountingPeriodActionPayload,
 ): Promise<AccountingPeriodActionState> {
-  const client = createApiClient();
+  const client = await createApiClient();
   const { error } = await client.POST(
     "/accounting-periods/{accountingPeriodId}/close",
     {

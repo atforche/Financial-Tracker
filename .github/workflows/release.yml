@@ -1,0 +1,104 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-images:
+    name: Build and Publish Container Images
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./scripts
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Trivy
+        uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567 # v0.3.1
+        with:
+          version: v0.71.0
+
+      - name: Build Container Images
+        run: python3 container_scripts.py build
+
+      - name: Scan Container Images
+        run: python3 security_scripts.py scan-images
+
+      - name: Smoke Test Container Images
+        run: python3 container_scripts.py smoke-test
+
+      - name: Resolve Registry Image Names
+        id: images
+        shell: bash
+        run: |
+          repository="${GITHUB_REPOSITORY,,}"
+          echo "backend=ghcr.io/${repository}-backend" >> "$GITHUB_OUTPUT"
+          echo "frontend=ghcr.io/${repository}-frontend" >> "$GITHUB_OUTPUT"
+          echo "migrator=ghcr.io/${repository}-migrator" >> "$GITHUB_OUTPUT"
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Backend Image
+        env:
+          IMAGE: ${{ steps.images.outputs.backend }}
+        run: |
+          docker tag financial-tracker-backend:workflow "${IMAGE}:sha-${GITHUB_SHA}"
+          docker push "${IMAGE}:sha-${GITHUB_SHA}"
+
+      - name: Publish Frontend Image
+        env:
+          IMAGE: ${{ steps.images.outputs.frontend }}
+        run: |
+          docker tag financial-tracker-frontend:workflow "${IMAGE}:sha-${GITHUB_SHA}"
+          docker push "${IMAGE}:sha-${GITHUB_SHA}"
+
+      - name: Publish Migrator Image
+        env:
+          IMAGE: ${{ steps.images.outputs.migrator }}
+        run: |
+          docker tag financial-tracker-migrator:workflow "${IMAGE}:sha-${GITHUB_SHA}"
+          docker push "${IMAGE}:sha-${GITHUB_SHA}"
+
+      - name: Create Release Manifest
+        env:
+          BACKEND_IMAGE: ${{ steps.images.outputs.backend }}
+          FRONTEND_IMAGE: ${{ steps.images.outputs.frontend }}
+          MIGRATOR_IMAGE: ${{ steps.images.outputs.migrator }}
+        run: |
+          backend_reference="$(docker image inspect --format='{{index .RepoDigests 0}}' "${BACKEND_IMAGE}:sha-${GITHUB_SHA}")"
+          frontend_reference="$(docker image inspect --format='{{index .RepoDigests 0}}' "${FRONTEND_IMAGE}:sha-${GITHUB_SHA}")"
+          migrator_reference="$(docker image inspect --format='{{index .RepoDigests 0}}' "${MIGRATOR_IMAGE}:sha-${GITHUB_SHA}")"
+          jq --null-input \
+            --arg commit "${GITHUB_SHA}" \
+            --arg backendImage "${backend_reference}" \
+            --arg frontendImage "${frontend_reference}" \
+            --arg migratorImage "${migrator_reference}" \
+            '{commit: $commit, backendImage: $backendImage, frontendImage: $frontendImage, migratorImage: $migratorImage}' \
+            > ../release-manifest.json
+
+      - name: Upload Release Manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ github.sha }}
+          path: |
+            release-manifest.json
+            compose.yaml
+            Caddyfile
+          if-no-files-found: error
+          retention-days: 90

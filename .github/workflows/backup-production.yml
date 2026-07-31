@@ -1,0 +1,89 @@
+name: Backup Production
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+    - cron: "43 7 * * 0"
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Backup operation to run
+        required: true
+        default: backup
+        type: choice
+        options:
+          - initialize
+          - backup
+          - verify
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: production-operations
+  cancel-in-progress: false
+
+jobs:
+  backup-production:
+    name: Backup Production
+    runs-on: [self-hosted, linux, production]
+    environment: production-backups
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Select Backup Operation
+        id: operation
+        env:
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
+          REQUESTED_OPERATION: ${{ inputs.operation }}
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            operation="${REQUESTED_OPERATION}"
+          elif [[ "${EVENT_SCHEDULE}" == "17 6 * * *" ]]; then
+            operation="backup"
+          else
+            operation="verify"
+          fi
+          echo "operation=${operation}" >> "${GITHUB_OUTPUT}"
+
+      - name: Login to GitHub Container Registry
+        if: steps.operation.outputs.operation == 'verify'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Run Backup Operation
+        env:
+          INSTANCE_PATH: ${{ vars.INSTANCE_PATH }}
+          RESTIC_REPOSITORY: ${{ secrets.RESTIC_REPOSITORY }}
+          RESTIC_PASSWORD: ${{ secrets.RESTIC_PASSWORD }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+          AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
+        run: |
+          if [[ -z "${INSTANCE_PATH}" ]]; then
+            echo "The production-backups environment variable INSTANCE_PATH must be configured." >&2
+            exit 1
+          fi
+          if [[ "${RESTIC_REPOSITORY}" == /* || "${RESTIC_REPOSITORY}" == local:* ]]; then
+            echo "Production RESTIC_REPOSITORY must use an off-host backend." >&2
+            exit 1
+          fi
+          instance_path="$(realpath "${INSTANCE_PATH}")"
+          workspace_path="$(realpath "${GITHUB_WORKSPACE}")"
+          if [[ "${instance_path}" == "/" || "${instance_path}" == "${workspace_path}" || "${instance_path}" == "${workspace_path}/"* ]]; then
+            echo "INSTANCE_PATH must be outside the runner workspace and cannot be the filesystem root." >&2
+            exit 1
+          fi
+          python3 scripts/backup_scripts.py "${{ steps.operation.outputs.operation }}" \
+            --path "${instance_path}"

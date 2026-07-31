@@ -7,6 +7,7 @@ import ApplicationShell from "@/framework/navigation/ApplicationShell";
 import DateLocalizationProvider from "@/framework/forms/DateLocalizationProvider";
 import type { JSX } from "react";
 import type { Metadata } from "next";
+import { auth } from "@/auth";
 
 /**
  * Metadata for the application, including title and description.
@@ -19,17 +20,19 @@ const metadata: Metadata = {
 /**
  * Component that displays the main layout for the application.
  */
-const RootLayout = function ({
+const RootLayout = async function ({
   children,
 }: Readonly<{
   children: JSX.Element;
-}>): JSX.Element {
+}>): Promise<JSX.Element> {
+  const session = await auth();
+
   return (
     <html lang="en">
       <body>
         <AppRouterCacheProvider>
           <DateLocalizationProvider>
-            <ApplicationShell>{children}</ApplicationShell>
+            <ApplicationShell user={session?.user}>{children}</ApplicationShell>
           </DateLocalizationProvider>
         </AppRouterCacheProvider>
       </body>

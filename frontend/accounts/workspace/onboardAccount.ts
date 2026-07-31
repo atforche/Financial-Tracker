@@ -34,7 +34,7 @@ const onboardAccount = async function (
   _: ActionState,
   { redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const { error } = await apiClient.POST("/accounts/onboard", {
     body: request,
   });

@@ -34,7 +34,7 @@ const FundGoalTrends = async function ({
   searchParams,
 }: FundGoalTrendsProps): Promise<JSX.Element> {
   const params = await searchParams;
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const periods = await loadAllPages(async (limit, offset) =>
     unwrapApiResponse(
       await apiClient.GET("/accounting-periods", {

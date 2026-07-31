@@ -2,12 +2,15 @@
 """Helper scripts for debugging the Financial Tracker"""
 
 import os
+import re
 import shutil
-from deploy_scripts import CreateInstanceDirectory, CreateEmptyDatabase, ApplyMigrations
 from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.configuration import Configuration, Environment
 from shared.step import Step
+
+DEBUG_BACKEND_PORT = 8081
+DEBUG_FRONTEND_PORT = 3001
 
 def main():
     """Builds and runs the command collection for this script"""
@@ -27,10 +30,26 @@ def get_debug_configuration() -> Configuration:
         name="Debug",
         path=os.path.join(os.path.dirname(__file__), "..", "debug"),
         environment=Environment.DEVELOPMENT,
-        backend_port=8081,
-        frontend_port=3001,
-        database_revision=0
+        public_origin="https://localhost:3001",
+        google_client_id=os.environ.get("GOOGLE_CLIENT_ID", ""),
+        google_client_secret=os.environ.get("GOOGLE_CLIENT_SECRET", ""),
+        google_allowed_subjects=os.environ.get("GOOGLE_ALLOWED_SUBJECTS", ""),
+        auth_secret=os.environ.get("AUTH_SECRET", ""),
+        backend_image="backend-Debug",
+        frontend_image="frontend-Debug",
+        migrator_image="migrator-Debug"
     )
+
+def get_debug_environment() -> dict[str, str]:
+    """Returns the current environment augmented with the debug instance settings."""
+
+    environment = os.environ.copy()
+    with open(get_debug_configuration().get_environment_file_path(), "r", encoding="utf-8") as file:
+        for line in file:
+            variable_match = re.fullmatch(r'([A-Z][A-Z0-9_]*)="(.*)"\n?', line)
+            if variable_match is not None:
+                environment[variable_match.group(1)] = variable_match.group(2)
+    return environment
 
 class CreateDebugEnvironment(Command):
     """Command class that creates the debug environment"""
@@ -41,9 +60,24 @@ class CreateDebugEnvironment(Command):
         super().__init__("create", "Creates the debug environment")
         if os.path.exists(get_debug_configuration().path):
             return
-        self.steps.append(Step("", "", lambda: CreateInstanceDirectory(get_debug_configuration()).run([])))
-        self.steps.append(Step("", "", lambda: CreateEmptyDatabase(get_debug_configuration()).run([])))
-        self.steps.append(Step("", "", lambda: ApplyMigrations(get_debug_configuration()).run([])))
+        self.steps.append(Step("Create Debug Directory", "Debug directory created", self.create_directory))
+        self.steps.append(Step("Create Debug Database", "Debug database created", self.create_database))
+        self.steps.append(Step("", "", lambda: ApplyDebugMigrations().run([])))
+
+    def create_directory(self) -> None:
+        """Creates the debug directory and its runtime log directory."""
+
+        configuration = get_debug_configuration()
+        os.mkdir(configuration.path)
+        os.mkdir(f"{configuration.path}/logs")
+
+    def create_database(self) -> None:
+        """Creates the writable debug database file."""
+
+        database_path = get_debug_configuration().get_database_file_path()
+        with open(database_path, "w", encoding="utf-8"):
+            pass
+        os.chmod(database_path, 0o666)
 
 class UpgradeDebugEnvironment(Command):
     """Command class that upgrades the debug environment"""
@@ -52,8 +86,23 @@ class UpgradeDebugEnvironment(Command):
         """Constructs a new instance of this class"""
 
         super().__init__("upgrade", "Upgrades the debug environment")
-        config_path = get_debug_configuration().path
-        self.steps.append(Step("", "", lambda: ApplyMigrations(Configuration.build_from_existing_instance(config_path, False)).run([])))
+        self.steps.append(Step("", "", lambda: ApplyDebugMigrations().run([])))
+
+class ApplyDebugMigrations(Command):
+    """Applies compiled EF migrations to the debug database."""
+
+    def __init__(self):
+        """Constructs a new instance of this class."""
+
+        super().__init__("apply-migrations", "Applies compiled EF migrations to the debug database")
+        self.steps.append(Step("Apply Debug Migrations", "Debug database migrated", self.apply_migrations))
+
+    def apply_migrations(self) -> None:
+        """Runs the migrator project against the debug database."""
+
+        environment = os.environ.copy()
+        environment["DATABASE_PATH"] = get_debug_configuration().get_database_file_path()
+        self.run_subprocess("dotnet run --project ../backend/Migrator/Migrator.csproj", env=environment)
 
 class DestroyDebugEnvironment(Command):
     """Command class that destroys the debug environment"""
@@ -77,9 +126,9 @@ class RunDebugFrontend(Command):
         """Runs the frontend for the debug environment"""
 
         os.chdir("../frontend")
-        environment = os.environ.copy()
-        environment["API_URL"] = f"http://localhost:{get_debug_configuration().backend_port}"
-        self.run_subprocess(f"npx next dev --port {get_debug_configuration().frontend_port}", env=environment)
+        environment = get_debug_environment()
+        environment["API_URL"] = f"http://localhost:{DEBUG_BACKEND_PORT}"
+        self.run_subprocess(f"npx next dev --port {DEBUG_FRONTEND_PORT}", env=environment)
 
 class RunDebugBackend(Command):
     """Command class that runs the backend for the debug environment"""
@@ -94,12 +143,14 @@ class RunDebugBackend(Command):
         """Runs the backend for the debug environment"""
 
         configuration = get_debug_configuration()
+        environment = get_debug_environment()
+        environment["ASPNETCORE_ENVIRONMENT"] = configuration.environment.value
+        environment["ASPNETCORE_HTTP_PORTS"] = str(DEBUG_BACKEND_PORT)
+        environment["DATABASE_PATH"] = configuration.get_database_file_path()
+        environment["LOG_DIRECTORY"] = f"{configuration.path}/logs"
+        environment["FRONTEND_ORIGIN"] = f"http://localhost:{DEBUG_FRONTEND_PORT}"
         os.chdir("../backend/Rest")
-        self.run_subprocess((f"dotnet run --environment ASPNETCORE_ENVIRONMENT={configuration.environment.value}"
-                             f" --environment ASPNETCORE_HTTP_PORTS={configuration.backend_port}"
-                             f" --environment DATABASE_PATH={configuration.get_database_file_path()}"
-                             f" --environment LOG_DIRECTORY={configuration.path}/logs"
-                             f" --environment FRONTEND_ORIGIN=http://localhost:{configuration.frontend_port}"))
+        self.run_subprocess("dotnet run", env=environment)
 
 if __name__ == "__main__":
     main()

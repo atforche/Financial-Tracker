@@ -1,5 +1,10 @@
 using System.Globalization;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Models;
 using Serilog;
@@ -7,6 +12,75 @@ using Serilog;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 bool shouldLaunchAPI = Rest.EnvironmentManager.ShouldLaunchAPI();
 bool isTesting = builder.Environment.IsEnvironment("Testing");
+string? googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+string[] allowedGoogleSubjects = (Environment.GetEnvironmentVariable("GOOGLE_ALLOWED_SUBJECTS") ?? "")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+if (shouldLaunchAPI && (string.IsNullOrWhiteSpace(googleClientId) || allowedGoogleSubjects.Length == 0))
+{
+    throw new InvalidOperationException("GOOGLE_CLIENT_ID and GOOGLE_ALLOWED_SUBJECTS must be configured before launching the API.");
+}
+
+_ = builder.Services.AddHttpContextAccessor();
+_ = builder.Services.AddHealthChecks()
+    .AddCheck<Rest.Health.DatabaseHealthCheck>("database", tags: ["ready"]);
+Microsoft.AspNetCore.Authentication.AuthenticationBuilder authenticationBuilder = builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = isTesting ? Rest.Authentication.TestAuthenticationDefaults.Scheme : JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = isTesting ? Rest.Authentication.TestAuthenticationDefaults.Scheme : JwtBearerDefaults.AuthenticationScheme;
+});
+_ = authenticationBuilder.AddJwtBearer(options =>
+    {
+        options.Authority = "https://accounts.google.com";
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuers = ["https://accounts.google.com", "accounts.google.com"],
+            ValidateAudience = true,
+            ValidAudience = googleClientId,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
+            NameClaimType = "sub",
+        };
+    });
+if (isTesting)
+{
+    _ = authenticationBuilder.AddScheme<Rest.Authentication.TestAuthenticationOptions, Rest.Authentication.TestAuthenticationHandler>(
+        Rest.Authentication.TestAuthenticationDefaults.Scheme,
+        _ => { });
+}
+Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder authorizationPolicyBuilder =
+    new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder().RequireAuthenticatedUser();
+if (!isTesting && allowedGoogleSubjects.Length > 0)
+{
+    _ = authorizationPolicyBuilder.RequireClaim("sub", allowedGoogleSubjects);
+}
+_ = builder.Services.AddAuthorizationBuilder().SetFallbackPolicy(authorizationPolicyBuilder.Build());
+_ = builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+    {
+        bool isReadRequest = HttpMethods.IsGet(context.Request.Method)
+            || HttpMethods.IsHead(context.Request.Method)
+            || HttpMethods.IsOptions(context.Request.Method);
+        int permitLimit = isReadRequest ? 120 : 30;
+        string subject = context.User.FindFirst("sub")?.Value
+            ?? context.Connection.RemoteIpAddress?.ToString()
+            ?? "unknown";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            $"{subject}:{permitLimit}",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = permitLimit,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            });
+    });
+});
 
 // Configure the JSON serializer to serialize enums as their string values
 _ = builder.Services.AddControllers().AddJsonOptions(options =>
@@ -85,19 +159,39 @@ if (app.Environment.IsDevelopment())
     _ = app.MapOpenApi();
     _ = app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Financial Tracker API"));
 }
+if (shouldLaunchAPI)
+{
+    // The backend is reachable only through Caddy, which supplies these headers.
+    // Clearing the defaults permits Caddy's dynamically assigned Compose address.
+    ForwardedHeadersOptions forwardedHeadersOptions = new()
+    {
+        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+        ForwardLimit = 1
+    };
+    forwardedHeadersOptions.KnownIPNetworks.Clear();
+    forwardedHeadersOptions.KnownProxies.Clear();
+    _ = app.UseForwardedHeaders(forwardedHeadersOptions);
+}
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 app.UseCors();
+_ = app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = _ => false
+}).AllowAnonymous();
+_ = app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = registration => registration.Tags.Contains("ready")
+}).AllowAnonymous();
 app.MapControllers();
 
 if (shouldLaunchAPI)
 {
-    // Ensure the database is healthy and the environment variables are all defined
-    using IServiceScope serviceScope = app.Services.CreateScope();
-    IServiceProvider services = serviceScope.ServiceProvider;
-    services.GetRequiredService<Data.DatabaseContext>()?.RunHealthCheck();
-    Data.EnvironmentManager.Instance.PrintEnvironment();
-    Rest.EnvironmentManager.Instance.PrintEnvironment();
+    // Construct the validated environment configuration before accepting requests.
+    _ = Data.EnvironmentManager.Instance;
+    _ = Rest.EnvironmentManager.Instance;
 
     app.Run();
 }

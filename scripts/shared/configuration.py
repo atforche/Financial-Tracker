@@ -1,7 +1,9 @@
 """Class representing the configuration for the Financial Tracker"""
 
 from enum import Enum
+import secrets
 from typing import Any
+from urllib.parse import urlsplit
 from shared.environment_variable import EnvironmentVariable
 
 class Environment(Enum):
@@ -16,46 +18,91 @@ class Configuration:
     name: str
     path: str
     environment: Environment
-    backend_port: int
-    frontend_port: int
-    database_revision: int
+    public_origin: str
+    google_client_id: str
+    google_client_secret: str
+    google_allowed_subjects: str
+    auth_secret: str
+    backend_image: str
+    frontend_image: str
+    migrator_image: str
 
-    def __init__(self, name: str, path: str, environment: Environment, backend_port: int, frontend_port: int, database_revision: int) -> None:
+    def __init__(self, name: str, path: str, environment: Environment, public_origin: str,
+                 google_client_id: str, google_client_secret: str,
+                 google_allowed_subjects: str, auth_secret: str,
+                 backend_image: str, frontend_image: str, migrator_image: str) -> None:
         """Constructs a new instance of this class
         
         Args:
             name (str): Name for this instance of the Financial Tracker
             path (str): Path to the directory where this instance is located
             environment (Environment): Type of environment for this instance. Must be one of Development or Production
-            backend_port (int): Port for the backend REST API to be exposed on
-            frontend_port (int): Port for the frontend to be exposed on
-            database_revision (int): Revision number of the database schema
+            public_origin (str): Public HTTPS origin used to access the instance
+            google_client_id (str): Client ID from the Google OpenID Connect application registration
+            google_client_secret (str): Client secret from the Google OpenID Connect application registration
+            google_allowed_subjects (str): Comma-separated immutable Google subjects allowed to access the instance
+            auth_secret (str): Secret used to encrypt Auth.js sessions
+            backend_image (str): Container image reference for the backend
+            frontend_image (str): Container image reference for the frontend
+            migrator_image (str): Container image reference for the database migrator
         """
 
         self.name = name
         self.path = path
         self.environment = environment
-        self.backend_port = backend_port
-        self.frontend_port = frontend_port
-        self.database_revision = database_revision
+        self.public_origin = public_origin
+        self.google_client_id = google_client_id
+        self.google_client_secret = google_client_secret
+        self.google_allowed_subjects = google_allowed_subjects
+        self.auth_secret = auth_secret
+        self.backend_image = backend_image
+        self.frontend_image = frontend_image
+        self.migrator_image = migrator_image
 
-    def write_to_file(self) -> None:
+    def write_to_file(self, environment_file_path: str | None = None) -> None:
         """Writes the current configuration to the specified file"""
 
-        with open(self.get_environment_file_path(), "w", encoding="utf-8") as file:
+        public_host = self.get_public_host()
+        public_port = self.get_public_port()
+
+        with open(environment_file_path or self.get_environment_file_path(), "w", encoding="utf-8") as file:
             file.write(f'INSTANCE_NAME="{self.name}"\n')
             file.write(f'INSTANCE_DIR="{self.path}"\n')
             file.write(f'ENVIRONMENT="{self.environment.value}"\n')
-            file.write(f'BACKEND_PORT="{self.backend_port}"\n')
-            file.write(f'FRONTEND_PORT="{self.frontend_port}"\n')
-            file.write(f'DATABASE_REVISION="{self.database_revision}"\n')
+            file.write(f'PUBLIC_ORIGIN="{self.public_origin}"\n')
+            file.write(f'PUBLIC_HOST="{public_host}"\n')
+            file.write(f'PUBLIC_PORT="{public_port}"\n')
             file.write("\n")
-            file.write(f'ASPNETCORE_ENVIRONMENT="{self.environment.value}"\n')
-            file.write('ASPNETCORE_HTTP_PORTS="8080"\n')
-            file.write('DATABASE_PATH="/data/database.db"\n')
-            file.write(f'FRONTEND_ORIGIN="http://localhost:{self.frontend_port}"\n')
-            file.write('API_URL="http://backend:8080"\n')
-            file.write('LOG_DIRECTORY="/logs"\n')  
+            file.write(f'BACKEND_IMAGE="{self.backend_image}"\n')
+            file.write(f'FRONTEND_IMAGE="{self.frontend_image}"\n')
+            file.write(f'MIGRATOR_IMAGE="{self.migrator_image}"\n')
+            file.write('\n')
+            file.write(f'GOOGLE_CLIENT_ID="{self.google_client_id}"\n')
+            file.write(f'GOOGLE_CLIENT_SECRET="{self.google_client_secret}"\n')
+            file.write(f'GOOGLE_ALLOWED_SUBJECTS="{self.google_allowed_subjects}"\n')
+            file.write('\n')
+            file.write(f'AUTH_SECRET="{self.auth_secret}"\n')
+
+    def get_public_host(self) -> str:
+        """Returns the hostname from the public HTTPS origin"""
+
+        parsed_origin = urlsplit(self.public_origin)
+        if parsed_origin.scheme != "https" or parsed_origin.hostname is None:
+            raise ValueError("PUBLIC_ORIGIN must be an HTTPS origin with a hostname")
+
+        return parsed_origin.hostname
+
+    def get_public_port(self) -> int:
+        """Returns the HTTPS port from the public origin"""
+
+        parsed_origin = urlsplit(self.public_origin)
+        if parsed_origin.scheme != "https" or parsed_origin.hostname is None:
+            raise ValueError("PUBLIC_ORIGIN must be an HTTPS origin with a hostname")
+
+        try:
+            return parsed_origin.port or 443
+        except ValueError as error:
+            raise ValueError("PUBLIC_ORIGIN must use a valid HTTPS port") from error
 
     def get_database_file_path(self) -> str:
         """Returns the path to the database file"""
@@ -66,16 +113,6 @@ class Configuration:
         """Returns the path to the environment file"""
 
         return f"{self.path}/.env"
-
-    def get_compose_file_path(self) -> str:
-        """Returns the path to the Docker compose file"""
-
-        return f"{self.path}/compose.yaml"
-
-    def get_scripts_directory_path(self) -> str:
-        """Returns the path to the scripts directory"""
-
-        return f"{self.path}/scripts"
 
     @classmethod
     def build_from_existing_instance(cls, instance_path: str, change_configuration: bool):
@@ -101,17 +138,48 @@ class Configuration:
         if environment is not None:
             results["ENVIRONMENT"] = environment
 
-        backend_port = EnvironmentVariable.try_read_from_file(environment_file_path, "BACKEND_PORT", int)
-        if backend_port is not None:
-            results["BACKEND_PORT"] = backend_port
+        public_origin = EnvironmentVariable.try_read_from_file(environment_file_path, "PUBLIC_ORIGIN", str)
+        if public_origin is None:
+            public_domain = EnvironmentVariable.try_read_from_file(environment_file_path, "PUBLIC_DOMAIN", str)
+            if public_domain is not None:
+                public_origin = EnvironmentVariable(
+                    environment_file_path, "PUBLIC_ORIGIN", f"https://{public_domain.value}")
 
-        frontend_port = EnvironmentVariable.try_read_from_file(environment_file_path, "FRONTEND_PORT", int)
-        if frontend_port is not None:
-            results["FRONTEND_PORT"] = frontend_port
+        if public_origin is not None:
+            results["PUBLIC_ORIGIN"] = public_origin
 
-        database_revision = EnvironmentVariable.try_read_from_file(environment_file_path, "DATABASE_REVISION", int)
-        if database_revision is not None:
-            results["DATABASE_REVISION"] = database_revision
+        google_client_id = EnvironmentVariable.try_read_from_file(environment_file_path, "GOOGLE_CLIENT_ID", str)
+        if google_client_id is not None:
+            results["GOOGLE_CLIENT_ID"] = google_client_id
+
+        google_client_secret = EnvironmentVariable.try_read_from_file(environment_file_path, "GOOGLE_CLIENT_SECRET", str)
+        if google_client_secret is not None:
+            results["GOOGLE_CLIENT_SECRET"] = google_client_secret
+
+        google_allowed_subjects = EnvironmentVariable.try_read_from_file(environment_file_path, "GOOGLE_ALLOWED_SUBJECTS", str)
+        if google_allowed_subjects is not None:
+            results["GOOGLE_ALLOWED_SUBJECTS"] = google_allowed_subjects
+        else:
+            google_allowed_subject = EnvironmentVariable.try_read_from_file(environment_file_path, "GOOGLE_ALLOWED_SUBJECT", str)
+            if google_allowed_subject is not None:
+                results["GOOGLE_ALLOWED_SUBJECTS"] = EnvironmentVariable(
+                    environment_file_path, "GOOGLE_ALLOWED_SUBJECTS", google_allowed_subject.value)
+
+        auth_secret = EnvironmentVariable.try_read_from_file(environment_file_path, "AUTH_SECRET", str)
+        if auth_secret is not None:
+            results["AUTH_SECRET"] = auth_secret
+
+        backend_image = EnvironmentVariable.try_read_from_file(environment_file_path, "BACKEND_IMAGE", str)
+        if backend_image is not None:
+            results["BACKEND_IMAGE"] = backend_image
+
+        frontend_image = EnvironmentVariable.try_read_from_file(environment_file_path, "FRONTEND_IMAGE", str)
+        if frontend_image is not None:
+            results["FRONTEND_IMAGE"] = frontend_image
+
+        migrator_image = EnvironmentVariable.try_read_from_file(environment_file_path, "MIGRATOR_IMAGE", str)
+        if migrator_image is not None:
+            results["MIGRATOR_IMAGE"] = migrator_image
 
         return Configuration.build_from_user_input(results, change_configuration)
 
@@ -148,26 +216,48 @@ class Configuration:
         else:
             environment = existing_environment.value
 
-        existing_backend_port = existing_values.get("BACKEND_PORT")
-        if existing_backend_port is None:
-            backend_port = int(input("Enter the backend port: "))
+        public_origin = cls.get_required_string(existing_values, "PUBLIC_ORIGIN", "public HTTPS origin", change_configuration)
+
+        google_client_id = cls.get_required_string(existing_values, "GOOGLE_CLIENT_ID", "Google OAuth client ID", change_configuration)
+        google_client_secret = cls.get_required_string(existing_values, "GOOGLE_CLIENT_SECRET", "Google OAuth client secret", change_configuration, True)
+        google_allowed_subjects = cls.get_required_string(existing_values, "GOOGLE_ALLOWED_SUBJECTS", "comma-separated Google subjects allowed to access this instance", change_configuration)
+        auth_secret = cls.get_auth_secret(existing_values)
+        existing_backend_image = existing_values.get("BACKEND_IMAGE")
+        backend_image = existing_backend_image.value if existing_backend_image is not None else f"backend-{name}"
+        existing_frontend_image = existing_values.get("FRONTEND_IMAGE")
+        frontend_image = existing_frontend_image.value if existing_frontend_image is not None else f"frontend-{name}"
+        existing_migrator_image = existing_values.get("MIGRATOR_IMAGE")
+        migrator_image = existing_migrator_image.value if existing_migrator_image is not None else f"migrator-{name}"
+
+        return Configuration(name, path, environment, public_origin,
+                             google_client_id, google_client_secret, google_allowed_subjects, auth_secret,
+                             backend_image, frontend_image, migrator_image)
+
+    @staticmethod
+    def get_required_string(existing_values: dict[str, EnvironmentVariable[Any]], name: str, prompt: str,
+                            change_configuration: bool, secret: bool = False) -> str:
+        """Gets a required string value, preserving an existing secret unless it is replaced."""
+
+        existing_value = existing_values.get(name)
+        if existing_value is None:
+            value = input(f"Enter the {prompt}: ")
         elif change_configuration:
-            backend_port = int(input(f"Enter the backend port [{existing_backend_port.value}]: ") or existing_backend_port.value)
+            default = "configured" if secret else existing_value.value
+            value = input(f"Enter the {prompt} [{default}]: ") or existing_value.value
         else:
-            backend_port = existing_backend_port.value
+            value = existing_value.value
 
-        existing_frontend_port = existing_values.get("FRONTEND_PORT")
-        if existing_frontend_port is None:
-            frontend_port = int(input("Enter the frontend port: "))
-        elif change_configuration:
-            frontend_port = int(input(f"Enter the frontend port [{existing_frontend_port.value}]: ") or existing_frontend_port.value)
-        else:
-            frontend_port = existing_frontend_port.value
+        if value.strip() == "":
+            raise ValueError(f"{name} must not be empty")
+        return value
 
-        existing_database_revision = existing_values.get("DATABASE_REVISION")
-        if existing_database_revision is None:
-            database_revision = 0
-        else:
-            database_revision = existing_database_revision.value
+    @staticmethod
+    def get_auth_secret(existing_values: dict[str, EnvironmentVariable[Any]]) -> str:
+        """Returns the existing Auth.js secret or securely generates one for a new instance."""
 
-        return Configuration(name, path, environment, backend_port, frontend_port, database_revision)
+        existing_secret = existing_values.get("AUTH_SECRET")
+        if existing_secret is not None:
+            return existing_secret.value
+
+        print("Generating a new Auth.js session secret")
+        return secrets.token_urlsafe(48)

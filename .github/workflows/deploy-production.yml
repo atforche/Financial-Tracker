@@ -1,0 +1,125 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Full commit SHA published by the release workflow
+        required: true
+        type: string
+      release_run_id:
+        description: Run ID of the successful release workflow
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  packages: read
+
+concurrency:
+  group: production-operations
+  cancel-in-progress: false
+
+jobs:
+  validate-request:
+    name: Validate Deployment Request
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Validate Workflow Inputs
+        env:
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          RELEASE_RUN_ID: ${{ inputs.release_run_id }}
+        run: |
+          if [[ "${GITHUB_REF}" != "refs/heads/main" ]]; then
+            echo "Production deployments must be dispatched from main." >&2
+            exit 1
+          fi
+          if [[ ! "${RELEASE_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "release_sha must be a full lowercase commit SHA." >&2
+            exit 1
+          fi
+          if [[ ! "${RELEASE_RUN_ID}" =~ ^[0-9]+$ ]]; then
+            echo "release_run_id must be numeric." >&2
+            exit 1
+          fi
+
+      - name: Validate Release Workflow Run
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/release_scripts.py validate-run \
+            --commit "${{ inputs.release_sha }}" \
+            --run-id "${{ inputs.release_run_id }}"
+
+  deploy-production:
+    name: Deploy Production
+    needs: validate-request
+    runs-on: [self-hosted, linux, production]
+    environment: production
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Released Revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_sha }}
+          persist-credentials: false
+
+      - name: Download Release Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release-${{ inputs.release_sha }}
+          path: ${{ runner.temp }}/financial-tracker-release
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.release_run_id }}
+
+      - name: Verify Release Artifact
+        run: |
+          python3 scripts/release_scripts.py validate-artifact \
+            --commit "${{ inputs.release_sha }}" \
+            --manifest "${{ runner.temp }}/financial-tracker-release/release-manifest.json"
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Deploy Release
+        env:
+          INSTANCE_PATH: ${{ vars.INSTANCE_PATH }}
+          RELEASE_MANIFEST: ${{ runner.temp }}/financial-tracker-release/release-manifest.json
+        run: |
+          if [[ -z "${INSTANCE_PATH}" ]]; then
+            echo "The production environment variable INSTANCE_PATH must be configured." >&2
+            exit 1
+          fi
+          instance_path="$(realpath "${INSTANCE_PATH}")"
+          workspace_path="$(realpath "${GITHUB_WORKSPACE}")"
+          if [[ "${instance_path}" == "/" || "${instance_path}" == "${workspace_path}" || "${instance_path}" == "${workspace_path}/"* ]]; then
+            echo "INSTANCE_PATH must be outside the runner workspace and cannot be the filesystem root." >&2
+            exit 1
+          fi
+          python3 scripts/deploy_scripts.py deploy \
+            --path "${instance_path}" \
+            --release-manifest "${RELEASE_MANIFEST}"
+
+      - name: Record Deployment
+        env:
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          RELEASE_RUN_ID: ${{ inputs.release_run_id }}
+        run: |
+          {
+            echo "## Production deployment"
+            echo
+            echo "- Commit: \`${RELEASE_SHA}\`"
+            echo "- Release workflow run: \`${RELEASE_RUN_ID}\`"
+          } >> "${GITHUB_STEP_SUMMARY}"

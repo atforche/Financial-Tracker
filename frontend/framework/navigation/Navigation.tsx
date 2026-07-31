@@ -1,4 +1,5 @@
 import { Drawer, type DrawerProps, Toolbar, Typography } from "@mui/material";
+import CurrentUserMenu from "@/framework/navigation/CurrentUserMenu";
 import Image from "next/image";
 import type { JSX } from "react";
 import NavigationLinks from "@/framework/navigation/NavigationLinks";
@@ -17,6 +18,13 @@ interface NavigationProps {
   readonly onClose?: () => void;
   readonly showBranding?: boolean;
   readonly visibility?: "desktop" | "mobile";
+  readonly user:
+    | {
+        readonly name?: string | null;
+        readonly email?: string | null;
+        readonly image?: string | null;
+      }
+    | undefined;
 }
 
 /**
@@ -28,6 +36,7 @@ const Navigation = function ({
   onClose,
   showBranding = true,
   visibility,
+  user,
 }: NavigationProps): JSX.Element {
   return (
     <Drawer
@@ -66,6 +75,7 @@ const Navigation = function ({
       <NavigationLinks
         onNavigate={variant === "temporary" ? onClose : undefined}
       />
+      <CurrentUserMenu user={user} />
     </Drawer>
   );
 };

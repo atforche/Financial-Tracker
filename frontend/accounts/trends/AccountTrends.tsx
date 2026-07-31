@@ -71,7 +71,7 @@ const AccountTrends = async function ({
   const defaultEndDate = dayjs();
   const defaultStartDate = defaultEndDate.subtract(90, "day");
 
-  const apiClient = createApiClient();
+  const apiClient = await createApiClient();
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
       query: {

@@ -38,7 +38,7 @@ const createFund = async function (
   _: ActionState,
   { redirectUrl, request }: ActionPayload,
 ): Promise<ActionState> {
-  const client = createApiClient();
+  const client = await createApiClient();
   const { error } = await client.POST("/funds", {
     body: request,
   });
