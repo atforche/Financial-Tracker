@@ -18,6 +18,10 @@ services:
     security_opt:
       - no-new-privileges:true
     read_only: true
+    restart: unless-stopped
+    depends_on:
+      frontend:
+        condition: service_healthy
 
   backend:
     image: "backend-$INSTANCE_NAME"
@@ -35,6 +39,7 @@ services:
     read_only: true
     tmpfs:
       - /tmp
+    restart: unless-stopped
 
   frontend:
     image: "frontend-$INSTANCE_NAME"
@@ -49,6 +54,10 @@ services:
     read_only: true
     tmpfs:
       - /tmp
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
 
 volumes:
   caddy_data:

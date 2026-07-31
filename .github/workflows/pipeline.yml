@@ -66,3 +66,6 @@ jobs:
 
     - name: Scan Dependencies and Container Images
       run: python3 security_scripts.py scan
+
+    - name: Smoke Test Container Images
+      run: python3 container_scripts.py smoke-test

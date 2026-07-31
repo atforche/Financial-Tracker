@@ -7,6 +7,11 @@ RUN dotnet publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:1fa23fc4872d95fd71c2833ebe65d7e84a43b2d51a31d119516852f13d9505a7
 WORKDIR /backend
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=build --chown=$APP_UID /backend/.artifacts/publish .
 USER $APP_UID
+HEALTHCHECK --interval=10s --timeout=3s --start-period=15s --retries=3 \
+    CMD curl --fail --silent --show-error http://127.0.0.1:8080/health/ready || exit 1
 ENTRYPOINT ["dotnet", "./Rest/Rest.dll"]

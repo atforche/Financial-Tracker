@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -20,6 +21,8 @@ if (shouldLaunchAPI && (string.IsNullOrWhiteSpace(googleClientId) || allowedGoog
 }
 
 _ = builder.Services.AddHttpContextAccessor();
+_ = builder.Services.AddHealthChecks()
+    .AddCheck<Rest.Health.DatabaseHealthCheck>("database", tags: ["ready"]);
 Microsoft.AspNetCore.Authentication.AuthenticationBuilder authenticationBuilder = builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = isTesting ? Rest.Authentication.TestAuthenticationDefaults.Scheme : JwtBearerDefaults.AuthenticationScheme;
@@ -174,16 +177,21 @@ app.UseAuthentication();
 app.UseRateLimiter();
 app.UseAuthorization();
 app.UseCors();
+_ = app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = _ => false
+}).AllowAnonymous();
+_ = app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = registration => registration.Tags.Contains("ready")
+}).AllowAnonymous();
 app.MapControllers();
 
 if (shouldLaunchAPI)
 {
-    // Ensure the database is healthy and the environment variables are all defined
-    using IServiceScope serviceScope = app.Services.CreateScope();
-    IServiceProvider services = serviceScope.ServiceProvider;
-    services.GetRequiredService<Data.DatabaseContext>()?.RunHealthCheck();
-    Data.EnvironmentManager.Instance.PrintEnvironment();
-    Rest.EnvironmentManager.Instance.PrintEnvironment();
+    // Construct the validated environment configuration before accepting requests.
+    _ = Data.EnvironmentManager.Instance;
+    _ = Rest.EnvironmentManager.Instance;
 
     app.Run();
 }

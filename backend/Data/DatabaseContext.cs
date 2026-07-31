@@ -82,10 +82,6 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     /// </summary>
     public void RunHealthCheck()
     {
-        if (!Path.Exists(DatabasePath))
-        {
-            throw new InvalidOperationException();
-        }
         if (!Database.CanConnect())
         {
             throw new InvalidOperationException();
