@@ -15,92 +15,17 @@ from shared.command_collection import CommandCollection
 from shared.release_manifest import ReleaseManifest
 from shared.step import Step
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-SCRIPTS_DIR = Path(__file__).resolve().parent
 RECOVERY_DIRECTORY_NAME = ".rollback"
 STAGING_RECOVERY_DIRECTORY_NAME = ".rollback-staging"
 RECOVERY_FILE_NAMES = (".env", "compose.yaml", "Caddyfile", "database.db")
 OPTIONAL_RECOVERY_FILE_NAMES = ("release-manifest.json",)
-def get_compose_file_path() -> Path:
-    """Gets the compose file path for the repository root."""
-
-    return PROJECT_ROOT / "compose.yaml"
-
-
-def get_scripts_dir() -> Path:
-    """Gets the scripts directory path for this project."""
-
-    return SCRIPTS_DIR
-
-
-def get_caddy_file_path() -> Path:
-    """Gets the Caddy configuration file path for the repository root."""
-
-    return PROJECT_ROOT / "Caddyfile"
-
-
 def main():
     """Builds and runs the command collection for this script"""
 
     commands = CommandCollection("Helper scripts for deploying the Financial Tracker")
-    commands.commands.append(CreateCommand())
     commands.commands.append(DeployCommand())
     commands.commands.append(RollbackCommand())
     commands.run()
-
-class CreateCommand(Command):
-    """Command class that creates a new instance of the Financial Tracker"""
-
-    configuration: Configuration
-
-    def __init__(self) -> None:
-        """Constructs a new instance of this class"""
-
-        super().__init__("create", "Creates a new instance at the specified location")
-        self.steps.append(Step("Create Configuration", "Configuration created", self.build_configuration))
-        self.steps.append(Step("", "", lambda: CreateInstanceDirectory(self.configuration).run([])))
-        self.steps.append(Step("Copy Docker Compose File", "Docker compose file copied", self.copy_compose_file))
-        self.steps.append(Step("Copy Caddy Configuration", "Caddy configuration copied", self.copy_caddy_file))
-        self.steps.append(Step("Create Environment File", "Environment file created", self.create_environment_file))
-        self.steps.append(Step("", "", lambda: CopyScripts(self.configuration).run([])))
-        self.steps.append(Step("", "", lambda: CreateEmptyDatabase(self.configuration).run([])))
-        self.steps.append(Step("", "", lambda: BuildContainerImages(self.configuration).run([])))
-        self.steps.append(Step("", "", lambda: ApplyMigrations(self.configuration).run([])))
-        
-    def build_configuration(self) -> None:
-        """Builds the configuration from user input"""
-        
-        self.configuration = Configuration.build_from_user_input({}, False)
-
-        if self.run_subprocess(f"docker image inspect {self.configuration.backend_image}", throw_on_error=False, suppress_output=True) == 0:
-            raise ValueError(f"Backend image {self.configuration.backend_image} is already in use")
-        
-        if self.run_subprocess(f"docker image inspect {self.configuration.frontend_image}", throw_on_error=False, suppress_output=True) == 0:
-            raise ValueError(f"Frontend image {self.configuration.frontend_image} is already in use")
-
-        if self.run_subprocess(f"docker image inspect {self.configuration.migrator_image}", throw_on_error=False, suppress_output=True) == 0:
-            raise ValueError(f"Migrator image {self.configuration.migrator_image} is already in use")
-        
-        if os.path.isdir(self.configuration.path):
-            raise ValueError(f"Directory '{self.configuration.path}' already exists")
-
-    def copy_compose_file(self) -> None:
-        """Copies the Docker compose file from the source code directory to the instance directory"""
-
-        print(f"Copying compose.yaml file to {self.configuration.get_compose_file_path()}")
-        shutil.copy(get_compose_file_path(), self.configuration.get_compose_file_path())
-
-    def create_environment_file(self) -> None:
-        """Creates the file with environment variables in the instance directory"""
-
-        print(f"Writing the environment file to {self.configuration.get_environment_file_path()}")
-        self.configuration.write_to_file()
-
-    def copy_caddy_file(self) -> None:
-        """Copies the Caddy configuration to the instance directory."""
-
-        print(f"Copying Caddyfile to {self.configuration.path}/Caddyfile")
-        shutil.copy(get_caddy_file_path(), f"{self.configuration.path}/Caddyfile")
 
 class DeployCommand(Command):
     """Transactionally deploys an immutable release to an existing instance."""
@@ -349,86 +274,6 @@ class TransactionalDeployment:
             *arguments,
         ]
 
-class CreateInstanceDirectory(Command):
-    """Command class that creates the instance directory"""
-
-    configuration: Configuration
-
-    def __init__(self, configuration: Configuration) -> None:
-        """Constructs a new instance of this class
-        
-        Args:
-            configuration: The configuration for the instance
-        """
-
-        super().__init__("create-instance-directory", "Creates the instance directory")
-        self.configuration = configuration
-        self.steps.append(Step("Create Instance Directory", "Instance directory created", self.create_instance_directory))
-
-    def create_instance_directory(self) -> None:
-        """Creates the instance directory"""
-
-        print(f"Creating instance directory at {self.configuration.path}")
-        os.mkdir(self.configuration.path)
-
-class CopyScripts(Command):
-    """Command class that copies scripts to the instance directory"""
-
-    configuration: Configuration
-
-    def __init__(self, configuration: Configuration) -> None:
-        """Constructs a new instance of this class
-        
-        Args:
-            configuration: The configuration for the instance
-        """
-
-        super().__init__("copy-scripts", "Copies the scripts to an instance directory")
-        self.configuration = configuration
-        self.steps.append(Step("Copy Scripts", "Scripts copied", self.copy_scripts))
-
-    def copy_scripts(self) -> None:
-        """Copies the scripts to the instance directory"""
-
-        if os.path.isdir(self.configuration.get_scripts_directory_path()):
-            shutil.rmtree(self.configuration.get_scripts_directory_path())
-
-        print(f"Copying scripts to {self.configuration.get_scripts_directory_path()}")
-        os.mkdir(self.configuration.get_scripts_directory_path())
-        os.mkdir(f"{self.configuration.get_scripts_directory_path()}/shared")
-        shutil.copy(get_scripts_dir() / "instance_scripts.py", f"{self.configuration.get_scripts_directory_path()}/instance_scripts.py")
-        shutil.copy(get_scripts_dir() / "shared" / "argument.py", f"{self.configuration.get_scripts_directory_path()}/shared/argument.py")
-        shutil.copy(get_scripts_dir() / "shared" / "environment_variable.py", f"{self.configuration.get_scripts_directory_path()}/shared/environment_variable.py")
-        shutil.copy(get_scripts_dir() / "shared" / "command.py", f"{self.configuration.get_scripts_directory_path()}/shared/command.py")
-        shutil.copy(get_scripts_dir() / "shared" / "command_collection.py", f"{self.configuration.get_scripts_directory_path()}/shared/command_collection.py")
-        shutil.copy(get_scripts_dir() / "shared" / "configuration.py", f"{self.configuration.get_scripts_directory_path()}/shared/configuration.py")
-        shutil.copy(get_scripts_dir() / "shared" / "step.py", f"{self.configuration.get_scripts_directory_path()}/shared/step.py")
-        self.run_subprocess(f"chmod +x {self.configuration.get_scripts_directory_path()}/instance_scripts.py")
-
-class CreateEmptyDatabase(Command):
-    """Command class that creates an empty database for the instance"""
-
-    configuration: Configuration
-
-    def __init__(self, configuration: Configuration) -> None:
-        """Constructs a new instance of this class
-        
-        Args:
-            configuration: The configuration for the instance
-        """
-
-        super().__init__("create-empty-database", "Creates an empty database for the instance")
-        self.configuration = configuration
-        self.steps.append(Step("Create Empty Database", "Empty database created", self.create_empty_database))
-
-    def create_empty_database(self) -> None:
-        """Creates an empty database in the instance directory"""
-
-        print(f"Creating database file at {self.configuration.get_database_file_path()}")
-        with open(self.configuration.get_database_file_path(), 'w', encoding="utf-8") as _:
-            pass
-        os.chmod(self.configuration.get_database_file_path(), 0o666)
-
 class ApplyMigrations(Command):
     """Command class that applies all missing migrations to the database"""
 
@@ -474,34 +319,6 @@ class ApplyMigrations(Command):
         shutil.copy2(database_file_path, archive_database_file_path)
         os.replace(upgrade_database_file_path, database_file_path)
         shutil.rmtree(upgrade_directory)
-
-class BuildContainerImages(Command):
-    """Command class that builds a new set of container images for the Financial Tracker"""
-
-    configuration: Configuration
-
-    def __init__(self, configuration: Configuration) -> None:
-        """Constructs a new instance of this class
-        
-        Args:
-            configuration: The configuration for the instance
-        """
-
-        super().__init__("build-containers", "Builds new versions of the container images for the Financial Tracker")
-        self.configuration = configuration
-        self.steps.append(Step("Build Containers", "Containers built", self.build_containers))
-
-    def build_containers(self) -> None:
-        """Builds the containers for the Financial Tracker using the current source code"""
-
-        print("Building the backend container image")
-        self.run_subprocess(f"docker build {PROJECT_ROOT / 'backend'} -t {self.configuration.backend_image}")
-        print("Building the frontend container image")
-        self.run_subprocess(f"docker build {PROJECT_ROOT / 'frontend'} -t {self.configuration.frontend_image}")
-        print("Building the database migrator container image")
-        self.run_subprocess(
-            f"docker build {PROJECT_ROOT / 'backend'} --file {PROJECT_ROOT / 'backend' / 'Migrator.Dockerfile'} "
-            f"-t {self.configuration.migrator_image}")
 
 if __name__ == "__main__":
     main()

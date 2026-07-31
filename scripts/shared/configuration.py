@@ -114,16 +114,6 @@ class Configuration:
 
         return f"{self.path}/.env"
 
-    def get_compose_file_path(self) -> str:
-        """Returns the path to the Docker compose file"""
-
-        return f"{self.path}/compose.yaml"
-
-    def get_scripts_directory_path(self) -> str:
-        """Returns the path to the scripts directory"""
-
-        return f"{self.path}/scripts"
-
     @classmethod
     def build_from_existing_instance(cls, instance_path: str, change_configuration: bool):
         """Constructs a new instance of this class from the provided file name

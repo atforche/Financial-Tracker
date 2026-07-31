@@ -4,7 +4,6 @@
 import os
 import re
 import shutil
-from deploy_scripts import CreateInstanceDirectory, CreateEmptyDatabase
 from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.configuration import Configuration, Environment
@@ -61,9 +60,24 @@ class CreateDebugEnvironment(Command):
         super().__init__("create", "Creates the debug environment")
         if os.path.exists(get_debug_configuration().path):
             return
-        self.steps.append(Step("", "", lambda: CreateInstanceDirectory(get_debug_configuration()).run([])))
-        self.steps.append(Step("", "", lambda: CreateEmptyDatabase(get_debug_configuration()).run([])))
+        self.steps.append(Step("Create Debug Directory", "Debug directory created", self.create_directory))
+        self.steps.append(Step("Create Debug Database", "Debug database created", self.create_database))
         self.steps.append(Step("", "", lambda: ApplyDebugMigrations().run([])))
+
+    def create_directory(self) -> None:
+        """Creates the debug directory and its runtime log directory."""
+
+        configuration = get_debug_configuration()
+        os.mkdir(configuration.path)
+        os.mkdir(f"{configuration.path}/logs")
+
+    def create_database(self) -> None:
+        """Creates the writable debug database file."""
+
+        database_path = get_debug_configuration().get_database_file_path()
+        with open(database_path, "w", encoding="utf-8"):
+            pass
+        os.chmod(database_path, 0o666)
 
 class UpgradeDebugEnvironment(Command):
     """Command class that upgrades the debug environment"""
