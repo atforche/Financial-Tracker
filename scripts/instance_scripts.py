@@ -77,8 +77,8 @@ class DestroyCommand(Command):
         """Destroys this instance of the Financial Tracker"""
 
         print(f"Destroying the '{self.configuration.name}' of the Financial Tracker")
-        self.run_subprocess(f"docker image rm backend-{self.configuration.name}")
-        self.run_subprocess(f"docker image rm frontend-{self.configuration.name}")
+        self.run_subprocess(f"docker image rm {self.configuration.backend_image}")
+        self.run_subprocess(f"docker image rm {self.configuration.frontend_image}")
         shutil.rmtree(pathlib.Path(__file__).parent.parent.resolve())
 
 if __name__ == "__main__":

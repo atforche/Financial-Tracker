@@ -66,11 +66,11 @@ class CreateCommand(Command):
         
         self.configuration = Configuration.build_from_user_input({}, False)
 
-        if self.run_subprocess(f"docker image inspect backend-{self.configuration.name}", throw_on_error=False, suppress_output=True) == 0:
-            raise ValueError(f"Instance name {self.configuration.name} is already in use")
+        if self.run_subprocess(f"docker image inspect {self.configuration.backend_image}", throw_on_error=False, suppress_output=True) == 0:
+            raise ValueError(f"Backend image {self.configuration.backend_image} is already in use")
         
-        if self.run_subprocess(f"docker image inspect frontend-{self.configuration.name}", throw_on_error=False, suppress_output=True) == 0:
-            raise ValueError(f"Instance name {self.configuration.name} is already in use")
+        if self.run_subprocess(f"docker image inspect {self.configuration.frontend_image}", throw_on_error=False, suppress_output=True) == 0:
+            raise ValueError(f"Frontend image {self.configuration.frontend_image} is already in use")
         
         if os.path.isdir(self.configuration.path):
             raise ValueError(f"Directory '{self.configuration.path}' already exists")
@@ -290,9 +290,9 @@ class BuildContainerImages(Command):
         """Builds the containers for the Financial Tracker using the current source code"""
 
         print("Building the backend container image")
-        self.run_subprocess(f"docker build {PROJECT_ROOT / 'backend'} -t backend-{self.configuration.name}")
+        self.run_subprocess(f"docker build {PROJECT_ROOT / 'backend'} -t {self.configuration.backend_image}")
         print("Building the frontend container image")
-        self.run_subprocess(f"docker build {PROJECT_ROOT / 'frontend'} -t frontend-{self.configuration.name}")
+        self.run_subprocess(f"docker build {PROJECT_ROOT / 'frontend'} -t {self.configuration.frontend_image}")
 
 if __name__ == "__main__":
     main()

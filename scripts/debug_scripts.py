@@ -36,7 +36,9 @@ def get_debug_configuration() -> Configuration:
         google_client_id=os.environ.get("GOOGLE_CLIENT_ID", ""),
         google_client_secret=os.environ.get("GOOGLE_CLIENT_SECRET", ""),
         google_allowed_subjects=os.environ.get("GOOGLE_ALLOWED_SUBJECTS", ""),
-        auth_secret=os.environ.get("AUTH_SECRET", "")
+        auth_secret=os.environ.get("AUTH_SECRET", ""),
+        backend_image="backend-Debug",
+        frontend_image="frontend-Debug"
     )
 
 def get_debug_environment() -> dict[str, str]:
