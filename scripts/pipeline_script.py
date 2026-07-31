@@ -3,6 +3,7 @@
 
 from backend_scripts import RestoreBackendSolution, FormatBackendSolution, BuildBackendSolution, TestBackendSolution
 from frontend_scripts import InstallFrontendPackages, FormatFrontend, LintFrontend, VerifyFrontendModels, BuildFrontend
+from security_scripts import ScanSecurity
 from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.step import Step
@@ -34,6 +35,9 @@ class RunPipeline(Command):
         self.steps.append(Step("", "", lambda: LintFrontend().run([])))
         self.steps.append(Step("", "", lambda: VerifyFrontendModels().run([])))
         self.steps.append(Step("", "", lambda: BuildFrontend().run([])))
+
+        # Security Steps
+        self.steps.append(Step("", "", lambda: ScanSecurity().run([])))
 
 if __name__ == "__main__":
     main()

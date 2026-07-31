@@ -20,6 +20,7 @@ ENV NODE_ENV=production
 
 COPY --from=production-dependencies --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/.next ./.next
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 USER node
 ENTRYPOINT ["./node_modules/.bin/next", "start", "--port", "3000"]

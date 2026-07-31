@@ -2,7 +2,7 @@ name: "$INSTANCE_NAME"
 
 services:
   proxy:
-    image: caddy:2.10-alpine
+    image: caddy:2.11.4-alpine
     container_name: "proxy-$INSTANCE_NAME"
     ports:
       - "$PUBLIC_PORT:443"
