@@ -23,6 +23,7 @@ def main():
     """Builds and runs the command collection for this script"""
 
     commands = CommandCollection("Helper scripts for deploying the Financial Tracker")
+    commands.commands.append(BootstrapCommand())
     commands.commands.append(DeployCommand())
     commands.commands.append(RollbackCommand())
     commands.run()
@@ -65,6 +66,64 @@ class DeployCommand(Command):
         configuration.migrator_image = manifest.migrator_image
 
         TransactionalDeployment(instance_path).deploy(configuration, manifest_path)
+
+
+class BootstrapCommand(Command):
+    """Creates and starts the first release for an otherwise empty instance path."""
+
+    path: Annotated[str, "New path to create for the instance"]
+    release_manifest: Annotated[str, "Path to the release manifest"]
+
+    def __init__(self):
+        """Constructs a new instance bootstrap command."""
+
+        super().__init__("bootstrap", "Bootstraps a new instance from an immutable release")
+        self.steps.append(Step("Bootstrap Instance", "Instance bootstrapped successfully", self.bootstrap_instance))
+
+    def validate_arguments(self) -> None:
+        """Validates that bootstrapping cannot overwrite an existing instance."""
+
+        instance_path = Path(self.path).resolve()
+        manifest_path = Path(self.release_manifest).resolve()
+        if instance_path == Path("/"):
+            raise ValueError("The filesystem root cannot be used as an instance path")
+        if instance_path.exists():
+            raise ValueError(f"Bootstrap path {instance_path} already exists")
+        if not instance_path.parent.is_dir():
+            raise ValueError(f"Parent path {instance_path.parent} does not exist")
+        if not manifest_path.is_file():
+            raise ValueError(f"Release manifest {manifest_path} does not exist")
+        for file_name in ("compose.yaml", "Caddyfile"):
+            if not (manifest_path.parent / file_name).is_file():
+                raise ValueError(f"Release artifact is missing {file_name}")
+
+    def bootstrap_instance(self) -> None:
+        """Installs the initial state, migrations, and running services atomically."""
+
+        instance_path = Path(self.path).resolve()
+        manifest_path = Path(self.release_manifest).resolve()
+        manifest = ReleaseManifest.read(manifest_path)
+        configuration = Configuration.build_from_environment(
+            str(instance_path), manifest.backend_image, manifest.frontend_image, manifest.migrator_image)
+        deployment = TransactionalDeployment(instance_path)
+
+        instance_path.mkdir(mode=0o750)
+        try:
+            (instance_path / "logs").mkdir(mode=0o777)
+            (instance_path / "archive").mkdir(mode=0o750)
+            database_path = instance_path / "database.db"
+            database_path.touch(mode=0o666)
+            database_path.chmod(0o666)
+
+            deployment.validate_release(configuration, manifest_path.parent)
+            deployment.pull_images(configuration)
+            deployment.install_release_files(configuration, manifest_path)
+            ApplyMigrations(configuration).run([])
+            deployment.start_instance()
+        except Exception:
+            deployment.stop_instance(throw_on_error=False)
+            shutil.rmtree(instance_path)
+            raise
 
 
 class RollbackCommand(Command):
