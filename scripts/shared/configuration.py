@@ -1,7 +1,8 @@
 """Class representing the configuration for the Financial Tracker"""
 
-from enum import Enum
+import os
 import secrets
+from enum import Enum
 from typing import Any
 from urllib.parse import urlsplit
 from shared.environment_variable import EnvironmentVariable
@@ -182,6 +183,34 @@ class Configuration:
             results["MIGRATOR_IMAGE"] = migrator_image
 
         return Configuration.build_from_user_input(results, change_configuration)
+
+    @classmethod
+    def build_from_environment(cls, path: str, backend_image: str, frontend_image: str,
+                               migrator_image: str) -> "Configuration":
+        """Builds a non-interactive configuration from the deployment environment."""
+
+        required_values = (
+            "INSTANCE_NAME",
+            "PUBLIC_ORIGIN",
+            "GOOGLE_CLIENT_ID",
+            "GOOGLE_CLIENT_SECRET",
+            "GOOGLE_ALLOWED_SUBJECTS",
+        )
+        missing_values = [
+            name for name in required_values if os.environ.get(name, "").strip() == ""
+        ]
+        if missing_values:
+            raise ValueError(
+                "The following environment variables must be configured for bootstrap: "
+                + ", ".join(missing_values))
+
+        environment_value = os.environ.get("ENVIRONMENT", "") or Environment.PRODUCTION.value
+        auth_secret = os.environ.get("AUTH_SECRET", "") or secrets.token_urlsafe(48)
+        return Configuration(
+            os.environ["INSTANCE_NAME"], path, Environment(environment_value),
+            os.environ["PUBLIC_ORIGIN"], os.environ["GOOGLE_CLIENT_ID"],
+            os.environ["GOOGLE_CLIENT_SECRET"], os.environ["GOOGLE_ALLOWED_SUBJECTS"],
+            auth_secret, backend_image, frontend_image, migrator_image)
 
     @classmethod
     def build_from_user_input(cls, existing_values: dict[str, EnvironmentVariable[Any]], change_configuration: bool):
