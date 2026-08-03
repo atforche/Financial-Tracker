@@ -10,6 +10,9 @@ from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.step import Step
 
+MINIMUM_LINE_COVERAGE = 0.70
+MINIMUM_BRANCH_COVERAGE = 0.60
+
 
 def main():
     """Builds and runs the command collection for this script"""
@@ -150,8 +153,10 @@ class GetBackendCoverage(Command):
 
         coverage_file = max(coverage_files, key=lambda path: path.stat().st_mtime)
         coverage = ElementTree.parse(coverage_file).getroot()
-        print(f"Line coverage: {float(coverage.attrib['line-rate']) * 100:.2f}%")
-        print(f"Branch coverage: {float(coverage.attrib['branch-rate']) * 100:.2f}%")
+        line_coverage = float(coverage.attrib["line-rate"])
+        branch_coverage = float(coverage.attrib["branch-rate"])
+        print(f"Line coverage: {line_coverage * 100:.2f}%")
+        print(f"Branch coverage: {branch_coverage * 100:.2f}%")
         print("Coverage by assembly:")
         for assembly in sorted(
             coverage.findall("./packages/package"),
@@ -163,6 +168,16 @@ class GetBackendCoverage(Command):
                 f"{float(assembly.attrib['branch-rate']) * 100:.2f}% branch"
             )
         print(f"Coverage report: {coverage_file.resolve()}")
+        if line_coverage < MINIMUM_LINE_COVERAGE:
+            raise RuntimeError(
+                "Backend line coverage is below the required "
+                f"{MINIMUM_LINE_COVERAGE * 100:.0f}% threshold"
+            )
+        if branch_coverage < MINIMUM_BRANCH_COVERAGE:
+            raise RuntimeError(
+                "Backend branch coverage is below the required "
+                f"{MINIMUM_BRANCH_COVERAGE * 100:.0f}% threshold"
+            )
 
 
 class RunBackendApi(Command):

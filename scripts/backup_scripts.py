@@ -6,8 +6,13 @@ import shutil
 import sqlite3
 import subprocess
 import tempfile
+import time
+from json import load as load_json
 from pathlib import Path
 from typing import Annotated
+from urllib.error import URLError
+from urllib.request import Request, urlopen
+from uuid import uuid4
 
 from shared.command import Command
 from shared.command_collection import CommandCollection
@@ -25,6 +30,7 @@ RESTIC_ENVIRONMENT_VARIABLES = (
     "AWS_DEFAULT_REGION",
 )
 BACKUP_TAG = "financial-tracker"
+RESTORE_SMOKE_SUBJECT = "backup-restore-smoke-test"
 
 
 def main() -> None:
@@ -146,6 +152,117 @@ class BackupCommand(Command):
                 )
         finally:
             connection.close()
+
+    @staticmethod
+    def get_published_port(container: str) -> int:
+        """Returns the host port Docker assigned to a restored backend container."""
+
+        result = subprocess.run(
+            ["docker", "port", container, "8080/tcp"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return int(result.stdout.strip().rsplit(":", maxsplit=1)[1])
+
+    @staticmethod
+    def wait_for_url(url: str) -> None:
+        """Waits for a restored backend operational endpoint to become healthy."""
+
+        deadline = time.monotonic() + 60
+        while time.monotonic() < deadline:
+            try:
+                with urlopen(url, timeout=3) as response:
+                    if 200 <= response.status < 300:
+                        return
+            except OSError, URLError:
+                time.sleep(1)
+
+        raise RuntimeError(f"Restored backend endpoint did not become ready: {url}")
+
+    @classmethod
+    def verify_restored_backend(
+        cls, configuration: Configuration, data_directory: Path
+    ) -> None:
+        """Runs the upgraded backup in the backend image and verifies a protected write."""
+
+        identifier = uuid4().hex
+        container = f"financial-tracker-restore-smoke-{identifier}"
+        logs_directory = data_directory / "logs"
+        logs_directory.mkdir(mode=0o777)
+        os.chmod(data_directory, 0o777)
+        try:
+            subprocess.run(
+                [
+                    "docker",
+                    "run",
+                    "--detach",
+                    "--name",
+                    container,
+                    "--publish",
+                    "127.0.0.1::8080",
+                    "--read-only",
+                    "--tmpfs",
+                    "/tmp",
+                    "--cap-drop",
+                    "ALL",
+                    "--security-opt",
+                    "no-new-privileges:true",
+                    "--volume",
+                    f"{data_directory.resolve()}:/data",
+                    "--volume",
+                    f"{logs_directory.resolve()}:/logs",
+                    "--env",
+                    "ASPNETCORE_ENVIRONMENT=Development",
+                    "--env",
+                    "ASPNETCORE_HTTP_PORTS=8080",
+                    "--env",
+                    "DATABASE_PATH=/data/database.db",
+                    "--env",
+                    "LOG_DIRECTORY=/logs",
+                    "--env",
+                    "FRONTEND_ORIGIN=http://localhost",
+                    "--env",
+                    "AUTH_MODE=development",
+                    "--env",
+                    f"DEVELOPMENT_AUTH_SUBJECT={RESTORE_SMOKE_SUBJECT}",
+                    configuration.backend_image,
+                ],
+                check=True,
+            )
+            port = cls.get_published_port(container)
+            base_url = f"http://127.0.0.1:{port}"
+            cls.wait_for_url(f"{base_url}/health/ready")
+            headers = {
+                "Authorization": f"Bearer development:{RESTORE_SMOKE_SUBJECT}",
+                "Content-Type": "application/json",
+            }
+            request = Request(
+                f"{base_url}/accounts/onboard",
+                data=(
+                    f'{{"name":"Restored backup smoke {identifier}",'
+                    '"type":"Standard","onboardedBalance":1}'
+                ).encode(),
+                headers=headers,
+                method="POST",
+            )
+            with urlopen(request, timeout=30) as response:
+                account = load_json(response)
+            with urlopen(
+                Request(f"{base_url}/accounts/{account['id']}", headers=headers),
+                timeout=30,
+            ) as response:
+                restored_account = load_json(response)
+            if restored_account["name"] != account["name"]:
+                raise RuntimeError(
+                    "Restored backend did not return its persisted account"
+                )
+        finally:
+            subprocess.run(
+                ["docker", "container", "rm", "--force", container],
+                check=False,
+                capture_output=True,
+            )
 
 
 class InitializeBackupRepository(BackupCommand):
@@ -283,6 +400,7 @@ class VerifyDatabaseRestoration(BackupCommand):
             os.chmod(migration_database, 0o666)
             run_migrator(configuration.migrator_image, migration_directory)
             self.validate_database(migration_database)
+            self.verify_restored_backend(configuration, migration_directory)
 
 
 if __name__ == "__main__":
