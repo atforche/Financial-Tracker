@@ -45,7 +45,7 @@ class BackupCommand(Command):
         instance_path = Path(self.path).resolve()
         if not instance_path.is_dir():
             raise ValueError(f"Path {instance_path} does not point to a valid instance directory")
-        if not (instance_path / ".env").is_file() or not (instance_path / "database.db").is_file():
+        if not (instance_path / ".env").is_file() or not (instance_path / "data" / "database.db").is_file():
             raise ValueError(f"Path {instance_path} does not contain a Financial Tracker instance")
         for name in ("RESTIC_REPOSITORY", "RESTIC_PASSWORD"):
             if os.environ.get(name, "").strip() == "":

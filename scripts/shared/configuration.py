@@ -109,7 +109,7 @@ class Configuration:
     def get_database_file_path(self) -> str:
         """Returns the path to the database file"""
 
-        return f"{self.path}/database.db"
+        return f"{self.path}/data/database.db"
 
     def get_environment_file_path(self) -> str:
         """Returns the path to the environment file"""

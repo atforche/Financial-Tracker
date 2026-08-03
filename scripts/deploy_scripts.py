@@ -19,6 +19,26 @@ RECOVERY_DIRECTORY_NAME = ".rollback"
 STAGING_RECOVERY_DIRECTORY_NAME = ".rollback-staging"
 RECOVERY_FILE_NAMES = (".env", "compose.yaml", "Caddyfile", "database.db")
 OPTIONAL_RECOVERY_FILE_NAMES = ("release-manifest.json",)
+DATABASE_DIRECTORY_NAME = "data"
+DATABASE_FILE_NAME = "database.db"
+
+
+def prepare_database_directory(instance_path: Path) -> None:
+    """Creates the writable SQLite directory and migrates the legacy database file."""
+
+    database_directory = instance_path / DATABASE_DIRECTORY_NAME
+    database_path = database_directory / DATABASE_FILE_NAME
+    legacy_database_path = instance_path / DATABASE_FILE_NAME
+
+    database_directory.mkdir(mode=0o777, exist_ok=True)
+    os.chmod(database_directory, 0o777)
+    if legacy_database_path.exists() and not database_path.exists():
+        os.replace(legacy_database_path, database_path)
+    if not database_path.exists():
+        database_path.touch(mode=0o666)
+    os.chmod(database_path, 0o666)
+
+
 def main():
     """Builds and runs the command collection for this script"""
 
@@ -111,9 +131,7 @@ class BootstrapCommand(Command):
         try:
             (instance_path / "logs").mkdir(mode=0o777)
             (instance_path / "archive").mkdir(mode=0o750)
-            database_path = instance_path / "database.db"
-            database_path.touch(mode=0o666)
-            database_path.chmod(0o666)
+            prepare_database_directory(instance_path)
 
             deployment.validate_release(configuration, manifest_path.parent)
             deployment.pull_images(configuration)
@@ -177,6 +195,7 @@ class TransactionalDeployment:
             self.create_recovery_point(self.staging_recovery_path)
             recovery_created = True
             self.install_release_files(configuration, release_manifest_path)
+            prepare_database_directory(self.instance_path)
             ApplyMigrations(configuration).run([])
             self.start_instance()
             self.promote_recovery_point()
@@ -276,6 +295,9 @@ class TransactionalDeployment:
                 source = self.instance_path / file_name
                 if source.exists():
                     shutil.copy2(source, destination / file_name)
+            database_directory = self.instance_path / DATABASE_DIRECTORY_NAME
+            if database_directory.exists():
+                shutil.copytree(database_directory, destination / DATABASE_DIRECTORY_NAME)
         except Exception:
             shutil.rmtree(destination)
             raise
@@ -293,7 +315,12 @@ class TransactionalDeployment:
         """Restores configuration, runtime definitions, and database from a recovery point."""
 
         for file_name in RECOVERY_FILE_NAMES:
-            shutil.copy2(source / file_name, self.instance_path / file_name)
+            recovery_file = source / file_name
+            instance_file = self.instance_path / file_name
+            if recovery_file.exists():
+                shutil.copy2(recovery_file, instance_file)
+            else:
+                instance_file.unlink(missing_ok=True)
         for file_name in OPTIONAL_RECOVERY_FILE_NAMES:
             recovery_file = source / file_name
             instance_file = self.instance_path / file_name
@@ -301,6 +328,12 @@ class TransactionalDeployment:
                 shutil.copy2(recovery_file, instance_file)
             else:
                 instance_file.unlink(missing_ok=True)
+        recovery_database_directory = source / DATABASE_DIRECTORY_NAME
+        instance_database_directory = self.instance_path / DATABASE_DIRECTORY_NAME
+        if instance_database_directory.exists():
+            shutil.rmtree(instance_database_directory)
+        if recovery_database_directory.exists():
+            shutil.copytree(recovery_database_directory, instance_database_directory)
 
     def promote_recovery_point(self) -> None:
         """Retains the replaced deployment as the next rollback target."""
