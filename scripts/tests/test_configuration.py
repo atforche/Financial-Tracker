@@ -97,3 +97,32 @@ def test_build_from_environment_uses_defaults_and_generates_auth_secret(monkeypa
 
     assert configuration.environment is Environment.PRODUCTION
     assert configuration.auth_secret
+
+
+def test_build_from_existing_instance_reads_current_environment_values(tmp_path):
+    environment_file = tmp_path / ".env"
+    environment_file.write_text(
+        "\n".join(
+            (
+                'INSTANCE_NAME="tracker"',
+                f'INSTANCE_DIR="{tmp_path}"',
+                'ENVIRONMENT="Production"',
+                'PUBLIC_ORIGIN="https://tracker.example.com"',
+                'GOOGLE_CLIENT_ID="client-id"',
+                'GOOGLE_CLIENT_SECRET="client-secret"',
+                'GOOGLE_ALLOWED_SUBJECTS="subject-a,subject-b"',
+                'AUTH_SECRET="auth-secret"',
+                'BACKEND_IMAGE="backend-image"',
+                'FRONTEND_IMAGE="frontend-image"',
+                'MIGRATOR_IMAGE="migrator-image"',
+                "",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    configuration = Configuration.build_from_existing_instance(str(tmp_path), False)
+
+    assert configuration.name == "tracker"
+    assert configuration.public_origin == "https://tracker.example.com"
+    assert configuration.google_allowed_subjects == "subject-a,subject-b"

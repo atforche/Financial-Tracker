@@ -143,95 +143,23 @@ class Configuration:
             change_configuration (bool): True to prompt to overwrite existing configuration values, false otherwise
         """
 
-        results: dict[str, EnvironmentVariable[Any]] = {}
         environment_file_path = f"{instance_path}/.env"
-
-        name = EnvironmentVariable.try_read_from_file(
-            environment_file_path, "INSTANCE_NAME", str
+        results = EnvironmentVariable.read_from_file(
+            environment_file_path,
+            {
+                "INSTANCE_NAME": str,
+                "INSTANCE_DIR": str,
+                "ENVIRONMENT": Environment,
+                "PUBLIC_ORIGIN": str,
+                "GOOGLE_CLIENT_ID": str,
+                "GOOGLE_CLIENT_SECRET": str,
+                "GOOGLE_ALLOWED_SUBJECTS": str,
+                "AUTH_SECRET": str,
+                "BACKEND_IMAGE": str,
+                "FRONTEND_IMAGE": str,
+                "MIGRATOR_IMAGE": str,
+            },
         )
-        if name is not None:
-            results["INSTANCE_NAME"] = name
-
-        path = EnvironmentVariable.try_read_from_file(
-            environment_file_path, "INSTANCE_DIR", str
-        )
-        if path is not None:
-            results["INSTANCE_DIR"] = path
-
-        environment = EnvironmentVariable.try_read_from_file(
-            environment_file_path, "ENVIRONMENT", Environment
-        )
-        if environment is not None:
-            results["ENVIRONMENT"] = environment
-
-        public_origin = EnvironmentVariable.try_read_from_file(
-            environment_file_path, "PUBLIC_ORIGIN", str
-        )
-        if public_origin is None:
-            public_domain = EnvironmentVariable.try_read_from_file(
-                environment_file_path, "PUBLIC_DOMAIN", str
-            )
-            if public_domain is not None:
-                public_origin = EnvironmentVariable(
-                    environment_file_path,
-                    "PUBLIC_ORIGIN",
-                    f"https://{public_domain.value}",
-                )
-
-        if public_origin is not None:
-            results["PUBLIC_ORIGIN"] = public_origin
-
-        google_client_id = EnvironmentVariable.try_read_from_file(
-            environment_file_path, "GOOGLE_CLIENT_ID", str
-        )
-        if google_client_id is not None:
-            results["GOOGLE_CLIENT_ID"] = google_client_id
-
-        google_client_secret = EnvironmentVariable.try_read_from_file(
-            environment_file_path, "GOOGLE_CLIENT_SECRET", str
-        )
-        if google_client_secret is not None:
-            results["GOOGLE_CLIENT_SECRET"] = google_client_secret
-
-        google_allowed_subjects = EnvironmentVariable.try_read_from_file(
-            environment_file_path, "GOOGLE_ALLOWED_SUBJECTS", str
-        )
-        if google_allowed_subjects is not None:
-            results["GOOGLE_ALLOWED_SUBJECTS"] = google_allowed_subjects
-        else:
-            google_allowed_subject = EnvironmentVariable.try_read_from_file(
-                environment_file_path, "GOOGLE_ALLOWED_SUBJECT", str
-            )
-            if google_allowed_subject is not None:
-                results["GOOGLE_ALLOWED_SUBJECTS"] = EnvironmentVariable(
-                    environment_file_path,
-                    "GOOGLE_ALLOWED_SUBJECTS",
-                    google_allowed_subject.value,
-                )
-
-        auth_secret = EnvironmentVariable.try_read_from_file(
-            environment_file_path, "AUTH_SECRET", str
-        )
-        if auth_secret is not None:
-            results["AUTH_SECRET"] = auth_secret
-
-        backend_image = EnvironmentVariable.try_read_from_file(
-            environment_file_path, "BACKEND_IMAGE", str
-        )
-        if backend_image is not None:
-            results["BACKEND_IMAGE"] = backend_image
-
-        frontend_image = EnvironmentVariable.try_read_from_file(
-            environment_file_path, "FRONTEND_IMAGE", str
-        )
-        if frontend_image is not None:
-            results["FRONTEND_IMAGE"] = frontend_image
-
-        migrator_image = EnvironmentVariable.try_read_from_file(
-            environment_file_path, "MIGRATOR_IMAGE", str
-        )
-        if migrator_image is not None:
-            results["MIGRATOR_IMAGE"] = migrator_image
 
         return Configuration.build_from_user_input(results, change_configuration)
 

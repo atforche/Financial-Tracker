@@ -12,6 +12,7 @@ from uuid import uuid4
 
 from shared.command import Command
 from shared.command_collection import CommandCollection
+from shared.migrator import run_migrator
 from shared.step import Step
 
 
@@ -112,8 +113,8 @@ class SmokeTestContainerImages(Command):
             os.chmod(directory, 0o777)
             os.chmod(database, 0o666)
 
-            self.run_migrator(database)
-            self.run_migrator(database)
+            run_migrator("financial-tracker-migrator:workflow", database.parent)
+            run_migrator("financial-tracker-migrator:workflow", database.parent)
 
             self.run_docker(["network", "create", network])
             try:
@@ -224,29 +225,6 @@ class SmokeTestContainerImages(Command):
         """Runs a Docker command and fails when it does not succeed."""
 
         subprocess.run(["docker", *arguments], check=True)
-
-    @staticmethod
-    def run_migrator(database: Path) -> None:
-        """Runs the release-owned migrator against a database file."""
-
-        subprocess.run(
-            [
-                "docker",
-                "run",
-                "--rm",
-                "--read-only",
-                "--cap-drop",
-                "ALL",
-                "--security-opt",
-                "no-new-privileges:true",
-                "--volume",
-                f"{database.parent}:/data",
-                "--env",
-                "DATABASE_PATH=/data/database.db",
-                "financial-tracker-migrator:workflow",
-            ],
-            check=True,
-        )
 
     @staticmethod
     def get_published_port(container: str, container_port: int) -> int:

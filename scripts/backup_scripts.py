@@ -12,6 +12,7 @@ from typing import Annotated
 from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.configuration import Configuration
+from shared.migrator import run_migrator
 from shared.step import Step
 
 RESTIC_IMAGE = "restic/restic:0.19.1@sha256:136600b6ff6843d61d355f7f71f460a166429f35de6fd11b568fece3c9a4d510"
@@ -280,24 +281,7 @@ class VerifyDatabaseRestoration(BackupCommand):
             migration_database = migration_directory / "database.db"
             shutil.copy2(restored_database, migration_database)
             os.chmod(migration_database, 0o666)
-            subprocess.run(
-                [
-                    "docker",
-                    "run",
-                    "--rm",
-                    "--read-only",
-                    "--cap-drop",
-                    "ALL",
-                    "--security-opt",
-                    "no-new-privileges:true",
-                    "--volume",
-                    f"{migration_directory}:/data",
-                    "--env",
-                    "DATABASE_PATH=/data/database.db",
-                    configuration.migrator_image,
-                ],
-                check=True,
-            )
+            run_migrator(configuration.migrator_image, migration_directory)
             self.validate_database(migration_database)
 
 

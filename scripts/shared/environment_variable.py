@@ -1,7 +1,7 @@
 """Class representing an environment variable defined in the .env file"""
 
 import re
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -9,40 +9,40 @@ T = TypeVar("T")
 class EnvironmentVariable(Generic[T]):
     """Class representing an environment variable defined in the .env file"""
 
-    file_path: str
     name: str
     value: T
 
-    def __init__(self, file_path: str, name: str, value: T):
+    def __init__(self, name: str, value: T):
         """Constructs a new instance of this class
 
         Args:
-            file_path (str): Path to the .env file for this Environment Variable
             name (str): Name for this Environment Variable
             value (T): Value for this Environment Variable
         """
 
-        self.file_path = file_path
         self.name = name
         self.value = value
 
     @classmethod
-    def try_read_from_file(cls, file_path: str, name: str, variable_type: type):
-        """Reads in the provided environment variable from the provided .env file path
+    def read_from_file(
+        cls, file_path: str, variable_types: dict[str, type]
+    ) -> dict[str, EnvironmentVariable[Any]]:
+        """Reads the requested environment variables from a single .env file pass.
 
         Args:
             file_path (str): Path to the .env file to read from
-            name (str): Name of the environment variable to read
-            variable_type (type): Type of the variable to read
+            variable_types (dict[str, type]): Expected variable names and value types
         """
 
+        values: dict[str, EnvironmentVariable[Any]] = {}
         with open(file_path, encoding="utf-8") as file:
-            content = file.read()
+            for line in file:
+                variable_match = re.fullmatch(r'([A-Z][A-Z0-9_]*)="(\S+)"\n?', line)
+                if variable_match is None:
+                    continue
+                name, value = variable_match.groups()
+                variable_type = variable_types.get(name)
+                if variable_type is not None:
+                    values[name] = cls(name, variable_type(value))
 
-        variable_match = re.search(rf'{name.upper()}="(\S+)"', content)
-        if variable_match is None:
-            return None
-
-        return EnvironmentVariable(
-            file_path, name, variable_type(variable_match.group(1))
-        )
+        return values

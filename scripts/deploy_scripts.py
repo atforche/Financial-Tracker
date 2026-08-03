@@ -2,7 +2,6 @@
 """Helper scripts for deploying the Financial Tracker"""
 
 import os
-import shlex
 import shutil
 import subprocess
 import tempfile
@@ -13,6 +12,7 @@ from typing import Annotated
 from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.configuration import Configuration
+from shared.migrator import run_migrator
 from shared.release_manifest import ReleaseManifest
 from shared.step import Step
 
@@ -488,13 +488,7 @@ class ApplyMigrations(Command):
         os.chmod(upgrade_database_file_path, 0o666)
 
         try:
-            self.run_subprocess(
-                "docker run --rm --read-only --cap-drop ALL "
-                "--security-opt no-new-privileges:true "
-                f"--volume {shlex.quote(upgrade_directory)}:/data "
-                "--env DATABASE_PATH=/data/database.db "
-                f"{shlex.quote(self.configuration.migrator_image)}"
-            )
+            run_migrator(self.configuration.migrator_image, Path(upgrade_directory))
         except Exception:
             shutil.rmtree(upgrade_directory)
             raise

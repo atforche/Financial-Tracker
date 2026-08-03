@@ -2,10 +2,38 @@
 """Helper scripts for developing the Financial Tracker frontend"""
 
 import os
+from pathlib import Path
 
 from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.step import Step
+
+FRONTEND_DIRECTORY = Path(__file__).resolve().parent.parent / "frontend"
+OPENAPI_TYPESCRIPT_COMMAND = (
+    "npx openapi-typescript ../backend/.artifacts/obj/Rest/Financial-Tracker-API.json "
+    "--output framework/data/api.ts{check} --enum"
+)
+
+
+class FrontendCommand(Command):
+    """Base command that executes a subprocess from the frontend directory."""
+
+    def run_frontend_subprocess(self, command: str) -> None:
+        """Runs a frontend command without leaving the process in another directory."""
+
+        original_directory = Path.cwd()
+        try:
+            os.chdir(FRONTEND_DIRECTORY)
+            self.run_subprocess(command)
+        finally:
+            os.chdir(original_directory)
+
+    def update_frontend_models(self, verify: bool) -> None:
+        """Generates frontend API models, optionally failing when they are stale."""
+
+        self.run_frontend_subprocess(
+            OPENAPI_TYPESCRIPT_COMMAND.format(check=" --check" if verify else "")
+        )
 
 
 def main():
@@ -25,7 +53,7 @@ def main():
     commands.run()
 
 
-class InstallFrontendPackages(Command):
+class InstallFrontendPackages(FrontendCommand):
     """Command class that installs the npm dependencies for the frontend"""
 
     def __init__(self):
@@ -43,11 +71,10 @@ class InstallFrontendPackages(Command):
     def install_dependencies(self):
         """Installs the npm dependencies for the frontend"""
 
-        os.chdir("../frontend")
-        self.run_subprocess("npm ci")
+        self.run_frontend_subprocess("npm ci")
 
 
-class FormatFrontend(Command):
+class FormatFrontend(FrontendCommand):
     """Command class that runs formatting for the frontend"""
 
     def __init__(self):
@@ -61,11 +88,10 @@ class FormatFrontend(Command):
     def run_formatting(self):
         """Runs formatting for the frontend"""
 
-        os.chdir("../frontend")
-        self.run_subprocess("npx prettier . --check")
+        self.run_frontend_subprocess("npx prettier . --check")
 
 
-class FixFrontendFormatting(Command):
+class FixFrontendFormatting(FrontendCommand):
     """Command class that fixes formatting for the frontend"""
 
     def __init__(self):
@@ -79,11 +105,10 @@ class FixFrontendFormatting(Command):
     def fix_formatting(self):
         """Fixes formatting for the frontend"""
 
-        os.chdir("../frontend")
-        self.run_subprocess("npx prettier . --write")
+        self.run_frontend_subprocess("npx prettier . --write")
 
 
-class LintFrontend(Command):
+class LintFrontend(FrontendCommand):
     """Command class that runs linting for the frontend"""
 
     def __init__(self):
@@ -95,13 +120,12 @@ class LintFrontend(Command):
     def run_linting(self):
         """Runs linting for the frontend"""
 
-        os.chdir("../frontend")
-        self.run_subprocess(
+        self.run_frontend_subprocess(
             "npx eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
         )
 
 
-class BuildFrontend(Command):
+class BuildFrontend(FrontendCommand):
     """Command class that builds the frontend"""
 
     def __init__(self):
@@ -115,12 +139,11 @@ class BuildFrontend(Command):
     def build_frontend(self):
         """Builds the frontend"""
 
-        os.chdir("../frontend")
-        self.run_subprocess("npx tsc")
-        self.run_subprocess("npx next build")
+        self.run_frontend_subprocess("npx tsc")
+        self.run_frontend_subprocess("npx next build")
 
 
-class RunFrontend(Command):
+class RunFrontend(FrontendCommand):
     """Command class that runs the frontend"""
 
     def __init__(self):
@@ -132,11 +155,10 @@ class RunFrontend(Command):
     def run_frontend(self):
         """Runs the frontend"""
 
-        os.chdir("../frontend")
-        self.run_subprocess("npx next dev")
+        self.run_frontend_subprocess("npx next dev")
 
 
-class RefreshFrontendModels(Command):
+class RefreshFrontendModels(FrontendCommand):
     """Command class that refreshes the API models used by the frontend"""
 
     def __init__(self):
@@ -150,13 +172,10 @@ class RefreshFrontendModels(Command):
     def refresh_models(self):
         """Refreshes the models used by the frontend"""
 
-        os.chdir("../frontend")
-        self.run_subprocess(
-            "npx openapi-typescript ../backend/.artifacts/obj/Rest/Financial-Tracker-API.json --output framework/data/api.ts --enum"
-        )
+        self.update_frontend_models(verify=False)
 
 
-class VerifyFrontendModels(Command):
+class VerifyFrontendModels(FrontendCommand):
     """Command class that verifies the API models used by the frontend are up to date"""
 
     def __init__(self):
@@ -172,10 +191,7 @@ class VerifyFrontendModels(Command):
     def verify_models(self):
         """Verifies the models used by the frontend are up to date"""
 
-        os.chdir("../frontend")
-        self.run_subprocess(
-            "npx openapi-typescript ../backend/.artifacts/obj/Rest/Financial-Tracker-API.json --output framework/data/api.ts --check --enum"
-        )
+        self.update_frontend_models(verify=True)
 
 
 if __name__ == "__main__":
