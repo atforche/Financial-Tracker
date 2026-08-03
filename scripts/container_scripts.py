@@ -3,6 +3,7 @@
 
 import json
 import os
+import socket
 import subprocess
 import tempfile
 import time
@@ -183,6 +184,8 @@ class SmokeTestContainerImages(Command):
                 self.wait_for_container_health(backend)
                 self.create_and_read_account(backend_port, identifier)
 
+                frontend_port = self.get_available_loopback_port()
+                frontend_origin = f"http://localhost:{frontend_port}"
                 self.run_docker(
                     [
                         "run",
@@ -192,7 +195,7 @@ class SmokeTestContainerImages(Command):
                         "--network",
                         network,
                         "--publish",
-                        "127.0.0.1::3000",
+                        f"127.0.0.1:{frontend_port}:3000",
                         "--read-only",
                         "--tmpfs",
                         "/tmp",
@@ -203,7 +206,7 @@ class SmokeTestContainerImages(Command):
                         "--env",
                         "API_URL=http://backend:8080",
                         "--env",
-                        "PUBLIC_ORIGIN=http://localhost",
+                        f"PUBLIC_ORIGIN={frontend_origin}",
                         "--env",
                         "AUTH_MODE=development",
                         "--env",
@@ -215,7 +218,7 @@ class SmokeTestContainerImages(Command):
                         "--env",
                         "GOOGLE_ALLOWED_SUBJECTS=container-smoke-test",
                         "--env",
-                        "AUTH_URL=http://localhost",
+                        f"AUTH_URL={frontend_origin}",
                         "--env",
                         "AUTH_TRUST_HOST=true",
                         "--env",
@@ -223,10 +226,10 @@ class SmokeTestContainerImages(Command):
                         "financial-tracker-frontend:workflow",
                     ]
                 )
-                frontend_port = self.get_published_port(frontend, 3000)
-                self.wait_for_url(f"http://127.0.0.1:{frontend_port}/login")
+                self.wait_for_url(f"{frontend_origin}/login")
                 self.wait_for_container_health(frontend)
                 self.verify_frontend_session_and_api_flow(frontend_port)
+                self.run_playwright_e2e(frontend_port)
             except Exception:
                 self.print_container_logs(backend)
                 self.print_container_logs(frontend)
@@ -330,6 +333,26 @@ class SmokeTestContainerImages(Command):
                 )
 
     @staticmethod
+    def run_playwright_e2e(frontend_port: int) -> None:
+        """Runs browser tests against the production-built frontend and backend images."""
+
+        environment = os.environ.copy()
+        environment["E2E_BASE_URL"] = f"http://127.0.0.1:{frontend_port}"
+        subprocess.run(
+            [
+                "npm",
+                "run",
+                "test:e2e",
+                "--",
+                "--config",
+                "e2e/playwright.config.ts",
+            ],
+            check=True,
+            cwd=Path(__file__).resolve().parent.parent / "frontend",
+            env=environment,
+        )
+
+    @staticmethod
     def run_docker(arguments: list[str]) -> None:
         """Runs a Docker command and fails when it does not succeed."""
 
@@ -346,6 +369,14 @@ class SmokeTestContainerImages(Command):
             text=True,
         )
         return int(result.stdout.strip().rsplit(":", maxsplit=1)[1])
+
+    @staticmethod
+    def get_available_loopback_port() -> int:
+        """Reserves a currently available loopback port for the frontend origin."""
+
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+            listener.bind(("127.0.0.1", 0))
+            return int(listener.getsockname()[1])
 
     @staticmethod
     def wait_for_url(url: str) -> None:

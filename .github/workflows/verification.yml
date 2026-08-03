@@ -115,6 +115,14 @@ jobs:
         with:
           node-version: 22.5.1
 
+      - name: Install Frontend Test Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Install Chromium
+        working-directory: ./frontend
+        run: npx playwright install --with-deps chromium
+
       - name: Setup Trivy
         uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567 # v0.3.1
         with:
@@ -125,3 +133,14 @@ jobs:
 
       - name: Build, Scan, and Smoke Test Container Images
         run: python3 pipeline_script.py container-images
+
+      - name: Upload Playwright Failure Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            frontend/playwright-report
+            frontend/test-results
+          if-no-files-found: ignore
+          retention-days: 7

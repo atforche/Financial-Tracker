@@ -29,6 +29,29 @@ if (!isStaticImageData(applicationIcon)) {
 
 const loginIcon = applicationIcon;
 
+/** Returns a same-origin callback path and rejects external redirect targets. */
+const getRedirectTo = function (callbackUrl: string | undefined): string {
+  if (
+    typeof callbackUrl === "string" &&
+    callbackUrl.startsWith("/") &&
+    !callbackUrl.startsWith("//")
+  ) {
+    return callbackUrl;
+  }
+
+  try {
+    const callback = new URL(callbackUrl ?? "");
+    const publicOrigin = new URL(process.env["PUBLIC_ORIGIN"] ?? "");
+    if (callback.origin === publicOrigin.origin) {
+      return `${callback.pathname}${callback.search}${callback.hash}`;
+    }
+  } catch {
+    // Invalid or unconfigured origins are not valid redirect targets.
+  }
+
+  return "/";
+};
+
 /**
  * Displays the sign-in page for the application.
  */
@@ -38,10 +61,7 @@ const LoginPage = async function ({
   readonly searchParams: Promise<{ callbackUrl?: string }>;
 }): Promise<JSX.Element> {
   const { callbackUrl } = await searchParams;
-  const redirectTo =
-    typeof callbackUrl === "string" && callbackUrl.startsWith("/")
-      ? callbackUrl
-      : "/";
+  const redirectTo = getRedirectTo(callbackUrl);
   const session = await auth();
 
   if (session !== null) {
