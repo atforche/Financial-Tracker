@@ -88,7 +88,7 @@ class SmokeTestContainerImages(Command):
                     "run", "--detach", "--name", backend, "--network", network,
                     "--publish", "127.0.0.1::8080", "--read-only", "--tmpfs", "/tmp",
                     "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true",
-                    "--volume", f"{database}:/data/database.db",
+                    "--volume", f"{directory}:/data",
                     "--volume", f"{logs}:/logs",
                     "--env", "ASPNETCORE_ENVIRONMENT=Production",
                     "--env", "ASPNETCORE_HTTP_PORTS=8080",

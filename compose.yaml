@@ -30,7 +30,7 @@ services:
     expose:
       - "8080"
     volumes:
-      - "${INSTANCE_DIR:?INSTANCE_DIR must be configured}/database.db:/data/database.db"
+      - "${INSTANCE_DIR:?INSTANCE_DIR must be configured}/data:/data"
       - "${INSTANCE_DIR}/logs:/logs"
     environment:
       ASPNETCORE_ENVIRONMENT: "${ENVIRONMENT:?ENVIRONMENT must be configured}"
