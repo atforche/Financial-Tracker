@@ -1,19 +1,35 @@
 #!/usr/bin/env python3
 """Helper scripts for verifying Financial Tracker container images."""
 
+import json
 import os
 import subprocess
 import tempfile
 import time
+from http.cookiejar import CookieJar
 from pathlib import Path
-from urllib.error import URLError
-from urllib.request import urlopen
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import (
+    HTTPCookieProcessor,
+    HTTPRedirectHandler,
+    Request,
+    build_opener,
+    urlopen,
+)
 from uuid import uuid4
 
 from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.migrator import run_migrator
 from shared.step import Step
+
+
+class DoNotFollowRedirects(HTTPRedirectHandler):
+    """Keeps Auth.js's callback redirect from leaving an ephemeral smoke-test port."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
 
 
 def main():
@@ -126,6 +142,8 @@ class SmokeTestContainerImages(Command):
                         backend,
                         "--network",
                         network,
+                        "--network-alias",
+                        "backend",
                         "--publish",
                         "127.0.0.1::8080",
                         "--read-only",
@@ -140,7 +158,7 @@ class SmokeTestContainerImages(Command):
                         "--volume",
                         f"{logs}:/logs",
                         "--env",
-                        "ASPNETCORE_ENVIRONMENT=Production",
+                        "ASPNETCORE_ENVIRONMENT=Development",
                         "--env",
                         "ASPNETCORE_HTTP_PORTS=8080",
                         "--env",
@@ -148,7 +166,11 @@ class SmokeTestContainerImages(Command):
                         "--env",
                         "LOG_DIRECTORY=/logs",
                         "--env",
-                        "FRONTEND_ORIGIN=https://localhost",
+                        "FRONTEND_ORIGIN=http://localhost",
+                        "--env",
+                        "AUTH_MODE=development",
+                        "--env",
+                        "DEVELOPMENT_AUTH_SUBJECT=container-smoke-test",
                         "--env",
                         "GOOGLE_CLIENT_ID=container-smoke-test",
                         "--env",
@@ -159,6 +181,7 @@ class SmokeTestContainerImages(Command):
                 backend_port = self.get_published_port(backend, 8080)
                 self.wait_for_url(f"http://127.0.0.1:{backend_port}/health/ready")
                 self.wait_for_container_health(backend)
+                self.create_and_read_account(backend_port, identifier)
 
                 self.run_docker(
                     [
@@ -178,9 +201,13 @@ class SmokeTestContainerImages(Command):
                         "--security-opt",
                         "no-new-privileges:true",
                         "--env",
-                        f"API_URL=http://{backend}:8080",
+                        "API_URL=http://backend:8080",
                         "--env",
-                        "PUBLIC_ORIGIN=https://localhost",
+                        "PUBLIC_ORIGIN=http://localhost",
+                        "--env",
+                        "AUTH_MODE=development",
+                        "--env",
+                        "DEVELOPMENT_AUTH_SUBJECT=container-smoke-test",
                         "--env",
                         "GOOGLE_CLIENT_ID=container-smoke-test",
                         "--env",
@@ -188,7 +215,7 @@ class SmokeTestContainerImages(Command):
                         "--env",
                         "GOOGLE_ALLOWED_SUBJECTS=container-smoke-test",
                         "--env",
-                        "AUTH_URL=https://localhost",
+                        "AUTH_URL=http://localhost",
                         "--env",
                         "AUTH_TRUST_HOST=true",
                         "--env",
@@ -199,6 +226,7 @@ class SmokeTestContainerImages(Command):
                 frontend_port = self.get_published_port(frontend, 3000)
                 self.wait_for_url(f"http://127.0.0.1:{frontend_port}/login")
                 self.wait_for_container_health(frontend)
+                self.verify_frontend_session_and_api_flow(frontend_port)
             except Exception:
                 self.print_container_logs(backend)
                 self.print_container_logs(frontend)
@@ -218,6 +246,87 @@ class SmokeTestContainerImages(Command):
                     ["docker", "network", "rm", network],
                     check=False,
                     capture_output=True,
+                )
+
+    @staticmethod
+    def create_and_read_account(backend_port: int, identifier: str) -> None:
+        """Proves the hardened backend can persist and return authenticated data."""
+
+        headers = {
+            "Authorization": "Bearer development:container-smoke-test",
+            "Content-Type": "application/json",
+        }
+        create_request = Request(
+            f"http://127.0.0.1:{backend_port}/accounts/onboard",
+            data=json.dumps(
+                {
+                    "name": f"Smoke account {identifier}",
+                    "type": "Standard",
+                    "onboardedBalance": 1,
+                }
+            ).encode(),
+            headers=headers,
+            method="POST",
+        )
+        with urlopen(create_request, timeout=30) as response:
+            account = json.load(response)
+
+        account_request = Request(
+            f"http://127.0.0.1:{backend_port}/accounts/{account['id']}",
+            headers=headers,
+        )
+        with urlopen(account_request, timeout=30) as response:
+            persisted_account = json.load(response)
+
+        if persisted_account["name"] != account["name"]:
+            raise RuntimeError("The backend did not return the account it persisted.")
+
+    @staticmethod
+    def verify_frontend_session_and_api_flow(frontend_port: int) -> None:
+        """Verifies Auth.js keeps its API token server-only and calls the API server-side."""
+
+        base_url = f"http://127.0.0.1:{frontend_port}"
+        cookies = CookieJar()
+        browser = build_opener(HTTPCookieProcessor(cookies))
+        with browser.open(f"{base_url}/api/auth/csrf", timeout=30) as response:
+            csrf_token = json.load(response)["csrfToken"]
+
+        sign_in_request = Request(
+            f"{base_url}/api/auth/callback/development",
+            data=urlencode(
+                {
+                    "csrfToken": csrf_token,
+                    "callbackUrl": f"{base_url}/accounts/workspace",
+                    "json": "true",
+                }
+            ).encode(),
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            method="POST",
+        )
+        callback_browser = build_opener(
+            HTTPCookieProcessor(cookies), DoNotFollowRedirects()
+        )
+        try:
+            with callback_browser.open(sign_in_request, timeout=30):
+                pass
+        except HTTPError as error:
+            if error.code != 302:
+                raise
+
+        with browser.open(f"{base_url}/api/auth/session", timeout=30) as response:
+            session = json.load(response)
+        if (
+            session.get("user", {}).get("name") != "Local developer"
+            or "idToken" in session
+        ):
+            raise RuntimeError(
+                "The frontend did not create a safe authenticated session."
+            )
+
+        with browser.open(f"{base_url}/accounts/workspace", timeout=30) as response:
+            if not 200 <= response.status < 300:
+                raise RuntimeError(
+                    "The authenticated frontend could not load account data."
                 )
 
     @staticmethod

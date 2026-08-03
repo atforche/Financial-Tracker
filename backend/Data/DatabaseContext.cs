@@ -94,6 +94,21 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
         {
             throw new InvalidOperationException();
         }
+        using Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction = Database.BeginTransaction();
+        int affectedRows = Database.ExecuteSqlRaw("""
+            UPDATE "__EFMigrationsHistory"
+            SET "ProductVersion" = "ProductVersion" || '-health-check'
+            WHERE "MigrationId" = (
+                SELECT "MigrationId"
+                FROM "__EFMigrationsHistory"
+                ORDER BY "MigrationId"
+                LIMIT 1)
+            """);
+        if (affectedRows != 1)
+        {
+            throw new InvalidOperationException("The database migration history is unavailable.");
+        }
+        transaction.Rollback();
     }
 
     /// <inheritdoc/>

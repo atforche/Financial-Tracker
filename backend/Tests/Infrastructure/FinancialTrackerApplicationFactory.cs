@@ -10,7 +10,7 @@ namespace Tests.Infrastructure;
 /// <summary>
 /// Creates an application instance backed by an isolated SQLite database.
 /// </summary>
-internal sealed class FinancialTrackerApplicationFactory : WebApplicationFactory<Program>
+internal class FinancialTrackerApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly string _databasePath = Path.Combine(Path.GetTempPath(), $"financial-tracker-tests-{Guid.NewGuid():N}.db");
 
