@@ -16,7 +16,7 @@ const createApiClient = async function (): Promise<Client<paths>> {
   const idToken = await getGoogleIdToken();
   if (idToken === null || idToken === "") {
     throw new Error(
-      "An authenticated Google session is required before using the API client.",
+      "An authenticated session is required before using the API client.",
     );
   }
 

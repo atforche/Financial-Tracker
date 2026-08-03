@@ -1,7 +1,7 @@
 /* eslint-disable sort-imports */
 import { Box, Button, Stack, Typography } from "@mui/material";
 import Image, { type StaticImageData } from "next/image";
-import { auth, signIn } from "@/auth";
+import { authenticationProvider, auth, signIn } from "@/auth";
 import { redirect } from "next/navigation";
 import type { JSX } from "react";
 import Frame from "@/framework/view/Frame";
@@ -80,18 +80,22 @@ const LoginPage = async function ({
                 Financial Tracker
               </Typography>
               <Typography color="text.secondary">
-                Sign in with your approved Google account to continue.
+                {authenticationProvider === "development"
+                  ? "Use the local developer identity to continue."
+                  : "Sign in with your approved Google account to continue."}
               </Typography>
             </Stack>
             <form
               style={{ width: "100%" }}
               action={async () => {
                 "use server";
-                await signIn("google", { redirectTo });
+                await signIn(authenticationProvider, { redirectTo });
               }}
             >
               <Button fullWidth type="submit" variant="contained">
-                Continue with Google
+                {authenticationProvider === "development"
+                  ? "Continue as local developer"
+                  : "Continue with Google"}
               </Button>
             </form>
           </Stack>

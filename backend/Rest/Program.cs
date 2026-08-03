@@ -12,10 +12,22 @@ using Serilog;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 bool shouldLaunchAPI = Rest.EnvironmentManager.ShouldLaunchAPI();
 bool isTesting = builder.Environment.IsEnvironment("Testing");
+string authenticationMode = Environment.GetEnvironmentVariable("AUTH_MODE") ?? "google";
+bool usesDevelopmentAuthentication = string.Equals(authenticationMode, "development", StringComparison.OrdinalIgnoreCase);
+bool usesGoogleAuthentication = string.Equals(authenticationMode, "google", StringComparison.OrdinalIgnoreCase);
+if (!usesDevelopmentAuthentication && !usesGoogleAuthentication)
+{
+    throw new InvalidOperationException("AUTH_MODE must be either 'development' or 'google'.");
+}
+if (usesDevelopmentAuthentication && !builder.Environment.IsDevelopment())
+{
+    throw new InvalidOperationException("AUTH_MODE=development is allowed only when ASPNETCORE_ENVIRONMENT is Development.");
+}
 string? googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
 string[] allowedGoogleSubjects = (Environment.GetEnvironmentVariable("GOOGLE_ALLOWED_SUBJECTS") ?? "")
     .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-if (shouldLaunchAPI && (string.IsNullOrWhiteSpace(googleClientId) || allowedGoogleSubjects.Length == 0))
+if (shouldLaunchAPI && usesGoogleAuthentication
+    && (string.IsNullOrWhiteSpace(googleClientId) || allowedGoogleSubjects.Length == 0))
 {
     throw new InvalidOperationException("GOOGLE_CLIENT_ID and GOOGLE_ALLOWED_SUBJECTS must be configured before launching the API.");
 }
@@ -25,10 +37,17 @@ _ = builder.Services.AddHealthChecks()
     .AddCheck<Rest.Health.DatabaseHealthCheck>("database", tags: ["ready"]);
 Microsoft.AspNetCore.Authentication.AuthenticationBuilder authenticationBuilder = builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = isTesting ? Rest.Authentication.TestAuthenticationDefaults.Scheme : JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = isTesting ? Rest.Authentication.TestAuthenticationDefaults.Scheme : JwtBearerDefaults.AuthenticationScheme;
+    string authenticationScheme = isTesting
+        ? Rest.Authentication.TestAuthenticationDefaults.Scheme
+        : usesDevelopmentAuthentication
+            ? Rest.Authentication.DevelopmentAuthenticationDefaults.Scheme
+            : JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = authenticationScheme;
+    options.DefaultChallengeScheme = authenticationScheme;
 });
-_ = authenticationBuilder.AddJwtBearer(options =>
+if (usesGoogleAuthentication)
+{
+    _ = authenticationBuilder.AddJwtBearer(options =>
     {
         options.Authority = "https://accounts.google.com";
         options.MapInboundClaims = false;
@@ -44,15 +63,22 @@ _ = authenticationBuilder.AddJwtBearer(options =>
             NameClaimType = "sub",
         };
     });
+}
 if (isTesting)
 {
     _ = authenticationBuilder.AddScheme<Rest.Authentication.TestAuthenticationOptions, Rest.Authentication.TestAuthenticationHandler>(
         Rest.Authentication.TestAuthenticationDefaults.Scheme,
         _ => { });
 }
+else if (usesDevelopmentAuthentication)
+{
+    _ = authenticationBuilder.AddScheme<Rest.Authentication.DevelopmentAuthenticationOptions, Rest.Authentication.DevelopmentAuthenticationHandler>(
+        Rest.Authentication.DevelopmentAuthenticationDefaults.Scheme,
+        _ => { });
+}
 Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder authorizationPolicyBuilder =
     new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder().RequireAuthenticatedUser();
-if (!isTesting && allowedGoogleSubjects.Length > 0)
+if (!isTesting && usesGoogleAuthentication && allowedGoogleSubjects.Length > 0)
 {
     _ = authorizationPolicyBuilder.RequireClaim("sub", allowedGoogleSubjects);
 }
