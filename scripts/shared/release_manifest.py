@@ -18,7 +18,7 @@ class ReleaseManifest:
     migrator_image: str
 
     @classmethod
-    def read(cls, path: Path) -> "ReleaseManifest":
+    def read(cls, path: Path) -> ReleaseManifest:
         """Reads and validates a release manifest."""
 
         with path.open("r", encoding="utf-8") as file:
@@ -29,13 +29,24 @@ class ReleaseManifest:
 
         expected_fields = {"commit", "backendImage", "frontendImage", "migratorImage"}
         if set(value) != expected_fields:
-            raise ValueError("Release manifest must contain only commit and the three image references")
+            raise ValueError(
+                "Release manifest must contain only commit and the three image references"
+            )
 
         commit = value["commit"]
-        image_references = (value["backendImage"], value["frontendImage"], value["migratorImage"])
+        image_references = (
+            value["backendImage"],
+            value["frontendImage"],
+            value["migratorImage"],
+        )
         if not isinstance(commit, str) or commit.strip() == "":
             raise ValueError("Release manifest commit must not be empty")
-        if not all(isinstance(image, str) and IMAGE_DIGEST_PATTERN.fullmatch(image) for image in image_references):
-            raise ValueError("Release manifest images must be immutable sha256 digest references")
+        if not all(
+            isinstance(image, str) and IMAGE_DIGEST_PATTERN.fullmatch(image)
+            for image in image_references
+        ):
+            raise ValueError(
+                "Release manifest images must be immutable sha256 digest references"
+            )
 
         return cls(commit, *image_references)

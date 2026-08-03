@@ -5,6 +5,12 @@ dist
 *obj*
 Work
 __pycache__
+.coverage
+.mypy_cache
+.pytest_cache
+.ruff_cache
+.venv
+htmlcov
 debug
 .next
 tsconfig.tsbuildinfo

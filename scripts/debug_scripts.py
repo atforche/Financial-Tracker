@@ -3,9 +3,10 @@
 
 import os
 import re
-import shutil
 import secrets
+import shutil
 from pathlib import Path
+
 from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.configuration import Configuration, Environment
@@ -15,6 +16,7 @@ DEBUG_BACKEND_PORT = 8081
 DEBUG_FRONTEND_PORT = 3001
 DEBUG_SUBJECT = "local-developer"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
 
 def main():
     """Builds and runs the command collection for this script"""
@@ -30,6 +32,7 @@ def main():
     commands.commands.append(RunDebugBackend())
     commands.run()
 
+
 def get_debug_configuration() -> Configuration:
     """Gets the configuration for the debug environment"""
 
@@ -44,8 +47,9 @@ def get_debug_configuration() -> Configuration:
         auth_secret=os.environ.get("AUTH_SECRET", ""),
         backend_image="backend-Debug",
         frontend_image="frontend-Debug",
-        migrator_image="migrator-Debug"
+        migrator_image="migrator-Debug",
     )
+
 
 def get_debug_environment() -> dict[str, str]:
     """Returns the current environment augmented with the debug instance settings."""
@@ -54,8 +58,9 @@ def get_debug_environment() -> dict[str, str]:
     environment_file_path = get_debug_configuration().get_environment_file_path()
     if not os.path.isfile(environment_file_path):
         raise RuntimeError(
-            "Debug configuration is missing. Run './debug_scripts.py create' before starting the application.")
-    with open(environment_file_path, "r", encoding="utf-8") as file:
+            "Debug configuration is missing. Run './debug_scripts.py create' before starting the application."
+        )
+    with open(environment_file_path, encoding="utf-8") as file:
         for line in file:
             variable_match = re.fullmatch(r'([A-Z][A-Z0-9_]*)="(.*)"\n?', line)
             if variable_match is not None:
@@ -74,8 +79,11 @@ def create_debug_environment_file() -> None:
     template_path = PROJECT_ROOT / "scripts" / "debug.env.example"
     template = template_path.read_text(encoding="utf-8")
     environment_file_path.write_text(
-        template.replace('AUTH_SECRET=""', f'AUTH_SECRET="{secrets.token_urlsafe(48)}"'),
-        encoding="utf-8")
+        template.replace(
+            'AUTH_SECRET=""', f'AUTH_SECRET="{secrets.token_urlsafe(48)}"'
+        ),
+        encoding="utf-8",
+    )
     os.chmod(environment_file_path, 0o600)
 
 
@@ -85,6 +93,7 @@ def prepare_debug_configuration() -> None:
     os.makedirs(get_debug_configuration().path, exist_ok=True)
     create_debug_environment_file()
 
+
 class CreateDebugEnvironment(Command):
     """Command class that creates the debug environment"""
 
@@ -92,9 +101,21 @@ class CreateDebugEnvironment(Command):
         """Constructs a new instance of this class"""
 
         super().__init__("create", "Creates the debug environment")
-        self.steps.append(Step("Create Debug Directory", "Debug directory ready", self.create_directory))
-        self.steps.append(Step("Create Debug Configuration", "Debug configuration ready", create_debug_environment_file))
-        self.steps.append(Step("Create Debug Database", "Debug database ready", self.create_database))
+        self.steps.append(
+            Step(
+                "Create Debug Directory", "Debug directory ready", self.create_directory
+            )
+        )
+        self.steps.append(
+            Step(
+                "Create Debug Configuration",
+                "Debug configuration ready",
+                create_debug_environment_file,
+            )
+        )
+        self.steps.append(
+            Step("Create Debug Database", "Debug database ready", self.create_database)
+        )
         self.steps.append(Step("", "", lambda: ApplyDebugMigrations().run([])))
 
     def create_directory(self) -> None:
@@ -115,6 +136,7 @@ class CreateDebugEnvironment(Command):
                 pass
         os.chmod(database_path, 0o666)
 
+
 class UpgradeDebugEnvironment(Command):
     """Command class that upgrades the debug environment"""
 
@@ -124,22 +146,36 @@ class UpgradeDebugEnvironment(Command):
         super().__init__("upgrade", "Upgrades the debug environment")
         self.steps.append(Step("", "", lambda: ApplyDebugMigrations().run([])))
 
+
 class ApplyDebugMigrations(Command):
     """Applies compiled EF migrations to the debug database."""
 
     def __init__(self):
         """Constructs a new instance of this class."""
 
-        super().__init__("apply-migrations", "Applies compiled EF migrations to the debug database")
-        self.steps.append(Step("Apply Debug Migrations", "Debug database migrated", self.apply_migrations))
+        super().__init__(
+            "apply-migrations", "Applies compiled EF migrations to the debug database"
+        )
+        self.steps.append(
+            Step(
+                "Apply Debug Migrations",
+                "Debug database migrated",
+                self.apply_migrations,
+            )
+        )
 
     def apply_migrations(self) -> None:
         """Runs the migrator project against the debug database."""
 
         environment = os.environ.copy()
-        environment["DATABASE_PATH"] = get_debug_configuration().get_database_file_path()
+        environment["DATABASE_PATH"] = (
+            get_debug_configuration().get_database_file_path()
+        )
         os.chdir(PROJECT_ROOT)
-        self.run_subprocess("dotnet run --project backend/Migrator/Migrator.csproj", env=environment)
+        self.run_subprocess(
+            "dotnet run --project backend/Migrator/Migrator.csproj", env=environment
+        )
+
 
 class DestroyDebugEnvironment(Command):
     """Command class that destroys the debug environment"""
@@ -148,7 +184,13 @@ class DestroyDebugEnvironment(Command):
         """Constructs a new instance of this class"""
 
         super().__init__("destroy", "Destroys the debug environment")
-        self.steps.append(Step("Destroy Debug Environment", "Debug environment destroyed", lambda: shutil.rmtree(get_debug_configuration().path)))
+        self.steps.append(
+            Step(
+                "Destroy Debug Environment",
+                "Debug environment destroyed",
+                lambda: shutil.rmtree(get_debug_configuration().path),
+            )
+        )
 
 
 class StartDebugStack(Command):
@@ -157,14 +199,26 @@ class StartDebugStack(Command):
     def __init__(self):
         """Constructs a new instance of this class."""
 
-        super().__init__("stack-up", "Builds and starts the complete local container stack")
-        self.steps.append(Step("Prepare Debug Configuration", "Debug configuration ready", prepare_debug_configuration))
-        self.steps.append(Step("Start Debug Stack", "Debug stack running", self.start_stack))
+        super().__init__(
+            "stack-up", "Builds and starts the complete local container stack"
+        )
+        self.steps.append(
+            Step(
+                "Prepare Debug Configuration",
+                "Debug configuration ready",
+                prepare_debug_configuration,
+            )
+        )
+        self.steps.append(
+            Step("Start Debug Stack", "Debug stack running", self.start_stack)
+        )
 
     def start_stack(self) -> None:
         """Builds and starts the local Docker Compose stack."""
 
-        self.run_subprocess(f"docker compose -f {PROJECT_ROOT / 'compose.dev.yaml'} up --build --detach --wait")
+        self.run_subprocess(
+            f"docker compose -f {PROJECT_ROOT / 'compose.dev.yaml'} up --build --detach --wait"
+        )
 
 
 class StopDebugStack(Command):
@@ -173,13 +227,19 @@ class StopDebugStack(Command):
     def __init__(self):
         """Constructs a new instance of this class."""
 
-        super().__init__("stack-down", "Stops the local container stack and retains its data")
-        self.steps.append(Step("Stop Debug Stack", "Debug stack stopped", self.stop_stack))
+        super().__init__(
+            "stack-down", "Stops the local container stack and retains its data"
+        )
+        self.steps.append(
+            Step("Stop Debug Stack", "Debug stack stopped", self.stop_stack)
+        )
 
     def stop_stack(self) -> None:
         """Stops the local Docker Compose stack without deleting its volumes."""
 
-        self.run_subprocess(f"docker compose -f {PROJECT_ROOT / 'compose.dev.yaml'} down")
+        self.run_subprocess(
+            f"docker compose -f {PROJECT_ROOT / 'compose.dev.yaml'} down"
+        )
 
 
 class DestroyDebugStack(Command):
@@ -188,13 +248,24 @@ class DestroyDebugStack(Command):
     def __init__(self):
         """Constructs a new instance of this class."""
 
-        super().__init__("stack-destroy", "Stops the local container stack and removes its data")
-        self.steps.append(Step("Destroy Debug Stack", "Debug stack and data removed", self.destroy_stack))
+        super().__init__(
+            "stack-destroy", "Stops the local container stack and removes its data"
+        )
+        self.steps.append(
+            Step(
+                "Destroy Debug Stack",
+                "Debug stack and data removed",
+                self.destroy_stack,
+            )
+        )
 
     def destroy_stack(self) -> None:
         """Stops the local Docker Compose stack and deletes its named volumes."""
 
-        self.run_subprocess(f"docker compose -f {PROJECT_ROOT / 'compose.dev.yaml'} down --volumes")
+        self.run_subprocess(
+            f"docker compose -f {PROJECT_ROOT / 'compose.dev.yaml'} down --volumes"
+        )
+
 
 class RunDebugFrontend(Command):
     """Command class that runs the frontend for the debug environment"""
@@ -203,7 +274,9 @@ class RunDebugFrontend(Command):
         """Constructs a new instance of this class"""
 
         super().__init__("frontend", "Runs the frontend for the debug environment")
-        self.steps.append(Step("Run Debug Frontend", "Debug frontend running", self.run_frontend))
+        self.steps.append(
+            Step("Run Debug Frontend", "Debug frontend running", self.run_frontend)
+        )
 
     def run_frontend(self):
         """Runs the frontend for the debug environment"""
@@ -211,7 +284,10 @@ class RunDebugFrontend(Command):
         os.chdir(PROJECT_ROOT / "frontend")
         environment = get_debug_environment()
         environment["API_URL"] = f"http://localhost:{DEBUG_BACKEND_PORT}"
-        self.run_subprocess(f"npx next dev --port {DEBUG_FRONTEND_PORT}", env=environment)
+        self.run_subprocess(
+            f"npx next dev --port {DEBUG_FRONTEND_PORT}", env=environment
+        )
+
 
 class RunDebugBackend(Command):
     """Command class that runs the backend for the debug environment"""
@@ -220,7 +296,9 @@ class RunDebugBackend(Command):
         """Constructs a new instance of this class"""
 
         super().__init__("backend", "Runs the backend for the debug environment")
-        self.steps.append(Step("Run Debug Backend", "Debug backend running", self.run_backend))
+        self.steps.append(
+            Step("Run Debug Backend", "Debug backend running", self.run_backend)
+        )
 
     def run_backend(self):
         """Runs the backend for the debug environment"""
@@ -234,6 +312,7 @@ class RunDebugBackend(Command):
         environment["FRONTEND_ORIGIN"] = f"http://localhost:{DEBUG_FRONTEND_PORT}"
         os.chdir(PROJECT_ROOT / "backend" / "Rest")
         self.run_subprocess("dotnet run", env=environment)
+
 
 if __name__ == "__main__":
     main()

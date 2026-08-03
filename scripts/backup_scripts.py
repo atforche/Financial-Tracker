@@ -2,11 +2,11 @@
 """Creates encrypted database backups and verifies that they can be restored."""
 
 import os
-from pathlib import Path
 import shutil
 import sqlite3
 import subprocess
 import tempfile
+from pathlib import Path
 from typing import Annotated
 
 from shared.command import Command
@@ -29,7 +29,9 @@ BACKUP_TAG = "financial-tracker"
 def main() -> None:
     """Builds and runs the backup command collection."""
 
-    commands = CommandCollection("Creates and verifies encrypted Financial Tracker backups")
+    commands = CommandCollection(
+        "Creates and verifies encrypted Financial Tracker backups"
+    )
     commands.commands.append(InitializeBackupRepository())
     commands.commands.append(BackupDatabase())
     commands.commands.append(VerifyDatabaseRestoration())
@@ -39,14 +41,23 @@ def main() -> None:
 class BackupCommand(Command):
     """Base command for operations against an instance backup repository."""
 
+    path: str
+
     def validate_arguments(self) -> None:
         """Validates the instance and required backup environment."""
 
         instance_path = Path(self.path).resolve()
         if not instance_path.is_dir():
-            raise ValueError(f"Path {instance_path} does not point to a valid instance directory")
-        if not (instance_path / ".env").is_file() or not (instance_path / "data" / "database.db").is_file():
-            raise ValueError(f"Path {instance_path} does not contain a Financial Tracker instance")
+            raise ValueError(
+                f"Path {instance_path} does not point to a valid instance directory"
+            )
+        if (
+            not (instance_path / ".env").is_file()
+            or not (instance_path / "data" / "database.db").is_file()
+        ):
+            raise ValueError(
+                f"Path {instance_path} does not contain a Financial Tracker instance"
+            )
         for name in ("RESTIC_REPOSITORY", "RESTIC_PASSWORD"):
             if os.environ.get(name, "").strip() == "":
                 raise ValueError(f"Environment variable {name} must be configured")
@@ -58,14 +69,26 @@ class BackupCommand(Command):
 
         return Configuration.build_from_existing_instance(self.path, False)
 
-    def run_restic(self, arguments: list[str], volumes: tuple[tuple[Path, str, bool], ...] = ()) -> None:
+    def run_restic(
+        self, arguments: list[str], volumes: tuple[tuple[Path, str, bool], ...] = ()
+    ) -> None:
         """Runs restic with only its required credentials and explicitly mounted paths."""
 
         command = [
-            "docker", "run", "--rm", "--read-only",
-            "--user", f"{os.getuid()}:{os.getgid()}",
-            "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true",
-            "--tmpfs", "/tmp", "--env", "HOME=/tmp",
+            "docker",
+            "run",
+            "--rm",
+            "--read-only",
+            "--user",
+            f"{os.getuid()}:{os.getgid()}",
+            "--cap-drop",
+            "ALL",
+            "--security-opt",
+            "no-new-privileges:true",
+            "--tmpfs",
+            "/tmp",
+            "--env",
+            "HOME=/tmp",
         ]
         repository = os.environ["RESTIC_REPOSITORY"]
         if repository.startswith("/"):
@@ -103,14 +126,23 @@ class BackupCommand(Command):
         try:
             integrity_results = connection.execute("PRAGMA integrity_check").fetchall()
             if integrity_results != [("ok",)]:
-                raise RuntimeError(f"SQLite integrity check failed: {integrity_results}")
-            foreign_key_results = connection.execute("PRAGMA foreign_key_check").fetchall()
+                raise RuntimeError(
+                    f"SQLite integrity check failed: {integrity_results}"
+                )
+            foreign_key_results = connection.execute(
+                "PRAGMA foreign_key_check"
+            ).fetchall()
             if foreign_key_results:
-                raise RuntimeError(f"SQLite foreign-key check failed: {foreign_key_results}")
+                raise RuntimeError(
+                    f"SQLite foreign-key check failed: {foreign_key_results}"
+                )
             migration_table = connection.execute(
-                "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = '__EFMigrationsHistory'").fetchone()
+                "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = '__EFMigrationsHistory'"
+            ).fetchone()
             if migration_table is None:
-                raise RuntimeError("Restored database does not contain EF migration history")
+                raise RuntimeError(
+                    "Restored database does not contain EF migration history"
+                )
         finally:
             connection.close()
 
@@ -124,7 +156,13 @@ class InitializeBackupRepository(BackupCommand):
         """Constructs a backup-repository initialization command."""
 
         super().__init__("initialize", "Initializes the encrypted backup repository")
-        self.steps.append(Step("Initialize Backup Repository", "Backup repository initialized", self.initialize))
+        self.steps.append(
+            Step(
+                "Initialize Backup Repository",
+                "Backup repository initialized",
+                self.initialize,
+            )
+        )
 
     def initialize(self) -> None:
         """Initializes a new restic repository with the configured password."""
@@ -140,33 +178,54 @@ class BackupDatabase(BackupCommand):
     def __init__(self) -> None:
         """Constructs a database backup command."""
 
-        super().__init__("backup", "Creates an encrypted database backup and applies retention")
-        self.steps.append(Step("Back Up Database", "Encrypted database backup completed", self.backup))
+        super().__init__(
+            "backup", "Creates an encrypted database backup and applies retention"
+        )
+        self.steps.append(
+            Step("Back Up Database", "Encrypted database backup completed", self.backup)
+        )
 
     def backup(self) -> None:
         """Snapshots the live database, validates it, and sends it to restic."""
 
         configuration = self.get_configuration()
-        with tempfile.TemporaryDirectory(prefix="financial-tracker-backup-") as temporary_directory:
+        with tempfile.TemporaryDirectory(
+            prefix="financial-tracker-backup-"
+        ) as temporary_directory:
             snapshot_directory = Path(temporary_directory)
             snapshot_path = snapshot_directory / "database.db"
-            self.create_database_snapshot(Path(configuration.get_database_file_path()), snapshot_path)
+            self.create_database_snapshot(
+                Path(configuration.get_database_file_path()), snapshot_path
+            )
             self.validate_database(snapshot_path)
-            self.run_restic([
-                "backup", "/snapshot/database.db",
-                "--host", configuration.name,
-                "--tag", BACKUP_TAG,
-            ], ((snapshot_directory, "/snapshot", True),))
+            self.run_restic(
+                [
+                    "backup",
+                    "/snapshot/database.db",
+                    "--host",
+                    configuration.name,
+                    "--tag",
+                    BACKUP_TAG,
+                ],
+                ((snapshot_directory, "/snapshot", True),),
+            )
 
-        self.run_restic([
-            "forget",
-            "--host", configuration.name,
-            "--tag", BACKUP_TAG,
-            "--keep-daily", "7",
-            "--keep-weekly", "5",
-            "--keep-monthly", "12",
-            "--prune",
-        ])
+        self.run_restic(
+            [
+                "forget",
+                "--host",
+                configuration.name,
+                "--tag",
+                BACKUP_TAG,
+                "--keep-daily",
+                "7",
+                "--keep-weekly",
+                "5",
+                "--keep-monthly",
+                "12",
+                "--prune",
+            ]
+        )
 
 
 class VerifyDatabaseRestoration(BackupCommand):
@@ -177,23 +236,39 @@ class VerifyDatabaseRestoration(BackupCommand):
     def __init__(self) -> None:
         """Constructs a restoration-verification command."""
 
-        super().__init__("verify", "Restores the latest backup and verifies database integrity and migration")
-        self.steps.append(Step("Verify Backup Restoration", "Backup restoration verified", self.verify))
+        super().__init__(
+            "verify",
+            "Restores the latest backup and verifies database integrity and migration",
+        )
+        self.steps.append(
+            Step(
+                "Verify Backup Restoration", "Backup restoration verified", self.verify
+            )
+        )
 
     def verify(self) -> None:
         """Checks the repository and exercises restoration into an isolated directory."""
 
         configuration = self.get_configuration()
         self.run_restic(["check"])
-        with tempfile.TemporaryDirectory(prefix="financial-tracker-restore-") as temporary_directory:
+        with tempfile.TemporaryDirectory(
+            prefix="financial-tracker-restore-"
+        ) as temporary_directory:
             restore_directory = Path(temporary_directory)
-            self.run_restic([
-                "restore", "latest",
-                "--host", configuration.name,
-                "--tag", BACKUP_TAG,
-                "--target", "/restore",
-                "--verify",
-            ], ((restore_directory, "/restore", False),))
+            self.run_restic(
+                [
+                    "restore",
+                    "latest",
+                    "--host",
+                    configuration.name,
+                    "--tag",
+                    BACKUP_TAG,
+                    "--target",
+                    "/restore",
+                    "--verify",
+                ],
+                ((restore_directory, "/restore", False),),
+            )
 
             restored_database = restore_directory / "snapshot/database.db"
             if not restored_database.is_file():
@@ -205,13 +280,24 @@ class VerifyDatabaseRestoration(BackupCommand):
             migration_database = migration_directory / "database.db"
             shutil.copy2(restored_database, migration_database)
             os.chmod(migration_database, 0o666)
-            subprocess.run([
-                "docker", "run", "--rm", "--read-only",
-                "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true",
-                "--volume", f"{migration_directory}:/data",
-                "--env", "DATABASE_PATH=/data/database.db",
-                configuration.migrator_image,
-            ], check=True)
+            subprocess.run(
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--read-only",
+                    "--cap-drop",
+                    "ALL",
+                    "--security-opt",
+                    "no-new-privileges:true",
+                    "--volume",
+                    f"{migration_directory}:/data",
+                    "--env",
+                    "DATABASE_PATH=/data/database.db",
+                    configuration.migrator_image,
+                ],
+                check=True,
+            )
             self.validate_database(migration_database)
 
 

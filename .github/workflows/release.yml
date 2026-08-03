@@ -29,14 +29,8 @@ jobs:
         with:
           version: v0.71.0
 
-      - name: Build Container Images
-        run: python3 container_scripts.py build
-
-      - name: Scan Container Images
-        run: python3 security_scripts.py scan-images
-
-      - name: Smoke Test Container Images
-        run: python3 container_scripts.py smoke-test
+      - name: Build, Scan, and Smoke Test Container Images
+        run: python3 pipeline_script.py container-images
 
       - name: Resolve Registry Image Names
         id: images

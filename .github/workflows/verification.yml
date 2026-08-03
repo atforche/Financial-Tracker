@@ -29,14 +29,8 @@ jobs:
         with:
           dotnet-version: 10.x.x
 
-      - name: Restore Backend Solution
-        run: python3 backend_scripts.py restore
-
-      - name: Build Backend Solution
-        run: python3 backend_scripts.py build
-
-      - name: Test Backend Solution
-        run: python3 backend_scripts.py test
+      - name: Build and Test Backend
+        run: python3 pipeline_script.py backend-test
 
       - name: Upload OpenAPI Contract
         uses: actions/upload-artifact@v4
@@ -65,11 +59,8 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install Frontend Dependencies
-        run: python3 frontend_scripts.py install
-
       - name: Build Frontend
-        run: python3 frontend_scripts.py build
+        run: python3 pipeline_script.py frontend-build
 
   api-contract-verification:
     name: Generated API Contract
@@ -90,9 +81,6 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install Frontend Dependencies
-        run: python3 frontend_scripts.py install
-
       - name: Download OpenAPI Contract
         uses: actions/download-artifact@v4
         with:
@@ -100,7 +88,7 @@ jobs:
           path: backend/.artifacts/obj/Rest
 
       - name: Verify Frontend Models
-        run: python3 frontend_scripts.py verify-models
+        run: python3 pipeline_script.py api-contract
 
   container-verification:
     name: Container Security and Smoke Tests
@@ -132,17 +120,8 @@ jobs:
         with:
           version: v0.71.0
 
-      - name: Restore Backend Solution
-        run: python3 backend_scripts.py restore
-
       - name: Scan Dependencies
-        run: python3 security_scripts.py scan-dependencies
+        run: python3 pipeline_script.py dependencies
 
-      - name: Build Container Images
-        run: python3 container_scripts.py build
-
-      - name: Scan Container Images
-        run: python3 security_scripts.py scan-images
-
-      - name: Smoke Test Container Images
-        run: python3 container_scripts.py smoke-test
+      - name: Build, Scan, and Smoke Test Container Images
+        run: python3 pipeline_script.py container-images

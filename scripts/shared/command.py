@@ -1,23 +1,25 @@
 """Class representing a standalone command used in a script"""
 
-from inspect import get_annotations
 import shlex
 import subprocess
 import sys
-from typing import Any, List, get_args
+from inspect import get_annotations
+from typing import Any, get_args
+
 from .argument import Argument
 from .step import Step
+
 
 class Command:
     """Class representing a standalone command used in a script"""
 
     name: str
     description: str
-    steps: List[Step]
+    steps: list[Step]
 
     def __init__(self, name: str, description: str):
         """Constructs a new instance of this class
-        
+
         Args:
             name (str): Name for this command
         """
@@ -27,9 +29,9 @@ class Command:
         self.steps = []
         self.validate_name()
 
-    def run(self, arg_list: List[str]):
+    def run(self, arg_list: list[str]):
         """Run this command.
-        
+
         Args:
             arg_list (List[str]): List of command list arguments provided to the program
         """
@@ -54,23 +56,25 @@ class Command:
     def validate_arguments(self):
         """Runs additional validation on the provided arguments"""
 
-    def build_argument_collection(self) -> List[Argument[Any]]:
+    def build_argument_collection(self) -> list[Argument[Any]]:
         """Builds the list of Arguments that this Command exposes"""
 
-        results: List[Argument[Any]] = [Argument[bool]("help", "Displays the help message for this command")]
+        results: list[Argument[Any]] = [
+            Argument[bool]("help", "Displays the help message for this command")
+        ]
 
         for property_name, property_annotations in get_annotations(type(self)).items():
             annotations = get_args(property_annotations)
-            if (len(annotations) == 0):
+            if len(annotations) < 2:
                 continue
-            results.append(Argument[annotations[0]](property_name, annotations[1]))
+            results.append(Argument[Any](property_name, annotations[1], annotations[0]))
 
         return results
 
     def print_usage(self):
         """Prints a help message for this command"""
 
-        arguments: List[Argument[Any]] = self.build_argument_collection()
+        arguments: list[Argument[Any]] = self.build_argument_collection()
         argument_usage = [f"[{argument.get_usage()}]" for argument in arguments]
         print(f"usage: {sys.argv[0]} {self.name} {' '.join(argument_usage)}")
         print()
@@ -81,14 +85,16 @@ class Command:
             for argument in self.build_argument_collection():
                 print(f"{argument.get_usage():<25} {argument.description}")
 
-    def run_subprocess(self,
-                       command_string: str,
-                       process_input: str = "",
-                       throw_on_error: bool = True,
-                       suppress_output: bool = False,
-                       env: dict[str, str] | None = None) -> int:
+    def run_subprocess(
+        self,
+        command_string: str,
+        process_input: str = "",
+        throw_on_error: bool = True,
+        suppress_output: bool = False,
+        env: dict[str, str] | None = None,
+    ) -> int:
         """Runs the provided command as a subprocess. An exception is raised if the command ends in error.
-        
+
         Args:
             command_string (str): Command to be run
             process_input (str): Input string to pipe into the process
@@ -101,13 +107,15 @@ class Command:
 
         if not suppress_output:
             print(f"Running subprocess: '{command_string}'")
-        result = subprocess.run(shlex.split(command_string),
-                                text=True,
-                                input=process_input,
-                                check=False,
-                                stdout=subprocess.DEVNULL if suppress_output else None,
-                                stderr=subprocess.DEVNULL if suppress_output else None,
-                                env=env)
+        result = subprocess.run(
+            shlex.split(command_string),
+            text=True,
+            input=process_input,
+            check=False,
+            stdout=subprocess.DEVNULL if suppress_output else None,
+            stderr=subprocess.DEVNULL if suppress_output else None,
+            env=env,
+        )
         if throw_on_error and result.returncode != 0:
             raise RuntimeError("Command ended with error")
         return result.returncode
@@ -117,5 +125,5 @@ class Command:
 
         if self.name == "":
             raise ValueError("A command cannot have a blank name")
-        if ' ' in self.name or '_' in self.name:
+        if " " in self.name or "_" in self.name:
             raise ValueError("A command name cannot contain a space or underscore")
