@@ -22,6 +22,11 @@ def test_run_command_contains_each_leaf_pipeline_command():
     assert expected_commands == pipeline_script.RUN_COMMANDS
 
 
+def test_backend_pipeline_collects_coverage_without_running_tests_twice():
+    assert ("backend_scripts.py", "test") not in pipeline_script.BACKEND_TEST_COMMANDS
+    assert ("backend_scripts.py", "coverage") in pipeline_script.BACKEND_TEST_COMMANDS
+
+
 def test_ci_workflows_delegate_check_sequences_to_pipeline_script():
     workflow_commands = {
         "code-quality.yml": ("python", "backend-format", "frontend-format"),

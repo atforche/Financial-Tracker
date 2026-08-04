@@ -34,7 +34,6 @@ FRONTEND_FORMAT_COMMANDS = (
 BACKEND_TEST_COMMANDS = (
     ("backend_scripts.py", "restore"),
     ("backend_scripts.py", "build"),
-    ("backend_scripts.py", "test"),
     ("backend_scripts.py", "coverage"),
 )
 

@@ -33,6 +33,10 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.x.x
+          cache: true
+          cache-dependency-path: |
+            backend/**/*.csproj
+            backend/Directory.Build.props
 
       - name: Build and Test Backend
         run: python pipeline_script.py backend-test
@@ -107,10 +111,6 @@ jobs:
 
   container-verification:
     name: Container Security and Smoke Tests
-    needs:
-      - backend-verification
-      - frontend-verification
-      - api-contract-verification
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -129,11 +129,17 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.x.x
+          cache: true
+          cache-dependency-path: |
+            backend/**/*.csproj
+            backend/Directory.Build.props
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22.5.1
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install Frontend Test Dependencies
         working-directory: ./frontend

@@ -50,6 +50,10 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.x.x
+          cache: true
+          cache-dependency-path: |
+            backend/**/*.csproj
+            backend/Directory.Build.props
 
       - name: Format Backend
         run: python pipeline_script.py backend-format

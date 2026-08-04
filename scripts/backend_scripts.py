@@ -103,12 +103,12 @@ class TestBackendSolution(Command):
         if self.use_database:
             print("Running database integration tests")
             self.run_subprocess(
-                "dotnet test ../backend/Backend.sln --no-build --verbosity minimal --environment USE_DATABASE=TRUE"
+                "dotnet test ../backend/Backend.sln --no-build --no-restore --verbosity minimal --environment USE_DATABASE=TRUE"
             )
         else:
             print("Running unit tests")
             self.run_subprocess(
-                "dotnet test ../backend/Backend.sln --no-build --verbosity minimal"
+                "dotnet test ../backend/Backend.sln --no-build --no-restore --verbosity minimal"
             )
 
 
@@ -134,7 +134,7 @@ class GetBackendCoverage(Command):
 
         results_directory = Path("../backend/.artifacts/TestResults")
         command = (
-            "dotnet test ../backend/Backend.sln --no-build --verbosity minimal "
+            "dotnet test ../backend/Backend.sln --no-build --no-restore --verbosity minimal "
             '--collect "XPlat Code Coverage" '
             f"--results-directory {results_directory}"
         )
