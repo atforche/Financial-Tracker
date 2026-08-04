@@ -388,7 +388,7 @@ class SmokeTestContainerImages(Command):
                 with urlopen(url, timeout=3) as response:
                     if 200 <= response.status < 300:
                         return
-            except OSError, URLError:
+            except (OSError, URLError):
                 time.sleep(1)
 
         raise RuntimeError(f"Container endpoint did not become ready: {url}")
