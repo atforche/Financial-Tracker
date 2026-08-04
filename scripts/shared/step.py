@@ -1,6 +1,8 @@
 """Class representing an individual step in a Command"""
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
+
 
 class Step:
     """Class representing an individual step in a Command"""
@@ -11,7 +13,7 @@ class Step:
 
     def __init__(self, header: str, footer: str, func: Callable[[], Any]) -> None:
         """Constructs a new instance of this class
-        
+
         Args:
             header (str): Header for this Step
             footer (str): Footer for this Step

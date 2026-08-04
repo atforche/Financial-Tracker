@@ -1,22 +1,25 @@
 """Class representing a collection of commands that can be run from the command line"""
 
 import sys
-from typing import List
+
 from .argument import Argument
 from .command import Command
+
 
 class CommandCollection:
     """Class representing a collection of commands that can be run from the command line"""
 
     def __init__(self, description: str) -> None:
         """Constructs a new instance of this class
-        
+
         Args:
             description (str): Description of this command collection
         """
 
-        self.commands: List[Command] = []
-        self.help_argument = Argument[bool]("help", "Displays the help message for this program")
+        self.commands: list[Command] = []
+        self.help_argument = Argument[bool](
+            "help", "Displays the help message for this program"
+        )
         self.description = description
 
     def run(self) -> None:
@@ -42,7 +45,9 @@ class CommandCollection:
         """Prints a help message with usage information for this command collection"""
 
         command_usage = f"{{{', '.join([command.name for command in self.commands])}}}"
-        print(f"usage: {sys.argv[0]} [{self.help_argument.get_usage()}] {command_usage}")
+        print(
+            f"usage: {sys.argv[0]} [{self.help_argument.get_usage()}] {command_usage}"
+        )
         print()
         print(self.description)
         print()

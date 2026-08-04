@@ -1,7 +1,7 @@
 /* eslint-disable sort-imports */
 import { Box, Button, Stack, Typography } from "@mui/material";
 import Image, { type StaticImageData } from "next/image";
-import { auth, signIn } from "@/auth";
+import { authenticationProvider, auth, signIn } from "@/auth";
 import { redirect } from "next/navigation";
 import type { JSX } from "react";
 import Frame from "@/framework/view/Frame";
@@ -29,6 +29,29 @@ if (!isStaticImageData(applicationIcon)) {
 
 const loginIcon = applicationIcon;
 
+/** Returns a same-origin callback path and rejects external redirect targets. */
+const getRedirectTo = function (callbackUrl: string | undefined): string {
+  if (
+    typeof callbackUrl === "string" &&
+    callbackUrl.startsWith("/") &&
+    !callbackUrl.startsWith("//")
+  ) {
+    return callbackUrl;
+  }
+
+  try {
+    const callback = new URL(callbackUrl ?? "");
+    const publicOrigin = new URL(process.env["PUBLIC_ORIGIN"] ?? "");
+    if (callback.origin === publicOrigin.origin) {
+      return `${callback.pathname}${callback.search}${callback.hash}`;
+    }
+  } catch {
+    // Invalid or unconfigured origins are not valid redirect targets.
+  }
+
+  return "/";
+};
+
 /**
  * Displays the sign-in page for the application.
  */
@@ -38,10 +61,7 @@ const LoginPage = async function ({
   readonly searchParams: Promise<{ callbackUrl?: string }>;
 }): Promise<JSX.Element> {
   const { callbackUrl } = await searchParams;
-  const redirectTo =
-    typeof callbackUrl === "string" && callbackUrl.startsWith("/")
-      ? callbackUrl
-      : "/";
+  const redirectTo = getRedirectTo(callbackUrl);
   const session = await auth();
 
   if (session !== null) {
@@ -80,18 +100,22 @@ const LoginPage = async function ({
                 Financial Tracker
               </Typography>
               <Typography color="text.secondary">
-                Sign in with your approved Google account to continue.
+                {authenticationProvider === "development"
+                  ? "Use the local developer identity to continue."
+                  : "Sign in with your approved Google account to continue."}
               </Typography>
             </Stack>
             <form
               style={{ width: "100%" }}
               action={async () => {
                 "use server";
-                await signIn("google", { redirectTo });
+                await signIn(authenticationProvider, { redirectTo });
               }}
             >
               <Button fullWidth type="submit" variant="contained">
-                Continue with Google
+                {authenticationProvider === "development"
+                  ? "Continue as local developer"
+                  : "Continue with Google"}
               </Button>
             </form>
           </Stack>

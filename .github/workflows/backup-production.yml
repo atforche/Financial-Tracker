@@ -38,6 +38,11 @@ jobs:
           ref: main
           persist-credentials: false
 
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
       - name: Select Backup Operation
         id: operation
         env:
@@ -85,5 +90,5 @@ jobs:
             echo "INSTANCE_PATH must be outside the runner workspace and cannot be the filesystem root." >&2
             exit 1
           fi
-          python3 scripts/backup_scripts.py "${{ steps.operation.outputs.operation }}" \
+          python scripts/backup_scripts.py "${{ steps.operation.outputs.operation }}" \
             --path "${instance_path}"

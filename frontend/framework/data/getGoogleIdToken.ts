@@ -4,7 +4,7 @@ import { getToken } from "next-auth/jwt";
 import { headers } from "next/headers";
 
 /**
- * Reads the Google ID token from the encrypted Auth.js session cookie without
+ * Reads the API access token from the encrypted Auth.js session cookie without
  * exposing it through the browser-visible session response.
  */
 const getGoogleIdToken = async function (): Promise<string | null> {
