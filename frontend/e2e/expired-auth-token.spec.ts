@@ -1,5 +1,4 @@
 import { expect, test } from "@playwright/test";
-import { encode } from "next-auth/jwt";
 
 const encodeBase64Url = function (value: object): string {
   return Buffer.from(JSON.stringify(value)).toString("base64url");
@@ -25,6 +24,8 @@ test("an expired provider token is rejected by the frontend session", async ({
   if (typeof secret !== "string" || secret === "") {
     return;
   }
+
+  const { encode } = await import("next-auth/jwt");
 
   await page.goto("/login");
   const applicationOrigin = new URL(page.url()).origin;
