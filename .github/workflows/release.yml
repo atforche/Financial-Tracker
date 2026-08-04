@@ -29,6 +29,19 @@ jobs:
         with:
           python-version: "3.14"
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.5.1
+
+      - name: Install Frontend Test Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Install Chromium
+        working-directory: ./frontend
+        run: npx playwright install --with-deps chromium
+
       - name: Setup Trivy
         uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567 # v0.3.1
         with:
