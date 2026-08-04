@@ -3,6 +3,7 @@
 
 import json
 import os
+import shlex
 import socket
 import subprocess
 import tempfile
@@ -24,6 +25,8 @@ from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.migrator import run_migrator
 from shared.step import Step
+
+DOCKER_BUILD_CACHE = "DOCKER_BUILD_CACHE"
 
 
 class DoNotFollowRedirects(HTTPRedirectHandler):
@@ -74,23 +77,61 @@ class BuildContainerImages(Command):
     def build_backend_image(self) -> None:
         """Builds the backend image used by verification and release workflows."""
 
-        self.run_subprocess(
-            "docker build ../backend --tag financial-tracker-backend:workflow"
+        self.build_image(
+            context="../backend",
+            tag="financial-tracker-backend:workflow",
+            cache_scope="financial-tracker-backend",
         )
 
     def build_frontend_image(self) -> None:
         """Builds the frontend image used by verification and release workflows."""
 
-        self.run_subprocess(
-            "docker build ../frontend --tag financial-tracker-frontend:workflow"
+        self.build_image(
+            context="../frontend",
+            tag="financial-tracker-frontend:workflow",
+            cache_scope="financial-tracker-frontend",
         )
 
     def build_migrator_image(self) -> None:
         """Builds the database migrator image used by verification and release workflows."""
 
-        self.run_subprocess(
-            "docker build ../backend --file ../backend/Migrator.Dockerfile --tag financial-tracker-migrator:workflow"
+        self.build_image(
+            context="../backend",
+            dockerfile="../backend/Migrator.Dockerfile",
+            tag="financial-tracker-migrator:workflow",
+            cache_scope="financial-tracker-migrator",
         )
+
+    def build_image(
+        self,
+        context: str,
+        tag: str,
+        cache_scope: str,
+        dockerfile: str | None = None,
+    ) -> None:
+        """Builds an image, optionally importing and exporting a CI cache."""
+
+        cache_backend = os.environ.get(DOCKER_BUILD_CACHE, "").strip().lower()
+        if cache_backend not in ("", "gha"):
+            raise ValueError(f"Unsupported Docker build cache backend: {cache_backend}")
+
+        command = ["docker"]
+        command.extend(["buildx", "build"] if cache_backend == "gha" else ["build"])
+        command.extend(["--tag", tag])
+        if dockerfile is not None:
+            command.extend(["--file", dockerfile])
+        if cache_backend == "gha":
+            command.extend(
+                [
+                    "--load",
+                    "--cache-from",
+                    f"type=gha,scope={cache_scope}",
+                    "--cache-to",
+                    f"type=gha,mode=max,ignore-error=true,scope={cache_scope}",
+                ]
+            )
+        command.append(context)
+        self.run_subprocess(shlex.join(command))
 
 
 class SmokeTestContainerImages(Command):

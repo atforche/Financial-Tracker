@@ -1,4 +1,8 @@
-.next
+node_modules/
+.next/
+playwright-report/
+test-results/
+*.tsbuildinfo
 tsconfig.json
 next-env.d.ts
 api.ts
