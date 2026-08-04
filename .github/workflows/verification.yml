@@ -24,13 +24,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.x.x
 
       - name: Build and Test Backend
-        run: python3 pipeline_script.py backend-test
+        run: python pipeline_script.py backend-test
 
       - name: Upload OpenAPI Contract
         uses: actions/upload-artifact@v4
@@ -52,6 +57,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -60,7 +70,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Build Frontend
-        run: python3 pipeline_script.py frontend-build
+        run: python pipeline_script.py frontend-build
 
   api-contract-verification:
     name: Generated API Contract
@@ -73,6 +83,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -88,7 +103,7 @@ jobs:
           path: backend/.artifacts/obj/Rest
 
       - name: Verify Frontend Models
-        run: python3 pipeline_script.py api-contract
+        run: python pipeline_script.py api-contract
 
   container-verification:
     name: Container Security and Smoke Tests
@@ -104,6 +119,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -129,10 +149,10 @@ jobs:
           version: v0.71.0
 
       - name: Scan Dependencies
-        run: python3 pipeline_script.py dependencies
+        run: python pipeline_script.py dependencies
 
       - name: Build, Scan, and Smoke Test Container Images
-        run: python3 pipeline_script.py container-images
+        run: python pipeline_script.py container-images
 
       - name: Upload Playwright Failure Artifacts
         if: always()

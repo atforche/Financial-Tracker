@@ -31,6 +31,11 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
       - name: Validate Workflow Inputs
         env:
           RELEASE_SHA: ${{ inputs.release_sha }}
@@ -53,7 +58,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          python3 scripts/release_scripts.py validate-run \
+          python scripts/release_scripts.py validate-run \
             --commit "${{ inputs.release_sha }}" \
             --run-id "${{ inputs.release_run_id }}"
 
@@ -71,6 +76,11 @@ jobs:
           ref: ${{ inputs.release_sha }}
           persist-credentials: false
 
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
       - name: Download Release Artifact
         uses: actions/download-artifact@v4
         with:
@@ -82,7 +92,7 @@ jobs:
 
       - name: Verify Release Artifact
         run: |
-          python3 scripts/release_scripts.py validate-artifact \
+          python scripts/release_scripts.py validate-artifact \
             --commit "${{ inputs.release_sha }}" \
             --manifest "${{ runner.temp }}/financial-tracker-release/release-manifest.json"
 
@@ -122,7 +132,7 @@ jobs:
             echo "INSTANCE_PATH must be outside the runner workspace and cannot be the filesystem root." >&2
             exit 1
           fi
-          python3 scripts/deploy_scripts.py bootstrap \
+          python scripts/deploy_scripts.py bootstrap \
             --path "${instance_path}" \
             --release-manifest "${RELEASE_MANIFEST}"
 
