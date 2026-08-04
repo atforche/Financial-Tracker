@@ -229,7 +229,7 @@ class SmokeTestContainerImages(Command):
                 self.wait_for_url(f"{frontend_origin}/login")
                 self.wait_for_container_health(frontend)
                 self.verify_frontend_session_and_api_flow(frontend_port)
-                self.run_playwright_e2e(frontend_port)
+                self.run_playwright_e2e(frontend_port, f"{identifier}{identifier}")
             except Exception:
                 self.print_container_logs(backend)
                 self.print_container_logs(frontend)
@@ -333,11 +333,12 @@ class SmokeTestContainerImages(Command):
                 )
 
     @staticmethod
-    def run_playwright_e2e(frontend_port: int) -> None:
+    def run_playwright_e2e(frontend_port: int, auth_secret: str) -> None:
         """Runs browser tests against the production-built frontend and backend images."""
 
         environment = os.environ.copy()
-        environment["E2E_BASE_URL"] = f"http://127.0.0.1:{frontend_port}"
+        environment["E2E_BASE_URL"] = f"http://localhost:{frontend_port}"
+        environment["E2E_AUTH_SECRET"] = auth_secret
         subprocess.run(
             [
                 "npm",
