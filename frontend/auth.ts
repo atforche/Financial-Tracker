@@ -1,3 +1,7 @@
+import {
+  getIdTokenExpiration,
+  isIdTokenExpired,
+} from "@/framework/auth/idTokenExpiration";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import NextAuth from "next-auth";
@@ -6,6 +10,7 @@ declare module "@auth/core/jwt" {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   interface JWT {
     idToken?: string;
+    idTokenExpiresAt?: number;
   }
 }
 
@@ -31,6 +36,28 @@ if (usesDevelopmentAuthentication && developmentSubject.trim() === "") {
 const authenticationProvider = usesDevelopmentAuthentication
   ? "development"
   : "google";
+
+/**
+ * Returns whether the provider token is still usable by the backend.
+ */
+const hasExpiredIdToken = function (token: {
+  idToken?: string;
+  idTokenExpiresAt?: number;
+}): boolean {
+  if (
+    typeof token.idToken !== "string" ||
+    token.idToken.startsWith("development:")
+  ) {
+    return false;
+  }
+
+  const expiration =
+    typeof token.idTokenExpiresAt === "number"
+      ? token.idTokenExpiresAt
+      : getIdTokenExpiration(token.idToken);
+
+  return isIdTokenExpired(token.idToken, expiration);
+};
 
 /**
  * Configures Google OpenID Connect login and retains the ID token for backend calls.
@@ -85,11 +112,20 @@ const { auth, handlers, signIn, signOut } = nextAuth({
       if (typeof account?.id_token === "string") {
         const tokenWithIdToken = token as typeof token & { idToken?: string };
         tokenWithIdToken.idToken = account.id_token;
+        const expiration = getIdTokenExpiration(account.id_token);
+        if (expiration !== null) {
+          tokenWithIdToken.idTokenExpiresAt = expiration;
+        }
       }
       if (account?.provider === "development" && typeof user.id === "string") {
         const tokenWithIdToken = token as typeof token & { idToken?: string };
         tokenWithIdToken.idToken = `development:${user.id}`;
       }
+
+      if (hasExpiredIdToken(token)) {
+        return null;
+      }
+
       return token;
     },
   },

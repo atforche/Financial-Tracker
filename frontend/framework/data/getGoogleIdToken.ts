@@ -2,6 +2,7 @@ import "server-only";
 
 import { getToken } from "next-auth/jwt";
 import { headers } from "next/headers";
+import { isIdTokenExpired } from "@/framework/auth/idTokenExpiration";
 
 /**
  * Reads the API access token from the encrypted Auth.js session cookie without
@@ -24,7 +25,16 @@ const getGoogleIdToken = async function (): Promise<string | null> {
     secureCookie,
   });
 
-  return typeof token?.idToken === "string" ? token.idToken : null;
+  if (typeof token?.idToken !== "string") {
+    return null;
+  }
+  if (token.idToken.startsWith("development:")) {
+    return token.idToken;
+  }
+
+  return isIdTokenExpired(token.idToken, token.idTokenExpiresAt)
+    ? null
+    : token.idToken;
 };
 
 export default getGoogleIdToken;
