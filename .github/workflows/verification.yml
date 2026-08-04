@@ -76,6 +76,41 @@ jobs:
       - name: Build Frontend
         run: python pipeline_script.py frontend-build
 
+  dependency-verification:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./scripts
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.x.x
+          cache: true
+          cache-dependency-path: |
+            backend/**/*.csproj
+            backend/Directory.Build.props
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.5.1
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Scan Dependencies
+        run: python pipeline_script.py dependencies
+
   api-contract-verification:
     name: Generated API Contract
     needs: backend-verification
@@ -125,21 +160,18 @@ jobs:
         with:
           python-version: "3.14"
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.x.x
-          cache: true
-          cache-dependency-path: |
-            backend/**/*.csproj
-            backend/Directory.Build.props
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22.5.1
           cache: npm
           cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Expose GitHub Actions Runtime
+        uses: crazy-max/ghaction-github-runtime@v3
 
       - name: Install Frontend Test Dependencies
         working-directory: ./frontend
@@ -154,10 +186,9 @@ jobs:
         with:
           version: v0.71.0
 
-      - name: Scan Dependencies
-        run: python pipeline_script.py dependencies
-
       - name: Build, Scan, and Smoke Test Container Images
+        env:
+          DOCKER_BUILD_CACHE: gha
         run: python pipeline_script.py container-images
 
       - name: Upload Playwright Failure Artifacts
