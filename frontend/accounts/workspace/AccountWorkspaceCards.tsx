@@ -118,7 +118,8 @@ const AccountWorkspaceCards = function ({
         gap: 2,
         alignItems: "flex-start",
         "& > *": {
-          flex: "0 0 auto",
+          flex: "0 1 auto",
+          minWidth: 0,
           maxWidth: "100%",
         },
       }}
@@ -131,14 +132,11 @@ const AccountWorkspaceCards = function ({
               : `financial-institution:${financialInstitution}`
           }
           caption={financialInstitution ?? noFinancialInstitutionLabel}
-          maxWidth={null}
+          minWidth={0}
+          maxWidth="100%"
+          width="max-content"
         >
-          <CardResponsiveGrid
-            columns={accounts.length}
-            contentSized
-            minimumColumnWidth={280}
-            spacing={2}
-          >
+          <CardResponsiveGrid minimumColumnWidth={280} spacing={2} wrap>
             {accounts.map((account) => (
               <WorkspaceCard
                 key={account.id}
