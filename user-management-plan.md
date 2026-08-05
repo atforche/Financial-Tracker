@@ -276,7 +276,7 @@ verified admin login before the old allowlist is removed.
 | 0 | Resolve remaining design details and lock contracts | None | Complete |
 | 1 | Persistence, domain lifecycle, migration, and bootstrap | Phase 0 | Complete |
 | 2 | Identity resolution and backend authorization | Phase 1 | Complete |
-| 3 | User and invitation administration API | Phase 2 | Not started |
+| 3 | User and invitation administration API | Phase 2 | Complete |
 | 4 | Auth.js handshake and current-user frontend foundation | Phases 2-3 | Not started |
 | 5 | Admin UI and read-only application experience | Phase 4 | Not started |
 | 6 | Deployment cutover, compatibility removal, and end-to-end proof | Phases 1-5 | Not started |
@@ -588,26 +588,53 @@ test once identity resolution and administration endpoints are introduced.
 
 ### Required tests
 
-- [ ] `/users/me` returns database role/status and safe profile fields only.
-- [ ] Standard and read-only callers cannot list or administer users.
-- [ ] Duplicate pending invitation returns the selected conflict response.
-- [ ] Invitation revoke behavior is idempotent or rejects repeated transition
+- [x] `/users/me` returns database role/status and safe profile fields only.
+- [x] Standard and read-only callers cannot list or administer users.
+- [x] Duplicate pending invitation returns the selected conflict response.
+- [x] Invitation revoke behavior is idempotent or rejects repeated transition
   consistently with the locked contract.
-- [ ] Admin can change roles and enable/disable users.
-- [ ] Last-admin actions return a conflict and preserve state.
-- [ ] Audit records are committed with successful operations and absent after
+- [x] Admin can change roles and enable/disable users.
+- [x] Last-admin actions return a conflict and preserve state.
+- [x] Audit records are committed with successful operations and absent after
   failed transactions.
-- [ ] OpenAPI generation/check passes.
+- [x] OpenAPI generation/check passes.
 
 ### Acceptance criteria
 
-- [ ] All target administration capabilities are accessible through REST.
-- [ ] No endpoint accepts caller-supplied actor identity.
-- [ ] Generated frontend types match the backend contract.
+- [x] All target administration capabilities are accessible through REST.
+- [x] No endpoint accepts caller-supplied actor identity.
+- [x] Generated frontend types match the backend contract.
 
 ### Validation evidence
 
-Not yet recorded.
+- Added safe user and invitation REST models plus converters. `UserModel` does
+  not expose the immutable provider subject.
+- Added `/users/me`, administrator-only user listing, role changes,
+  enablement/disablement, invitation listing/creation, and invitation
+  revocation. Every mutating administration route resolves the actor from the
+  authenticated request, starts a serializable SQLite transaction, and commits
+  the domain mutation and audit event together.
+- Added deliberate `403`, `404`, `409`, and `422` response mappings for
+  authorization, missing records, lifecycle conflicts, and domain validation.
+- Added six REST integration tests covering safe current-user data,
+  role/status authorization, invitation lifecycle and duplicate conflicts,
+  last-administrator protection, audit behavior, and validation/not-found
+  responses.
+- `dotnet build backend/Backend.sln --no-restore
+  -p:UseSharedCompilation=false -p:RazorLangVersion=Latest -m:1
+  --verbosity minimal` passed with 0 warnings and 0 errors.
+- `dotnet test backend/Tests/Tests.csproj --no-build --no-restore
+  -p:RazorLangVersion=Latest --filter
+  FullyQualifiedName~UserAdministrationEndpointTests` passed 6/6; the complete
+  backend suite passed 131/131.
+- `dotnet format ../backend/Backend.sln --verify-no-changes --no-restore
+  --severity info` passed from `scripts/`; OpenAPI generation and
+  `frontend_scripts.py verify-models` passed; Python script tests passed 31/31;
+  and `git diff --check` plus the no-final-newline C# check passed.
+
+The admin page, Auth.js handshake, frontend role handling, and production
+cutover remain later phases. Phase 3 exposes the REST contract and does not
+implement those consumers.
 
 ## Phase 4: Auth.js Handshake and Current-User Foundation
 
@@ -874,3 +901,18 @@ phase.
 - Limitations: The smoke path uses guarded development authentication by design;
   Google production cutover and administration endpoints remain Phase 3-6 work.
 - Next: Phase 3, user and invitation administration API.
+
+### 2026-08-05 - Phase 3 user administration API complete
+
+- Phase: Phase 3 complete.
+- Changes: Added REST models and OpenAPI descriptions for users and invitations;
+  `/users/me`; administrator user listing, role, enable, and disable routes;
+  invitation listing, creation, and revocation routes; serializable mutation
+  transactions; and REST integration coverage.
+- Validation: Focused administration tests passed 6/6; the complete backend
+  suite passed 131/131; the backend build passed with 0 warnings and 0 errors;
+  backend format verification, OpenAPI generation/verification, Python script
+  tests (31/31), and whitespace checks passed.
+- Limitations: Auth.js provisioning handshake, frontend role-aware behavior,
+  admin UI, and production cutover remain unimplemented.
+- Next: Phase 4, Auth.js handshake and current-user frontend foundation.

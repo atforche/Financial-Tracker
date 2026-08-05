@@ -5,7 +5,7 @@ namespace Rest.Authentication;
 /// <summary>
 /// Resolves and caches the database user for the current authenticated request.
 /// </summary>
-internal interface ICurrentApplicationUserAccessor
+public interface ICurrentApplicationUserAccessor
 {
     /// <summary>
     /// Gets the database user associated with the current provider subject.
