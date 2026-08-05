@@ -76,6 +76,15 @@ public sealed class AccountController(
     }
 
     /// <summary>
+    /// Retrieves all financial institutions currently assigned to Accounts.
+    /// </summary>
+    [HttpGet("financial-institutions")]
+    [ProducesResponseType(typeof(CollectionModel<string>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<CollectionModel<string>>> GetFinancialInstitutionsAsync(
+        CancellationToken cancellationToken) => Ok(accountConverter.ToModel(
+            await accountQueryService.GetAllFinancialInstitutionsAsync(cancellationToken)));
+
+    /// <summary>
     /// Retrieves the Account that matches the provided ID
     /// </summary>
     [HttpGet("{accountId}")]
@@ -169,6 +178,7 @@ public sealed class AccountController(
             new CreateAccountRequest
             {
                 Name = createAccountModel.Name,
+                FinancialInstitution = createAccountModel.FinancialInstitution,
                 Type = accountType.Value,
                 OpeningAccountingPeriod = accountingPeriod,
                 DateOpened = createAccountModel.DateOpened
@@ -216,6 +226,7 @@ public sealed class AccountController(
             new OnboardAccountRequest
             {
                 Name = onboardAccountModel.Name,
+                FinancialInstitution = onboardAccountModel.FinancialInstitution,
                 Type = accountType.Value,
                 OnboardedBalance = onboardAccountModel.OnboardedBalance
             },
@@ -255,7 +266,11 @@ public sealed class AccountController(
         }
         if (!accountService.TryUpdate(
                 accountToUpdate,
-                new UpdateAccountRequest { Name = updateAccountModel.Name },
+                new UpdateAccountRequest
+                {
+                    Name = updateAccountModel.Name,
+                    FinancialInstitution = updateAccountModel.FinancialInstitution,
+                },
                 out IEnumerable<ValidationError> validationErrors))
         {
             Dictionary<string, string[]> errors = ValidationErrorHelper.GroupValidationErrors(validationErrors);

@@ -32,6 +32,12 @@ const AccountSummaryFrame = function ({
           setValue={null}
           errorMessage={null}
         />
+        <StringEntryField
+          label="Financial Institution"
+          value={account.financialInstitution}
+          setValue={null}
+          errorMessage={null}
+        />
         <AccountTypeEntryField
           label="Type"
           value={account.type}

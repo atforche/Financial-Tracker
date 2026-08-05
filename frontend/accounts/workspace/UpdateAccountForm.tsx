@@ -9,6 +9,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import CreatableComboBoxEntryField from "@/framework/forms/CreatableComboBoxEntryField";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import StringEntryField from "@/framework/forms/StringEntryField";
@@ -20,6 +21,7 @@ import { useRouter } from "next/navigation";
  */
 interface UpdateAccountFormProps {
   readonly account: Account;
+  readonly financialInstitutions: readonly string[];
   readonly redirectUrl: string;
   readonly onClose: () => void;
 }
@@ -29,11 +31,15 @@ interface UpdateAccountFormProps {
  */
 const UpdateAccountForm = function ({
   account,
+  financialInstitutions,
   redirectUrl,
   onClose,
 }: UpdateAccountFormProps): JSX.Element {
   const router = useRouter();
   const [name, setName] = useState<string>(account.name);
+  const [financialInstitution, setFinancialInstitution] = useState<
+    string | null
+  >(account.financialInstitution);
   const [state, action, pending] = useActionState(updateAccount, {});
 
   useEffect(() => {
@@ -47,6 +53,7 @@ const UpdateAccountForm = function ({
   if (name !== "") {
     request = {
       name,
+      financialInstitution,
     };
   }
 
@@ -97,6 +104,12 @@ const UpdateAccountForm = function ({
           value={name}
           setValue={setName}
           errorMessage={state.nameErrors ?? null}
+        />
+        <CreatableComboBoxEntryField
+          label="Financial Institution"
+          options={financialInstitutions}
+          value={financialInstitution}
+          setValue={setFinancialInstitution}
         />
         <ErrorAlert
           errorMessage={state.errorTitle ?? null}

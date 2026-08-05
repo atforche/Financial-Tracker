@@ -9,6 +9,16 @@ namespace Tests.Accounts;
 internal sealed class AccountBuilder(TestApiClient apiClient, string name)
 {
     private decimal _openingBalance;
+    private string? _financialInstitution;
+
+    /// <summary>
+    /// Sets the account's financial institution.
+    /// </summary>
+    public AccountBuilder WithFinancialInstitution(string value)
+    {
+        _financialInstitution = value;
+        return this;
+    }
 
     /// <summary>
     /// Sets the account's onboarded balance.
@@ -27,6 +37,7 @@ internal sealed class AccountBuilder(TestApiClient apiClient, string name)
         AccountModel model = await apiClient.PostAsync<OnboardAccountModel, AccountModel>("/accounts/onboard", new OnboardAccountModel
         {
             Name = name,
+            FinancialInstitution = _financialInstitution,
             Type = AccountTypeModel.Standard,
             OnboardedBalance = _openingBalance
         });

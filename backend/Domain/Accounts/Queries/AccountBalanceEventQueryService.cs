@@ -285,7 +285,9 @@ public sealed class AccountBalanceEventQueryService(
     /// Determines whether an Account matches the provided query criteria.
     /// </summary>
     private static bool Matches(Account account, AccountFilter filter) =>
-        (string.IsNullOrWhiteSpace(filter.NameSearch) || account.Name.Contains(filter.NameSearch, StringComparison.OrdinalIgnoreCase))
+        (string.IsNullOrWhiteSpace(filter.NameSearch)
+            || account.Name.Contains(filter.NameSearch, StringComparison.OrdinalIgnoreCase)
+            || (account.FinancialInstitution?.Contains(filter.NameSearch, StringComparison.OrdinalIgnoreCase) ?? false))
         && (filter.Names.Count == 0 || filter.Names.Contains(account.Name))
         && (filter.Types.Count == 0 || filter.Types.Contains(account.Type));
 

@@ -84,6 +84,16 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
             .Select(account => account.Name).ToListAsync(cancellationToken);
 
     /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<string>> GetAllFinancialInstitutionsAsync(CancellationToken cancellationToken = default)
+    {
+        List<string> institutions = await databaseContext.Accounts.AsNoTracking()
+            .Where(account => account.FinancialInstitution != null)
+            .Select(account => account.FinancialInstitution!)
+            .ToListAsync(cancellationToken);
+        return institutions.Distinct(StringComparer.Ordinal).OrderBy(institution => institution, StringComparer.Ordinal).ToList();
+    }
+
+    /// <inheritdoc/>
     public async Task<IReadOnlyCollection<AccountPeriodBalanceFacts>> GetPeriodBalanceFactsAsync(
         int startIndex,
         int endIndex,
@@ -171,7 +181,9 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
     {
         if (!string.IsNullOrWhiteSpace(filter.NameSearch))
         {
-            query = query.Where(account => EF.Functions.Like(account.Name, $"%{filter.NameSearch}%"));
+            query = query.Where(account => EF.Functions.Like(account.Name, $"%{filter.NameSearch}%")
+                || (account.FinancialInstitution != null
+                    && EF.Functions.Like(account.FinancialInstitution, $"%{filter.NameSearch}%")));
         }
         if (filter.Names.Count > 0)
         {

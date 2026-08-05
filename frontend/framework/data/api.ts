@@ -1578,6 +1578,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/accounts/financial-institutions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves all financial institutions currently assigned to Accounts. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfstring"];
+                        "application/json": components["schemas"]["CollectionModelOfstring"];
+                        "text/json": components["schemas"]["CollectionModelOfstring"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/accounts/{accountId}": {
         parameters: {
             query?: never;
@@ -2670,6 +2708,8 @@ export interface components {
             id: string;
             /** @description Name for the Account */
             name: string;
+            /** @description Financial institution for the Account, when specified. */
+            financialInstitution: null | string;
             /** @description Type for the Account */
             type: components["schemas"]["AccountTypeModel"];
         };
@@ -2755,6 +2795,8 @@ export interface components {
             id: string;
             /** @description Name for the Account */
             name: string;
+            /** @description Financial institution for the Account, when specified. */
+            financialInstitution: null | string;
             /** @description Type for the Account */
             type: components["schemas"]["AccountTypeModel"];
         };
@@ -2777,6 +2819,8 @@ export interface components {
             id: string;
             /** @description Name for the Account */
             name: string;
+            /** @description Financial institution for the Account, when specified. */
+            financialInstitution: null | string;
             /** @description Type for the Account */
             type: components["schemas"]["AccountTypeModel"];
         };
@@ -2930,6 +2974,16 @@ export interface components {
             totalCount: number;
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfstring: {
+            /** @description The collection of items. */
+            items: string[];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfTransactionModel: {
             /** @description The collection of items. */
             items: components["schemas"]["TransactionModel"][];
@@ -2976,6 +3030,8 @@ export interface components {
         CreateAccountModel: {
             /** @description Name for the Account */
             name: string;
+            /** @description Financial institution for the Account, when specified. */
+            financialInstitution?: null | string;
             /** @description Type of the Account */
             type: components["schemas"]["AccountTypeModel"];
             /**
@@ -3785,6 +3841,8 @@ export interface components {
         OnboardAccountModel: {
             /** @description Name for the Account */
             name: string;
+            /** @description Financial institution for the Account, when specified. */
+            financialInstitution?: null | string;
             /** @description Type of the Account */
             type: components["schemas"]["AccountTypeModel"];
             /**
@@ -4160,6 +4218,8 @@ export interface components {
         UpdateAccountModel: {
             /** @description Name for the Account */
             name: string;
+            /** @description Financial institution for the Account, when specified. */
+            financialInstitution?: null | string;
         };
         /** @description Model representing a destination of an account transaction update request. */
         UpdateAccountTransactionDestinationModel: {

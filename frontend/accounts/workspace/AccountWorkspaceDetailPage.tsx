@@ -41,7 +41,11 @@ const AccountWorkspaceDetailPage = async function ({
   const apiClient = await createApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
   const balanceEventOffset = getPageOffset(currentBalanceEventPage);
-  const [accountsResponse, balanceEventsResponse] = await Promise.all([
+  const [
+    accountsResponse,
+    balanceEventsResponse,
+    financialInstitutionsResponse,
+  ] = await Promise.all([
     apiClient.GET("/accounts/with-balances"),
     apiClient.GET("/accounts/{accountId}/balance-events", {
       params: {
@@ -55,6 +59,7 @@ const AccountWorkspaceDetailPage = async function ({
         },
       },
     }),
+    apiClient.GET("/accounts/financial-institutions"),
   ]);
   const accounts = unwrapApiResponse(
     accountsResponse,
@@ -63,6 +68,10 @@ const AccountWorkspaceDetailPage = async function ({
   const balanceEvents = unwrapApiResponse(
     balanceEventsResponse,
     "Failed to fetch account balance events",
+  );
+  const financialInstitutions = unwrapApiResponse(
+    financialInstitutionsResponse,
+    "Failed to fetch financial institutions",
   );
   const account = accounts.items.find((item) => item.id === accountId);
 
@@ -102,6 +111,7 @@ const AccountWorkspaceDetailPage = async function ({
       </Stack>
       <ViewAccountForm
         account={account}
+        financialInstitutions={financialInstitutions.items}
         redirectUrl={currentUrl}
         deleteRedirectUrl={workspaceUrl}
         recentBalanceEvents={balanceEvents.items}

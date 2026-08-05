@@ -41,10 +41,18 @@ const AccountWorkspace = async function ({
       },
     },
   });
+  const financialInstitutionsPromise = apiClient.GET(
+    "/accounts/financial-institutions",
+  );
 
-  const [accountingPeriodsResponse, accountsResponse] = await Promise.all([
+  const [
+    accountingPeriodsResponse,
+    accountsResponse,
+    financialInstitutionsResponse,
+  ] = await Promise.all([
     accountingPeriodsPromise,
     accountsPromise,
+    financialInstitutionsPromise,
   ]);
   const accountingPeriods = unwrapApiResponse(
     accountingPeriodsResponse,
@@ -53,6 +61,10 @@ const AccountWorkspace = async function ({
   const accounts = unwrapApiResponse(
     accountsResponse,
     "Failed to fetch accounts",
+  );
+  const financialInstitutions = unwrapApiResponse(
+    financialInstitutionsResponse,
+    "Failed to fetch financial institutions",
   );
 
   const filteredAccounts = shouldPersistAccountTypes(currentAccountTypes)
@@ -74,6 +86,7 @@ const AccountWorkspace = async function ({
       />
       <AccountWorkspaceActions
         accountingPeriods={openAccountingPeriods}
+        financialInstitutions={financialInstitutions.items}
         isInOnboardingMode={isInOnboardingMode}
         requestedAction={action ?? null}
       />

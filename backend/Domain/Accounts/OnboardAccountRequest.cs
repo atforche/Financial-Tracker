@@ -11,6 +11,11 @@ public record OnboardAccountRequest
     public required string Name { get; init; }
 
     /// <summary>
+    /// Financial institution for the Account.
+    /// </summary>
+    public string? FinancialInstitution { get; init; }
+
+    /// <summary>
     /// Type for the Account
     /// </summary>
     public required AccountType Type { get; init; }

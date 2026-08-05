@@ -9,4 +9,9 @@ public record UpdateAccountRequest
     /// Name for the Account
     /// </summary>
     public required string Name { get; init; }
+
+    /// <summary>
+    /// Financial institution for the Account.
+    /// </summary>
+    public string? FinancialInstitution { get; init; }
 }

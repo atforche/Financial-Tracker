@@ -13,6 +13,11 @@ public class Account : Entity<AccountId>
     public string Name { get; internal set; }
 
     /// <summary>
+    /// Financial institution for this Account.
+    /// </summary>
+    public string? FinancialInstitution { get; internal set; }
+
+    /// <summary>
     /// Type for this Account
     /// </summary>
     public AccountType Type { get; private set; }
@@ -40,10 +45,16 @@ public class Account : Entity<AccountId>
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal Account(string name, AccountType type, AccountingPeriodId openingAccountingPeriodId, DateOnly dateOpened)
+    internal Account(
+        string name,
+        string? financialInstitution,
+        AccountType type,
+        AccountingPeriodId openingAccountingPeriodId,
+        DateOnly dateOpened)
         : base(new AccountId(Guid.NewGuid()))
     {
         Name = name;
+        FinancialInstitution = financialInstitution;
         Type = type;
         OpeningAccountingPeriodId = openingAccountingPeriodId;
         DateOpened = dateOpened;
@@ -53,10 +64,11 @@ public class Account : Entity<AccountId>
     /// <summary>
     /// Constructs a new onboarded instance of this class
     /// </summary>
-    internal Account(string name, AccountType type, decimal onboardedBalance)
+    internal Account(string name, string? financialInstitution, AccountType type, decimal onboardedBalance)
         : base(new AccountId(Guid.NewGuid()))
     {
         Name = name;
+        FinancialInstitution = financialInstitution;
         Type = type;
         OpeningAccountingPeriodId = null;
         DateOpened = null;

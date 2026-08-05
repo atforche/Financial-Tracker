@@ -22,7 +22,10 @@ public sealed class BalanceEventQueryContractTests
     public async Task BalanceEventQueriesOrderAndPageAcrossSurfaces()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
-        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash")
+            .WithFinancialInstitution("Ally")
+            .WithOpeningBalance(100m)
+            .CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
         TransactionHandle earlier = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 10)).For(10m).From(cash).To("First", groceries).CreateAsync();
@@ -54,7 +57,10 @@ public sealed class BalanceEventQueryContractTests
     public async Task AccountBalanceEventRangeQueriesFilterAndValidateAcrossAccounts()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
-        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash")
+            .WithFinancialInstitution("Ally")
+            .WithOpeningBalance(100m)
+            .CreateAsync();
         AccountHandle card = await test.Accounts.Onboard("Card").CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
@@ -63,9 +69,9 @@ public sealed class BalanceEventQueryContractTests
         _ = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 20)).For(20m).From(card).To("Market", groceries).CreateAsync();
 
         CollectionModel<AccountBalanceEventModel> byDate = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            "/accounts/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31&filter.names=Cash&sort=AmountDescending");
+            "/accounts/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31&filter.nameSearch=ally&sort=AmountDescending");
         CollectionModel<AccountBalanceEventModel> byPeriod = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}&filter.names=Cash&sort=Counterparty");
+            $"/accounts/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}&filter.nameSearch=ally&sort=Counterparty");
         using HttpResponseMessage reversed = await test.Api.GetResponseAsync(
             $"/accounts/balance-events/accounting-period-range?range.start={august.Id}&range.end={july.Id}");
 
