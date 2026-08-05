@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.Users;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data.Users;
 
@@ -31,4 +32,15 @@ public sealed class UserInvitationRepository(DatabaseContext databaseContext) : 
 
     /// <inheritdoc/>
     public void Add(UserInvitation invitation) => databaseContext.Add(invitation);
+
+    /// <inheritdoc/>
+    public bool TryClaimPending(UserInvitation invitation, DateTime acceptedAt)
+    {
+        int affectedRows = databaseContext.UserInvitations
+            .Where(candidate => candidate.Id == invitation.Id && candidate.Status == UserInvitationStatus.Pending)
+            .ExecuteUpdate(setters => setters
+                .SetProperty(candidate => candidate.Status, UserInvitationStatus.Accepted)
+                .SetProperty(candidate => candidate.AcceptedAt, acceptedAt));
+        return affectedRows == 1;
+    }
 }

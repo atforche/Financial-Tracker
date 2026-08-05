@@ -26,4 +26,9 @@ public interface IUserInvitationRepository
     /// Adds an invitation to the current unit of work.
     /// </summary>
     void Add(UserInvitation invitation);
+
+    /// <summary>
+    /// Conditionally claims a pending invitation in the current transaction.
+    /// </summary>
+    bool TryClaimPending(UserInvitation invitation, DateTime acceptedAt);
 }

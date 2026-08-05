@@ -28,6 +28,11 @@ public sealed class UserRepository(DatabaseContext databaseContext) : IUserRepos
         ?? databaseContext.Users.Local.SingleOrDefault(user => user.GoogleSubject == googleSubject);
 
     /// <inheritdoc/>
+    public User? GetByNormalizedEmail(string normalizedEmail) => databaseContext.Users
+        .SingleOrDefault(user => user.NormalizedEmail == normalizedEmail)
+        ?? databaseContext.Users.Local.SingleOrDefault(user => user.NormalizedEmail == normalizedEmail);
+
+    /// <inheritdoc/>
     public int GetActiveAdministratorCount() => databaseContext.Users.Count(user =>
         user.Status == UserStatus.Active && user.Role == UserRole.Admin);
 

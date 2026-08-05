@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Models;
+using Rest.Authentication;
 using Serilog;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -24,12 +25,10 @@ if (usesDevelopmentAuthentication && !builder.Environment.IsDevelopment())
     throw new InvalidOperationException("AUTH_MODE=development is allowed only when ASPNETCORE_ENVIRONMENT is Development.");
 }
 string? googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
-string[] allowedGoogleSubjects = (Environment.GetEnvironmentVariable("GOOGLE_ALLOWED_SUBJECTS") ?? "")
-    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 if (shouldLaunchAPI && usesGoogleAuthentication
-    && (string.IsNullOrWhiteSpace(googleClientId) || allowedGoogleSubjects.Length == 0))
+    && string.IsNullOrWhiteSpace(googleClientId))
 {
-    throw new InvalidOperationException("GOOGLE_CLIENT_ID and GOOGLE_ALLOWED_SUBJECTS must be configured before launching the API.");
+    throw new InvalidOperationException("GOOGLE_CLIENT_ID must be configured before launching the API.");
 }
 
 _ = builder.Services.AddHttpContextAccessor();
@@ -38,9 +37,9 @@ _ = builder.Services.AddHealthChecks()
 Microsoft.AspNetCore.Authentication.AuthenticationBuilder authenticationBuilder = builder.Services.AddAuthentication(options =>
 {
     string authenticationScheme = isTesting
-        ? Rest.Authentication.TestAuthenticationDefaults.Scheme
+        ? TestAuthenticationDefaults.Scheme
         : usesDevelopmentAuthentication
-            ? Rest.Authentication.DevelopmentAuthenticationDefaults.Scheme
+            ? DevelopmentAuthenticationDefaults.Scheme
             : JwtBearerDefaults.AuthenticationScheme;
     options.DefaultAuthenticateScheme = authenticationScheme;
     options.DefaultChallengeScheme = authenticationScheme;
@@ -66,23 +65,34 @@ if (usesGoogleAuthentication)
 }
 if (isTesting)
 {
-    _ = authenticationBuilder.AddScheme<Rest.Authentication.TestAuthenticationOptions, Rest.Authentication.TestAuthenticationHandler>(
-        Rest.Authentication.TestAuthenticationDefaults.Scheme,
+    _ = authenticationBuilder.AddScheme<TestAuthenticationOptions, TestAuthenticationHandler>(
+        TestAuthenticationDefaults.Scheme,
         _ => { });
 }
 else if (usesDevelopmentAuthentication)
 {
-    _ = authenticationBuilder.AddScheme<Rest.Authentication.DevelopmentAuthenticationOptions, Rest.Authentication.DevelopmentAuthenticationHandler>(
-        Rest.Authentication.DevelopmentAuthenticationDefaults.Scheme,
+    _ = authenticationBuilder.AddScheme<DevelopmentAuthenticationOptions, DevelopmentAuthenticationHandler>(
+        DevelopmentAuthenticationDefaults.Scheme,
         _ => { });
 }
 Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder authorizationPolicyBuilder =
-    new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder().RequireAuthenticatedUser();
-if (!isTesting && usesGoogleAuthentication && allowedGoogleSubjects.Length > 0)
-{
-    _ = authorizationPolicyBuilder.RequireClaim("sub", allowedGoogleSubjects);
-}
-_ = builder.Services.AddAuthorizationBuilder().SetFallbackPolicy(authorizationPolicyBuilder.Build());
+    new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .AddRequirements(new ApplicationAccessRequirement());
+_ = builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(UserAuthorizationPolicies.ProviderIdentity, policy => policy
+        .RequireAuthenticatedUser()
+        .AddRequirements(new ProviderIdentityRequirement()))
+    .AddPolicy(UserAuthorizationPolicies.ActiveUser, policy => policy
+        .RequireAuthenticatedUser()
+        .AddRequirements(new ActiveUserRequirement()))
+    .AddPolicy(UserAuthorizationPolicies.WriteCapableUser, policy => policy
+        .RequireAuthenticatedUser()
+        .AddRequirements(new WriteCapableUserRequirement()))
+    .AddPolicy(UserAuthorizationPolicies.Administrator, policy => policy
+        .RequireAuthenticatedUser()
+        .AddRequirements(new AdministratorRequirement()))
+    .SetFallbackPolicy(authorizationPolicyBuilder.Build());
 _ = builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;

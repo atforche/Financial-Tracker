@@ -1,9 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using Domain.Users;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -15,7 +15,7 @@ namespace Tests.Infrastructure;
 /// </summary>
 internal sealed class JwtBearerAuthenticationApplicationFactory : FinancialTrackerApplicationFactory
 {
-    internal const string AllowedSubject = "allowed-test-subject";
+    internal const string ProvisionedSubject = "provisioned-test-subject";
 
     private const string Audience = "financial-tracker-tests";
     private const string Issuer = "https://issuer.test";
@@ -28,16 +28,40 @@ internal sealed class JwtBearerAuthenticationApplicationFactory : FinancialTrack
         string subject,
         string issuer = Issuer,
         string audience = Audience,
-        DateTime? expires = null)
+        DateTime? expires = null,
+        string? email = null,
+        bool? emailVerified = null,
+        string? displayName = null)
     {
+        List<Claim> claims = [new Claim("sub", subject)];
+        if (email != null)
+        {
+            claims.Add(new Claim("email", email));
+        }
+        if (emailVerified.HasValue)
+        {
+            claims.Add(new Claim("email_verified", emailVerified.Value ? "true" : "false"));
+        }
+        if (displayName != null)
+        {
+            claims.Add(new Claim("name", displayName));
+        }
+
         JwtSecurityToken token = new(
             issuer,
             audience,
-            [new Claim("sub", subject)],
+            claims,
             expires: expires ?? DateTime.UtcNow.AddMinutes(5),
             signingCredentials: new SigningCredentials(new RsaSecurityKey(_signingKey), SecurityAlgorithms.RsaSha256));
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    /// <inheritdoc/>
+    public override async Task InitializeDatabaseAsync()
+    {
+        await base.InitializeDatabaseAsync();
+        await SeedUserAsync(ProvisionedSubject, "provisioned@example.test", UserRole.Admin);
     }
 
     /// <inheritdoc/>
@@ -69,13 +93,6 @@ internal sealed class JwtBearerAuthenticationApplicationFactory : FinancialTrack
                     ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
                     NameClaimType = "sub"
                 };
-            });
-            _ = services.PostConfigure<AuthorizationOptions>(options =>
-            {
-                options.FallbackPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
-                    .RequireAuthenticatedUser()
-                    .RequireClaim("sub", AllowedSubject)
-                    .Build();
             });
         });
     }

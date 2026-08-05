@@ -27,6 +27,20 @@ from shared.migrator import run_migrator
 from shared.step import Step
 
 DOCKER_BUILD_CACHE = "DOCKER_BUILD_CACHE"
+SMOKE_TEST_SUBJECT = "container-smoke-test"
+SMOKE_TEST_EMAIL = "container-smoke-test@example.test"
+
+
+def prepare_smoke_test_database(data_directory: Path) -> None:
+    """Migrates the smoke database and provisions its deterministic test user."""
+
+    environment = {
+        "AUTH_MODE": "development",
+        "DEVELOPMENT_AUTH_SUBJECT": SMOKE_TEST_SUBJECT,
+        "DEVELOPMENT_AUTH_EMAIL": SMOKE_TEST_EMAIL,
+    }
+    run_migrator("financial-tracker-migrator:workflow", data_directory, environment)
+    run_migrator("financial-tracker-migrator:workflow", data_directory, environment)
 
 
 class DoNotFollowRedirects(HTTPRedirectHandler):
@@ -171,8 +185,7 @@ class SmokeTestContainerImages(Command):
             os.chmod(directory, 0o777)
             os.chmod(database, 0o666)
 
-            run_migrator("financial-tracker-migrator:workflow", database.parent)
-            run_migrator("financial-tracker-migrator:workflow", database.parent)
+            prepare_smoke_test_database(database.parent)
 
             self.run_docker(["network", "create", network])
             try:
@@ -212,11 +225,11 @@ class SmokeTestContainerImages(Command):
                         "--env",
                         "AUTH_MODE=development",
                         "--env",
-                        "DEVELOPMENT_AUTH_SUBJECT=container-smoke-test",
+                        f"DEVELOPMENT_AUTH_SUBJECT={SMOKE_TEST_SUBJECT}",
                         "--env",
                         "GOOGLE_CLIENT_ID=container-smoke-test",
                         "--env",
-                        "GOOGLE_ALLOWED_SUBJECTS=container-smoke-test",
+                        f"GOOGLE_ALLOWED_SUBJECTS={SMOKE_TEST_SUBJECT}",
                         "financial-tracker-backend:workflow",
                     ]
                 )
@@ -251,13 +264,13 @@ class SmokeTestContainerImages(Command):
                         "--env",
                         "AUTH_MODE=development",
                         "--env",
-                        "DEVELOPMENT_AUTH_SUBJECT=container-smoke-test",
+                        f"DEVELOPMENT_AUTH_SUBJECT={SMOKE_TEST_SUBJECT}",
                         "--env",
                         "GOOGLE_CLIENT_ID=container-smoke-test",
                         "--env",
                         "GOOGLE_CLIENT_SECRET=container-smoke-test",
                         "--env",
-                        "GOOGLE_ALLOWED_SUBJECTS=container-smoke-test",
+                        f"GOOGLE_ALLOWED_SUBJECTS={SMOKE_TEST_SUBJECT}",
                         "--env",
                         f"AUTH_URL={frontend_origin}",
                         "--env",
@@ -297,7 +310,7 @@ class SmokeTestContainerImages(Command):
         """Proves the hardened backend can persist and return authenticated data."""
 
         headers = {
-            "Authorization": "Bearer development:container-smoke-test",
+            "Authorization": f"Bearer development:{SMOKE_TEST_SUBJECT}",
             "Content-Type": "application/json",
         }
         create_request = Request(

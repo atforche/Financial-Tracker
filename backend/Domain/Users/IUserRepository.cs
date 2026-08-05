@@ -23,6 +23,11 @@ public interface IUserRepository
     User? GetByGoogleSubject(string googleSubject);
 
     /// <summary>
+    /// Gets a user by its normalized email address.
+    /// </summary>
+    User? GetByNormalizedEmail(string normalizedEmail);
+
+    /// <summary>
     /// Gets the number of active administrators.
     /// </summary>
     int GetActiveAdministratorCount();

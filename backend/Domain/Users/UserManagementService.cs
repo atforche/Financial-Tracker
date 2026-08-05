@@ -115,7 +115,9 @@ public sealed class UserManagementService(
     {
         user = null;
         errors = [];
-        if (string.IsNullOrWhiteSpace(googleSubject) || googleSubject.Trim().Length > 255)
+        if (string.IsNullOrWhiteSpace(googleSubject)
+            || googleSubject.Trim().Length > 255
+            || !emailVerified)
         {
             errors = [new UserManagementError(
                 UserManagementErrorKind.Forbidden,
@@ -146,11 +148,30 @@ public sealed class UserManagementService(
                     "The authenticated identity could not be provisioned.")];
                 return false;
             }
+            User? conflictingUser = userRepository.GetByNormalizedEmail(currentNormalizedEmail);
+            if (conflictingUser != null && conflictingUser.Id != user.Id)
+            {
+                user = null;
+                errors = [new UserManagementError(
+                    UserManagementErrorKind.Forbidden,
+                    ValidationErrorPath.Empty,
+                    "The authenticated identity could not be provisioned.")];
+                return false;
+            }
             user.RefreshProviderProfile(currentEmail, currentNormalizedEmail, displayName, now);
             return true;
         }
 
-        if (!emailVerified || !TryNormalizeEmail(email, out string displayEmail, out string normalizedEmail, out _))
+        if (!TryNormalizeEmail(email, out string displayEmail, out string normalizedEmail, out _))
+        {
+            errors = [new UserManagementError(
+                UserManagementErrorKind.Forbidden,
+                ValidationErrorPath.Empty,
+                "The authenticated identity could not be provisioned.")];
+            return false;
+        }
+
+        if (userRepository.GetByNormalizedEmail(normalizedEmail) != null)
         {
             errors = [new UserManagementError(
                 UserManagementErrorKind.Forbidden,
@@ -171,6 +192,15 @@ public sealed class UserManagementService(
 
         user = new User(subject, displayEmail, normalizedEmail, displayName, invitation.Role, now);
         userRepository.Add(user);
+        if (!invitationRepository.TryClaimPending(invitation, now))
+        {
+            user = null;
+            errors = [new UserManagementError(
+                UserManagementErrorKind.Forbidden,
+                ValidationErrorPath.Empty,
+                "The authenticated identity could not be provisioned.")];
+            return false;
+        }
         invitation.Accept(user.Id, now);
         AddAudit(UserAdministrationAction.InvitationAccepted, user, user, invitation, null, invitation.Role, now);
         return true;

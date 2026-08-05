@@ -28,6 +28,15 @@ internal sealed class TestApiClient : IDisposable
     }
 
     /// <summary>
+    /// Changes the authenticated test subject for subsequent requests.
+    /// </summary>
+    public void AuthenticateAs(string subject)
+    {
+        _ = _client.DefaultRequestHeaders.Remove(TestUserHeader);
+        _ = _client.DefaultRequestHeaders.TryAddWithoutValidation(TestUserHeader, subject);
+    }
+
+    /// <summary>
     /// Sends a GET request and returns its required response body.
     /// </summary>
     public async Task<TResponse> GetAsync<TResponse>(string uri)

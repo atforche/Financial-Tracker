@@ -1,7 +1,42 @@
 import shlex
+from pathlib import Path
 
 import container_scripts
 import pytest
+
+
+def test_prepare_smoke_test_database_provisions_the_authenticated_user(
+    monkeypatch, tmp_path
+):
+    calls: list[tuple[str, Path, dict[str, str]]] = []
+
+    def fake_run_migrator(image, data_directory, environment):
+        calls.append((image, data_directory, environment))
+
+    monkeypatch.setattr(container_scripts, "run_migrator", fake_run_migrator)
+
+    container_scripts.prepare_smoke_test_database(tmp_path)
+
+    assert calls == [
+        (
+            "financial-tracker-migrator:workflow",
+            tmp_path,
+            {
+                "AUTH_MODE": "development",
+                "DEVELOPMENT_AUTH_SUBJECT": "container-smoke-test",
+                "DEVELOPMENT_AUTH_EMAIL": "container-smoke-test@example.test",
+            },
+        ),
+        (
+            "financial-tracker-migrator:workflow",
+            tmp_path,
+            {
+                "AUTH_MODE": "development",
+                "DEVELOPMENT_AUTH_SUBJECT": "container-smoke-test",
+                "DEVELOPMENT_AUTH_EMAIL": "container-smoke-test@example.test",
+            },
+        ),
+    ]
 
 
 def test_build_image_uses_docker_build_without_ci_cache(monkeypatch):

@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Rest.AccountingPeriods;
 using Rest.Accounts;
+using Rest.Authentication;
 using Rest.FundGoals;
 using Rest.Funds;
 using Rest.Transactions;
@@ -17,6 +19,13 @@ public static class ServiceManager
     /// <param name="serviceCollection">Service Collection</param>
     public static void Register(IServiceCollection serviceCollection)
     {
+        _ = serviceCollection.AddScoped<ICurrentApplicationUserAccessor, CurrentApplicationUserAccessor>();
+        _ = serviceCollection.AddScoped<IAuthorizationHandler, ProviderIdentityAuthorizationHandler>();
+        _ = serviceCollection.AddScoped<IAuthorizationHandler, ActiveUserAuthorizationHandler>();
+        _ = serviceCollection.AddScoped<IAuthorizationHandler, WriteCapableUserAuthorizationHandler>();
+        _ = serviceCollection.AddScoped<IAuthorizationHandler, AdministratorAuthorizationHandler>();
+        _ = serviceCollection.AddScoped<IAuthorizationHandler, ApplicationAccessAuthorizationHandler>();
+
         _ = serviceCollection.AddScoped<AccountingPeriodConverter>();
         _ = serviceCollection.AddScoped<AccountingPeriodQueryConverter>();
 

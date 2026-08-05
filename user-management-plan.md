@@ -275,7 +275,7 @@ verified admin login before the old allowlist is removed.
 |---|---|---|---|
 | 0 | Resolve remaining design details and lock contracts | None | Complete |
 | 1 | Persistence, domain lifecycle, migration, and bootstrap | Phase 0 | Complete |
-| 2 | Identity resolution and backend authorization | Phase 1 | Not started |
+| 2 | Identity resolution and backend authorization | Phase 1 | Complete |
 | 3 | User and invitation administration API | Phase 2 | Not started |
 | 4 | Auth.js handshake and current-user frontend foundation | Phases 2-3 | Not started |
 | 5 | Admin UI and read-only application experience | Phase 4 | Not started |
@@ -510,39 +510,67 @@ test once identity resolution and administration endpoints are introduced.
 
 ### Required identity tests
 
-- [ ] Existing active subject succeeds independent of a changed email.
-- [ ] Existing disabled subject is rejected.
-- [ ] Verified matching email accepts an invitation and persists `sub`.
-- [ ] Email matching uses the selected normalization rules.
-- [ ] Missing, false, or malformed `email_verified` is rejected.
-- [ ] Missing or mismatched email is rejected.
-- [ ] Subject and email collisions are rejected safely.
-- [ ] Concurrent first-login requests accept an invitation only once.
-- [ ] Failure responses do not reveal whether an email was invited.
+- [x] Existing active subject succeeds independent of a changed email.
+- [x] Existing disabled subject is rejected.
+- [x] Verified matching email accepts an invitation and persists `sub`.
+- [x] Email matching uses the selected normalization rules.
+- [x] Missing, false, or malformed `email_verified` is rejected.
+- [x] Missing or mismatched email is rejected.
+- [x] Subject and email collisions are rejected safely.
+- [x] Concurrent first-login requests accept an invitation only once.
+- [x] Failure responses do not reveal whether an email was invited.
 
 ### Required authorization tests
 
-- [ ] Anonymous request is `401` where authentication is required.
-- [ ] Valid but unprovisioned identity is `403` on normal endpoints.
-- [ ] Every role can use representative read endpoints.
-- [ ] `Admin` and `Standard` can use representative financial mutations.
-- [ ] `ReadOnly` receives `403` for every inventoried mutation category.
-- [ ] Only `Admin` can use administration policies.
-- [ ] Disablement and role changes affect the next request.
-- [ ] Readiness and liveness remain anonymous and functional.
+- [x] Anonymous request is `401` where authentication is required.
+- [x] Valid but unprovisioned identity is `403` on normal endpoints.
+- [x] Every role can use representative read endpoints.
+- [x] `Admin` and `Standard` can use representative financial mutations.
+- [x] `ReadOnly` receives `403` for every inventoried mutation category.
+- [x] Only `Admin` can use administration policies.
+- [x] Disablement and role changes affect the next request.
+- [x] Readiness and liveness remain anonymous and functional.
 
 ### Acceptance criteria
 
-- [ ] Backend authorization no longer depends on a permanent production subject
+- [x] Backend authorization no longer depends on a permanent production subject
   allowlist, except any documented temporary compatibility path.
-- [ ] A future mutation is denied to `ReadOnly` by default unless explicitly
+- [x] A future mutation is denied to `ReadOnly` by default unless explicitly
   classified otherwise.
-- [ ] REST integration tests cover real database state transitions.
-- [ ] Existing financial REST behavior remains passing.
+- [x] REST integration tests cover real database state transitions.
+- [x] Existing financial REST behavior remains passing.
 
 ### Validation evidence
 
-Not yet recorded.
+- Added `POST /authentication/resolve-user`, which accepts only a validated
+  provider identity (`sub`, parseable email, and `email_verified=true`) and
+  resolves or provisions the database user without exposing invitation state.
+  Existing active users may refresh provider profile data; disabled users,
+  uninvited identities, malformed claims, and subject/email collisions fail
+  generically with `403`.
+- Added a serializable SQLite transaction around identity resolution and a
+  conditional pending-invitation claim so concurrent first-login requests can
+  create at most one application user.
+- Added request-local current-user resolution and centralized authorization:
+  active users can read, `Admin` and `Standard` can mutate, `ReadOnly` is denied
+  mutations by default, and the administrator policy is available for the
+  administration API phase.
+- Removed the backend's permanent `GOOGLE_ALLOWED_SUBJECTS` fallback and its
+  production startup requirement. Google issuer, audience, lifetime, signing
+  key, and algorithm validation remain unchanged. Frontend/Auth.js sign-in
+  still uses the old allowlist until Phase 4, as planned.
+- Updated test authentication fixtures to provision database users and added
+  claim-aware JWT generation. Existing health, JWT-validation, and financial
+  integration tests continue to exercise real SQLite state.
+- `dotnet build backend/Backend.sln --no-restore
+  -p:UseSharedCompilation=false -p:RazorLangVersion=Latest -m:1
+  --verbosity minimal` passed with 0 warnings and 0 errors.
+- `dotnet test backend/Tests/Tests.csproj --no-build --no-restore
+  -p:RazorLangVersion=Latest --filter
+  FullyQualifiedName~UserResolutionAuthorizationTests` passed 12/12 tests.
+  The complete backend suite passed 125/125 tests.
+- `git diff --check` passed; all changed C# files also follow the repository's
+  no-final-newline convention.
 
 ## Phase 3: User and Invitation Administration API
 
@@ -812,3 +840,37 @@ phase.
   unimplemented. Parallel last-admin mutation testing is deferred until the
   identity/API transaction boundary exists in Phase 2/3.
 - Next: Phase 2, identity resolution and backend authorization.
+
+### 2026-08-05 - Phase 2 identity and backend authorization complete
+
+- Phase: Phase 2 complete.
+- Changes: Added validated provider-identity policy and
+  `/authentication/resolve-user`; atomic SQLite identity resolution and
+  conditional invitation claiming; request-local current-user resolution;
+  active, write-capable, administrator, and method-aware application policies;
+  removal of the backend subject-allowlist fallback; and database-backed JWT
+  authorization fixtures.
+- Validation: Focused identity and authorization integration tests passed
+  12/12; the complete backend suite passed 125/125; the backend solution build
+  passed with 0 warnings and 0 errors; concurrent first-login behavior accepted
+  exactly one request; health endpoints remained anonymous; and all changed C#
+  files were checked for the repository's no-final-newline convention.
+- Limitations: Auth.js still performs its local subject-allowlist sign-in
+  decision, administration REST endpoints do not yet exist, and frontend role
+  handling is not implemented. Those are Phase 3/4 dependencies, not a Phase 2
+  authorization bypass.
+- Next: Phase 3, user and invitation administration API.
+
+### 2026-08-05 - Container smoke authentication follow-up
+
+- Phase: Phase 2 validation follow-up.
+- Changes: Updated `scripts/container_scripts.py` to provision the deterministic
+  development user before starting the backend and frontend images, and added a
+  regression test for the migrator environment contract.
+- Validation: Script tests passed 31/31; Ruff, formatting, compilation, and
+  whitespace checks passed; the production-built container smoke test passed,
+  including backend persistence, frontend session/API flow, and both Playwright
+  tests (2/2).
+- Limitations: The smoke path uses guarded development authentication by design;
+  Google production cutover and administration endpoints remain Phase 3-6 work.
+- Next: Phase 3, user and invitation administration API.

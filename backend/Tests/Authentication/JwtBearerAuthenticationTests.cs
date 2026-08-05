@@ -4,20 +4,20 @@ using Tests.Infrastructure;
 namespace Tests.Authentication;
 
 /// <summary>
-/// Verifies the production JWT validation and subject authorization contract.
+/// Verifies the production JWT validation and database-backed subject authorization contract.
 /// </summary>
 public sealed class JwtBearerAuthenticationTests
 {
     /// <summary>
-    /// Allows a valid token only when its literal Google subject is allowlisted.
+    /// Allows a valid token when its subject has an active application user.
     /// </summary>
     [Fact]
-    public async Task AllowlistedSubjectCanAccessProtectedEndpoint()
+    public async Task ProvisionedSubjectCanAccessProtectedEndpoint()
     {
         using JwtBearerAuthenticationApplicationFactory factory = new();
         await factory.InitializeDatabaseAsync();
         using HttpClient client = factory.CreateClient();
-        client.DefaultRequestHeaders.Authorization = new("Bearer", factory.CreateToken(JwtBearerAuthenticationApplicationFactory.AllowedSubject));
+        client.DefaultRequestHeaders.Authorization = new("Bearer", factory.CreateToken(JwtBearerAuthenticationApplicationFactory.ProvisionedSubject));
 
         using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts", UriKind.Relative));
 
@@ -25,10 +25,10 @@ public sealed class JwtBearerAuthenticationTests
     }
 
     /// <summary>
-    /// Rejects a genuine token for a subject that is not an approved collaborator.
+    /// Rejects a genuine token for a subject without an application user.
     /// </summary>
     [Fact]
-    public async Task UnallowlistedSubjectIsForbidden()
+    public async Task UnprovisionedSubjectIsForbidden()
     {
         using JwtBearerAuthenticationApplicationFactory factory = new();
         await factory.InitializeDatabaseAsync();
@@ -50,7 +50,7 @@ public sealed class JwtBearerAuthenticationTests
         await factory.InitializeDatabaseAsync();
         using HttpClient client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new("Bearer", factory.CreateToken(
-            JwtBearerAuthenticationApplicationFactory.AllowedSubject,
+            JwtBearerAuthenticationApplicationFactory.ProvisionedSubject,
             expires: DateTime.UtcNow.AddMinutes(-6)));
 
         using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts", UriKind.Relative));
@@ -68,7 +68,7 @@ public sealed class JwtBearerAuthenticationTests
         await factory.InitializeDatabaseAsync();
         using HttpClient client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new("Bearer", factory.CreateToken(
-            JwtBearerAuthenticationApplicationFactory.AllowedSubject,
+            JwtBearerAuthenticationApplicationFactory.ProvisionedSubject,
             audience: "other-client"));
 
         using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts", UriKind.Relative));
@@ -86,7 +86,7 @@ public sealed class JwtBearerAuthenticationTests
         await factory.InitializeDatabaseAsync();
         using HttpClient client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new("Bearer", factory.CreateToken(
-            JwtBearerAuthenticationApplicationFactory.AllowedSubject,
+            JwtBearerAuthenticationApplicationFactory.ProvisionedSubject,
             issuer: "https://other-issuer.test"));
 
         using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts", UriKind.Relative));
