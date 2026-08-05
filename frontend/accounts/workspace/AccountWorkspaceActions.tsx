@@ -15,6 +15,7 @@ import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
  */
 interface AccountWorkspaceActionsProps {
   readonly accountingPeriods: AccountingPeriod[];
+  readonly financialInstitutions: readonly string[];
   readonly isInOnboardingMode: boolean;
   readonly requestedAction: AccountWorkspaceAction | null;
 }
@@ -24,6 +25,7 @@ interface AccountWorkspaceActionsProps {
  */
 const AccountWorkspaceActions = function ({
   accountingPeriods,
+  financialInstitutions,
   isInOnboardingMode,
   requestedAction,
 }: AccountWorkspaceActionsProps): JSX.Element {
@@ -55,6 +57,7 @@ const AccountWorkspaceActions = function ({
       {isCreateDialogOpen ? (
         <CreateAccountForm
           accountingPeriods={accountingPeriods}
+          financialInstitutions={financialInstitutions}
           open
           onClose={() => {
             setAction(null);
@@ -64,6 +67,7 @@ const AccountWorkspaceActions = function ({
       ) : null}
       {isOnboardDialogOpen ? (
         <OnboardAccountForm
+          financialInstitutions={financialInstitutions}
           open
           onClose={() => {
             setAction(null);

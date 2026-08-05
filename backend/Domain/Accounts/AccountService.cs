@@ -31,7 +31,12 @@ public class AccountService(
         {
             return false;
         }
-        account = new Account(request.Name, request.Type, request.OpeningAccountingPeriod.Id, request.DateOpened);
+        account = new Account(
+            request.Name,
+            NormalizeFinancialInstitution(request.FinancialInstitution),
+            request.Type,
+            request.OpeningAccountingPeriod.Id,
+            request.DateOpened);
         accountRepository.Add(account);
         accountingPeriodBalanceService.AddAccount(account);
         return true;
@@ -66,7 +71,11 @@ public class AccountService(
             decimal changeInUnassignedBalance = request.Type.IsDebt() ? -request.OnboardedBalance : request.OnboardedBalance;
             unassignedFund.OnboardedBalance += changeInUnassignedBalance;
         }
-        account = new Account(request.Name, request.Type, request.OnboardedBalance);
+        account = new Account(
+            request.Name,
+            NormalizeFinancialInstitution(request.FinancialInstitution),
+            request.Type,
+            request.OnboardedBalance);
         accountRepository.Add(account);
         return true;
     }
@@ -85,8 +94,15 @@ public class AccountService(
             return false;
         }
         account.Name = request.Name;
+        account.FinancialInstitution = NormalizeFinancialInstitution(request.FinancialInstitution);
         return true;
     }
+
+    /// <summary>
+    /// Normalizes an optional financial institution value before it is persisted.
+    /// </summary>
+    private static string? NormalizeFinancialInstitution(string? financialInstitution) =>
+        string.IsNullOrWhiteSpace(financialInstitution) ? null : financialInstitution.Trim();
 
     /// <summary>
     /// Attempts to delete an existing Account

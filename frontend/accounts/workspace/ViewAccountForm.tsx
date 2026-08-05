@@ -15,6 +15,7 @@ import UpdateAccountForm from "@/accounts/workspace/UpdateAccountForm";
  */
 interface ViewAccountFormProps {
   readonly account: AccountWithBalance;
+  readonly financialInstitutions: readonly string[];
   readonly redirectUrl: string;
   readonly deleteRedirectUrl: string;
   readonly recentBalanceEvents: AccountBalanceEvent[];
@@ -27,6 +28,7 @@ interface ViewAccountFormProps {
  */
 const ViewAccountForm = function ({
   account,
+  financialInstitutions,
   redirectUrl,
   deleteRedirectUrl,
   recentBalanceEvents,
@@ -65,6 +67,7 @@ const ViewAccountForm = function ({
         {updateDialogOpen ? (
           <UpdateAccountForm
             account={account}
+            financialInstitutions={financialInstitutions}
             redirectUrl={redirectUrl}
             onClose={() => {
               setUpdateDialogOpen(false);

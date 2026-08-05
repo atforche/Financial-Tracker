@@ -37,6 +37,11 @@ public interface IAccountQueryRepository
     Task<IReadOnlyCollection<string>> GetAllNamesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves all available Account financial institutions.
+    /// </summary>
+    Task<IReadOnlyCollection<string>> GetAllFinancialInstitutionsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves Account balance facts for the provided Accounting Periods.
     /// </summary>
     Task<IReadOnlyCollection<AccountPeriodBalanceFacts>> GetPeriodBalanceFactsAsync(

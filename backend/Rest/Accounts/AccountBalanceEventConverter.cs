@@ -111,6 +111,7 @@ public sealed class AccountBalanceEventConverter
         {
             Id = balanceEvent.Account.Id.Value,
             Name = balanceEvent.Account.Name,
+            FinancialInstitution = balanceEvent.Account.FinancialInstitution,
             Type = AccountTypeConverter.ToModel(balanceEvent.Account.Type),
         },
         Source = ToModel(balanceEvent.Source),

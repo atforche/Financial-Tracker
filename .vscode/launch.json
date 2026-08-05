@@ -39,7 +39,7 @@
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_HTTP_PORTS": "8081",
-        "DATABASE_PATH": "${workspaceFolder}/debug/database.db",
+        "DATABASE_PATH": "${workspaceFolder}/debug/data/database.db",
         "LOG_DIRECTORY": "${workspaceFolder}/debug/logs",
         "FRONTEND_ORIGIN": "http://localhost:3001"
       },
@@ -62,7 +62,7 @@
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_HTTP_PORTS": "8081",
-        "DATABASE_PATH": "${workspaceFolder}/debug/database.db",
+        "DATABASE_PATH": "${workspaceFolder}/debug/data/database.db",
         "LOG_DIRECTORY": "${workspaceFolder}/debug/logs",
         "FRONTEND_ORIGIN": "http://localhost:3001"
       },

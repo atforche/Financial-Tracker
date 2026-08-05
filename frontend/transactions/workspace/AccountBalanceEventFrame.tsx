@@ -103,6 +103,7 @@ const AccountBalanceEventFrame = function ({
       ? {
           id: displayedAccountId,
           name: displayedAccountName,
+          financialInstitution: null,
           type: displayedAccountType,
         }
       : null;

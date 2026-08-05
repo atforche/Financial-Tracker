@@ -1,4 +1,10 @@
-import { Autocomplete, Box, TextField, Typography } from "@mui/material";
+import {
+  Autocomplete,
+  Box,
+  TextField,
+  Typography,
+  createFilterOptions,
+} from "@mui/material";
 import { type JSX, useEffect, useRef, useState } from "react";
 import ReadOnlyField from "@/framework/forms/ReadOnlyField";
 
@@ -22,6 +28,8 @@ interface ComboBoxEntryFieldProps<T> {
   readonly errorMessage?: string | null;
   readonly autoFocus?: boolean;
   readonly size?: "small" | "medium";
+  readonly createOption?:
+    ((inputValue: string) => ComboBoxOption<T> | null) | null;
   readonly isOptionEqualToValue?: (
     option: ComboBoxOption<T>,
     value: ComboBoxOption<T>,
@@ -49,11 +57,13 @@ const ComboBoxEntryField = function <T>({
   errorMessage = null,
   autoFocus = false,
   size = "medium",
+  createOption = null,
   isOptionEqualToValue = compareOptionValues,
 }: ComboBoxEntryFieldProps<T>): JSX.Element {
   const hint = useRef("");
   const justSelected = useRef(false);
   const [inputValue, setInputValue] = useState(value?.label ?? "");
+  const defaultFilterOptions = createFilterOptions<ComboBoxOption<T>>();
 
   useEffect(() => {
     setInputValue(value?.label ?? "");
@@ -71,6 +81,16 @@ const ComboBoxEntryField = function <T>({
       inputValue={inputValue}
       value={value}
       isOptionEqualToValue={isOptionEqualToValue}
+      filterOptions={(sourceOptions, state) => {
+        const filteredOptions = defaultFilterOptions(sourceOptions, state);
+        const createdOption = createOption?.(state.inputValue) ?? null;
+        return createdOption !== null &&
+          !filteredOptions.some(
+            (option) => option.label === createdOption.label,
+          )
+          ? [...filteredOptions, createdOption]
+          : filteredOptions;
+      }}
       renderOption={(props, option) => (
         <Box component="li" {...props}>
           <Box sx={{ minWidth: 0 }}>
@@ -113,7 +133,11 @@ const ComboBoxEntryField = function <T>({
           />
         </Box>
       )}
-      onChange={(_, newValue) => {
+      onChange={(_, newValue, reason) => {
+        if (createOption !== null && reason === "blur") {
+          return;
+        }
+
         justSelected.current = true;
         setInputValue(newValue?.label ?? "");
         setValue(newValue);

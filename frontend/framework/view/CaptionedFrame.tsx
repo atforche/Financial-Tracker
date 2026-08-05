@@ -1,5 +1,5 @@
+import { Box, Typography } from "@mui/material";
 import type { JSX } from "react";
-import { Typography } from "@mui/material";
 
 const defaultMinWidth = 300;
 const defaultMaxWidth = 500;
@@ -24,22 +24,23 @@ const CaptionedFrame = function ({
   children,
 }: CaptionedFrameProps): JSX.Element {
   return (
-    <fieldset
-      style={{
-        border: "1px solid rgba(0, 0, 0, 0.23)",
-        borderRadius: "5px",
-        padding: "0px 15px 15px 15px",
+    <Box
+      component="fieldset"
+      sx={{
+        border: "1px solid",
+        borderColor: "divider",
+        borderRadius: 3,
+        padding: "0 15px 15px",
+        width: maxWidth === null ? "fit-content" : undefined,
         minWidth,
         maxWidth: maxWidth ?? "fit-content",
       }}
     >
       <legend>
-        <Typography variant="caption" sx={{ color: "rgba(0, 0, 0, 0.6)" }}>
-          {caption}
-        </Typography>
+        <Typography variant="subtitle1">{caption}</Typography>
       </legend>
       {children}
-    </fieldset>
+    </Box>
   );
 };
 

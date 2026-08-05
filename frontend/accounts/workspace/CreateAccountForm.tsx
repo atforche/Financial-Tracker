@@ -28,6 +28,7 @@ import { useRouter } from "next/navigation";
  */
 interface CreateAccountFormProps {
   readonly accountingPeriods: AccountingPeriod[];
+  readonly financialInstitutions: readonly string[];
   readonly open: boolean;
   readonly onClose: () => void;
   readonly redirectUrl: string;
@@ -38,12 +39,16 @@ interface CreateAccountFormProps {
  */
 const CreateAccountForm = function ({
   accountingPeriods,
+  financialInstitutions,
   open,
   onClose,
   redirectUrl,
 }: CreateAccountFormProps): JSX.Element {
   const router = useRouter();
   const [name, setName] = useState<string>("");
+  const [financialInstitution, setFinancialInstitution] = useState<
+    string | null
+  >(null);
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(null);
@@ -69,6 +74,7 @@ const CreateAccountForm = function ({
 
   const request: CreateAccountRequest | null = buildCreateRequest(
     name,
+    financialInstitution,
     accountType,
     accountingPeriod,
     dateOpened,
@@ -113,6 +119,9 @@ const CreateAccountForm = function ({
           name={name}
           setName={setName}
           nameErrorMessage={state.nameErrors ?? null}
+          financialInstitution={financialInstitution}
+          financialInstitutions={financialInstitutions}
+          setFinancialInstitution={setFinancialInstitution}
           accountType={accountType}
           setAccountType={setAccountType}
           accountTypeErrorMessage={state.typeErrors ?? null}

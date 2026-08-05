@@ -16,6 +16,11 @@ public class AccountModel
     public required string Name { get; init; }
 
     /// <summary>
+    /// Financial institution for the Account, when specified.
+    /// </summary>
+    public required string? FinancialInstitution { get; init; }
+
+    /// <summary>
     /// Type for the Account
     /// </summary>
     public required AccountTypeModel Type { get; init; }

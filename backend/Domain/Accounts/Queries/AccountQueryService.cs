@@ -25,6 +25,12 @@ public sealed class AccountQueryService(
         accountQueryRepository.GetAsync(query, cancellationToken);
 
     /// <summary>
+    /// Retrieves all available Account financial institutions.
+    /// </summary>
+    public Task<IReadOnlyCollection<string>> GetAllFinancialInstitutionsAsync(CancellationToken cancellationToken = default) =>
+        accountQueryRepository.GetAllFinancialInstitutionsAsync(cancellationToken);
+
+    /// <summary>
     /// Retrieves Accounts and their interpreted current balances.
     /// </summary>
     public async Task<QueryPage<AccountBalance>> GetWithBalancesAsync(

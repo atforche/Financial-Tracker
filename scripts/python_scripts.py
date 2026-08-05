@@ -2,6 +2,8 @@
 """Commands for maintaining the quality of repository Python scripts."""
 
 import os
+import platform
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -13,6 +15,23 @@ from shared.step import Step
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 VIRTUAL_ENVIRONMENT_PATH = PROJECT_ROOT / ".venv"
 QUALITY_PYTHON = VIRTUAL_ENVIRONMENT_PATH / "bin" / "python"
+REQUIRED_PYTHON_VERSION = "3.14"
+REQUIRED_PYTHON_COMMAND = f"python{REQUIRED_PYTHON_VERSION}"
+
+
+def get_required_python() -> str:
+    """Returns an interpreter that can create the required Python 3.14 environment."""
+
+    if platform.python_version_tuple()[:2] == ("3", "14"):
+        return sys.executable
+
+    required_python = shutil.which(REQUIRED_PYTHON_COMMAND)
+    if required_python is None:
+        raise RuntimeError(
+            "Python 3.14 is required to create the repository virtual environment. "
+            f"Install {REQUIRED_PYTHON_COMMAND} and ensure it is on PATH."
+        )
+    return required_python
 
 
 def get_quality_python() -> Path:
@@ -39,10 +58,9 @@ def ensure_quality_pip() -> None:
         [str(get_quality_python()), "-m", "ensurepip", "--upgrade"], check=False
     )
     if ensure_pip.returncode != 0:
-        python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
         raise RuntimeError(
             "The Python virtual environment does not include pip. Install the Python "
-            f"venv package (for example, 'sudo apt install python{python_version}-venv'), "
+            f"3.14 venv package (for example, 'sudo apt install {REQUIRED_PYTHON_COMMAND}-venv'), "
             f"delete {VIRTUAL_ENVIRONMENT_PATH}, and run this command again."
         )
 
@@ -66,7 +84,12 @@ class InstallCommand(Command):
         if not QUALITY_PYTHON.is_file():
             print(f"Creating Python virtual environment: {VIRTUAL_ENVIRONMENT_PATH}")
             subprocess.run(
-                [sys.executable, "-m", "venv", str(VIRTUAL_ENVIRONMENT_PATH)],
+                [
+                    get_required_python(),
+                    "-m",
+                    "venv",
+                    str(VIRTUAL_ENVIRONMENT_PATH),
+                ],
                 check=True,
             )
 

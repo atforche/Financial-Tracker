@@ -1,21 +1,25 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
 {
-	"name": "C# (.NET)",
-	"image": "mcr.microsoft.com/devcontainers/dotnet:10.0-noble",
-	"features": {
-        "ghcr.io/devcontainers/features/node:latest": {}
-	},
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"esbenp.prettier-vscode",
-				"ms-dotnettools.csdevkit",
-				"ms-python.pylint",
-				"streetsidesoftware.code-spell-checker",
-				"alexcvzz.vscode-sqlite"
-			]
-		}
-	},
-	"postCreateCommand": "sudo apt update || true && sudo apt install sqlite3 && sudo apt install -y python3 && dotnet tool install --global dotnet-ef"
+  "name": "C# (.NET)",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:10.0-noble",
+  "features": {
+    "ghcr.io/devcontainers/features/node:latest": {},
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.14",
+      "installTools": false
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "ms-dotnettools.csdevkit",
+        "ms-python.pylint",
+        "streetsidesoftware.code-spell-checker",
+        "alexcvzz.vscode-sqlite"
+      ]
+    }
+  },
+  "postCreateCommand": "sudo apt update || true && sudo apt install sqlite3 && dotnet tool install --global dotnet-ef"
 }

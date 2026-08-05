@@ -87,7 +87,17 @@ public sealed class AccountConverter
     {
         Id = account.Id.Value,
         Name = account.Name,
+        FinancialInstitution = account.FinancialInstitution,
         Type = AccountTypeConverter.ToModel(account.Type),
+    };
+
+    /// <summary>
+    /// Converts the provided financial institutions to a collection model.
+    /// </summary>
+    public CollectionModel<string> ToModel(IReadOnlyCollection<string> financialInstitutions) => new()
+    {
+        Items = financialInstitutions,
+        TotalCount = financialInstitutions.Count,
     };
 
     /// <summary>
@@ -106,6 +116,7 @@ public sealed class AccountConverter
     {
         Id = balance.Account.Id.Value,
         Name = balance.Account.Name,
+        FinancialInstitution = balance.Account.FinancialInstitution,
         Type = AccountTypeConverter.ToModel(balance.Account.Type),
         CurrentBalance = new AccountBalanceModel
         {
@@ -134,6 +145,7 @@ public sealed class AccountConverter
             {
                 Id = balance.Account.Id.Value,
                 Name = balance.Account.Name,
+                FinancialInstitution = balance.Account.FinancialInstitution,
                 Type = AccountTypeConverter.ToModel(balance.Account.Type),
                 StartingBalance = balance.StartingBalance,
                 EndingBalance = balance.EndingBalance,
@@ -162,6 +174,7 @@ public sealed class AccountConverter
             {
                 Id = balance.Account.Id.Value,
                 Name = balance.Account.Name,
+                FinancialInstitution = balance.Account.FinancialInstitution,
                 Type = AccountTypeConverter.ToModel(balance.Account.Type),
                 StartingBalance = balance.StartingBalance,
                 EndingBalance = balance.EndingBalance,

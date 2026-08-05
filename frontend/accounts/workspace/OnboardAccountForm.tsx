@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
  * Props for the OnboardAccountForm component.
  */
 interface OnboardAccountFormProps {
+  readonly financialInstitutions: readonly string[];
   readonly open: boolean;
   readonly onClose: () => void;
   readonly redirectUrl: string;
@@ -31,16 +32,21 @@ interface OnboardAccountFormProps {
  */
 const OnboardAccountForm = function ({
   open,
+  financialInstitutions,
   onClose,
   redirectUrl,
 }: OnboardAccountFormProps): JSX.Element {
   const router = useRouter();
   const [name, setName] = useState<string>("");
+  const [financialInstitution, setFinancialInstitution] = useState<
+    string | null
+  >(null);
   const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [onboardedBalance, setOnboardedBalance] = useState<number | null>(null);
   const [state, action, pending] = useActionState(onboardAccount, {});
   const request: OnboardAccountRequest | null = buildOnboardRequest(
     name,
+    financialInstitution,
     accountType,
     onboardedBalance,
   );
@@ -91,6 +97,9 @@ const OnboardAccountForm = function ({
           name={name}
           setName={setName}
           nameErrorMessage={state.nameErrors ?? null}
+          financialInstitution={financialInstitution}
+          financialInstitutions={financialInstitutions}
+          setFinancialInstitution={setFinancialInstitution}
           accountType={accountType}
           setAccountType={setAccountType}
           accountTypeErrorMessage={state.typeErrors ?? null}

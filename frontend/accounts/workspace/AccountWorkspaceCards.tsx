@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import {
   accountWorkspaceParamNames,
   clearAccountWorkspaceFilters,
@@ -13,6 +13,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
+import CaptionedFrame from "@/framework/view/CaptionedFrame";
 import CardResponsiveGrid from "@/framework/view/CardResponsiveGrid";
 import type { JSX } from "react";
 import WorkspaceCard from "@/framework/view/WorkspaceCard";
@@ -28,6 +29,12 @@ interface AccountWorkspaceCardsProps {
   readonly data: AccountWithBalance[];
   readonly isInOnboardingMode: boolean;
 }
+
+const noFinancialInstitutionLabel = "No Financial Institution";
+
+const compareStrings = function (left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
+};
 
 /**
  * Displays the account workspace as a collection of clickable cards.
@@ -72,6 +79,22 @@ const AccountWorkspaceCards = function ({
     });
   };
 
+  const groupedAccounts = new Map<string | null, AccountWithBalance[]>();
+  data.forEach((account) => {
+    const accounts = groupedAccounts.get(account.financialInstitution) ?? [];
+    accounts.push(account);
+    groupedAccounts.set(account.financialInstitution, accounts);
+  });
+  const groups = [...groupedAccounts.entries()].sort(([left], [right]) =>
+    compareStrings(
+      left ?? noFinancialInstitutionLabel,
+      right ?? noFinancialInstitutionLabel,
+    ),
+  );
+  groups.forEach(([, accounts]) => {
+    accounts.sort((left, right) => compareStrings(left.name, right.name));
+  });
+
   return data.length === 0 ? (
     <Stack spacing={2} alignItems="flex-start">
       <Typography color="text.secondary">
@@ -88,30 +111,60 @@ const AccountWorkspaceCards = function ({
       ) : null}
     </Stack>
   ) : (
-    <CardResponsiveGrid minimumColumnWidth={280} spacing={2}>
-      {data.map((account) => (
-        <WorkspaceCard
-          key={account.id}
-          title={account.name}
-          color={getAccountCardColor(account.type)}
-          onClick={() => {
-            openAccount(account.id);
-          }}
+    <Box
+      sx={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: 2,
+        alignItems: "flex-start",
+        "& > *": {
+          flex: "0 0 auto",
+          maxWidth: "100%",
+        },
+      }}
+    >
+      {groups.map(([financialInstitution, accounts]) => (
+        <CaptionedFrame
+          key={
+            financialInstitution === null
+              ? "no-financial-institution"
+              : `financial-institution:${financialInstitution}`
+          }
+          caption={financialInstitution ?? noFinancialInstitutionLabel}
+          maxWidth={null}
         >
-          <Stack spacing={0.5}>
-            <Typography
-              variant="overline"
-              sx={{ color: "text.secondary", fontWeight: 700 }}
-            >
-              Current balance
-            </Typography>
-            <Typography variant="h5">
-              {formatCurrency(account.currentBalance.postedBalance)}
-            </Typography>
-          </Stack>
-        </WorkspaceCard>
+          <CardResponsiveGrid
+            columns={accounts.length}
+            contentSized
+            minimumColumnWidth={280}
+            spacing={2}
+          >
+            {accounts.map((account) => (
+              <WorkspaceCard
+                key={account.id}
+                title={account.name}
+                color={getAccountCardColor(account.type)}
+                onClick={() => {
+                  openAccount(account.id);
+                }}
+              >
+                <Stack spacing={0.5}>
+                  <Typography
+                    variant="overline"
+                    sx={{ color: "text.secondary", fontWeight: 700 }}
+                  >
+                    Current balance
+                  </Typography>
+                  <Typography variant="h5">
+                    {formatCurrency(account.currentBalance.postedBalance)}
+                  </Typography>
+                </Stack>
+              </WorkspaceCard>
+            ))}
+          </CardResponsiveGrid>
+        </CaptionedFrame>
       ))}
-    </CardResponsiveGrid>
+    </Box>
   );
 };
 

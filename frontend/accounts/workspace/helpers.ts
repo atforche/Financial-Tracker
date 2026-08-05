@@ -39,6 +39,7 @@ const getNormalizedDateOpened = function (
  */
 const buildCreateRequest = function (
   name: string,
+  financialInstitution: string | null,
   accountType: AccountType | null,
   accountingPeriod: AccountingPeriod | null,
   dateOpened: Dayjs | null,
@@ -53,6 +54,7 @@ const buildCreateRequest = function (
   }
   return {
     name,
+    financialInstitution,
     type: accountType,
     openingAccountingPeriodId: accountingPeriod.id,
     dateOpened: dateOpened.format("YYYY-MM-DD"),
@@ -64,6 +66,7 @@ const buildCreateRequest = function (
  */
 const buildOnboardRequest = function (
   name: string,
+  financialInstitution: string | null,
   accountType: AccountType | null,
   onboardedBalance: number | null,
 ): OnboardAccountRequest | null {
@@ -72,6 +75,7 @@ const buildOnboardRequest = function (
   }
   return {
     name,
+    financialInstitution,
     type: accountType,
     onboardedBalance,
   };

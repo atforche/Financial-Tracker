@@ -71,6 +71,9 @@ namespace Data.Migrations
                     b.Property<DateOnly?>("DateOpened")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("FinancialInstitution")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");

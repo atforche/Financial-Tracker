@@ -9,4 +9,9 @@ public class UpdateAccountModel
     /// Name for the Account
     /// </summary>
     public required string Name { get; init; }
+
+    /// <summary>
+    /// Financial institution for the Account, when specified.
+    /// </summary>
+    public string? FinancialInstitution { get; init; }
 }
