@@ -171,7 +171,7 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
     {
         if (!string.IsNullOrWhiteSpace(filter.NameSearch))
         {
-            query = query.Where(fund => fund.Name.Contains(filter.NameSearch));
+            query = query.Where(fund => EF.Functions.Like(fund.Name, $"%{filter.NameSearch}%"));
         }
         if (filter.Names.Count > 0)
         {

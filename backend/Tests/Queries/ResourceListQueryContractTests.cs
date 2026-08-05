@@ -29,9 +29,9 @@ public sealed class ResourceListQueryContractTests
         _ = await test.Funds.Create("Alpha fund").In(july).CreateAsync();
 
         CollectionModel<AccountModel> accounts = await test.Api.GetAsync<CollectionModel<AccountModel>>(
-            "/accounts?filter.nameSearch=cash&sort=Name&limit=1");
+            "/accounts?filter.nameSearch=CASH&sort=Name&limit=1");
         CollectionModel<FundModel> funds = await test.Api.GetAsync<CollectionModel<FundModel>>(
-            "/funds?filter.nameSearch=fund&sort=NameDescending&limit=1");
+            "/funds?filter.nameSearch=FUND&sort=NameDescending&limit=1");
 
         Assert.Equal(2, accounts.TotalCount);
         Assert.Equal("Alpha cash", Assert.Single(accounts.Items).Name);
