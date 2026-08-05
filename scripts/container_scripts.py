@@ -11,7 +11,7 @@ import time
 from http.cookiejar import CookieJar
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 from urllib.request import (
     HTTPCookieProcessor,
     HTTPRedirectHandler,
@@ -283,6 +283,7 @@ class SmokeTestContainerImages(Command):
                 self.wait_for_url(f"{frontend_origin}/login")
                 self.wait_for_container_health(frontend)
                 self.verify_frontend_session_and_api_flow(frontend_port)
+                self.verify_frontend_sign_in_outage(frontend_port, backend)
                 self.run_playwright_e2e(frontend_port, f"{identifier}{identifier}")
             except Exception:
                 self.print_container_logs(backend)
@@ -385,6 +386,64 @@ class SmokeTestContainerImages(Command):
                 raise RuntimeError(
                     "The authenticated frontend could not load account data."
                 )
+
+    def verify_frontend_sign_in_outage(self, frontend_port: int, backend: str) -> None:
+        """Verifies a resolver outage rejects sign-in with a generic login error."""
+
+        base_url = f"http://127.0.0.1:{frontend_port}"
+        cookies = CookieJar()
+        browser = build_opener(HTTPCookieProcessor(cookies))
+        with browser.open(f"{base_url}/api/auth/csrf", timeout=30) as response:
+            csrf_token = json.load(response)["csrfToken"]
+
+        sign_in_request = Request(
+            f"{base_url}/api/auth/callback/development",
+            data=urlencode(
+                {
+                    "csrfToken": csrf_token,
+                    "callbackUrl": f"{base_url}/accounts/workspace",
+                    "json": "true",
+                }
+            ).encode(),
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            method="POST",
+        )
+        callback_browser = build_opener(
+            HTTPCookieProcessor(cookies), DoNotFollowRedirects()
+        )
+        self.run_docker(["stop", backend])
+        try:
+            try:
+                callback_browser.open(sign_in_request, timeout=30)
+            except HTTPError as error:
+                if error.code != 302:
+                    raise
+                redirect_location = error.headers.get("Location")
+                if (
+                    redirect_location is None
+                    or "/login?error=AccessDenied" not in redirect_location
+                ):
+                    raise RuntimeError(
+                        "A resolver outage did not fail closed to the generic login error."
+                    ) from error
+                with browser.open(
+                    urljoin(base_url, redirect_location), timeout=30
+                ) as response:
+                    login_page = response.read().decode()
+                if (
+                    "We could not confirm that this account has access."
+                    not in login_page
+                ):
+                    raise RuntimeError(
+                        "The login page did not show the generic resolver outage message."
+                    ) from error
+            else:
+                raise RuntimeError("A resolver outage unexpectedly created a session.")
+        finally:
+            self.run_docker(["start", backend])
+            restarted_backend_port = self.get_published_port(backend, 8080)
+            self.wait_for_url(f"http://127.0.0.1:{restarted_backend_port}/health/ready")
+            self.wait_for_container_health(backend)
 
     @staticmethod
     def run_playwright_e2e(frontend_port: int, auth_secret: str) -> None:

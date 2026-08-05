@@ -9,6 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import { type JSX, type ReactNode, useState } from "react";
+import type { CurrentApplicationUser } from "@/framework/auth/currentApplicationUser";
 import Image from "next/image";
 import Menu from "@mui/icons-material/Menu";
 import Navigation from "@/framework/navigation/Navigation";
@@ -19,6 +20,7 @@ import { usePathname } from "next/navigation";
  */
 interface ApplicationShellProps {
   readonly children: ReactNode;
+  readonly applicationUser: CurrentApplicationUser | null;
   readonly user:
     | {
         readonly name?: string | null;
@@ -32,6 +34,7 @@ interface ApplicationShellProps {
  * Provides responsive application navigation and the main content region.
  */
 const ApplicationShell = function ({
+  applicationUser,
   children,
   user,
 }: ApplicationShellProps): JSX.Element {
@@ -82,8 +85,13 @@ const ApplicationShell = function ({
           </Typography>
         </Toolbar>
       </AppBar>
-      <Navigation user={user} visibility="desktop" />
       <Navigation
+        applicationUser={applicationUser}
+        user={user}
+        visibility="desktop"
+      />
+      <Navigation
+        applicationUser={applicationUser}
         user={user}
         variant="temporary"
         open={mobileNavigationOpen}

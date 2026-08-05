@@ -5,6 +5,7 @@ import {
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import NextAuth from "next-auth";
+import resolveApplicationUser from "@/framework/auth/resolveApplicationUser";
 
 declare module "@auth/core/jwt" {
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -23,10 +24,6 @@ const usesGoogleAuthentication = authenticationMode === "google";
 if (!usesDevelopmentAuthentication && !usesGoogleAuthentication) {
   throw new Error("AUTH_MODE must be either 'development' or 'google'.");
 }
-const allowedGoogleSubjects = (process.env["GOOGLE_ALLOWED_SUBJECTS"] ?? "")
-  .split(",")
-  .map((subject) => subject.trim())
-  .filter((subject) => subject !== "");
 const developmentSubject = process.env["DEVELOPMENT_AUTH_SUBJECT"] ?? "";
 if (usesDevelopmentAuthentication && developmentSubject.trim() === "") {
   throw new Error(
@@ -84,26 +81,30 @@ const { auth, handlers, signIn, signOut } = nextAuth({
         }),
       ],
   pages: {
+    error: "/login",
     signIn: "/login",
   },
   callbacks: {
-    signIn({ account, profile, user }) {
-      if (account?.provider === "development") {
-        return user.id === developmentSubject;
+    async signIn({ account, user }) {
+      const idToken =
+        account?.provider === "development"
+          ? typeof user.id === "string"
+            ? `development:${user.id}`
+            : null
+          : typeof account?.id_token === "string"
+            ? account.id_token
+            : null;
+      if (idToken === null) {
+        return false;
       }
 
-      const subject = typeof profile?.sub === "string" ? profile.sub : null;
-      const isAllowed =
-        subject !== null && allowedGoogleSubjects.includes(subject);
-
-      if (!isAllowed && subject !== null) {
+      try {
+        return await resolveApplicationUser(idToken);
+      } catch {
         // eslint-disable-next-line no-console
-        console.warn("Rejected Google sign-in for unapproved subject", {
-          subject,
-        });
+        console.error("Application user resolution failed during sign-in.");
+        return false;
       }
-
-      return isAllowed;
     },
     authorized({ auth: session, request }) {
       return request.nextUrl.pathname === "/login" || session !== null;

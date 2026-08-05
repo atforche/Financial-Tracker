@@ -34,7 +34,16 @@ internal sealed class DevelopmentAuthenticationHandler(
             return Task.FromResult(AuthenticateResult.Fail("The development access token is invalid."));
         }
 
-        Claim[] claims = [new Claim(ClaimTypes.NameIdentifier, expectedSubject), new Claim("sub", expectedSubject)];
+        string email = Environment.GetEnvironmentVariable(DevelopmentAuthenticationDefaults.EmailEnvironmentVariable)
+            ?? "local-developer@example.test";
+        Claim[] claims =
+        [
+            new Claim(ClaimTypes.NameIdentifier, expectedSubject),
+            new Claim("sub", expectedSubject),
+            new Claim("email", email),
+            new Claim("email_verified", "true"),
+            new Claim("name", "Local developer"),
+        ];
         ClaimsIdentity identity = new(claims, DevelopmentAuthenticationDefaults.Scheme, ClaimTypes.Name, ClaimTypes.Role);
         AuthenticationTicket ticket = new(new ClaimsPrincipal(identity), DevelopmentAuthenticationDefaults.Scheme);
         return Task.FromResult(AuthenticateResult.Success(ticket));
@@ -60,4 +69,9 @@ internal static class DevelopmentAuthenticationDefaults
     /// Environment variable containing the local developer subject.
     /// </summary>
     internal const string SubjectEnvironmentVariable = "DEVELOPMENT_AUTH_SUBJECT";
+
+    /// <summary>
+    /// Environment variable containing the local developer email claim.
+    /// </summary>
+    internal const string EmailEnvironmentVariable = "DEVELOPMENT_AUTH_EMAIL";
 }

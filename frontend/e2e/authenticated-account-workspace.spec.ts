@@ -13,6 +13,9 @@ test("the browser creates a safe authenticated session and onboards an account",
   page,
 }) => {
   await signInAsLocalDeveloper(page);
+  await expect(
+    page.getByText("Role: Admin", { exact: true }).first(),
+  ).toBeVisible();
 
   const session: unknown = await page.evaluate(async () => {
     const response = await fetch("/api/auth/session");

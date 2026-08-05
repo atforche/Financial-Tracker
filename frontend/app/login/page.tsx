@@ -58,9 +58,9 @@ const getRedirectTo = function (callbackUrl: string | undefined): string {
 const LoginPage = async function ({
   searchParams,
 }: {
-  readonly searchParams: Promise<{ callbackUrl?: string }>;
+  readonly searchParams: Promise<{ callbackUrl?: string; error?: string }>;
 }): Promise<JSX.Element> {
-  const { callbackUrl } = await searchParams;
+  const { callbackUrl, error } = await searchParams;
   const redirectTo = getRedirectTo(callbackUrl);
   const session = await auth();
 
@@ -102,9 +102,15 @@ const LoginPage = async function ({
               <Typography color="text.secondary">
                 {authenticationProvider === "development"
                   ? "Use the local developer identity to continue."
-                  : "Sign in with your approved Google account to continue."}
+                  : "Sign in with your invited Google account to continue."}
               </Typography>
             </Stack>
+            {error !== undefined ? (
+              <Typography color="error" role="alert" textAlign="center">
+                We could not confirm that this account has access. Contact an
+                administrator if you believe this is an error.
+              </Typography>
+            ) : null}
             <form
               style={{ width: "100%" }}
               action={async () => {

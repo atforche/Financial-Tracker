@@ -277,7 +277,7 @@ verified admin login before the old allowlist is removed.
 | 1 | Persistence, domain lifecycle, migration, and bootstrap | Phase 0 | Complete |
 | 2 | Identity resolution and backend authorization | Phase 1 | Complete |
 | 3 | User and invitation administration API | Phase 2 | Complete |
-| 4 | Auth.js handshake and current-user frontend foundation | Phases 2-3 | Not started |
+| 4 | Auth.js handshake and current-user frontend foundation | Phases 2-3 | Complete |
 | 5 | Admin UI and read-only application experience | Phase 4 | Not started |
 | 6 | Deployment cutover, compatibility removal, and end-to-end proof | Phases 1-5 | Not started |
 
@@ -655,27 +655,57 @@ implement those consumers.
 
 ### Required tests
 
-- [ ] Invited first login resolves the user and creates a usable session.
-- [ ] Existing active user login succeeds.
-- [ ] Uninvited and disabled identities do not receive usable application
+- [x] Invited first login resolves the user and creates a usable session.
+- [x] Existing active user login succeeds.
+- [x] Uninvited and disabled identities do not receive usable application
   sessions.
-- [ ] Backend outages during sign-in fail closed with a useful generic UI.
-- [ ] `/api/auth/session` does not expose the Google ID token.
-- [ ] Authenticated server-side API requests still attach the ID token.
-- [ ] Login remains public and callback paths remain valid.
-- [ ] Development authentication remains usable only in the guarded local mode.
+- [x] Backend outages during sign-in fail closed with a useful generic UI.
+- [x] `/api/auth/session` does not expose the Google ID token.
+- [x] Authenticated server-side API requests still attach the ID token.
+- [x] Login remains public and callback paths remain valid.
+- [x] Development authentication remains usable only in the guarded local mode.
 
 ### Acceptance criteria
 
-- [ ] Auth.js no longer reads the permanent subject allowlist for authorization.
-- [ ] Backend resolution is the single source of provisioning truth.
-- [ ] Application layout has current database role/status available.
-- [ ] Frontend lint, type checking, and build pass or limitations are recorded
+- [x] Auth.js no longer reads the permanent subject allowlist for authorization.
+- [x] Backend resolution is the single source of provisioning truth.
+- [x] Application layout has current database role/status available.
+- [x] Frontend lint, type checking, and build pass or limitations are recorded
   precisely.
 
 ### Validation evidence
 
-Not yet recorded.
+- Auth.js now sends the provider ID token to `POST /authentication/resolve-user`
+  and rejects sign-in on denial or resolver failure. The frontend no longer
+  parses or consults `GOOGLE_ALLOWED_SUBJECTS`; the backend resolver owns
+  provisioning and active-user decisions.
+- Added the server-only `/users/me` loader and authenticated root-layout
+  handling. Active sessions receive the database display name, email, role, and
+  status; disabled or otherwise denied sessions receive a generic access-
+  unavailable view without loading the financial shell.
+- Development authentication now emits the verified email claims required by
+  the backend resolver while remaining guarded by `AUTH_MODE=development` and
+  the backend Development environment.
+- The identity-resolution suite passed 12/12 tests, covering existing active,
+  disabled, invited, invalid-verification, collision, concurrent-first-login,
+  and role authorization behavior.
+- Frontend ESLint, Prettier, TypeScript (`npx tsc --noEmit`), and generated API
+  model verification passed. The host `next build` stalled after beginning
+  optimization in this restricted environment; the production Docker build
+  completed the Next.js compile, TypeScript check, static generation, and route
+  finalization successfully.
+- The production container smoke test passed after migration and repeated
+  development seeding. It verified backend resolution, `/users/me`, server-side
+  authenticated API access, the database role in responsive navigation,
+  browser session redaction, expired-token rejection, login/callback behavior,
+  backend-outage fail-closed redirect and generic UI, backend restart recovery,
+  and both Playwright tests (2/2).
+- Python script tests passed 31/31; Ruff check and formatting passed; `git
+  diff --check` passed; and the changed C# file follows the repository's
+  no-final-newline convention. Repository-wide `dotnet format` could not produce
+  a clean result because the existing workspace reports broad IDE0005 and
+  dependent-project semantic errors; the changed backend compiled successfully
+  in the production image and the focused backend tests passed.
 
 ## Phase 5: Admin UI and Read-Only Experience
 
@@ -916,3 +946,25 @@ phase.
 - Limitations: Auth.js provisioning handshake, frontend role-aware behavior,
   admin UI, and production cutover remain unimplemented.
 - Next: Phase 4, Auth.js handshake and current-user frontend foundation.
+
+### 2026-08-05 - Phase 4 Auth.js handshake and current-user foundation complete
+
+- Phase: Phase 4 complete.
+- Changes: Replaced the frontend subject allowlist sign-in decision with the
+  backend identity-resolution handshake; added generic denial/error handling;
+  added the server-only current-user loader and access-denied view; threaded
+  database role information through the responsive navigation; added required
+  development resolver claims; and extended container smoke coverage for
+  resolver outages and role presentation.
+- Validation: Production backend, frontend, and migrator images built
+  successfully; focused identity-resolution tests passed 12/12; Python script
+  tests passed 31/31; frontend lint, formatting, type checking, model
+  verification, and Docker production build passed; and the final container
+  smoke test passed, including its outage/restart check and both Playwright
+  tests (2/2).
+- Limitations: No browser test uses a live Google credential, so Google
+  provider UX remains represented by the shared Auth.js callback and backend
+  identity-resolution tests. The host-local Next.js build and repository-wide
+  `dotnet format` remain environment-limited; the Docker production build and
+  focused backend tests provide the corresponding runtime/compiler evidence.
+- Next: Phase 5, admin UI and read-only application experience.
