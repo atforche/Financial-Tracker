@@ -18,7 +18,7 @@ from shared.step import Step
 
 RECOVERY_DIRECTORY_NAME = ".rollback"
 STAGING_RECOVERY_DIRECTORY_NAME = ".rollback-staging"
-RECOVERY_FILE_NAMES = (".env", "compose.yaml", "Caddyfile", "database.db")
+RECOVERY_FILE_NAMES = (".env", "compose.yaml", "Caddyfile")
 OPTIONAL_RECOVERY_FILE_NAMES = ("release-manifest.json",)
 DATABASE_DIRECTORY_NAME = "data"
 DATABASE_FILE_NAME = "database.db"
