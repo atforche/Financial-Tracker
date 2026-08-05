@@ -20,6 +20,7 @@ import parseEnumValue from "@/framework/data/parseEnumValue";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the FundGoalBalanceEventsFrame component.
@@ -42,6 +43,7 @@ const FundGoalBalanceEventsFrame = function ({
   accountingPeriodId,
   fundId,
 }: FundGoalBalanceEventsFrameProps): JSX.Element {
+  const canWrite = useWriteAccess();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -83,13 +85,15 @@ const FundGoalBalanceEventsFrame = function ({
         title="Recent Balance Events"
         color="info"
         headerContent={
-          <Button
-            component={Link}
-            href={addTransactionHref}
-            variant="contained"
-          >
-            Add Transaction
-          </Button>
+          !canWrite ? undefined : (
+            <Button
+              component={Link}
+              href={addTransactionHref}
+              variant="contained"
+            >
+              Add Transaction
+            </Button>
+          )
         }
         columns={columns}
         getId={(balanceEvent) =>
@@ -113,7 +117,7 @@ const FundGoalBalanceEventsFrame = function ({
           title: "No balance events yet",
           description:
             "Create a transaction for this fund to start building its Fund Goal history.",
-          action: (
+          action: !canWrite ? null : (
             <Button
               component={Link}
               href={addTransactionHref}

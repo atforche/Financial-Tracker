@@ -28,6 +28,7 @@ import { buildUrl } from "@/framework/routes/helpers";
 import { formatLongDate } from "@/framework/dateHelpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import postTransaction from "@/transactions/workspace/postTransaction";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the AccountBalanceEventFrame component.
@@ -57,6 +58,7 @@ const AccountBalanceEventFrame = function ({
   label = "Account",
   balanceChange = null,
 }: AccountBalanceEventFrameProps): JSX.Element {
+  const canWrite = useWriteAccess();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -116,7 +118,7 @@ const AccountBalanceEventFrame = function ({
         Posted on {formatLongDate(new Date(`${postedDate}T00:00:00`))}
       </Typography>
     );
-  } else if (setAccount === null) {
+  } else if (canWrite && setAccount === null) {
     helperContent = (
       <Stack spacing={1.25} sx={{ paddingTop: 2 }}>
         <Stack

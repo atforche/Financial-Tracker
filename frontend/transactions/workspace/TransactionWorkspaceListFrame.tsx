@@ -12,6 +12,7 @@ import parseEnumValue from "@/framework/data/parseEnumValue";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the TransactionWorkspaceListFrame component.
@@ -28,6 +29,7 @@ const TransactionWorkspaceListFrame = function ({
   data,
   totalCount,
 }: TransactionWorkspaceListFrameProps): JSX.Element {
+  const canWrite = useWriteAccess();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -90,14 +92,16 @@ const TransactionWorkspaceListFrame = function ({
     <ListFrame<Transaction>
       title="Transactions"
       headerContent={
-        <Button
-          variant="contained"
-          onClick={() => {
-            router.push(createUrl);
-          }}
-        >
-          Create Transaction
-        </Button>
+        !canWrite ? undefined : (
+          <Button
+            variant="contained"
+            onClick={() => {
+              router.push(createUrl);
+            }}
+          >
+            Create Transaction
+          </Button>
+        )
       }
       columns={columns}
       getId={(transaction) => transaction.id}

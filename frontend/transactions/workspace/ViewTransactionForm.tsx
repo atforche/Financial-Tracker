@@ -45,6 +45,7 @@ import UnpostTransactionForm from "@/transactions/workspace/UnpostTransactionFor
 import dayjs from "dayjs";
 import { getCurrencyTotal } from "@/framework/currencyHelpers";
 import { getPostedTransactionAccounts } from "@/transactions/postingHelpers";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the ViewTransactionForm component.
@@ -75,6 +76,7 @@ const ViewTransactionForm = function ({
   editUrl,
   returnUrl = null,
 }: ViewTransactionFormProps): JSX.Element {
+  const canWrite = useWriteAccess();
   const currentFundGoals = fundGoals.filter(
     (fundGoal) =>
       fundGoal.accountingPeriod?.id === transactionAccountingPeriod.id,
@@ -269,21 +271,23 @@ const ViewTransactionForm = function ({
       description={transaction.description}
       setDescription={null}
       headerContent={
-        <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-          <Button component={Link} href={editUrl} variant="contained">
-            Edit
-          </Button>
-          {postedAccountCount > 0 ? (
-            <UnpostTransactionForm
+        !canWrite ? undefined : (
+          <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
+            <Button component={Link} href={editUrl} variant="contained">
+              Edit
+            </Button>
+            {postedAccountCount > 0 ? (
+              <UnpostTransactionForm
+                transaction={transaction}
+                redirectUrl={currentUrl}
+              />
+            ) : null}
+            <DeleteTransactionForm
               transaction={transaction}
-              redirectUrl={currentUrl}
+              redirectUrl={returnUrl ?? workspaceUrl}
             />
-          ) : null}
-          <DeleteTransactionForm
-            transaction={transaction}
-            redirectUrl={returnUrl ?? workspaceUrl}
-          />
-        </Stack>
+          </Stack>
+        )
       }
       sourceContent={
         sourceContent ?? (

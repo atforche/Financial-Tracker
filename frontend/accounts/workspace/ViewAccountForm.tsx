@@ -9,6 +9,7 @@ import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import DeleteAccountForm from "@/accounts/workspace/DeleteAccountForm";
 import PageLayout from "@/framework/view/PageLayout";
 import UpdateAccountForm from "@/accounts/workspace/UpdateAccountForm";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the ViewAccountForm component.
@@ -35,6 +36,7 @@ const ViewAccountForm = function ({
   recentBalanceEventCount,
   addTransactionHref,
 }: ViewAccountFormProps): JSX.Element {
+  const canWrite = useWriteAccess();
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
 
   return (
@@ -43,20 +45,22 @@ const ViewAccountForm = function ({
         <AccountSummaryFrame
           account={account}
           headerContent={
-            <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-              <Button
-                variant="contained"
-                onClick={() => {
-                  setUpdateDialogOpen(true);
-                }}
-              >
-                Edit
-              </Button>
-              <DeleteAccountForm
-                account={account}
-                redirectUrl={deleteRedirectUrl}
-              />
-            </Stack>
+            !canWrite ? undefined : (
+              <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setUpdateDialogOpen(true);
+                  }}
+                >
+                  Edit
+                </Button>
+                <DeleteAccountForm
+                  account={account}
+                  redirectUrl={deleteRedirectUrl}
+                />
+              </Stack>
+            )
           }
         />
         <AccountBalanceEventsFrame
@@ -64,7 +68,7 @@ const ViewAccountForm = function ({
           totalCount={recentBalanceEventCount}
           addTransactionHref={addTransactionHref}
         />
-        {updateDialogOpen ? (
+        {canWrite && updateDialogOpen ? (
           <UpdateAccountForm
             account={account}
             financialInstitutions={financialInstitutions}

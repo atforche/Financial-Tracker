@@ -24,6 +24,7 @@ import createFund from "@/funds/workspace/createFund";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import useFundSetupState from "@/funds/workspace/useFundSetupState";
 import { useRouter } from "next/navigation";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the CreateFundForm component.
@@ -39,7 +40,8 @@ interface CreateFundFormProps {
 const CreateFundForm = function ({
   accountingPeriods,
   redirectUrl,
-}: CreateFundFormProps): JSX.Element {
+}: CreateFundFormProps): JSX.Element | null {
+  const canWrite = useWriteAccess();
   const router = useRouter();
   const fundSetup = useFundSetupState();
   const {
@@ -86,6 +88,10 @@ const CreateFundForm = function ({
     maximumFundedBalance,
     targetEndingBalance,
   });
+
+  if (!canWrite) {
+    return null;
+  }
 
   return (
     <ConstrainedContent maxWidth={780}>

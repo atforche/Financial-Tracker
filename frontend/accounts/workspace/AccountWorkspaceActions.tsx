@@ -9,6 +9,7 @@ import OnboardAccountForm from "@/accounts/workspace/OnboardAccountForm";
 import { accountWorkspaceParamNames } from "@/accounts/workspace/searchParams";
 import { buildUrl } from "@/framework/routes/helpers";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the AccountWorkspaceActions component.
@@ -28,7 +29,8 @@ const AccountWorkspaceActions = function ({
   financialInstitutions,
   isInOnboardingMode,
   requestedAction,
-}: AccountWorkspaceActionsProps): JSX.Element {
+}: AccountWorkspaceActionsProps): JSX.Element | null {
+  const canWrite = useWriteAccess();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const updateParams = useSearchParamUpdater([]);
@@ -51,6 +53,10 @@ const AccountWorkspaceActions = function ({
     !isInOnboardingMode && requestedAction === "create";
   const isOnboardDialogOpen =
     isInOnboardingMode && requestedAction === "onboard";
+
+  if (!canWrite) {
+    return null;
+  }
 
   return (
     <>

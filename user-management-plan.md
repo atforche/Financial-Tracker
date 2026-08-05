@@ -278,7 +278,7 @@ verified admin login before the old allowlist is removed.
 | 2 | Identity resolution and backend authorization | Phase 1 | Complete |
 | 3 | User and invitation administration API | Phase 2 | Complete |
 | 4 | Auth.js handshake and current-user frontend foundation | Phases 2-3 | Complete |
-| 5 | Admin UI and read-only application experience | Phase 4 | Not started |
+| 5 | Admin UI and read-only application experience | Phase 4 | In progress |
 | 6 | Deployment cutover, compatibility removal, and end-to-end proof | Phases 1-5 | Not started |
 
 Allowed statuses are `Not started`, `In progress`, `Blocked`, and `Complete`.
@@ -745,7 +745,13 @@ implement those consumers.
 
 ### Validation evidence
 
-Not yet recorded.
+- 2026-08-05: Added the admin-only navigation item and `/admin/users` page,
+  invitation and user lifecycle controls, a shared client-side application-user
+  context, and read-only visibility gates across the inventoried workspace
+  mutation controls. Focused ESLint and `tsc --noEmit` passed, along with
+  `git diff --check`. Browser/container coverage and a successful host Next.js
+  production build remain pending; the host build currently has a stale Next
+  build lock after an earlier incomplete attempt.
 
 ## Phase 6: Deployment Cutover and End-to-End Proof
 

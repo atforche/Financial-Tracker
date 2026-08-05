@@ -9,6 +9,7 @@ import FundBalanceEventsFrame from "@/funds/workspace/FundBalanceEventsFrame";
 import FundSummaryFrame from "@/funds/workspace/FundSummaryFrame";
 import PageLayout from "@/framework/view/PageLayout";
 import UpdateFundForm from "@/funds/workspace/UpdateFundForm";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the ViewFundForm component.
@@ -33,6 +34,7 @@ const ViewFundForm = function ({
   recentBalanceEventCount,
   addTransactionHref,
 }: ViewFundFormProps): JSX.Element {
+  const canWrite = useWriteAccess();
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
 
   return (
@@ -41,17 +43,19 @@ const ViewFundForm = function ({
         <FundSummaryFrame
           fund={fund}
           headerContent={
-            <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-              <Button
-                variant="contained"
-                onClick={() => {
-                  setUpdateDialogOpen(true);
-                }}
-              >
-                Edit
-              </Button>
-              <DeleteFundForm fund={fund} redirectUrl={deleteRedirectUrl} />
-            </Stack>
+            !canWrite ? undefined : (
+              <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setUpdateDialogOpen(true);
+                  }}
+                >
+                  Edit
+                </Button>
+                <DeleteFundForm fund={fund} redirectUrl={deleteRedirectUrl} />
+              </Stack>
+            )
           }
         />
         <FundBalanceEventsFrame
@@ -59,7 +63,7 @@ const ViewFundForm = function ({
           totalCount={recentBalanceEventCount}
           addTransactionHref={addTransactionHref}
         />
-        {updateDialogOpen ? (
+        {canWrite && updateDialogOpen ? (
           <UpdateFundForm
             fund={fund}
             redirectUrl={redirectUrl}

@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Divider, List } from "@mui/material";
-import { type JSX, useEffect, useState } from "react";
+import { type JSX, useEffect, useMemo, useState } from "react";
 import NavigationLinkGroup from "./NavigationLinkGroup";
 import NavigationLinkItem from "./NavigationLinkItem";
 import matchesPath from "./matchesPath";
@@ -12,6 +12,7 @@ import { usePathname } from "next/navigation";
  * Props for the NavigationLinks component.
  */
 interface NavigationLinksProps {
+  readonly isAdministrator: boolean;
   readonly onNavigate?: (() => void) | undefined;
 }
 
@@ -19,26 +20,31 @@ interface NavigationLinksProps {
  * Displays the navigation links for the application.
  */
 const NavigationLinks = function ({
+  isAdministrator,
   onNavigate,
 }: NavigationLinksProps): JSX.Element {
+  const links = useMemo(
+    () => navigationItems(isAdministrator),
+    [isAdministrator],
+  );
   const pathname = usePathname();
   const [expandedLinkName, setExpandedLinkName] = useState<string | null>(null);
 
   useEffect(() => {
-    const expandedLink = navigationItems.find(
+    const expandedLink = links.find(
       (link) =>
         link.childLinks !== undefined &&
         (matchesPath(pathname, link.href) ||
           link.childLinks.some((child) => matchesPath(pathname, child.href))),
     );
     setExpandedLinkName(expandedLink?.name ?? null);
-  }, [pathname]);
+  }, [links, pathname]);
 
   return (
     <Box sx={{ overflow: "auto" }}>
       <Divider />
       <List>
-        {navigationItems.map((link) => {
+        {links.map((link) => {
           if (link.childLinks === undefined) {
             return (
               <NavigationLinkItem

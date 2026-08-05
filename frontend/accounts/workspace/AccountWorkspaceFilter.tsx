@@ -15,6 +15,7 @@ import SearchBar from "@/framework/listframe/SearchBar";
 import { shouldPersistAccountTypes } from "@/accounts/accountTypeFilterHelpers";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the AccountWorkspaceFilter component.
@@ -29,6 +30,7 @@ interface AccountWorkspaceFilterProps {
 const AccountWorkspaceFilter = function ({
   isInOnboardingMode,
 }: AccountWorkspaceFilterProps): JSX.Element {
+  const canWrite = useWriteAccess();
   const searchParams = useSearchParams();
   const filters = parseAccountWorkspaceFilters(searchParams);
 
@@ -83,14 +85,16 @@ const AccountWorkspaceFilter = function ({
           >
             Reset Filters
           </Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setAction(isInOnboardingMode ? "onboard" : "create");
-            }}
-          >
-            {addActionLabel}
-          </Button>
+          {!canWrite ? null : (
+            <Button
+              variant="contained"
+              onClick={() => {
+                setAction(isInOnboardingMode ? "onboard" : "create");
+              }}
+            >
+              {addActionLabel}
+            </Button>
+          )}
         </Stack>
       }
     >

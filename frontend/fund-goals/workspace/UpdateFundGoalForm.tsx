@@ -15,6 +15,7 @@ import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FundGoalSetupSection from "@/funds/workspace/FundGoalSetupSection";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import updateFundGoal from "@/fund-goals/workspace/updateFundGoal";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the UpdateFundGoalForm component.
@@ -30,7 +31,8 @@ interface UpdateFundGoalFormProps {
 const UpdateFundGoalForm = function ({
   fundGoal,
   redirectUrl,
-}: UpdateFundGoalFormProps): JSX.Element {
+}: UpdateFundGoalFormProps): JSX.Element | null {
+  const canWrite = useWriteAccess();
   const [open, setOpen] = useState(false);
   const [regularContribution, setRegularContribution] = useState(
     fundGoal.regularContribution ?? null,
@@ -70,6 +72,10 @@ const UpdateFundGoalForm = function ({
     minimumFundedBalance === null ||
     maximumFundedBalance === null ||
     minimumFundedBalance <= maximumFundedBalance;
+  if (!canWrite) {
+    return null;
+  }
+
   return (
     <>
       <Button

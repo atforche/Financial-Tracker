@@ -13,6 +13,7 @@ import type { JSX } from "react";
 import ReopenAccountingPeriodForm from "@/accounting-periods/workspace/ReopenAccountingPeriodForm";
 import { buildUrl } from "@/framework/routes/helpers";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the AccountingPeriodWorkspaceActions component.
@@ -32,7 +33,8 @@ const AccountingPeriodWorkspaceActions = function ({
   latestAccountingPeriod,
   selectedAccountingPeriod,
   requestedAction,
-}: AccountingPeriodWorkspaceActionsProps): JSX.Element {
+}: AccountingPeriodWorkspaceActionsProps): JSX.Element | null {
+  const canWrite = useWriteAccess();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const updateParams = useSearchParamUpdater([]);
@@ -58,6 +60,10 @@ const AccountingPeriodWorkspaceActions = function ({
   const dialogParams = new URLSearchParams(searchParams.toString());
   dialogParams.delete("action");
   const dialogRedirectUrl = buildUrl(pathname, dialogParams);
+
+  if (!canWrite) {
+    return null;
+  }
 
   return (
     <>
