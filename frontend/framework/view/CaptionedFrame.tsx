@@ -10,7 +10,8 @@ const defaultMaxWidth = 500;
 interface CaptionedFrameProps {
   readonly caption: string;
   readonly minWidth?: number;
-  readonly maxWidth?: number | null;
+  readonly maxWidth?: number | string | null;
+  readonly width?: number | string;
   readonly children: React.ReactNode;
 }
 
@@ -21,6 +22,7 @@ const CaptionedFrame = function ({
   caption,
   minWidth = defaultMinWidth,
   maxWidth = defaultMaxWidth,
+  width,
   children,
 }: CaptionedFrameProps): JSX.Element {
   return (
@@ -31,7 +33,7 @@ const CaptionedFrame = function ({
         borderColor: "divider",
         borderRadius: 3,
         padding: "0 15px 15px",
-        width: maxWidth === null ? "fit-content" : undefined,
+        width: width ?? (maxWidth === null ? "fit-content" : undefined),
         minWidth,
         maxWidth: maxWidth ?? "fit-content",
       }}

@@ -9,6 +9,7 @@ interface CardResponsiveGridProps {
   readonly columns?: number;
   readonly contentSized?: boolean;
   readonly minimumColumnWidth: number;
+  readonly wrap?: boolean;
   readonly spacing?: number;
 }
 
@@ -20,24 +21,35 @@ const CardResponsiveGrid = function ({
   columns,
   contentSized = false,
   minimumColumnWidth,
+  wrap = false,
   spacing = 3,
 }: CardResponsiveGridProps): JSX.Element {
   return (
     <Box
       sx={{
-        display: "grid",
+        display: wrap ? "flex" : "grid",
+        flexWrap: wrap ? "wrap" : undefined,
         gap: spacing,
         width: contentSized ? { xs: "100%", sm: "max-content" } : undefined,
         justifyContent: "start",
         justifyItems: "stretch",
         alignItems: "start",
-        gridTemplateColumns: {
-          xs: "minmax(0, 1fr)",
-          sm:
-            typeof columns === "number"
-              ? `repeat(${columns}, minmax(${minimumColumnWidth}px, max-content))`
-              : `repeat(auto-fit, minmax(${minimumColumnWidth}px, max-content))`,
-        },
+        gridTemplateColumns: wrap
+          ? undefined
+          : {
+              xs: "minmax(0, 1fr)",
+              sm:
+                typeof columns === "number"
+                  ? `repeat(${columns}, minmax(${minimumColumnWidth}px, max-content))`
+                  : `repeat(auto-fit, minmax(${minimumColumnWidth}px, max-content))`,
+            },
+        "& > *": wrap
+          ? {
+              flex: `0 0 ${minimumColumnWidth}px`,
+              minWidth: { xs: 0, sm: minimumColumnWidth },
+              maxWidth: "100%",
+            }
+          : undefined,
         "& .MuiTypography-root": {
           whiteSpace: { xs: "normal", sm: "nowrap" },
         },
