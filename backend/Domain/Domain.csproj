@@ -2,6 +2,7 @@
   <!-- Allow the Data project to access the internals of this project -->
   <ItemGroup>
     <InternalsVisibleTo Include="Data" />
+    <InternalsVisibleTo Include="Tests" />
   </ItemGroup>
 
     <!-- Nuget Package References -->

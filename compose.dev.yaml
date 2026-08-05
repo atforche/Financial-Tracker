@@ -14,6 +14,8 @@ services:
       dockerfile: Migrator.Dockerfile
     environment:
       DATABASE_PATH: /data/database.db
+      AUTH_MODE: development
+      DEVELOPMENT_AUTH_SUBJECT: local-developer
     volumes:
       - development_data:/data
     depends_on:

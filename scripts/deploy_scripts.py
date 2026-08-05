@@ -45,6 +45,7 @@ def main():
 
     commands = CommandCollection("Helper scripts for deploying the Financial Tracker")
     commands.commands.append(BootstrapCommand())
+    commands.commands.append(BootstrapAdminCommand())
     commands.commands.append(DeployCommand())
     commands.commands.append(RollbackCommand())
     commands.run()
@@ -98,6 +99,54 @@ class DeployCommand(Command):
         configuration.migrator_image = manifest.migrator_image
 
         TransactionalDeployment(instance_path).deploy(configuration, manifest_path)
+
+
+class BootstrapAdminCommand(Command):
+    """Creates the first administrator invitation for an existing instance."""
+
+    path: Annotated[str, "Path to the deployed instance directory"]
+    email: Annotated[str, "Email address for the bootstrap administrator invitation"]
+
+    def __init__(self):
+        """Constructs a bootstrap administrator command."""
+
+        super().__init__(
+            "bootstrap-admin",
+            "Creates the first administrator invitation when no active administrator exists",
+        )
+        self.steps.append(
+            Step(
+                "Bootstrap Administrator",
+                "Bootstrap administrator invitation created",
+                self.bootstrap_admin,
+            )
+        )
+
+    def validate_arguments(self) -> None:
+        """Validates the existing instance path and email argument."""
+
+        if not os.path.isdir(self.path):
+            raise ValueError(f"Path {self.path} does not point to a valid directory")
+        if not self.email.strip():
+            raise ValueError("Email must not be empty")
+        configuration = Configuration.build_from_existing_instance(
+            str(Path(self.path).resolve()), False
+        )
+        if not configuration.migrator_image:
+            raise ValueError("The instance migrator image is not configured")
+
+    def bootstrap_admin(self) -> None:
+        """Runs the application-owned bootstrap capability in the migrator image."""
+
+        instance_path = Path(self.path).resolve()
+        configuration = Configuration.build_from_existing_instance(
+            str(instance_path), False
+        )
+        run_migrator(
+            configuration.migrator_image,
+            instance_path / DATABASE_DIRECTORY_NAME,
+            {"BOOTSTRAP_ADMIN_EMAIL": self.email.strip()},
+        )
 
 
 class BootstrapCommand(Command):
