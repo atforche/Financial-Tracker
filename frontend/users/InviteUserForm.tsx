@@ -1,22 +1,39 @@
 "use client";
 
 import { Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
-import { type JSX, type SyntheticEvent, useState } from "react";
+import { type JSX, type SyntheticEvent, useEffect, useState } from "react";
+import { formatUserRole, roles } from "@/users/userManagementHelpers";
+import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import Frame from "@/framework/view/Frame";
 import type { UserRole } from "@/users/types";
 import { UserRoleModel } from "@/framework/data/api";
 import { createUserInvitation } from "@/users/userManagementActions";
-import { roles } from "@/users/userManagementHelpers";
 import useUserManagementAction from "@/users/useUserManagementAction";
 
 /**
- * Displays invitation controls for an administrator.
+ * Props for the InviteUserForm component.
  */
-const InviteUserForm = function (): JSX.Element {
+interface InviteUserFormProps {
+  readonly onClose: () => void;
+  readonly open: boolean;
+}
+
+/**
+ * Displays invitation controls in a dialog for an administrator.
+ */
+const InviteUserForm = function ({
+  onClose,
+  open,
+}: InviteUserFormProps): JSX.Element {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<UserRole>(UserRoleModel.Standard);
   const { pending, run, state } = useUserManagementAction();
+
+  useEffect(() => {
+    if (state.success && !pending) {
+      onClose();
+    }
+  }, [onClose, pending, state.success]);
 
   const submit = function (event: SyntheticEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -30,53 +47,75 @@ const InviteUserForm = function (): JSX.Element {
   };
 
   return (
-    <Frame title="Invite user" color="primary">
-      <Stack component="form" spacing={2} onSubmit={submit}>
+    <Dialog
+      open={open}
+      onClose={pending ? undefined : onClose}
+      fullWidth
+      maxWidth="sm"
+      title="Invite user"
+      actions={
+        <>
+          <Button disabled={pending} onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            loading={pending}
+            disabled={email.trim() === ""}
+            form="invite-user-form"
+            type="submit"
+          >
+            Send invitation
+          </Button>
+        </>
+      }
+    >
+      <Stack
+        component="form"
+        id="invite-user-form"
+        spacing={3}
+        onSubmit={submit}
+      >
         <Typography color="text.secondary">
           Invitations are matched to a verified Google email address on first
           sign-in.
         </Typography>
-        <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-          <TextField
-            required
-            fullWidth
-            label="Email address"
-            type="email"
-            value={email}
-            onChange={(event) => {
-              setEmail(event.target.value);
-            }}
-          />
-          <TextField
-            select
-            label="Role"
-            value={role}
-            sx={{ minWidth: 160 }}
-            onChange={(event) => {
-              const nextRole = roles.find(
-                (option) => option.toString() === event.target.value,
-              );
-              if (nextRole !== undefined) {
-                setRole(nextRole);
-              }
-            }}
-          >
-            {roles.map((option) => (
-              <MenuItem key={option} value={option}>
-                {option}
-              </MenuItem>
-            ))}
-          </TextField>
-          <Button loading={pending} type="submit" variant="contained">
-            Send invitation
-          </Button>
-        </Stack>
+        <TextField
+          required
+          fullWidth
+          label="Email address"
+          type="email"
+          value={email}
+          onChange={(event) => {
+            setEmail(event.target.value);
+          }}
+        />
+        <TextField
+          select
+          fullWidth
+          label="Role"
+          value={role}
+          onChange={(event) => {
+            const nextRole = roles.find(
+              (option) => option.toString() === event.target.value,
+            );
+            if (nextRole !== undefined) {
+              setRole(nextRole);
+            }
+          }}
+        >
+          {roles.map((option) => (
+            <MenuItem key={option} value={option}>
+              {formatUserRole(option)}
+            </MenuItem>
+          ))}
+        </TextField>
         <ErrorAlert
           errorMessage={state.errorTitle}
           unmappedErrors={state.unmappedErrors}
         />
       </Stack>
-    </Frame>
+    </Dialog>
   );
 };
 

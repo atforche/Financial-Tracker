@@ -15,8 +15,13 @@ declare module "@auth/core/jwt" {
   }
 }
 
+interface DevelopmentAuthenticationIdentity {
+  label: string;
+  subject: string;
+}
+
 const google = Google;
-const credentials = Credentials;
+const credentialsProvider = Credentials;
 const nextAuth = NextAuth;
 const authenticationMode = process.env["AUTH_MODE"] ?? "google";
 const usesDevelopmentAuthentication = authenticationMode === "development";
@@ -30,6 +35,42 @@ if (usesDevelopmentAuthentication && developmentSubject.trim() === "") {
     "DEVELOPMENT_AUTH_SUBJECT must be configured when AUTH_MODE=development.",
   );
 }
+const additionalDevelopmentSubjects = (
+  process.env["DEVELOPMENT_AUTH_ADDITIONAL_SUBJECTS"] ??
+  (developmentSubject === "local-developer"
+    ? "local-standard,local-read-only"
+    : "")
+)
+  .split(",")
+  .map((subject) => subject.trim())
+  .filter((subject) => subject !== "");
+const readOnlyDevelopmentSubjects = new Set(
+  (
+    process.env["DEVELOPMENT_AUTH_READ_ONLY_SUBJECTS"] ??
+    (developmentSubject === "local-developer" ? "local-read-only" : "")
+  )
+    .split(",")
+    .map((subject) => subject.trim())
+    .filter((subject) => subject !== ""),
+);
+const developmentAuthenticationIdentities: readonly DevelopmentAuthenticationIdentity[] =
+  [
+    {
+      label: "Administrator",
+      subject: developmentSubject,
+    },
+    ...additionalDevelopmentSubjects
+      .filter((subject) => subject !== developmentSubject)
+      .map((subject) => ({
+        label: readOnlyDevelopmentSubjects.has(subject)
+          ? "Read-only user"
+          : "Standard user",
+        subject,
+      })),
+  ];
+const developmentSubjects = new Set(
+  developmentAuthenticationIdentities.map((identity) => identity.subject),
+);
 const authenticationProvider = usesDevelopmentAuthentication
   ? "development"
   : "google";
@@ -62,14 +103,26 @@ const hasExpiredIdToken = function (token: {
 const { auth, handlers, signIn, signOut } = nextAuth({
   providers: usesDevelopmentAuthentication
     ? [
-        credentials({
+        credentialsProvider({
           id: "development",
           name: "Local development",
-          credentials: {},
-          authorize() {
+          credentials: {
+            subject: {},
+          },
+          authorize(submittedCredentials) {
+            const { subject } = submittedCredentials;
+            if (
+              typeof subject !== "string" ||
+              !developmentSubjects.has(subject)
+            ) {
+              return null;
+            }
             return {
-              id: developmentSubject,
-              name: "Local developer",
+              id: subject,
+              name:
+                developmentAuthenticationIdentities.find(
+                  (identity) => identity.subject === subject,
+                )?.label ?? "Local developer",
             };
           },
         }),
@@ -132,4 +185,11 @@ const { auth, handlers, signIn, signOut } = nextAuth({
   },
 });
 
-export { authenticationProvider, auth, handlers, signIn, signOut };
+export {
+  authenticationProvider,
+  auth,
+  developmentAuthenticationIdentities,
+  handlers,
+  signIn,
+  signOut,
+};

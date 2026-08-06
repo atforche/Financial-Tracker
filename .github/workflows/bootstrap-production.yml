@@ -110,12 +110,11 @@ jobs:
           ENVIRONMENT: ${{ vars.ENVIRONMENT }}
           PUBLIC_ORIGIN: ${{ vars.PUBLIC_ORIGIN }}
           GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
-          GOOGLE_ALLOWED_SUBJECTS: ${{ vars.GOOGLE_ALLOWED_SUBJECTS }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
           RELEASE_MANIFEST: ${{ runner.temp }}/financial-tracker-release/release-manifest.json
         run: |
-          required_values=(INSTANCE_PATH INSTANCE_NAME PUBLIC_ORIGIN GOOGLE_CLIENT_ID GOOGLE_ALLOWED_SUBJECTS GOOGLE_CLIENT_SECRET AUTH_SECRET)
+          required_values=(INSTANCE_PATH INSTANCE_NAME PUBLIC_ORIGIN GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET AUTH_SECRET)
           for value_name in "${required_values[@]}"; do
             if [[ -z "${!value_name}" ]]; then
               echo "The production environment value ${value_name} must be configured." >&2

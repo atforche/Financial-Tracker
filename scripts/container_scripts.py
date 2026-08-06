@@ -50,6 +50,7 @@ def prepare_smoke_test_database(data_directory: Path) -> None:
             "AUTH_MODE": "development",
             "DEVELOPMENT_AUTH_SUBJECT": SMOKE_TEST_STANDARD_SUBJECT,
             "DEVELOPMENT_AUTH_EMAIL": SMOKE_TEST_STANDARD_EMAIL,
+            "DEVELOPMENT_AUTH_ROLE": "Standard",
         },
     )
 
@@ -241,8 +242,6 @@ class SmokeTestContainerImages(Command):
                         f"DEVELOPMENT_AUTH_ADDITIONAL_SUBJECTS={SMOKE_TEST_STANDARD_SUBJECT}",
                         "--env",
                         "GOOGLE_CLIENT_ID=container-smoke-test",
-                        "--env",
-                        f"GOOGLE_ALLOWED_SUBJECTS={SMOKE_TEST_SUBJECT}",
                         "financial-tracker-backend:workflow",
                     ]
                 )
@@ -279,11 +278,11 @@ class SmokeTestContainerImages(Command):
                         "--env",
                         f"DEVELOPMENT_AUTH_SUBJECT={SMOKE_TEST_SUBJECT}",
                         "--env",
+                        f"DEVELOPMENT_AUTH_ADDITIONAL_SUBJECTS={SMOKE_TEST_STANDARD_SUBJECT}",
+                        "--env",
                         "GOOGLE_CLIENT_ID=container-smoke-test",
                         "--env",
                         "GOOGLE_CLIENT_SECRET=container-smoke-test",
-                        "--env",
-                        f"GOOGLE_ALLOWED_SUBJECTS={SMOKE_TEST_SUBJECT}",
                         "--env",
                         f"AUTH_URL={frontend_origin}",
                         "--env",
@@ -369,6 +368,7 @@ class SmokeTestContainerImages(Command):
                     "csrfToken": csrf_token,
                     "callbackUrl": f"{base_url}/accounts/workspace",
                     "json": "true",
+                    "subject": SMOKE_TEST_SUBJECT,
                 }
             ).encode(),
             headers={"Content-Type": "application/x-www-form-urlencoded"},
@@ -387,7 +387,7 @@ class SmokeTestContainerImages(Command):
         with browser.open(f"{base_url}/api/auth/session", timeout=30) as response:
             session = json.load(response)
         if (
-            session.get("user", {}).get("name") != "Local developer"
+            session.get("user", {}).get("name") != "Administrator"
             or "idToken" in session
         ):
             raise RuntimeError(
@@ -416,6 +416,7 @@ class SmokeTestContainerImages(Command):
                     "csrfToken": csrf_token,
                     "callbackUrl": f"{base_url}/accounts/workspace",
                     "json": "true",
+                    "subject": SMOKE_TEST_SUBJECT,
                 }
             ).encode(),
             headers={"Content-Type": "application/x-www-form-urlencoded"},

@@ -32,10 +32,14 @@ internal sealed class DevelopmentAuthenticationHandler(
         string subject = token.StartsWith("development:", StringComparison.Ordinal)
             ? token["development:".Length..]
             : "";
+        string additionalSubjects = Environment.GetEnvironmentVariable(DevelopmentAuthenticationDefaults.AdditionalSubjectsEnvironmentVariable)
+            ?? (string.Equals(expectedSubject, "local-developer", StringComparison.Ordinal)
+                ? "local-standard,local-read-only"
+                : "");
         string[] allowedSubjects =
         [
             expectedSubject,
-            ..(Environment.GetEnvironmentVariable(DevelopmentAuthenticationDefaults.AdditionalSubjectsEnvironmentVariable) ?? "")
+            ..additionalSubjects
                 .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
         ];
         if (!allowedSubjects.Contains(subject, StringComparer.Ordinal))
@@ -43,8 +47,10 @@ internal sealed class DevelopmentAuthenticationHandler(
             return Task.FromResult(AuthenticateResult.Fail("The development access token is invalid."));
         }
 
-        string email = Environment.GetEnvironmentVariable(DevelopmentAuthenticationDefaults.EmailEnvironmentVariable)
-            ?? "local-developer@example.test";
+        string email = subject == expectedSubject
+            ? Environment.GetEnvironmentVariable(DevelopmentAuthenticationDefaults.EmailEnvironmentVariable)
+                ?? "local-developer@example.test"
+            : $"{subject}@example.test";
         Claim[] claims =
         [
             new Claim(ClaimTypes.NameIdentifier, subject),

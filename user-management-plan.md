@@ -279,7 +279,7 @@ verified admin login before the old allowlist is removed.
 | 3 | User and invitation administration API | Phase 2 | Complete |
 | 4 | Auth.js handshake and current-user frontend foundation | Phases 2-3 | Complete |
 | 5 | Admin UI and read-only application experience | Phase 4 | Complete |
-| 6 | Deployment cutover, compatibility removal, and end-to-end proof | Phases 1-5 | Not started |
+| 6 | Deployment cutover, compatibility removal, and end-to-end proof | Phases 1-5 | In progress |
 
 Allowed statuses are `Not started`, `In progress`, `Blocked`, and `Complete`.
 
@@ -816,16 +816,47 @@ implement those consumers.
 
 ### Acceptance criteria
 
-- [ ] No runtime component requires `GOOGLE_ALLOWED_SUBJECTS`.
+- [x] No runtime component requires `GOOGLE_ALLOWED_SUBJECTS`.
 - [ ] Production-like build, migration, startup, readiness, authentication,
   authorization, and persistence are proven.
-- [ ] Local orchestration represents the relevant CI/deployment checks.
-- [ ] Operational rollback is documented, including the database compatibility
+- [x] Local orchestration represents the relevant CI/deployment checks.
+- [x] Operational rollback is documented, including the database compatibility
   implications of the new migration.
 
 ### Validation evidence
 
-Not yet recorded.
+- 2026-08-06: Removed `GOOGLE_ALLOWED_SUBJECTS` from Compose, the production
+  bootstrap workflow, generated deployment configuration, debug configuration,
+  container-smoke environments, templates, documentation, and tests. Existing
+  instance `.env` files remain readable; the next deploy rewrites them without
+  the retired setting.
+- The backup-restore verifier now runs the migrator with a deterministic,
+  guarded-development identity and proves `/users/me` before performing its
+  protected persistence cycle. This validates the restored database through the
+  same database-backed current-user resolution used by the application.
+- `pytest scripts/tests` passed 31/31; Ruff check and format verification,
+  Prettier checks, and `git diff --check` passed. A repository-wide scan found
+  no runtime/deployment/configuration/test reference to
+  `GOOGLE_ALLOWED_SUBJECTS`; the remaining mentions are this historical plan.
+- Production backend, frontend, and migrator images built successfully. The
+  production-container smoke runner migrated a fresh database and reached its
+  three Playwright scenarios without the retired environment setting. The tool
+  session did not return the runner's final status after Playwright started, so
+  this is not recorded as a completed smoke result.
+- A live production backup/restore and Google-login cutover require the
+  operator's backup credentials, production database, and Google identity, and
+  remain outstanding.
+- 2026-08-06: Fixed native debug migration seeding. The debug migrator now
+  loads `debug/.env`, including `AUTH_MODE=development` and
+  `DEVELOPMENT_AUTH_SUBJECT`, so its deterministic local user is created before
+  the backend applies database-backed authorization. The regression suite
+  passed 32/32 script tests.
+- 2026-08-06: Extended guarded development authentication with selectable
+  Administrator, Standard, and Read-only identities. The native and Compose
+  debug paths seed matching application users, while the login page sends only
+  an explicitly configured local subject to Auth.js. Frontend lint and type
+  checks passed; the production images compiled the backend, migrator, and
+  frontend successfully.
 
 ## Cross-Cutting Security Requirements
 
@@ -1056,3 +1087,58 @@ phase.
   suite completed without Playwright failure artifacts.
 - Next: Phase 6, deployment cutover, compatibility removal, and end-to-end
   production proof.
+
+### 2026-08-06 - Phase 6 deployment cutover preparation
+
+- Phase: Phase 6 in progress.
+- Changes: Removed the retired Google-subject allowlist from all runtime and
+  deployment configuration surfaces; updated the production bootstrap workflow,
+  templates, tests, container smoke environment, and operator documentation;
+  and strengthened restore verification to seed and resolve an application user
+  before its protected write/read persistence check.
+- Validation: `pytest scripts/tests` passed 31/31; Ruff check and format
+  verification, Prettier, `git diff --check`, and the no-runtime-reference scan
+  passed. Production backend, frontend, and migrator images built successfully.
+  The production smoke suite migrated its database and began all three
+  Playwright scenarios, but its final process status was unavailable after the
+  execution session disconnected.
+- Limitations: No production backup repository/database or live Google identity
+  is available in this workspace. The operator must run and verify the backup,
+  deploy during the planned maintenance window, run `bootstrap-admin`, verify
+  the first Google login, invite collaborators, and exercise the documented
+  rollback decision before Phase 6 can be marked complete.
+- Next: Complete the production cutover checklist and record its exact backup,
+  migration, Google-login, authorization, restart, and restore evidence.
+
+### 2026-08-06 - Native debug development-user seeding fix
+
+- Phase: Phase 6 follow-up.
+- Changes: Updated `ApplyDebugMigrations` to load the debug environment before
+  invoking the migrator, and added regression coverage for the development
+  subject/email and SQLite database path passed to the migrator.
+- Validation: Script tests passed 32/32; Ruff check and format verification,
+  Prettier, and `git diff --check` passed.
+- Follow-up: Run `./scripts/debug_scripts.py upgrade` once to seed the existing
+  migrated debug database, then launch the debugger normally.
+
+### 2026-08-06 - Three development identities
+
+- Phase: Phase 6 follow-up.
+- Changes: Added local Administrator, Standard, and Read-only login choices;
+  seeded their matching database roles through the migrator; retained explicit
+  role configuration for non-debug smoke identities; and documented the local
+  debugging behavior.
+- Validation: Script tests passed 32/32; frontend Prettier, ESLint, and
+  TypeScript checks passed; `git diff --check` passed; and the production Docker
+  build compiled the backend, migrator, frontend, and test projects.
+- Follow-up: Run `./scripts/debug_scripts.py upgrade` to seed the identities
+  into an existing debug database before choosing them on the login page.
+
+### 2026-08-06 - Accounting Period trends read-only follow-up
+
+- Phase: Phase 5 correction.
+- Changes: Applied the existing `useWriteAccess` visibility gate to the
+  Accounting Period trends list frame's initial empty-state action, so a
+  read-only user cannot see the Create Accounting Period control there.
+- Validation: Focused frontend ESLint and TypeScript checks passed, along with
+  `git diff --check`.

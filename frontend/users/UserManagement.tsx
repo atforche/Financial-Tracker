@@ -2,7 +2,6 @@
 
 import type { User, UserInvitation } from "@/users/types";
 import InvitationListFrame from "@/users/InvitationListFrame";
-import InviteUserForm from "@/users/InviteUserForm";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import UserListFrame from "@/users/UserListFrame";
@@ -26,7 +25,6 @@ const UserManagement = function ({
 }: UserManagementProps): JSX.Element {
   return (
     <PageLayout>
-      <InviteUserForm />
       <UserListFrame currentUserId={currentUserId} users={users} />
       <InvitationListFrame invitations={invitations} />
     </PageLayout>

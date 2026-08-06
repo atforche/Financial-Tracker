@@ -19,6 +19,7 @@ import parseEnumValue from "@/framework/data/parseEnumValue";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/accounting-periods/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the AccountingPeriodTrendsListFrame component.
@@ -35,6 +36,7 @@ const AccountingPeriodTrendsListFrame = function ({
   data,
   totalCount,
 }: AccountingPeriodTrendsListFrameProps): JSX.Element {
+  const canWrite = useWriteAccess();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -183,7 +185,7 @@ const AccountingPeriodTrendsListFrame = function ({
         title: "No accounting periods have been added",
         description:
           "Create an accounting period to start organizing balances by month.",
-        action: (
+        action: !canWrite ? undefined : (
           <Button
             variant="contained"
             onClick={() => {

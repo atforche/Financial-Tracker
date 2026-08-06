@@ -7,6 +7,11 @@ const roles: readonly UserRole[] = [
   UserRoleModel.ReadOnly,
 ];
 
+/** Formats an application role for display. */
+const formatUserRole = function (role: UserRole): string {
+  return role === UserRoleModel.ReadOnly ? "Read only" : role;
+};
+
 /**
  * Formats an optional UTC timestamp for compact list presentation.
  */
@@ -26,4 +31,4 @@ const formatDate = function (value: string | null | undefined): string {
   }).format(date);
 };
 
-export { formatDate, roles };
+export { formatDate, formatUserRole, roles };

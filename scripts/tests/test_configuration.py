@@ -14,7 +14,6 @@ def build_configuration(
         public_origin,
         "client-id",
         "client-secret",
-        "subject-a,subject-b",
         "auth-secret",
         "backend-image",
         "frontend-image",
@@ -42,7 +41,6 @@ def test_write_to_file_writes_expected_environment_values(tmp_path):
         "\n"
         'GOOGLE_CLIENT_ID="client-id"\n'
         'GOOGLE_CLIENT_SECRET="client-secret"\n'
-        'GOOGLE_ALLOWED_SUBJECTS="subject-a,subject-b"\n'
         "\n"
         'AUTH_SECRET="auth-secret"\n'
     )
@@ -70,7 +68,6 @@ def test_build_from_environment_reports_all_missing_required_values(monkeypatch)
         "PUBLIC_ORIGIN",
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",
-        "GOOGLE_ALLOWED_SUBJECTS",
     ):
         monkeypatch.delenv(variable, raising=False)
 
@@ -87,7 +84,6 @@ def test_build_from_environment_uses_defaults_and_generates_auth_secret(monkeypa
     monkeypatch.setenv("PUBLIC_ORIGIN", "https://tracker.example.com")
     monkeypatch.setenv("GOOGLE_CLIENT_ID", "client-id")
     monkeypatch.setenv("GOOGLE_CLIENT_SECRET", "client-secret")
-    monkeypatch.setenv("GOOGLE_ALLOWED_SUBJECTS", "subject")
     monkeypatch.delenv("ENVIRONMENT", raising=False)
     monkeypatch.delenv("AUTH_SECRET", raising=False)
 
@@ -110,7 +106,7 @@ def test_build_from_existing_instance_reads_current_environment_values(tmp_path)
                 'PUBLIC_ORIGIN="https://tracker.example.com"',
                 'GOOGLE_CLIENT_ID="client-id"',
                 'GOOGLE_CLIENT_SECRET="client-secret"',
-                'GOOGLE_ALLOWED_SUBJECTS="subject-a,subject-b"',
+                'REMOVED_DEPLOYMENT_SETTING="legacy-value"',
                 'AUTH_SECRET="auth-secret"',
                 'BACKEND_IMAGE="backend-image"',
                 'FRONTEND_IMAGE="frontend-image"',
@@ -125,4 +121,3 @@ def test_build_from_existing_instance_reads_current_environment_values(tmp_path)
 
     assert configuration.name == "tracker"
     assert configuration.public_origin == "https://tracker.example.com"
-    assert configuration.google_allowed_subjects == "subject-a,subject-b"

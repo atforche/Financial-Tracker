@@ -1,12 +1,14 @@
 "use client";
 
+import { type JSX, useState } from "react";
+import { formatDate, formatUserRole } from "@/users/userManagementHelpers";
 import { getPaginationIndex, rowsPerPage } from "@/framework/listframe/page";
+import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import InvitationActions from "@/users/InvitationActions";
-import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
+import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
+import ManageInvitationDialog from "@/users/ManageInvitationDialog";
 import type { UserInvitation } from "@/users/types";
-import { formatDate } from "@/users/userManagementHelpers";
 import { useSearchParams } from "next/navigation";
 
 /**
@@ -25,6 +27,8 @@ const InvitationListFrame = function ({
   invitations,
 }: InvitationListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
+  const [managedInvitation, setManagedInvitation] =
+    useState<UserInvitation | null>(null);
   const paginationIndex = getPaginationIndex(
     searchParams.get(pageParamName),
     invitations.length,
@@ -42,7 +46,7 @@ const InvitationListFrame = function ({
     {
       name: "role",
       headerContent: "Role",
-      getBodyContent: (invitation) => invitation.role,
+      getBodyContent: (invitation) => formatUserRole(invitation.role),
     },
     {
       name: "status",
@@ -61,27 +65,53 @@ const InvitationListFrame = function ({
     },
     {
       name: "actions",
-      headerContent: "Actions",
+      headerContent: "",
       getBodyContent: (invitation) => (
-        <InvitationActions invitation={invitation} />
+        <ListFrameActionButton
+          size="small"
+          color="primary"
+          onClick={() => {
+            setManagedInvitation(invitation);
+          }}
+          ariaLabel={`Open invitation for ${invitation.email}`}
+        >
+          <ArrowForwardOutlined fontSize="small" color="action" />
+        </ListFrameActionButton>
       ),
+      alignment: "right",
+      minWidth: 52,
+      maxWidth: 52,
     },
   ];
 
   return (
-    <ListFrame<UserInvitation>
-      title="Invitation history"
-      columns={columns}
-      getId={(invitation) => invitation.id}
-      data={pageInvitations}
-      totalCount={invitations.length}
-      pageParamName={pageParamName}
-      hasActiveFilters={false}
-      initialEmptyState={{
-        title: "No invitations",
-        description: "Create an invitation to grant a collaborator access.",
-      }}
-    />
+    <>
+      <ListFrame<UserInvitation>
+        title="Invitation history"
+        columns={columns}
+        getId={(invitation) => invitation.id}
+        data={pageInvitations}
+        totalCount={invitations.length}
+        pageParamName={pageParamName}
+        hasActiveFilters={false}
+        onRowClick={(invitation) => {
+          setManagedInvitation(invitation);
+        }}
+        initialEmptyState={{
+          title: "No invitations",
+          description: "Create an invitation to grant a collaborator access.",
+        }}
+      />
+      {managedInvitation !== null ? (
+        <ManageInvitationDialog
+          invitation={managedInvitation}
+          open
+          onClose={() => {
+            setManagedInvitation(null);
+          }}
+        />
+      ) : null}
+    </>
   );
 };
 

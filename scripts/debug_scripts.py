@@ -43,7 +43,6 @@ def get_debug_configuration() -> Configuration:
         public_origin="https://localhost:3001",
         google_client_id=os.environ.get("GOOGLE_CLIENT_ID", ""),
         google_client_secret=os.environ.get("GOOGLE_CLIENT_SECRET", ""),
-        google_allowed_subjects=os.environ.get("GOOGLE_ALLOWED_SUBJECTS", ""),
         auth_secret=os.environ.get("AUTH_SECRET", ""),
         backend_image="backend-Debug",
         frontend_image="frontend-Debug",
@@ -167,7 +166,7 @@ class ApplyDebugMigrations(Command):
     def apply_migrations(self) -> None:
         """Runs the migrator project against the debug database."""
 
-        environment = os.environ.copy()
+        environment = get_debug_environment()
         environment["DATABASE_PATH"] = (
             get_debug_configuration().get_database_file_path()
         )

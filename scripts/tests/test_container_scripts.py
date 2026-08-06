@@ -43,6 +43,7 @@ def test_prepare_smoke_test_database_provisions_the_authenticated_user(
                 "AUTH_MODE": "development",
                 "DEVELOPMENT_AUTH_SUBJECT": "container-smoke-standard",
                 "DEVELOPMENT_AUTH_EMAIL": "container-smoke-standard@example.test",
+                "DEVELOPMENT_AUTH_ROLE": "Standard",
             },
         ),
     ]

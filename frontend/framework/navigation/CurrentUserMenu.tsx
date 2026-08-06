@@ -49,11 +49,6 @@ const CurrentUserMenu = function ({
               {email}
             </Typography>
           ) : null}
-          {applicationUser !== null ? (
-            <Typography noWrap color="text.secondary" variant="caption">
-              Role: {applicationUser.role}
-            </Typography>
-          ) : null}
         </Box>
       </Stack>
       <Button

@@ -10,9 +10,7 @@ import {
 const signInAsLocalDeveloper = async function (page: Page): Promise<void> {
   await page.goto("/admin/users");
   await expect(page).toHaveURL(/\/login\?callbackUrl=/u);
-  await page
-    .getByRole("button", { name: "Continue as local developer" })
-    .click();
+  await page.getByRole("button", { name: "Continue as Administrator" }).click();
   await expect(page).toHaveURL(/\/admin\/users$/u);
 };
 
@@ -55,10 +53,11 @@ const createDevelopmentSession = async function (
 const confirmAction = async function (
   page: Page,
   trigger: Locator,
+  confirmationDialogName: string,
   confirmationName: string,
 ): Promise<void> {
   await trigger.click();
-  const dialog = page.getByRole("dialog");
+  const dialog = page.getByRole("dialog", { name: confirmationDialogName });
   await expect(dialog).toBeVisible();
   await dialog.getByRole("button", { name: confirmationName }).click();
   await expect(dialog).toBeHidden();
@@ -84,9 +83,7 @@ test("an administrator manages invitations and application user access", async (
   await expect(
     page.getByRole("link", { name: "User Management" }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Invite user" }),
-  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Invite user" })).toBeVisible();
 
   const userRow = getRow(page, standardEmail);
   await expect(userRow).toContainText("Standard");
@@ -99,26 +96,37 @@ test("an administrator manages invitations and application user access", async (
     standardSession.page.getByRole("button", { name: "Onboard Account" }),
   ).toBeVisible();
 
-  await page.getByRole("textbox", { name: "Email address" }).fill(invitedEmail);
-  await page.getByRole("button", { name: "Send invitation" }).click();
+  await page.getByRole("button", { name: "Invite user" }).click();
+  const inviteUserDialog = page.getByRole("dialog", { name: "Invite user" });
+  await inviteUserDialog
+    .getByRole("textbox", { name: "Email address" })
+    .fill(invitedEmail);
+  await inviteUserDialog
+    .getByRole("button", { name: "Send invitation" })
+    .click();
   const invitationRow = getRow(page, invitedEmail);
   await expect(invitationRow).toContainText("Pending");
+  await invitationRow.click();
+  const invitationDialog = page.getByRole("dialog", {
+    name: "Invitation details",
+  });
   await confirmAction(
     page,
-    invitationRow.getByRole("button", { name: "Revoke" }),
+    invitationDialog.getByRole("button", { name: "Revoke invitation" }),
+    "Revoke invitation",
     "Revoke",
   );
   await expect(invitationRow).toContainText("Revoked");
 
-  await userRow.getByRole("combobox", { name: "Role" }).click();
-  await page.getByRole("option", { name: "ReadOnly", exact: true }).click();
-  await confirmAction(
-    page,
-    userRow.getByRole("button", { name: "Change role" }),
-    "Change role",
-  );
-  await page.reload();
-  await expect(getRow(page, standardEmail)).toContainText("ReadOnly");
+  await userRow.click();
+  const manageUserDialog = page.getByRole("dialog", {
+    name: "Manage Local standard user",
+  });
+  await manageUserDialog.getByRole("combobox", { name: "Role" }).click();
+  await page.getByRole("option", { name: "Read only", exact: true }).click();
+  await manageUserDialog.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(userRow).toContainText("Read only");
 
   await standardSession.page
     .getByRole("button", { name: "Onboard Account" })
@@ -168,15 +176,25 @@ test("an administrator manages invitations and application user access", async (
 
   await page.goto("/admin/users");
   const refreshedUserRow = getRow(page, standardEmail);
+  await refreshedUserRow.click();
+  const refreshedManageUserDialog = page.getByRole("dialog", {
+    name: "Manage Local standard user",
+  });
   await confirmAction(
     page,
-    refreshedUserRow.getByRole("button", { name: "Disable" }),
+    refreshedManageUserDialog.getByRole("button", { name: "Disable" }),
+    "Disable user",
     "Disable",
   );
   await expect(refreshedUserRow).toContainText("Disabled");
+  await refreshedUserRow.click();
+  const enabledManageUserDialog = page.getByRole("dialog", {
+    name: "Manage Local standard user",
+  });
   await confirmAction(
     page,
-    refreshedUserRow.getByRole("button", { name: "Enable" }),
+    enabledManageUserDialog.getByRole("button", { name: "Enable" }),
+    "Enable user",
     "Enable",
   );
   await expect(refreshedUserRow).toContainText("Active");

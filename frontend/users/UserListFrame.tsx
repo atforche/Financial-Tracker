@@ -1,14 +1,17 @@
 "use client";
 
+import { type JSX, useState } from "react";
 import { UserRoleModel, UserStatusModel } from "@/framework/data/api";
+import { formatDate, formatUserRole } from "@/users/userManagementHelpers";
 import { getPaginationIndex, rowsPerPage } from "@/framework/listframe/page";
+import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
+import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import type { JSX } from "react";
+import InviteUserForm from "@/users/InviteUserForm";
 import ListFrame from "@/framework/listframe/ListFrame";
-import { Typography } from "@mui/material";
+import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
+import ManageUserDialog from "@/users/ManageUserDialog";
 import type { User } from "@/users/types";
-import UserActions from "@/users/UserActions";
-import { formatDate } from "@/users/userManagementHelpers";
 import { useSearchParams } from "next/navigation";
 
 /**
@@ -29,6 +32,8 @@ const UserListFrame = function ({
   users,
 }: UserListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [managedUser, setManagedUser] = useState<User | null>(null);
   const activeAdministratorCount = users.filter(
     (user) =>
       user.role === UserRoleModel.Admin &&
@@ -44,23 +49,21 @@ const UserListFrame = function ({
   );
   const columns: readonly ColumnDefinition<User>[] = [
     {
-      name: "user",
-      headerContent: "User",
-      getBodyContent: (user) => (
-        <>
-          <Typography variant="body2">
-            {user.displayName ?? user.email}
-          </Typography>
-          <Typography color="text.secondary" variant="caption">
-            {user.email}
-          </Typography>
-        </>
-      ),
+      name: "name",
+      headerContent: "Name",
+      getBodyContent: (user) => user.displayName ?? "—",
+      minWidth: 150,
+    },
+    {
+      name: "email",
+      headerContent: "Email",
+      getBodyContent: (user) => user.email,
+      minWidth: 220,
     },
     {
       name: "role",
       headerContent: "Role",
-      getBodyContent: (user) => user.role,
+      getBodyContent: (user) => formatUserRole(user.role),
     },
     {
       name: "status",
@@ -74,31 +77,71 @@ const UserListFrame = function ({
     },
     {
       name: "actions",
-      headerContent: "Actions",
+      headerContent: "",
       getBodyContent: (user) => (
-        <UserActions
-          activeAdministratorCount={activeAdministratorCount}
-          currentUserId={currentUserId}
-          user={user}
-        />
+        <ListFrameActionButton
+          size="small"
+          color="primary"
+          onClick={() => {
+            setManagedUser(user);
+          }}
+          ariaLabel={`Manage ${user.displayName ?? user.email}`}
+        >
+          <ArrowForwardOutlined fontSize="small" color="action" />
+        </ListFrameActionButton>
       ),
+      alignment: "right",
+      minWidth: 52,
+      maxWidth: 52,
     },
   ];
 
   return (
-    <ListFrame<User>
-      title="Application users"
-      columns={columns}
-      getId={(user) => user.id}
-      data={pageUsers}
-      totalCount={users.length}
-      pageParamName={pageParamName}
-      hasActiveFilters={false}
-      initialEmptyState={{
-        title: "No application users",
-        description: "Users appear here after accepting an invitation.",
-      }}
-    />
+    <>
+      <ListFrame<User>
+        title="Application users"
+        headerContent={
+          <Button
+            variant="contained"
+            onClick={() => {
+              setInviteDialogOpen(true);
+            }}
+          >
+            Invite user
+          </Button>
+        }
+        columns={columns}
+        getId={(user) => user.id}
+        data={pageUsers}
+        totalCount={users.length}
+        pageParamName={pageParamName}
+        hasActiveFilters={false}
+        onRowClick={(user) => {
+          setManagedUser(user);
+        }}
+        initialEmptyState={{
+          title: "No application users",
+          description: "Users appear here after accepting an invitation.",
+        }}
+      />
+      <InviteUserForm
+        open={inviteDialogOpen}
+        onClose={() => {
+          setInviteDialogOpen(false);
+        }}
+      />
+      {managedUser !== null ? (
+        <ManageUserDialog
+          activeAdministratorCount={activeAdministratorCount}
+          currentUserId={currentUserId}
+          open
+          user={managedUser}
+          onClose={() => {
+            setManagedUser(null);
+          }}
+        />
+      ) : null}
+    </>
   );
 };
 

@@ -53,9 +53,44 @@ string? developmentSubject = Environment.GetEnvironmentVariable("DEVELOPMENT_AUT
 if (string.Equals(authenticationMode, "development", StringComparison.OrdinalIgnoreCase)
     && !string.IsNullOrWhiteSpace(developmentSubject))
 {
-    await userManagementBootstrapper.EnsureDevelopmentUserAsync(
-        developmentSubject,
-        Environment.GetEnvironmentVariable("DEVELOPMENT_AUTH_EMAIL") ?? "local-developer@example.test",
-        "Local developer");
-    Console.WriteLine("Development application user ready.");
+    string developmentRoleValue = Environment.GetEnvironmentVariable("DEVELOPMENT_AUTH_ROLE")
+        ?? nameof(UserRole.Admin);
+    if (!Enum.TryParse(developmentRoleValue, true, out UserRole developmentRole))
+    {
+        throw new InvalidOperationException("DEVELOPMENT_AUTH_ROLE must name a UserRole.");
+    }
+
+    string[] readOnlySubjects = (Environment.GetEnvironmentVariable("DEVELOPMENT_AUTH_READ_ONLY_SUBJECTS")
+        ?? (string.Equals(developmentSubject, "local-developer", StringComparison.Ordinal)
+            ? "local-read-only"
+            : ""))
+        .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+    string[] additionalSubjects = (Environment.GetEnvironmentVariable("DEVELOPMENT_AUTH_ADDITIONAL_SUBJECTS")
+        ?? (string.Equals(developmentSubject, "local-developer", StringComparison.Ordinal)
+            ? "local-standard,local-read-only"
+            : ""))
+        .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+    var developmentUsers = new List<(string Subject, string Email, string DisplayName, UserRole Role)>
+    {
+        (
+            developmentSubject,
+            Environment.GetEnvironmentVariable("DEVELOPMENT_AUTH_EMAIL") ?? "local-developer@example.test",
+            $"Local {developmentRole} user",
+            developmentRole),
+    };
+    developmentUsers.AddRange(additionalSubjects
+        .Where(subject => !string.Equals(subject, developmentSubject, StringComparison.Ordinal))
+        .Distinct(StringComparer.Ordinal)
+        .Select(subject => (
+            subject,
+            $"{subject}@example.test",
+            readOnlySubjects.Contains(subject, StringComparer.Ordinal) ? "Local read-only user" : "Local standard user",
+            readOnlySubjects.Contains(subject, StringComparer.Ordinal) ? UserRole.ReadOnly : UserRole.Standard)));
+
+    foreach ((string subject, string email, string displayName, UserRole role) in developmentUsers)
+    {
+        await userManagementBootstrapper.EnsureDevelopmentUserAsync(subject, email, displayName, role);
+    }
+
+    Console.WriteLine("Development application users ready.");
 }

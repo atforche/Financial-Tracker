@@ -36,6 +36,7 @@ public sealed class UserManagementBootstrapper(
         string googleSubject,
         string email,
         string displayName,
+        UserRole role = UserRole.Admin,
         CancellationToken cancellationToken = default)
     {
         await using Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction =
@@ -56,7 +57,6 @@ public sealed class UserManagementBootstrapper(
                 throw new InvalidOperationException("The deterministic development email is invalid.");
             }
 
-            UserRole role = userRepository.GetActiveAdministratorCount() == 0 ? UserRole.Admin : UserRole.Standard;
             var user = new User(googleSubject, displayEmail!, normalizedEmail!, displayName, role, DateTime.UtcNow);
             userRepository.Add(user);
             auditEventRepository.Add(new UserAdministrationAuditEvent(
