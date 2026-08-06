@@ -45,7 +45,7 @@ string? bootstrapAdminEmail = Environment.GetEnvironmentVariable("BOOTSTRAP_ADMI
 if (!string.IsNullOrWhiteSpace(bootstrapAdminEmail))
 {
     await userManagementBootstrapper.CreateBootstrapInvitationAsync(bootstrapAdminEmail);
-    Console.WriteLine("Bootstrap administrator invitation created.");
+    Console.WriteLine("Bootstrap administrator invitation is ready.");
 }
 
 string? authenticationMode = Environment.GetEnvironmentVariable("AUTH_MODE");

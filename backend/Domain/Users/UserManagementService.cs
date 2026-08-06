@@ -63,7 +63,7 @@ public sealed class UserManagementService(
     }
 
     /// <summary>
-    /// Creates the first administrator invitation in an uninitialized system.
+    /// Ensures the first administrator invitation exists in an uninitialized system.
     /// </summary>
     public bool TryCreateBootstrapInvitation(
         string? email,
@@ -75,23 +75,25 @@ public sealed class UserManagementService(
         errors = [];
         if (userRepository.GetActiveAdministratorCount() > 0)
         {
-            errors = [new UserManagementError(
-                UserManagementErrorKind.Conflict,
-                ValidationErrorPath.Empty,
-                "An active administrator already exists.")];
-            return false;
+            return true;
         }
         if (!TryNormalizeEmail(email, out string displayEmail, out string normalizedEmail, out UserManagementError? emailError))
         {
             errors = [emailError!];
             return false;
         }
-        if (invitationRepository.GetPendingByNormalizedEmail(normalizedEmail) != null)
+        UserInvitation? pendingInvitation = invitationRepository.GetAll()
+            .FirstOrDefault(invitation => invitation.Status == UserInvitationStatus.Pending);
+        if (pendingInvitation != null)
         {
+            if (pendingInvitation.NormalizedEmail == normalizedEmail)
+            {
+                return true;
+            }
             errors = [new UserManagementError(
                 UserManagementErrorKind.Conflict,
                 new ValidationErrorPath(nameof(email)),
-                "A pending invitation already exists for this email address.")];
+                "A bootstrap administrator invitation is already pending for a different email address.")];
             return false;
         }
 

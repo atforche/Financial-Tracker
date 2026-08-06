@@ -59,12 +59,35 @@ public sealed class UserManagementLifecycleTests
             audit.Action == UserAdministrationAction.InvitationAccepted
             && audit.ActorUserId == persistedUser.Id
             && audit.TargetUserId == persistedUser.Id);
-        Assert.False(store.Service.TryCreateBootstrapInvitation(
+        Assert.True(store.Service.TryCreateBootstrapInvitation(
             "second-owner@example.com",
             now.AddMinutes(2),
             out _,
             out IEnumerable<UserManagementError> secondBootstrapErrors));
-        Assert.Contains(secondBootstrapErrors, error => error.Kind == UserManagementErrorKind.Conflict);
+        Assert.Empty(secondBootstrapErrors);
+    }
+
+    /// <summary>
+    /// Permits deployment retries for the configured bootstrap administrator without creating another invitation.
+    /// </summary>
+    [Fact]
+    public async Task BootstrapInvitationIsIdempotentForTheConfiguredEmail()
+    {
+        await using UserManagementTestStore store = await UserManagementTestStore.CreateAsync();
+        DateTime now = new(2026, 8, 5, 17, 30, 0, DateTimeKind.Utc);
+
+        Assert.True(store.Service.TryCreateBootstrapInvitation(
+            "owner@example.com", now, out _, out IEnumerable<UserManagementError> creationErrors));
+        Assert.Empty(creationErrors);
+        _ = await store.Context.SaveChangesAsync();
+
+        Assert.True(store.Service.TryCreateBootstrapInvitation(
+            "OWNER@example.com", now.AddMinutes(1), out UserInvitation? duplicate, out IEnumerable<UserManagementError> retryErrors));
+        Assert.Null(duplicate);
+        Assert.Empty(retryErrors);
+        Assert.False(store.Service.TryCreateBootstrapInvitation(
+            "different-owner@example.com", now.AddMinutes(1), out _, out IEnumerable<UserManagementError> conflictingErrors));
+        Assert.Contains(conflictingErrors, error => error.Kind == UserManagementErrorKind.Conflict);
     }
 
     /// <summary>

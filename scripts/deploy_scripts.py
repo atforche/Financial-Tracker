@@ -44,15 +44,13 @@ def main():
     """Builds and runs the command collection for this script"""
 
     commands = CommandCollection("Helper scripts for deploying the Financial Tracker")
-    commands.commands.append(BootstrapCommand())
-    commands.commands.append(BootstrapAdminCommand())
     commands.commands.append(DeployCommand())
     commands.commands.append(RollbackCommand())
     commands.run()
 
 
 class DeployCommand(Command):
-    """Transactionally deploys an immutable release to an existing instance."""
+    """Deploys an immutable release, creating a new instance when needed."""
 
     path: Annotated[str, "Path to the instance directory"]
     release_manifest: Annotated[str, "Path to the release manifest"]
@@ -66,7 +64,7 @@ class DeployCommand(Command):
 
         super().__init__(
             "deploy",
-            "Transactionally deploys an immutable release and rolls back on failure",
+            "Deploys an immutable release and bootstraps a missing instance",
         )
         self.steps.append(
             Step("Deploy Release", "Release deployed successfully", self.deploy_release)
@@ -75,8 +73,17 @@ class DeployCommand(Command):
     def validate_arguments(self):
         """Validates the instance and release artifact paths."""
 
-        if not os.path.isdir(self.path):
-            raise ValueError(f"Path {self.path} does not point to a valid directory")
+        instance_path = Path(self.path).resolve()
+        if instance_path == Path("/"):
+            raise ValueError("The filesystem root cannot be used as an instance path")
+        if instance_path.exists() and not instance_path.is_dir():
+            raise ValueError(
+                f"Path {instance_path} does not point to a valid directory"
+            )
+        if not instance_path.exists() and not instance_path.parent.is_dir():
+            raise ValueError(f"Parent path {instance_path.parent} does not exist")
+        if instance_path.exists() and not (instance_path / ".env").is_file():
+            raise ValueError(f"Path {instance_path} is not an initialized instance")
         manifest_path = Path(self.release_manifest).resolve()
         if not manifest_path.is_file():
             raise ValueError(f"Release manifest {manifest_path} does not exist")
@@ -90,108 +97,22 @@ class DeployCommand(Command):
         instance_path = Path(self.path).resolve()
         manifest_path = Path(self.release_manifest).resolve()
         manifest = ReleaseManifest.read(manifest_path)
-        configuration = Configuration.build_from_existing_instance(
-            str(instance_path), self.change_configuration
-        )
-        configuration.path = str(instance_path)
-        configuration.backend_image = manifest.backend_image
-        configuration.frontend_image = manifest.frontend_image
-        configuration.migrator_image = manifest.migrator_image
-
-        TransactionalDeployment(instance_path).deploy(configuration, manifest_path)
-
-
-class BootstrapAdminCommand(Command):
-    """Creates the first administrator invitation for an existing instance."""
-
-    path: Annotated[str, "Path to the deployed instance directory"]
-    email: Annotated[str, "Email address for the bootstrap administrator invitation"]
-
-    def __init__(self):
-        """Constructs a bootstrap administrator command."""
-
-        super().__init__(
-            "bootstrap-admin",
-            "Creates the first administrator invitation when no active administrator exists",
-        )
-        self.steps.append(
-            Step(
-                "Bootstrap Administrator",
-                "Bootstrap administrator invitation created",
-                self.bootstrap_admin,
-            )
-        )
-
-    def validate_arguments(self) -> None:
-        """Validates the existing instance path and email argument."""
-
-        if not os.path.isdir(self.path):
-            raise ValueError(f"Path {self.path} does not point to a valid directory")
-        if not self.email.strip():
-            raise ValueError("Email must not be empty")
-        configuration = Configuration.build_from_existing_instance(
-            str(Path(self.path).resolve()), False
-        )
-        if not configuration.migrator_image:
-            raise ValueError("The instance migrator image is not configured")
-
-    def bootstrap_admin(self) -> None:
-        """Runs the application-owned bootstrap capability in the migrator image."""
-
-        instance_path = Path(self.path).resolve()
-        configuration = Configuration.build_from_existing_instance(
-            str(instance_path), False
-        )
-        run_migrator(
-            configuration.migrator_image,
-            instance_path / DATABASE_DIRECTORY_NAME,
-            {"BOOTSTRAP_ADMIN_EMAIL": self.email.strip()},
-        )
-
-
-class BootstrapCommand(Command):
-    """Creates and starts the first release for an otherwise empty instance path."""
-
-    path: Annotated[str, "New path to create for the instance"]
-    release_manifest: Annotated[str, "Path to the release manifest"]
-
-    def __init__(self):
-        """Constructs a new instance bootstrap command."""
-
-        super().__init__(
-            "bootstrap", "Bootstraps a new instance from an immutable release"
-        )
-        self.steps.append(
-            Step(
-                "Bootstrap Instance",
-                "Instance bootstrapped successfully",
-                self.bootstrap_instance,
-            )
-        )
-
-    def validate_arguments(self) -> None:
-        """Validates that bootstrapping cannot overwrite an existing instance."""
-
-        instance_path = Path(self.path).resolve()
-        manifest_path = Path(self.release_manifest).resolve()
-        if instance_path == Path("/"):
-            raise ValueError("The filesystem root cannot be used as an instance path")
+        bootstrap_admin_email = os.environ.get("INITIAL_ADMIN_EMAIL", "").strip()
+        if not bootstrap_admin_email:
+            raise ValueError("INITIAL_ADMIN_EMAIL must be configured")
         if instance_path.exists():
-            raise ValueError(f"Bootstrap path {instance_path} already exists")
-        if not instance_path.parent.is_dir():
-            raise ValueError(f"Parent path {instance_path.parent} does not exist")
-        if not manifest_path.is_file():
-            raise ValueError(f"Release manifest {manifest_path} does not exist")
-        for file_name in ("compose.yaml", "Caddyfile"):
-            if not (manifest_path.parent / file_name).is_file():
-                raise ValueError(f"Release artifact is missing {file_name}")
+            configuration = Configuration.build_from_existing_instance(
+                str(instance_path), self.change_configuration
+            )
+            configuration.path = str(instance_path)
+            configuration.backend_image = manifest.backend_image
+            configuration.frontend_image = manifest.frontend_image
+            configuration.migrator_image = manifest.migrator_image
+            TransactionalDeployment(instance_path).deploy(
+                configuration, manifest_path, bootstrap_admin_email
+            )
+            return
 
-    def bootstrap_instance(self) -> None:
-        """Installs the initial state, migrations, and running services atomically."""
-
-        instance_path = Path(self.path).resolve()
-        manifest_path = Path(self.release_manifest).resolve()
-        manifest = ReleaseManifest.read(manifest_path)
         configuration = Configuration.build_from_environment(
             str(instance_path),
             manifest.backend_image,
@@ -199,17 +120,15 @@ class BootstrapCommand(Command):
             manifest.migrator_image,
         )
         deployment = TransactionalDeployment(instance_path)
-
         instance_path.mkdir(mode=0o750)
         try:
             (instance_path / "logs").mkdir(mode=0o777)
             (instance_path / "archive").mkdir(mode=0o750)
             prepare_database_directory(instance_path)
-
             deployment.validate_release(configuration, manifest_path.parent)
             deployment.pull_images(configuration)
             deployment.install_release_files(configuration, manifest_path)
-            ApplyMigrations(configuration).run([])
+            ApplyMigrations(configuration, bootstrap_admin_email).run([])
             deployment.start_instance()
         except Exception:
             deployment.stop_instance(throw_on_error=False)
@@ -266,7 +185,12 @@ class TransactionalDeployment:
         self.recovery_path = instance_path / RECOVERY_DIRECTORY_NAME
         self.staging_recovery_path = instance_path / STAGING_RECOVERY_DIRECTORY_NAME
 
-    def deploy(self, configuration: Configuration, release_manifest_path: Path) -> None:
+    def deploy(
+        self,
+        configuration: Configuration,
+        release_manifest_path: Path,
+        bootstrap_admin_email: str,
+    ) -> None:
         """Deploys a release, automatically restoring the previous healthy state on failure."""
 
         self.ensure_no_incomplete_transaction()
@@ -282,7 +206,7 @@ class TransactionalDeployment:
             recovery_created = True
             self.install_release_files(configuration, release_manifest_path)
             prepare_database_directory(self.instance_path)
-            ApplyMigrations(configuration).run([])
+            ApplyMigrations(configuration, bootstrap_admin_email).run([])
             self.start_instance()
             self.promote_recovery_point()
         except Exception as deployment_error:
@@ -501,7 +425,9 @@ class ApplyMigrations(Command):
 
     configuration: Configuration
 
-    def __init__(self, configuration: Configuration) -> None:
+    def __init__(
+        self, configuration: Configuration, bootstrap_admin_email: str | None = None
+    ) -> None:
         """Constructs a new instance of this class
 
         Args:
@@ -513,6 +439,7 @@ class ApplyMigrations(Command):
             "Applies all the missing migrations to the instance database",
         )
         self.configuration = configuration
+        self.bootstrap_admin_email = bootstrap_admin_email
         self.steps.append(
             Step(
                 "Apply Missing Migrations",
@@ -537,7 +464,16 @@ class ApplyMigrations(Command):
         os.chmod(upgrade_database_file_path, 0o666)
 
         try:
-            run_migrator(self.configuration.migrator_image, Path(upgrade_directory))
+            environment = (
+                {"BOOTSTRAP_ADMIN_EMAIL": self.bootstrap_admin_email}
+                if self.bootstrap_admin_email
+                else None
+            )
+            run_migrator(
+                self.configuration.migrator_image,
+                Path(upgrade_directory),
+                environment,
+            )
         except Exception:
             shutil.rmtree(upgrade_directory)
             raise
