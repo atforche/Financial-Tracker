@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, type ButtonProps, Stack, Typography } from "@mui/material";
-import { type JSX, type ReactNode, useState } from "react";
+import { type JSX, type ReactNode, useEffect, useState } from "react";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 
@@ -15,6 +15,7 @@ interface ConfirmActionDialogProps {
   readonly confirmLabel: string;
   readonly onConfirm: () => void;
   readonly pending: boolean;
+  readonly success?: boolean | undefined;
   readonly errorTitle?: string | null | undefined;
   readonly unmappedErrors?: string | null | undefined;
   readonly confirmButtonProps?: Omit<ButtonProps, "children" | "onClick">;
@@ -31,6 +32,7 @@ const ConfirmActionDialog = function ({
   confirmLabel,
   onConfirm,
   pending,
+  success = false,
   errorTitle = null,
   unmappedErrors = null,
   confirmButtonProps,
@@ -43,6 +45,12 @@ const ConfirmActionDialog = function ({
     setOpen(false);
     setConfirmationAttempted(false);
   };
+
+  useEffect(() => {
+    if (success && !pending) {
+      closeDialog();
+    }
+  }, [pending, success]);
 
   return (
     <>

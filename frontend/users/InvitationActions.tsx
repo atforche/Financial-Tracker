@@ -40,6 +40,7 @@ const InvitationActions = function ({
         confirmLabel="Revoke"
         confirmButtonProps={{ color: "error" }}
         pending={pending}
+        success={state.success}
         errorTitle={state.errorTitle}
         unmappedErrors={state.unmappedErrors}
         onConfirm={() => {

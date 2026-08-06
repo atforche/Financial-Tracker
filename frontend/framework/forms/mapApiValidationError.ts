@@ -39,9 +39,11 @@ const mapApiValidationError = function <StateField extends string>(
   }
 
   return {
-    errorTitle: error.title ?? null,
+    errorTitle: error.title ?? "Request failed",
     fieldErrors,
-    unmappedErrors: formatErrors(unmappedErrors),
+    unmappedErrors:
+      formatErrors(unmappedErrors) ??
+      "The request could not be completed. Your access may have changed; refresh the page and try again.",
   };
 };
 

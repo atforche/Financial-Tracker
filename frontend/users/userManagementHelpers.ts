@@ -10,15 +10,20 @@ const roles: readonly UserRole[] = [
 /**
  * Formats an optional UTC timestamp for compact list presentation.
  */
-const formatDate = function (value: string | null): string {
-  if (value === null) {
+const formatDate = function (value: string | null | undefined): string {
+  if (value === null || typeof value === "undefined") {
+    return "—";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
     return "—";
   }
 
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
-  }).format(new Date(value));
+  }).format(date);
 };
 
 export { formatDate, roles };

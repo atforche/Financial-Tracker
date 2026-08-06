@@ -83,6 +83,7 @@ const UserActions = function ({
           confirmationCopy={`Change ${user.email} to ${role}?${selfWarning}`}
           confirmLabel="Change role"
           pending={pending}
+          success={state.success}
           errorTitle={state.errorTitle}
           unmappedErrors={state.unmappedErrors}
           onConfirm={() => {
@@ -115,6 +116,7 @@ const UserActions = function ({
             color: user.status === UserStatusModel.Active ? "error" : "success",
           }}
           pending={pending}
+          success={state.success}
           errorTitle={state.errorTitle}
           unmappedErrors={state.unmappedErrors}
           onConfirm={() => {

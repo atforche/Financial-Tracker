@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { UserManagementActionState } from "@/users/userManagementActions";
+import type { UserManagementActionState } from "@/users/userManagementActionState";
 import { useRouter } from "next/navigation";
 
 /**

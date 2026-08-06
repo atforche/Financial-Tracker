@@ -29,6 +29,8 @@ from shared.step import Step
 DOCKER_BUILD_CACHE = "DOCKER_BUILD_CACHE"
 SMOKE_TEST_SUBJECT = "container-smoke-test"
 SMOKE_TEST_EMAIL = "container-smoke-test@example.test"
+SMOKE_TEST_STANDARD_SUBJECT = "container-smoke-standard"
+SMOKE_TEST_STANDARD_EMAIL = "container-smoke-standard@example.test"
 
 
 def prepare_smoke_test_database(data_directory: Path) -> None:
@@ -41,6 +43,15 @@ def prepare_smoke_test_database(data_directory: Path) -> None:
     }
     run_migrator("financial-tracker-migrator:workflow", data_directory, environment)
     run_migrator("financial-tracker-migrator:workflow", data_directory, environment)
+    run_migrator(
+        "financial-tracker-migrator:workflow",
+        data_directory,
+        {
+            "AUTH_MODE": "development",
+            "DEVELOPMENT_AUTH_SUBJECT": SMOKE_TEST_STANDARD_SUBJECT,
+            "DEVELOPMENT_AUTH_EMAIL": SMOKE_TEST_STANDARD_EMAIL,
+        },
+    )
 
 
 class DoNotFollowRedirects(HTTPRedirectHandler):
@@ -226,6 +237,8 @@ class SmokeTestContainerImages(Command):
                         "AUTH_MODE=development",
                         "--env",
                         f"DEVELOPMENT_AUTH_SUBJECT={SMOKE_TEST_SUBJECT}",
+                        "--env",
+                        f"DEVELOPMENT_AUTH_ADDITIONAL_SUBJECTS={SMOKE_TEST_STANDARD_SUBJECT}",
                         "--env",
                         "GOOGLE_CLIENT_ID=container-smoke-test",
                         "--env",

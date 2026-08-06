@@ -1,19 +1,10 @@
 "use server";
 
-import type { components } from "@/framework/data/api";
+import type {
+  UserManagementActionState,
+  UserRole,
+} from "@/users/userManagementActionState";
 import createApiClient from "@/framework/data/createApiClient";
-import { revalidatePath } from "next/cache";
-
-type UserRole = components["schemas"]["UserRoleModel"];
-
-/**
- * Result returned to the user-management client after an administration action.
- */
-interface UserManagementActionState {
-  readonly errorTitle: string | null;
-  readonly unmappedErrors: string | null;
-  readonly success: boolean;
-}
 
 /**
  * Converts a safe API error into presentation state.
@@ -43,10 +34,9 @@ const toActionState = function (error: unknown): UserManagementActionState {
 };
 
 /**
- * Returns a successful administration action state after refreshing the page data.
+ * Returns a successful administration action state.
  */
 const successfulAction = function (): UserManagementActionState {
-  revalidatePath("/admin/users");
   return { errorTitle: null, unmappedErrors: null, success: true };
 };
 
@@ -116,7 +106,6 @@ const revokeUserInvitation = async function (
   return error === undefined ? successfulAction() : toActionState(error);
 };
 
-export type { UserManagementActionState, UserRole };
 export {
   changeUserRole,
   createUserInvitation,

@@ -278,7 +278,7 @@ verified admin login before the old allowlist is removed.
 | 2 | Identity resolution and backend authorization | Phase 1 | Complete |
 | 3 | User and invitation administration API | Phase 2 | Complete |
 | 4 | Auth.js handshake and current-user frontend foundation | Phases 2-3 | Complete |
-| 5 | Admin UI and read-only application experience | Phase 4 | In progress |
+| 5 | Admin UI and read-only application experience | Phase 4 | Complete |
 | 6 | Deployment cutover, compatibility removal, and end-to-end proof | Phases 1-5 | Not started |
 
 Allowed statuses are `Not started`, `In progress`, `Blocked`, and `Complete`.
@@ -726,22 +726,22 @@ implement those consumers.
 
 ### Required tests
 
-- [ ] Admin navigation/page is visible to admins.
-- [ ] Admin navigation/page is absent and inaccessible to other roles.
-- [ ] Admin can invite, change role, disable/enable, and revoke through the UI.
-- [ ] Validation and conflict errors are understandable.
-- [ ] Read-only user can navigate all read experiences.
-- [ ] Read-only user sees no usable create/edit/delete/post/unpost/close/reopen/
+- [x] Admin navigation/page is visible to admins.
+- [x] Admin navigation/page is absent and inaccessible to other roles.
+- [x] Admin can invite, change role, disable/enable, and revoke through the UI.
+- [x] Validation and conflict errors are understandable.
+- [x] Read-only user can navigate all read experiences.
+- [x] Read-only user sees no usable create/edit/delete/post/unpost/close/reopen/
   onboard controls from the Phase 0 inventory.
-- [ ] A stale page handles a newly denied mutation without corrupting UI state.
-- [ ] Responsive navigation still works.
+- [x] A stale page handles a newly denied mutation without corrupting UI state.
+- [x] Responsive navigation still works.
 
 ### Acceptance criteria
 
-- [ ] All user-management operations are usable without knowing Google subject
+- [x] All user-management operations are usable without knowing Google subject
   IDs.
-- [ ] Read-only behavior is coherent throughout the frontend.
-- [ ] Frontend lint, type checking, build, and focused browser tests pass.
+- [x] Read-only behavior is coherent throughout the frontend.
+- [x] Frontend lint, type checking, build, and focused browser tests pass.
 
 ### Validation evidence
 
@@ -749,9 +749,37 @@ implement those consumers.
   invitation and user lifecycle controls, a shared client-side application-user
   context, and read-only visibility gates across the inventoried workspace
   mutation controls. Focused ESLint and `tsc --noEmit` passed, along with
-  `git diff --check`. Browser/container coverage and a successful host Next.js
-  production build remain pending; the host build currently has a stale Next
-  build lock after an earlier incomplete attempt.
+  `git diff --check`.
+- 2026-08-06: Added a deterministic non-admin smoke fixture and browser
+  coverage for administrator navigation and invitation/user lifecycle actions.
+  The test creates and revokes an invitation, changes a real user's role from
+  `Standard` to `ReadOnly`, then disables and re-enables that user through the
+  production-built UI. `pytest scripts/tests` passed 31/31; frontend ESLint,
+  TypeScript, and Prettier checks passed; `git diff --check` passed; and the
+  production container smoke test passed with all three Playwright tests.
+- A host `npx next build` still exits during Turbopack optimization in this
+  restricted environment without reporting a compiler error. The production
+  Docker build completed compilation, TypeScript checking, static generation,
+  and route finalization, including `/admin/users`.
+
+- 2026-08-06: Added a guarded-development additional-subject fixture solely
+  for production-container browser coverage. The role-change test opens a
+  standard user's workspace, demotes that user to `ReadOnly` in a separate
+  admin session, then proves the stale write remains in its dialog and reports
+  a generic retry error instead of corrupting the page. After refresh, the
+  read-only session can navigate each primary read route, has no user-management
+  navigation or access, and has no account-onboarding control in both desktop
+  and mobile navigation. Shared API-error mapping now keeps mutation forms
+  recoverable for non-validation errors, including a current-role `403`.
+- `pytest scripts/tests` passed 31/31. Frontend ESLint, TypeScript, Prettier,
+  and `git diff --check` passed. The production Docker build compiled the
+  backend and frontend, completed frontend TypeScript/static generation and
+  route finalization, and the container smoke test passed all focused
+  Playwright coverage.
+- 2026-08-06 follow-up: The administrator browser flow exposed a render-time
+  failure after creating an invitation. `formatDate` now handles absent or
+  invalid optional timestamps safely; the rebuilt production container smoke
+  suite completed with no Playwright failure artifacts.
 
 ## Phase 6: Deployment Cutover and End-to-End Proof
 
@@ -974,3 +1002,57 @@ phase.
   `dotnet format` remain environment-limited; the Docker production build and
   focused backend tests provide the corresponding runtime/compiler evidence.
 - Next: Phase 5, admin UI and read-only application experience.
+
+### 2026-08-06 - Phase 5 administrator lifecycle browser coverage
+
+- Phase: Phase 5 remains in progress.
+- Changes: Extended the production smoke database fixture with a deterministic
+  non-admin user; added a Playwright administrator flow that proves the
+  user-management navigation/page, invitation creation and revocation, role
+  change, disablement, and enablement against the production-built containers.
+- Validation: Python script tests passed 31/31; frontend ESLint, TypeScript,
+  and Prettier checks passed; `git diff --check` passed; and the production
+  container smoke test passed all 3 Playwright tests. The container frontend
+  build completed Next.js compilation, type checking, static generation, and
+  route finalization. A first smoke attempt failed before frontend startup due
+  to a Docker loopback-port forwarding 500; the fresh-port retry passed.
+- Limitations: Browser coverage does not yet establish a read-only session or
+  exercise stale-page handling after a backend `403`. The host-local Next.js
+  build continues to terminate during optimization without a compiler error;
+  the Docker production build is the available build evidence.
+- Next: Continue Phase 5 with read-only-session and stale-denial browser
+  coverage, then complete the remaining acceptance checklist.
+
+### 2026-08-06 - Phase 5 admin and read-only experience complete
+
+- Phase: Phase 5 complete.
+- Changes: Added a guarded-development multi-subject smoke fixture and browser
+  session helper; completed administrator and read-only lifecycle coverage;
+  made shared mutation error mapping return a recoverable generic state for
+  non-validation API errors; and removed redundant server-action path
+  revalidation because the client action hook already refreshes the page.
+- Validation: Python script tests passed 31/31; frontend ESLint, TypeScript,
+  Prettier, and whitespace checks passed; the production Docker build compiled
+  and finalized all frontend routes and published the backend; and the final
+  production container smoke run completed without Playwright failure artifacts.
+  Its focused browser suite covers safe session handling, administrator
+  invitation/user operations, stale role denial, read-only primary-route
+  navigation and controls, mobile navigation, and expired-token rejection.
+- Limitations: The host-local Next.js build still terminates during Turbopack
+  optimization without a compiler error, while the production Docker build
+  succeeds. Google-provider UX is represented by the established Auth.js and
+  backend resolver coverage; it does not use a live Google credential.
+- Next: Phase 6, deployment cutover, compatibility removal, and end-to-end
+  production proof.
+
+### 2026-08-06 - Phase 5 Playwright follow-up
+
+- Phase: Phase 5 remains complete.
+- Changes: Hardened optional timestamp presentation in the user-management
+  lists so a newly created invitation cannot crash the refreshed admin page.
+- Validation: Frontend lint, TypeScript, formatting, and whitespace checks
+  passed. The rebuilt production frontend image completed compilation, type
+  checking, static generation, and route finalization; the production smoke
+  suite completed without Playwright failure artifacts.
+- Next: Phase 6, deployment cutover, compatibility removal, and end-to-end
+  production proof.

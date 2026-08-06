@@ -36,6 +36,15 @@ def test_prepare_smoke_test_database_provisions_the_authenticated_user(
                 "DEVELOPMENT_AUTH_EMAIL": "container-smoke-test@example.test",
             },
         ),
+        (
+            "financial-tracker-migrator:workflow",
+            tmp_path,
+            {
+                "AUTH_MODE": "development",
+                "DEVELOPMENT_AUTH_SUBJECT": "container-smoke-standard",
+                "DEVELOPMENT_AUTH_EMAIL": "container-smoke-standard@example.test",
+            },
+        ),
     ]
 
 
