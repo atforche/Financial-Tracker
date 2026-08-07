@@ -12,6 +12,7 @@ import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import PageLayout from "@/framework/view/PageLayout";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the CreateTransactionForm component.
@@ -35,10 +36,15 @@ const CreateTransactionForm = function ({
   fundGoals,
   redirectUrl,
   showHeading = true,
-}: CreateTransactionFormProps): JSX.Element {
+}: CreateTransactionFormProps): JSX.Element | null {
+  const canWrite = useWriteAccess();
   type TransactionFormKind = "spending" | "income" | "account" | "fund";
   const [transactionType, setTransactionType] =
     useState<TransactionFormKind>("spending");
+
+  if (!canWrite) {
+    return null;
+  }
 
   return (
     <PageLayout>

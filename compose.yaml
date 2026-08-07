@@ -39,7 +39,6 @@ services:
       LOG_DIRECTORY: "/logs"
       FRONTEND_ORIGIN: "${PUBLIC_ORIGIN:?PUBLIC_ORIGIN must be configured}"
       GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID must be configured}"
-      GOOGLE_ALLOWED_SUBJECTS: "${GOOGLE_ALLOWED_SUBJECTS:?GOOGLE_ALLOWED_SUBJECTS must be configured}"
     cap_drop:
       - ALL
     security_opt:
@@ -59,7 +58,6 @@ services:
       PUBLIC_ORIGIN: "${PUBLIC_ORIGIN:?PUBLIC_ORIGIN must be configured}"
       GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID must be configured}"
       GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET:?GOOGLE_CLIENT_SECRET must be configured}"
-      GOOGLE_ALLOWED_SUBJECTS: "${GOOGLE_ALLOWED_SUBJECTS:?GOOGLE_ALLOWED_SUBJECTS must be configured}"
       AUTH_URL: "${PUBLIC_ORIGIN}"
       AUTH_TRUST_HOST: "true"
       AUTH_SECRET: "${AUTH_SECRET:?AUTH_SECRET must be configured}"

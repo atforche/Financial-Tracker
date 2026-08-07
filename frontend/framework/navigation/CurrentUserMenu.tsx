@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar, Box, Button, Stack, Typography } from "@mui/material";
+import type { CurrentApplicationUser } from "@/framework/auth/currentApplicationUser";
 import type { JSX } from "react";
 import { signOut } from "next-auth/react";
 
@@ -8,6 +9,7 @@ import { signOut } from "next-auth/react";
  * Props for the CurrentUserMenu component.
  */
 interface CurrentUserMenuProps {
+  readonly applicationUser: CurrentApplicationUser | null;
   readonly user:
     | {
         readonly name?: string | null;
@@ -21,13 +23,16 @@ interface CurrentUserMenuProps {
  * Displays the signed-in user's identity and a logout action.
  */
 const CurrentUserMenu = function ({
+  applicationUser,
   user,
 }: CurrentUserMenuProps): JSX.Element | null {
   if (user === undefined) {
     return null;
   }
 
-  const name = user.name ?? user.email ?? "Signed in user";
+  const name =
+    applicationUser?.displayName ?? user.name ?? user.email ?? "Signed in user";
+  const email = applicationUser?.email ?? user.email;
 
   return (
     <Box sx={{ mt: "auto", p: 2 }}>
@@ -39,9 +44,9 @@ const CurrentUserMenu = function ({
           <Typography noWrap variant="body2">
             {name}
           </Typography>
-          {user.email !== null && user.email !== undefined ? (
+          {email !== null && email !== undefined && email !== "" ? (
             <Typography noWrap color="text.secondary" variant="caption">
-              {user.email}
+              {email}
             </Typography>
           ) : null}
         </Box>

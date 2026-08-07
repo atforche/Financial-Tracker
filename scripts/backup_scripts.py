@@ -31,6 +31,7 @@ RESTIC_ENVIRONMENT_VARIABLES = (
 )
 BACKUP_TAG = "financial-tracker"
 RESTORE_SMOKE_SUBJECT = "backup-restore-smoke-test"
+RESTORE_SMOKE_EMAIL = "backup-restore-smoke-test@example.test"
 
 
 def main() -> None:
@@ -237,6 +238,14 @@ class BackupCommand(Command):
                 "Authorization": f"Bearer development:{RESTORE_SMOKE_SUBJECT}",
                 "Content-Type": "application/json",
             }
+            with urlopen(
+                Request(f"{base_url}/users/me", headers=headers), timeout=30
+            ) as response:
+                application_user = load_json(response)
+            if application_user["email"] != RESTORE_SMOKE_EMAIL:
+                raise RuntimeError(
+                    "Restored backend did not resolve the seeded application user"
+                )
             request = Request(
                 f"{base_url}/accounts/onboard",
                 data=(
@@ -398,7 +407,15 @@ class VerifyDatabaseRestoration(BackupCommand):
             migration_database = migration_directory / "database.db"
             shutil.copy2(restored_database, migration_database)
             os.chmod(migration_database, 0o666)
-            run_migrator(configuration.migrator_image, migration_directory)
+            run_migrator(
+                configuration.migrator_image,
+                migration_directory,
+                {
+                    "AUTH_MODE": "development",
+                    "DEVELOPMENT_AUTH_SUBJECT": RESTORE_SMOKE_SUBJECT,
+                    "DEVELOPMENT_AUTH_EMAIL": RESTORE_SMOKE_EMAIL,
+                },
+            )
             self.validate_database(migration_database)
             self.verify_restored_backend(configuration, migration_directory)
 

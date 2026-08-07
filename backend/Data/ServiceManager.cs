@@ -3,6 +3,7 @@ using Data.Accounts;
 using Data.FundGoals;
 using Data.Funds;
 using Data.Transactions;
+using Data.Users;
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
@@ -13,6 +14,7 @@ using Domain.Funds;
 using Domain.Funds.Queries;
 using Domain.Transactions;
 using Domain.Transactions.Queries;
+using Domain.Users;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Data;
@@ -59,5 +61,10 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<ITransactionRepository, TransactionRepository>();
         _ = serviceCollection.AddScoped<ITransactionBalanceEventQueryRepository, TransactionBalanceEventQueryRepository>();
         _ = serviceCollection.AddScoped<ITransactionQueryRepository, TransactionQueryRepository>();
+
+        _ = serviceCollection.AddScoped<IUserRepository, UserRepository>();
+        _ = serviceCollection.AddScoped<IUserInvitationRepository, UserInvitationRepository>();
+        _ = serviceCollection.AddScoped<IUserAdministrationAuditEventRepository, UserAdministrationAuditEventRepository>();
+        _ = serviceCollection.AddScoped<UserManagementBootstrapper>();
     }
 }

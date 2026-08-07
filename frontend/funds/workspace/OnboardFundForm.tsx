@@ -28,6 +28,7 @@ import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl
 import onboardFund from "@/funds/workspace/onboardFund";
 import useFundSetupState from "@/funds/workspace/useFundSetupState";
 import { useRouter } from "next/navigation";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the OnboardFundForm component.
@@ -43,7 +44,8 @@ interface OnboardFundFormProps {
 const OnboardFundForm = function ({
   redirectUrl,
   unassignedBalance,
-}: OnboardFundFormProps): JSX.Element {
+}: OnboardFundFormProps): JSX.Element | null {
+  const canWrite = useWriteAccess();
   const router = useRouter();
   const fundSetup = useFundSetupState();
   const {
@@ -93,6 +95,10 @@ const OnboardFundForm = function ({
     maximumFundedBalance,
     targetEndingBalance,
   });
+
+  if (!canWrite) {
+    return null;
+  }
 
   return (
     <ConstrainedContent maxWidth={780}>

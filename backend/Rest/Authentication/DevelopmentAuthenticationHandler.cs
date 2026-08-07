@@ -29,12 +29,36 @@ internal sealed class DevelopmentAuthenticationHandler(
         }
 
         string token = Request.Headers.Authorization.ToString()[bearerPrefix.Length..];
-        if (!string.Equals(token, $"development:{expectedSubject}", StringComparison.Ordinal))
+        string subject = token.StartsWith("development:", StringComparison.Ordinal)
+            ? token["development:".Length..]
+            : "";
+        string additionalSubjects = Environment.GetEnvironmentVariable(DevelopmentAuthenticationDefaults.AdditionalSubjectsEnvironmentVariable)
+            ?? (string.Equals(expectedSubject, "local-developer", StringComparison.Ordinal)
+                ? "local-standard,local-read-only"
+                : "");
+        string[] allowedSubjects =
+        [
+            expectedSubject,
+            ..additionalSubjects
+                .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+        ];
+        if (!allowedSubjects.Contains(subject, StringComparer.Ordinal))
         {
             return Task.FromResult(AuthenticateResult.Fail("The development access token is invalid."));
         }
 
-        Claim[] claims = [new Claim(ClaimTypes.NameIdentifier, expectedSubject), new Claim("sub", expectedSubject)];
+        string email = subject == expectedSubject
+            ? Environment.GetEnvironmentVariable(DevelopmentAuthenticationDefaults.EmailEnvironmentVariable)
+                ?? "local-developer@example.test"
+            : $"{subject}@example.test";
+        Claim[] claims =
+        [
+            new Claim(ClaimTypes.NameIdentifier, subject),
+            new Claim("sub", subject),
+            new Claim("email", email),
+            new Claim("email_verified", "true"),
+            new Claim("name", "Local developer"),
+        ];
         ClaimsIdentity identity = new(claims, DevelopmentAuthenticationDefaults.Scheme, ClaimTypes.Name, ClaimTypes.Role);
         AuthenticationTicket ticket = new(new ClaimsPrincipal(identity), DevelopmentAuthenticationDefaults.Scheme);
         return Task.FromResult(AuthenticateResult.Success(ticket));
@@ -60,4 +84,14 @@ internal static class DevelopmentAuthenticationDefaults
     /// Environment variable containing the local developer subject.
     /// </summary>
     internal const string SubjectEnvironmentVariable = "DEVELOPMENT_AUTH_SUBJECT";
+
+    /// <summary>
+    /// Optional comma-separated additional local identities accepted by guarded development authentication.
+    /// </summary>
+    internal const string AdditionalSubjectsEnvironmentVariable = "DEVELOPMENT_AUTH_ADDITIONAL_SUBJECTS";
+
+    /// <summary>
+    /// Environment variable containing the local developer email claim.
+    /// </summary>
+    internal const string EmailEnvironmentVariable = "DEVELOPMENT_AUTH_EMAIL";
 }

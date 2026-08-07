@@ -25,7 +25,6 @@ class Configuration:
     public_origin: str
     google_client_id: str
     google_client_secret: str
-    google_allowed_subjects: str
     auth_secret: str
     backend_image: str
     frontend_image: str
@@ -39,7 +38,6 @@ class Configuration:
         public_origin: str,
         google_client_id: str,
         google_client_secret: str,
-        google_allowed_subjects: str,
         auth_secret: str,
         backend_image: str,
         frontend_image: str,
@@ -54,7 +52,6 @@ class Configuration:
             public_origin (str): Public HTTPS origin used to access the instance
             google_client_id (str): Client ID from the Google OpenID Connect application registration
             google_client_secret (str): Client secret from the Google OpenID Connect application registration
-            google_allowed_subjects (str): Comma-separated immutable Google subjects allowed to access the instance
             auth_secret (str): Secret used to encrypt Auth.js sessions
             backend_image (str): Container image reference for the backend
             frontend_image (str): Container image reference for the frontend
@@ -67,7 +64,6 @@ class Configuration:
         self.public_origin = public_origin
         self.google_client_id = google_client_id
         self.google_client_secret = google_client_secret
-        self.google_allowed_subjects = google_allowed_subjects
         self.auth_secret = auth_secret
         self.backend_image = backend_image
         self.frontend_image = frontend_image
@@ -97,7 +93,6 @@ class Configuration:
             file.write("\n")
             file.write(f'GOOGLE_CLIENT_ID="{self.google_client_id}"\n')
             file.write(f'GOOGLE_CLIENT_SECRET="{self.google_client_secret}"\n')
-            file.write(f'GOOGLE_ALLOWED_SUBJECTS="{self.google_allowed_subjects}"\n')
             file.write("\n")
             file.write(f'AUTH_SECRET="{self.auth_secret}"\n')
 
@@ -153,7 +148,6 @@ class Configuration:
                 "PUBLIC_ORIGIN": str,
                 "GOOGLE_CLIENT_ID": str,
                 "GOOGLE_CLIENT_SECRET": str,
-                "GOOGLE_ALLOWED_SUBJECTS": str,
                 "AUTH_SECRET": str,
                 "BACKEND_IMAGE": str,
                 "FRONTEND_IMAGE": str,
@@ -174,7 +168,6 @@ class Configuration:
             "PUBLIC_ORIGIN",
             "GOOGLE_CLIENT_ID",
             "GOOGLE_CLIENT_SECRET",
-            "GOOGLE_ALLOWED_SUBJECTS",
         )
         missing_values = [
             name for name in required_values if os.environ.get(name, "").strip() == ""
@@ -196,7 +189,6 @@ class Configuration:
             os.environ["PUBLIC_ORIGIN"],
             os.environ["GOOGLE_CLIENT_ID"],
             os.environ["GOOGLE_CLIENT_SECRET"],
-            os.environ["GOOGLE_ALLOWED_SUBJECTS"],
             auth_secret,
             backend_image,
             frontend_image,
@@ -273,12 +265,6 @@ class Configuration:
             change_configuration,
             True,
         )
-        google_allowed_subjects = cls.get_required_string(
-            existing_values,
-            "GOOGLE_ALLOWED_SUBJECTS",
-            "comma-separated Google subjects allowed to access this instance",
-            change_configuration,
-        )
         auth_secret = cls.get_auth_secret(existing_values)
         existing_backend_image = existing_values.get("BACKEND_IMAGE")
         backend_image = (
@@ -306,7 +292,6 @@ class Configuration:
             public_origin,
             google_client_id,
             google_client_secret,
-            google_allowed_subjects,
             auth_secret,
             backend_image,
             frontend_image,

@@ -1,8 +1,10 @@
 import { Drawer, type DrawerProps, Toolbar, Typography } from "@mui/material";
+import type { CurrentApplicationUser } from "@/framework/auth/currentApplicationUser";
 import CurrentUserMenu from "@/framework/navigation/CurrentUserMenu";
 import Image from "next/image";
 import type { JSX } from "react";
 import NavigationLinks from "@/framework/navigation/NavigationLinks";
+import { UserRoleModel } from "@/framework/data/api";
 
 /**
  * Width of the navigation drawer.
@@ -13,6 +15,7 @@ const navigationWidth = 280;
  * Props for the Navigation component.
  */
 interface NavigationProps {
+  readonly applicationUser: CurrentApplicationUser | null;
   readonly variant?: DrawerProps["variant"];
   readonly open?: boolean;
   readonly onClose?: () => void;
@@ -31,6 +34,7 @@ interface NavigationProps {
  * Displays the navigation using either a permanent or temporary drawer.
  */
 const Navigation = function ({
+  applicationUser,
   variant = "permanent",
   open = true,
   onClose,
@@ -73,9 +77,10 @@ const Navigation = function ({
         ) : null}
       </Toolbar>
       <NavigationLinks
+        isAdministrator={applicationUser?.role === UserRoleModel.Admin}
         onNavigate={variant === "temporary" ? onClose : undefined}
       />
-      <CurrentUserMenu user={user} />
+      <CurrentUserMenu applicationUser={applicationUser} user={user} />
     </Drawer>
   );
 };

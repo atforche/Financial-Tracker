@@ -1,7 +1,12 @@
 /* eslint-disable sort-imports */
 import { Box, Button, Stack, Typography } from "@mui/material";
 import Image, { type StaticImageData } from "next/image";
-import { authenticationProvider, auth, signIn } from "@/auth";
+import {
+  authenticationProvider,
+  auth,
+  developmentAuthenticationIdentities,
+  signIn,
+} from "@/auth";
 import { redirect } from "next/navigation";
 import type { JSX } from "react";
 import Frame from "@/framework/view/Frame";
@@ -58,9 +63,9 @@ const getRedirectTo = function (callbackUrl: string | undefined): string {
 const LoginPage = async function ({
   searchParams,
 }: {
-  readonly searchParams: Promise<{ callbackUrl?: string }>;
+  readonly searchParams: Promise<{ callbackUrl?: string; error?: string }>;
 }): Promise<JSX.Element> {
-  const { callbackUrl } = await searchParams;
+  const { callbackUrl, error } = await searchParams;
   const redirectTo = getRedirectTo(callbackUrl);
   const session = await auth();
 
@@ -101,23 +106,48 @@ const LoginPage = async function ({
               </Typography>
               <Typography color="text.secondary">
                 {authenticationProvider === "development"
-                  ? "Use the local developer identity to continue."
-                  : "Sign in with your approved Google account to continue."}
+                  ? "Choose a local identity to exercise each permission level."
+                  : "Sign in with your invited Google account to continue."}
               </Typography>
             </Stack>
-            <form
-              style={{ width: "100%" }}
-              action={async () => {
-                "use server";
-                await signIn(authenticationProvider, { redirectTo });
-              }}
-            >
-              <Button fullWidth type="submit" variant="contained">
-                {authenticationProvider === "development"
-                  ? "Continue as local developer"
-                  : "Continue with Google"}
-              </Button>
-            </form>
+            {error !== undefined ? (
+              <Typography color="error" role="alert" textAlign="center">
+                We could not confirm that this account has access. Contact an
+                administrator if you believe this is an error.
+              </Typography>
+            ) : null}
+            {authenticationProvider === "development" ? (
+              <Stack spacing={1} sx={{ width: "100%" }}>
+                {developmentAuthenticationIdentities.map((identity) => (
+                  <form
+                    key={identity.subject}
+                    action={async () => {
+                      "use server";
+                      await signIn(authenticationProvider, {
+                        redirectTo,
+                        subject: identity.subject,
+                      });
+                    }}
+                  >
+                    <Button fullWidth type="submit" variant="contained">
+                      Continue as {identity.label}
+                    </Button>
+                  </form>
+                ))}
+              </Stack>
+            ) : (
+              <form
+                style={{ width: "100%" }}
+                action={async () => {
+                  "use server";
+                  await signIn(authenticationProvider, { redirectTo });
+                }}
+              >
+                <Button fullWidth type="submit" variant="contained">
+                  Continue with Google
+                </Button>
+              </form>
+            )}
           </Stack>
         </Frame>
       </Box>

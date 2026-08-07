@@ -55,7 +55,11 @@ const onboardAccount = async function (
         unmappedErrors: formattedError.unmappedErrors,
       };
     }
-    throw new Error("An unexpected error occurred", { cause: error });
+    return {
+      errorTitle: "Request failed",
+      unmappedErrors:
+        "The request could not be completed. Your access may have changed; refresh the page and try again.",
+    };
   }
   revalidatePath(redirectUrl);
   return { success: true };

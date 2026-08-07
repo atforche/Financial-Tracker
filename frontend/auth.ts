@@ -5,6 +5,7 @@ import {
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import NextAuth from "next-auth";
+import resolveApplicationUser from "@/framework/auth/resolveApplicationUser";
 
 declare module "@auth/core/jwt" {
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -14,8 +15,13 @@ declare module "@auth/core/jwt" {
   }
 }
 
+interface DevelopmentAuthenticationIdentity {
+  label: string;
+  subject: string;
+}
+
 const google = Google;
-const credentials = Credentials;
+const credentialsProvider = Credentials;
 const nextAuth = NextAuth;
 const authenticationMode = process.env["AUTH_MODE"] ?? "google";
 const usesDevelopmentAuthentication = authenticationMode === "development";
@@ -23,16 +29,48 @@ const usesGoogleAuthentication = authenticationMode === "google";
 if (!usesDevelopmentAuthentication && !usesGoogleAuthentication) {
   throw new Error("AUTH_MODE must be either 'development' or 'google'.");
 }
-const allowedGoogleSubjects = (process.env["GOOGLE_ALLOWED_SUBJECTS"] ?? "")
-  .split(",")
-  .map((subject) => subject.trim())
-  .filter((subject) => subject !== "");
 const developmentSubject = process.env["DEVELOPMENT_AUTH_SUBJECT"] ?? "";
 if (usesDevelopmentAuthentication && developmentSubject.trim() === "") {
   throw new Error(
     "DEVELOPMENT_AUTH_SUBJECT must be configured when AUTH_MODE=development.",
   );
 }
+const additionalDevelopmentSubjects = (
+  process.env["DEVELOPMENT_AUTH_ADDITIONAL_SUBJECTS"] ??
+  (developmentSubject === "local-developer"
+    ? "local-standard,local-read-only"
+    : "")
+)
+  .split(",")
+  .map((subject) => subject.trim())
+  .filter((subject) => subject !== "");
+const readOnlyDevelopmentSubjects = new Set(
+  (
+    process.env["DEVELOPMENT_AUTH_READ_ONLY_SUBJECTS"] ??
+    (developmentSubject === "local-developer" ? "local-read-only" : "")
+  )
+    .split(",")
+    .map((subject) => subject.trim())
+    .filter((subject) => subject !== ""),
+);
+const developmentAuthenticationIdentities: readonly DevelopmentAuthenticationIdentity[] =
+  [
+    {
+      label: "Administrator",
+      subject: developmentSubject,
+    },
+    ...additionalDevelopmentSubjects
+      .filter((subject) => subject !== developmentSubject)
+      .map((subject) => ({
+        label: readOnlyDevelopmentSubjects.has(subject)
+          ? "Read-only user"
+          : "Standard user",
+        subject,
+      })),
+  ];
+const developmentSubjects = new Set(
+  developmentAuthenticationIdentities.map((identity) => identity.subject),
+);
 const authenticationProvider = usesDevelopmentAuthentication
   ? "development"
   : "google";
@@ -65,14 +103,26 @@ const hasExpiredIdToken = function (token: {
 const { auth, handlers, signIn, signOut } = nextAuth({
   providers: usesDevelopmentAuthentication
     ? [
-        credentials({
+        credentialsProvider({
           id: "development",
           name: "Local development",
-          credentials: {},
-          authorize() {
+          credentials: {
+            subject: {},
+          },
+          authorize(submittedCredentials) {
+            const { subject } = submittedCredentials;
+            if (
+              typeof subject !== "string" ||
+              !developmentSubjects.has(subject)
+            ) {
+              return null;
+            }
             return {
-              id: developmentSubject,
-              name: "Local developer",
+              id: subject,
+              name:
+                developmentAuthenticationIdentities.find(
+                  (identity) => identity.subject === subject,
+                )?.label ?? "Local developer",
             };
           },
         }),
@@ -84,26 +134,30 @@ const { auth, handlers, signIn, signOut } = nextAuth({
         }),
       ],
   pages: {
+    error: "/login",
     signIn: "/login",
   },
   callbacks: {
-    signIn({ account, profile, user }) {
-      if (account?.provider === "development") {
-        return user.id === developmentSubject;
+    async signIn({ account, user }) {
+      const idToken =
+        account?.provider === "development"
+          ? typeof user.id === "string"
+            ? `development:${user.id}`
+            : null
+          : typeof account?.id_token === "string"
+            ? account.id_token
+            : null;
+      if (idToken === null) {
+        return false;
       }
 
-      const subject = typeof profile?.sub === "string" ? profile.sub : null;
-      const isAllowed =
-        subject !== null && allowedGoogleSubjects.includes(subject);
-
-      if (!isAllowed && subject !== null) {
+      try {
+        return await resolveApplicationUser(idToken);
+      } catch {
         // eslint-disable-next-line no-console
-        console.warn("Rejected Google sign-in for unapproved subject", {
-          subject,
-        });
+        console.error("Application user resolution failed during sign-in.");
+        return false;
       }
-
-      return isAllowed;
     },
     authorized({ auth: session, request }) {
       return request.nextUrl.pathname === "/login" || session !== null;
@@ -131,4 +185,11 @@ const { auth, handlers, signIn, signOut } = nextAuth({
   },
 });
 
-export { authenticationProvider, auth, handlers, signIn, signOut };
+export {
+  authenticationProvider,
+  auth,
+  developmentAuthenticationIdentities,
+  handlers,
+  signIn,
+  signOut,
+};

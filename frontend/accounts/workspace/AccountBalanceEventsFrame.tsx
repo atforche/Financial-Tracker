@@ -19,6 +19,7 @@ import parseEnumValue from "@/framework/data/parseEnumValue";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the AccountBalanceEventsFrame component.
@@ -37,6 +38,7 @@ const AccountBalanceEventsFrame = function ({
   totalCount,
   addTransactionHref,
 }: AccountBalanceEventsFrameProps): JSX.Element {
+  const canWrite = useWriteAccess();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -91,9 +93,15 @@ const AccountBalanceEventsFrame = function ({
       title="Recent Balance Events"
       color="info"
       headerContent={
-        <Button component={Link} href={addTransactionHref} variant="contained">
-          Add Transaction
-        </Button>
+        !canWrite ? undefined : (
+          <Button
+            component={Link}
+            href={addTransactionHref}
+            variant="contained"
+          >
+            Add Transaction
+          </Button>
+        )
       }
       columns={columns}
       getId={getId}
@@ -106,7 +114,7 @@ const AccountBalanceEventsFrame = function ({
         title: "No balance events yet",
         description:
           "Create or post a transaction for this account to start building its balance history.",
-        action: (
+        action: !canWrite ? null : (
           <Button
             component={Link}
             href={addTransactionHref}

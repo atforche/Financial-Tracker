@@ -18,6 +18,7 @@ import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import propertyName from "@/framework/data/propertyName";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the AccountingPeriodWorkspaceFilter component.
@@ -36,6 +37,7 @@ const AccountingPeriodWorkspaceFilter = function ({
   isInOnboardingMode,
   selectedAccountingPeriod,
 }: AccountingPeriodWorkspaceFilterProps): JSX.Element {
+  const canWrite = useWriteAccess();
   const searchParams = useSearchParams();
 
   const pageParamName =
@@ -132,7 +134,7 @@ const AccountingPeriodWorkspaceFilter = function ({
           >
             Reset Filters
           </Button>
-          {selectedAction === null ? null : (
+          {!canWrite || selectedAction === null ? null : (
             <Button
               variant="outlined"
               onClick={() => {
@@ -142,7 +144,7 @@ const AccountingPeriodWorkspaceFilter = function ({
               {selectedAction === "close" ? "Close Period" : "Reopen Period"}
             </Button>
           )}
-          {selectedAccountingPeriod === null ? null : (
+          {!canWrite || selectedAccountingPeriod === null ? null : (
             <Button
               color="error"
               variant="outlined"
@@ -153,14 +155,18 @@ const AccountingPeriodWorkspaceFilter = function ({
               Delete Period
             </Button>
           )}
-          <Button
-            variant="contained"
-            onClick={() => {
-              setAction("create");
-            }}
-          >
-            {isInOnboardingMode ? "Create First Period" : "Create Next Period"}
-          </Button>
+          {!canWrite ? null : (
+            <Button
+              variant="contained"
+              onClick={() => {
+                setAction("create");
+              }}
+            >
+              {isInOnboardingMode
+                ? "Create First Period"
+                : "Create Next Period"}
+            </Button>
+          )}
         </Stack>
       }
     >

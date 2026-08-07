@@ -1,5 +1,6 @@
 import {
   AccountBalance,
+  AdminPanelSettings,
   Assessment,
   CalendarMonth,
   EmojiEvents,
@@ -18,81 +19,92 @@ import transactionRoutes from "@/transactions/routes";
 /**
  * Navigation items for the application shell.
  */
-const navigationItems: NavigationLink[] = [
-  { name: "Overview", href: "/", icon: <GridView /> },
-  {
-    name: "Accounting Periods",
-    href: accountingPeriodRoutes.workspace({}),
-    icon: <CalendarMonth />,
-    childLinks: [
-      {
-        name: "Workspace",
-        href: accountingPeriodRoutes.workspace({}),
-        icon: <Workspaces />,
-      },
-      {
-        name: "Trends",
-        href: accountingPeriodRoutes.trends({}),
-        icon: <Timeline />,
-      },
-    ],
-  },
-  {
-    name: "Accounts",
-    href: accountRoutes.workspace({}),
-    icon: <AccountBalance />,
-    childLinks: [
-      {
-        name: "Workspace",
-        href: accountRoutes.workspace({}),
-        icon: <Workspaces />,
-      },
-      { name: "Trends", href: accountRoutes.trends({}), icon: <Timeline /> },
-    ],
-  },
-  {
-    name: "Funds",
-    href: fundRoutes.workspace({}),
-    icon: <Assessment />,
-    childLinks: [
-      {
-        name: "Workspace",
-        href: fundRoutes.workspace({}),
-        icon: <Workspaces />,
-      },
-      { name: "Trends", href: fundRoutes.trends({}), icon: <Timeline /> },
-    ],
-  },
-  {
-    name: "Goals",
-    href: fundGoalRoutes.workspace({}),
-    icon: <EmojiEvents />,
-    childLinks: [
-      {
-        name: "Workspace",
-        href: fundGoalRoutes.workspace({}),
-        icon: <Workspaces />,
-      },
-      { name: "Trends", href: fundGoalRoutes.trends({}), icon: <Timeline /> },
-    ],
-  },
-  {
-    name: "Transactions",
-    href: transactionRoutes.workspace({}),
-    icon: <ReceiptLong />,
-    childLinks: [
-      {
-        name: "Workspace",
-        href: transactionRoutes.workspace({}),
-        icon: <Workspaces />,
-      },
-      {
-        name: "Trends",
-        href: transactionRoutes.trends({}),
-        icon: <Timeline />,
-      },
-    ],
-  },
-];
+const navigationItems = function (isAdministrator: boolean): NavigationLink[] {
+  const items: NavigationLink[] = [
+    { name: "Overview", href: "/", icon: <GridView /> },
+    {
+      name: "Accounting Periods",
+      href: accountingPeriodRoutes.workspace({}),
+      icon: <CalendarMonth />,
+      childLinks: [
+        {
+          name: "Workspace",
+          href: accountingPeriodRoutes.workspace({}),
+          icon: <Workspaces />,
+        },
+        {
+          name: "Trends",
+          href: accountingPeriodRoutes.trends({}),
+          icon: <Timeline />,
+        },
+      ],
+    },
+    {
+      name: "Accounts",
+      href: accountRoutes.workspace({}),
+      icon: <AccountBalance />,
+      childLinks: [
+        {
+          name: "Workspace",
+          href: accountRoutes.workspace({}),
+          icon: <Workspaces />,
+        },
+        { name: "Trends", href: accountRoutes.trends({}), icon: <Timeline /> },
+      ],
+    },
+    {
+      name: "Funds",
+      href: fundRoutes.workspace({}),
+      icon: <Assessment />,
+      childLinks: [
+        {
+          name: "Workspace",
+          href: fundRoutes.workspace({}),
+          icon: <Workspaces />,
+        },
+        { name: "Trends", href: fundRoutes.trends({}), icon: <Timeline /> },
+      ],
+    },
+    {
+      name: "Goals",
+      href: fundGoalRoutes.workspace({}),
+      icon: <EmojiEvents />,
+      childLinks: [
+        {
+          name: "Workspace",
+          href: fundGoalRoutes.workspace({}),
+          icon: <Workspaces />,
+        },
+        { name: "Trends", href: fundGoalRoutes.trends({}), icon: <Timeline /> },
+      ],
+    },
+    {
+      name: "Transactions",
+      href: transactionRoutes.workspace({}),
+      icon: <ReceiptLong />,
+      childLinks: [
+        {
+          name: "Workspace",
+          href: transactionRoutes.workspace({}),
+          icon: <Workspaces />,
+        },
+        {
+          name: "Trends",
+          href: transactionRoutes.trends({}),
+          icon: <Timeline />,
+        },
+      ],
+    },
+  ];
+  if (isAdministrator) {
+    items.push({
+      name: "User Management",
+      href: "/admin/users",
+      icon: <AdminPanelSettings />,
+    });
+  }
+
+  return items;
+};
 
 export default navigationItems;

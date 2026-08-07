@@ -13,7 +13,7 @@ const isApiError = function (obj: unknown): obj is ApiError {
     return false;
   }
   if (!("errors" in obj)) {
-    return false;
+    return true;
   }
 
   const { errors } = obj;

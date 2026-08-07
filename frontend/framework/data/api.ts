@@ -4,6 +4,519 @@
  */
 
 export interface paths {
+    "/users/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Gets the current database-backed application user. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["UserModel"];
+                        "application/json": components["schemas"]["UserModel"];
+                        "text/json": components["schemas"]["UserModel"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists all application users for an administrator. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfUserModel"];
+                        "application/json": components["schemas"]["CollectionModelOfUserModel"];
+                        "text/json": components["schemas"]["CollectionModelOfUserModel"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/{userId}/role": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Changes an application user's role. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": null | components["schemas"]["ChangeUserRoleModel"];
+                    "text/json": null | components["schemas"]["ChangeUserRoleModel"];
+                    "application/*+json": null | components["schemas"]["ChangeUserRoleModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["UserModel"];
+                        "application/json": components["schemas"]["UserModel"];
+                        "text/json": components["schemas"]["UserModel"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/{userId}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Disables an application user's access. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["UserModel"];
+                        "application/json": components["schemas"]["UserModel"];
+                        "text/json": components["schemas"]["UserModel"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/{userId}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Enables an application user's access. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["UserModel"];
+                        "application/json": components["schemas"]["UserModel"];
+                        "text/json": components["schemas"]["UserModel"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/user-invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists all invitations, including completed invitation history. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfUserInvitationModel"];
+                        "application/json": components["schemas"]["CollectionModelOfUserInvitationModel"];
+                        "text/json": components["schemas"]["CollectionModelOfUserInvitationModel"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Creates a pending user invitation. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": null | components["schemas"]["CreateUserInvitationModel"];
+                    "text/json": null | components["schemas"]["CreateUserInvitationModel"];
+                    "application/*+json": null | components["schemas"]["CreateUserInvitationModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["UserInvitationModel"];
+                        "application/json": components["schemas"]["UserInvitationModel"];
+                        "text/json": components["schemas"]["UserInvitationModel"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/user-invitations/{invitationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revokes a pending user invitation. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    invitationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/transactions": {
         parameters: {
             query?: never;
@@ -1407,6 +1920,51 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/authentication/resolve-user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolves the authenticated provider identity and accepts a matching invitation. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -2853,6 +3411,10 @@ export interface components {
          * @enum {unknown}
          */
         BalanceEventTypeModel: BalanceEventTypeModel;
+        /** @description Request to change an application user's role. */
+        ChangeUserRoleModel: {
+            role?: null | components["schemas"]["UserRoleModel"];
+        };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfAccountBalanceEventModel: {
             /** @description The collection of items. */
@@ -2987,6 +3549,26 @@ export interface components {
         CollectionModelOfTransactionModel: {
             /** @description The collection of items. */
             items: components["schemas"]["TransactionModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfUserInvitationModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["UserInvitationModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfUserModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["UserModel"][];
             /**
              * Format: int32
              * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
@@ -3341,6 +3923,17 @@ export interface components {
              * @description Gets the ID of the created Transaction.
              */
             id: string;
+        };
+        /** @description Request to create a user invitation. */
+        CreateUserInvitationModel: {
+            /** @description Email address to invite. */
+            email?: null | string;
+            role?: null | components["schemas"]["UserRoleModel"];
+            /**
+             * Format: date-time
+             * @description Optional UTC expiration time.
+             */
+            expiresAt?: null | string;
         };
         /** @description Model describing ending-balance progress. */
         EndingBalanceProgressModel: {
@@ -4491,6 +5084,106 @@ export interface components {
              */
             amount: number;
         };
+        /** @description User invitation details exposed through the REST API. */
+        UserInvitationModel: {
+            /**
+             * Format: uuid
+             * @description Invitation identifier.
+             */
+            id: string;
+            /** @description Invited email address. */
+            email: string;
+            /** @description Role assigned when the invitation is accepted. */
+            role: components["schemas"]["UserRoleModel"];
+            /** @description Current invitation status. */
+            status: components["schemas"]["UserInvitationStatusModel"];
+            /**
+             * Format: date-time
+             * @description UTC time at which the invitation was created.
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description Optional UTC expiration time.
+             */
+            expiresAt: null | string;
+            /**
+             * Format: uuid
+             * @description User that created the invitation, when applicable.
+             */
+            invitedByUserId: null | string;
+            /**
+             * Format: date-time
+             * @description UTC time at which the invitation was accepted.
+             */
+            acceptedAt: null | string;
+            /**
+             * Format: uuid
+             * @description User created by accepting the invitation.
+             */
+            acceptedByUserId: null | string;
+            /**
+             * Format: date-time
+             * @description UTC time at which the invitation was revoked.
+             */
+            revokedAt: null | string;
+            /**
+             * Format: uuid
+             * @description User that revoked the invitation.
+             */
+            revokedByUserId: null | string;
+        };
+        /**
+         * @description Invitation lifecycle status exposed through the REST API.
+         * @enum {unknown}
+         */
+        UserInvitationStatusModel: UserInvitationStatusModel;
+        /** @description Application user details exposed through the REST API. */
+        UserModel: {
+            /**
+             * Format: uuid
+             * @description Application user identifier.
+             */
+            id: string;
+            /** @description Current provider email address. */
+            email: string;
+            /** @description Optional provider display name. */
+            displayName: null | string;
+            /** @description User role. */
+            role: components["schemas"]["UserRoleModel"];
+            /** @description User access status. */
+            status: components["schemas"]["UserStatusModel"];
+            /**
+             * Format: date-time
+             * @description UTC time at which the user was created.
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description UTC time at which the user was activated.
+             */
+            activatedAt: string;
+            /**
+             * Format: date-time
+             * @description UTC time of the most recent successful login.
+             */
+            lastLoginAt: null | string;
+            /**
+             * Format: date-time
+             * @description UTC time at which the user record was most recently changed.
+             */
+            updatedAt: string;
+        };
+        /**
+         * @description Role assigned to an application user in the REST API.
+         * @enum {unknown}
+         */
+        UserRoleModel: UserRoleModel;
+        /**
+         * @description Access status assigned to an application user in the REST API.
+         * @enum {unknown}
+         */
+        UserStatusModel: UserStatusModel;
         ValidationProblemDetails: {
             type?: null | string;
             title?: null | string;
@@ -4703,5 +5396,20 @@ export enum UpdateTransactionModelUpdateIncomeTransactionModelType {
 }
 export enum UpdateTransactionModelUpdateSpendingTransactionModelType {
     Spending = "Spending"
+}
+export enum UserInvitationStatusModel {
+    Pending = "Pending",
+    Accepted = "Accepted",
+    Revoked = "Revoked",
+    Expired = "Expired"
+}
+export enum UserRoleModel {
+    Admin = "Admin",
+    Standard = "Standard",
+    ReadOnly = "ReadOnly"
+}
+export enum UserStatusModel {
+    Active = "Active",
+    Disabled = "Disabled"
 }
 export type operations = Record<string, never>;

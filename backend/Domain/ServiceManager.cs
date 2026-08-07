@@ -11,6 +11,7 @@ using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Spending;
+using Domain.Users;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Domain;
@@ -54,5 +55,6 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<FundTransactionService>();
         _ = serviceCollection.AddScoped<TransactionDispatcherService>();
         _ = serviceCollection.AddScoped<Transactions.Queries.TransactionQueryService>();
+        _ = serviceCollection.AddScoped<UserManagementService>();
     }
 }

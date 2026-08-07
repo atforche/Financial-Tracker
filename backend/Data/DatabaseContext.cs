@@ -3,6 +3,7 @@ using Domain.Accounts;
 using Domain.FundGoals;
 using Domain.Funds;
 using Domain.Transactions;
+using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data;
@@ -71,6 +72,21 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     /// Collection of Transactions in the database
     /// </summary>
     internal DbSet<Transaction> Transactions { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of application users in the database.
+    /// </summary>
+    internal DbSet<User> Users { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of user invitations in the database.
+    /// </summary>
+    internal DbSet<UserInvitation> UserInvitations { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of user-management audit events in the database.
+    /// </summary>
+    internal DbSet<UserAdministrationAuditEvent> UserAdministrationAuditEvents { get; set; } = default!;
 
     /// <summary>
     /// Gets the database path for this Database Context

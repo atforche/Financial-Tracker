@@ -11,7 +11,7 @@ import time
 from http.cookiejar import CookieJar
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 from urllib.request import (
     HTTPCookieProcessor,
     HTTPRedirectHandler,
@@ -27,6 +27,32 @@ from shared.migrator import run_migrator
 from shared.step import Step
 
 DOCKER_BUILD_CACHE = "DOCKER_BUILD_CACHE"
+SMOKE_TEST_SUBJECT = "container-smoke-test"
+SMOKE_TEST_EMAIL = "container-smoke-test@example.test"
+SMOKE_TEST_STANDARD_SUBJECT = "container-smoke-standard"
+SMOKE_TEST_STANDARD_EMAIL = "container-smoke-standard@example.test"
+
+
+def prepare_smoke_test_database(data_directory: Path) -> None:
+    """Migrates the smoke database and provisions its deterministic test user."""
+
+    environment = {
+        "AUTH_MODE": "development",
+        "DEVELOPMENT_AUTH_SUBJECT": SMOKE_TEST_SUBJECT,
+        "DEVELOPMENT_AUTH_EMAIL": SMOKE_TEST_EMAIL,
+    }
+    run_migrator("financial-tracker-migrator:workflow", data_directory, environment)
+    run_migrator("financial-tracker-migrator:workflow", data_directory, environment)
+    run_migrator(
+        "financial-tracker-migrator:workflow",
+        data_directory,
+        {
+            "AUTH_MODE": "development",
+            "DEVELOPMENT_AUTH_SUBJECT": SMOKE_TEST_STANDARD_SUBJECT,
+            "DEVELOPMENT_AUTH_EMAIL": SMOKE_TEST_STANDARD_EMAIL,
+            "DEVELOPMENT_AUTH_ROLE": "Standard",
+        },
+    )
 
 
 class DoNotFollowRedirects(HTTPRedirectHandler):
@@ -171,8 +197,7 @@ class SmokeTestContainerImages(Command):
             os.chmod(directory, 0o777)
             os.chmod(database, 0o666)
 
-            run_migrator("financial-tracker-migrator:workflow", database.parent)
-            run_migrator("financial-tracker-migrator:workflow", database.parent)
+            prepare_smoke_test_database(database.parent)
 
             self.run_docker(["network", "create", network])
             try:
@@ -212,11 +237,11 @@ class SmokeTestContainerImages(Command):
                         "--env",
                         "AUTH_MODE=development",
                         "--env",
-                        "DEVELOPMENT_AUTH_SUBJECT=container-smoke-test",
+                        f"DEVELOPMENT_AUTH_SUBJECT={SMOKE_TEST_SUBJECT}",
+                        "--env",
+                        f"DEVELOPMENT_AUTH_ADDITIONAL_SUBJECTS={SMOKE_TEST_STANDARD_SUBJECT}",
                         "--env",
                         "GOOGLE_CLIENT_ID=container-smoke-test",
-                        "--env",
-                        "GOOGLE_ALLOWED_SUBJECTS=container-smoke-test",
                         "financial-tracker-backend:workflow",
                     ]
                 )
@@ -251,13 +276,13 @@ class SmokeTestContainerImages(Command):
                         "--env",
                         "AUTH_MODE=development",
                         "--env",
-                        "DEVELOPMENT_AUTH_SUBJECT=container-smoke-test",
+                        f"DEVELOPMENT_AUTH_SUBJECT={SMOKE_TEST_SUBJECT}",
+                        "--env",
+                        f"DEVELOPMENT_AUTH_ADDITIONAL_SUBJECTS={SMOKE_TEST_STANDARD_SUBJECT}",
                         "--env",
                         "GOOGLE_CLIENT_ID=container-smoke-test",
                         "--env",
                         "GOOGLE_CLIENT_SECRET=container-smoke-test",
-                        "--env",
-                        "GOOGLE_ALLOWED_SUBJECTS=container-smoke-test",
                         "--env",
                         f"AUTH_URL={frontend_origin}",
                         "--env",
@@ -270,6 +295,7 @@ class SmokeTestContainerImages(Command):
                 self.wait_for_url(f"{frontend_origin}/login")
                 self.wait_for_container_health(frontend)
                 self.verify_frontend_session_and_api_flow(frontend_port)
+                self.verify_frontend_sign_in_outage(frontend_port, backend)
                 self.run_playwright_e2e(frontend_port, f"{identifier}{identifier}")
             except Exception:
                 self.print_container_logs(backend)
@@ -297,7 +323,7 @@ class SmokeTestContainerImages(Command):
         """Proves the hardened backend can persist and return authenticated data."""
 
         headers = {
-            "Authorization": "Bearer development:container-smoke-test",
+            "Authorization": f"Bearer development:{SMOKE_TEST_SUBJECT}",
             "Content-Type": "application/json",
         }
         create_request = Request(
@@ -342,6 +368,7 @@ class SmokeTestContainerImages(Command):
                     "csrfToken": csrf_token,
                     "callbackUrl": f"{base_url}/accounts/workspace",
                     "json": "true",
+                    "subject": SMOKE_TEST_SUBJECT,
                 }
             ).encode(),
             headers={"Content-Type": "application/x-www-form-urlencoded"},
@@ -360,7 +387,7 @@ class SmokeTestContainerImages(Command):
         with browser.open(f"{base_url}/api/auth/session", timeout=30) as response:
             session = json.load(response)
         if (
-            session.get("user", {}).get("name") != "Local developer"
+            session.get("user", {}).get("name") != "Administrator"
             or "idToken" in session
         ):
             raise RuntimeError(
@@ -372,6 +399,65 @@ class SmokeTestContainerImages(Command):
                 raise RuntimeError(
                     "The authenticated frontend could not load account data."
                 )
+
+    def verify_frontend_sign_in_outage(self, frontend_port: int, backend: str) -> None:
+        """Verifies a resolver outage rejects sign-in with a generic login error."""
+
+        base_url = f"http://127.0.0.1:{frontend_port}"
+        cookies = CookieJar()
+        browser = build_opener(HTTPCookieProcessor(cookies))
+        with browser.open(f"{base_url}/api/auth/csrf", timeout=30) as response:
+            csrf_token = json.load(response)["csrfToken"]
+
+        sign_in_request = Request(
+            f"{base_url}/api/auth/callback/development",
+            data=urlencode(
+                {
+                    "csrfToken": csrf_token,
+                    "callbackUrl": f"{base_url}/accounts/workspace",
+                    "json": "true",
+                    "subject": SMOKE_TEST_SUBJECT,
+                }
+            ).encode(),
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            method="POST",
+        )
+        callback_browser = build_opener(
+            HTTPCookieProcessor(cookies), DoNotFollowRedirects()
+        )
+        self.run_docker(["stop", backend])
+        try:
+            try:
+                callback_browser.open(sign_in_request, timeout=30)
+            except HTTPError as error:
+                if error.code != 302:
+                    raise
+                redirect_location = error.headers.get("Location")
+                if (
+                    redirect_location is None
+                    or "/login?error=AccessDenied" not in redirect_location
+                ):
+                    raise RuntimeError(
+                        "A resolver outage did not fail closed to the generic login error."
+                    ) from error
+                with browser.open(
+                    urljoin(base_url, redirect_location), timeout=30
+                ) as response:
+                    login_page = response.read().decode()
+                if (
+                    "We could not confirm that this account has access."
+                    not in login_page
+                ):
+                    raise RuntimeError(
+                        "The login page did not show the generic resolver outage message."
+                    ) from error
+            else:
+                raise RuntimeError("A resolver outage unexpectedly created a session.")
+        finally:
+            self.run_docker(["start", backend])
+            restarted_backend_port = self.get_published_port(backend, 8080)
+            self.wait_for_url(f"http://127.0.0.1:{restarted_backend_port}/health/ready")
+            self.wait_for_container_health(backend)
 
     @staticmethod
     def run_playwright_e2e(frontend_port: int, auth_secret: str) -> None:

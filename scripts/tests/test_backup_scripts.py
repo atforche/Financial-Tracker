@@ -20,6 +20,8 @@ def test_restored_backend_verification_uses_hardened_runtime_and_persists_data(
         assert timeout in {3, 30}
         if isinstance(request, Request):
             requests.append(request)
+            if request.full_url.endswith("/users/me"):
+                return io.BytesIO(b'{"email":"backup-restore-smoke-test@example.test"}')
             if request.get_method() == "POST":
                 return io.BytesIO(
                     b'{"id":"account-id","name":"Restored backup smoke account"}'
@@ -46,7 +48,7 @@ def test_restored_backend_verification_uses_hardened_runtime_and_persists_data(
     assert "no-new-privileges:true" in run_command
     assert run_command[-1] == "backend-image"
     assert commands[-1][:4] == ["docker", "container", "rm", "--force"]
-    assert [request.get_method() for request in requests] == ["POST", "GET"]
+    assert [request.get_method() for request in requests] == ["GET", "POST", "GET"]
     assert requests[0].get_header("Authorization") == (
         "Bearer development:backup-restore-smoke-test"
     )

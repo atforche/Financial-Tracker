@@ -7,6 +7,7 @@ import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import SearchBar from "@/framework/listframe/SearchBar";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/funds/routes";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the FundWorkspaceFilter component.
@@ -21,6 +22,7 @@ interface FundWorkspaceFilterProps {
 const FundWorkspaceFilter = function ({
   isInOnboardingMode,
 }: FundWorkspaceFilterProps): JSX.Element {
+  const canWrite = useWriteAccess();
   const addFundHref = isInOnboardingMode
     ? routes.workspaceOnboard({})
     : routes.workspaceCreate({});
@@ -29,9 +31,11 @@ const FundWorkspaceFilter = function ({
     <PageFilterFrame
       title="Fund Workspace"
       actions={
-        <Button variant="contained" href={addFundHref}>
-          {isInOnboardingMode ? "Onboard Fund" : "Create Fund"}
-        </Button>
+        !canWrite ? undefined : (
+          <Button variant="contained" href={addFundHref}>
+            {isInOnboardingMode ? "Onboard Fund" : "Create Fund"}
+          </Button>
+        )
       }
     >
       <SearchBar
