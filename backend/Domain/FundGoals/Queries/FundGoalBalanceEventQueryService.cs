@@ -231,7 +231,9 @@ public sealed class FundGoalBalanceEventQueryService(
         fundId,
         history?.AmountAssigned ?? 0,
         0,
+        history?.RegularAmountAssigned ?? 0,
         history?.AmountSpent ?? 0,
+        history?.RegularAmountAssigned ?? 0,
         0);
 
     /// <summary>

@@ -3146,6 +3146,24 @@ export interface components {
              */
             amount: number;
         };
+        /** @description Model representing a Fund amount assigned by an income transaction. */
+        CreateIncomeFundAmountModel: {
+            /**
+             * @description Whether this assignment is extra funding outside the regular monthly
+             *     contribution.
+             */
+            isExtraContribution?: boolean;
+            /**
+             * Format: uuid
+             * @description Fund for this Fund Amount
+             */
+            fundId: string;
+            /**
+             * Format: double
+             * @description Amount for this Fund Amount
+             */
+            amount: number;
+        };
         /** @description Model representing an income line in a create income transaction request. */
         CreateIncomeLineModel: {
             /** @description Description for the income line. */
@@ -3169,7 +3187,7 @@ export interface components {
              */
             amount: number;
             /** @description Fund assignments for this destination. */
-            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
+            fundAssignments: components["schemas"]["CreateIncomeFundAmountModel"][];
         };
         /** @description Model representing the source of an income transaction create request. */
         CreateIncomeTransactionSourceModel: {
@@ -3380,6 +3398,11 @@ export interface components {
         };
         /** @description Model representing a balance event for a fund. */
         FundBalanceEventModel: {
+            /**
+             * @description Whether this income assignment is extra funding outside the regular
+             *     monthly Fund Goal contribution.
+             */
+            isExtraContribution?: boolean;
             /** @description Fund affected by the balance event. */
             fund: components["schemas"]["FundModel"];
             /** @description Source associated with the balance event's Transaction. */
@@ -3658,9 +3681,20 @@ export interface components {
             amountAssigned: number;
             /**
              * Format: double
+             * @description Posted amount assigned toward the regular monthly contribution.
+             */
+            regularAmountAssigned: number;
+            /**
+             * Format: double
              * @description Amount assigned including unposted Transaction effects.
              */
             amountAssignedIncludingPending: number;
+            /**
+             * Format: double
+             * @description Amount assigned toward the regular monthly contribution including
+             *     unposted Transaction effects.
+             */
+            regularAmountAssignedIncludingPending: number;
             /**
              * Format: double
              * @description Posted amount spent.
@@ -4330,7 +4364,7 @@ export interface components {
              */
             amount: number;
             /** @description Fund assignments for this destination. */
-            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
+            fundAssignments: components["schemas"]["CreateIncomeFundAmountModel"][];
         };
         /** @description Model representing the source of an income transaction update request. */
         UpdateIncomeTransactionSourceModel: {

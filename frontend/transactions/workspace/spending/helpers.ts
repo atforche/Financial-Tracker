@@ -342,6 +342,7 @@ const getFundAssignmentFromTransactionFund = (
   fundId: assignment.fund.id,
   fundName: assignment.fund.name,
   amount: assignment.amount,
+  isExtraContribution: false,
   previousFundBalance: assignment.previousBalance.postedBalance,
   newFundBalance: assignment.newBalance.postedBalance,
   previousGoalAmount: getSpendingGoalRemainingAmount(

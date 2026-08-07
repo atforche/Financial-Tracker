@@ -66,14 +66,14 @@ public sealed class FundBalanceEventConverter
     /// </summary>
     public CollectionModel<FundBalanceEventModel> ToModel(QueryPage<FundBalanceEvent> page) => new()
     {
-        Items = page.Items.Select(ToModel).ToList(),
+        Items = page.Items.Select(balanceEvent => ToModel(balanceEvent)).ToList(),
         TotalCount = page.TotalCount,
     };
 
     /// <summary>
     /// Converts a Domain Fund balance event to an API model.
     /// </summary>
-    public FundBalanceEventModel ToModel(FundBalanceEvent balanceEvent) => new()
+    public FundBalanceEventModel ToModel(FundBalanceEvent balanceEvent, bool isExtraContribution = false) => new()
     {
         AccountingPeriod = new AccountingPeriodModel
         {
@@ -91,6 +91,7 @@ public sealed class FundBalanceEventConverter
         Type = balanceEvent.Type == BalanceEventType.Debit ? BalanceEventTypeModel.Debit : BalanceEventTypeModel.Credit,
         IsPosted = balanceEvent.IsPosted,
         Amount = balanceEvent.Amount,
+        IsExtraContribution = isExtraContribution,
         Fund = new FundModel
         {
             Id = balanceEvent.Fund.Id.Value,

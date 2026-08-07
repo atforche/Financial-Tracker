@@ -158,7 +158,7 @@ internal sealed class TransactionConfiguration :
             destinationBuilder.HasOne(destination => destination.Account).WithMany().HasForeignKey("AccountId");
             destinationBuilder.Navigation(destination => destination.Account).AutoInclude();
 
-            destinationBuilder.OwnsMany<FundAmount>(nameof(IncomeTransactionDestination.FundAssignments), fundAssignmentBuilder =>
+            destinationBuilder.OwnsMany<IncomeFundAmount>(nameof(IncomeTransactionDestination.FundAssignments), fundAssignmentBuilder =>
             {
                 fundAssignmentBuilder.ToTable("IncomeTransactionIncomeDestinationFundAssignments");
                 fundAssignmentBuilder.WithOwner().HasForeignKey("IncomeDestinationId");
