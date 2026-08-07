@@ -40,6 +40,12 @@ public sealed class FundGoalTotalsHistory : Entity<FundGoalTotalsHistoryId>
     public decimal AmountAssigned { get; private set; }
 
     /// <summary>
+    /// Posted amount assigned toward the regular monthly contribution after
+    /// the Transaction.
+    /// </summary>
+    public decimal RegularAmountAssigned { get; private set; }
+
+    /// <summary>
     /// Posted amount spent after the Transaction.
     /// </summary>
     public decimal AmountSpent { get; private set; }
@@ -54,6 +60,7 @@ public sealed class FundGoalTotalsHistory : Entity<FundGoalTotalsHistoryId>
             throw new InvalidOperationException("Cannot update Fund Goal totals history for a different Fund.");
         }
         AmountAssigned = totals.AmountAssigned;
+        RegularAmountAssigned = totals.RegularAmountAssigned;
         AmountSpent = totals.AmountSpent;
     }
 
@@ -61,7 +68,7 @@ public sealed class FundGoalTotalsHistory : Entity<FundGoalTotalsHistoryId>
     /// Converts this history entry to Fund Goal totals.
     /// </summary>
     public FundGoalTotals ToTotals() =>
-        new(FundId, AmountAssigned, AmountSpent);
+        new(FundId, AmountAssigned, AmountSpent, RegularAmountAssigned);
 
     /// <summary>
     /// Constructs a Fund Goal totals history entry.

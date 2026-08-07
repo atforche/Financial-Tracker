@@ -20,6 +20,7 @@ public class IncomeTransactionService(
     PendingFundGoalTotalsService pendingFundGoalTotalsService,
     IAccountingPeriodRepository accountingPeriodRepository,
     IFundRepository fundRepository,
+    IFundGoalRepository fundGoalRepository,
     ITransactionRepository transactionRepository) :
     TransactionService(
         accountBalanceService,
@@ -175,6 +176,7 @@ public class IncomeTransactionService(
             exceptions = exceptions.Concat(structureExceptions);
         }
         if (!ValidateDestinationFundAssignments(
+                request.AccountingPeriodId,
                 request.Destinations,
                 (i) => new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Destinations), i),
                 out IEnumerable<ValidationError> fundAssignmentExceptions))
@@ -245,6 +247,7 @@ public class IncomeTransactionService(
             exceptions = exceptions.Concat(structureExceptions);
         }
         if (!ValidateDestinationFundAssignments(
+                transaction.AccountingPeriodId,
                 request.Destinations,
                 (i) => new ValidationErrorPath(nameof(UpdateIncomeTransactionRequest.Destinations), i),
                 out IEnumerable<ValidationError> fundAssignmentExceptions))
@@ -368,6 +371,7 @@ public class IncomeTransactionService(
     /// Validates the accounts for this Income Transaction
     /// </summary>
     private bool ValidateDestinationFundAssignments(
+        AccountingPeriodId accountingPeriodId,
         IReadOnlyCollection<IncomeTransactionDestination> destinations,
         Func<int, ValidationErrorPath> destinationsPathBuilder,
         out IEnumerable<ValidationError> exceptions)
@@ -388,6 +392,18 @@ public class IncomeTransactionService(
                     out IEnumerable<ValidationError> fundAssignmentExceptions))
             {
                 exceptions = exceptions.Concat(fundAssignmentExceptions);
+            }
+            foreach ((int fundAssignmentIndex, IncomeFundAmount fundAssignment) in destination.FundAssignments.Index())
+            {
+                if (fundAssignment.IsExtraContribution
+                    && fundGoalRepository.GetByFundAndAccountingPeriod(fundAssignment.FundId, accountingPeriodId)?.RegularContribution == null)
+                {
+                    exceptions = exceptions.Append(new ValidationError(
+                        destinationsPathBuilder(index)
+                            .AppendWithIndex(nameof(IncomeTransactionDestination.FundAssignments), fundAssignmentIndex)
+                            .Append(nameof(IncomeFundAmount.IsExtraContribution)),
+                        "Extra contributions require a Fund Goal with a regular contribution"));
+                }
             }
         }
         return !exceptions.Any();

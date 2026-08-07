@@ -273,6 +273,7 @@ const buildRequestFields = function (
         .map((fundAmount) => ({
           fundId: fundAmount.fundId,
           amount: fundAmount.amount,
+          isExtraContribution: fundAmount.isExtraContribution,
         })),
     })),
   };
@@ -416,6 +417,7 @@ const getFundAssignmentFromTransactionFund = (
   fundId: assignment.fund.id,
   fundName: assignment.fund.name,
   amount: assignment.amount,
+  isExtraContribution: assignment.isExtraContribution ?? false,
   previousFundBalance: assignment.previousBalance.postedBalance,
   newFundBalance: assignment.newBalance.postedBalance,
   previousGoalAmount: getIncomeGoalRemainingAmount(
@@ -424,7 +426,7 @@ const getFundAssignmentFromTransactionFund = (
   ),
   newGoalAmount: Math.max(
     getIncomeGoalRemainingAmount(assignment.fund.id, fundGoals) -
-      assignment.amount,
+      (assignment.isExtraContribution === true ? 0 : assignment.amount),
     0,
   ),
 });

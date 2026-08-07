@@ -107,6 +107,7 @@ const SpendingFundAssignmentPlanner = function ({
             fundId: newFund.id,
             fundName: newFund.name,
             amount: assignment.amount,
+            isExtraContribution: false,
             previousFundBalance,
             newFundBalance: getCurrencyDifference(
               previousFundBalance,

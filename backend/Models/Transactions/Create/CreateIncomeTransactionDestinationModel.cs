@@ -20,5 +20,5 @@ public sealed class CreateIncomeTransactionDestinationModel
     /// <summary>
     /// Fund assignments for this destination.
     /// </summary>
-    public required IReadOnlyCollection<CreateFundAmountModel> FundAssignments { get; init; }
+    public required IReadOnlyCollection<CreateIncomeFundAmountModel> FundAssignments { get; init; }
 }

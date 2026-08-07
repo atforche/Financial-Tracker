@@ -83,7 +83,7 @@ public sealed class FinancialRangeProjectionTests
             {
                 AccountId = savings.Id,
                 Amount = 30m,
-                FundAssignments = [new CreateFundAmountModel { FundId = income.Id, Amount = 30m }]
+                FundAssignments = [new CreateIncomeFundAmountModel { FundId = income.Id, Amount = 30m }]
             }]
         });
 

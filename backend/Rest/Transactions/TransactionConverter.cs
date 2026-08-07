@@ -277,7 +277,9 @@ public sealed class TransactionConverter(
                 Amount = destination.Amount,
                 PostedDate = destination.PostedDate,
                 FundAssignments = destination.FundAssignments.Select(amount =>
-                    fundBalanceEventConverter.ToModel(details.GetFundEvent(amount, BalanceEventType.Credit))).ToList(),
+                    fundBalanceEventConverter.ToModel(
+                        details.GetFundEvent(amount, BalanceEventType.Credit),
+                        amount.IsExtraContribution)).ToList(),
                 FundGoals = destination.FundAssignments.Where(amount => amount.FundId != Fund.UnassignedFundId).Select(amount =>
                     fundGoalBalanceEventConverter.ToModel(details.GetFundGoalEvent(
                         amount,

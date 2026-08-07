@@ -308,10 +308,40 @@ public sealed class TransactionRequestConverter(
                 return Task.FromResult<IReadOnlyCollection<FundAmount>?>(null);
             }
 
-            resolvedFundAmounts.Add(new FundAmount { FundId = fund.Id, Amount = fundAmountModel.Amount });
+            resolvedFundAmounts.Add(new FundAmount
+            {
+                FundId = fund.Id,
+                Amount = fundAmountModel.Amount,
+            });
         }
 
         return Task.FromResult<IReadOnlyCollection<FundAmount>?>(resolvedFundAmounts);
+    }
+
+    private Task<IReadOnlyCollection<IncomeFundAmount>?> GetIncomeFundAmountsAsync(
+        IReadOnlyCollection<CreateIncomeFundAmountModel> models,
+        string errorKeyPrefix,
+        Dictionary<string, string[]> errors)
+    {
+        List<IncomeFundAmount> resolvedFundAmounts = [];
+
+        foreach ((int index, CreateIncomeFundAmountModel fundAmountModel) in models.Index())
+        {
+            Fund? fund = TryGetFund(fundAmountModel.FundId, $"{errorKeyPrefix}[{index}]", errors);
+            if (fund == null)
+            {
+                return Task.FromResult<IReadOnlyCollection<IncomeFundAmount>?>(null);
+            }
+
+            resolvedFundAmounts.Add(new IncomeFundAmount
+            {
+                FundId = fund.Id,
+                Amount = fundAmountModel.Amount,
+                IsExtraContribution = fundAmountModel.IsExtraContribution,
+            });
+        }
+
+        return Task.FromResult<IReadOnlyCollection<IncomeFundAmount>?>(resolvedFundAmounts);
     }
 
     private SpendingTransactionSource? GetSpendingSource(
@@ -502,7 +532,7 @@ public sealed class TransactionRequestConverter(
     private async Task<IncomeTransactionDestination?> GetIncomeDestinationAsync(
         Guid accountId,
         decimal amount,
-        IReadOnlyCollection<CreateFundAmountModel> fundAssignmentModels,
+        IReadOnlyCollection<CreateIncomeFundAmountModel> fundAssignmentModels,
         string errorKeyPrefix,
         Dictionary<string, string[]> errors)
     {
@@ -511,7 +541,7 @@ public sealed class TransactionRequestConverter(
         {
             return null;
         }
-        IReadOnlyCollection<FundAmount>? fundAssignments = await GetFundAmountsAsync(fundAssignmentModels, $"{errorKeyPrefix}.FundAssignments", errors);
+        IReadOnlyCollection<IncomeFundAmount>? fundAssignments = await GetIncomeFundAmountsAsync(fundAssignmentModels, $"{errorKeyPrefix}.FundAssignments", errors);
         if (fundAssignments == null)
         {
             return null;

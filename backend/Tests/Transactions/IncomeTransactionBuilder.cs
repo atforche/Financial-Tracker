@@ -129,7 +129,7 @@ internal sealed class IncomeTransactionBuilder(TestApiClient apiClient)
         {
             AccountId = account.Id,
             Amount = _amount,
-            FundAssignments = [new CreateFundAmountModel
+            FundAssignments = [new CreateIncomeFundAmountModel
             {
                 FundId = fund.Id,
                 Amount = _amount
@@ -144,7 +144,7 @@ internal sealed class IncomeTransactionBuilder(TestApiClient apiClient)
         {
             AccountId = account.Id,
             Amount = _amount,
-            FundAssignments = [new CreateFundAmountModel
+            FundAssignments = [new CreateIncomeFundAmountModel
             {
                 FundId = fund.Id,
                 Amount = _amount

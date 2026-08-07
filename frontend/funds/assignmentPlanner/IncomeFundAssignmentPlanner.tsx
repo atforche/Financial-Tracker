@@ -1,4 +1,4 @@
-import { Chip, Stack } from "@mui/material";
+import { Checkbox, Chip, FormControlLabel, Stack } from "@mui/material";
 import type { Fund, FundWithBalance } from "@/funds/types";
 import {
   type FundAssignmentDraft,
@@ -52,6 +52,14 @@ const IncomeFundAssignmentPlanner = function ({
   readOnly = false,
 }: IncomeFundAssignmentPlannerProps): JSX.Element {
   const unassignedFund = getUnassignedFund(funds);
+
+  const hasRegularContribution = function (fundId: string): boolean {
+    const fundGoal = fundGoals.find((goal) => goal.fund.id === fundId);
+    return (
+      fundGoal?.regularContribution !== null &&
+      fundGoal?.regularContribution !== undefined
+    );
+  };
 
   const sortFunds = function (left: Fund, right: Fund): number {
     return sortFundsByRemainingAmount(left, right, (fundId: string) =>
@@ -109,10 +117,14 @@ const IncomeFundAssignmentPlanner = function ({
             index,
             previousGoalAmount,
           );
+          const isExtraContribution =
+            hasRegularContribution(newFund.id) &&
+            assignment.isExtraContribution;
           return {
             fundId: newFund.id,
             fundName: newFund.name,
             amount: recommendedAmount,
+            isExtraContribution,
             previousFundBalance,
             newFundBalance: getCurrencyTotal([
               previousFundBalance,
@@ -120,7 +132,10 @@ const IncomeFundAssignmentPlanner = function ({
             ]),
             previousGoalAmount,
             newGoalAmount: getMaximumCurrencyAmount(
-              getCurrencyTotal([previousGoalAmount, -recommendedAmount]),
+              getCurrencyTotal([
+                previousGoalAmount,
+                isExtraContribution ? 0 : -recommendedAmount,
+              ]),
               0,
             ),
           };
@@ -154,7 +169,44 @@ const IncomeFundAssignmentPlanner = function ({
               newAmount ?? 0,
             ]),
             newGoalAmount: getMaximumCurrencyAmount(
-              getCurrencyTotal([previousGoalAmount, -(newAmount ?? 0)]),
+              getCurrencyTotal([
+                previousGoalAmount,
+                assignment.isExtraContribution ? 0 : -(newAmount ?? 0),
+              ]),
+              0,
+            ),
+          };
+        },
+      ),
+    );
+  };
+
+  const updateExtraContribution = function (
+    index: number,
+    isExtraContribution: boolean,
+  ): void {
+    setFundAssignments?.(
+      updateFundAssignment(
+        unassignedFund,
+        totalAmountToAssign,
+        fundAssignments,
+        index,
+        (assignment) => {
+          const previousGoalAmount =
+            getContributionRemainingAmount(
+              assignment.fundId,
+              fundGoals,
+              baselineFundAssignments,
+            ) ?? 0;
+          return {
+            ...assignment,
+            isExtraContribution,
+            previousGoalAmount,
+            newGoalAmount: getMaximumCurrencyAmount(
+              getCurrencyTotal([
+                previousGoalAmount,
+                isExtraContribution ? 0 : -assignment.amount,
+              ]),
               0,
             ),
           };
@@ -199,6 +251,34 @@ const IncomeFundAssignmentPlanner = function ({
     );
   };
 
+  const renderAssignmentControl = function (
+    assignment: FundAssignmentDraft,
+    index: number,
+  ): JSX.Element | null {
+    if (
+      assignment.fundId === "" ||
+      (!hasRegularContribution(assignment.fundId) &&
+        !assignment.isExtraContribution)
+    ) {
+      return null;
+    }
+    return (
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={assignment.isExtraContribution}
+            disabled={readOnly}
+            onChange={(event) => {
+              updateExtraContribution(index, event.target.checked);
+            }}
+          />
+        }
+        label="Extra contribution"
+        sx={{ flexShrink: 0, m: 0, whiteSpace: "nowrap" }}
+      />
+    );
+  };
+
   return (
     <FundAssignmentPlanner
       funds={funds}
@@ -229,6 +309,7 @@ const IncomeFundAssignmentPlanner = function ({
       }
       sortFunds={sortFunds}
       renderAssignmentDetails={renderAssignmentDetails}
+      renderAssignmentControl={renderAssignmentControl}
       color={frameColor}
       readOnly={readOnly}
     />

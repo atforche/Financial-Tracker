@@ -4,6 +4,7 @@ using Models.FundGoals;
 using Models.Funds;
 using Models.Transactions;
 using Models.Transactions.Create;
+using Models.Transactions.Types;
 using Models.Transactions.Update;
 using Tests.AccountingPeriods;
 using Tests.Accounts;
@@ -18,6 +19,61 @@ namespace Tests.Transactions;
 /// </summary>
 public sealed class TransactionCalculationCoverageTests
 {
+    /// <summary>
+    /// Verifies extra income funding increases funded-balance progress without
+    /// satisfying the regular monthly contribution.
+    /// </summary>
+    [Fact]
+    public async Task ExtraIncomeFundingCountsTowardFundedBalanceButNotRegularContribution()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle gifts = await test.Funds.Create("Gifts").In(july).CreateAsync();
+        _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{gifts.Goal.Id}", new UpdateFundGoalModel
+        {
+            RegularContribution = 200m,
+            MinimumFundedBalance = 50m,
+            MaximumFundedBalance = 300m,
+        });
+        CreateTransactionResultModel created = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", new CreateIncomeTransactionModel
+        {
+            AccountingPeriodId = july.Id,
+            Date = new DateOnly(2026, 7, 10),
+            Description = "Birthday gift",
+            Amount = 50m,
+            Source = new CreateIncomeTransactionSourceModel
+            {
+                Location = "Family",
+                IncomeLines = [new CreateIncomeLineModel { Description = "Gift", Amount = 50m }],
+                IncomeDeductions = [],
+            },
+            Destinations = [new CreateIncomeTransactionDestinationModel
+            {
+                AccountId = cash.Id,
+                Amount = 50m,
+                FundAssignments = [new CreateIncomeFundAmountModel
+                {
+                    FundId = gifts.Id,
+                    Amount = 50m,
+                    IsExtraContribution = true,
+                }],
+            }],
+        });
+
+        await test.Transactions.PostAsync(new TransactionHandle(created.Id), cash, new DateOnly(2026, 7, 10));
+        FundGoalProgressModel progress = await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{gifts.Goal.Id}/progress/{july.Id}");
+        IncomeTransactionModel transaction = await test.Api.GetAsync<IncomeTransactionModel>($"/transactions/{created.Id}");
+
+        Assert.True(Assert.Single(Assert.Single(transaction.Destinations).FundAssignments).IsExtraContribution);
+        Assert.NotNull(progress.Contribution);
+        Assert.Equal(0m, progress.Contribution.AssignedAmount);
+        Assert.Equal(200m, progress.Contribution.RemainingAmount);
+        Assert.NotNull(progress.FundedBalance);
+        Assert.Equal(50m, progress.FundedBalance.Balance);
+        Assert.Equal(FundedBalanceStatusModel.WithinRange, progress.FundedBalance.Status);
+    }
+
     /// <summary>
     /// Verifies goal assignment and spending totals survive posting, unposting, and deleting each applicable transaction type.
     /// </summary>
@@ -83,7 +139,7 @@ public sealed class TransactionCalculationCoverageTests
             Description = "Income",
             Amount = 25m,
             Source = new UpdateIncomeTransactionSourceModel { Location = "Employer", IncomeLines = [new UpdateIncomeLineModel { Description = "Pay", Amount = 25m }], IncomeDeductions = [] },
-            Destinations = [new UpdateIncomeTransactionDestinationModel { AccountId = second.Id, Amount = 25m, FundAssignments = [new CreateFundAmountModel { FundId = newFund.Id, Amount = 25m }] }]
+            Destinations = [new UpdateIncomeTransactionDestinationModel { AccountId = second.Id, Amount = 25m, FundAssignments = [new CreateIncomeFundAmountModel { FundId = newFund.Id, Amount = 25m }] }]
         };
         await test.Api.PostAsync($"/transactions/{income.Id}", incomeUpdate);
         Assert.Equal(0m, (await test.AccountQueries.GetBalanceAsync(first)).IncludingPending);

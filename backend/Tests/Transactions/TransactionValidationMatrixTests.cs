@@ -112,8 +112,47 @@ public sealed class TransactionValidationMatrixTests
             {
                 AccountId = cash.Id,
                 Amount = 100m,
-                FundAssignments = [new CreateFundAmountModel { FundId = income.Id, Amount = 90m }]
+                FundAssignments = [new CreateIncomeFundAmountModel { FundId = income.Id, Amount = 90m }]
             }]
+        });
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
+    /// <summary>
+    /// Rejects extra funding when the selected Fund Goal has no regular contribution.
+    /// </summary>
+    [Fact]
+    public async Task CreateAsyncRejectsExtraContributionWithoutRegularFundGoalContribution()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle gifts = await test.Funds.Create("Gifts").In(july).CreateAsync();
+
+        using HttpResponseMessage response = await test.Api.PostResponseAsync<CreateTransactionModel>("/transactions", new CreateIncomeTransactionModel
+        {
+            AccountingPeriodId = july.Id,
+            Date = new DateOnly(2026, 7, 15),
+            Description = "Birthday gift",
+            Amount = 50m,
+            Source = new CreateIncomeTransactionSourceModel
+            {
+                Location = "Family",
+                IncomeLines = [new CreateIncomeLineModel { Description = "Gift", Amount = 50m }],
+                IncomeDeductions = [],
+            },
+            Destinations = [new CreateIncomeTransactionDestinationModel
+            {
+                AccountId = cash.Id,
+                Amount = 50m,
+                FundAssignments = [new CreateIncomeFundAmountModel
+                {
+                    FundId = gifts.Id,
+                    Amount = 50m,
+                    IsExtraContribution = true,
+                }],
+            }],
         });
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
@@ -154,7 +193,7 @@ public sealed class TransactionValidationMatrixTests
                 {
                     AccountId = cash.Id,
                     Amount = 60m,
-                    FundAssignments = [new CreateFundAmountModel { FundId = income.Id, Amount = 60m }]
+                    FundAssignments = [new CreateIncomeFundAmountModel { FundId = income.Id, Amount = 60m }]
                 },
                 new CreateIncomeTransactionDestinationModel { AccountId = debt.Id, Amount = 40m, FundAssignments = [] }
             ]
