@@ -18,6 +18,7 @@ interface FundAssignmentDraft {
   readonly fundId: string;
   readonly fundName: string;
   readonly amount: number;
+  readonly isExtraContribution: boolean;
   readonly previousFundBalance: number;
   readonly newFundBalance: number;
   readonly previousGoalAmount: number;
@@ -32,6 +33,7 @@ const createFundAssignmentDraft = function (amount = 0): FundAssignmentDraft {
     fundId: "",
     fundName: "",
     amount,
+    isExtraContribution: false,
     previousFundBalance: 0,
     newFundBalance: 0,
     previousGoalAmount: 0,
@@ -105,6 +107,7 @@ const updateUnassignedFundAmount = function (
         getCurrencyTotal([totalAmountToAssign, -assignedAmount]),
         0,
       ),
+      isExtraContribution: false,
       previousFundBalance: 0,
       newFundBalance: 0,
       previousGoalAmount: 0,
@@ -199,7 +202,9 @@ const getContributionRemainingAmount = function (
   const fundGoal = fundGoals.find((goal) => goal.fund.id === fundId);
   return getRemainingAmount(
     fundGoal?.progress.contribution?.remainingAmount,
-    baselineFundAssignments,
+    baselineFundAssignments.filter(
+      (assignment) => !assignment.isExtraContribution,
+    ),
     fundId,
   );
 };

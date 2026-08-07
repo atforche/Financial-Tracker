@@ -11,6 +11,7 @@ public static class FundGoalProgressService
     public static FundGoalProgress Calculate(
         decimal openingAvailableBalance,
         decimal assignedAmount,
+        decimal regularAssignedAmount,
         decimal currentAvailableBalance,
         decimal? regularContribution,
         decimal? minimumFundedBalance,
@@ -25,7 +26,7 @@ public static class FundGoalProgressService
         ContributionProgress? contribution = regularContribution != null
             || minimumFundedBalance != null
             || maximumFundedBalance != null
-            ? new ContributionProgress(recommendedContribution, assignedAmount)
+            ? new ContributionProgress(recommendedContribution, regularAssignedAmount)
             : null;
         FundedBalanceProgress? fundedBalance = minimumFundedBalance != null
             || maximumFundedBalance != null

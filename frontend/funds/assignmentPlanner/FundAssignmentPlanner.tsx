@@ -41,7 +41,11 @@ interface FundAssignmentPlannerProps {
   readonly getFundOptionSecondaryLabel?: ((fund: Fund) => string | null) | null;
   readonly sortFunds?: ((left: Fund, right: Fund) => number) | null;
   readonly renderAssignmentDetails?:
-    ((assignment: FundAssignmentDraft) => JSX.Element | null) | null;
+    | ((assignment: FundAssignmentDraft, index: number) => JSX.Element | null)
+    | null;
+  readonly renderAssignmentControl?:
+    | ((assignment: FundAssignmentDraft, index: number) => JSX.Element | null)
+    | null;
   readonly color?: FrameColor;
   readonly readOnly?: boolean;
 }
@@ -62,6 +66,7 @@ const FundAssignmentPlanner = function ({
   getFundOptionSecondaryLabel = null,
   sortFunds = null,
   renderAssignmentDetails = null,
+  renderAssignmentControl = null,
   color = "info",
   readOnly = false,
 }: FundAssignmentPlannerProps): JSX.Element {
@@ -128,24 +133,35 @@ const FundAssignmentPlanner = function ({
                     sortComparator={sortFunds}
                   />
                 </Box>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <CurrencyEntryField
-                    label="Assigned Amount"
-                    value={assignment.amount}
-                    setValue={
-                      readOnly
-                        ? null
-                        : (newAmount): void => {
-                            updateAmount(index, newAmount);
-                          }
-                    }
-                  />
+                <Box
+                  sx={{
+                    flex: 1,
+                    minWidth: 0,
+                    display: "flex",
+                    alignItems: { xs: "flex-start", md: "center" },
+                    gap: 1,
+                  }}
+                >
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <CurrencyEntryField
+                      label="Assigned Amount"
+                      value={assignment.amount}
+                      setValue={
+                        readOnly
+                          ? null
+                          : (newAmount): void => {
+                              updateAmount(index, newAmount);
+                            }
+                      }
+                    />
+                  </Box>
+                  {renderAssignmentControl?.(assignment, index) ?? null}
                 </Box>
                 {readOnly ? null : (
                   <IconButton
                     aria-label="Delete fund assignment"
                     sx={{
-                      alignSelf: { xs: "flex-end", md: "flex-start" },
+                      alignSelf: { xs: "flex-end", md: "center" },
                       flexShrink: 0,
                     }}
                     onClick={() => {
@@ -157,7 +173,7 @@ const FundAssignmentPlanner = function ({
                 )}
               </Box>
 
-              {renderAssignmentDetails?.(assignment) ?? null}
+              {renderAssignmentDetails?.(assignment, index) ?? null}
             </Stack>
           ))}
         </Stack>

@@ -154,6 +154,7 @@ public sealed class FundGoalService(
         progress = FundGoalProgressService.Calculate(
             fundBalanceHistory.OpeningBalance,
             totals.AmountAssigned,
+            totals.RegularAmountAssigned,
             fundBalanceHistory.ClosingBalance,
             fundGoal.RegularContribution,
             fundGoal.MinimumFundedBalance,
@@ -189,6 +190,7 @@ public sealed class FundGoalService(
             results.Add(fundGoal.Id, FundGoalProgressService.Calculate(
                 fundBalanceHistory.OpeningBalance,
                 totals.AmountAssigned,
+                totals.RegularAmountAssigned,
                 fundBalanceHistory.ClosingBalance,
                 fundGoal.RegularContribution,
                 fundGoal.MinimumFundedBalance,

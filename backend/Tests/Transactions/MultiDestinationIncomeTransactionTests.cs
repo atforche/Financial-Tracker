@@ -87,13 +87,13 @@ public sealed class MultiDestinationIncomeTransactionTests
                 {
                     AccountId = first.Id,
                     Amount = 40m,
-                    FundAssignments = [new CreateFundAmountModel { FundId = firstFund.Id, Amount = 40m }]
+                    FundAssignments = [new CreateIncomeFundAmountModel { FundId = firstFund.Id, Amount = 40m }]
                 },
                 new CreateIncomeTransactionDestinationModel
                 {
                     AccountId = second.Id,
                     Amount = 60m,
-                    FundAssignments = [new CreateFundAmountModel { FundId = secondFund.Id, Amount = 60m }]
+                    FundAssignments = [new CreateIncomeFundAmountModel { FundId = secondFund.Id, Amount = 60m }]
                 }
             ]
         });

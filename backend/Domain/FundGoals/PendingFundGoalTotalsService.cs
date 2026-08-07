@@ -28,7 +28,9 @@ public sealed class PendingFundGoalTotalsService(IFundGoalPendingTotalsEffectRep
                 current.FundId,
                 current.AmountAssigned,
                 current.AmountSpent,
+                current.RegularAmountAssigned,
                 current.AmountAssignedIncludingPending + effect.PendingAmountAssigned,
+                current.RegularAmountAssignedIncludingPending + effect.PendingRegularAmountAssigned,
                 current.AmountSpentIncludingPending + effect.PendingAmountSpent);
         }
         return postedTotals.Select(item => totals[(item.Totals.FundId, item.AccountingPeriodId)]).ToList();
@@ -50,6 +52,7 @@ public sealed class PendingFundGoalTotalsService(IFundGoalPendingTotalsEffectRep
                     transaction.AccountingPeriodId,
                     transaction.Id,
                     effect.AmountAssigned,
+                    effect.RegularAmountAssigned,
                     effect.AmountSpent));
             }
         }

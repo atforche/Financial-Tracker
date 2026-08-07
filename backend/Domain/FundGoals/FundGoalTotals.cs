@@ -18,9 +18,21 @@ public sealed class FundGoalTotals
     public decimal AmountAssigned { get; }
 
     /// <summary>
+    /// Posted amount assigned toward the regular monthly contribution during
+    /// the Accounting Period.
+    /// </summary>
+    public decimal RegularAmountAssigned { get; }
+
+    /// <summary>
     /// Amount assigned after current unposted Transaction effects are applied.
     /// </summary>
     public decimal AmountAssignedIncludingPending { get; }
+
+    /// <summary>
+    /// Amount assigned toward the regular monthly contribution after current
+    /// unposted Transaction effects are applied.
+    /// </summary>
+    public decimal RegularAmountAssignedIncludingPending { get; }
 
     /// <summary>
     /// Posted amount spent during the Accounting Period.
@@ -35,12 +47,20 @@ public sealed class FundGoalTotals
     /// <summary>
     /// Assigns the specified amount to this Fund Goal Totals.
     /// </summary>
-    internal FundGoalTotals Assign(decimal amount) => new(FundId, AmountAssigned + amount, AmountSpent);
+    internal FundGoalTotals Assign(decimal amount, decimal? regularAmount = null) => new(
+        FundId,
+        AmountAssigned + amount,
+        AmountSpent,
+        RegularAmountAssigned + (regularAmount ?? amount));
 
     /// <summary>
     /// Spends the specified amount from this Fund Goal Totals.
     /// </summary>
-    internal FundGoalTotals Spend(decimal amount) => new(FundId, AmountAssigned, AmountSpent + amount);
+    internal FundGoalTotals Spend(decimal amount) => new(
+        FundId,
+        AmountAssigned,
+        AmountSpent + amount,
+        RegularAmountAssigned);
 
     /// <summary>
     /// Constructs a new instance of this class.
@@ -49,12 +69,16 @@ public sealed class FundGoalTotals
         FundId fundId,
         decimal amountAssigned,
         decimal amountSpent,
+        decimal? regularAmountAssigned = null,
         decimal? amountAssignedIncludingPending = null,
+        decimal? regularAmountAssignedIncludingPending = null,
         decimal? amountSpentIncludingPending = null)
     {
         FundId = fundId;
         AmountAssigned = amountAssigned;
         AmountAssignedIncludingPending = amountAssignedIncludingPending ?? amountAssigned;
+        RegularAmountAssigned = regularAmountAssigned ?? amountAssigned;
+        RegularAmountAssignedIncludingPending = regularAmountAssignedIncludingPending ?? RegularAmountAssigned;
         AmountSpent = amountSpent;
         AmountSpentIncludingPending = amountSpentIncludingPending ?? amountSpent;
     }

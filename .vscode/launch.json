@@ -38,6 +38,8 @@
       },
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
+        "AUTH_MODE": "development",
+        "DEVELOPMENT_AUTH_SUBJECT": "local-developer",
         "ASPNETCORE_HTTP_PORTS": "8081",
         "DATABASE_PATH": "${workspaceFolder}/debug/data/database.db",
         "LOG_DIRECTORY": "${workspaceFolder}/debug/logs",
@@ -61,6 +63,8 @@
       },
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
+        "AUTH_MODE": "development",
+        "DEVELOPMENT_AUTH_SUBJECT": "local-developer",
         "ASPNETCORE_HTTP_PORTS": "8081",
         "DATABASE_PATH": "${workspaceFolder}/debug/data/database.db",
         "LOG_DIRECTORY": "${workspaceFolder}/debug/logs",

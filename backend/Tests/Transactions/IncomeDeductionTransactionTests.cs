@@ -46,7 +46,7 @@ public sealed class IncomeDeductionTransactionTests
             {
                 AccountId = cash.Id,
                 Amount = 100m,
-                FundAssignments = [new CreateFundAmountModel { FundId = income.Id, Amount = 100m }]
+                FundAssignments = [new CreateIncomeFundAmountModel { FundId = income.Id, Amount = 100m }]
             }]
         });
         TransactionHandle transaction = new(created.Id);
@@ -69,7 +69,7 @@ public sealed class IncomeDeductionTransactionTests
             {
                 AccountId = cash.Id,
                 Amount = 150m,
-                FundAssignments = [new CreateFundAmountModel { FundId = income.Id, Amount = 150m }]
+                FundAssignments = [new CreateIncomeFundAmountModel { FundId = income.Id, Amount = 150m }]
             }]
         };
         await test.Api.PostAsync($"/transactions/{transaction.Id}", update);

@@ -188,9 +188,15 @@ public class IncomeTransaction : Transaction
     /// <inheritdoc/>
     protected override FundGoalTotals PostToFundGoalTotals(FundGoalTotals existingTotals, AccountId accountId, bool reverse)
     {
-        decimal amount = _destinations.Where(destination => destination.Account.Id == accountId)
+        var fundAmounts = _destinations.Where(destination => destination.Account.Id == accountId)
             .SelectMany(destination => destination.FundAssignments)
-            .Where(assignment => assignment.FundId == existingTotals.FundId).Sum(assignment => assignment.Amount);
-        return amount == 0 ? existingTotals : existingTotals.Assign(reverse ? -amount : amount);
+            .Where(assignment => assignment.FundId == existingTotals.FundId).ToList();
+        decimal amount = fundAmounts.Sum(assignment => assignment.Amount);
+        decimal regularAmount = fundAmounts
+            .Where(assignment => !assignment.IsExtraContribution)
+            .Sum(assignment => assignment.Amount);
+        return amount == 0 ? existingTotals : existingTotals.Assign(
+            reverse ? -amount : amount,
+            reverse ? -regularAmount : regularAmount);
     }
 }
