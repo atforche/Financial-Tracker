@@ -24,19 +24,19 @@
     {
       "label": "create-debug-environment",
       "type": "process",
-      "command": "./debug_scripts.py",
-      "args": ["create"],
+      "command": "python",
+      "args": ["-m", "orchestrator", "debug", "create"],
       "options": {
-        "cwd": "${workspaceFolder}/scripts"
+        "cwd": "${workspaceFolder}"
       }
     },
     {
       "label": "run-frontend",
       "type": "process",
-      "command": "./debug_scripts.py",
-      "args": ["frontend"],
+      "command": "python",
+      "args": ["-m", "orchestrator", "debug", "frontend"],
       "options": {
-        "cwd": "${workspaceFolder}/scripts"
+        "cwd": "${workspaceFolder}"
       },
       "isBackground": true, // Mark the task as running in the background
       "problemMatcher": {
@@ -53,10 +53,10 @@
     {
       "label": "run-backend",
       "type": "process",
-      "command": "./debug_scripts.py",
-      "args": ["backend"],
+      "command": "python",
+      "args": ["-m", "orchestrator", "debug", "backend"],
       "options": {
-        "cwd": "${workspaceFolder}/scripts"
+        "cwd": "${workspaceFolder}"
       },
       "isBackground": true, // Mark the task as running in the background
       "problemMatcher": {
@@ -73,10 +73,10 @@
     {
       "label": "build-backend",
       "type": "process",
-      "command": "dotnet",
-      "args": ["build"],
+      "command": "python",
+      "args": ["-m", "orchestrator", "backend", "build"],
       "options": {
-        "cwd": "${workspaceFolder}/backend"
+        "cwd": "${workspaceFolder}"
       },
       "problemMatcher": "$msCompile" // Use the built-in MSBuild problem matcher
     },

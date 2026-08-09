@@ -2,7 +2,7 @@ name: financial-tracker-dev
 
 services:
   storage-init:
-    image: alpine:3.23
+    image: "${ALPINE_IMAGE:?ALPINE_IMAGE must be configured}"
     command: ["sh", "-c", "chown -R 1654:1654 /data /logs"]
     volumes:
       - development_data:/data
@@ -12,6 +12,9 @@ services:
     build:
       context: ./backend
       dockerfile: Migrator.Dockerfile
+      args:
+        DOTNET_SDK_IMAGE: "${DOTNET_SDK_IMAGE:?DOTNET_SDK_IMAGE must be configured}"
+        DOTNET_RUNTIME_IMAGE: "${DOTNET_RUNTIME_IMAGE:?DOTNET_RUNTIME_IMAGE must be configured}"
     environment:
       DATABASE_PATH: /data/database.db
       AUTH_MODE: development
@@ -27,8 +30,11 @@ services:
   backend:
     build:
       context: ./backend
+      args:
+        DOTNET_SDK_IMAGE: "${DOTNET_SDK_IMAGE:?DOTNET_SDK_IMAGE must be configured}"
+        DOTNET_RUNTIME_IMAGE: "${DOTNET_RUNTIME_IMAGE:?DOTNET_RUNTIME_IMAGE must be configured}"
     ports:
-      - "127.0.0.1:8081:8080"
+      - "127.0.0.1:${DEBUG_BACKEND_PORT:?DEBUG_BACKEND_PORT must be configured}:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_HTTP_PORTS: "8080"
@@ -37,7 +43,7 @@ services:
       DEVELOPMENT_AUTH_ADDITIONAL_SUBJECTS: local-standard,local-read-only
       DEVELOPMENT_AUTH_READ_ONLY_SUBJECTS: local-read-only
       DATABASE_PATH: /data/database.db
-      FRONTEND_ORIGIN: http://localhost:3001
+      FRONTEND_ORIGIN: "http://localhost:${DEBUG_FRONTEND_PORT:?DEBUG_FRONTEND_PORT must be configured}"
       LOG_DIRECTORY: /logs
     volumes:
       - development_data:/data
@@ -49,18 +55,20 @@ services:
   frontend:
     build:
       context: ./frontend
+      args:
+        NODE_IMAGE: "${NODE_IMAGE:?NODE_IMAGE must be configured}"
     env_file:
       - ./debug/.env
     ports:
-      - "127.0.0.1:3001:3000"
+      - "127.0.0.1:${DEBUG_FRONTEND_PORT:?DEBUG_FRONTEND_PORT must be configured}:3000"
     environment:
       API_URL: http://backend:8080
       AUTH_MODE: development
       DEVELOPMENT_AUTH_SUBJECT: local-developer
       DEVELOPMENT_AUTH_ADDITIONAL_SUBJECTS: local-standard,local-read-only
       DEVELOPMENT_AUTH_READ_ONLY_SUBJECTS: local-read-only
-      PUBLIC_ORIGIN: http://localhost:3001
-      AUTH_URL: http://localhost:3001
+      PUBLIC_ORIGIN: "http://localhost:${DEBUG_FRONTEND_PORT:?DEBUG_FRONTEND_PORT must be configured}"
+      AUTH_URL: "http://localhost:${DEBUG_FRONTEND_PORT:?DEBUG_FRONTEND_PORT must be configured}"
     depends_on:
       backend:
         condition: service_healthy

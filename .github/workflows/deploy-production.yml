@@ -31,10 +31,8 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Setup Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.14"
+      - name: Setup Repository Toolchain
+        uses: ./.github/actions/setup-toolchain
 
       - name: Validate Workflow Inputs
         env:
@@ -58,7 +56,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          python scripts/release_scripts.py validate-run \
+          python -m orchestrator release validate-run \
             --commit "${{ inputs.release_sha }}" \
             --run-id "${{ inputs.release_run_id }}"
 
@@ -76,10 +74,8 @@ jobs:
           ref: ${{ inputs.release_sha }}
           persist-credentials: false
 
-      - name: Setup Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.14"
+      - name: Setup Repository Toolchain
+        uses: ./.github/actions/setup-toolchain
 
       - name: Download Release Artifact
         uses: actions/download-artifact@v4
@@ -92,7 +88,7 @@ jobs:
 
       - name: Verify Release Artifact
         run: |
-          python scripts/release_scripts.py validate-artifact \
+          python -m orchestrator release validate-artifact \
             --commit "${{ inputs.release_sha }}" \
             --manifest "${{ runner.temp }}/financial-tracker-release/release-manifest.json"
 
@@ -122,18 +118,8 @@ jobs:
               exit 1
             fi
           done
-          if [[ "${INSTANCE_PATH}" != /* ]]; then
-            echo "INSTANCE_PATH must be an absolute path." >&2
-            exit 1
-          fi
-          instance_path="$(realpath --canonicalize-missing "${INSTANCE_PATH}")"
-          workspace_path="$(realpath "${GITHUB_WORKSPACE}")"
-          if [[ "${instance_path}" == "/" || "${instance_path}" == "${workspace_path}" || "${instance_path}" == "${workspace_path}/"* ]]; then
-            echo "INSTANCE_PATH must be outside the runner workspace and cannot be the filesystem root." >&2
-            exit 1
-          fi
-          python scripts/deploy_scripts.py deploy \
-            --path "${instance_path}" \
+          python -m orchestrator deploy deploy \
+            --path "${INSTANCE_PATH}" \
             --release-manifest "${RELEASE_MANIFEST}"
 
       - name: Record Deployment
