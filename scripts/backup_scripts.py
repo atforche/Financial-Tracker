@@ -404,6 +404,7 @@ class VerifyDatabaseRestoration(BackupCommand):
 
             migration_directory = restore_directory / "migration"
             migration_directory.mkdir(mode=0o777)
+            os.chmod(migration_directory, 0o777)
             migration_database = migration_directory / "database.db"
             shutil.copy2(restored_database, migration_database)
             os.chmod(migration_database, 0o666)
