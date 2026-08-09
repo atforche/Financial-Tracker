@@ -15,6 +15,44 @@ native VS Code debugging:
 ./scripts/debug_scripts.py create
 ```
 
+To populate native debugging with a downloaded production backup, first stop any
+native debug backend, then use either a local Restic repository:
+
+```sh
+./scripts/debug_scripts.py restore --repository /path/to/restic-repository
+```
+
+Or download the repository directly from S3 using an AWS CLI profile:
+
+```sh
+./scripts/debug_scripts.py restore \
+  --s3-uri s3://bucket/restic-prefix \
+  --aws-profile production-backups
+```
+
+For an S3 source, the command uses the selected AWS CLI profile and first checks
+whether it has usable credentials. If needed, it starts the browser-based
+`aws login` flow, or `aws sso login` for an IAM Identity Center profile. The
+`--aws-profile` argument may be omitted to use the default AWS profile. AWS CLI
+version 2.32.0 or later is required for the browser-based `aws login` flow.
+
+The command downloads the complete repository into a temporary directory, then
+verifies the repository, restores the latest `financial-tracker` snapshot,
+validates and migrates the database using development authentication, and
+atomically replaces `debug/data/database.db`. The Restic password is prompted
+for unless `RESTIC_PASSWORD` is already set. The previous database is retained
+beside it as a rollback copy. AWS credentials remain on the host and are not
+passed into the Restic container. This command affects native `debug/data` only;
+it does not update the named data volume used by the optional Compose stack.
+
+See the [AWS CLI sign-in documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sign-in.html)
+and [S3 sync documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-services-s3-commands.html)
+for profile setup and permissions.
+
+Because the restored database contains production financial data, keep the debug
+area local and do not expose it through a public or production-authenticated
+endpoint.
+
 Then use one of the VS Code launch configurations.
 
 Local development provides three selectable identities on the login page:

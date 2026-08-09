@@ -18,17 +18,9 @@ from shared.command import Command
 from shared.command_collection import CommandCollection
 from shared.configuration import Configuration
 from shared.migrator import run_migrator
+from shared.restic import run_restic as execute_restic
 from shared.step import Step
 
-RESTIC_IMAGE = "restic/restic:0.19.1@sha256:136600b6ff6843d61d355f7f71f460a166429f35de6fd11b568fece3c9a4d510"
-RESTIC_ENVIRONMENT_VARIABLES = (
-    "RESTIC_REPOSITORY",
-    "RESTIC_PASSWORD",
-    "AWS_ACCESS_KEY_ID",
-    "AWS_SECRET_ACCESS_KEY",
-    "AWS_SESSION_TOKEN",
-    "AWS_DEFAULT_REGION",
-)
 BACKUP_TAG = "financial-tracker"
 RESTORE_SMOKE_SUBJECT = "backup-restore-smoke-test"
 RESTORE_SMOKE_EMAIL = "backup-restore-smoke-test@example.test"
@@ -82,37 +74,7 @@ class BackupCommand(Command):
     ) -> None:
         """Runs restic with only its required credentials and explicitly mounted paths."""
 
-        command = [
-            "docker",
-            "run",
-            "--rm",
-            "--read-only",
-            "--user",
-            f"{os.getuid()}:{os.getgid()}",
-            "--cap-drop",
-            "ALL",
-            "--security-opt",
-            "no-new-privileges:true",
-            "--tmpfs",
-            "/tmp",
-            "--env",
-            "HOME=/tmp",
-        ]
-        repository = os.environ["RESTIC_REPOSITORY"]
-        if repository.startswith("/"):
-            command.extend(["--volume", f"{Path(repository).resolve()}:/repository"])
-            command.extend(["--env", "RESTIC_REPOSITORY=/repository"])
-        else:
-            command.extend(["--env", "RESTIC_REPOSITORY"])
-
-        for name in RESTIC_ENVIRONMENT_VARIABLES:
-            if name != "RESTIC_REPOSITORY" and os.environ.get(name, "") != "":
-                command.extend(["--env", name])
-        for source, destination, read_only in volumes:
-            mode = ":ro" if read_only else ""
-            command.extend(["--volume", f"{source.resolve()}:{destination}{mode}"])
-
-        subprocess.run([*command, RESTIC_IMAGE, *arguments], check=True)
+        execute_restic(arguments, volumes=volumes)
 
     @staticmethod
     def create_database_snapshot(source: Path, destination: Path) -> None:

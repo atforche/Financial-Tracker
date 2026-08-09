@@ -1,6 +1,6 @@
 """Class representing an argument that can be passed in from the command lines"""
 
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar, get_args
 
 T = TypeVar("T")
 
@@ -69,6 +69,8 @@ class Argument(Generic[T]):
             if self.get_generic_type_parameter() is bool:
                 # If a boolean argument isn't provided, just return the value as being false
                 return False  # type: ignore
+            if self.is_optional():
+                return None  # type: ignore
             else:
                 return Exception(f"Required argument '{self.name}' was not provided")
 
@@ -93,9 +95,27 @@ class Argument(Generic[T]):
     def get_generic_type_parameter(self) -> type[Any]:
         """Gets the generic type parameter used for this Argument"""
 
-        if self.value_type is not None:
-            return self.value_type
-        return self.__orig_class__.__args__[0]  # type: ignore # pylint: disable=maybe-no-member
+        annotation = self.value_type
+        if annotation is None:
+            annotation = self.__orig_class__.__args__[0]  # type: ignore # pylint: disable=maybe-no-member
+        annotation_arguments = get_args(annotation)
+        if type(None) in annotation_arguments:
+            non_optional_arguments = [
+                argument
+                for argument in annotation_arguments
+                if argument is not type(None)
+            ]
+            if len(non_optional_arguments) == 1:
+                return non_optional_arguments[0]
+        return annotation
+
+    def is_optional(self) -> bool:
+        """Returns whether this argument may be omitted."""
+
+        annotation = self.value_type
+        if annotation is None:
+            annotation = self.__orig_class__.__args__[0]  # type: ignore # pylint: disable=maybe-no-member
+        return type(None) in get_args(annotation)
 
     def validate_name(self) -> None:
         """Validates the name for this Argument"""
