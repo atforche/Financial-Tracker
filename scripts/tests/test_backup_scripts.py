@@ -25,9 +25,7 @@ def test_restored_backend_verification_uses_hardened_runtime_and_persists_data(
                 return io.BytesIO(b'{"email":"backup-restore-smoke-test@example.test"}')
             if request.get_method() == "POST":
                 body = json.loads(request.data)
-                return io.BytesIO(
-                    json.dumps({"id": "account-id", **body}).encode()
-                )
+                return io.BytesIO(json.dumps({"id": "account-id", **body}).encode())
             if request.full_url.endswith("/accounts"):
                 return io.BytesIO(
                     b'[{"id":"account-id","name":"Restored backup smoke account"}]'

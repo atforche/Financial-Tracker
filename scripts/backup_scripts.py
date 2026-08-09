@@ -176,7 +176,7 @@ class BackupCommand(Command):
                 with urlopen(url, timeout=3) as response:
                     if 200 <= response.status < 300:
                         return
-            except (OSError, URLError):
+            except OSError, URLError:
                 time.sleep(1)
 
         raise RuntimeError(f"Restored backend endpoint did not become ready: {url}")
