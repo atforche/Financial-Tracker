@@ -11,6 +11,12 @@ class DatabaseCommand(Command):
     use_database: Annotated[bool, "If provided, runs tests against an actual database"]
 
 
+class OptionalValueCommand(Command):
+    """Command with an optional string argument."""
+
+    value: Annotated[str | None, "Optional value"]
+
+
 def test_run_subprocess_splits_command_and_returns_exit_code(monkeypatch):
     command = Command("test", "test command")
     captured: dict[str, object] = {}
@@ -61,3 +67,13 @@ def test_optional_boolean_command_argument_defaults_to_false():
     command.run([])
 
     assert command.use_database is False
+
+
+def test_optional_string_command_argument_defaults_to_none_and_parses_value():
+    command = OptionalValueCommand("test", "test command")
+    command.run([])
+    assert command.value is None
+
+    command = OptionalValueCommand("test", "test command")
+    command.run(["--value", "provided"])
+    assert command.value == "provided"

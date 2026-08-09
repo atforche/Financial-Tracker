@@ -5,6 +5,7 @@ from types import SimpleNamespace
 from urllib.request import Request
 
 import backup_scripts
+from shared import restic
 
 
 def test_restored_backend_verification_uses_hardened_runtime_and_persists_data(
@@ -56,3 +57,49 @@ def test_restored_backend_verification_uses_hardened_runtime_and_persists_data(
     assert requests[0].get_header("Authorization") == (
         "Bearer development:backup-restore-smoke-test"
     )
+
+
+def test_restic_password_is_forwarded_in_environment_not_command_arguments(
+    monkeypatch, tmp_path
+):
+    repository = tmp_path / "repository"
+    repository.mkdir()
+    captured: dict[str, object] = {}
+
+    def fake_run(command, **kwargs):
+        captured["command"] = command
+        captured["environment"] = kwargs["env"]
+
+    monkeypatch.setattr(restic.subprocess, "run", fake_run)
+
+    restic.run_restic(
+        ["check"],
+        repository=repository,
+        password="restic-secret",
+    )
+
+    assert "restic-secret" not in captured["command"]
+    assert captured["environment"]["RESTIC_PASSWORD"] == "restic-secret"
+
+
+def test_local_restic_operations_can_omit_aws_environment_variables(
+    monkeypatch, tmp_path
+):
+    repository = tmp_path / "repository"
+    repository.mkdir()
+    captured: dict[str, object] = {}
+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "should-not-be-forwarded")
+
+    def fake_run(command, **kwargs):
+        captured["command"] = command
+        captured["environment"] = kwargs["env"]
+
+    monkeypatch.setattr(restic.subprocess, "run", fake_run)
+    restic.run_restic(
+        ["check"],
+        repository=repository,
+        password="restic-secret",
+        pass_aws_credentials=False,
+    )
+
+    assert "AWS_ACCESS_KEY_ID" not in captured["command"]
