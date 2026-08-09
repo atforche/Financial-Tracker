@@ -250,11 +250,19 @@ class BackupCommand(Command):
                 Request(f"{base_url}/accounts", headers=headers), timeout=30
             ) as response:
                 accounts = load_json(response)
-            if not accounts:
+            if isinstance(accounts, list):
+                account_items = accounts
+            elif isinstance(accounts, dict) and "items" in accounts:
+                account_items = accounts["items"]
+            else:
+                raise RuntimeError(
+                    "Restored backend returned an unexpected accounts response"
+                )
+            if not account_items:
                 raise RuntimeError(
                     "Restored backend returned no accounts from the restored database"
                 )
-            account = accounts[0]
+            account = account_items[0]
             request = Request(
                 f"{base_url}/accounts/{account['id']}",
                 data=(
