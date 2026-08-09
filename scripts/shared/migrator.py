@@ -19,6 +19,8 @@ def run_migrator(
             "run",
             "--rm",
             "--read-only",
+            "--tmpfs",
+            "/tmp",
             "--cap-drop",
             "ALL",
             "--security-opt",

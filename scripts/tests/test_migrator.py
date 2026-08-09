@@ -20,6 +20,8 @@ def test_run_migrator_uses_the_hardened_container_contract(monkeypatch, tmp_path
             "run",
             "--rm",
             "--read-only",
+            "--tmpfs",
+            "/tmp",
             "--cap-drop",
             "ALL",
             "--security-opt",
