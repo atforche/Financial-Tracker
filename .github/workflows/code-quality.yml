@@ -20,66 +20,49 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v7
+      - name: Setup Repository Toolchain
+        uses: ./.github/actions/setup-toolchain
         with:
-          python-version: "3.14"
-          cache: pip
-          cache-dependency-path: requirements-dev.txt
+          python-cache: pip
+          python-cache-dependency-path: pyproject.toml
 
       - name: Run Python Checks
-        run: python scripts/pipeline_script.py python
+        run: python -m orchestrator ci python
 
   backend-formatting:
     name: Backend Formatting
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./scripts
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v7
+      - name: Setup Repository Toolchain
+        uses: ./.github/actions/setup-toolchain
         with:
-          python-version: "3.14"
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.x.x
-          cache: true
-          cache-dependency-path: |
+          setup-dotnet: "true"
+          dotnet-cache: "true"
+          dotnet-cache-dependency-path: |
             backend/**/*.csproj
             backend/Directory.Build.props
+            backend/Directory.Packages.props
+            .config/dotnet-tools.json
 
       - name: Format Backend
-        run: python pipeline_script.py backend-format
+        run: python -m orchestrator ci backend-format
 
   frontend-quality:
     name: Frontend Formatting and Linting
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./scripts
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v7
+      - name: Setup Repository Toolchain
+        uses: ./.github/actions/setup-toolchain
         with:
-          python-version: "3.14"
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.5.1
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          setup-node: "true"
+          node-cache: npm
+          node-cache-dependency-path: frontend/package-lock.json
 
       - name: Format and Lint Frontend
-        run: python pipeline_script.py frontend-format
+        run: python -m orchestrator ci frontend-format

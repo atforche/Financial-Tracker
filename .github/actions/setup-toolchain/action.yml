@@ -1,0 +1,80 @@
+name: Set up repository toolchain
+description: Install the versions declared in config/toolchain.toml
+
+outputs:
+  backend_image:
+    description: Configured local backend image tag
+    value: ${{ steps.toolchain.outputs.backend_image }}
+  frontend_image:
+    description: Configured local frontend image tag
+    value: ${{ steps.toolchain.outputs.frontend_image }}
+  migrator_image:
+    description: Configured local migrator image tag
+    value: ${{ steps.toolchain.outputs.migrator_image }}
+
+inputs:
+  setup-node:
+    description: Set up Node.js in addition to Python
+    default: "false"
+  setup-dotnet:
+    description: Set up .NET in addition to Python
+    default: "false"
+  python-cache:
+    description: Cache mode passed to setup-python
+    default: ""
+  python-cache-dependency-path:
+    description: Python dependency file passed to setup-python
+    default: ""
+  node-cache:
+    description: Cache mode passed to setup-node
+    default: ""
+  node-cache-dependency-path:
+    description: Node dependency file passed to setup-node
+    default: ""
+  dotnet-cache:
+    description: Whether setup-dotnet should enable caching
+    default: "false"
+  dotnet-cache-dependency-path:
+    description: .NET dependency files passed to setup-dotnet
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - id: toolchain
+      shell: bash
+      run: |
+        tool_value() {
+          sed -n "/^\[tools\]/,/^\[/{s/^$1 = \"\(.*\)\"$/\1/p}" config/toolchain.toml
+        }
+        image_value() {
+          sed -n "/^\[images\]/,/^\[/{s/^$1 = \"\(.*\)\"$/\1/p}" config/toolchain.toml
+        }
+        {
+          echo "python=$(tool_value python)"
+          echo "node=$(tool_value node)"
+          echo "dotnet=$(tool_value dotnet)"
+          echo "backend_image=$(image_value backend)"
+          echo "frontend_image=$(image_value frontend)"
+          echo "migrator_image=$(image_value migrator)"
+        } >> "$GITHUB_OUTPUT"
+
+    - uses: actions/setup-python@v7
+      with:
+        python-version: ${{ steps.toolchain.outputs.python }}
+        cache: ${{ inputs.python-cache }}
+        cache-dependency-path: ${{ inputs.python-cache-dependency-path }}
+
+    - if: ${{ inputs.setup-node == 'true' }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ steps.toolchain.outputs.node }}
+        cache: ${{ inputs.node-cache }}
+        cache-dependency-path: ${{ inputs.node-cache-dependency-path }}
+
+    - if: ${{ inputs.setup-dotnet == 'true' }}
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ steps.toolchain.outputs.dotnet }}
+        cache: ${{ inputs.dotnet-cache }}
+        cache-dependency-path: ${{ inputs.dotnet-cache-dependency-path }}

@@ -1,0 +1,215 @@
+# Authoritative environment-variable contract for the application and its
+# repository orchestrator. Values belong in dotenv files or secret stores;
+# this file contains names, ownership, validation rules, and generated-profile
+# defaults. Values belonging to secrets or deployments remain empty by design.
+
+[profiles.debug]
+
+[profiles.production]
+https_origins = ["PUBLIC_ORIGIN"]
+
+[profiles.ci]
+
+[profiles.backup]
+
+[profiles.deployment]
+
+[variables.INSTANCE_PATH]
+description = "Absolute path to a deployed instance."
+required_in = ["deployment"]
+
+[variables.INSTANCE_NAME]
+description = "Stable name used for a deployed instance and Compose project."
+required_in = ["production"]
+defaults = { production = "" }
+
+[variables.INSTANCE_DIR]
+description = "Derived deployed instance directory written to the instance dotenv file."
+derived = true
+required_in = ["production"]
+defaults = { production = "" }
+
+[variables.ENVIRONMENT]
+description = "ASP.NET environment name for a deployed instance."
+required_in = ["production"]
+defaults = { production = "Production" }
+
+[variables.PUBLIC_ORIGIN]
+description = "Public HTTPS origin of the application."
+required_in = ["debug", "production"]
+defaults = { debug = "http://localhost:3001", production = "" }
+
+[variables.PUBLIC_HOST]
+description = "Derived hostname used by the reverse proxy."
+derived = true
+required_in = ["production"]
+defaults = { production = "" }
+
+[variables.PUBLIC_PORT]
+description = "Derived public HTTPS port."
+derived = true
+required_in = ["production"]
+defaults = { production = "443" }
+
+[variables.BACKEND_IMAGE]
+description = "Immutable backend image reference."
+required_in = ["production"]
+defaults = { production = "" }
+
+[variables.FRONTEND_IMAGE]
+description = "Immutable frontend image reference."
+required_in = ["production"]
+defaults = { production = "" }
+
+[variables.MIGRATOR_IMAGE]
+description = "Immutable database migrator image reference."
+required_in = ["production"]
+defaults = { production = "" }
+
+[variables.CADDY_IMAGE]
+description = "Immutable Caddy reverse-proxy image reference derived from the repository toolchain."
+derived = true
+required_in = ["production"]
+defaults = { production = "" }
+
+[variables.GOOGLE_CLIENT_ID]
+description = "Google OAuth client identifier."
+required_in = ["production"]
+defaults = { production = "" }
+
+[variables.GOOGLE_CLIENT_SECRET]
+description = "Google OAuth client secret."
+secret = true
+required_in = ["production"]
+defaults = { production = "" }
+
+[variables.AUTH_SECRET]
+description = "Auth.js session encryption secret."
+secret = true
+required_in = ["debug", "production"]
+defaults = { debug = "", production = "" }
+
+[variables.AUTH_URL]
+description = "Auth.js callback origin."
+required_in = ["debug"]
+defaults = { debug = "http://localhost:3001" }
+
+[variables.AUTH_TRUST_HOST]
+description = "Whether Auth.js trusts the proxy host header."
+
+[variables.AUTH_MODE]
+description = "Authentication mode: development or google."
+required_in = ["debug", "production"]
+defaults = { debug = "development", production = "google" }
+
+[variables.DEVELOPMENT_AUTH_SUBJECT]
+description = "Primary deterministic development identity."
+required_in = ["debug"]
+defaults = { debug = "local-developer" }
+
+[variables.DEVELOPMENT_AUTH_ADDITIONAL_SUBJECTS]
+description = "Additional comma-separated development identities."
+render_in = ["debug"]
+defaults = { debug = "local-standard,local-read-only" }
+
+[variables.DEVELOPMENT_AUTH_READ_ONLY_SUBJECTS]
+description = "Comma-separated development identities with read-only access."
+render_in = ["debug"]
+defaults = { debug = "local-read-only" }
+
+[variables.DEVELOPMENT_AUTH_EMAIL]
+description = "Email assigned to a development identity by the migrator."
+
+[variables.DEVELOPMENT_AUTH_ROLE]
+description = "Optional role assigned to a development identity."
+
+[variables.ASPNETCORE_ENVIRONMENT]
+description = "ASP.NET Core environment name."
+required_in = ["debug"]
+defaults = { debug = "Development" }
+
+[variables.ASPNETCORE_HTTP_PORTS]
+description = "Backend HTTP port."
+required_in = ["debug"]
+defaults = { debug = "8081" }
+
+[variables.DATABASE_PATH]
+description = "SQLite database path inside or outside the backend process."
+required_in = ["debug"]
+defaults = { debug = "" }
+
+[variables.FRONTEND_ORIGIN]
+description = "Origin allowed to call the backend API."
+required_in = ["debug"]
+defaults = { debug = "http://localhost:3001" }
+
+[variables.API_URL]
+description = "Server-side frontend URL for the backend API."
+required_in = ["debug"]
+defaults = { debug = "http://localhost:8081" }
+
+[variables.LOG_DIRECTORY]
+description = "Directory where backend logs are written."
+required_in = ["debug"]
+defaults = { debug = "" }
+
+[variables.INITIAL_ADMIN_EMAIL]
+description = "Email invited as the initial production administrator."
+required_in = ["deployment"]
+
+[variables.BOOTSTRAP_ADMIN_EMAIL]
+description = "Transient administrator email forwarded to the database migrator during deployment."
+derived = true
+
+[variables.RELEASE_MANIFEST]
+description = "Path to a downloaded immutable release manifest."
+
+[variables.RELEASE_SHA]
+description = "Expected release commit SHA."
+
+[variables.RELEASE_RUN_ID]
+description = "GitHub Actions release workflow run ID."
+
+[variables.GITHUB_API_URL]
+description = "GitHub API base URL."
+
+[variables.GITHUB_REPOSITORY]
+description = "GitHub owner and repository name."
+
+[variables.GITHUB_TOKEN]
+description = "GitHub API token."
+secret = true
+
+[variables.RESTIC_REPOSITORY]
+description = "Restic repository location."
+required_in = ["backup"]
+
+[variables.RESTIC_PASSWORD]
+description = "Restic repository password."
+secret = true
+required_in = ["backup"]
+
+[variables.AWS_ACCESS_KEY_ID]
+description = "Optional object-storage access key forwarded to Restic."
+secret = true
+
+[variables.AWS_SECRET_ACCESS_KEY]
+description = "Optional object-storage secret forwarded to Restic."
+secret = true
+
+[variables.AWS_SESSION_TOKEN]
+description = "Optional object-storage session token forwarded to Restic."
+secret = true
+
+[variables.AWS_DEFAULT_REGION]
+description = "Optional object-storage region forwarded to Restic."
+
+[variables.DOCKER_BUILD_CACHE]
+description = "Docker build cache backend, currently empty or gha."
+
+[variables.E2E_BASE_URL]
+description = "Base URL used by Playwright smoke tests."
+
+[variables.E2E_AUTH_SECRET]
+description = "Temporary secret used by Playwright smoke tests."
+secret = true

@@ -1,0 +1,21 @@
+# Versions required by local development and CI. External tool managers may
+# consume this file; `ft deps check` verifies the active PATH independently.
+
+[tools]
+python = "3.14"
+node = "24.19.0"
+dotnet = "10.0.110"
+trivy = "0.73.0"
+
+[images]
+backend = "financial-tracker-backend:workflow"
+frontend = "financial-tracker-frontend:workflow"
+migrator = "financial-tracker-migrator:workflow"
+caddy = "caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648"
+restic = "restic/restic:0.19.1@sha256:136600b6ff6843d61d355f7f71f460a166429f35de6fd11b568fece3c9a4d510"
+
+[base_images]
+node = "node:24.19.0-alpine@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad43"
+dotnet_sdk = "mcr.microsoft.com/dotnet/sdk:10.0@sha256:ed034a8bf0b24ded0cbbac07e17825d8e9ebfe21e308191d0f7421eaf5ad4664"
+dotnet_runtime = "mcr.microsoft.com/dotnet/aspnet:10.0@sha256:1fa23fc4872d95fd71c2833ebe65d7e84a43b2d51a31d119516852f13d9505a7"
+alpine = "alpine:3.23@sha256:fd791d74b68913cbb027c6546007b3f0d3bc45125f797758156952bc2d6daf40"

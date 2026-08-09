@@ -4,7 +4,9 @@
   "name": "C# (.NET)",
   "image": "mcr.microsoft.com/devcontainers/dotnet:10.0-noble",
   "features": {
-    "ghcr.io/devcontainers/features/node:latest": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24.19.0"
+    },
     "ghcr.io/devcontainers/features/python:1": {
       "version": "3.14",
       "installTools": false
@@ -21,5 +23,5 @@
       ]
     }
   },
-  "postCreateCommand": "sudo apt update || true && sudo apt install sqlite3 && dotnet tool install --global dotnet-ef"
+  "postCreateCommand": "sudo apt update || true && sudo apt install -y sqlite3 && python -m orchestrator deps install && python -m orchestrator deps check"
 }

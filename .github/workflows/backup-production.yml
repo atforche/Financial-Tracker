@@ -38,10 +38,8 @@ jobs:
           ref: main
           persist-credentials: false
 
-      - name: Setup Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.14"
+      - name: Setup Repository Toolchain
+        uses: ./.github/actions/setup-toolchain
 
       - name: Select Backup Operation
         id: operation
@@ -84,11 +82,5 @@ jobs:
             echo "Production RESTIC_REPOSITORY must use an off-host backend." >&2
             exit 1
           fi
-          instance_path="$(realpath "${INSTANCE_PATH}")"
-          workspace_path="$(realpath "${GITHUB_WORKSPACE}")"
-          if [[ "${instance_path}" == "/" || "${instance_path}" == "${workspace_path}" || "${instance_path}" == "${workspace_path}/"* ]]; then
-            echo "INSTANCE_PATH must be outside the runner workspace and cannot be the filesystem root." >&2
-            exit 1
-          fi
-          python scripts/backup_scripts.py "${{ steps.operation.outputs.operation }}" \
-            --path "${instance_path}"
+          python -m orchestrator backup "${{ steps.operation.outputs.operation }}" \
+            --path "${INSTANCE_PATH}"

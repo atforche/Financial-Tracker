@@ -16,30 +16,23 @@ jobs:
   backend-verification:
     name: Backend Build and Tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./scripts
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v7
+      - name: Setup Repository Toolchain
+        uses: ./.github/actions/setup-toolchain
         with:
-          python-version: "3.14"
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.x.x
-          cache: true
-          cache-dependency-path: |
+          setup-dotnet: "true"
+          dotnet-cache: "true"
+          dotnet-cache-dependency-path: |
             backend/**/*.csproj
             backend/Directory.Build.props
+            backend/Directory.Packages.props
+            .config/dotnet-tools.json
 
       - name: Build and Test Backend
-        run: python pipeline_script.py backend-test
+        run: python -m orchestrator ci backend-test
 
       - name: Upload OpenAPI Contract
         uses: actions/upload-artifact@v4
@@ -53,87 +46,58 @@ jobs:
   frontend-verification:
     name: Frontend Build
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./scripts
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v7
+      - name: Setup Repository Toolchain
+        uses: ./.github/actions/setup-toolchain
         with:
-          python-version: "3.14"
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.5.1
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          setup-node: "true"
+          node-cache: npm
+          node-cache-dependency-path: frontend/package-lock.json
 
       - name: Build Frontend
-        run: python pipeline_script.py frontend-build
+        run: python -m orchestrator ci frontend-build
 
   dependency-verification:
     name: Dependency Security Scan
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./scripts
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v7
+      - name: Setup Repository Toolchain
+        uses: ./.github/actions/setup-toolchain
         with:
-          python-version: "3.14"
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.x.x
-          cache: true
-          cache-dependency-path: |
+          setup-dotnet: "true"
+          dotnet-cache: "true"
+          dotnet-cache-dependency-path: |
             backend/**/*.csproj
             backend/Directory.Build.props
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.5.1
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+            backend/Directory.Packages.props
+            .config/dotnet-tools.json
+          setup-node: "true"
+          node-cache: npm
+          node-cache-dependency-path: frontend/package-lock.json
 
       - name: Scan Dependencies
-        run: python pipeline_script.py dependencies
+        run: python -m orchestrator ci dependencies
 
   api-contract-verification:
     name: Generated API Contract
     needs: backend-verification
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./scripts
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v7
+      - name: Setup Repository Toolchain
+        uses: ./.github/actions/setup-toolchain
         with:
-          python-version: "3.14"
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.5.1
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          setup-node: "true"
+          node-cache: npm
+          node-cache-dependency-path: frontend/package-lock.json
 
       - name: Download OpenAPI Contract
         uses: actions/download-artifact@v4
@@ -142,30 +106,21 @@ jobs:
           path: backend/.artifacts/obj/Rest
 
       - name: Verify Frontend Models
-        run: python pipeline_script.py api-contract
+        run: python -m orchestrator ci api-contract
 
   container-verification:
     name: Container Security and Smoke Tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./scripts
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v7
+      - name: Setup Repository Toolchain
+        uses: ./.github/actions/setup-toolchain
         with:
-          python-version: "3.14"
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.5.1
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          setup-node: "true"
+          node-cache: npm
+          node-cache-dependency-path: frontend/package-lock.json
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -173,23 +128,10 @@ jobs:
       - name: Expose GitHub Actions Runtime
         uses: crazy-max/ghaction-github-runtime@v3
 
-      - name: Install Frontend Test Dependencies
-        working-directory: ./frontend
-        run: npm ci
-
-      - name: Install Chromium
-        working-directory: ./frontend
-        run: npx playwright install --with-deps chromium
-
-      - name: Setup Trivy
-        uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567 # v0.3.1
-        with:
-          version: v0.73.0
-
       - name: Build, Scan, and Smoke Test Container Images
         env:
           DOCKER_BUILD_CACHE: gha
-        run: python pipeline_script.py container-images
+        run: python -m orchestrator ci container-images
 
       - name: Upload Playwright Failure Artifacts
         if: always()
