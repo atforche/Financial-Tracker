@@ -246,25 +246,28 @@ class BackupCommand(Command):
                 raise RuntimeError(
                     "Restored backend did not resolve the seeded application user"
                 )
+            with urlopen(
+                Request(f"{base_url}/accounts", headers=headers), timeout=30
+            ) as response:
+                accounts = load_json(response)
+            if not accounts:
+                raise RuntimeError(
+                    "Restored backend returned no accounts from the restored database"
+                )
+            account = accounts[0]
             request = Request(
-                f"{base_url}/accounts/onboard",
+                f"{base_url}/accounts/{account['id']}",
                 data=(
-                    f'{{"name":"Restored backup smoke {identifier}",'
-                    '"type":"Standard","onboardedBalance":1}'
+                    f'{{"name":"{account["name"]}","financialInstitution":"smoke-{identifier}"}}'
                 ).encode(),
                 headers=headers,
                 method="POST",
             )
             with urlopen(request, timeout=30) as response:
-                account = load_json(response)
-            with urlopen(
-                Request(f"{base_url}/accounts/{account['id']}", headers=headers),
-                timeout=30,
-            ) as response:
-                restored_account = load_json(response)
-            if restored_account["name"] != account["name"]:
+                updated_account = load_json(response)
+            if updated_account["financialInstitution"] != f"smoke-{identifier}":
                 raise RuntimeError(
-                    "Restored backend did not return its persisted account"
+                    "Restored backend did not persist the account update"
                 )
         finally:
             subprocess.run(
