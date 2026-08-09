@@ -19,6 +19,7 @@ from ..core.runner import Runner
 from .configuration import Configuration
 from .instance import resolve_instance_path
 from .migrator import run_migrator
+from .restic import run_restic as execute_restic
 
 RESTIC_ENVIRONMENT_VARIABLES = (
     "RESTIC_REPOSITORY",
@@ -65,35 +66,14 @@ class BackupOperations:
         arguments: list[str],
         volumes: tuple[tuple[Path, str, bool], ...] = (),
     ) -> None:
-        command = [
-            "docker",
-            "run",
-            "--rm",
-            "--read-only",
-            "--user",
-            f"{os.getuid()}:{os.getgid()}",
-            "--cap-drop",
-            "ALL",
-            "--security-opt",
-            "no-new-privileges:true",
-            "--tmpfs",
-            "/tmp",
-            "--env",
-            "HOME=/tmp",
-        ]
-        repository = os.environ["RESTIC_REPOSITORY"]
-        if repository.startswith("/"):
-            command.extend(["--volume", f"{Path(repository).resolve()}:/repository"])
-            command.extend(["--env", "RESTIC_REPOSITORY=/repository"])
-        else:
-            command.extend(["--env", "RESTIC_REPOSITORY"])
-        for name in RESTIC_ENVIRONMENT_VARIABLES:
-            if name != "RESTIC_REPOSITORY" and os.environ.get(name, ""):
-                command.extend(["--env", name])
-        for source, destination, read_only in volumes:
-            mode = ":ro" if read_only else ""
-            command.extend(["--volume", f"{source.resolve()}:{destination}{mode}"])
-        self.runner.run([*command, self.restic_image, *arguments])
+        """Run Restic with only its required credentials and explicit mounts."""
+
+        execute_restic(
+            arguments,
+            volumes=volumes,
+            image=self.restic_image,
+            runner=self.runner,
+        )
 
     @staticmethod
     def create_database_snapshot(source: Path, destination: Path) -> None:
@@ -207,13 +187,14 @@ class BackupOperations:
                 Request(f"{base_url}/accounts", headers=headers), timeout=30
             ) as response:
                 accounts = load_json(response)
-            account_items = (
-                accounts
-                if isinstance(accounts, list)
-                else accounts.get("items", [])
-                if isinstance(accounts, dict)
-                else []
-            )
+            if isinstance(accounts, list):
+                account_items = accounts
+            elif isinstance(accounts, dict) and "items" in accounts:
+                account_items = accounts["items"]
+            else:
+                raise RuntimeError(
+                    "Restored backend returned an unexpected accounts response"
+                )
             if not account_items:
                 raise RuntimeError(
                     "Restored backend returned no accounts from the restored database"

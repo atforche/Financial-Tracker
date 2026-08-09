@@ -7,6 +7,7 @@ from . import (
     debug_create,
     debug_destroy,
     debug_frontend,
+    debug_restore,
     debug_stack_destroy,
     debug_stack_down,
     debug_stack_up,
@@ -22,6 +23,13 @@ def register(commands: object) -> None:
     )
     add_command(
         commands, "upgrade", "Apply debug database migrations", debug_upgrade.run
+    )
+    add_command(
+        commands,
+        "restore",
+        "Restore an encrypted backup into the native debug database",
+        debug_restore.run,
+        debug_restore.configure,
     )
     add_command(
         commands, "destroy", "Remove the native debug environment", debug_destroy.run

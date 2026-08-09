@@ -2,18 +2,20 @@ from __future__ import annotations
 
 import io
 import json
+import sqlite3
 from pathlib import Path
 from types import SimpleNamespace
 from urllib.request import Request
 
 import pytest
 
-from orchestrator.operations import container_smoke, migrator
+from orchestrator.operations import container_smoke, debug_restore, migrator
 from orchestrator.operations.backup import BackupOperations
 from orchestrator.operations.configuration import Configuration, Environment
 from orchestrator.operations.deployment import apply_migrations, validate_deploy_request
 from orchestrator.operations.instance import resolve_instance_path
 from orchestrator.operations.release_manifest import ReleaseManifest
+from orchestrator.operations.restic import run_restic
 
 
 def build_configuration(
@@ -245,3 +247,83 @@ def test_backup_restoration_uses_hardened_runtime_and_persists_data(
     assert commands[0][-1] == "backend-image"
     assert commands[-1][:4] == ["docker", "container", "rm", "--force"]
     assert [request.get_method() for request in requests] == ["GET", "GET", "POST"]
+
+
+def test_restic_password_is_not_put_in_command_arguments(monkeypatch, tmp_path: Path):
+    captured: dict[str, object] = {}
+
+    class RecordingRunner:
+        def run(self, command, **kwargs):
+            captured["command"] = command
+            captured["environment"] = kwargs["env"]
+
+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "should-not-be-forwarded")
+    run_restic(
+        ["check"],
+        repository=tmp_path,
+        password="restic-secret",
+        pass_aws_credentials=False,
+        image="restic-image",
+        runner=RecordingRunner(),
+    )
+
+    command = captured["command"]
+    assert "restic-secret" not in command
+    assert "AWS_ACCESS_KEY_ID" not in command
+    assert captured["environment"] == {"RESTIC_PASSWORD": "restic-secret"}
+
+
+def test_debug_restore_stages_migrates_and_replaces_database(monkeypatch, tmp_path: Path):
+    debug_data = tmp_path / "debug" / "data"
+    debug_data.mkdir(parents=True)
+    debug_environment = debug_data.parent / ".env"
+    debug_environment.write_text(
+        "DEVELOPMENT_AUTH_SUBJECT=local-developer\n", encoding="utf-8"
+    )
+    database_path = debug_data / "database.db"
+    database_path.write_text("previous database", encoding="utf-8")
+    repository = tmp_path / "repository"
+    repository.mkdir()
+    (repository / "config").touch()
+    paths = type(
+        "Paths",
+        (),
+        {
+            "debug_data": debug_data,
+            "debug_environment": debug_environment,
+            "debug_database": database_path,
+        },
+    )()
+    operations = debug_restore.DebugRestoreOperations.__new__(
+        debug_restore.DebugRestoreOperations
+    )
+    operations.paths = paths
+    operations.repository = str(repository)
+    operations.s3_uri = None
+    operations.aws_profile = None
+    operations.restic_image = "restic-image"
+    operations.migrator_image = "migrator-image"
+    operations.runner = object()
+    monkeypatch.setattr(
+        operations, "get_restic_password", lambda: "restic-secret"
+    )
+
+    def fake_run_restic(arguments, **kwargs):
+        if arguments[0] == "restore":
+            restore_directory = kwargs["volumes"][0][0]
+            restored_database = restore_directory / "snapshot" / "database.db"
+            restored_database.parent.mkdir()
+            with sqlite3.connect(restored_database) as connection:
+                connection.execute(
+                    "CREATE TABLE __EFMigrationsHistory (MigrationId TEXT NOT NULL)"
+                )
+
+    monkeypatch.setattr(debug_restore, "run_restic", fake_run_restic)
+    monkeypatch.setattr(debug_restore, "run_migrator", lambda *args, **kwargs: None)
+
+    operations.validate()
+    operations.restore()
+
+    assert database_path.is_file()
+    assert database_path.read_bytes() != b"previous database"
+    assert list(debug_data.glob("database.db.before-restore-*.bak"))

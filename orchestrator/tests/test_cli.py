@@ -6,6 +6,11 @@ def test_cli_registers_leaf_commands():
 
     assert parser.parse_args(["debug", "stack-up"]).handler is not None
     assert (
+        parser.parse_args(["debug", "restore", "--repository", "/tmp/repository"])
+        .repository
+        == "/tmp/repository"
+    )
+    assert (
         parser.parse_args(["backend", "create-migration", "initial"]).name == "initial"
     )
     assert (

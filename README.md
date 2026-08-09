@@ -113,6 +113,35 @@ directly. Create the local configuration, SQLite database, and schema once:
 ft debug create
 ```
 
+To populate native debugging with a downloaded production backup, first stop any
+native debug backend, then use either a local Restic repository:
+
+```sh
+ft debug restore --repository /path/to/restic-repository
+```
+
+Or download the repository directly from S3 using an AWS CLI profile:
+
+```sh
+ft debug restore \
+  --s3-uri s3://bucket/restic-prefix \
+  --aws-profile production-backups
+```
+
+The command verifies the repository, restores the latest `financial-tracker`
+snapshot, validates and migrates the database using development authentication,
+and atomically replaces `debug/data/database.db`. The Restic password is
+prompted for unless `RESTIC_PASSWORD` is already set. The previous database is
+retained beside it as a rollback copy. AWS credentials are not passed into the
+Restic container. This command only changes native `debug/data`, not the named
+data volume used by the optional Compose stack.
+
+For S3 profile setup, see the [AWS CLI sign-in documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sign-in.html)
+and [S3 sync documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-services-s3-commands.html).
+Because the restored database contains production financial data, keep the debug
+area local and do not expose it through a public or production-authenticated
+endpoint.
+
 Then select a launch configuration from
 [`.vscode/launch.json`](.vscode/launch.json):
 
