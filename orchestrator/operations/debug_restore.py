@@ -66,7 +66,9 @@ class DebugRestoreOperations:
                 or parsed.query
                 or parsed.fragment
             ):
-                raise ValueError(f"Value {self.s3_uri} is not a valid S3 bucket or prefix")
+                raise ValueError(
+                    f"Value {self.s3_uri} is not a valid S3 bucket or prefix"
+                )
             if shutil.which("aws") is None:
                 raise ValueError(
                     "The AWS CLI is required to download an S3 Restic repository"
@@ -78,9 +80,13 @@ class DebugRestoreOperations:
                 raise ValueError("--aws-profile cannot be empty")
 
         if not self.paths.debug_environment.is_file():
-            raise ValueError("Debug configuration is missing. Run 'ft debug create' first.")
+            raise ValueError(
+                "Debug configuration is missing. Run 'ft debug create' first."
+            )
         if not self.paths.debug_data.is_dir():
-            raise ValueError("Debug data directory is missing. Run 'ft debug create' first.")
+            raise ValueError(
+                "Debug data directory is missing. Run 'ft debug create' first."
+            )
 
     def _profile_arguments(self) -> list[str]:
         if self.aws_profile is None:
@@ -123,9 +129,7 @@ class DebugRestoreOperations:
                 capture_output=True,
             )
 
-        self.run_aws(
-            ["sso", "login"] if login_mode.stdout.strip() else ["login"]
-        )
+        self.run_aws(["sso", "login"] if login_mode.stdout.strip() else ["login"])
         identity = self.run_aws(
             ["sts", "get-caller-identity"], check=False, capture_output=True
         )
@@ -142,7 +146,9 @@ class DebugRestoreOperations:
         self.ensure_aws_login()
         self.run_aws(["s3", "sync", self.s3_uri, str(destination)])
         if not (destination / "config").is_file():
-            raise RuntimeError("The S3 source did not contain a complete Restic repository")
+            raise RuntimeError(
+                "The S3 source did not contain a complete Restic repository"
+            )
 
     @staticmethod
     def get_restic_password() -> str:
@@ -231,7 +237,9 @@ class DebugRestoreOperations:
 
                 restored_database = restore_directory / "snapshot" / "database.db"
                 if not restored_database.is_file():
-                    raise RuntimeError("Restic did not restore the expected database file")
+                    raise RuntimeError(
+                        "Restic did not restore the expected database file"
+                    )
 
                 staged_database = restore_directory / "database.db"
                 shutil.copy2(restored_database, staged_database)

@@ -273,7 +273,9 @@ def test_restic_password_is_not_put_in_command_arguments(monkeypatch, tmp_path: 
     assert captured["environment"] == {"RESTIC_PASSWORD": "restic-secret"}
 
 
-def test_debug_restore_stages_migrates_and_replaces_database(monkeypatch, tmp_path: Path):
+def test_debug_restore_stages_migrates_and_replaces_database(
+    monkeypatch, tmp_path: Path
+):
     debug_data = tmp_path / "debug" / "data"
     debug_data.mkdir(parents=True)
     debug_environment = debug_data.parent / ".env"
@@ -304,9 +306,7 @@ def test_debug_restore_stages_migrates_and_replaces_database(monkeypatch, tmp_pa
     operations.restic_image = "restic-image"
     operations.migrator_image = "migrator-image"
     operations.runner = object()
-    monkeypatch.setattr(
-        operations, "get_restic_password", lambda: "restic-secret"
-    )
+    monkeypatch.setattr(operations, "get_restic_password", lambda: "restic-secret")
 
     def fake_run_restic(arguments, **kwargs):
         if arguments[0] == "restore":
