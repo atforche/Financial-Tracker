@@ -1,4 +1,5 @@
 import io
+import json
 from pathlib import Path
 from types import SimpleNamespace
 from urllib.request import Request
@@ -23,11 +24,16 @@ def test_restored_backend_verification_uses_hardened_runtime_and_persists_data(
             if request.full_url.endswith("/users/me"):
                 return io.BytesIO(b'{"email":"backup-restore-smoke-test@example.test"}')
             if request.get_method() == "POST":
+                body = json.loads(request.data)
                 return io.BytesIO(
-                    b'{"id":"account-id","name":"Restored backup smoke account"}'
+                    json.dumps({"id": "account-id", **body}).encode()
+                )
+            if request.full_url.endswith("/accounts"):
+                return io.BytesIO(
+                    b'[{"id":"account-id","name":"Restored backup smoke account"}]'
                 )
             return io.BytesIO(
-                b'{"id":"account-id","name":"Restored backup smoke account"}'
+                b'{"id":"account-id","name":"Restored backup smoke account","financialInstitution":"smoke-test"}'
             )
         return io.BytesIO(b"")
 
@@ -48,7 +54,7 @@ def test_restored_backend_verification_uses_hardened_runtime_and_persists_data(
     assert "no-new-privileges:true" in run_command
     assert run_command[-1] == "backend-image"
     assert commands[-1][:4] == ["docker", "container", "rm", "--force"]
-    assert [request.get_method() for request in requests] == ["GET", "POST", "GET"]
+    assert [request.get_method() for request in requests] == ["GET", "GET", "POST"]
     assert requests[0].get_header("Authorization") == (
         "Bearer development:backup-restore-smoke-test"
     )
