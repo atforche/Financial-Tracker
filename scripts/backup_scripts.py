@@ -250,11 +250,11 @@ class BackupCommand(Command):
                 Request(f"{base_url}/accounts", headers=headers), timeout=30
             ) as response:
                 accounts = load_json(response)
-            if not accounts:
+            if not accounts["items"]:
                 raise RuntimeError(
                     "Restored backend returned no accounts from the restored database"
                 )
-            account = accounts[0]
+            account = accounts["items"][0]
             request = Request(
                 f"{base_url}/accounts/{account['id']}",
                 data=(
