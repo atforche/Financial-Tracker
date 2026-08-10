@@ -76,6 +76,7 @@ const Navigation = function ({
         ) : null}
       </Toolbar>
       <NavigationLinks
+        isTemporary={variant === "temporary"}
         onNavigate={variant === "temporary" ? onClose : undefined}
       />
       <CurrentUserMenu

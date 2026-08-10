@@ -12,6 +12,7 @@ import { usePathname } from "next/navigation";
  * Props for the NavigationLinks component.
  */
 interface NavigationLinksProps {
+  readonly isTemporary?: boolean;
   readonly onNavigate?: (() => void) | undefined;
 }
 
@@ -19,6 +20,7 @@ interface NavigationLinksProps {
  * Displays the navigation links for the application.
  */
 const NavigationLinks = function ({
+  isTemporary = false,
   onNavigate,
 }: NavigationLinksProps): JSX.Element {
   const links = useMemo(() => navigationItems(), []);
@@ -55,6 +57,7 @@ const NavigationLinks = function ({
           return (
             <NavigationLinkGroup
               key={link.name}
+              isTemporary={isTemporary}
               link={{ ...link, childLinks: link.childLinks }}
               pathname={pathname}
               isExpanded={isExpanded}

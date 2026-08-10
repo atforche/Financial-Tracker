@@ -179,6 +179,23 @@ test("an administrator manages invitations and application user access", async (
   await expect(
     standardSession.page.getByRole("link", { name: "Manage users" }),
   ).toHaveCount(0);
+  await standardSession.page.goto("/");
+  await standardSession.page.getByLabel("Open navigation").click();
+  await standardSession.page
+    .getByRole("button", { name: "Accounts", exact: true })
+    .last()
+    .click();
+  await expect(
+    standardSession.page
+      .getByRole("link", { name: "Trends", exact: true })
+      .last(),
+  ).toBeVisible();
+  await expect(standardSession.page).toHaveURL(/\/$/u);
+  await standardSession.page
+    .getByRole("link", { name: "Trends", exact: true })
+    .last()
+    .click();
+  await expect(standardSession.page).toHaveURL(/\/accounts\/trends$/u);
   await standardSession.page.goto("/admin/users");
   await expect(
     standardSession.page.getByText("Administrator access required"),
