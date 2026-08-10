@@ -5,7 +5,6 @@ import Frame, { type FrameColor } from "@/framework/view/Frame";
 import { type JSX, type ReactNode, useEffect } from "react";
 import {
   Paper,
-  Stack,
   Table,
   TableBody,
   TableCell,
@@ -13,11 +12,12 @@ import {
   TableHead,
   TablePagination,
   TableRow,
-  Typography,
 } from "@mui/material";
 import { getPaginationIndex, rowsPerPage } from "@/framework/listframe/page";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnHeader from "@/framework/listframe/ColumnHeader";
+import ListFrameEmptyState from "@/framework/listframe/ListFrameEmptyState";
+import ListFrameMobile from "@/framework/listframe/ListFrameMobile";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -54,7 +54,7 @@ interface ListFrameProps<T> {
 }
 
 /**
- * Component that presents a generic list frame with a table structure.
+ * Component that presents a generic list frame with table and mobile card layouts.
  */
 const ListFrame = function <T>({
   title,
@@ -126,7 +126,7 @@ const ListFrame = function <T>({
           overflow: "hidden",
         }}
       >
-        <TableContainer>
+        <TableContainer sx={{ display: { xs: "none", md: "block" } }}>
           <Table stickyHeader>
             <TableHead>
               <TableRow>
@@ -207,34 +207,35 @@ const ListFrame = function <T>({
               {emptyStateToDisplay !== null ? (
                 <TableRow>
                   <TableCell colSpan={columns.length}>
-                    <Stack
-                      spacing={1.5}
-                      sx={{
-                        alignItems: "center",
-                        minHeight: rowsPerPage * listFrameRowHeight,
-                        justifyContent: "center",
-                        px: 3,
-                        py: 4,
-                        textAlign: "center",
-                      }}
-                    >
-                      <Typography variant="h6">
-                        {emptyStateToDisplay.title}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "text.secondary", maxWidth: 420 }}
-                      >
-                        {emptyStateToDisplay.description}
-                      </Typography>
-                      {emptyStateToDisplay.action}
-                    </Stack>
+                    <ListFrameEmptyState
+                      desktopMinHeight={rowsPerPage * listFrameRowHeight}
+                      emptyState={emptyStateToDisplay}
+                    />
                   </TableCell>
                 </TableRow>
               ) : null}
             </TableBody>
           </Table>
         </TableContainer>
+        <ListFrameMobile
+          columns={columns}
+          data={data}
+          emptyState={
+            emptyStateToDisplay === null ? null : (
+              <ListFrameEmptyState
+                desktopMinHeight={rowsPerPage * listFrameRowHeight}
+                emptyState={emptyStateToDisplay}
+              />
+            )
+          }
+          getId={getId}
+          hasLoadingCompleted={hasLoadingCompleted}
+          {...(isRowSelected === undefined ? {} : { isRowSelected })}
+          {...(onRowClick === undefined ? {} : { onRowClick })}
+          placeholderRowCount={
+            hasLoadingCompleted ? placeholderRowCount : rowsPerPage
+          }
+        />
         {hasLoadingCompleted && totalCount > 0 ? (
           <TablePagination
             rowsPerPageOptions={[rowsPerPage]}

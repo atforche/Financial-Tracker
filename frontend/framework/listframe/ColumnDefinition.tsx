@@ -15,6 +15,8 @@ interface ColumnDefinitionBase<T> {
   readonly alignment?: "center" | "left" | "right";
   readonly maxWidth?: number;
   readonly minWidth?: number;
+  /** Whether this column should be emphasized as the primary value on mobile. */
+  readonly mobilePrimary?: boolean;
   readonly sx?: ColumnSx | null;
 }
 

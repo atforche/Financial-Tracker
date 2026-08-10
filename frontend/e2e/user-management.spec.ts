@@ -72,6 +72,21 @@ const expectReadRoute = async function (
   await expect(page.getByText("Unable to load this page")).toHaveCount(0);
 };
 
+test("list frames fit within a mobile viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await signInAsLocalDeveloper(page);
+
+  await expect(page.getByText("Application users", { exact: true })).toBeVisible();
+  await expect(page.locator("table").first()).toBeHidden();
+  await expect(page.getByText("Email", { exact: true }).last()).toBeVisible();
+
+  const dimensions = await page.evaluate(() => ({
+    documentWidth: document.documentElement.scrollWidth,
+    viewportWidth: document.documentElement.clientWidth,
+  }));
+  expect(dimensions.documentWidth).toBeLessThanOrEqual(dimensions.viewportWidth);
+});
+
 test("an administrator manages invitations and application user access", async ({
   browser,
   page,
