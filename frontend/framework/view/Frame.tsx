@@ -75,9 +75,7 @@ const Frame = function ({
     >
       <Stack spacing={0}>
         <Stack
-          direction={
-            headerContentInline ? "row" : { xs: "column", sm: "row" }
-          }
+          direction={headerContentInline ? "row" : { xs: "column", sm: "row" }}
           spacing={1.5}
           justifyContent="space-between"
           alignItems={

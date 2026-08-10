@@ -47,10 +47,10 @@ public sealed class BalanceEventProjectionTests
 
         Assert.Equal(BalanceEventTypeModel.Debit, fund.Type);
         Assert.Equal("Cash", fund.Source.DisplayName);
-        Assert.Equal("Cash", Assert.Single(fund.Destinations).DisplayName);
+        Assert.Equal("Market", Assert.Single(fund.Destinations).DisplayName);
         Assert.Equal(-25m, fund.NewBalance.BalanceIncludingPending);
         Assert.Equal("Cash", goal.Source.DisplayName);
-        Assert.Equal("Cash", Assert.Single(goal.Destinations).DisplayName);
+        Assert.Equal("Market", Assert.Single(goal.Destinations).DisplayName);
         Assert.Equal(25m, goal.NewTotals.AmountSpentIncludingPending);
     }
 

@@ -224,6 +224,7 @@ public sealed class AccountBalanceEventQueryService(
         return new AccountBalanceEvent(
             period,
             transaction.Id,
+            transaction.Description,
             transaction.Date,
             transaction.Sequence,
             postedDate,

@@ -18,6 +18,11 @@ public class BalanceEventModel
     public required Guid TransactionId { get; init; }
 
     /// <summary>
+    /// Description for the transaction associated with the balance event.
+    /// </summary>
+    public required string Description { get; init; }
+
+    /// <summary>
     /// Date on which the Transaction was created.
     /// </summary>
     public required DateOnly TransactionDate { get; init; }

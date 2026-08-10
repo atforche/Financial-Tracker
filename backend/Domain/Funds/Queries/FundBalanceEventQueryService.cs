@@ -137,7 +137,9 @@ public sealed class FundBalanceEventQueryService(
                     amount.Amount,
                     BalanceEventType.Debit,
                     ToParty(spending.Source.Account, null, null),
-                    [ToParty(spending.Source.Account, null, null)],
+                    spending.Destinations
+                        .Select(item => ToParty(item.Account, item.Location, item.Amount))
+                        .ToList(),
                     histories)),
             IncomeTransaction income => income.Destinations.SelectMany(destination => destination.FundAssignments
                 .Select(amount => Create(
@@ -194,6 +196,7 @@ public sealed class FundBalanceEventQueryService(
         return new FundBalanceEvent(
             period,
             transaction.Id,
+            transaction.Description,
             transaction.Date,
             transaction.Sequence,
             postedDate,

@@ -1,7 +1,4 @@
-import {
-  type FundGoalProgress,
-  FundedBalanceStatus,
-} from "@/fund-goals/types";
+import { type FundGoalProgress, FundedBalanceStatus } from "@/fund-goals/types";
 import { compareCurrencyAmounts } from "@/framework/currencyHelpers";
 
 /**

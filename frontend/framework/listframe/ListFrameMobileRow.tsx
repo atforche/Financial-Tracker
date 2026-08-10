@@ -120,10 +120,7 @@ const ListFrameMobileRow = function <T>({
         }
       }}
       onKeyDown={(event): void => {
-        if (
-          isClickable &&
-          (event.key === "Enter" || event.key === " ")
-        ) {
+        if (isClickable && (event.key === "Enter" || event.key === " ")) {
           event.preventDefault();
           onRowClick(item);
         }

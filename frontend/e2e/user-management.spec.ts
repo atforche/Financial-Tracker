@@ -76,15 +76,24 @@ test("list frames fit within a mobile viewport", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await signInAsLocalDeveloper(page);
 
-  await expect(page.getByText("Application users", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Application users", { exact: true }),
+  ).toBeVisible();
   await expect(page.locator("table").first()).toBeHidden();
-  await expect(page.getByText("Email", { exact: true }).last()).toBeVisible();
+  const applicationUsersFrame = page
+    .getByText("Application users", { exact: true })
+    .locator("xpath=ancestor::div[contains(@class, 'MuiPaper-root')][1]");
+  await expect(
+    applicationUsersFrame.getByText("Email", { exact: true }).last(),
+  ).toBeVisible();
 
   const dimensions = await page.evaluate(() => ({
     documentWidth: document.documentElement.scrollWidth,
     viewportWidth: document.documentElement.clientWidth,
   }));
-  expect(dimensions.documentWidth).toBeLessThanOrEqual(dimensions.viewportWidth);
+  expect(dimensions.documentWidth).toBeLessThanOrEqual(
+    dimensions.viewportWidth,
+  );
 });
 
 test("an administrator manages invitations and application user access", async ({
@@ -95,12 +104,10 @@ test("an administrator manages invitations and application user access", async (
   const standardEmail = "container-smoke-standard@example.test";
 
   await signInAsLocalDeveloper(page);
-  await expect(
-    page.getByRole("link", { name: "Manage users" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: "User Management" }),
-  ).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Manage users" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "User Management" })).toHaveCount(
+    0,
+  );
   await expect(page.getByRole("button", { name: "Invite user" })).toBeVisible();
 
   const userRow = getRow(page, standardEmail);

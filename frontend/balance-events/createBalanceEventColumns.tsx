@@ -11,6 +11,7 @@ import { formatLongDate } from "@/framework/dateHelpers";
  */
 interface BalanceEventListItem {
   readonly amount: number;
+  readonly description: string;
   readonly eventDate?: string | null;
   readonly isPosted: boolean;
   readonly type: BalanceEventType;
@@ -47,6 +48,13 @@ const createBalanceEventColumns = function <T extends BalanceEventListItem>({
           ? formatLongDate(new Date(`${event.eventDate}T00:00:00`))
           : "Pending",
       minWidth: 135,
+    },
+    {
+      name: "description",
+      headerContent: "Description",
+      getBodyContent: (event) => event.description,
+      mobilePrimary: true,
+      minWidth: 180,
     },
     {
       name: "type",

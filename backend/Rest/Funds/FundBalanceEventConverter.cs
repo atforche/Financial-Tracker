@@ -84,6 +84,7 @@ public sealed class FundBalanceEventConverter
             IsOpen = balanceEvent.AccountingPeriod.IsOpen,
         },
         TransactionId = balanceEvent.TransactionId.Value,
+        Description = balanceEvent.Description,
         TransactionDate = balanceEvent.TransactionDate,
         TransactionSequence = balanceEvent.TransactionSequence,
         EventDate = balanceEvent.EventDate,

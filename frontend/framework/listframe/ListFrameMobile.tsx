@@ -33,10 +33,7 @@ const ListFrameMobile = function <T>({
   const items = hasLoadingCompleted ? (data ?? []) : [];
 
   return (
-    <Stack
-      spacing={1.25}
-      sx={{ display: { xs: "flex", md: "none" }, p: 1.5 }}
-    >
+    <Stack spacing={1.25} sx={{ display: { xs: "flex", md: "none" }, p: 1.5 }}>
       {items.map((item) => (
         <ListFrameMobileRow
           key={getId(item)}

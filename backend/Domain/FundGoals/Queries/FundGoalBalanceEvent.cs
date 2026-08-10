@@ -11,6 +11,7 @@ namespace Domain.FundGoals.Queries;
 public sealed record FundGoalBalanceEvent(
     AccountingPeriod AccountingPeriod,
     TransactionId TransactionId,
+    string Description,
     DateOnly TransactionDate,
     int TransactionSequence,
     DateOnly? EventDate,
