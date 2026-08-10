@@ -338,27 +338,29 @@ const getSourceFromTransaction = function (
 const getFundAssignmentFromTransactionFund = (
   assignment: FundBalanceEvent,
   fundGoals: FundGoalWithProgress[],
-): FundAssignmentDraft => ({
-  fundId: assignment.fund.id,
-  fundName: assignment.fund.name,
-  amount: assignment.amount,
-  isExtraContribution: false,
-  previousFundBalance: assignment.previousBalance.postedBalance,
-  newFundBalance: assignment.newBalance.postedBalance,
-  previousGoalAmount: getSpendingGoalRemainingAmount(
-    assignment.fund.id,
-    fundGoals,
-    assignment.previousBalance.postedBalance,
-  ),
-  newGoalAmount: getCurrencyDifference(
-    getSpendingGoalRemainingAmount(
+): FundAssignmentDraft => {
+  const previousFundBalance = assignment.previousBalance.postedBalance;
+  const newFundBalance = assignment.newBalance.postedBalance;
+
+  return {
+    fundId: assignment.fund.id,
+    fundName: assignment.fund.name,
+    amount: assignment.amount,
+    isExtraContribution: false,
+    previousFundBalance,
+    newFundBalance,
+    previousGoalAmount: getSpendingGoalRemainingAmount(
       assignment.fund.id,
       fundGoals,
-      assignment.previousBalance.postedBalance,
+      previousFundBalance,
     ),
-    assignment.amount,
-  ),
-});
+    newGoalAmount: getSpendingGoalRemainingAmount(
+      assignment.fund.id,
+      fundGoals,
+      newFundBalance,
+    ),
+  };
+};
 
 /**
  * Gets the collection of destinations from the provided spending transaction.
