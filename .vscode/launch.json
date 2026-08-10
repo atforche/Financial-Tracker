@@ -6,7 +6,7 @@
       "type": "node-terminal",
       "request": "launch",
       "cwd": "${workspaceFolder}",
-      "command": "python -m orchestrator debug frontend --inspect",
+      "command": "python3.14 -m orchestrator debug frontend --inspect",
       "envFile": "${workspaceFolder}/debug/.env",
       "preLaunchTask": "debug-frontend-server-side",
       "postDebugTask": "end-debug-session",

@@ -10,5 +10,7 @@ def run(context: Context, _args: Namespace) -> int:
     values = environment(context)
     print("Run Debug Backend", flush=True)
     return context.runner.run(
-        ["dotnet", "run"], cwd=context.paths.backend / "Rest", env=values
+        ["dotnet", "run", "--no-build", "--no-restore"],
+        cwd=context.paths.backend / "Rest",
+        env=values,
     ).returncode

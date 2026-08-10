@@ -72,7 +72,14 @@ def environment(context: Context) -> dict[str, str]:
 def apply_migrations(context: Context) -> int:
     values = environment(context)
     return context.runner.run(
-        ["dotnet", "run", "--project", str(context.paths.migrator_project)],
+        [
+            "dotnet",
+            "run",
+            "--no-build",
+            "--no-restore",
+            "--project",
+            str(context.paths.migrator_project),
+        ],
         cwd=context.root,
         env=values,
     ).returncode

@@ -3,19 +3,39 @@
   "tasks": [
     {
       "label": "debug-frontend-server-side",
-      "dependsOn": ["create-debug-environment", "run-backend"]
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "restore-backend",
+        "build-backend",
+        "create-debug-environment",
+        "run-backend"
+      ]
     },
     {
       "label": "debug-frontend-client-side",
-      "dependsOn": ["create-debug-environment", "run-backend", "run-frontend"]
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "restore-backend",
+        "build-backend",
+        "create-debug-environment",
+        "run-backend",
+        "run-frontend"
+      ]
     },
     {
       "label": "debug-backend",
-      "dependsOn": ["create-debug-environment", "build-backend"]
+      "dependsOrder": "sequence",
+      "dependsOn": ["restore-backend", "build-backend", "create-debug-environment"]
     },
     {
       "label": "debug-backend-with-frontend",
-      "dependsOn": ["create-debug-environment", "build-backend", "run-frontend"]
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "restore-backend",
+        "build-backend",
+        "create-debug-environment",
+        "run-frontend"
+      ]
     },
     {
       "label": "end-debug-session",
@@ -24,8 +44,17 @@
     {
       "label": "create-debug-environment",
       "type": "process",
-      "command": "python",
+      "command": "python3.14",
       "args": ["-m", "orchestrator", "debug", "create"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "restore-backend",
+      "type": "process",
+      "command": "python3.14",
+      "args": ["-m", "orchestrator", "backend", "restore"],
       "options": {
         "cwd": "${workspaceFolder}"
       }
@@ -33,7 +62,7 @@
     {
       "label": "run-frontend",
       "type": "process",
-      "command": "python",
+      "command": "python3.14",
       "args": ["-m", "orchestrator", "debug", "frontend"],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -53,7 +82,7 @@
     {
       "label": "run-backend",
       "type": "process",
-      "command": "python",
+      "command": "python3.14",
       "args": ["-m", "orchestrator", "debug", "backend"],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -73,7 +102,7 @@
     {
       "label": "build-backend",
       "type": "process",
-      "command": "python",
+      "command": "python3.14",
       "args": ["-m", "orchestrator", "backend", "build"],
       "options": {
         "cwd": "${workspaceFolder}"
