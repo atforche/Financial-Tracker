@@ -3037,6 +3037,8 @@ export interface components {
              * @description Transaction for the balance event.
              */
             transactionId: string;
+            /** @description Description for the transaction associated with the balance event. */
+            description: string;
             /**
              * Format: date
              * @description Date on which the Transaction was created.
@@ -4013,6 +4015,8 @@ export interface components {
              * @description Transaction for the balance event.
              */
             transactionId: string;
+            /** @description Description for the transaction associated with the balance event. */
+            description: string;
             /**
              * Format: date
              * @description Date on which the Transaction was created.
@@ -4172,6 +4176,8 @@ export interface components {
              * @description Transaction for the balance event.
              */
             transactionId: string;
+            /** @description Description for the transaction associated with the balance event. */
+            description: string;
             /**
              * Format: date
              * @description Date on which the Transaction was created.

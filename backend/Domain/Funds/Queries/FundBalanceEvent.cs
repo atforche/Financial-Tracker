@@ -10,6 +10,7 @@ namespace Domain.Funds.Queries;
 public sealed record FundBalanceEvent(
     AccountingPeriod AccountingPeriod,
     TransactionId TransactionId,
+    string Description,
     DateOnly TransactionDate,
     int TransactionSequence,
     DateOnly? EventDate,

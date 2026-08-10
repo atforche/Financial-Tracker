@@ -19,6 +19,7 @@ import matchesPath from "./matchesPath";
  * Props for the NavigationLinkGroup component.
  */
 interface NavigationLinkGroupProps {
+  readonly isTemporary: boolean;
   readonly link: NavigationLink & {
     childLinks: NonNullable<NavigationLink["childLinks"]>;
   };
@@ -32,6 +33,7 @@ interface NavigationLinkGroupProps {
  * Displays a navigation link and its collapsible child links.
  */
 const NavigationLinkGroup = function ({
+  isTemporary,
   link,
   pathname,
   isExpanded,
@@ -56,18 +58,39 @@ const NavigationLinkGroup = function ({
           </IconButton>
         }
       >
-        <Link
-          href={link.href}
-          {...(onNavigate === undefined ? {} : { onClick: onNavigate })}
-          style={{ textDecoration: "none", color: "inherit", width: "100%" }}
-        >
-          <ListItemButton selected={isSelected} sx={{ width: "100%", pr: 7.5 }}>
+        {isTemporary ? (
+          <ListItemButton
+            aria-expanded={isExpanded}
+            onClick={onToggle}
+            selected={isSelected}
+            sx={{ width: "100%", pr: 7.5 }}
+          >
             <ListItemIcon sx={{ paddingLeft: "15px" }}>
               {link.icon}
             </ListItemIcon>
             <ListItemText primary={link.name} />
           </ListItemButton>
-        </Link>
+        ) : (
+          <Link
+            href={link.href}
+            {...(onNavigate === undefined ? {} : { onClick: onNavigate })}
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+              width: "100%",
+            }}
+          >
+            <ListItemButton
+              selected={isSelected}
+              sx={{ width: "100%", pr: 7.5 }}
+            >
+              <ListItemIcon sx={{ paddingLeft: "15px" }}>
+                {link.icon}
+              </ListItemIcon>
+              <ListItemText primary={link.name} />
+            </ListItemButton>
+          </Link>
+        )}
       </ListItem>
       <Collapse in={isExpanded} timeout="auto" unmountOnExit>
         <List disablePadding>

@@ -64,6 +64,7 @@ const ComboBoxEntryField = function <T>({
   const justSelected = useRef(false);
   const [inputValue, setInputValue] = useState(value?.label ?? "");
   const defaultFilterOptions = createFilterOptions<ComboBoxOption<T>>();
+  const hintVerticalPadding = size === "small" ? 8.5 : 16.5;
 
   useEffect(() => {
     setInputValue(value?.label ?? "");
@@ -110,7 +111,8 @@ const ComboBoxEntryField = function <T>({
               position: "absolute",
               opacity: 0.5,
               left: 14,
-              top: 16.5,
+              top: hintVerticalPadding,
+              lineHeight: 1.4375,
               overflow: "hidden",
               whiteSpace: "nowrap",
               width: "calc(100% - 75px)",

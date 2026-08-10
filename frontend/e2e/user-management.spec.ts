@@ -72,6 +72,30 @@ const expectReadRoute = async function (
   await expect(page.getByText("Unable to load this page")).toHaveCount(0);
 };
 
+test("list frames fit within a mobile viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await signInAsLocalDeveloper(page);
+
+  await expect(
+    page.getByText("Application users", { exact: true }),
+  ).toBeVisible();
+  await expect(page.locator("table").first()).toBeHidden();
+  const applicationUsersFrame = page
+    .getByText("Application users", { exact: true })
+    .locator("xpath=ancestor::div[contains(@class, 'MuiPaper-root')][1]");
+  await expect(
+    applicationUsersFrame.getByText("Email", { exact: true }).last(),
+  ).toBeVisible();
+
+  const dimensions = await page.evaluate(() => ({
+    documentWidth: document.documentElement.scrollWidth,
+    viewportWidth: document.documentElement.clientWidth,
+  }));
+  expect(dimensions.documentWidth).toBeLessThanOrEqual(
+    dimensions.viewportWidth,
+  );
+});
+
 test("an administrator manages invitations and application user access", async ({
   browser,
   page,
@@ -80,9 +104,10 @@ test("an administrator manages invitations and application user access", async (
   const standardEmail = "container-smoke-standard@example.test";
 
   await signInAsLocalDeveloper(page);
-  await expect(
-    page.getByRole("link", { name: "User Management" }),
-  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Manage users" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "User Management" })).toHaveCount(
+    0,
+  );
   await expect(page.getByRole("button", { name: "Invite user" })).toBeVisible();
 
   const userRow = getRow(page, standardEmail);
@@ -155,12 +180,29 @@ test("an administrator manages invitations and application user access", async (
     standardSession.page.getByRole("button", { name: "Onboard Account" }),
   ).toHaveCount(0);
   await expect(
-    standardSession.page.getByRole("link", { name: "User Management" }),
+    standardSession.page.getByRole("link", { name: "Manage users" }),
   ).toHaveCount(0);
   await standardSession.page.getByLabel("Open navigation").click();
   await expect(
-    standardSession.page.getByRole("link", { name: "User Management" }),
+    standardSession.page.getByRole("link", { name: "Manage users" }),
   ).toHaveCount(0);
+  await standardSession.page.goto("/");
+  await standardSession.page.getByLabel("Open navigation").click();
+  await standardSession.page
+    .getByRole("button", { name: "Accounts", exact: true })
+    .last()
+    .click();
+  await expect(
+    standardSession.page
+      .getByRole("link", { name: "Trends", exact: true })
+      .last(),
+  ).toBeVisible();
+  await expect(standardSession.page).toHaveURL(/\/$/u);
+  await standardSession.page
+    .getByRole("link", { name: "Trends", exact: true })
+    .last()
+    .click();
+  await expect(standardSession.page).toHaveURL(/\/accounts\/trends$/u);
   await standardSession.page.goto("/admin/users");
   await expect(
     standardSession.page.getByText("Administrator access required"),

@@ -42,6 +42,7 @@ const TransactionSourceDestinationLayout = function ({
         sx={{
           display: { xs: "block", lg: "none" },
           fontSize: 26,
+          justifySelf: "center",
         }}
       />
       <Stack spacing={2} sx={{ position: "relative", zIndex: 1 }}>

@@ -1,8 +1,10 @@
 "use client";
 
 import { Avatar, Box, Button, Stack, Typography } from "@mui/material";
+import { AdminPanelSettings } from "@mui/icons-material";
 import type { CurrentApplicationUser } from "@/framework/auth/currentApplicationUser";
 import type { JSX } from "react";
+import { UserRoleModel } from "@/framework/data/api";
 import { signOut } from "next-auth/react";
 
 /**
@@ -10,6 +12,7 @@ import { signOut } from "next-auth/react";
  */
 interface CurrentUserMenuProps {
   readonly applicationUser: CurrentApplicationUser | null;
+  readonly onNavigate?: (() => void) | undefined;
   readonly user:
     | {
         readonly name?: string | null;
@@ -20,10 +23,11 @@ interface CurrentUserMenuProps {
 }
 
 /**
- * Displays the signed-in user's identity and a logout action.
+ * Displays the signed-in user's identity and account actions.
  */
 const CurrentUserMenu = function ({
   applicationUser,
+  onNavigate,
   user,
 }: CurrentUserMenuProps): JSX.Element | null {
   if (user === undefined) {
@@ -51,9 +55,21 @@ const CurrentUserMenu = function ({
           ) : null}
         </Box>
       </Stack>
+      {applicationUser?.role === UserRoleModel.Admin ? (
+        <Button
+          fullWidth
+          href="/admin/users"
+          startIcon={<AdminPanelSettings />}
+          sx={{ mt: 2 }}
+          variant="outlined"
+          {...(onNavigate === undefined ? {} : { onClick: onNavigate })}
+        >
+          Manage users
+        </Button>
+      ) : null}
       <Button
         fullWidth
-        sx={{ mt: 2 }}
+        sx={{ mt: 1 }}
         variant="outlined"
         onClick={() => {
           signOut({ redirectTo: "/login" }).catch(() => undefined);

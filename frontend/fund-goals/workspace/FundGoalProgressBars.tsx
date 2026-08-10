@@ -10,6 +10,7 @@ import type { JSX } from "react";
 import { Stack } from "@mui/material";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import { formatCurrency } from "@/framework/currencyHelpers";
+import { isMaximumFundedBalanceSatisfied } from "@/fund-goals/helpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
@@ -81,9 +82,7 @@ const FundGoalProgressBars = function ({
           label="Maximum Funded Amount"
           current={progress.fundedBalance.balance}
           target={progress.fundedBalance.maximumBalance}
-          satisfied={
-            progress.fundedBalance.status !== FundedBalanceStatus.AboveMaximum
-          }
+          satisfied={isMaximumFundedBalanceSatisfied(progress.fundedBalance)}
         />
       ) : showUnconfigured ? (
         <StringEntryField

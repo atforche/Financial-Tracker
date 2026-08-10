@@ -47,6 +47,7 @@ const WorkspaceCard = function ({
     <Frame
       title={title}
       {...(color === undefined ? {} : { color })}
+      headerContentInline
       headerContent={
         <KeyboardArrowRight sx={{ color: "text.secondary", fontSize: 22 }} />
       }

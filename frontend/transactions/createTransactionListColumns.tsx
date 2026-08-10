@@ -47,6 +47,7 @@ const createTransactionListColumns = function ({
         TransactionSort.Description,
         TransactionSort.DescriptionDescending,
       ),
+      mobilePrimary: true,
       minWidth: 150,
     },
     {

@@ -1,6 +1,5 @@
 import {
   AccountBalance,
-  AdminPanelSettings,
   Assessment,
   CalendarMonth,
   EmojiEvents,
@@ -19,7 +18,7 @@ import transactionRoutes from "@/transactions/routes";
 /**
  * Navigation items for the application shell.
  */
-const navigationItems = function (isAdministrator: boolean): NavigationLink[] {
+const navigationItems = function (): NavigationLink[] {
   const items: NavigationLink[] = [
     { name: "Overview", href: "/", icon: <GridView /> },
     {
@@ -96,14 +95,6 @@ const navigationItems = function (isAdministrator: boolean): NavigationLink[] {
       ],
     },
   ];
-  if (isAdministrator) {
-    items.push({
-      name: "User Management",
-      href: "/admin/users",
-      icon: <AdminPanelSettings />,
-    });
-  }
-
   return items;
 };
 

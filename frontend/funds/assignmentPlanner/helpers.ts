@@ -231,10 +231,11 @@ const getSpendingGoalRemainingAmount = function (
   fundBalance: number,
 ): number {
   const fundGoal = fundGoals.find((goal) => goal.fund.id === fundId);
-  if (fundGoal === undefined) {
-    return 0;
+  const targetEndingBalance = fundGoal?.targetEndingBalance;
+  if (targetEndingBalance === null || targetEndingBalance === undefined) {
+    return fundBalance;
   }
-  return fundGoal.progress.endingBalance?.variance ?? fundBalance;
+  return getCurrencyDifference(fundBalance, targetEndingBalance);
 };
 
 /**
@@ -251,7 +252,7 @@ const getEndingBalanceVariance = function (
     return null;
   }
   return getRemainingAmount(
-    fundGoal.progress.endingBalance?.variance ?? fundBalance,
+    getSpendingGoalRemainingAmount(fundId, fundGoals, fundBalance),
     baselineFundAssignments,
     fundId,
   );

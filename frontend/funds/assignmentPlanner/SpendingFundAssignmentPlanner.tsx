@@ -59,7 +59,7 @@ const SpendingFundAssignmentPlanner = function ({
         fundId,
         fundGoals,
         baselineFundAssignments,
-        fund?.currentBalance.postedBalance ?? 0,
+        fund?.currentBalance.balanceIncludingPending ?? 0,
       );
     });
   };
@@ -97,7 +97,8 @@ const SpendingFundAssignmentPlanner = function ({
             return createFundAssignmentDraft(assignment.amount);
           }
           const fund = funds.find((f) => f.id === newFund.id);
-          const previousFundBalance = fund?.currentBalance.postedBalance ?? 0;
+          const previousFundBalance =
+            fund?.currentBalance.balanceIncludingPending ?? 0;
           const previousGoalAmount = getSpendingGoalRemainingAmount(
             newFund.id,
             fundGoals,
@@ -212,7 +213,7 @@ const SpendingFundAssignmentPlanner = function ({
             fund.id,
             fundGoals,
             baselineFundAssignments,
-            fundWithBalance?.currentBalance.postedBalance ?? 0,
+            fundWithBalance?.currentBalance.balanceIncludingPending ?? 0,
           ),
         );
       }}

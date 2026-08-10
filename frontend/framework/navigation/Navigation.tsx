@@ -4,7 +4,6 @@ import CurrentUserMenu from "@/framework/navigation/CurrentUserMenu";
 import Image from "next/image";
 import type { JSX } from "react";
 import NavigationLinks from "@/framework/navigation/NavigationLinks";
-import { UserRoleModel } from "@/framework/data/api";
 
 /**
  * Width of the navigation drawer.
@@ -77,10 +76,14 @@ const Navigation = function ({
         ) : null}
       </Toolbar>
       <NavigationLinks
-        isAdministrator={applicationUser?.role === UserRoleModel.Admin}
+        isTemporary={variant === "temporary"}
         onNavigate={variant === "temporary" ? onClose : undefined}
       />
-      <CurrentUserMenu applicationUser={applicationUser} user={user} />
+      <CurrentUserMenu
+        applicationUser={applicationUser}
+        onNavigate={variant === "temporary" ? onClose : undefined}
+        user={user}
+      />
     </Drawer>
   );
 };

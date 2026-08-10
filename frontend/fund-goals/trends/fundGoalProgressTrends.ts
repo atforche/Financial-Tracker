@@ -8,6 +8,7 @@ import {
   compareCurrencyAmounts,
   getCurrencyTotal,
 } from "@/framework/currencyHelpers";
+import { isMaximumFundedBalanceSatisfied } from "@/fund-goals/helpers";
 
 /**
  * A Fund Goal paired with its progress for the Fund Goal's Accounting Period.
@@ -163,9 +164,9 @@ const buildFundGoalMetricTrendPoints = function (
                 {
                   currentAmount: goalProgress.fundedBalance.balance,
                   targetAmount: goalProgress.fundedBalance.maximumBalance,
-                  isSatisfied:
-                    goalProgress.fundedBalance.status !==
-                    FundedBalanceStatus.AboveMaximum,
+                  isSatisfied: isMaximumFundedBalanceSatisfied(
+                    goalProgress.fundedBalance,
+                  ),
                 },
               ];
         case "endingBalance":

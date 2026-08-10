@@ -21,6 +21,7 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 import FundGoalAvailableBalance from "@/fund-goals/workspace/FundGoalAvailableBalance";
 import FundGoalProgressBars from "@/fund-goals/workspace/FundGoalProgressBars";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
+import { isMaximumFundedBalanceSatisfied } from "@/fund-goals/helpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
@@ -62,9 +63,7 @@ const FundGoalWorkspaceCard = function ({
     },
     {
       configured: isNotNullOrUndefined(fundGoal.maximumFundedBalance),
-      satisfied:
-        isNotNullOrUndefined(fundedBalance) &&
-        fundedBalance.status !== FundedBalanceStatus.AboveMaximum,
+      satisfied: isMaximumFundedBalanceSatisfied(fundedBalance),
     },
     {
       configured: isNotNullOrUndefined(fundGoal.targetEndingBalance),
@@ -90,6 +89,7 @@ const FundGoalWorkspaceCard = function ({
     <Frame
       title={fundGoal.fund.name}
       color={color}
+      headerContentInline
       headerContent={
         <Tooltip title="View Fund Goal details">
           <IconButton

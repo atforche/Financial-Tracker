@@ -47,6 +47,9 @@ const AccountWorkspaceCards = function ({
   const router = useRouter();
   const updateParams = useSearchParamUpdater([]);
   const filters = parseAccountWorkspaceFilters(searchParams);
+  const filteredData = shouldPersistAccountTypes(filters.accountTypes)
+    ? data.filter((account) => filters.accountTypes.includes(account.type))
+    : data;
 
   const {
     action: actionParamName,
@@ -80,7 +83,7 @@ const AccountWorkspaceCards = function ({
   };
 
   const groupedAccounts = new Map<string | null, AccountWithBalance[]>();
-  data.forEach((account) => {
+  filteredData.forEach((account) => {
     const accounts = groupedAccounts.get(account.financialInstitution) ?? [];
     accounts.push(account);
     groupedAccounts.set(account.financialInstitution, accounts);
@@ -95,7 +98,7 @@ const AccountWorkspaceCards = function ({
     accounts.sort((left, right) => compareStrings(left.name, right.name));
   });
 
-  return data.length === 0 ? (
+  return filteredData.length === 0 ? (
     <Stack spacing={2} alignItems="flex-start">
       <Typography color="text.secondary">
         {filters.hasActiveFilters
