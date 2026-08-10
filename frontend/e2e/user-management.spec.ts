@@ -81,8 +81,11 @@ test("an administrator manages invitations and application user access", async (
 
   await signInAsLocalDeveloper(page);
   await expect(
-    page.getByRole("link", { name: "User Management" }),
+    page.getByRole("link", { name: "Manage users" }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "User Management" }),
+  ).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Invite user" })).toBeVisible();
 
   const userRow = getRow(page, standardEmail);
@@ -155,11 +158,11 @@ test("an administrator manages invitations and application user access", async (
     standardSession.page.getByRole("button", { name: "Onboard Account" }),
   ).toHaveCount(0);
   await expect(
-    standardSession.page.getByRole("link", { name: "User Management" }),
+    standardSession.page.getByRole("link", { name: "Manage users" }),
   ).toHaveCount(0);
   await standardSession.page.getByLabel("Open navigation").click();
   await expect(
-    standardSession.page.getByRole("link", { name: "User Management" }),
+    standardSession.page.getByRole("link", { name: "Manage users" }),
   ).toHaveCount(0);
   await standardSession.page.goto("/admin/users");
   await expect(

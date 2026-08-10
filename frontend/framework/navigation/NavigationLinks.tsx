@@ -12,7 +12,6 @@ import { usePathname } from "next/navigation";
  * Props for the NavigationLinks component.
  */
 interface NavigationLinksProps {
-  readonly isAdministrator: boolean;
   readonly onNavigate?: (() => void) | undefined;
 }
 
@@ -20,13 +19,9 @@ interface NavigationLinksProps {
  * Displays the navigation links for the application.
  */
 const NavigationLinks = function ({
-  isAdministrator,
   onNavigate,
 }: NavigationLinksProps): JSX.Element {
-  const links = useMemo(
-    () => navigationItems(isAdministrator),
-    [isAdministrator],
-  );
+  const links = useMemo(() => navigationItems(), []);
   const pathname = usePathname();
   const [expandedLinkName, setExpandedLinkName] = useState<string | null>(null);
 
