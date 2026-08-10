@@ -16,6 +16,7 @@ interface FrameProps {
   readonly title: string;
   readonly children: ReactNode;
   readonly headerContent?: ReactNode;
+  readonly headerContentInline?: boolean;
   readonly color?: FrameColor;
 }
 
@@ -59,6 +60,7 @@ const Frame = function ({
   title,
   children,
   headerContent,
+  headerContentInline = false,
   color = "primary",
 }: FrameProps): JSX.Element {
   return (
@@ -73,10 +75,14 @@ const Frame = function ({
     >
       <Stack spacing={0}>
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={
+            headerContentInline ? "row" : { xs: "column", sm: "row" }
+          }
           spacing={1.5}
           justifyContent="space-between"
-          alignItems={{ xs: "stretch", sm: "center" }}
+          alignItems={
+            headerContentInline ? "center" : { xs: "stretch", sm: "center" }
+          }
           sx={(theme) => {
             const accentColor = getAccentColor(color, theme);
 
@@ -88,7 +94,12 @@ const Frame = function ({
             };
           }}
         >
-          <Stack direction="row" spacing={1.25} alignItems="center">
+          <Stack
+            direction="row"
+            spacing={1.25}
+            alignItems="center"
+            sx={headerContentInline ? { minWidth: 0, flex: 1 } : undefined}
+          >
             <Box
               sx={(theme) => ({
                 width: 11,
@@ -109,7 +120,14 @@ const Frame = function ({
               {title}
             </Typography>
           </Stack>
-          <Box sx={{ color: "text.primary" }}>{headerContent ?? null}</Box>
+          <Box
+            sx={{
+              color: "text.primary",
+              ...(headerContentInline ? { flexShrink: 0 } : {}),
+            }}
+          >
+            {headerContent ?? null}
+          </Box>
         </Stack>
         <Stack spacing={2.5} sx={{ p: { xs: 1, md: 1.5 } }}>
           {children}

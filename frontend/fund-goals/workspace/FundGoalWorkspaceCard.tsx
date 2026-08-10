@@ -90,6 +90,7 @@ const FundGoalWorkspaceCard = function ({
     <Frame
       title={fundGoal.fund.name}
       color={color}
+      headerContentInline
       headerContent={
         <Tooltip title="View Fund Goal details">
           <IconButton
