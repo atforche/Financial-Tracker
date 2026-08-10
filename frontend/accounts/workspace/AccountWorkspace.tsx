@@ -38,6 +38,9 @@ const AccountWorkspace = async function ({
     params: {
       query: {
         "Filter.NameSearch": search ?? "",
+        ...(shouldPersistAccountTypes(currentAccountTypes)
+          ? { "Filter.Types": [...currentAccountTypes] }
+          : {}),
       },
     },
   });

@@ -71,13 +71,18 @@ const isAccountType = function (value: string): value is AccountType {
 
 /**
  * Normalizes raw query or select values into a canonical ordered account type list.
+ * An empty list represents all account types, so selecting every account type
+ * is normalized back to an empty list as well.
  */
 const normalizeAccountTypes = function (
   values: readonly string[],
 ): readonly AccountType[] {
   const selectedValues = new Set(values.filter(isAccountType));
-  if (selectedValues.size === 0) {
-    return accountTypeValues;
+  if (
+    selectedValues.size === 0 ||
+    selectedValues.size === accountTypeValues.length
+  ) {
+    return [];
   }
   return accountTypeValues.filter((accountType) =>
     selectedValues.has(accountType),
@@ -162,7 +167,10 @@ const toggleAccountTypeGroup = function (
 const formatSelectedAccountTypes = function (
   selectedAccountTypes: readonly AccountType[],
 ): string {
-  if (selectedAccountTypes.length === accountTypeValues.length) {
+  if (
+    selectedAccountTypes.length === 0 ||
+    selectedAccountTypes.length === accountTypeValues.length
+  ) {
     return "All account types";
   }
 
