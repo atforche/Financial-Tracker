@@ -4,7 +4,6 @@ import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import createApiClient from "@/framework/data/createApiClient";
-import { isUnassignedFund } from "@/funds/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -39,16 +38,13 @@ const FundWorkspace = async function ({
   );
   const funds = unwrapApiResponse(fundsResponse, "Failed to fetch funds");
 
-  const visibleFunds = funds.items.filter(
-    (fund) => !isUnassignedFund(fund.name),
-  );
   const isInOnboardingMode = accountingPeriod.items.length === 0;
 
   return (
     <PageLayout>
       <FundWorkspaceFilter isInOnboardingMode={isInOnboardingMode} />
       <FundWorkspaceCards
-        data={visibleFunds}
+        data={funds.items}
         isInOnboardingMode={isInOnboardingMode}
       />
     </PageLayout>
