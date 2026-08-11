@@ -97,4 +97,44 @@ public sealed class FinancialRangeProjectionTests
         Assert.Equal(50m, posted.TotalIncome.Tracked);
         Assert.NotEqual(external.Id, internalResult.Id);
     }
+
+    /// <summary>
+    /// Restricts account and Fund financial totals to the entities selected by range filters.
+    /// </summary>
+    [Fact]
+    public async Task RangeTotalsHonorAccountAndFundFilters()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
+        AccountHandle savings = await test.Accounts.Onboard("Savings").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        FundHandle travel = await test.Funds.Create("Travel").In(july).CreateAsync();
+        TransactionHandle groceriesIncome = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(40m).From("Employer").To(cash, groceries).CreateAsync();
+        TransactionHandle travelIncome = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 11)).For(60m).From("Employer").To(savings, travel).CreateAsync();
+        TransactionHandle groceriesSpending = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 12)).For(15m).From(cash).To("Market", groceries).CreateAsync();
+        TransactionHandle travelSpending = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 13)).For(20m).From(savings).To("Flight", travel).CreateAsync();
+        await test.Transactions.PostAsync(groceriesIncome, cash, new DateOnly(2026, 7, 10));
+        await test.Transactions.PostAsync(travelIncome, savings, new DateOnly(2026, 7, 11));
+        await test.Transactions.PostAsync(groceriesSpending, cash, new DateOnly(2026, 7, 12));
+        await test.Transactions.PostAsync(travelSpending, savings, new DateOnly(2026, 7, 13));
+
+        AccountsInAccountingPeriodRangeModel accounts = await test.Api.GetAsync<AccountsInAccountingPeriodRangeModel>(
+            $"/accounts/accounting-period-range?range.start={july.Id}&range.end={july.Id}&filter.names=Cash");
+        FundsInAccountingPeriodRangeModel funds = await test.Api.GetAsync<FundsInAccountingPeriodRangeModel>(
+            $"/funds/accounting-period-range?range.start={july.Id}&range.end={july.Id}&filter.names=Groceries");
+        AccountsInDateRangeModel datedAccounts = await test.Api.GetAsync<AccountsInDateRangeModel>(
+            "/accounts/date-range?range.start=2026-07-01&range.end=2026-07-31&filter.names=Cash");
+        FundsInDateRangeModel datedFunds = await test.Api.GetAsync<FundsInDateRangeModel>(
+            "/funds/date-range?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries");
+
+        Assert.Equal(40m, accounts.TotalIncome.Total);
+        Assert.Equal(15m, accounts.TotalSpending);
+        Assert.Equal(40m, funds.TotalIncome.Tracked);
+        Assert.Equal(15m, funds.TotalSpending);
+        Assert.Equal(40m, datedAccounts.TotalIncome.Total);
+        Assert.Equal(15m, datedAccounts.TotalSpending);
+        Assert.Equal(40m, datedFunds.TotalIncome.Tracked);
+        Assert.Equal(15m, datedFunds.TotalSpending);
+    }
 }

@@ -19,6 +19,7 @@ import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import createApiClient from "@/framework/data/createApiClient";
 import { createEmptyTrends } from "@/accounting-periods/trends/helpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
@@ -126,6 +127,7 @@ const AccountingPeriodTrends = async function ({
 
   return (
     <PageLayout>
+      <ResponsivePageSize desktopBreakpoint="lg" />
       <ConstrainedContent>
         <AccountingPeriodTrendsFilter
           accountingPeriods={accountingPeriods.items}

@@ -21,6 +21,7 @@ import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import TransactionTrendsAmountChart from "@/transactions/trends/TransactionTrendsAmountChart";
 import TransactionTrendsCountChart from "@/transactions/trends/TransactionTrendsCountChart";
 import TransactionTrendsFilter from "@/transactions/trends/TransactionTrendsFilter";
@@ -259,6 +260,7 @@ const TransactionTrends = async function ({
 
   return (
     <PageLayout>
+      <ResponsivePageSize desktopBreakpoint="lg" />
       <ConstrainedContent>
         <TransactionTrendsFilter
           accountingPeriods={accountingPeriods.items}

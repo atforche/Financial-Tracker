@@ -9,7 +9,6 @@ namespace Domain.Funds.Queries;
 public sealed class FundQueryService(
     IFundQueryRepository fundQueryRepository,
     PendingFundBalanceService pendingFundBalanceService,
-    IAccountingPeriodQueryRepository accountingPeriodQueryRepository,
     AccountingPeriodRangeService accountingPeriodRangeService)
 {
     /// <summary>
@@ -79,8 +78,9 @@ public sealed class FundQueryService(
             .Take(query.Limit ?? int.MaxValue)
             .ToList();
         IReadOnlyCollection<Guid> periodIds = orderedHistories.Select(history => history.AccountingPeriod.Id.Value).ToList();
-        IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await accountingPeriodQueryRepository.GetRangeIncomeFactsAsync(periodIds, cancellationToken);
-        IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await accountingPeriodQueryRepository.GetRangeSpendingFactsAsync(periodIds, cancellationToken);
+        IReadOnlyCollection<FundId> fundIds = funds.Select(fund => fund.Id).ToList();
+        IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await fundQueryRepository.GetAccountingPeriodRangeIncomeFactsAsync(fundIds, periodIds, cancellationToken);
+        IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await fundQueryRepository.GetAccountingPeriodRangeSpendingFactsAsync(fundIds, periodIds, cancellationToken);
         var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
         IReadOnlyCollection<FundPeriodBalanceSummary> summaries = orderedHistories.Select(history => new FundPeriodBalanceSummary(
             history.AccountingPeriod,
@@ -113,11 +113,14 @@ public sealed class FundQueryService(
             query.Start,
             query.End,
             cancellationToken);
+        IReadOnlyCollection<FundId> fundIds = balances.Select(balance => balance.Fund.Id).ToList();
         IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await fundQueryRepository.GetDateRangeIncomeFactsAsync(
+            fundIds,
             query.Start,
             query.End,
             cancellationToken);
         IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await fundQueryRepository.GetDateRangeSpendingFactsAsync(
+            fundIds,
             query.Start,
             query.End,
             cancellationToken);

@@ -12,21 +12,14 @@ import {
   TableHead,
   TablePagination,
   TableRow,
-  useMediaQuery,
 } from "@mui/material";
-import {
-  desktopRowsPerPage,
-  getPaginationIndex,
-  getRowsPerPage,
-  mobileRowsPerPage,
-} from "@/framework/listframe/page";
+import { getPaginationIndex, getRowsPerPage } from "@/framework/listframe/page";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnHeader from "@/framework/listframe/ColumnHeader";
 import ListFrameEmptyState from "@/framework/listframe/ListFrameEmptyState";
 import ListFrameMobile from "@/framework/listframe/ListFrameMobile";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
-import { useTheme } from "@mui/material/styles";
 
 /** Height of each row in the list frame. */
 const listFrameRowHeight = 50;
@@ -84,11 +77,6 @@ const ListFrame = function <T>({
 }: ListFrameProps<T>): JSX.Element {
   const searchParams = useSearchParams();
   const updateParams = useSearchParamUpdater([]);
-  const theme = useTheme();
-  const isDesktopLayout = useMediaQuery(
-    theme.breakpoints.up(desktopBreakpoint),
-    { noSsr: true },
-  );
   const currentSearch =
     typeof searchParamName === "string"
       ? searchParams.get(searchParamName)
@@ -131,17 +119,6 @@ const ListFrame = function <T>({
     paginationIndex,
     updateParams,
   ]);
-
-  useEffect(() => {
-    const expectedRowsPerPage = isDesktopLayout
-      ? desktopRowsPerPage
-      : mobileRowsPerPage;
-    if (rowsPerPage !== expectedRowsPerPage) {
-      updateParams((params) => {
-        params.set("pageSize", expectedRowsPerPage.toString());
-      });
-    }
-  }, [isDesktopLayout, rowsPerPage, updateParams]);
 
   let emptyStateToDisplay = null;
   if (hasLoadingCompleted && numberOfRows === 0) {

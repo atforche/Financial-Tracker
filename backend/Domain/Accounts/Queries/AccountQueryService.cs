@@ -8,7 +8,6 @@ namespace Domain.Accounts.Queries;
 /// </summary>
 public sealed class AccountQueryService(
     IAccountQueryRepository accountQueryRepository,
-    IAccountingPeriodQueryRepository accountingPeriodQueryRepository,
     AccountingPeriodRangeService accountingPeriodRangeService,
     PendingAccountBalanceService pendingAccountBalanceService)
 {
@@ -87,8 +86,9 @@ public sealed class AccountQueryService(
             .Take(query.Limit ?? int.MaxValue)
             .ToList();
         IReadOnlyCollection<Guid> periodIds = orderedHistories.Select(history => history.AccountingPeriod.Id.Value).ToList();
-        IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await accountingPeriodQueryRepository.GetRangeIncomeFactsAsync(periodIds, cancellationToken);
-        IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await accountingPeriodQueryRepository.GetRangeSpendingFactsAsync(periodIds, cancellationToken);
+        IReadOnlyCollection<AccountId> accountIds = accounts.Select(account => account.Id).ToList();
+        IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await accountQueryRepository.GetAccountingPeriodRangeIncomeFactsAsync(accountIds, periodIds, cancellationToken);
+        IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await accountQueryRepository.GetAccountingPeriodRangeSpendingFactsAsync(accountIds, periodIds, cancellationToken);
         var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
         IReadOnlyCollection<AccountPeriodBalanceSummary> summaries = orderedHistories.Select(history => new AccountPeriodBalanceSummary(
             history.AccountingPeriod,
@@ -121,11 +121,14 @@ public sealed class AccountQueryService(
             query.Start,
             query.End,
             cancellationToken);
+        IReadOnlyCollection<AccountId> accountIds = balances.Select(balance => balance.Account.Id).ToList();
         IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await accountQueryRepository.GetDateRangeIncomeFactsAsync(
+            accountIds,
             query.Start,
             query.End,
             cancellationToken);
         IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await accountQueryRepository.GetDateRangeSpendingFactsAsync(
+            accountIds,
             query.Start,
             query.End,
             cancellationToken);
