@@ -19,7 +19,8 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
 {
     /// <inheritdoc/>
     public Task<Transaction?> GetByIdAsync(TransactionId transactionId, CancellationToken cancellationToken = default) =>
-        databaseContext.Transactions.AsNoTracking().SingleOrDefaultAsync(transaction => transaction.Id == transactionId, cancellationToken);
+        databaseContext.Transactions.AsNoTracking().AsSplitQuery()
+            .SingleOrDefaultAsync(transaction => transaction.Id == transactionId, cancellationToken);
 
     /// <inheritdoc/>
     public async Task<TransactionQueryFacts> GetAsync(
@@ -151,7 +152,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
             or TransactionSort.Destination or TransactionSort.DestinationDescending
             or TransactionSort.FullyPosted or TransactionSort.FullyPostedDescending)
         {
-            List<Transaction> allTransactions = await filtered.ToListAsync(cancellationToken);
+            List<Transaction> allTransactions = await filtered.AsSplitQuery().ToListAsync(cancellationToken);
             Dictionary<AccountingPeriodId, int> periodOrder = sort is TransactionSort.AccountingPeriod or TransactionSort.AccountingPeriodDescending
                 ? await databaseContext.AccountingPeriods.AsNoTracking()
                     .ToDictionaryAsync(period => period.Id, period => (period.Year * 12) + period.Month, cancellationToken)
@@ -163,7 +164,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
         }
         else
         {
-            transactions = await ApplySort(filtered, sort)
+            transactions = await ApplySort(filtered, sort).AsSplitQuery()
                 .Skip(offset)
                 .Take(limit ?? int.MaxValue)
                 .ToListAsync(cancellationToken);
@@ -177,7 +178,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
         TransactionId transactionId,
         CancellationToken cancellationToken = default)
     {
-        Transaction? transaction = await databaseContext.Transactions.AsNoTracking()
+        Transaction? transaction = await databaseContext.Transactions.AsNoTracking().AsSplitQuery()
             .SingleOrDefaultAsync(item => item.Id == transactionId, cancellationToken);
         if (transaction == null)
         {

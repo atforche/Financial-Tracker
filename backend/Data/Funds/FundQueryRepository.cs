@@ -92,6 +92,7 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
         List<AccountingPeriodBalanceHistory> histories = await databaseContext.AccountingPeriodBalanceHistories.AsNoTracking()
             .Include(history => history.AccountingPeriod)
             .Include(history => history.FundBalances).ThenInclude(balance => balance.Fund)
+            .AsSplitQuery()
             .Where(history => ((history.AccountingPeriod.Year * 12) + history.AccountingPeriod.Month) >= startIndex
                 && ((history.AccountingPeriod.Year * 12) + history.AccountingPeriod.Month) <= endIndex)
             .ToListAsync(cancellationToken);

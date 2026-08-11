@@ -6,6 +6,7 @@ using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Spending;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data.Transactions;
 
@@ -19,6 +20,7 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
     {
         var historiesOnDate = databaseContext.Transactions
             .Where(transaction => transaction.Date == transactionDate)
+            .AsSplitQuery()
             .ToList();
         return historiesOnDate.Count == 0 ? 1 : historiesOnDate.Max(transaction => transaction.Sequence) + 1;
     }
@@ -34,18 +36,20 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
-        databaseContext.Transactions.Where(transaction => transaction.AccountingPeriodId == accountingPeriodId).ToList();
+        databaseContext.Transactions.Where(transaction => transaction.AccountingPeriodId == accountingPeriodId).AsSplitQuery().ToList();
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> GetAllIncomeTransactionsByDateRange(DateOnly startDate, DateOnly endDate) =>
         databaseContext.Transactions.OfType<IncomeTransaction>()
             .Where(t => t.Destinations.Any(d => d.PostedDate != null && d.PostedDate >= startDate && d.PostedDate <= endDate))
+            .AsSplitQuery()
             .ToList();
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Transaction> GetAllSpendingTransactionsByDateRange(DateOnly startDate, DateOnly endDate) =>
         databaseContext.Transactions.OfType<SpendingTransaction>()
             .Where(t => t.Source.PostedDate != null && t.Source.PostedDate >= startDate && t.Source.PostedDate <= endDate)
+            .AsSplitQuery()
             .ToList();
 
     /// <inheritdoc/>
@@ -58,12 +62,12 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
             .Any(t => t.Source.Fund.Id == fundId || t.Destinations.Any(d => d.Fund.Id == fundId));
 
     /// <inheritdoc/>
-    public Transaction GetById(TransactionId id) => databaseContext.Transactions.Single(transaction => transaction.Id == id);
+    public Transaction GetById(TransactionId id) => databaseContext.Transactions.AsSplitQuery().Single(transaction => transaction.Id == id);
 
     /// <inheritdoc/>
     public bool TryGetById(Guid id, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out Transaction? transaction)
     {
-        transaction = databaseContext.Transactions.SingleOrDefault(candidate => candidate.Id == new TransactionId(id))
+        transaction = databaseContext.Transactions.AsSplitQuery().SingleOrDefault(candidate => candidate.Id == new TransactionId(id))
             ?? databaseContext.Transactions.Local.SingleOrDefault(candidate => candidate.Id == new TransactionId(id));
         return transaction != null;
     }
