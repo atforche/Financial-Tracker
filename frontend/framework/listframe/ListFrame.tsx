@@ -38,6 +38,8 @@ interface EmptyStateDefinition {
  */
 interface ListFrameProps<T> {
   readonly title: string;
+  /** The viewport width at which the fixed-width desktop table is suitable. */
+  readonly desktopBreakpoint?: "sm" | "md" | "lg" | "xl";
   readonly headerContent?: ReactNode;
   readonly color?: FrameColor;
   readonly columns: readonly ColumnDefinition<T>[];
@@ -58,6 +60,7 @@ interface ListFrameProps<T> {
  */
 const ListFrame = function <T>({
   title,
+  desktopBreakpoint = "lg",
   headerContent,
   color = "primary",
   columns,
@@ -86,6 +89,10 @@ const ListFrame = function <T>({
       : typeof currentSearch === "string" && currentSearch.trim() !== "";
 
   const hasLoadingCompleted = data !== null && totalCount !== null;
+  const desktopLayoutSx = {
+    display: { xs: "none", [desktopBreakpoint]: "block" },
+    overflowX: "hidden",
+  };
   const numberOfRows = data?.length ?? 0;
   const placeholderRowCount =
     hasLoadingCompleted && numberOfRows > 0 ? rowsPerPage - numberOfRows : 0;
@@ -126,8 +133,8 @@ const ListFrame = function <T>({
           overflow: "hidden",
         }}
       >
-        <TableContainer sx={{ display: { xs: "none", md: "block" } }}>
-          <Table stickyHeader>
+        <TableContainer sx={desktopLayoutSx}>
+          <Table stickyHeader sx={{ tableLayout: "fixed", width: "100%" }}>
             <TableHead>
               <TableRow>
                 {columns.map((column) => (
@@ -171,6 +178,10 @@ const ListFrame = function <T>({
                             align={column.alignment ?? "left"}
                             sx={[
                               {
+                                minWidth: 0,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
                                 paddingTop: "8px",
                                 paddingBottom: "8px",
                               },
@@ -235,6 +246,7 @@ const ListFrame = function <T>({
           placeholderRowCount={
             hasLoadingCompleted ? placeholderRowCount : rowsPerPage
           }
+          desktopBreakpoint={desktopBreakpoint}
         />
         {hasLoadingCompleted && totalCount > 0 ? (
           <TablePagination

@@ -1,10 +1,7 @@
-import { TableCell, TableSortLabel } from "@mui/material";
+import { Box, TableCell, TableSortLabel } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
-
-/** Default width for a column in the list frame. */
-const defaultColumnWidth = 100;
 
 /**
  * Props for the ColumnHeader component.
@@ -25,8 +22,12 @@ const ColumnHeader = function <T>({
       align={column.alignment ?? "left"}
       sx={[
         {
-          maxWidth: column.maxWidth ?? defaultColumnWidth,
-          minWidth: column.minWidth,
+          width:
+            column.minWidth === column.maxWidth ? column.minWidth : undefined,
+          minWidth: 0,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
           backgroundColor: "primary.main",
           color: "white",
         },
@@ -49,8 +50,19 @@ const ColumnHeader = function <T>({
               column.onSort(null);
             }
           }}
+          sx={{ maxWidth: "100%" }}
         >
-          <div style={{ color: "white" }}>{column.headerContent}</div>
+          <Box
+            component="span"
+            sx={{
+              minWidth: 0,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {column.headerContent}
+          </Box>
         </TableSortLabel>
       ) : (
         column.headerContent

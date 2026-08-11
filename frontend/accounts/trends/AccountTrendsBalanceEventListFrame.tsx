@@ -139,6 +139,7 @@ const AccountTrendsBalanceEventListFrame = function ({
   return (
     <ListFrame<AccountBalanceEvent>
       title="Balance Events"
+      desktopBreakpoint="xl"
       columns={columns}
       getId={(balanceEvent) =>
         `${balanceEvent.transactionId}-${balanceEvent.account.id}-${balanceEvent.eventDate ?? "pending"}-${balanceEvent.type}-${balanceEvent.amount}`
