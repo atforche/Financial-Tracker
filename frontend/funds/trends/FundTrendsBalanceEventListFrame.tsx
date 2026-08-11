@@ -133,6 +133,7 @@ const FundTrendsBalanceEventListFrame = function ({
   return (
     <ListFrame<FundBalanceEvent>
       title="Balance Events"
+      desktopBreakpoint="xl"
       columns={columns}
       getId={(balanceEvent) =>
         `${balanceEvent.transactionId}-${balanceEvent.fund.id}-${balanceEvent.accountingPeriod.id}-${balanceEvent.eventDate}-${balanceEvent.type}-${balanceEvent.amount}`

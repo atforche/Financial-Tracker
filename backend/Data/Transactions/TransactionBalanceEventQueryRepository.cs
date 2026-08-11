@@ -23,19 +23,19 @@ public sealed class TransactionBalanceEventQueryRepository(DatabaseContext datab
         CancellationToken cancellationToken = default)
     {
         List<SpendingTransaction> spendingTransactions = await databaseContext.Transactions
-            .OfType<SpendingTransaction>().AsNoTracking()
+            .OfType<SpendingTransaction>().AsNoTracking().AsSplitQuery()
             .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
             .Where(transaction => transaction.Source.Account.Id == accountId
                 || transaction.Destinations.Any(destination => destination.Account != null && destination.Account.Id == accountId))
             .ToListAsync(cancellationToken);
         List<IncomeTransaction> incomeTransactions = await databaseContext.Transactions
-            .OfType<IncomeTransaction>().AsNoTracking()
+            .OfType<IncomeTransaction>().AsNoTracking().AsSplitQuery()
             .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
             .Where(transaction => (transaction.Source.Account != null && transaction.Source.Account.Id == accountId)
                 || transaction.Destinations.Any(destination => destination.Account.Id == accountId))
             .ToListAsync(cancellationToken);
         List<AccountTransaction> accountTransactions = await databaseContext.Transactions
-            .OfType<AccountTransaction>().AsNoTracking()
+            .OfType<AccountTransaction>().AsNoTracking().AsSplitQuery()
             .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
             .Where(transaction => (transaction.Source.Account != null && transaction.Source.Account.Id == accountId)
                 || transaction.Destinations.Any(destination => destination.Account != null && destination.Account.Id == accountId))
@@ -48,7 +48,7 @@ public sealed class TransactionBalanceEventQueryRepository(DatabaseContext datab
         DateOnly startDate,
         DateOnly endDate,
         CancellationToken cancellationToken = default) =>
-        await databaseContext.Transactions.AsNoTracking()
+        await databaseContext.Transactions.AsNoTracking().AsSplitQuery()
             .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
             .ToListAsync(cancellationToken);
 
@@ -56,7 +56,7 @@ public sealed class TransactionBalanceEventQueryRepository(DatabaseContext datab
     public async Task<IReadOnlyCollection<Transaction>> GetAsync(
         IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds,
         CancellationToken cancellationToken = default) =>
-        await databaseContext.Transactions.AsNoTracking()
+        await databaseContext.Transactions.AsNoTracking().AsSplitQuery()
             .Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId))
             .ToListAsync(cancellationToken);
 
@@ -66,17 +66,17 @@ public sealed class TransactionBalanceEventQueryRepository(DatabaseContext datab
         CancellationToken cancellationToken = default)
     {
         List<SpendingTransaction> spendingTransactions = await databaseContext.Transactions
-            .OfType<SpendingTransaction>().AsNoTracking()
+            .OfType<SpendingTransaction>().AsNoTracking().AsSplitQuery()
             .Where(transaction => (accountIds.Contains(transaction.Source.Account.Id) && transaction.Source.PostedDate == null)
                 || transaction.Destinations.Any(destination => destination.Account != null && accountIds.Contains(destination.Account.Id) && destination.PostedDate == null))
             .ToListAsync(cancellationToken);
         List<IncomeTransaction> incomeTransactions = await databaseContext.Transactions
-            .OfType<IncomeTransaction>().AsNoTracking()
+            .OfType<IncomeTransaction>().AsNoTracking().AsSplitQuery()
             .Where(transaction => (transaction.Source.Account != null && accountIds.Contains(transaction.Source.Account.Id) && transaction.Source.PostedDate == null)
                 || transaction.Destinations.Any(destination => accountIds.Contains(destination.Account.Id) && destination.PostedDate == null))
             .ToListAsync(cancellationToken);
         List<AccountTransaction> accountTransactions = await databaseContext.Transactions
-            .OfType<AccountTransaction>().AsNoTracking()
+            .OfType<AccountTransaction>().AsNoTracking().AsSplitQuery()
             .Where(transaction => (transaction.Source.Account != null && accountIds.Contains(transaction.Source.Account.Id) && transaction.Source.PostedDate == null)
                 || transaction.Destinations.Any(destination => destination.Account != null && accountIds.Contains(destination.Account.Id) && destination.PostedDate == null))
             .ToListAsync(cancellationToken);
@@ -89,12 +89,12 @@ public sealed class TransactionBalanceEventQueryRepository(DatabaseContext datab
         CancellationToken cancellationToken = default)
     {
         List<SpendingTransaction> spendingTransactions = await databaseContext.Transactions
-            .OfType<SpendingTransaction>().AsNoTracking()
+            .OfType<SpendingTransaction>().AsNoTracking().AsSplitQuery()
             .Where(transaction => transaction.Destinations.Any(destination => destination.PostedDate == null
                 && destination.FundAssignments.Any(amount => fundIds.Contains(amount.FundId))))
             .ToListAsync(cancellationToken);
         List<IncomeTransaction> incomeTransactions = await databaseContext.Transactions
-            .OfType<IncomeTransaction>().AsNoTracking()
+            .OfType<IncomeTransaction>().AsNoTracking().AsSplitQuery()
             .Where(transaction => transaction.Destinations.Any(destination => destination.PostedDate == null
                 && destination.FundAssignments.Any(amount => fundIds.Contains(amount.FundId))))
             .ToListAsync(cancellationToken);

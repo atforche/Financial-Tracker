@@ -103,8 +103,8 @@ const AccountingPeriodWorkspaceListFrame = function ({
         />
       ),
       alignment: "center",
-      minWidth: 0,
-      maxWidth: 0,
+      minWidth: 52,
+      maxWidth: 52,
     },
     {
       name: "period",

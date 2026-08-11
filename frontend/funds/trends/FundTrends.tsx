@@ -9,8 +9,8 @@ import type {
 } from "@/funds/trends/helpers";
 import {
   getPageOffset,
+  getRowsPerPage,
   normalizePageValue,
-  rowsPerPage,
 } from "@/framework/listframe/page";
 import {
   normalizeRequestedFundNames,
@@ -28,6 +28,7 @@ import FundTrendsSummaryCards from "@/funds/trends/FundTrendsSummaryCards";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
@@ -52,6 +53,7 @@ const FundTrends = async function ({
   const {
     sort,
     page,
+    pageSize,
     balanceEventSort,
     balanceEventPage,
     mode,
@@ -87,6 +89,7 @@ const FundTrends = async function ({
     toRepeatedSearchParams(fundName),
   );
   const currentPage = normalizePageValue(page);
+  const rowsPerPage = getRowsPerPage(pageSize);
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
 
   const persistedFilters = {
@@ -137,13 +140,13 @@ const FundTrends = async function ({
     ...(typeof sort === "string" ? { Sort: sort } : {}),
     ...filterQuery,
     Limit: rowsPerPage,
-    Offset: getPageOffset(currentPage),
+    Offset: getPageOffset(currentPage, rowsPerPage),
   };
   const balanceEventQuery = {
     ...(typeof balanceEventSort === "string" ? { Sort: balanceEventSort } : {}),
     ...filterQuery,
     Limit: rowsPerPage,
-    Offset: getPageOffset(currentBalanceEventPage),
+    Offset: getPageOffset(currentBalanceEventPage, rowsPerPage),
   };
   const { trends, balanceEvents } = await (async function (): Promise<{
     trends: FundsInDateRange | FundsInAccountingPeriodRange;
@@ -212,6 +215,7 @@ const FundTrends = async function ({
 
   return (
     <PageLayout>
+      <ResponsivePageSize desktopBreakpoint="xl" />
       <ConstrainedContent>
         <FundTrendsFilter
           accountingPeriods={accountingPeriods.items}

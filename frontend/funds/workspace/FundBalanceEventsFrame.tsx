@@ -76,6 +76,7 @@ const FundBalanceEventsFrame = function ({
   return (
     <ListFrame<FundBalanceEvent>
       title="Recent Balance Events"
+      desktopBreakpoint="xl"
       color="info"
       headerContent={
         !canWrite ? undefined : (

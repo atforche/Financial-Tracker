@@ -8,6 +8,7 @@ import { chartFontFamily } from "@/framework/charts/chartStyles";
  */
 interface ChartFrameProps {
   readonly title: string;
+  readonly headerContent?: ReactNode;
   readonly emptyMessage: string;
   readonly hasData: boolean;
   readonly children: ReactNode;
@@ -21,6 +22,7 @@ interface ChartFrameProps {
  */
 const ChartFrame = function ({
   title,
+  headerContent,
   emptyMessage,
   hasData,
   children,
@@ -29,7 +31,7 @@ const ChartFrame = function ({
   color = "primary",
 }: ChartFrameProps): JSX.Element {
   return (
-    <Frame title={title} color={color}>
+    <Frame title={title} headerContent={headerContent} color={color}>
       <Box sx={{ p: { xs: 2, md: 1.5 } }}>
         <Stack spacing={hasData ? 2.5 : 1}>
           {hasData ? (

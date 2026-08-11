@@ -1,14 +1,16 @@
 import { Button, Stack, Typography } from "@mui/material";
 import {
   getPageOffset,
+  getRowsPerPage,
   normalizePageValue,
-  rowsPerPage,
 } from "@/framework/listframe/page";
+import { AccountBalanceEventSort } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import type { JSX } from "react";
 import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
+import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import ViewAccountForm from "@/accounts/workspace/ViewAccountForm";
 import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
@@ -36,23 +38,32 @@ const AccountWorkspaceDetailPage = async function ({
 }: AccountWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { accountId } = await params;
   const resolvedSearchParams = await searchParams;
-  const { search, accountType, balanceEventPage, balanceEventSort } =
+  const { search, accountType, balanceEventPage, balanceEventSort, pageSize } =
     resolvedSearchParams;
   const apiClient = await createApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
-  const balanceEventOffset = getPageOffset(currentBalanceEventPage);
+  const rowsPerPage = getRowsPerPage(pageSize);
+  const balanceEventOffset = getPageOffset(
+    currentBalanceEventPage,
+    rowsPerPage,
+  );
+  const recentActivityEndDate = dayjs().format("YYYY-MM-DD");
+  const recentActivityStartDate = dayjs()
+    .subtract(60, "day")
+    .format("YYYY-MM-DD");
   const [
     accountsResponse,
     balanceEventsResponse,
     financialInstitutionsResponse,
+    recentActivityResponse,
   ] = await Promise.all([
     apiClient.GET("/accounts/with-balances"),
     apiClient.GET("/accounts/{accountId}/balance-events", {
       params: {
         path: { accountId },
         query: {
-          "Range.Start": dayjs().subtract(60, "day").format("YYYY-MM-DD"),
-          "Range.End": dayjs().format("YYYY-MM-DD"),
+          "Range.Start": recentActivityStartDate,
+          "Range.End": recentActivityEndDate,
           Limit: rowsPerPage,
           Offset: balanceEventOffset,
           ...(balanceEventSort === undefined ? {} : { Sort: balanceEventSort }),
@@ -60,6 +71,18 @@ const AccountWorkspaceDetailPage = async function ({
       },
     }),
     apiClient.GET("/accounts/financial-institutions"),
+    apiClient.GET("/accounts/{accountId}/balance-events", {
+      params: {
+        path: { accountId },
+        query: {
+          "Range.Start": recentActivityStartDate,
+          "Range.End": recentActivityEndDate,
+          Sort: AccountBalanceEventSort.Date,
+          Limit: 500,
+          Offset: 0,
+        },
+      },
+    }),
   ]);
   const accounts = unwrapApiResponse(
     accountsResponse,
@@ -72,6 +95,10 @@ const AccountWorkspaceDetailPage = async function ({
   const financialInstitutions = unwrapApiResponse(
     financialInstitutionsResponse,
     "Failed to fetch financial institutions",
+  );
+  const recentActivity = unwrapApiResponse(
+    recentActivityResponse,
+    "Failed to fetch recent account activity",
   );
   const account = accounts.items.find((item) => item.id === accountId);
 
@@ -89,6 +116,20 @@ const AccountWorkspaceDetailPage = async function ({
   if (typeof account === "undefined") {
     redirect(workspaceUrl);
   }
+  const recentActivityBalances = unwrapApiResponse(
+    await apiClient.GET("/accounts/date-range", {
+      params: {
+        query: {
+          "Range.Start": recentActivityStartDate,
+          "Range.End": recentActivityEndDate,
+          "Filter.Names": [account.name],
+          Limit: 1,
+          Offset: 0,
+        },
+      },
+    }),
+    "Failed to fetch recent account balance history",
+  );
 
   const currentUrl = routes.workspaceDetail(account.id, detailSearchParams);
   const addTransactionHref = transactionRoutes.workspaceCreate({
@@ -98,6 +139,7 @@ const AccountWorkspaceDetailPage = async function ({
 
   return (
     <PageLayout>
+      <ResponsivePageSize desktopBreakpoint="xl" />
       <Stack spacing={2.5}>
         <Link
           href={workspaceUrl}
@@ -116,6 +158,14 @@ const AccountWorkspaceDetailPage = async function ({
         deleteRedirectUrl={workspaceUrl}
         recentBalanceEvents={balanceEvents.items}
         recentBalanceEventCount={balanceEvents.totalCount}
+        recentActivityEvents={recentActivity.items}
+        recentActivityBalances={recentActivityBalances.dates}
+        trendsHref={routes.trends({
+          mode: "date",
+          accountName: [account.name],
+          startDate: recentActivityStartDate,
+          endDate: recentActivityEndDate,
+        })}
         addTransactionHref={addTransactionHref}
       />
     </PageLayout>

@@ -15,6 +15,7 @@ interface ListFrameMobileProps<T> {
   readonly isRowSelected?: (item: T) => boolean;
   readonly onRowClick?: (item: T) => void;
   readonly placeholderRowCount: number;
+  readonly desktopBreakpoint: "sm" | "md" | "lg" | "xl";
 }
 
 /**
@@ -29,11 +30,18 @@ const ListFrameMobile = function <T>({
   isRowSelected,
   onRowClick,
   placeholderRowCount,
+  desktopBreakpoint,
 }: ListFrameMobileProps<T>): JSX.Element {
   const items = hasLoadingCompleted ? (data ?? []) : [];
 
   return (
-    <Stack spacing={1.25} sx={{ display: { xs: "flex", md: "none" }, p: 1.5 }}>
+    <Stack
+      spacing={1.25}
+      sx={{
+        display: { xs: "flex", [desktopBreakpoint]: "none" },
+        p: 1.5,
+      }}
+    >
       {items.map((item) => (
         <ListFrameMobileRow
           key={getId(item)}

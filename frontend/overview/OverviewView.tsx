@@ -1,7 +1,7 @@
 import {
   getPageOffset,
+  getRowsPerPage,
   normalizePageValue,
-  rowsPerPage,
 } from "@/framework/listframe/page";
 import { summarizeAccounts, summarizeFunds } from "@/overview/helpers";
 import AccountOverview from "@/overview/AccountOverview";
@@ -16,6 +16,7 @@ import type { JSX } from "react";
 import type { OverviewData } from "@/overview/types";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import type { TransactionSort } from "@/transactions/types";
 import { Typography } from "@mui/material";
 import createApiClient from "@/framework/data/createApiClient";
@@ -75,6 +76,7 @@ const getOverviewData = async function (): Promise<OverviewData> {
 interface OverviewSearchParams {
   currentTransactionSort?: TransactionSort;
   currentTransactionPage?: number | string | null;
+  pageSize?: number | string | null;
 }
 
 /**
@@ -90,9 +92,11 @@ interface OverviewViewProps {
 const OverviewView = async function ({
   searchParams,
 }: OverviewViewProps): Promise<JSX.Element> {
-  const { currentTransactionPage, currentTransactionSort } = await searchParams;
+  const { currentTransactionPage, currentTransactionSort, pageSize } =
+    await searchParams;
   const data = await getOverviewData();
   const currentPage = normalizePageValue(currentTransactionPage);
+  const rowsPerPage = getRowsPerPage(pageSize);
   const apiClient = await createApiClient();
   const currentTransactions: AccountingPeriodWithTransactions | null =
     data.currentAccountingPeriod === null
@@ -108,7 +112,7 @@ const OverviewView = async function ({
                     ? {}
                     : { Sort: currentTransactionSort }),
                   Limit: rowsPerPage,
-                  Offset: getPageOffset(currentPage),
+                  Offset: getPageOffset(currentPage, rowsPerPage),
                 },
               },
             },
@@ -119,6 +123,7 @@ const OverviewView = async function ({
   return (
     <ConstrainedContent>
       <PageLayout>
+        <ResponsivePageSize desktopBreakpoint="lg" />
         <ContentSurface>
           <Typography variant="h4">
             Overview

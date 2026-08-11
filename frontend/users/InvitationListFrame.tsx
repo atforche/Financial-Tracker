@@ -2,7 +2,7 @@
 
 import { type JSX, useState } from "react";
 import { formatDate, formatUserRole } from "@/users/userManagementHelpers";
-import { getPaginationIndex, rowsPerPage } from "@/framework/listframe/page";
+import { getPaginationIndex, getRowsPerPage } from "@/framework/listframe/page";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ListFrame from "@/framework/listframe/ListFrame";
@@ -29,9 +29,11 @@ const InvitationListFrame = function ({
   const searchParams = useSearchParams();
   const [managedInvitation, setManagedInvitation] =
     useState<UserInvitation | null>(null);
+  const rowsPerPage = getRowsPerPage(searchParams.get("pageSize"));
   const paginationIndex = getPaginationIndex(
     searchParams.get(pageParamName),
     invitations.length,
+    rowsPerPage,
   );
   const pageInvitations = invitations.slice(
     paginationIndex * rowsPerPage,

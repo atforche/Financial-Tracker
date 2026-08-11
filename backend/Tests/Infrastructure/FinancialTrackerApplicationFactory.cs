@@ -4,6 +4,7 @@ using Domain.Users;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -33,7 +34,11 @@ internal class FinancialTrackerApplicationFactory : WebApplicationFactory<Progra
             _ = services.RemoveAll<DbContextOptions<DatabaseContext>>();
             _ = services.RemoveAll<DbContextOptions>();
             _ = services.RemoveAll<DatabaseContext>();
-            _ = services.AddDbContext<DatabaseContext>(options => options.UseSqlite($"Data Source={_databasePath}"));
+            _ = services.AddDbContext<DatabaseContext>(options =>
+            {
+                _ = options.UseSqlite($"Data Source={_databasePath}");
+                _ = options.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
+            });
         });
     }
 

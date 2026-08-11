@@ -1,18 +1,21 @@
 import {
   getPageOffset,
+  getRowsPerPage,
   normalizePageValue,
-  rowsPerPage,
 } from "@/framework/listframe/page";
 import {
   isNotNullOrUndefined,
   isNullOrUndefined,
 } from "@/framework/nullHelpers";
+import { FundGoalBalanceEventSort } from "@/fund-goals/types";
 import FundGoalWorkspacePageHeader from "@/fund-goals/workspace/FundGoalWorkspacePageHeader";
 import type { FundGoalWorkspaceSearchParams } from "@/fund-goals/workspace/FundGoalWorkspace";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
+import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import ViewFundGoalForm from "@/fund-goals/workspace/ViewFundGoalForm";
 import createApiClient from "@/framework/data/createApiClient";
+import dayjs from "dayjs";
 import { redirect } from "next/navigation";
 import routes from "@/fund-goals/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
@@ -40,8 +43,10 @@ const FundGoalWorkspaceDetailPage = async function ({
     fundIds,
     search,
     balanceEventPage,
+    pageSize,
     balanceEventSort,
   } = await searchParams;
+  const rowsPerPage = getRowsPerPage(pageSize);
   const selectedFundIds = toRepeatedSearchParams(fundIds);
   const apiClient = await createApiClient();
   const periods = unwrapApiResponse(
@@ -69,19 +74,29 @@ const FundGoalWorkspaceDetailPage = async function ({
     goalResponse,
     "Failed to fetch the fund goal",
   );
-  const progress = unwrapApiResponse(
-    await apiClient.GET(
-      "/fund-goals/{fundGoalId}/progress/{accountingPeriodId}",
-      {
-        params: {
-          path: { fundGoalId: fundGoal.id, accountingPeriodId: periodId },
-        },
+  if (isNullOrUndefined(fundGoal.accountingPeriod)) {
+    redirect(workspaceUrl);
+  }
+  const recentActivityStartDate = dayjs()
+    .year(fundGoal.accountingPeriod.year)
+    .month(fundGoal.accountingPeriod.month - 1)
+    .startOf("month")
+    .format("YYYY-MM-DD");
+  const recentActivityEndDate = dayjs(recentActivityStartDate)
+    .endOf("month")
+    .format("YYYY-MM-DD");
+  const [
+    progressResponse,
+    eventsResponse,
+    recentActivityResponse,
+    recentActivityBalancesResponse,
+  ] = await Promise.all([
+    apiClient.GET("/fund-goals/{fundGoalId}/progress/{accountingPeriodId}", {
+      params: {
+        path: { fundGoalId: fundGoal.id, accountingPeriodId: periodId },
       },
-    ),
-    "Failed to fetch Fund Goal progress",
-  );
-  const events = unwrapApiResponse(
-    await apiClient.GET("/fund-goals/balance-events/accounting-period-range", {
+    }),
+    apiClient.GET("/fund-goals/balance-events/accounting-period-range", {
       params: {
         query: {
           "Range.Start": periodId,
@@ -89,14 +104,56 @@ const FundGoalWorkspaceDetailPage = async function ({
           "Filter.FundIds": [fundId],
           "Filter.AccountingPeriodIds": [periodId],
           Limit: rowsPerPage,
-          Offset: getPageOffset(normalizePageValue(balanceEventPage)),
+          Offset: getPageOffset(
+            normalizePageValue(balanceEventPage),
+            rowsPerPage,
+          ),
           ...(isNotNullOrUndefined(balanceEventSort)
             ? { Sort: balanceEventSort }
             : {}),
         },
       },
     }),
+    apiClient.GET("/fund-goals/balance-events/accounting-period-range", {
+      params: {
+        query: {
+          "Range.Start": periodId,
+          "Range.End": periodId,
+          "Filter.FundIds": [fundId],
+          "Filter.AccountingPeriodIds": [periodId],
+          Sort: FundGoalBalanceEventSort.Date,
+          Limit: 500,
+          Offset: 0,
+        },
+      },
+    }),
+    apiClient.GET("/funds/date-range", {
+      params: {
+        query: {
+          "Range.Start": recentActivityStartDate,
+          "Range.End": recentActivityEndDate,
+          "Filter.Names": [fundGoal.fund.name],
+          Limit: 1,
+          Offset: 0,
+        },
+      },
+    }),
+  ]);
+  const progress = unwrapApiResponse(
+    progressResponse,
+    "Failed to fetch Fund Goal progress",
+  );
+  const events = unwrapApiResponse(
+    eventsResponse,
     "Failed to fetch Fund Goal balance events",
+  );
+  const recentActivity = unwrapApiResponse(
+    recentActivityResponse,
+    "Failed to fetch recent Fund Goal activity",
+  );
+  const recentActivityBalances = unwrapApiResponse(
+    recentActivityBalancesResponse,
+    "Failed to fetch recent Fund Goal balance history",
   );
   const currentUrl = routes.workspaceDetail(fundId, {
     accountingPeriodId: periodId,
@@ -107,6 +164,7 @@ const FundGoalWorkspaceDetailPage = async function ({
   });
   return (
     <PageLayout>
+      <ResponsivePageSize desktopBreakpoint="lg" />
       <FundGoalWorkspacePageHeader
         backHref={workspaceUrl}
         title="Goal Details"
@@ -117,6 +175,13 @@ const FundGoalWorkspaceDetailPage = async function ({
         redirectUrl={currentUrl}
         recentBalanceEvents={events.items}
         recentBalanceEventCount={events.totalCount}
+        recentActivityEvents={recentActivity.items}
+        recentActivityBalances={recentActivityBalances.dates}
+        trendsHref={routes.trends({
+          fundName: [fundGoal.fund.name],
+          startAccountingPeriodId: periodId,
+          endAccountingPeriodId: periodId,
+        })}
         addTransactionHref={transactionRoutes.workspaceCreate({
           accountingPeriodIds: [periodId],
           fundIds: [fundId],

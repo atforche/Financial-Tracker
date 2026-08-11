@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data.AccountingPeriods;
 
@@ -10,6 +11,7 @@ public class AccountingPeriodBalanceHistoryRepository(DatabaseContext databaseCo
     /// <inheritdoc/>
     public AccountingPeriodBalanceHistory GetForAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
         databaseContext.AccountingPeriodBalanceHistories
+            .AsSplitQuery()
             .SingleOrDefault(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.AccountingPeriod.Id == accountingPeriodId)
         ?? databaseContext.AccountingPeriodBalanceHistories.Local
             .Single(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.AccountingPeriod.Id == accountingPeriodId);

@@ -232,7 +232,7 @@ public sealed class TransactionConverter(
                 FundGoals = destination.FundAssignments.Where(amount => amount.FundId != Fund.UnassignedFundId).Select(amount =>
                     fundGoalBalanceEventConverter.ToModel(details.GetFundGoalEvent(
                         amount,
-                        destination.PostedDate,
+                        destination.Account == null ? spending.Source.PostedDate : destination.PostedDate,
                         BalanceEventType.Debit))).ToList(),
             }).ToList(),
         },

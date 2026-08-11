@@ -103,6 +103,10 @@ const ListFrameMobileRow = function <T>({
   const detailColumns = labeledColumns.filter(
     (column) => column !== primaryColumn,
   );
+  const mobileColumns =
+    primaryColumn === undefined
+      ? detailColumns
+      : [primaryColumn, ...detailColumns];
   const utilityColumns = columns.filter(
     (column) => !labeledColumns.includes(column),
   );
@@ -140,68 +144,60 @@ const ListFrameMobileRow = function <T>({
           : false,
       ]}
     >
-      <Stack spacing={1.25}>
-        <Stack
-          direction="row"
-          spacing={1}
-          alignItems="flex-start"
-          justifyContent="space-between"
+      <Stack direction="row" spacing={1} alignItems="flex-start">
+        <Box
+          sx={{
+            display: "grid",
+            gap: 1.25,
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            minWidth: 0,
+            flex: 1,
+          }}
         >
-          {primaryColumn ? (
-            <Stack spacing={0.25} sx={{ minWidth: 0, flex: 1 }}>
-              <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                {getMobileColumnHeader(primaryColumn)}
-              </Typography>
-              <ListFrameMobileValue prominent>
-                {primaryColumn.getBodyContent(item)}
-              </ListFrameMobileValue>
-            </Stack>
-          ) : (
-            <Box sx={{ flex: 1 }} />
-          )}
-          {utilityColumns.length > 0 ? (
-            <Stack
-              direction="row"
-              spacing={0.5}
-              alignItems="center"
-              sx={{ flexShrink: 0 }}
+          {mobileColumns.map((column) => (
+            <Box
+              key={`${id}-${column.name}-mobile-field`}
+              sx={{
+                display: "grid",
+                columnGap: 0.75,
+                gridTemplateColumns: "7.5rem minmax(0, 1fr)",
+                alignItems: "baseline",
+                minWidth: 0,
+              }}
             >
-              {utilityColumns.map((column) => (
-                <Box
-                  key={`${id}-${column.name}-mobile-utility`}
-                  sx={{ display: "flex", alignItems: "center" }}
-                >
-                  {column.getBodyContent(item)}
-                </Box>
-              ))}
-            </Stack>
-          ) : null}
-        </Stack>
-        {detailColumns.length > 0 ? (
-          <Box
-            sx={{
-              display: "grid",
-              gap: 1.25,
-              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            }}
-          >
-            {detailColumns.map((column) => (
-              <Box
-                key={`${id}-${column.name}-mobile-detail`}
-                sx={{ minWidth: 0, overflowWrap: "anywhere" }}
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "text.secondary",
+                  overflowWrap: "anywhere",
+                }}
               >
-                <Typography
-                  variant="caption"
-                  sx={{ color: "text.secondary", display: "block" }}
-                >
-                  {getMobileColumnHeader(column)}
-                </Typography>
-                <ListFrameMobileValue>
+                {getMobileColumnHeader(column)}
+              </Typography>
+              <Box sx={{ minWidth: 0 }}>
+                <ListFrameMobileValue prominent={column === primaryColumn}>
                   {column.getBodyContent(item)}
                 </ListFrameMobileValue>
               </Box>
+            </Box>
+          ))}
+        </Box>
+        {utilityColumns.length > 0 ? (
+          <Stack
+            direction="row"
+            spacing={0.5}
+            alignItems="center"
+            sx={{ flexShrink: 0 }}
+          >
+            {utilityColumns.map((column) => (
+              <Box
+                key={`${id}-${column.name}-mobile-utility`}
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                {column.getBodyContent(item)}
+              </Box>
             ))}
-          </Box>
+          </Stack>
         ) : null}
       </Stack>
     </Paper>

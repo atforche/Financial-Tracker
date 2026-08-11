@@ -51,9 +51,9 @@ const Navigation = function ({
         [`& .MuiToolbar-root`]: { padding: "12px" },
         display:
           visibility === "desktop"
-            ? { xs: "none", md: "block" }
+            ? { xs: "none", xl: "block" }
             : visibility === "mobile"
-              ? { xs: "block", md: "none" }
+              ? { xs: "block", xl: "none" }
               : undefined,
         flexShrink: 0,
         width: navigationWidth,

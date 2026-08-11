@@ -14,7 +14,7 @@ import {
   type BalanceTrendChartPoint,
   getBalanceTrendTooltipPoint,
 } from "@/framework/charts/balanceTrendHelpers";
-import { type JSX, useId } from "react";
+import { type JSX, type ReactNode, useId } from "react";
 import { alpha, useTheme } from "@mui/material/styles";
 import {
   chartMargin,
@@ -35,6 +35,7 @@ interface BalanceTrendChartProps {
   readonly chartPoints: readonly BalanceTrendChartPoint[];
   readonly xAxisLabel: string;
   readonly title?: string;
+  readonly headerContent?: ReactNode;
   readonly emptyMessage?: string;
   readonly yAxisLabel?: string;
   readonly tickFormatter?: (value: number) => string;
@@ -49,6 +50,7 @@ const BalanceTrendChart = function ({
   chartPoints,
   xAxisLabel,
   title = "Balance Trend",
+  headerContent,
   emptyMessage = "No balance history is available for the selected trends range.",
   yAxisLabel = "Total Balance",
   tickFormatter = formatCompactCurrency,
@@ -58,10 +60,15 @@ const BalanceTrendChart = function ({
   const gradientId = `balance-trend-fill-${useId().replaceAll(":", "")}`;
   const theme = useTheme();
   const lineColor = theme.palette[color].main;
+  const chartData = chartPoints.map((point, index) => ({
+    ...point,
+    xAxisValue: index.toString(),
+  }));
 
   return (
     <ChartFrame
       title={title}
+      headerContent={headerContent}
       emptyMessage={emptyMessage}
       hasData={chartPoints.length > 0}
       color={color}
@@ -69,7 +76,7 @@ const BalanceTrendChart = function ({
       yAxisLabel={yAxisLabel}
     >
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={chartPoints} margin={chartMargin}>
+        <AreaChart data={chartData} margin={chartMargin}>
           <defs>
             <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%" stopColor={alpha(lineColor, 0.28)} />
@@ -83,10 +90,13 @@ const BalanceTrendChart = function ({
           />
           <XAxis
             axisLine={false}
-            dataKey="tickLabel"
+            dataKey="xAxisValue"
             interval="preserveStartEnd"
             minTickGap={24}
             tick={xAxisTick}
+            tickFormatter={(value: string): string =>
+              chartData[Number(value)]?.tickLabel ?? value
+            }
             tickLine={false}
           />
           <YAxis
@@ -107,6 +117,9 @@ const BalanceTrendChart = function ({
                 <ChartTooltip
                   label={point.tooltipLabel}
                   value={valueFormatter(point.balance)}
+                  {...(typeof point.description === "string"
+                    ? { description: point.description }
+                    : {})}
                 />
               );
             }}

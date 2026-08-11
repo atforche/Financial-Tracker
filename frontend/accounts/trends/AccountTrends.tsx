@@ -9,8 +9,8 @@ import type {
 } from "@/accounts/trends/helpers";
 import {
   getPageOffset,
+  getRowsPerPage,
   normalizePageValue,
-  rowsPerPage,
 } from "@/framework/listframe/page";
 import {
   normalizeAccountTypes,
@@ -32,6 +32,7 @@ import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import type { TrendRangeMode } from "@/framework/routes/trendRange";
 import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
@@ -57,6 +58,7 @@ const AccountTrends = async function ({
   const {
     sort,
     page,
+    pageSize,
     balanceEventSort,
     balanceEventPage,
     mode,
@@ -96,6 +98,7 @@ const AccountTrends = async function ({
     toRepeatedSearchParams(accountName),
   );
   const currentPage = normalizePageValue(page);
+  const rowsPerPage = getRowsPerPage(pageSize);
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
 
   const persistedFilters = {
@@ -152,13 +155,13 @@ const AccountTrends = async function ({
     ...(typeof sort === "string" ? { Sort: sort } : {}),
     ...filterQuery,
     Limit: rowsPerPage,
-    Offset: getPageOffset(currentPage),
+    Offset: getPageOffset(currentPage, rowsPerPage),
   };
   const balanceEventQuery = {
     ...(typeof balanceEventSort === "string" ? { Sort: balanceEventSort } : {}),
     ...filterQuery,
     Limit: rowsPerPage,
-    Offset: getPageOffset(currentBalanceEventPage),
+    Offset: getPageOffset(currentBalanceEventPage, rowsPerPage),
   };
   const { trends, balanceEvents } = await (async function (): Promise<{
     trends: AccountsInDateRange | AccountsInAccountingPeriodRange;
@@ -236,6 +239,7 @@ const AccountTrends = async function ({
 
   return (
     <PageLayout>
+      <ResponsivePageSize desktopBreakpoint="xl" />
       <ConstrainedContent>
         <AccountTrendsFilter
           accountingPeriods={accountingPeriods.items}
