@@ -39,6 +39,7 @@ interface BalanceTrendChartPoint {
   readonly tickLabel: string;
   readonly tooltipLabel: string;
   readonly balance: number;
+  readonly description?: string;
 }
 
 /**
@@ -48,6 +49,7 @@ interface BalanceTrendChartPointCandidate {
   readonly tickLabel?: unknown;
   readonly tooltipLabel?: unknown;
   readonly balance?: unknown;
+  readonly description?: unknown;
 }
 
 /**
@@ -64,6 +66,7 @@ const isBalanceTrendChartPoint = function (
     tickLabel: value["tickLabel"],
     tooltipLabel: value["tooltipLabel"],
     balance: value["balance"],
+    description: value["description"],
   };
 
   return (
@@ -87,6 +90,9 @@ const toBalanceTrendChartPoint = function (
     tickLabel: value.tickLabel,
     tooltipLabel: value.tooltipLabel,
     balance: value.balance,
+    ...(typeof value.description === "string"
+      ? { description: value.description }
+      : {}),
   };
 };
 

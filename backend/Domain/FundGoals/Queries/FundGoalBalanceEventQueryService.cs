@@ -139,7 +139,7 @@ public sealed class FundGoalBalanceEventQueryService(
                     transaction,
                     period,
                     funds[amount.FundId],
-                    destination.PostedDate,
+                    destination.Account == null ? spending.Source.PostedDate : destination.PostedDate,
                     amount.Amount,
                     BalanceEventType.Debit,
                     ToParty(spending.Source.Account, null, null),
@@ -203,6 +203,10 @@ public sealed class FundGoalBalanceEventQueryService(
         FundGoalTotalsHistory? current = histories.SingleOrDefault(history => history.TransactionId == transaction.Id);
         int index = current == null ? -1 : histories.IndexOf(current);
         FundGoalTotalsHistory? previous = index > 0 ? histories[index - 1] : null;
+        FundGoalTotals previousTotals = ToTotals(fund.Id, previous);
+        FundGoalTotals newTotals = postedDate == null
+            ? ToTotals(fund.Id, current)
+            : transaction.ApplyAllPostedEffectsToFundGoalTotals(previousTotals);
         return new FundGoalBalanceEvent(
             period,
             transaction.Id,
@@ -216,8 +220,8 @@ public sealed class FundGoalBalanceEventQueryService(
             fund,
             source,
             destinations,
-            ToTotals(fund.Id, previous),
-            ToTotals(fund.Id, current));
+            previousTotals,
+            newTotals);
     }
 
     /// <summary>
@@ -233,11 +237,11 @@ public sealed class FundGoalBalanceEventQueryService(
     private static FundGoalTotals ToTotals(FundId fundId, FundGoalTotalsHistory? history) => new(
         fundId,
         history?.AmountAssigned ?? 0,
-        0,
-        history?.RegularAmountAssigned ?? 0,
         history?.AmountSpent ?? 0,
         history?.RegularAmountAssigned ?? 0,
-        0);
+        history?.AmountAssigned ?? 0,
+        history?.RegularAmountAssigned ?? 0,
+        history?.AmountSpent ?? 0);
 
     /// <summary>
     /// Projects pending events from final posted Fund Goal totals in transaction order.

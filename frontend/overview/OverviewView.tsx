@@ -16,6 +16,7 @@ import type { JSX } from "react";
 import type { OverviewData } from "@/overview/types";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import type { TransactionSort } from "@/transactions/types";
 import { Typography } from "@mui/material";
 import createApiClient from "@/framework/data/createApiClient";
@@ -122,6 +123,7 @@ const OverviewView = async function ({
   return (
     <ConstrainedContent>
       <PageLayout>
+        <ResponsivePageSize desktopBreakpoint="lg" />
         <ContentSurface>
           <Typography variant="h4">
             Overview

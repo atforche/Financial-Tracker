@@ -55,6 +55,50 @@ public sealed class BalanceEventProjectionTests
     }
 
     /// <summary>
+    /// Uses the spending source Account's posting date for Fund Goal spending events.
+    /// </summary>
+    [Fact]
+    public async Task PostedSpendingEventsArePostedForFundGoals()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        TransactionHandle transaction = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(25m).From(cash).To("Market", groceries).CreateAsync();
+        await test.Transactions.PostAsync(transaction, cash, new DateOnly(2026, 7, 16));
+
+        CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.Api.GetAsync<CollectionModel<FundGoalBalanceEventModel>>(
+            $"/fund-goals/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}");
+
+        FundGoalBalanceEventModel goal = Assert.Single(goalEvents.Items, item => item.TransactionId == transaction.Id);
+        Assert.True(goal.IsPosted);
+        Assert.Equal(new DateOnly(2026, 7, 16), goal.EventDate);
+    }
+
+    /// <summary>
+    /// Carries prior posted spending into later Fund Goal balance event totals.
+    /// </summary>
+    [Fact]
+    public async Task FundGoalEventsPreservePriorPostedSpendingTotals()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        TransactionHandle earlier = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 10)).For(25m).From(cash).To("Market", groceries).CreateAsync();
+        TransactionHandle later = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(15m).From(cash).To("Market", groceries).CreateAsync();
+        await test.Transactions.PostAsync(earlier, cash, new DateOnly(2026, 7, 10));
+        await test.Transactions.PostAsync(later, cash, new DateOnly(2026, 7, 15));
+
+        CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.Api.GetAsync<CollectionModel<FundGoalBalanceEventModel>>(
+            $"/fund-goals/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}");
+
+        FundGoalBalanceEventModel laterEvent = Assert.Single(goalEvents.Items, item => item.TransactionId == later.Id);
+        Assert.Equal(25m, laterEvent.PreviousTotals.AmountSpent);
+        Assert.Equal(40m, laterEvent.NewTotals.AmountSpent);
+    }
+
+    /// <summary>
     /// Projects a fund transfer with its counterparty Funds on both balance surfaces.
     /// </summary>
     [Fact]
