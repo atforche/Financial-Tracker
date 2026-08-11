@@ -59,7 +59,7 @@ const ApplicationShell = function ({
           color="inherit"
           elevation={0}
           sx={{
-            display: { xs: "block", md: "none" },
+            display: { xs: "block", xl: "none" },
             zIndex: (theme) => theme.zIndex.drawer + 1,
           }}
         >
@@ -107,7 +107,7 @@ const ApplicationShell = function ({
           component="main"
           sx={{ minWidth: 0, width: "100%", p: { xs: 2, sm: 3 } }}
         >
-          <Toolbar sx={{ display: { xs: "flex", md: "none" } }} />
+          <Toolbar sx={{ display: { xs: "flex", xl: "none" } }} />
           {children}
         </Box>
       </Stack>
