@@ -13,6 +13,7 @@ import { formatShortDate } from "@/framework/dateHelpers";
 interface FundTrendsSearchParams {
   sort?: FundWithBalanceRangeSort;
   page?: number | string | null;
+  pageSize?: number | string | null;
   balanceEventSort?: FundBalanceEventSort;
   balanceEventPage?: number | string | null;
   mode?: TrendRangeMode;
@@ -97,6 +98,7 @@ const getFundTrendsSnapshot = function (
 const fundTrendsParamNames = {
   sort: "sort",
   page: "page",
+  pageSize: "pageSize",
   balanceEventSort: "balanceEventSort",
   balanceEventPage: "balanceEventPage",
   mode: "mode",

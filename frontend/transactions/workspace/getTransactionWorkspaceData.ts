@@ -1,7 +1,7 @@
 import {
   getPageOffset,
+  getRowsPerPage,
   normalizePageValue,
-  rowsPerPage,
 } from "@/framework/listframe/page";
 import {
   normalizeStringSearchParams,
@@ -226,9 +226,11 @@ const getTransactionWorkspaceDetailReferenceData = async function (
 const getTransactionWorkspaceListData = async function (
   searchParams: TransactionWorkspaceSearchParams,
 ): Promise<TransactionWorkspaceListData> {
-  const { accountingPeriodIds, accountIds, fundIds, sort, page } = searchParams;
+  const { accountingPeriodIds, accountIds, fundIds, sort, page, pageSize } =
+    searchParams;
   const apiClient = await createApiClient();
   const currentPage = normalizePageValue(page);
+  const rowsPerPage = getRowsPerPage(pageSize);
   const normalizedAccountingPeriodIds = normalizeStringSearchParams(
     toRepeatedSearchParams(accountingPeriodIds),
   );
@@ -253,7 +255,7 @@ const getTransactionWorkspaceListData = async function (
           : {}),
         Sort: sort ?? null,
         Limit: rowsPerPage,
-        Offset: getPageOffset(currentPage),
+        Offset: getPageOffset(currentPage, rowsPerPage),
       },
     },
   });

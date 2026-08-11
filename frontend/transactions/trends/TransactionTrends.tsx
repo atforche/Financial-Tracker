@@ -1,8 +1,8 @@
 import type { TransactionSort, TransactionType } from "@/transactions/types";
 import {
   getPageOffset,
+  getRowsPerPage,
   normalizePageValue,
-  rowsPerPage,
 } from "@/framework/listframe/page";
 import {
   normalizeRequestedAccountNames,
@@ -44,6 +44,7 @@ type TransactionsTrendsFilterMode = "accounting-period" | "date";
 interface TransactionTrendsSearchParams {
   sort?: TransactionSort;
   page?: number | string | null;
+  pageSize?: number | string | null;
   mode?: TransactionsTrendsFilterMode;
   transactionType?: TransactionType | readonly TransactionType[];
   accountName?: string | readonly string[];
@@ -70,6 +71,7 @@ const TransactionTrends = async function ({
   const {
     sort,
     page,
+    pageSize,
     mode,
     transactionType,
     accountName,
@@ -111,6 +113,7 @@ const TransactionTrends = async function ({
     toRepeatedSearchParams(fundName),
   );
   const currentPage = normalizePageValue(page);
+  const rowsPerPage = getRowsPerPage(pageSize);
 
   const persistedFilters = {
     ...(typeof sort === "string" ? { sort } : {}),
@@ -206,7 +209,7 @@ const TransactionTrends = async function ({
     const pagedQuery = {
       ...query,
       Limit: rowsPerPage,
-      Offset: getPageOffset(currentPage),
+      Offset: getPageOffset(currentPage, rowsPerPage),
     };
     if (currentMode === "date") {
       const [listResponse, trendsResponse] = await Promise.all([

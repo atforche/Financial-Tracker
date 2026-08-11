@@ -6,6 +6,7 @@ import type { FundBalanceEventSort } from "@/funds/types";
 interface FundWorkspaceSearchParams {
   search?: string;
   balanceEventPage?: number | string | null;
+  pageSize?: number | string | null;
   balanceEventSort?: FundBalanceEventSort;
 }
 

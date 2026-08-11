@@ -11,7 +11,7 @@ const signInAsLocalDeveloper = async function (page: Page): Promise<void> {
   await page.goto("/admin/users");
   await expect(page).toHaveURL(/\/login\?callbackUrl=/u);
   await page.getByRole("button", { name: "Continue as Administrator" }).click();
-  await expect(page).toHaveURL(/\/admin\/users$/u);
+  await expect(page).toHaveURL((url) => url.pathname === "/admin/users");
 };
 
 const getRow = function (page: Page, email: string): Locator {
@@ -104,10 +104,12 @@ test("an administrator manages invitations and application user access", async (
   const standardEmail = "container-smoke-standard@example.test";
 
   await signInAsLocalDeveloper(page);
+  await page.getByLabel("Open navigation").click();
   await expect(page.getByRole("link", { name: "Manage users" })).toBeVisible();
   await expect(page.getByRole("link", { name: "User Management" })).toHaveCount(
     0,
   );
+  await page.getByRole("link", { name: "Manage users" }).click();
   await expect(page.getByRole("button", { name: "Invite user" })).toBeVisible();
 
   const userRow = getRow(page, standardEmail);
@@ -197,12 +199,14 @@ test("an administrator manages invitations and application user access", async (
       .getByRole("link", { name: "Trends", exact: true })
       .last(),
   ).toBeVisible();
-  await expect(standardSession.page).toHaveURL(/\/$/u);
+  await expect(standardSession.page).toHaveURL((url) => url.pathname === "/");
   await standardSession.page
     .getByRole("link", { name: "Trends", exact: true })
     .last()
     .click();
-  await expect(standardSession.page).toHaveURL(/\/accounts\/trends$/u);
+  await expect(standardSession.page).toHaveURL(
+    (url) => url.pathname === "/accounts/trends",
+  );
   await standardSession.page.goto("/admin/users");
   await expect(
     standardSession.page.getByText("Administrator access required"),

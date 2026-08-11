@@ -1,7 +1,7 @@
 import {
   getPageOffset,
+  getRowsPerPage,
   normalizePageValue,
-  rowsPerPage,
 } from "@/framework/listframe/page";
 import {
   isNotNullOrUndefined,
@@ -40,8 +40,10 @@ const FundGoalWorkspaceDetailPage = async function ({
     fundIds,
     search,
     balanceEventPage,
+    pageSize,
     balanceEventSort,
   } = await searchParams;
+  const rowsPerPage = getRowsPerPage(pageSize);
   const selectedFundIds = toRepeatedSearchParams(fundIds);
   const apiClient = await createApiClient();
   const periods = unwrapApiResponse(
@@ -89,7 +91,10 @@ const FundGoalWorkspaceDetailPage = async function ({
           "Filter.FundIds": [fundId],
           "Filter.AccountingPeriodIds": [periodId],
           Limit: rowsPerPage,
-          Offset: getPageOffset(normalizePageValue(balanceEventPage)),
+          Offset: getPageOffset(
+            normalizePageValue(balanceEventPage),
+            rowsPerPage,
+          ),
           ...(isNotNullOrUndefined(balanceEventSort)
             ? { Sort: balanceEventSort }
             : {}),

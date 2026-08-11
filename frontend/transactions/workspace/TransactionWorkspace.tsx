@@ -15,6 +15,7 @@ interface TransactionWorkspaceSearchParams {
   fundIds?: string | string[];
   sort?: TransactionSort | null;
   page?: number | string | null;
+  pageSize?: number | string | null;
   selectedTransactionId?: string;
   returnUrl?: string;
 }

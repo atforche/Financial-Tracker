@@ -3,7 +3,7 @@
 import { type JSX, useState } from "react";
 import { UserRoleModel, UserStatusModel } from "@/framework/data/api";
 import { formatDate, formatUserRole } from "@/users/userManagementHelpers";
-import { getPaginationIndex, rowsPerPage } from "@/framework/listframe/page";
+import { getPaginationIndex, getRowsPerPage } from "@/framework/listframe/page";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -34,6 +34,7 @@ const UserListFrame = function ({
   const searchParams = useSearchParams();
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [managedUser, setManagedUser] = useState<User | null>(null);
+  const rowsPerPage = getRowsPerPage(searchParams.get("pageSize"));
   const activeAdministratorCount = users.filter(
     (user) =>
       user.role === UserRoleModel.Admin &&
@@ -42,6 +43,7 @@ const UserListFrame = function ({
   const paginationIndex = getPaginationIndex(
     searchParams.get(pageParamName),
     users.length,
+    rowsPerPage,
   );
   const pageUsers = users.slice(
     paginationIndex * rowsPerPage,

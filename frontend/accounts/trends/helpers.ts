@@ -16,6 +16,7 @@ import { getCurrencyDifference } from "@/framework/currencyHelpers";
 interface AccountTrendsSearchParams {
   sort?: AccountWithBalanceRangeSort;
   page?: number | string | null;
+  pageSize?: number | string | null;
   balanceEventSort?: AccountBalanceEventSort;
   balanceEventPage?: number | string | null;
   mode?: TrendRangeMode;
@@ -154,6 +155,7 @@ const getAccountTypeBreakdownDetails = function (
 const accountTrendsParamNames = {
   sort: "sort",
   page: "page",
+  pageSize: "pageSize",
   balanceEventSort: "balanceEventSort",
   balanceEventPage: "balanceEventPage",
   mode: "mode",

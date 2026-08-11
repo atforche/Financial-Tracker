@@ -5,8 +5,8 @@ import {
 import type { Transaction, TransactionSort } from "@/transactions/types";
 import {
   getPageOffset,
+  getRowsPerPage,
   normalizePageValue,
-  rowsPerPage,
 } from "@/framework/listframe/page";
 import AccountingPeriodTrendChart from "@/accounting-periods/trends/AccountingPeriodTrendChart";
 import AccountingPeriodTrendsChangeChart from "@/accounting-periods/trends/AccountingPeriodTrendsChangeChart";
@@ -30,6 +30,7 @@ import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 interface AccountingPeriodTrendsSearchParams {
   sort?: AccountingPeriodWithBalanceSort;
   page?: number | string | null;
+  pageSize?: number | string | null;
   transactionSort?: TransactionSort;
   transactionPage?: number | string | null;
   startAccountingPeriodId?: string;
@@ -52,6 +53,7 @@ const AccountingPeriodTrends = async function ({
   const {
     sort,
     page,
+    pageSize,
     transactionSort,
     transactionPage,
     startAccountingPeriodId,
@@ -73,6 +75,7 @@ const AccountingPeriodTrends = async function ({
     "Failed to fetch accounting periods",
   );
   const currentPage = normalizePageValue(page);
+  const rowsPerPage = getRowsPerPage(pageSize);
   const currentTransactionPage = normalizePageValue(transactionPage);
 
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
@@ -93,7 +96,7 @@ const AccountingPeriodTrends = async function ({
             ...range,
             ...(isNotNullOrUndefined(sort) ? { Sort: sort } : {}),
             Limit: rowsPerPage,
-            Offset: getPageOffset(currentPage),
+            Offset: getPageOffset(currentPage, rowsPerPage),
           },
         },
       }),
@@ -105,7 +108,7 @@ const AccountingPeriodTrends = async function ({
               ? { Sort: transactionSort }
               : {}),
             Limit: rowsPerPage,
-            Offset: getPageOffset(currentTransactionPage),
+            Offset: getPageOffset(currentTransactionPage, rowsPerPage),
           },
         },
       }),

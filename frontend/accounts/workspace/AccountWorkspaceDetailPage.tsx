@@ -1,8 +1,8 @@
 import { Button, Stack, Typography } from "@mui/material";
 import {
   getPageOffset,
+  getRowsPerPage,
   normalizePageValue,
-  rowsPerPage,
 } from "@/framework/listframe/page";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
 import ArrowBack from "@mui/icons-material/ArrowBack";
@@ -36,11 +36,15 @@ const AccountWorkspaceDetailPage = async function ({
 }: AccountWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { accountId } = await params;
   const resolvedSearchParams = await searchParams;
-  const { search, accountType, balanceEventPage, balanceEventSort } =
+  const { search, accountType, balanceEventPage, balanceEventSort, pageSize } =
     resolvedSearchParams;
   const apiClient = await createApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
-  const balanceEventOffset = getPageOffset(currentBalanceEventPage);
+  const rowsPerPage = getRowsPerPage(pageSize);
+  const balanceEventOffset = getPageOffset(
+    currentBalanceEventPage,
+    rowsPerPage,
+  );
   const [
     accountsResponse,
     balanceEventsResponse,

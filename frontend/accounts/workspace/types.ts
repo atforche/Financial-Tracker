@@ -13,6 +13,7 @@ interface AccountWorkspaceSearchParams {
   accountType?: AccountType | readonly AccountType[];
   action?: AccountWorkspaceAction;
   balanceEventPage?: number | string | null;
+  pageSize?: number | string | null;
   balanceEventSort?: AccountBalanceEventSort;
 }
 

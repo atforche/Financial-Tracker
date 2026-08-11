@@ -1,7 +1,7 @@
 import {
   getPageOffset,
+  getRowsPerPage,
   normalizePageValue,
-  rowsPerPage,
 } from "@/framework/listframe/page";
 import { summarizeAccounts, summarizeFunds } from "@/overview/helpers";
 import AccountOverview from "@/overview/AccountOverview";
@@ -75,6 +75,7 @@ const getOverviewData = async function (): Promise<OverviewData> {
 interface OverviewSearchParams {
   currentTransactionSort?: TransactionSort;
   currentTransactionPage?: number | string | null;
+  pageSize?: number | string | null;
 }
 
 /**
@@ -90,9 +91,11 @@ interface OverviewViewProps {
 const OverviewView = async function ({
   searchParams,
 }: OverviewViewProps): Promise<JSX.Element> {
-  const { currentTransactionPage, currentTransactionSort } = await searchParams;
+  const { currentTransactionPage, currentTransactionSort, pageSize } =
+    await searchParams;
   const data = await getOverviewData();
   const currentPage = normalizePageValue(currentTransactionPage);
+  const rowsPerPage = getRowsPerPage(pageSize);
   const apiClient = await createApiClient();
   const currentTransactions: AccountingPeriodWithTransactions | null =
     data.currentAccountingPeriod === null
@@ -108,7 +111,7 @@ const OverviewView = async function ({
                     ? {}
                     : { Sort: currentTransactionSort }),
                   Limit: rowsPerPage,
-                  Offset: getPageOffset(currentPage),
+                  Offset: getPageOffset(currentPage, rowsPerPage),
                 },
               },
             },

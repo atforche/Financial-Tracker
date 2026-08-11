@@ -1,7 +1,7 @@
 import {
   getPageOffset,
+  getRowsPerPage,
   normalizePageValue,
-  rowsPerPage,
 } from "@/framework/listframe/page";
 import { FundBalanceEventSort } from "@/funds/types";
 import FundWorkspacePageHeader from "@/funds/workspace/FundWorkspacePageHeader";
@@ -33,10 +33,15 @@ const FundWorkspaceDetailPage = async function ({
 }: FundWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { fundId } = await params;
   const resolvedSearchParams = await searchParams;
-  const { search, balanceEventPage, balanceEventSort } = resolvedSearchParams;
+  const { search, balanceEventPage, balanceEventSort, pageSize } =
+    resolvedSearchParams;
   const apiClient = await createApiClient();
   const currentBalanceEventPage = normalizePageValue(balanceEventPage);
-  const balanceEventOffset = getPageOffset(currentBalanceEventPage);
+  const rowsPerPage = getRowsPerPage(pageSize);
+  const balanceEventOffset = getPageOffset(
+    currentBalanceEventPage,
+    rowsPerPage,
+  );
   const fundsResponse = await apiClient.GET("/funds/with-balances");
   const funds = unwrapApiResponse(fundsResponse, "Failed to fetch funds");
   const fund = funds.items.find((item) => item.id === fundId);

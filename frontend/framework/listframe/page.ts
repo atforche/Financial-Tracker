@@ -1,5 +1,20 @@
-/** Number of rows per page in a list frame. */
-const rowsPerPage = 10;
+/** Number of items per page when a list frame is displayed as a table. */
+const desktopRowsPerPage = 10;
+
+/** Number of items per page when a list frame is displayed as cards. */
+const mobileRowsPerPage = 5;
+
+/**
+ * Gets the requested list-frame page size, falling back to the desktop size.
+ * Only the supported layouts can choose a page size.
+ */
+const getRowsPerPage = function (
+  value: number | string | null | undefined,
+): number {
+  return Number(value) === mobileRowsPerPage
+    ? mobileRowsPerPage
+    : desktopRowsPerPage;
+};
 
 /**
  * Normalizes a page value from the URL query parameters, ensuring it is a positive integer.
@@ -17,6 +32,7 @@ const normalizePageValue = function (
 const getPaginationIndex = function (
   value: number | string | null | undefined,
   totalCount: number,
+  rowsPerPage = desktopRowsPerPage,
 ): number {
   const lastPageIndex = Math.max(Math.ceil(totalCount / rowsPerPage) - 1, 0);
   return Math.min(normalizePageValue(value) - 1, lastPageIndex);
@@ -27,8 +43,16 @@ const getPaginationIndex = function (
  */
 const getPageOffset = function (
   value: number | string | null | undefined,
+  rowsPerPage = desktopRowsPerPage,
 ): number {
   return (normalizePageValue(value) - 1) * rowsPerPage;
 };
 
-export { normalizePageValue, getPageOffset, getPaginationIndex, rowsPerPage };
+export {
+  desktopRowsPerPage,
+  getPageOffset,
+  getPaginationIndex,
+  getRowsPerPage,
+  mobileRowsPerPage,
+  normalizePageValue,
+};

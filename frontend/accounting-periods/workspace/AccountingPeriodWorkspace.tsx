@@ -9,8 +9,8 @@ import {
 } from "@/framework/routes/helpers";
 import {
   getPageOffset,
+  getRowsPerPage,
   normalizePageValue,
-  rowsPerPage,
 } from "@/framework/listframe/page";
 import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/workspace/helpers";
 import AccountingPeriodWorkspaceActions from "@/accounting-periods/workspace/AccountingPeriodWorkspaceActions";
@@ -31,6 +31,7 @@ interface AccountingPeriodWorkspaceSearchParams {
   months?: number | number[];
   sort?: AccountingPeriodWithBalanceSort;
   page?: number | string | null;
+  pageSize?: number | string | null;
   selectedAccountingPeriodId?: string;
   action?: AccountingPeriodWorkspaceAction;
 }
@@ -49,9 +50,17 @@ const AccountingPeriodWorkspace = async function ({
   searchParams,
 }: AccountingPeriodWorkspaceProps): Promise<JSX.Element> {
   const apiClient = await createApiClient();
-  const { years, months, sort, page, selectedAccountingPeriodId, action } =
-    await searchParams;
+  const {
+    years,
+    months,
+    sort,
+    page,
+    pageSize,
+    selectedAccountingPeriodId,
+    action,
+  } = await searchParams;
   const currentPage = normalizePageValue(page);
+  const rowsPerPage = getRowsPerPage(pageSize);
   const currentYear = new Date().getFullYear();
   const normalizedMonths = normalizeIntegerSearchParams(
     toRepeatedSearchParams(months),
@@ -107,7 +116,7 @@ const AccountingPeriodWorkspace = async function ({
           "Filter.Months": normalizedMonths,
           Sort: sort ?? null,
           Limit: rowsPerPage,
-          Offset: getPageOffset(currentPage),
+          Offset: getPageOffset(currentPage, rowsPerPage),
         }),
       },
     },
