@@ -5,16 +5,19 @@ import {
   AccountingPeriodWithBalanceSort,
 } from "@/accounting-periods/types";
 import { Button, Checkbox } from "@mui/material";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
+import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import ListFrame from "@/framework/listframe/ListFrame";
+import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import propertyName from "@/framework/data/propertyName";
+import routes from "@/accounting-periods/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
-import { useSearchParams } from "next/navigation";
 
 /**
  * Props for the AccountingPeriodWorkspaceListFrame component.
@@ -22,7 +25,6 @@ import { useSearchParams } from "next/navigation";
 interface AccountingPeriodWorkspaceListFrameProps {
   readonly data: AccountingPeriodWithBalance[] | null;
   readonly totalCount: number | null;
-  readonly selectedAccountingPeriodId: string | null;
 }
 
 /**
@@ -31,18 +33,14 @@ interface AccountingPeriodWorkspaceListFrameProps {
 const AccountingPeriodWorkspaceListFrame = function ({
   data,
   totalCount,
-  selectedAccountingPeriodId,
 }: AccountingPeriodWorkspaceListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const sortParamName =
     propertyName<AccountingPeriodWorkspaceSearchParams>("sort");
   const pageParamName =
     propertyName<AccountingPeriodWorkspaceSearchParams>("page");
-  const selectedAccountingPeriodIdParamName =
-    propertyName<AccountingPeriodWorkspaceSearchParams>(
-      "selectedAccountingPeriodId",
-    );
   const actionParamName =
     propertyName<AccountingPeriodWorkspaceSearchParams>("action");
   const yearParamName =
@@ -64,48 +62,25 @@ const AccountingPeriodWorkspaceListFrame = function ({
     });
   };
 
-  const toggleSelection = function (accountingPeriodId: string): void {
-    updateParams((params) => {
-      const currentlySelectedAccountingPeriodId = params.get(
-        selectedAccountingPeriodIdParamName,
-      );
-      if (currentlySelectedAccountingPeriodId === accountingPeriodId) {
-        params.delete(selectedAccountingPeriodIdParamName);
-        return;
-      }
-      params.set(selectedAccountingPeriodIdParamName, accountingPeriodId);
-    });
-  };
-
   const currentSort = parseEnumValue(
     AccountingPeriodWithBalanceSort,
     searchParams.get(sortParamName) ?? "",
   );
 
   const getSortProps = createColumnSortProps(currentSort, setSort);
+  const openAccountingPeriod = function (
+    accountingPeriod: AccountingPeriodWithBalance,
+  ): void {
+    router.push(
+      routes.workspaceDetail(accountingPeriod.id, {
+        years: searchParams.getAll(yearParamName).map(Number),
+        months: searchParams.getAll(monthParamName).map(Number),
+        ...(currentSort === null ? {} : { sort: currentSort }),
+      }),
+    );
+  };
 
   const columns: ColumnDefinition<AccountingPeriodWithBalance>[] = [
-    {
-      name: "selected",
-      headerContent: "",
-      getBodyContent: (account) => (
-        <Checkbox
-          checked={selectedAccountingPeriodId === account.id}
-          onClick={(event) => {
-            event.stopPropagation();
-            toggleSelection(account.id);
-          }}
-          slotProps={{
-            input: {
-              "aria-label": `Select ${account.name}`,
-            },
-          }}
-        />
-      ),
-      alignment: "center",
-      minWidth: 52,
-      maxWidth: 52,
-    },
     {
       name: "period",
       headerContent: "Period",
@@ -161,6 +136,23 @@ const AccountingPeriodWorkspaceListFrame = function ({
       ),
       alignment: "right",
     },
+    {
+      name: "actions",
+      headerContent: "",
+      getBodyContent: (accountingPeriod) => (
+        <ListFrameActionButton
+          ariaLabel={`View ${accountingPeriod.name} details`}
+          onClick={() => {
+            openAccountingPeriod(accountingPeriod);
+          }}
+        >
+          <KeyboardArrowRight fontSize="small" color="action" />
+        </ListFrameActionButton>
+      ),
+      alignment: "right",
+      minWidth: 52,
+      maxWidth: 52,
+    },
   ];
 
   return (
@@ -172,11 +164,8 @@ const AccountingPeriodWorkspaceListFrame = function ({
       totalCount={totalCount ?? null}
       pageParamName={pageParamName}
       onRowClick={(accountingPeriod) => {
-        toggleSelection(accountingPeriod.id);
+        openAccountingPeriod(accountingPeriod);
       }}
-      isRowSelected={(accountingPeriod) =>
-        accountingPeriod.id === selectedAccountingPeriodId
-      }
       initialEmptyState={{
         title: "No accounting periods yet",
         description:
@@ -195,7 +184,6 @@ const AccountingPeriodWorkspaceListFrame = function ({
                 params.delete(yearParamName);
                 params.delete(monthParamName);
                 params.delete(pageParamName);
-                params.delete(selectedAccountingPeriodIdParamName);
                 params.delete(actionParamName);
               });
             }}

@@ -2912,6 +2912,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/accounting-periods/{accountingPeriodId}/expected-income-sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Replaces expected income sources for an open Accounting Period. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountingPeriodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ExpectedIncomeSourceRequestModel"][];
+                    "text/json": components["schemas"]["ExpectedIncomeSourceRequestModel"][];
+                    "application/*+json": components["schemas"]["ExpectedIncomeSourceRequestModel"][];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountingPeriodWithBalanceModel"];
+                        "application/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
+                        "text/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/accounting-periods/{accountingPeriodId}/close": {
         parameters: {
             query?: never;
@@ -3196,6 +3253,23 @@ export interface components {
              * @description Closing balance for the Accounting Period
              */
             closingBalance: number;
+            /** @description Sources of expected income for the Accounting Period. */
+            expectedIncomeSources: components["schemas"]["ExpectedIncomeSourceModel"][];
+            /**
+             * Format: double
+             * @description Total income expected for the Accounting Period.
+             */
+            expectedIncome: number;
+            /**
+             * Format: double
+             * @description Posted income for the Accounting Period.
+             */
+            actualIncome: number;
+            /**
+             * Format: double
+             * @description Amount required to satisfy all Fund Goals for the Accounting Period.
+             */
+            expectedGoalContributions: number;
             /**
              * Format: uuid
              * @description ID for the Accounting Period
@@ -3239,6 +3313,23 @@ export interface components {
              * @description Closing balance for the Accounting Period
              */
             closingBalance: number;
+            /** @description Sources of expected income for the Accounting Period. */
+            expectedIncomeSources: components["schemas"]["ExpectedIncomeSourceModel"][];
+            /**
+             * Format: double
+             * @description Total income expected for the Accounting Period.
+             */
+            expectedIncome: number;
+            /**
+             * Format: double
+             * @description Posted income for the Accounting Period.
+             */
+            actualIncome: number;
+            /**
+             * Format: double
+             * @description Amount required to satisfy all Fund Goals for the Accounting Period.
+             */
+            expectedGoalContributions: number;
             /**
              * Format: uuid
              * @description ID for the Accounting Period
@@ -3609,6 +3700,8 @@ export interface components {
              * @description Month for the Accounting Period
              */
             month: number;
+            /** @description Expected income sources for the Accounting Period. */
+            expectedIncomeSources: components["schemas"]["ExpectedIncomeSourceRequestModel"][];
         };
         /** @description Model representing a request to create an Account. */
         CreateAccountModel: {
@@ -3967,6 +4060,43 @@ export interface components {
          * @enum {unknown}
          */
         EndingBalanceStatusModel: EndingBalanceStatusModel;
+        /** @description Expected income from a named source during an Accounting Period. */
+        ExpectedIncomeSourceModel: {
+            /**
+             * Format: uuid
+             * @description Identifier for the source.
+             */
+            id: string;
+            /** @description Source name. */
+            name: string;
+            /** @description Income lines expected for each payment. */
+            incomeLines: components["schemas"]["IncomeLineModel"][];
+            /** @description Deductions expected for each payment. */
+            incomeDeductions: components["schemas"]["IncomeDeductionModel"][];
+            /** @description Expected payment dates. */
+            expectedDates: string[];
+            /**
+             * Format: double
+             * @description Net amount expected for one payment.
+             */
+            netAmount: number;
+            /**
+             * Format: double
+             * @description Total expected amount for this source.
+             */
+            expectedAmount: number;
+        };
+        /** @description Request model for an expected income source. */
+        ExpectedIncomeSourceRequestModel: {
+            /** @description Source name. */
+            name: string;
+            /** @description Income lines expected for each payment. */
+            incomeLines: components["schemas"]["CreateIncomeLineModel"][];
+            /** @description Deductions expected for each payment. */
+            incomeDeductions: components["schemas"]["CreateIncomeDeductionModel"][];
+            /** @description Expected payment dates. */
+            expectedDates: string[];
+        };
         FundAmountModel: {
             /** Format: uuid */
             fundId: string;

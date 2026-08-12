@@ -61,7 +61,9 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
         IReadOnlyCollection<AccountingPeriodBalance> items = rows.Select(row => new AccountingPeriodBalance(
             row.AccountingPeriod,
             row.OpeningBalance,
-            row.ClosingBalance)).ToList();
+            row.ClosingBalance,
+            0,
+            0)).ToList();
         return new QueryPage<AccountingPeriodBalance>(items, totalCount);
     }
 
@@ -70,7 +72,9 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
         AccountingPeriodId accountingPeriodId,
         CancellationToken cancellationToken = default)
     {
-        AccountingPeriodBalanceRow? row = await databaseContext.AccountingPeriodBalanceHistories.AsNoTracking()
+        AccountingPeriodBalanceRow? row = await databaseContext.AccountingPeriodBalanceHistories.AsNoTracking().AsSplitQuery()
+            .Include(history => history.AccountingPeriod)
+            .ThenInclude(accountingPeriod => accountingPeriod.ExpectedIncomeSources)
             .Where(history => history.AccountingPeriod.Id == accountingPeriodId)
             .Select(history => new AccountingPeriodBalanceRow
             {
@@ -78,7 +82,7 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
                 OpeningBalance = history.OpeningBalance,
                 ClosingBalance = history.ClosingBalance,
             }).SingleOrDefaultAsync(cancellationToken);
-        return row == null ? null : new AccountingPeriodBalance(row.AccountingPeriod, row.OpeningBalance, row.ClosingBalance);
+        return row == null ? null : new AccountingPeriodBalance(row.AccountingPeriod, row.OpeningBalance, row.ClosingBalance, 0, 0);
     }
 
     /// <inheritdoc/>
@@ -126,7 +130,9 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
         return rows.Select(row => new AccountingPeriodBalance(
             row.AccountingPeriod,
             row.OpeningBalance,
-            row.ClosingBalance)).ToList();
+            row.ClosingBalance,
+            0,
+            0)).ToList();
     }
 
     /// <inheritdoc/>
@@ -140,7 +146,6 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
             .SelectMany(transaction => transaction.Destinations, (transaction, destination) => new FinancialRangeIncomeFact(
                 destination.Amount,
                 destination.Account.Type,
-                transaction.Source.Account != null,
                 destination.PostedDate))
             .ToListAsync(cancellationToken);
     }

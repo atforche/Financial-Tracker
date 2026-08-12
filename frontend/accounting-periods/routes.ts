@@ -33,6 +33,14 @@ const routes = {
       "/accounting-periods/workspace",
       accountingPeriodWorkspaceSearchParamsToSearchParams(searchParams),
     ),
+  workspaceDetail: (
+    accountingPeriodId: string,
+    searchParams: AccountingPeriodWorkspaceSearchParams,
+  ): Route =>
+    buildUrl(
+      `/accounting-periods/workspace/${accountingPeriodId}`,
+      accountingPeriodWorkspaceSearchParamsToSearchParams(searchParams),
+    ),
 };
 
 export default routes;

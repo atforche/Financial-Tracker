@@ -10,7 +10,9 @@ namespace Rest.AccountingPeriods;
 /// <summary>
 /// Converts between Accounting Period API models and Domain query types.
 /// </summary>
-public sealed class AccountingPeriodQueryConverter(TransactionConverter transactionConverter)
+public sealed class AccountingPeriodQueryConverter(
+    TransactionConverter transactionConverter,
+    AccountingPeriodConverter accountingPeriodConverter)
 {
     /// <summary>
     /// Converts the provided Accounting Period query model to a Domain query.
@@ -102,6 +104,10 @@ public sealed class AccountingPeriodQueryConverter(TransactionConverter transact
         IsOpen = balance.AccountingPeriod.IsOpen,
         OpeningBalance = balance.OpeningBalance,
         ClosingBalance = balance.ClosingBalance,
+        ExpectedIncomeSources = balance.AccountingPeriod.ExpectedIncomeSources.Select(accountingPeriodConverter.ToModel).ToList(),
+        ExpectedIncome = balance.AccountingPeriod.ExpectedIncomeSources.Sum(source => source.ExpectedAmount),
+        ActualIncome = balance.ActualIncome,
+        ExpectedGoalContributions = balance.ExpectedGoalContributions,
     };
 
     /// <summary>
@@ -140,6 +146,10 @@ public sealed class AccountingPeriodQueryConverter(TransactionConverter transact
         IsOpen = result.Balance.AccountingPeriod.IsOpen,
         OpeningBalance = result.Balance.OpeningBalance,
         ClosingBalance = result.Balance.ClosingBalance,
+        ExpectedIncomeSources = result.Balance.AccountingPeriod.ExpectedIncomeSources.Select(accountingPeriodConverter.ToModel).ToList(),
+        ExpectedIncome = result.Balance.AccountingPeriod.ExpectedIncomeSources.Sum(source => source.ExpectedAmount),
+        ActualIncome = result.Balance.ActualIncome,
+        ExpectedGoalContributions = result.Balance.ExpectedGoalContributions,
         Transactions = transactionConverter.ToModel(result.Transactions),
         TotalIncome = new IncomeAmountModel
         {

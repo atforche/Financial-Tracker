@@ -1,3 +1,4 @@
+using Domain.FundGoals;
 using Domain.Transactions.Queries;
 
 namespace Domain.AccountingPeriods.Queries;
@@ -8,7 +9,9 @@ namespace Domain.AccountingPeriods.Queries;
 public sealed class AccountingPeriodQueryService(
     IAccountingPeriodQueryRepository accountingPeriodQueryRepository,
     AccountingPeriodRangeService accountingPeriodRangeService,
-    TransactionQueryService transactionQueryService)
+    TransactionQueryService transactionQueryService,
+    IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
+    IFundGoalRepository fundGoalRepository)
 {
     /// <summary>
     /// Retrieves Accounting Periods matching the provided query.
@@ -21,18 +24,26 @@ public sealed class AccountingPeriodQueryService(
     /// <summary>
     /// Retrieves Accounting Periods and their balances.
     /// </summary>
-    public Task<QueryPage<AccountingPeriodBalance>> GetWithBalancesAsync(
+    public async Task<QueryPage<AccountingPeriodBalance>> GetWithBalancesAsync(
         AccountingPeriodBalanceQuery query,
-        CancellationToken cancellationToken = default) =>
-        accountingPeriodQueryRepository.GetBalancesAsync(query, cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        QueryPage<AccountingPeriodBalance> page = await accountingPeriodQueryRepository.GetBalancesAsync(query, cancellationToken);
+        return new QueryPage<AccountingPeriodBalance>(
+            await EnrichBalancesAsync(page.Items, cancellationToken),
+            page.TotalCount);
+    }
 
     /// <summary>
     /// Retrieves an Accounting Period and its balance by ID, or null when it does not exist.
     /// </summary>
-    public Task<AccountingPeriodBalance?> GetBalanceByIdAsync(
+    public async Task<AccountingPeriodBalance?> GetBalanceByIdAsync(
         Guid accountingPeriodId,
-        CancellationToken cancellationToken = default) =>
-        accountingPeriodQueryRepository.GetBalanceByIdAsync(new AccountingPeriodId(accountingPeriodId), cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        AccountingPeriodBalance? balance = await accountingPeriodQueryRepository.GetBalanceByIdAsync(new AccountingPeriodId(accountingPeriodId), cancellationToken);
+        return balance == null ? null : (await EnrichBalancesAsync([balance], cancellationToken)).Single();
+    }
 
     /// <summary>
     /// Retrieves an Accounting Period by ID, or null when it does not exist.
@@ -49,9 +60,7 @@ public sealed class AccountingPeriodQueryService(
         AccountingPeriodTransactionsQuery query,
         CancellationToken cancellationToken = default)
     {
-        AccountingPeriodBalance? balance = await accountingPeriodQueryRepository.GetBalanceByIdAsync(
-            new AccountingPeriodId(query.AccountingPeriodId),
-            cancellationToken);
+        AccountingPeriodBalance? balance = await GetBalanceByIdAsync(query.AccountingPeriodId, cancellationToken);
         if (balance == null)
         {
             return null;
@@ -102,6 +111,7 @@ public sealed class AccountingPeriodQueryService(
         {
             return new AccountingPeriodRangeQueryResult(null, AccountingPeriodRangeQueryFailure.NotContiguous);
         }
+        periods = await EnrichBalancesAsync(periods, cancellationToken);
 
         IReadOnlyCollection<Guid> ids = periods.Select(period => period.AccountingPeriod.Id.Value).ToList();
         IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await accountingPeriodQueryRepository.GetRangeIncomeFactsAsync(ids, cancellationToken);
@@ -117,6 +127,33 @@ public sealed class AccountingPeriodQueryService(
             totals.TrackedIncome,
             totals.TotalSpending);
         return new AccountingPeriodRangeQueryResult(range, AccountingPeriodRangeQueryFailure.None);
+    }
+
+    /// <summary>
+    /// Adds calculated income and Fund Goal requirement totals to period balances.
+    /// </summary>
+    private async Task<IReadOnlyCollection<AccountingPeriodBalance>> EnrichBalancesAsync(
+        IReadOnlyCollection<AccountingPeriodBalance> balances,
+        CancellationToken cancellationToken)
+    {
+        // Income facts are not currently partitioned by period. Query them one period at a time
+        // to preserve the existing facts contract.
+        var result = new List<AccountingPeriodBalance>();
+        foreach (AccountingPeriodBalance balance in balances)
+        {
+            IReadOnlyCollection<FinancialRangeIncomeFact> periodIncomeFacts = await accountingPeriodQueryRepository.GetRangeIncomeFactsAsync(
+                [balance.AccountingPeriod.Id.Value], cancellationToken);
+            decimal actualIncome = FinancialRangeTotals.Calculate(periodIncomeFacts, []).TotalIncome;
+            AccountingPeriodBalanceHistory history = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(balance.AccountingPeriod.Id);
+            decimal expectedGoalContributions = fundGoalRepository.GetAllByAccountingPeriod(balance.AccountingPeriod.Id)
+                .Sum(goal => FundGoalProgressService.CalculateRecommendedContribution(
+                    history.FundBalances.SingleOrDefault(item => item.Fund.Id == goal.Fund.Id)?.OpeningBalance ?? 0,
+                    goal.RegularContribution,
+                    goal.MinimumFundedBalance,
+                    goal.MaximumFundedBalance));
+            result.Add(balance with { ActualIncome = actualIncome, ExpectedGoalContributions = expectedGoalContributions });
+        }
+        return result;
     }
 
     /// <summary>

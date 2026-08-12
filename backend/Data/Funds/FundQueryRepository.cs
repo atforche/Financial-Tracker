@@ -149,12 +149,11 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
         CancellationToken cancellationToken = default) =>
         await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
             .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
-            .SelectMany(transaction => transaction.Destinations, (transaction, destination) => new { transaction, destination })
-            .SelectMany(item => item.destination.FundAssignments.Where(assignment => fundIds.Contains(assignment.FundId)), (item, assignment) => new FinancialRangeIncomeFact(
+            .SelectMany(transaction => transaction.Destinations)
+            .SelectMany(destination => destination.FundAssignments.Where(assignment => fundIds.Contains(assignment.FundId)), (destination, assignment) => new FinancialRangeIncomeFact(
                 assignment.Amount,
-                item.destination.Account.Type,
-                item.transaction.Source.Account != null,
-                item.destination.PostedDate))
+                destination.Account.Type,
+                destination.PostedDate))
             .ToListAsync(cancellationToken);
 
     /// <inheritdoc/>
@@ -178,12 +177,11 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
         var periodIds = accountingPeriodIds.Select(id => new AccountingPeriodId(id)).ToList();
         return await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
             .Where(transaction => periodIds.Contains(transaction.AccountingPeriodId))
-            .SelectMany(transaction => transaction.Destinations, (transaction, destination) => new { transaction, destination })
-            .SelectMany(item => item.destination.FundAssignments.Where(assignment => fundIds.Contains(assignment.FundId)), (item, assignment) => new FinancialRangeIncomeFact(
+            .SelectMany(transaction => transaction.Destinations)
+            .SelectMany(destination => destination.FundAssignments.Where(assignment => fundIds.Contains(assignment.FundId)), (destination, assignment) => new FinancialRangeIncomeFact(
                 assignment.Amount,
-                item.destination.Account.Type,
-                item.transaction.Source.Account != null,
-                item.destination.PostedDate))
+                destination.Account.Type,
+                destination.PostedDate))
             .ToListAsync(cancellationToken);
     }
 

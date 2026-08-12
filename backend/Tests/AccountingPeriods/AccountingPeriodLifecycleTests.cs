@@ -27,12 +27,14 @@ public sealed class AccountingPeriodLifecycleTests
         using HttpResponseMessage duplicate = await test.Api.PostResponseAsync("/accounting-periods", new CreateAccountingPeriodModel
         {
             Year = 2026,
-            Month = 7
+            Month = 7,
+            ExpectedIncomeSources = [],
         });
         using HttpResponseMessage gap = await test.Api.PostResponseAsync("/accounting-periods", new CreateAccountingPeriodModel
         {
             Year = 2026,
-            Month = 9
+            Month = 9,
+            ExpectedIncomeSources = [],
         });
         AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
 
@@ -178,5 +180,48 @@ public sealed class AccountingPeriodLifecycleTests
         Assert.Equal(HttpStatusCode.OK, deleted.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
         Assert.DoesNotContain(after.Items, fund => fund.Name == "Unassigned");
+    }
+
+    /// <summary>
+    /// Copies expected-income sources into the next period with payment dates cleared.
+    /// </summary>
+    [Fact]
+    public async Task CreateAsyncCopiesExpectedIncomeSourcesWithoutDates()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        var source = new ExpectedIncomeSourceRequestModel
+        {
+            Name = "Employer",
+            IncomeLines = [new Models.Transactions.Create.CreateIncomeLineModel { Description = "Salary", Amount = 1_000m }],
+            IncomeDeductions = [new Models.Transactions.Create.CreateIncomeDeductionModel { Description = "Tax", Amount = 200m }],
+            ExpectedDates = [new DateOnly(2026, 7, 15)],
+        };
+
+        _ = await test.Api.PostAsync<IReadOnlyCollection<ExpectedIncomeSourceRequestModel>, AccountingPeriodWithBalanceModel>(
+            $"/accounting-periods/{july.Id}/expected-income-sources", [source]);
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        AccountingPeriodWithBalanceModel result = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{august.Id}");
+
+        ExpectedIncomeSourceModel copied = Assert.Single(result.ExpectedIncomeSources);
+        Assert.Equal("Employer", copied.Name);
+        Assert.Equal(800m, copied.NetAmount);
+        Assert.Empty(copied.ExpectedDates);
+    }
+
+    /// <summary>
+    /// Does not allow expected-income sources to change after their period closes.
+    /// </summary>
+    [Fact]
+    public async Task ExpectedIncomeSourcesCannotBeUpdatedForClosedPeriod()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        await test.Api.PostAsync($"/accounting-periods/{july.Id}/close");
+
+        using HttpResponseMessage response = await test.Api.PostResponseAsync(
+            $"/accounting-periods/{july.Id}/expected-income-sources", Array.Empty<ExpectedIncomeSourceRequestModel>());
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 }

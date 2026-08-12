@@ -15,7 +15,7 @@ public sealed record FinancialRangeTotals(decimal TotalIncome, decimal TrackedIn
         IEnumerable<FinancialRangeSpendingFact> spendingFacts)
     {
         var recognizedIncome = incomeFacts
-            .Where(fact => !fact.HasInternalSource || fact.PostedDate != null)
+            .Where(fact => fact.PostedDate != null)
             .ToList();
         return new FinancialRangeTotals(
             recognizedIncome.Sum(fact => fact.Amount),

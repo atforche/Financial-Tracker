@@ -1,6 +1,6 @@
 import {
   AccountingPeriodSort,
-  type AccountingPeriodWithBalanceSort,
+  AccountingPeriodWithBalanceSort,
 } from "@/accounting-periods/types";
 import {
   compactSearchParams,
@@ -19,8 +19,6 @@ import AccountingPeriodWorkspaceListFrame from "@/accounting-periods/workspace/A
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import createApiClient from "@/framework/data/createApiClient";
-import { redirect } from "next/navigation";
-import routes from "@/accounting-periods/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -32,7 +30,6 @@ interface AccountingPeriodWorkspaceSearchParams {
   sort?: AccountingPeriodWithBalanceSort;
   page?: number | string | null;
   pageSize?: number | string | null;
-  selectedAccountingPeriodId?: string;
   action?: AccountingPeriodWorkspaceAction;
 }
 
@@ -56,7 +53,6 @@ const AccountingPeriodWorkspace = async function ({
     sort,
     page,
     pageSize,
-    selectedAccountingPeriodId,
     action,
   } = await searchParams;
   const currentPage = normalizePageValue(page);
@@ -80,11 +76,11 @@ const AccountingPeriodWorkspace = async function ({
     },
   );
   const latestAccountingPeriodResponse = await apiClient.GET(
-    "/accounting-periods",
+    "/accounting-periods/with-balances",
     {
       params: {
         query: {
-          Sort: AccountingPeriodSort.DateDescending,
+          Sort: AccountingPeriodWithBalanceSort.DateDescending,
           Limit: 1,
         },
       },
@@ -127,45 +123,22 @@ const AccountingPeriodWorkspace = async function ({
     "Failed to fetch accounting periods",
   );
 
-  const selectedAccountingPeriod =
-    accountingPeriods.items.find(
-      (accountingPeriod) => accountingPeriod.id === selectedAccountingPeriodId,
-    ) ?? null;
   const isInOnboardingMode = firstAccountingPeriod.items.length === 0;
-
-  if (
-    typeof selectedAccountingPeriodId === "string" &&
-    selectedAccountingPeriod === null
-  ) {
-    redirect(
-      routes.workspace(
-        compactSearchParams({
-          years: normalizedYears,
-          months: normalizedMonths,
-          sort,
-          page: currentPage,
-          action,
-        }),
-      ),
-    );
-  }
 
   return (
     <PageLayout>
       <AccountingPeriodWorkspaceFilter
         firstAccountingPeriod={firstAccountingPeriod.items[0] ?? null}
         isInOnboardingMode={isInOnboardingMode}
-        selectedAccountingPeriod={selectedAccountingPeriod}
       />
       <AccountingPeriodWorkspaceListFrame
         data={accountingPeriods.items}
         totalCount={accountingPeriods.totalCount}
-        selectedAccountingPeriodId={selectedAccountingPeriodId ?? null}
       />
       <AccountingPeriodWorkspaceActions
         isInOnboardingMode={isInOnboardingMode}
         latestAccountingPeriod={latestAccountingPeriod}
-        selectedAccountingPeriod={selectedAccountingPeriod}
+        selectedAccountingPeriod={null}
         requestedAction={action ?? null}
       />
     </PageLayout>

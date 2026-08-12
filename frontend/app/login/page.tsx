@@ -1,16 +1,15 @@
-/* eslint-disable sort-imports */
 import { Box, Button, Stack, Typography } from "@mui/material";
 import Image, { type StaticImageData } from "next/image";
 import {
-  authenticationProvider,
   auth,
+  authenticationProvider,
   developmentAuthenticationIdentities,
   signIn,
 } from "@/auth";
-import { redirect } from "next/navigation";
-import type { JSX } from "react";
 import Frame from "@/framework/view/Frame";
+import type { JSX } from "react";
 import applicationIcon from "@/app/icon.svg";
+import { redirect } from "next/navigation";
 
 /**
  * Confirms that a statically imported image has the shape expected by Next.js.

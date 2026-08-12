@@ -14,4 +14,24 @@ public class AccountingPeriodWithBalanceModel : AccountingPeriodModel
     /// Closing balance for the Accounting Period
     /// </summary>
     public required decimal ClosingBalance { get; init; }
+
+    /// <summary>
+    /// Sources of expected income for the Accounting Period.
+    /// </summary>
+    public required IReadOnlyCollection<ExpectedIncomeSourceModel> ExpectedIncomeSources { get; init; }
+
+    /// <summary>
+    /// Total income expected for the Accounting Period.
+    /// </summary>
+    public required decimal ExpectedIncome { get; init; }
+
+    /// <summary>
+    /// Posted income for the Accounting Period.
+    /// </summary>
+    public required decimal ActualIncome { get; init; }
+
+    /// <summary>
+    /// Amount required to satisfy all Fund Goals for the Accounting Period.
+    /// </summary>
+    public required decimal ExpectedGoalContributions { get; init; }
 }

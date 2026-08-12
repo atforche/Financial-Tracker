@@ -49,7 +49,7 @@ public sealed class FinancialRangeProjectionTests
     }
 
     /// <summary>
-    /// Recognizes external pending income immediately but waits for internal income to post.
+    /// Recognizes income only after its destination has posted.
     /// </summary>
     [Fact]
     public async Task DateRangeTotalsRespectIncomeSourceAndPostingState()
@@ -91,10 +91,10 @@ public sealed class FinancialRangeProjectionTests
         await test.Transactions.PostAsync(new TransactionHandle(internalResult.Id), savings, new DateOnly(2026, 7, 16));
         AccountsInDateRangeModel posted = await test.Api.GetAsync<AccountsInDateRangeModel>("/accounts/date-range?range.start=2026-07-01&range.end=2026-07-31");
 
-        Assert.Equal(20m, pending.TotalIncome.Total);
-        Assert.Equal(20m, pending.TotalIncome.Tracked);
-        Assert.Equal(50m, posted.TotalIncome.Total);
-        Assert.Equal(50m, posted.TotalIncome.Tracked);
+        Assert.Equal(0m, pending.TotalIncome.Total);
+        Assert.Equal(0m, pending.TotalIncome.Tracked);
+        Assert.Equal(30m, posted.TotalIncome.Total);
+        Assert.Equal(30m, posted.TotalIncome.Tracked);
         Assert.NotEqual(external.Id, internalResult.Id);
     }
 
