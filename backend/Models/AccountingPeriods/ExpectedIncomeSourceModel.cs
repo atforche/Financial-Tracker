@@ -1,4 +1,4 @@
-using Models.Transactions.Types;
+using Models.Income;
 
 namespace Models.AccountingPeriods;
 
@@ -18,14 +18,9 @@ public sealed class ExpectedIncomeSourceModel
     public required string Name { get; init; }
 
     /// <summary>
-    /// Income lines expected for each payment.
+    /// Economic composition expected for each payment.
     /// </summary>
-    public required IReadOnlyCollection<IncomeLineModel> IncomeLines { get; init; }
-
-    /// <summary>
-    /// Deductions expected for each payment.
-    /// </summary>
-    public required IReadOnlyCollection<IncomeDeductionModel> IncomeDeductions { get; init; }
+    public required IncomeBreakdownModel Income { get; init; }
 
     /// <summary>
     /// Expected payment dates.
@@ -35,7 +30,12 @@ public sealed class ExpectedIncomeSourceModel
     /// <summary>
     /// Net amount expected for one payment.
     /// </summary>
-    public required decimal NetAmount { get; init; }
+    public required decimal TrackedAmount { get; init; }
+
+    /// <summary>
+    /// Untracked income expected for one payment.
+    /// </summary>
+    public required decimal UntrackedAmount { get; init; }
 
     /// <summary>
     /// Total expected amount for this source.

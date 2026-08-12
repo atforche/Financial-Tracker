@@ -1,5 +1,4 @@
 using Domain.AccountingPeriods;
-using Domain.Transactions.Income;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,37 +17,39 @@ internal sealed class AccountingPeriodConfiguration : IEntityTypeConfiguration<A
             .HasConversion(accountingPeriodId => accountingPeriodId.Value, value => new AccountingPeriodId(value));
 
         builder.HasIndex(accountingPeriod => accountingPeriod.Name);
-        builder.OwnsMany(accountingPeriod => accountingPeriod.ExpectedIncomeSources, sourceBuilder =>
-        {
-            sourceBuilder.ToTable("ExpectedIncomeSources");
-            sourceBuilder.WithOwner(source => source.AccountingPeriod)
-                .HasForeignKey("AccountingPeriodId");
-            sourceBuilder.HasKey(source => source.Id);
-            sourceBuilder.Property(source => source.Id)
-                .HasConversion(id => id.Value, value => new ExpectedIncomeSourceId(value));
-            sourceBuilder.Property(source => source.Name);
-            sourceBuilder.OwnsMany<IncomeLine>(nameof(ExpectedIncomeSource.IncomeLines), lineBuilder =>
-            {
-                lineBuilder.ToTable("ExpectedIncomeSourceIncomeLines");
-                lineBuilder.WithOwner().HasForeignKey("ExpectedIncomeSourceId");
-                lineBuilder.Property<int>("Id");
-                lineBuilder.HasKey("Id");
-            });
-            sourceBuilder.OwnsMany<IncomeDeduction>(nameof(ExpectedIncomeSource.IncomeDeductions), deductionBuilder =>
-            {
-                deductionBuilder.ToTable("ExpectedIncomeSourceIncomeDeductions");
-                deductionBuilder.WithOwner().HasForeignKey("ExpectedIncomeSourceId");
-                deductionBuilder.Property<int>("Id");
-                deductionBuilder.HasKey("Id");
-            });
-            sourceBuilder.OwnsMany<ExpectedIncomeDate>(nameof(ExpectedIncomeSource.ExpectedDates), dateBuilder =>
-            {
-                dateBuilder.ToTable("ExpectedIncomeSourceDates");
-                dateBuilder.WithOwner().HasForeignKey("ExpectedIncomeSourceId");
-                dateBuilder.Property<int>("Id");
-                dateBuilder.HasKey("Id");
-            });
-        });
+        builder.HasMany(accountingPeriod => accountingPeriod.ExpectedIncomeSources)
+            .WithOne(source => source.AccountingPeriod)
+            .HasForeignKey("AccountingPeriodId")
+            .OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(accountingPeriod => accountingPeriod.ExpectedIncomeSources).AutoInclude(false);
+    }
+}
+
+/// <summary>
+/// EF Core entity configuration for an <see cref="ExpectedIncomeSource"/>.
+/// </summary>
+internal sealed class ExpectedIncomeSourceConfiguration : IEntityTypeConfiguration<ExpectedIncomeSource>
+{
+    /// <inheritdoc/>
+    public void Configure(EntityTypeBuilder<ExpectedIncomeSource> builder)
+    {
+        builder.ToTable("ExpectedIncomeSources");
+        builder.HasKey(source => source.Id);
+        builder.Property(source => source.Id)
+            .HasConversion(id => id.Value, value => new ExpectedIncomeSourceId(value))
+            .ValueGeneratedNever();
+        builder.Property(source => source.Name);
+        builder.HasOne(source => source.Income)
+            .WithOne()
+            .HasForeignKey<Domain.Income.IncomeBreakdown>("ExpectedIncomeSourceId")
+            .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(source => source.Income).AutoInclude();
+        builder.OwnsMany<ExpectedIncomeDate>(nameof(ExpectedIncomeSource.ExpectedDates), dateBuilder =>
+        {
+            dateBuilder.ToTable("ExpectedIncomeSourceDates");
+            dateBuilder.WithOwner().HasForeignKey("ExpectedIncomeSourceId");
+            dateBuilder.Property<int>("Id");
+            dateBuilder.HasKey("Id");
+        });
     }
 }

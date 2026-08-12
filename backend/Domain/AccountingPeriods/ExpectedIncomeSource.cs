@@ -1,4 +1,5 @@
-using Domain.Transactions.Income;
+using Domain.Income;
+using Domain.Payroll;
 
 namespace Domain.AccountingPeriods;
 
@@ -7,8 +8,6 @@ namespace Domain.AccountingPeriods;
 /// </summary>
 public sealed class ExpectedIncomeSource : Entity<ExpectedIncomeSourceId>
 {
-    private List<IncomeLine> _incomeLines = [];
-    private List<IncomeDeduction> _incomeDeductions = [];
     private List<ExpectedIncomeDate> _expectedDates = [];
 
     /// <summary>
@@ -22,22 +21,20 @@ public sealed class ExpectedIncomeSource : Entity<ExpectedIncomeSourceId>
     public AccountingPeriod AccountingPeriod { get; private set; }
 
     /// <summary>
-    /// Income lines expected for each payment.
+    /// Economic composition expected for each payment.
     /// </summary>
-    public IReadOnlyCollection<IncomeLine> IncomeLines
-    {
-        get => _incomeLines;
-        private set => _incomeLines = value.ToList();
-    }
+    public IncomeBreakdown Income { get; private set; }
 
     /// <summary>
-    /// Deductions expected for each payment.
+    /// Number of payments made by this source during a full year.
     /// </summary>
-    public IReadOnlyCollection<IncomeDeduction> IncomeDeductions
-    {
-        get => _incomeDeductions;
-        private set => _incomeDeductions = value.ToList();
-    }
+    public int? PayPeriodsPerYear => (Income as ExpectedPayrollPayment)?.PayPeriodsPerYear;
+
+    /// <summary>
+    /// Withholding inputs used to project this expected payroll income.
+    /// </summary>
+    public PayrollWithholdingConfiguration? WithholdingConfiguration =>
+        (Income as ExpectedPayrollPayment)?.WithholdingConfiguration;
 
     /// <summary>
     /// Dates on which this source is expected to pay during the Accounting Period.
@@ -51,12 +48,32 @@ public sealed class ExpectedIncomeSource : Entity<ExpectedIncomeSourceId>
     /// <summary>
     /// Net amount expected for one payment.
     /// </summary>
-    public decimal NetAmount => IncomeLines.Sum(line => line.Amount) - IncomeDeductions.Sum(deduction => deduction.Amount);
+    public decimal TrackedAmount => Income.TrackedAmount;
+
+    /// <summary>
+    /// Untracked income expected for one payment.
+    /// </summary>
+    public decimal UntrackedAmount => Income.UntrackedAmount;
+
+    /// <summary>
+    /// Total recognized income expected for one payment.
+    /// </summary>
+    public decimal Amount => Income.TotalAmount;
 
     /// <summary>
     /// Total amount expected from this source during the Accounting Period.
     /// </summary>
-    public decimal ExpectedAmount => NetAmount * ExpectedDates.Count;
+    public decimal ExpectedTrackedAmount => TrackedAmount * ExpectedDates.Count;
+
+    /// <summary>
+    /// Total untracked income expected during the Accounting Period.
+    /// </summary>
+    public decimal ExpectedUntrackedAmount => UntrackedAmount * ExpectedDates.Count;
+
+    /// <summary>
+    /// Total recognized income expected during the Accounting Period.
+    /// </summary>
+    public decimal ExpectedAmount => Amount * ExpectedDates.Count;
 
     /// <summary>
     /// Constructs an expected income source.
@@ -64,15 +81,13 @@ public sealed class ExpectedIncomeSource : Entity<ExpectedIncomeSourceId>
     internal ExpectedIncomeSource(
         AccountingPeriod accountingPeriod,
         string name,
-        IEnumerable<IncomeLine> incomeLines,
-        IEnumerable<IncomeDeduction> incomeDeductions,
+        IncomeBreakdown income,
         IEnumerable<DateOnly> expectedDates)
         : base(new ExpectedIncomeSourceId(Guid.NewGuid()))
     {
         AccountingPeriod = accountingPeriod;
         Name = name;
-        _incomeLines.AddRange(incomeLines);
-        _incomeDeductions.AddRange(incomeDeductions);
+        Income = income;
         _expectedDates.AddRange(expectedDates.Select(date => new ExpectedIncomeDate(date)));
     }
 
@@ -83,6 +98,7 @@ public sealed class ExpectedIncomeSource : Entity<ExpectedIncomeSourceId>
     {
         Name = null!;
         AccountingPeriod = null!;
+        Income = null!;
     }
 }
 

@@ -14,6 +14,7 @@ using Rest.AccountingPeriods;
 using Rest.Accounts;
 using Rest.FundGoals;
 using Rest.Funds;
+using Rest.Income;
 
 namespace Rest.Transactions;
 
@@ -256,16 +257,7 @@ public sealed class TransactionConverter(
                     income.Amount,
                     BalanceEventType.Debit)),
                 Location = income.Source.Location,
-                IncomeLines = income.Source.IncomeLines.Select(line => new IncomeLineModel
-                {
-                    Description = line.Description,
-                    Amount = line.Amount,
-                }).ToList(),
-                IncomeDeductions = income.Source.IncomeDeductions.Select(deduction => new IncomeDeductionModel
-                {
-                    Description = deduction.Description,
-                    Amount = deduction.Amount,
-                }).ToList(),
+                Income = IncomeBreakdownConverter.ToModel(income.Source.Income),
             },
             Destinations = income.Destinations.Select(destination => new IncomeTransactionDestinationModel
             {

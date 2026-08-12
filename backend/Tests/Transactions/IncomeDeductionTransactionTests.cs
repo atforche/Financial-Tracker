@@ -36,11 +36,9 @@ public sealed class IncomeDeductionTransactionTests
             Source = new CreateIncomeTransactionSourceModel
             {
                 Location = "Employer",
-                IncomeLines = [
-                    new CreateIncomeLineModel { Description = "Salary", Amount = 120m },
-                    new CreateIncomeLineModel { Description = "Bonus", Amount = 30m }
-                ],
-                IncomeDeductions = [new CreateIncomeDeductionModel { Description = "Tax", Amount = 50m }]
+                Income = IncomeBreakdownModelFactory.Payroll(
+                    [("Salary", 120m), ("Bonus", 30m)],
+                    [("Tax", 50m)])
             },
             Destinations = [new CreateIncomeTransactionDestinationModel
             {
@@ -59,11 +57,9 @@ public sealed class IncomeDeductionTransactionTests
             Source = new UpdateIncomeTransactionSourceModel
             {
                 Location = "Employer",
-                IncomeLines = [new UpdateIncomeLineModel { Description = "Salary", Amount = 200m }],
-                IncomeDeductions = [
-                    new UpdateIncomeDeductionModel { Description = "Tax", Amount = 40m },
-                    new UpdateIncomeDeductionModel { Description = "Benefits", Amount = 10m }
-                ]
+                Income = IncomeBreakdownModelFactory.Payroll(
+                    [("Salary", 200m)],
+                    [("Tax", 40m), ("Benefits", 10m)])
             },
             Destinations = [new UpdateIncomeTransactionDestinationModel
             {
@@ -77,8 +73,8 @@ public sealed class IncomeDeductionTransactionTests
         IncomeTransactionModel detail = await test.Api.GetAsync<IncomeTransactionModel>($"/transactions/{transaction.Id}");
         Assert.Equal(150m, detail.Amount);
         Assert.Equal(150m, detail.TrackedAmount);
-        Assert.Equal(["Tax", "Benefits"], detail.Source.IncomeDeductions.Select(deduction => deduction.Description));
-        Assert.Equal(50m, detail.Source.IncomeDeductions.Sum(deduction => deduction.Amount));
+        Assert.Equal(["Tax", "Benefits"], detail.Source.Income.EmployeeDeductions.Select(deduction => deduction.Description));
+        Assert.Equal(50m, detail.Source.Income.EmployeeDeductions.Sum(deduction => deduction.Amount));
 
         await test.Transactions.PostAsync(transaction, cash, new DateOnly(2026, 7, 16));
         AccountBalanceSnapshot account = await test.AccountQueries.GetBalanceAsync(cash);

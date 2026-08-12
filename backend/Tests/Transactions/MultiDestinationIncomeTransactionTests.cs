@@ -33,8 +33,7 @@ public sealed class MultiDestinationIncomeTransactionTests
             Source = new CreateIncomeTransactionSourceModel
             {
                 Location = "Employer",
-                IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = 100m }],
-                IncomeDeductions = []
+                Income = IncomeBreakdownModelFactory.Simple(100m)
             },
             Destinations = [
                 new CreateIncomeTransactionDestinationModel { AccountId = first.Id, Amount = 40m, FundAssignments = [] },
@@ -79,8 +78,7 @@ public sealed class MultiDestinationIncomeTransactionTests
             Source = new CreateIncomeTransactionSourceModel
             {
                 Location = "Employer",
-                IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = 100m }],
-                IncomeDeductions = []
+                Income = IncomeBreakdownModelFactory.Simple(100m)
             },
             Destinations = [
                 new CreateIncomeTransactionDestinationModel

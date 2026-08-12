@@ -6,6 +6,7 @@ using Domain.FundGoals;
 using Domain.FundGoals.Queries;
 using Domain.Funds;
 using Domain.Funds.Queries;
+using Domain.Payroll;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
@@ -51,6 +52,7 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<SpendingTransactionService>();
         _ = serviceCollection.AddScoped<IncomeTransactionService>();
+        _ = serviceCollection.AddScoped<PayrollProjectionService>();
         _ = serviceCollection.AddScoped<AccountTransactionService>();
         _ = serviceCollection.AddScoped<FundTransactionService>();
         _ = serviceCollection.AddScoped<TransactionDispatcherService>();

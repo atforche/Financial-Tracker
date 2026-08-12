@@ -1,4 +1,5 @@
 using Models.Accounts;
+using Models.Income;
 
 namespace Models.Transactions.Types;
 
@@ -18,12 +19,7 @@ public sealed class IncomeTransactionSourceModel
     public string? Location { get; init; }
 
     /// <summary>
-    /// Income lines for the source.
+    /// Economic composition of the income receipt.
     /// </summary>
-    public required IReadOnlyCollection<IncomeLineModel> IncomeLines { get; init; }
-
-    /// <summary>
-    /// Income deductions for the source.
-    /// </summary>
-    public required IReadOnlyCollection<IncomeDeductionModel> IncomeDeductions { get; init; }
+    public required IncomeBreakdownModel Income { get; init; }
 }

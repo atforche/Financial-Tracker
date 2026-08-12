@@ -71,8 +71,7 @@ const CreateAccountingPeriodForm = function ({
     setExpectedIncomeSources(
       latestAccountingPeriod?.expectedIncomeSources.map((source) => ({
         name: source.name,
-        incomeLines: source.incomeLines,
-        incomeDeductions: source.incomeDeductions,
+        income: { kind: source.income.kind, trackedAmount: source.trackedAmount, untrackedAmount: source.untrackedAmount, earnings: source.income.earnings, employeeDeductions: source.income.employeeDeductions, employerContributions: source.income.employerContributions, taxWithholdings: source.income.taxWithholdings },
         expectedDates: [],
       })) ?? [],
     );

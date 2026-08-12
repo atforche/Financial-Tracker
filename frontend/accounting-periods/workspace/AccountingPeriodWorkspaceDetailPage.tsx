@@ -174,7 +174,7 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
       >
         <ExpectedIncomeSourcesFrame
           accountingPeriod={period}
-          redirectUrl={currentUrl}
+          routeSearchParams={resolvedSearchParams}
         />
         <FundGoalsFrame
           goals={goalsWithProgress}

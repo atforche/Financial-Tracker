@@ -1,6 +1,7 @@
 import type { Account, AccountBalanceEventDraft } from "@/accounts/types";
 import {
   CreateTransactionModelCreateIncomeTransactionModelType,
+  IncomeBreakdownKindModel,
   UpdateTransactionModelUpdateIncomeTransactionModelType,
   type components,
 } from "@/framework/data/api";
@@ -45,6 +46,25 @@ interface IncomeLineDraft {
 interface IncomeDeductionDraft {
   readonly description: string | null;
   readonly amount: number | null;
+  readonly disposition: number;
+  readonly reducesTaxableWagesFor: number;
+}
+
+interface EmployerContributionDraft {
+  readonly description: string | null;
+  readonly amount: number | null;
+}
+
+interface PayrollTaxJurisdictionDraft {
+  readonly countryCode: string | null;
+  readonly subdivisionCode: string | null;
+  readonly locality: string | null;
+}
+
+interface PayrollTaxWithholdingDraft {
+  readonly jurisdiction: PayrollTaxJurisdictionDraft;
+  readonly taxType: number;
+  readonly amount: number | null;
 }
 
 /**
@@ -55,6 +75,9 @@ interface IncomeSourceDraft {
   readonly location: string | null;
   readonly incomeLines: IncomeLineDraft[];
   readonly incomeDeductions: IncomeDeductionDraft[];
+  readonly employerContributions: EmployerContributionDraft[];
+  readonly taxWithholdings: PayrollTaxWithholdingDraft[];
+  readonly stateIncomeStateCode: string | null;
 }
 
 /**
@@ -92,6 +115,22 @@ const createEmptyDeduction = function (): IncomeDeductionDraft {
   return {
     description: null,
     amount: null,
+    disposition: 0,
+    reducesTaxableWagesFor: 0,
+  };
+};
+
+/** Creates an empty employer contribution. */
+const createEmptyEmployerContribution = function (): EmployerContributionDraft {
+  return { description: null, amount: null };
+};
+
+/** Creates an empty payroll tax withholding. */
+const createEmptyTaxWithholding = function (): PayrollTaxWithholdingDraft {
+  return {
+    jurisdiction: { countryCode: "US", subdivisionCode: null, locality: null },
+    taxType: 0,
+    amount: null,
   };
 };
 
@@ -104,6 +143,9 @@ const createEmptySource = function (): IncomeSourceDraft {
     location: null,
     incomeLines: [],
     incomeDeductions: [],
+    employerContributions: [],
+    taxWithholdings: [],
+    stateIncomeStateCode: null,
   };
 };
 
@@ -126,10 +168,47 @@ const getNetIncomeAmount = function (source: IncomeSourceDraft): number {
   const incomeLineTotal = getCurrencyTotal(
     source.incomeLines.map((line) => line.amount),
   );
-  const incomeDeductionTotal = getCurrencyTotal(
-    source.incomeDeductions.map((deduction) => deduction.amount),
+  const nonIncomeDeductionTotal = getCurrencyTotal(
+    source.incomeDeductions
+      .filter((deduction) => deduction.disposition === 0)
+      .map((deduction) => deduction.amount),
   );
-  return getCurrencyDifference(incomeLineTotal, incomeDeductionTotal);
+  const taxWithholdingTotal = getCurrencyTotal(
+    source.taxWithholdings.map((withholding) => withholding.amount),
+  );
+  const employerContributionTotal = getCurrencyTotal(
+    source.employerContributions.map((contribution) => contribution.amount),
+  );
+  return getCurrencyTotal([
+    getCurrencyDifference(
+      getCurrencyDifference(incomeLineTotal, nonIncomeDeductionTotal),
+      taxWithholdingTotal,
+    ),
+    employerContributionTotal,
+  ]);
+};
+
+/** Gets the portion of payroll income deposited into tracked accounts. */
+const getTrackedIncomeAmount = function (source: IncomeSourceDraft): number {
+  return getCurrencyDifference(
+    getCurrencyDifference(
+      getCurrencyTotal(source.incomeLines.map((line) => line.amount)),
+      getCurrencyTotal(source.incomeDeductions.map((item) => item.amount)),
+    ),
+    getCurrencyTotal(
+      source.taxWithholdings.map((withholding) => withholding.amount),
+    ),
+  );
+};
+
+/** Gets the portion of payroll income directed to untracked accounts. */
+const getUntrackedIncomeAmount = function (source: IncomeSourceDraft): number {
+  return getCurrencyTotal([
+    ...source.incomeDeductions
+      .filter((deduction) => deduction.disposition === 1)
+      .map((deduction) => deduction.amount),
+    ...source.employerContributions.map((contribution) => contribution.amount),
+  ]);
 };
 
 /**
@@ -158,6 +237,28 @@ const validateIncomeDeduction = function (
   );
 };
 
+const validateEmployerContribution = function (
+  contribution: EmployerContributionDraft,
+): boolean {
+  return (
+    contribution.description !== null &&
+    contribution.description.trim() !== "" &&
+    contribution.amount !== null &&
+    compareCurrencyAmounts(contribution.amount, 0) > 0
+  );
+};
+
+const validateTaxWithholding = function (
+  withholding: PayrollTaxWithholdingDraft,
+): boolean {
+  return (
+    withholding.jurisdiction.countryCode !== null &&
+    withholding.jurisdiction.countryCode.trim() !== "" &&
+    withholding.amount !== null &&
+    compareCurrencyAmounts(withholding.amount, 0) > 0
+  );
+};
+
 /**
  * Validates the source of an income transaction.
  */
@@ -176,6 +277,8 @@ const validateSource = function (source: IncomeSourceDraft): boolean {
   return (
     hasValidIncomeLines &&
     hasValidIncomeDeductions &&
+    source.employerContributions.every(validateEmployerContribution) &&
+    source.taxWithholdings.every(validateTaxWithholding) &&
     compareCurrencyAmounts(getNetIncomeAmount(source), 0) >= 0
   );
 };
@@ -226,10 +329,32 @@ const validateRequest = function (
   const destinationTotal = getCurrencyTotal(
     destinations.map((destination) => destination.amount),
   );
+  const trackedDestinationTotal = getCurrencyTotal(
+    destinations
+      .filter(
+        (destination) =>
+          destination.account?.accountType !== null &&
+          destination.account?.accountType !== undefined &&
+          isTrackedAccountType(destination.account.accountType),
+      )
+      .map((destination) => destination.amount),
+  );
+  const untrackedDestinationTotal = getCurrencyDifference(
+    destinationTotal,
+    trackedDestinationTotal,
+  );
   return (
     validateDetails(accountingPeriod, date, defaultDate, description) &&
     validateSource(source) &&
     destinations.every(validateDestination) &&
+    compareCurrencyAmounts(
+      trackedDestinationTotal,
+      getTrackedIncomeAmount(source),
+    ) === 0 &&
+    compareCurrencyAmounts(
+      untrackedDestinationTotal,
+      getUntrackedIncomeAmount(source),
+    ) === 0 &&
     validateSummary(
       getNetIncomeAmount(source),
       destinationTotal,
@@ -256,14 +381,46 @@ const buildRequestFields = function (
       accountId: source.account?.accountId ?? null,
       location:
         source.account === null ? (source.location?.trim() ?? null) : null,
-      incomeLines: source.incomeLines.map((line) => ({
-        description: line.description?.trim() ?? "",
-        amount: line.amount ?? 0,
-      })),
-      incomeDeductions: source.incomeDeductions.map((deduction) => ({
-        description: deduction.description?.trim() ?? "",
-        amount: deduction.amount ?? 0,
-      })),
+      income: {
+        kind: IncomeBreakdownKindModel.Payroll,
+        trackedAmount: null,
+        untrackedAmount: null,
+        earnings: source.incomeLines.map((line) => ({
+          description: line.description?.trim() ?? "",
+          amount: line.amount ?? 0,
+        })),
+        employeeDeductions: source.incomeDeductions.map((deduction) => ({
+          description: deduction.description?.trim() ?? "",
+          amount: deduction.amount ?? 0,
+          disposition: deduction.disposition,
+          reducesTaxableWagesFor: deduction.reducesTaxableWagesFor,
+        })),
+        employerContributions: source.employerContributions.map(
+          (contribution) => ({
+            description: contribution.description?.trim() ?? "",
+            amount: contribution.amount ?? 0,
+          }),
+        ),
+        taxWithholdings: source.taxWithholdings.map((withholding) => ({
+          jurisdiction: {
+            countryCode: withholding.jurisdiction.countryCode?.trim() ?? "",
+            subdivisionCode:
+              withholding.jurisdiction.subdivisionCode?.trim() === ""
+                ? null
+                : (withholding.jurisdiction.subdivisionCode?.trim() ?? null),
+            locality:
+              withholding.jurisdiction.locality?.trim() === ""
+                ? null
+                : (withholding.jurisdiction.locality?.trim() ?? null),
+          },
+          taxType: withholding.taxType,
+          amount: withholding.amount ?? 0,
+        })),
+        stateIncomeStateCode:
+          source.stateIncomeStateCode?.trim() === ""
+            ? null
+            : (source.stateIncomeStateCode?.trim() ?? null),
+      },
     },
     destinations: destinations.map((destination) => ({
       accountId: destination.account?.accountId ?? "",
@@ -396,14 +553,30 @@ const getSourceFromTransaction = function (
       transaction.source.account,
     ),
     location: transaction.source.location ?? "",
-    incomeLines: transaction.source.incomeLines.map((line) => ({
+    incomeLines: transaction.source.income.earnings.map((line) => ({
       description: line.description,
       amount: line.amount,
     })),
-    incomeDeductions: transaction.source.incomeDeductions.map((deduction) => ({
-      description: deduction.description,
-      amount: deduction.amount,
-    })),
+    incomeDeductions: transaction.source.income.employeeDeductions.map(
+      (deduction) => ({
+        description: deduction.description,
+        amount: deduction.amount,
+        disposition: deduction.disposition,
+        reducesTaxableWagesFor: deduction.reducesTaxableWagesFor,
+      }),
+    ),
+    employerContributions: transaction.source.income.employerContributions,
+    taxWithholdings: transaction.source.income.taxWithholdings.map(
+      (withholding) => ({
+        ...withholding,
+        jurisdiction: {
+          countryCode: withholding.jurisdiction.countryCode,
+          subdivisionCode: withholding.jurisdiction.subdivisionCode ?? null,
+          locality: withholding.jurisdiction.locality ?? null,
+        },
+      }),
+    ),
+    stateIncomeStateCode: transaction.source.income.stateIncomeStateCode ?? null,
   };
 };
 
@@ -457,6 +630,8 @@ const getDestinationsFromTransaction = function (
 export type {
   IncomeLineDraft,
   IncomeDeductionDraft,
+  EmployerContributionDraft,
+  PayrollTaxWithholdingDraft,
   IncomeSourceDraft,
   IncomeDestinationDraft,
 };
@@ -469,11 +644,15 @@ export {
   buildUpdateRequest,
   createEmptyLine,
   createEmptyDeduction,
+  createEmptyEmployerContribution,
+  createEmptyTaxWithholding,
   createEmptySource,
   createEmptyDestination,
   getDestinationsFromTransaction,
   getFundAssignmentFromTransactionFund,
   getNetIncomeAmount,
+  getTrackedIncomeAmount,
+  getUntrackedIncomeAmount,
   getSourceFromTransaction,
   validateFundAssignments,
   validateDestination,

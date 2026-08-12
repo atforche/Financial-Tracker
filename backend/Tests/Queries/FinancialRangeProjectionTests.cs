@@ -2,11 +2,11 @@ using Models.Accounts;
 using Models.Funds;
 using Models.Transactions;
 using Models.Transactions.Create;
+using Tests.Transactions;
 using Tests.AccountingPeriods;
 using Tests.Accounts;
 using Tests.Funds;
 using Tests.Infrastructure;
-using Tests.Transactions;
 
 namespace Tests.Queries;
 
@@ -76,8 +76,7 @@ public sealed class FinancialRangeProjectionTests
             Source = new CreateIncomeTransactionSourceModel
             {
                 AccountId = investment.Id,
-                IncomeLines = [new CreateIncomeLineModel { Description = "Transfer", Amount = 30m }],
-                IncomeDeductions = []
+                Income = IncomeBreakdownModelFactory.Simple(30m)
             },
             Destinations = [new CreateIncomeTransactionDestinationModel
             {

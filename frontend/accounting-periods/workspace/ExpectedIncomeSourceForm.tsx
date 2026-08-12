@@ -5,7 +5,7 @@ import type {
   ExpectedIncomeSource,
   ExpectedIncomeSourceRequest,
 } from "@/accounting-periods/types";
-import { Button, Stack, Typography } from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -13,16 +13,17 @@ import {
   useEffect,
   useState,
 } from "react";
-import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import ExpectedIncomeSourcesEditor from "@/accounting-periods/workspace/ExpectedIncomeSourcesEditor";
+import { IncomeBreakdownKindModel } from "@/framework/data/api";
+import Link from "next/link";
 import updateExpectedIncomeSources from "@/accounting-periods/workspace/updateExpectedIncomeSources";
 import { useRouter } from "next/navigation";
 
 /**
  * Mode for the ExpectedIncomeSourceForm component, indicating whether the form is being used to add, change, or delete an expected income source.
  */
-type ExpectedIncomeSourceMode = "add" | "change" | "delete";
+type ExpectedIncomeSourceMode = "add" | "change";
 
 /**
  * Props for the ExpectedIncomeSourceForm component.
@@ -31,20 +32,26 @@ interface ExpectedIncomeSourceFormProps {
   readonly accountingPeriod: AccountingPeriodWithBalance;
   readonly mode: ExpectedIncomeSourceMode;
   readonly source?: ExpectedIncomeSource;
-  readonly open: boolean;
-  readonly onClose: () => void;
   readonly redirectUrl: string;
+  readonly cancelUrl: string;
 }
 
 /**
- * Converts the provided expected income source into a request.
+ * Converts an expected income source response into an update request.
  */
 const toRequest = (
   source: ExpectedIncomeSource,
 ): ExpectedIncomeSourceRequest => ({
   name: source.name,
-  incomeLines: source.incomeLines,
-  incomeDeductions: source.incomeDeductions,
+  income: {
+    kind: source.income.kind,
+    trackedAmount: source.income.trackedAmount,
+    untrackedAmount: source.income.untrackedAmount,
+    earnings: source.income.earnings,
+    employeeDeductions: source.income.employeeDeductions,
+    employerContributions: source.income.employerContributions,
+    taxWithholdings: source.income.taxWithholdings,
+  },
   expectedDates: source.expectedDates,
 });
 
@@ -53,21 +60,27 @@ const toRequest = (
  */
 const emptySource = (): ExpectedIncomeSourceRequest => ({
   name: "",
-  incomeLines: [{ description: "Income", amount: 0 }],
-  incomeDeductions: [],
+  income: {
+    kind: IncomeBreakdownKindModel.Payroll,
+    trackedAmount: null,
+    untrackedAmount: null,
+    earnings: [],
+    employeeDeductions: [],
+    employerContributions: [],
+    taxWithholdings: [],
+  },
   expectedDates: [],
 });
 
-/** 
- * Dialog for adding, changing, or removing one expected-income source.
+/**
+ * Displays a page-level form for creating, editing, or deleting one expected income source.
  */
 const ExpectedIncomeSourceForm = function ({
   accountingPeriod,
   mode,
   source,
-  open,
-  onClose,
   redirectUrl,
+  cancelUrl,
 }: ExpectedIncomeSourceFormProps): JSX.Element {
   const router = useRouter();
   const [draft, setDraft] = useState<ExpectedIncomeSourceRequest>(() =>
@@ -79,10 +92,9 @@ const ExpectedIncomeSourceForm = function ({
   );
   useEffect(() => {
     if (state.success === true) {
-      onClose();
       router.replace(redirectUrl, { scroll: false });
     }
-  }, [onClose, redirectUrl, router, state.success]);
+  }, [redirectUrl, router, state.success]);
   const save = (): void => {
     const existing = accountingPeriod.expectedIncomeSources.map(toRequest);
     const sourceIndex = source
@@ -93,65 +105,40 @@ const ExpectedIncomeSourceForm = function ({
     const sources =
       mode === "add"
         ? [...existing, draft]
-        : mode === "change"
-          ? existing.map((item, index) =>
-              index === sourceIndex ? draft : item,
-            )
-          : existing.filter((_, index) => index !== sourceIndex);
+        : existing.map((item, index) => (index === sourceIndex ? draft : item));
     startTransition(() => {
       action({ accountingPeriodId: accountingPeriod.id, redirectUrl, sources });
     });
   };
-  const actionLabel =
-    mode === "add" ? "Add" : mode === "change" ? "Save Changes" : "Delete";
   return (
-    <Dialog
-      open={open}
-      onClose={pending ? undefined : onClose}
-      fullWidth
-      maxWidth="md"
-      title={`${mode === "add" ? "Add" : mode === "change" ? "Change" : "Delete"} Expected Income Source`}
-      actions={
-        <>
-          <Button disabled={pending} onClick={onClose}>
+    <Stack spacing={3} sx={{ width: "100%" }}>
+      <ExpectedIncomeSourcesEditor
+        sources={[draft]}
+        setSources={(sources): void => {
+          setDraft(sources[0] ?? emptySource());
+        }}
+        year={accountingPeriod.year}
+        month={accountingPeriod.month}
+        showSourceControls={false}
+      />
+      <ErrorAlert
+        errorMessage={state.errorTitle ?? null}
+        unmappedErrors={state.unmappedErrors ?? null}
+      />
+      <Stack direction="row" spacing={1} justifyContent="flex-end">
+        <Link href={cancelUrl} style={{ textDecoration: "none" }}>
+          <Button component="span" disabled={pending}>
             Cancel
           </Button>
-          <Button
-            color={mode === "delete" ? "error" : "primary"}
-            variant="contained"
-            loading={pending}
-            onClick={save}
-          >
-            {actionLabel}
-          </Button>
-        </>
-      }
-    >
-      <Stack spacing={2}>
-        {mode === "delete" ? (
-          <Typography>
-            Delete {source?.name ?? "this expected income source"} from{" "}
-            {accountingPeriod.name}?
-          </Typography>
-        ) : (
-          <ExpectedIncomeSourcesEditor
-            sources={[draft]}
-            setSources={(sources) => {
-              setDraft(sources[0] ?? emptySource());
-            }}
-            year={accountingPeriod.year}
-            month={accountingPeriod.month}
-            showSourceControls={false}
-          />
-        )}
-        <ErrorAlert
-          errorMessage={state.errorTitle ?? null}
-          unmappedErrors={state.unmappedErrors ?? null}
-        />
+        </Link>
+        <Button variant="contained" loading={pending} onClick={save}>
+          {mode === "add" ? "Add" : "Save Changes"}
+        </Button>
       </Stack>
-    </Dialog>
+    </Stack>
   );
 };
 
 export type { ExpectedIncomeSourceMode };
+export { toRequest };
 export default ExpectedIncomeSourceForm;
