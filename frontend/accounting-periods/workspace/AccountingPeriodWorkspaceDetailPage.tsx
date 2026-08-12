@@ -1,9 +1,13 @@
-import { Button, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
+import {
+  getPageOffset,
+  getRowsPerPage,
+  normalizePageValue,
+} from "@/framework/listframe/page";
 import AccountingPeriodDetailActions from "@/accounting-periods/workspace/AccountingPeriodDetailActions";
 import AccountingPeriodSummaryFrame from "@/accounting-periods/workspace/AccountingPeriodSummaryFrame";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import ArrowBack from "@mui/icons-material/ArrowBack";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import ExpectedIncomeSourcesFrame from "@/accounting-periods/workspace/ExpectedIncomeSourcesFrame";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import FundGoalsFrame from "@/accounting-periods/workspace/FundGoalsFrame";
@@ -11,8 +15,9 @@ import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
 import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
+import RecentTransactionsFrame from "@/accounting-periods/workspace/RecentTransactionsFrame";
+import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import createApiClient from "@/framework/data/createApiClient";
-import { formatCurrency } from "@/framework/currencyHelpers";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 import transactionRoutes from "@/transactions/routes";
@@ -36,6 +41,11 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
   const { accountingPeriodId } = await params;
   const resolvedSearchParams = await searchParams;
   const apiClient = await createApiClient();
+  const rowsPerPage = getRowsPerPage(resolvedSearchParams.pageSize);
+  const fundGoalPage = normalizePageValue(resolvedSearchParams.fundGoalPage);
+  const transactionPage = normalizePageValue(
+    resolvedSearchParams.transactionPage,
+  );
   const workspaceParams = {
     ...(typeof resolvedSearchParams.years !== "undefined"
       ? { years: resolvedSearchParams.years }
@@ -64,13 +74,20 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
       params: { path: { accountingPeriodId } },
     }),
     apiClient.GET("/accounting-periods/{accountingPeriodId}/transactions", {
-      params: { path: { accountingPeriodId }, query: { Limit: 12, Offset: 0 } },
+      params: {
+        path: { accountingPeriodId },
+        query: {
+          Limit: rowsPerPage,
+          Offset: getPageOffset(transactionPage, rowsPerPage),
+        },
+      },
     }),
     apiClient.GET("/fund-goals", {
       params: {
         query: {
           "Filter.AccountingPeriodIds": [accountingPeriodId],
-          Limit: 500,
+          Limit: rowsPerPage,
+          Offset: getPageOffset(fundGoalPage, rowsPerPage),
         },
       },
     }),
@@ -103,7 +120,15 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
       return goalProgress ? [{ ...goal, progress: goalProgress }] : [];
     },
   );
-  const currentUrl = routes.workspaceDetail(period.id, workspaceParams);
+  const currentUrl = routes.workspaceDetail(period.id, {
+    ...workspaceParams,
+    ...(typeof resolvedSearchParams.fundGoalPage !== "undefined"
+      ? { fundGoalPage: resolvedSearchParams.fundGoalPage }
+      : {}),
+    ...(typeof resolvedSearchParams.transactionPage !== "undefined"
+      ? { transactionPage: resolvedSearchParams.transactionPage }
+      : {}),
+  });
   const addTransactionHref = transactionRoutes.workspaceCreate({
     accountingPeriodIds: [period.id],
     returnUrl: currentUrl,
@@ -111,7 +136,8 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
 
   return (
     <PageLayout>
-      <ConstrainedContent maxWidth={1200}>
+      <ResponsivePageSize desktopBreakpoint="lg" />
+      <Box sx={{ maxWidth: 1200, width: "100%" }}>
         <Stack spacing={2.5}>
           <Link
             href={workspaceUrl}
@@ -121,12 +147,7 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
               Back to Workspace
             </Button>
           </Link>
-          <Stack spacing={0.5}>
-            <Typography variant="h4">{period.name}</Typography>
-            <Typography color="text.secondary">
-              Accounting period details and activity
-            </Typography>
-          </Stack>
+          <Typography variant="h4">{period.name}</Typography>
           <AccountingPeriodSummaryFrame
             accountingPeriod={period}
             headerContent={
@@ -141,43 +162,39 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
             totalIncome={transactionSnapshot.totalIncome}
             totalSpending={transactionSnapshot.totalSpending}
           />
-          <ExpectedIncomeSourcesFrame
-            accountingPeriod={period}
-            redirectUrl={currentUrl}
-          />
-          <FundGoalsFrame goals={goalsWithProgress} />
-          <Typography variant="h6">Recent Transactions</Typography>
-          <Stack spacing={0.75}>
-            {transactionSnapshot.transactions.items.length ? (
-              transactionSnapshot.transactions.items.map((transaction) => (
-                <Stack
-                  key={transaction.id}
-                  direction="row"
-                  justifyContent="space-between"
-                  spacing={2}
-                >
-                  <Typography>{transaction.description}</Typography>
-                  <Typography color="text.secondary">
-                    {formatCurrency(transaction.amount)}
-                  </Typography>
-                </Stack>
-              ))
-            ) : (
-              <Typography color="text.secondary">
-                No transactions have been recorded for this period.
-              </Typography>
-            )}
-          </Stack>
-          <Link
-            href={addTransactionHref}
-            style={{ alignSelf: "flex-start", textDecoration: "none" }}
-          >
-            <Button component="span" variant="outlined">
-              Add Transaction
-            </Button>
-          </Link>
         </Stack>
-      </ConstrainedContent>
+      </Box>
+      <Box
+        sx={{
+          display: "grid",
+          gap: 3,
+          gridTemplateColumns: { xs: "1fr", lg: "repeat(2, minmax(0, 1fr))" },
+          width: "100%",
+        }}
+      >
+        <ExpectedIncomeSourcesFrame
+          accountingPeriod={period}
+          redirectUrl={currentUrl}
+        />
+        <FundGoalsFrame
+          goals={goalsWithProgress}
+          totalCount={goals.totalCount}
+          accountingPeriodId={period.id}
+          returnUrl={currentUrl}
+        />
+        <RecentTransactionsFrame
+          transactions={transactionSnapshot.transactions.items}
+          totalCount={transactionSnapshot.transactions.totalCount}
+          returnUrl={currentUrl}
+          headerContent={
+            <Link href={addTransactionHref} style={{ textDecoration: "none" }}>
+              <Button component="span" variant="contained">
+                Add Transaction
+              </Button>
+            </Link>
+          }
+        />
+      </Box>
     </PageLayout>
   );
 };

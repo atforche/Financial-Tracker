@@ -18,6 +18,7 @@ interface FundGoalWorkspaceSearchParams {
   balanceEventPage?: string;
   pageSize?: number | string | null;
   balanceEventSort?: FundGoalBalanceEventSort;
+  returnUrl?: string;
 }
 
 /**

@@ -8,13 +8,15 @@ import ExpectedIncomeSourceForm, {
   type ExpectedIncomeSourceMode,
 } from "@/accounting-periods/workspace/ExpectedIncomeSourceForm";
 import { type JSX, useState } from "react";
+import { getPaginationIndex, getRowsPerPage } from "@/framework/listframe/page";
+import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import DeleteOutline from "@mui/icons-material/DeleteOutline";
-import EditOutlined from "@mui/icons-material/EditOutlined";
+import ExpectedIncomeSourceDetailsDialog from "@/accounting-periods/workspace/ExpectedIncomeSourceDetailsDialog";
 import ListFrame from "@/framework/listframe/ListFrame";
 import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import { formatCurrency } from "@/framework/currencyHelpers";
+import { useSearchParams } from "next/navigation";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
@@ -25,8 +27,8 @@ interface ExpectedIncomeSourcesFrameProps {
   readonly redirectUrl: string;
 }
 
-/** 
- * Displays expected income sources and actions to manage individual sources. 
+/**
+ * Displays expected income sources and actions to manage individual sources.
  */
 const ExpectedIncomeSourcesFrame = function ({
   accountingPeriod,
@@ -34,11 +36,23 @@ const ExpectedIncomeSourcesFrame = function ({
 }: ExpectedIncomeSourcesFrameProps): JSX.Element {
   const canWrite = useWriteAccess();
   const canManageSources = canWrite && accountingPeriod.isOpen;
-  const [dialog, setDialog] = useState<{
-    mode: ExpectedIncomeSourceMode;
-    source?: ExpectedIncomeSource;
-  } | null>(null);
+  const searchParams = useSearchParams();
+  const [dialog, setDialog] = useState<
+    | { mode: "add" }
+    | { mode: "view" | ExpectedIncomeSourceMode; source: ExpectedIncomeSource }
+    | null
+  >(null);
   const sources = accountingPeriod.expectedIncomeSources;
+  const rowsPerPage = getRowsPerPage(searchParams.get("pageSize"));
+  const paginationIndex = getPaginationIndex(
+    searchParams.get("incomeSourcePage"),
+    sources.length,
+    rowsPerPage,
+  );
+  const paginatedSources = sources.slice(
+    paginationIndex * rowsPerPage,
+    (paginationIndex + 1) * rowsPerPage,
+  );
   const columns: ColumnDefinition<ExpectedIncomeSource>[] = [
     {
       name: "name",
@@ -67,30 +81,20 @@ const ExpectedIncomeSourcesFrame = function ({
     {
       name: "actions",
       headerContent: "",
-      getBodyContent: (source) =>
-        !canManageSources ? null : (
-          <>
-            <ListFrameActionButton
-              ariaLabel={`Change ${source.name}`}
-              onClick={() => {
-                setDialog({ mode: "change", source });
-              }}
-            >
-              <EditOutlined fontSize="small" color="action" />
-            </ListFrameActionButton>
-            <ListFrameActionButton
-              ariaLabel={`Delete ${source.name}`}
-              onClick={() => {
-                setDialog({ mode: "delete", source });
-              }}
-            >
-              <DeleteOutline fontSize="small" color="action" />
-            </ListFrameActionButton>
-          </>
-        ),
+      getBodyContent: (source) => (
+        <ListFrameActionButton
+          ariaLabel={`View ${source.name}`}
+          onClick={(event) => {
+            event.stopPropagation();
+            setDialog({ mode: "view", source });
+          }}
+        >
+          <ArrowForwardOutlined fontSize="small" color="action" />
+        </ListFrameActionButton>
+      ),
       alignment: "right",
-      minWidth: 96,
-      maxWidth: 96,
+      minWidth: 52,
+      maxWidth: 52,
     },
   ];
   return (
@@ -111,9 +115,12 @@ const ExpectedIncomeSourcesFrame = function ({
         }
         columns={columns}
         getId={(source) => source.id}
-        data={sources}
+        data={paginatedSources}
         totalCount={sources.length}
         pageParamName="incomeSourcePage"
+        onRowClick={(source) => {
+          setDialog({ mode: "view", source });
+        }}
         initialEmptyState={{
           title: "No expected income sources",
           description:
@@ -121,13 +128,25 @@ const ExpectedIncomeSourcesFrame = function ({
           action: null,
         }}
       />
-      {dialog === null ? null : (
+      {dialog?.mode === "view" ? (
+        <ExpectedIncomeSourceDetailsDialog
+          source={dialog.source}
+          canManage={canManageSources}
+          onClose={() => {
+            setDialog(null);
+          }}
+          onChange={() => {
+            setDialog({ mode: "change", source: dialog.source });
+          }}
+          onDelete={() => {
+            setDialog({ mode: "delete", source: dialog.source });
+          }}
+        />
+      ) : dialog === null ? null : (
         <ExpectedIncomeSourceForm
           accountingPeriod={accountingPeriod}
           mode={dialog.mode}
-          {...(typeof dialog.source === "undefined"
-            ? {}
-            : { source: dialog.source })}
+          {...("source" in dialog ? { source: dialog.source } : {})}
           open
           onClose={() => {
             setDialog(null);

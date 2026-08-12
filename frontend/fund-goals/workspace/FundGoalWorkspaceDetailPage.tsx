@@ -45,6 +45,7 @@ const FundGoalWorkspaceDetailPage = async function ({
     balanceEventPage,
     pageSize,
     balanceEventSort,
+    returnUrl,
   } = await searchParams;
   const rowsPerPage = getRowsPerPage(pageSize);
   const selectedFundIds = toRepeatedSearchParams(fundIds);
@@ -60,6 +61,7 @@ const FundGoalWorkspaceDetailPage = async function ({
     ...(isNotNullOrUndefined(periodId) ? { accountingPeriodId: periodId } : {}),
     ...(selectedFundIds.length ? { fundIds: selectedFundIds } : {}),
     ...(isNotNullOrUndefined(search) ? { search } : {}),
+    ...(isNotNullOrUndefined(returnUrl) ? { returnUrl } : {}),
   });
   if (isNullOrUndefined(periodId)) {
     redirect(workspaceUrl);
@@ -161,12 +163,13 @@ const FundGoalWorkspaceDetailPage = async function ({
     ...(isNotNullOrUndefined(search) ? { search } : {}),
     ...(isNotNullOrUndefined(balanceEventPage) ? { balanceEventPage } : {}),
     ...(isNotNullOrUndefined(balanceEventSort) ? { balanceEventSort } : {}),
+    ...(isNotNullOrUndefined(returnUrl) ? { returnUrl } : {}),
   });
   return (
     <PageLayout>
       <ResponsivePageSize desktopBreakpoint="lg" />
       <FundGoalWorkspacePageHeader
-        backHref={workspaceUrl}
+        backHref={returnUrl ?? workspaceUrl}
         title="Goal Details"
       />
       <ViewFundGoalForm

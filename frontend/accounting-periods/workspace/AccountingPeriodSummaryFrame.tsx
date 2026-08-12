@@ -50,17 +50,17 @@ const AccountingPeriodSummaryFrame = function ({
           setValue={null}
         />
         <CurrencyEntryField
-          label="Expected Income"
+          label="Expected Tracked Income"
           value={accountingPeriod.expectedIncome}
           setValue={null}
         />
         <CurrencyEntryField
-          label="Posted Income"
+          label="Posted Tracked Income"
           value={accountingPeriod.actualIncome}
           setValue={null}
         />
         <CurrencyEntryField
-          label="Goal Contributions"
+          label="Expected Goal Contributions"
           value={accountingPeriod.expectedGoalContributions}
           setValue={null}
         />
