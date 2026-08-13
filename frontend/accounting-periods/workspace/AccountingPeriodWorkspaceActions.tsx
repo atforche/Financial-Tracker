@@ -5,10 +5,11 @@ import {
   getAvailableAccountingPeriodWorkspaceActions,
 } from "@/accounting-periods/workspace/helpers";
 import { usePathname, useSearchParams } from "next/navigation";
-import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import CloseAccountingPeriodForm from "@/accounting-periods/workspace/CloseAccountingPeriodForm";
 import CreateAccountingPeriodForm from "@/accounting-periods/workspace/CreateAccountingPeriodForm";
 import DeleteAccountingPeriodForm from "@/accounting-periods/workspace/DeleteAccountingPeriodForm";
+import ExpectedIncomeSourcesForm from "@/accounting-periods/workspace/ExpectedIncomeSourcesForm";
 import type { JSX } from "react";
 import ReopenAccountingPeriodForm from "@/accounting-periods/workspace/ReopenAccountingPeriodForm";
 import { buildUrl } from "@/framework/routes/helpers";
@@ -20,8 +21,8 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
  */
 interface AccountingPeriodWorkspaceActionsProps {
   readonly isInOnboardingMode: boolean;
-  readonly latestAccountingPeriod: AccountingPeriod | null;
-  readonly selectedAccountingPeriod: AccountingPeriod | null;
+  readonly latestAccountingPeriod: AccountingPeriodWithBalance | null;
+  readonly selectedAccountingPeriod: AccountingPeriodWithBalance | null;
   readonly requestedAction: AccountingPeriodWorkspaceAction | null;
 }
 
@@ -90,6 +91,17 @@ const AccountingPeriodWorkspaceActions = function ({
       ) : null}
       {activeAction === "reopen" && selectedAccountingPeriod !== null ? (
         <ReopenAccountingPeriodForm
+          accountingPeriod={selectedAccountingPeriod}
+          open
+          onClose={() => {
+            setAction(null);
+          }}
+          redirectUrl={dialogRedirectUrl}
+        />
+      ) : null}
+      {activeAction === "editExpectedIncome" &&
+      selectedAccountingPeriod !== null ? (
+        <ExpectedIncomeSourcesForm
           accountingPeriod={selectedAccountingPeriod}
           open
           onClose={() => {

@@ -41,6 +41,13 @@ type AccountingPeriodsInRange =
 type CreateAccountingPeriodRequest =
   components["schemas"]["CreateAccountingPeriodModel"];
 
+/** Type representing a configured expected-income source. */
+type ExpectedIncomeSource = components["schemas"]["ExpectedIncomeSourceModel"];
+
+/** Type representing an expected-income source request. */
+type ExpectedIncomeSourceRequest =
+  components["schemas"]["ExpectedIncomeSourceRequestModel"];
+
 export {
   type AccountingPeriod,
   type AccountingPeriodRange,
@@ -50,4 +57,6 @@ export {
   type AccountingPeriodWithTransactions,
   type AccountingPeriodsInRange,
   type CreateAccountingPeriodRequest,
+  type ExpectedIncomeSource,
+  type ExpectedIncomeSourceRequest,
 };

@@ -564,6 +564,143 @@ namespace Data.Migrations
                     b.HasDiscriminator().HasValue(0);
                 });
 
+            modelBuilder.Entity("Domain.AccountingPeriods.AccountingPeriod", b =>
+                {
+                    b.OwnsMany("Domain.AccountingPeriods.ExpectedIncomeSource", "ExpectedIncomeSources", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("AccountingPeriodId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("AccountingPeriodId");
+
+                            b1.ToTable("ExpectedIncomeSources", (string)null);
+
+                            b1.WithOwner("AccountingPeriod")
+                                .HasForeignKey("AccountingPeriodId");
+
+                            b1.OwnsMany("Domain.AccountingPeriods.ExpectedIncomeDate", "ExpectedDates", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("INTEGER");
+
+                                    b2.Property<DateOnly>("Date")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<Guid>("ExpectedIncomeSourceId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("ExpectedIncomeSourceId");
+
+                                    b2.ToTable("ExpectedIncomeSourceDates", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ExpectedIncomeSourceId");
+                                });
+
+                            b1.OwnsMany("Domain.Transactions.Income.IncomeDeduction", "IncomeDeductions", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("INTEGER");
+
+                                    b2.Property<decimal>("Amount")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<string>("Description")
+                                        .IsRequired()
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<Guid>("ExpectedIncomeSourceId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("ExpectedIncomeSourceId");
+
+                                    b2.ToTable("ExpectedIncomeSourceIncomeDeductions", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ExpectedIncomeSourceId");
+                                });
+
+                            b1.OwnsMany("Domain.Transactions.Income.IncomeLine", "IncomeLines", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("INTEGER");
+
+                                    b2.Property<decimal>("Amount")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<string>("Description")
+                                        .IsRequired()
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<Guid>("ExpectedIncomeSourceId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("ExpectedIncomeSourceId");
+
+                                    b2.ToTable("ExpectedIncomeSourceIncomeLines", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ExpectedIncomeSourceId");
+                                });
+
+                            b1.OwnsMany("Domain.AccountingPeriods.ExpectedUntrackedIncomeTransfer", "UntrackedTransfers", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("INTEGER");
+
+                                    b2.Property<decimal>("Amount")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<string>("Description")
+                                        .IsRequired()
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<Guid>("ExpectedIncomeSourceId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("ExpectedIncomeSourceId");
+
+                                    b2.ToTable("ExpectedIncomeSourceUntrackedTransfers", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ExpectedIncomeSourceId");
+                                });
+
+                            b1.Navigation("AccountingPeriod");
+
+                            b1.Navigation("ExpectedDates");
+
+                            b1.Navigation("IncomeDeductions");
+
+                            b1.Navigation("IncomeLines");
+
+                            b1.Navigation("UntrackedTransfers");
+                        });
+
+                    b.Navigation("ExpectedIncomeSources");
+                });
+
             modelBuilder.Entity("Domain.AccountingPeriods.AccountingPeriodBalanceHistory", b =>
                 {
                     b.HasOne("Domain.AccountingPeriods.AccountingPeriod", "AccountingPeriod")

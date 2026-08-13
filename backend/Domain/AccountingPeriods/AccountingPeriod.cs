@@ -7,6 +7,8 @@ namespace Domain.AccountingPeriods;
 /// </summary>
 public class AccountingPeriod : Entity<AccountingPeriodId>
 {
+    private List<ExpectedIncomeSource> _expectedIncomeSources = [];
+
     /// <summary>
     /// Year for this Accounting Period
     /// </summary>
@@ -33,6 +35,15 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
     public bool IsOpen { get; internal set; }
 
     /// <summary>
+    /// Expected income sources configured for this Accounting Period.
+    /// </summary>
+    public IReadOnlyCollection<ExpectedIncomeSource> ExpectedIncomeSources
+    {
+        get => _expectedIncomeSources;
+        private set => _expectedIncomeSources = value.ToList();
+    }
+
+    /// <summary>
     /// Determines if the provided date falls within the Accounting Period
     /// </summary>
     public bool IsDateInPeriod(DateOnly date) => date >= GetMinimumDateInPeriod() && date <= GetMaximumDateInPeriod();
@@ -46,6 +57,21 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
     /// Gets the maximum date that falls within this Accounting Period
     /// </summary>
     public DateOnly GetMaximumDateInPeriod() => new DateOnly(Year, Month, 1).AddMonths(2).AddDays(-1);
+
+    /// <summary>
+    /// Replaces the expected income sources for this Accounting Period.
+    /// </summary>
+    internal void ReplaceExpectedIncomeSources(IEnumerable<ExpectedIncomeSourceRequest> sources)
+    {
+        _expectedIncomeSources.Clear();
+        _expectedIncomeSources.AddRange(sources.Select(source => new ExpectedIncomeSource(
+            this,
+            source.Name,
+            source.IncomeLines,
+            source.IncomeDeductions,
+            source.UntrackedTransfers,
+            source.ExpectedDates)));
+    }
 
     /// <summary>
     /// Constructs a new instance of this class

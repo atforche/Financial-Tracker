@@ -132,7 +132,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     {
         if (!optionsBuilder.IsConfigured)
         {
-            _ = optionsBuilder.UseSqlite($"Data Source={DatabasePath}");
+            _ = optionsBuilder.UseSqlite(
+                $"Data Source={DatabasePath}",
+                options => options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
         }
     }
 

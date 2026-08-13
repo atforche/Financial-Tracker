@@ -26,7 +26,6 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 interface AccountingPeriodWorkspaceFilterProps {
   readonly firstAccountingPeriod: AccountingPeriod | null;
   readonly isInOnboardingMode: boolean;
-  readonly selectedAccountingPeriod: AccountingPeriod | null;
 }
 
 /**
@@ -35,7 +34,6 @@ interface AccountingPeriodWorkspaceFilterProps {
 const AccountingPeriodWorkspaceFilter = function ({
   firstAccountingPeriod,
   isInOnboardingMode,
-  selectedAccountingPeriod,
 }: AccountingPeriodWorkspaceFilterProps): JSX.Element {
   const canWrite = useWriteAccess();
   const searchParams = useSearchParams();
@@ -46,10 +44,6 @@ const AccountingPeriodWorkspaceFilter = function ({
     propertyName<AccountingPeriodWorkspaceSearchParams>("years");
   const monthsParamName =
     propertyName<AccountingPeriodWorkspaceSearchParams>("months");
-  const selectedAccountingPeriodIdParamName =
-    propertyName<AccountingPeriodWorkspaceSearchParams>(
-      "selectedAccountingPeriodId",
-    );
   const actionParamName =
     propertyName<AccountingPeriodWorkspaceSearchParams>("action");
 
@@ -77,10 +71,7 @@ const AccountingPeriodWorkspaceFilter = function ({
     (value) => value,
   );
 
-  const updateParams = useSearchParamUpdater([
-    pageParamName,
-    selectedAccountingPeriodIdParamName,
-  ]);
+  const updateParams = useSearchParamUpdater([pageParamName]);
 
   const hasActiveView = currentYears.length > 0 || currentMonths.length > 0;
 
@@ -115,13 +106,6 @@ const AccountingPeriodWorkspaceFilter = function ({
     });
   };
 
-  const selectedAction =
-    selectedAccountingPeriod === null
-      ? null
-      : selectedAccountingPeriod.isOpen
-        ? "close"
-        : "reopen";
-
   return (
     <PageFilterFrame
       title="Accounting Periods Workspace"
@@ -134,27 +118,6 @@ const AccountingPeriodWorkspaceFilter = function ({
           >
             Reset Filters
           </Button>
-          {!canWrite || selectedAction === null ? null : (
-            <Button
-              variant="outlined"
-              onClick={() => {
-                setAction(selectedAction);
-              }}
-            >
-              {selectedAction === "close" ? "Close Period" : "Reopen Period"}
-            </Button>
-          )}
-          {!canWrite || selectedAccountingPeriod === null ? null : (
-            <Button
-              color="error"
-              variant="outlined"
-              onClick={() => {
-                setAction("delete");
-              }}
-            >
-              Delete Period
-            </Button>
-          )}
           {!canWrite ? null : (
             <Button
               variant="contained"

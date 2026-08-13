@@ -3,6 +3,7 @@ using Domain.Accounts;
 using Domain.FundGoals;
 using Domain.Funds;
 using Domain.Transactions;
+using Domain.Transactions.Income;
 using Domain.Validation;
 
 namespace Domain.AccountingPeriods;
@@ -35,6 +36,16 @@ public class AccountingPeriodService(
         }
         AccountingPeriod? previousAccountingPeriod = accountingPeriodRepository.GetLatestAccountingPeriod();
         accountingPeriod = new AccountingPeriod(request.Year, request.Month);
+        accountingPeriod.ReplaceExpectedIncomeSources(request.ExpectedIncomeSources.Count > 0
+            ? request.ExpectedIncomeSources
+            : previousAccountingPeriod?.ExpectedIncomeSources.Select(source => new ExpectedIncomeSourceRequest
+            {
+                Name = source.Name,
+                IncomeLines = source.IncomeLines.ToList(),
+                IncomeDeductions = source.IncomeDeductions.ToList(),
+                UntrackedTransfers = source.UntrackedTransfers.ToList(),
+                ExpectedDates = [],
+            }) ?? []);
         fundGoalService.CopyToAccountingPeriod(previousAccountingPeriod, accountingPeriod);
         accountingPeriodBalanceService.AddAccountingPeriod(accountingPeriod);
         if (previousAccountingPeriod == null)
@@ -124,6 +135,9 @@ public class AccountingPeriodService(
                 new ValidationErrorPath(nameof(CreateAccountingPeriodRequest.Year)),
                 "An Accounting Period already exists for this year and month."));
         }
+        exceptions = exceptions.Concat(ValidateExpectedIncomeSources(
+            request.ExpectedIncomeSources,
+            new AccountingPeriod(request.Year, request.Month)));
         AccountingPeriod? latestAccountingPeriod = accountingPeriodRepository.GetLatestAccountingPeriod();
         if (latestAccountingPeriod != null && latestAccountingPeriod.PeriodStartDate != new DateOnly(request.Year, request.Month, 1).AddMonths(-1))
         {
@@ -135,6 +149,95 @@ public class AccountingPeriodService(
                 "New Accounting Period must directly follow the most recent existing Accounting Period."));
         }
         return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Attempts to replace the expected income sources for an open Accounting Period.
+    /// </summary>
+    public static bool TryReplaceExpectedIncomeSources(
+        AccountingPeriod accountingPeriod,
+        IReadOnlyCollection<ExpectedIncomeSourceRequest> sources,
+        out IEnumerable<ValidationError> exceptions)
+    {
+        exceptions = [];
+        if (!accountingPeriod.IsOpen)
+        {
+            exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "Expected income sources for a closed Accounting Period cannot be changed."));
+        }
+        exceptions = exceptions.Concat(ValidateExpectedIncomeSources(sources, accountingPeriod));
+        if (exceptions.Any())
+        {
+            return false;
+        }
+        accountingPeriod.ReplaceExpectedIncomeSources(sources);
+        return true;
+    }
+
+    /// <summary>
+    /// Validates expected income source configuration.
+    /// </summary>
+    private static IEnumerable<ValidationError> ValidateExpectedIncomeSources(
+        IReadOnlyCollection<ExpectedIncomeSourceRequest> sources,
+        AccountingPeriod accountingPeriod)
+    {
+        IEnumerable<ValidationError> errors = [];
+        foreach ((int sourceIndex, ExpectedIncomeSourceRequest source) in sources.Index())
+        {
+            ValidationErrorPath sourcePath = new ValidationErrorPath("").AppendWithIndex(nameof(CreateAccountingPeriodRequest.ExpectedIncomeSources), sourceIndex);
+            if (string.IsNullOrWhiteSpace(source.Name))
+            {
+                errors = errors.Append(new ValidationError(sourcePath.Append(nameof(ExpectedIncomeSourceRequest.Name)), "Expected income source names are required."));
+            }
+            if (source.IncomeLines.Count == 0)
+            {
+                errors = errors.Append(new ValidationError(sourcePath.Append(nameof(ExpectedIncomeSourceRequest.IncomeLines)), "Expected income sources must have at least one income line."));
+            }
+            foreach ((int index, IncomeLine line) in source.IncomeLines.Index())
+            {
+                if (line.Amount <= 0)
+                {
+                    errors = errors.Append(new ValidationError(sourcePath.AppendWithIndex(nameof(ExpectedIncomeSourceRequest.IncomeLines), index), "Expected income line amounts must be positive."));
+                }
+            }
+            foreach ((int index, IncomeDeduction deduction) in source.IncomeDeductions.Index())
+            {
+                if (deduction.Amount <= 0)
+                {
+                    errors = errors.Append(new ValidationError(sourcePath.AppendWithIndex(nameof(ExpectedIncomeSourceRequest.IncomeDeductions), index), "Expected income deduction amounts must be positive."));
+                }
+            }
+            foreach ((int index, ExpectedUntrackedIncomeTransfer transfer) in source.UntrackedTransfers.Index())
+            {
+                if (string.IsNullOrWhiteSpace(transfer.Description))
+                {
+                    errors = errors.Append(new ValidationError(sourcePath.AppendWithIndex(nameof(ExpectedIncomeSourceRequest.UntrackedTransfers), index), "Expected untracked income transfer descriptions are required."));
+                }
+                if (transfer.Amount <= 0)
+                {
+                    errors = errors.Append(new ValidationError(sourcePath.AppendWithIndex(nameof(ExpectedIncomeSourceRequest.UntrackedTransfers), index), "Expected untracked income transfer amounts must be positive."));
+                }
+            }
+            if (source.IncomeLines.Sum(line => line.Amount) - source.IncomeDeductions.Sum(deduction => deduction.Amount) < 0)
+            {
+                errors = errors.Append(new ValidationError(sourcePath, "Expected income deductions cannot exceed income lines."));
+            }
+            if (source.UntrackedTransfers.Sum(transfer => transfer.Amount) > source.IncomeLines.Sum(line => line.Amount) - source.IncomeDeductions.Sum(deduction => deduction.Amount))
+            {
+                errors = errors.Append(new ValidationError(sourcePath.Append(nameof(ExpectedIncomeSourceRequest.UntrackedTransfers)), "Expected untracked income transfers cannot exceed expected net income."));
+            }
+            foreach ((int index, DateOnly date) in source.ExpectedDates.Index())
+            {
+                if (date.Year != accountingPeriod.Year || date.Month != accountingPeriod.Month)
+                {
+                    errors = errors.Append(new ValidationError(sourcePath.AppendWithIndex(nameof(ExpectedIncomeSourceRequest.ExpectedDates), index), "Expected income dates must fall within the Accounting Period calendar month."));
+                }
+            }
+            if (source.ExpectedDates.Distinct().Count() != source.ExpectedDates.Count)
+            {
+                errors = errors.Append(new ValidationError(sourcePath.Append(nameof(ExpectedIncomeSourceRequest.ExpectedDates)), "Expected income dates must be unique within a source."));
+            }
+        }
+        return errors;
     }
 
     /// <summary>

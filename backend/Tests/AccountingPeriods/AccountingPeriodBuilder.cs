@@ -16,7 +16,8 @@ internal sealed class AccountingPeriodBuilder(TestApiClient apiClient, int year,
         AccountingPeriodWithBalanceModel model = await apiClient.PostAsync<CreateAccountingPeriodModel, AccountingPeriodWithBalanceModel>("/accounting-periods", new CreateAccountingPeriodModel
         {
             Year = year,
-            Month = month
+            Month = month,
+            ExpectedIncomeSources = [],
         });
         return new AccountingPeriodHandle(model.Id, model.Name);
     }

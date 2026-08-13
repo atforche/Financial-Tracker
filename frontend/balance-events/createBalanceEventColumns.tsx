@@ -124,7 +124,7 @@ const createBalanceEventColumns = function <T extends BalanceEventListItem>({
   }
 
   columns.push({
-    name: "open",
+    name: "actions",
     headerContent: "",
     getBodyContent: () => (
       <Box
@@ -140,8 +140,8 @@ const createBalanceEventColumns = function <T extends BalanceEventListItem>({
       </Box>
     ),
     alignment: "center",
-    minWidth: 0,
-    maxWidth: 0,
+    minWidth: 52,
+    maxWidth: 52,
   });
 
   return columns;

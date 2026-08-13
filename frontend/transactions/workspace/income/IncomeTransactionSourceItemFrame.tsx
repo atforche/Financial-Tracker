@@ -133,6 +133,7 @@ const IncomeTransactionSourceItemFrame = function <
               >
                 <IconButton
                   color="error"
+                  disabled={!allowEmpty && items.length === 1}
                   onClick={() => {
                     const nextItems = items.filter(
                       (_, itemIndex) => itemIndex !== index,

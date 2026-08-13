@@ -7,6 +7,7 @@ const accountingPeriodWorkspaceActions = [
   "create",
   "close",
   "reopen",
+  "editExpectedIncome",
   "delete",
 ] as const;
 
@@ -26,6 +27,7 @@ const accountingPeriodWorkspaceActionLabels: Record<
   create: "Create",
   close: "Close",
   reopen: "Reopen",
+  editExpectedIncome: "Edit Expected Income",
   delete: "Delete",
 };
 
@@ -39,7 +41,7 @@ const getAvailableAccountingPeriodWorkspaceActions = function (
     return ["create"];
   }
   return accountingPeriod.isOpen
-    ? ["close", "delete", "create"]
+    ? ["close", "editExpectedIncome", "delete", "create"]
     : ["reopen", "delete", "create"];
 };
 

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data.AccountingPeriods;
 
@@ -9,32 +10,38 @@ namespace Data.AccountingPeriods;
 public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAccountingPeriodRepository
 {
     /// <inheritdoc/>
-    public IReadOnlyCollection<AccountingPeriod> GetAll() => databaseContext.AccountingPeriods.ToList();
+    public IReadOnlyCollection<AccountingPeriod> GetAll() => databaseContext.AccountingPeriods.AsSplitQuery().ToList();
 
     /// <inheritdoc/>
     public IReadOnlyCollection<AccountingPeriod> GetAllOpenPeriods() => databaseContext.AccountingPeriods
-        .Where(accountingPeriod => accountingPeriod.IsOpen)
+        .AsSplitQuery().Where(accountingPeriod => accountingPeriod.IsOpen)
         .ToList();
 
     /// <inheritdoc/>
     public AccountingPeriod GetById(AccountingPeriodId id) => databaseContext.AccountingPeriods
+        .AsSplitQuery()
+        .Include(accountingPeriod => accountingPeriod.ExpectedIncomeSources)
         .SingleOrDefault(accountingPeriod => accountingPeriod.Id == id)
         ?? databaseContext.AccountingPeriods.Local.Single(accountingPeriod => accountingPeriod.Id == id);
 
     /// <inheritdoc/>
     public bool TryGetById(Guid id, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod)
     {
-        accountingPeriod = databaseContext.AccountingPeriods.SingleOrDefault(candidate => candidate.Id == new AccountingPeriodId(id))
+        accountingPeriod = databaseContext.AccountingPeriods
+            .AsSplitQuery()
+            .Include(candidate => candidate.ExpectedIncomeSources)
+            .SingleOrDefault(candidate => candidate.Id == new AccountingPeriodId(id))
             ?? databaseContext.AccountingPeriods.Local.SingleOrDefault(candidate => candidate.Id == new AccountingPeriodId(id));
         return accountingPeriod != null;
     }
 
     /// <inheritdoc/>
-    public AccountingPeriod? GetByYearAndMonth(int year, int month) => databaseContext.AccountingPeriods
+    public AccountingPeriod? GetByYearAndMonth(int year, int month) => databaseContext.AccountingPeriods.AsSplitQuery()
         .SingleOrDefault(accountingPeriod => accountingPeriod.Year == year && accountingPeriod.Month == month);
 
     /// <inheritdoc/>
-    public AccountingPeriod? GetLatestAccountingPeriod() => databaseContext.AccountingPeriods
+    public AccountingPeriod? GetLatestAccountingPeriod() => databaseContext.AccountingPeriods.AsSplitQuery()
+        .Include(accountingPeriod => accountingPeriod.ExpectedIncomeSources)
         .OrderBy(accountingPeriod => accountingPeriod.Year)
         .ThenBy(accountingPeriod => accountingPeriod.Month)
         .LastOrDefault();
@@ -44,7 +51,7 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
     {
         AccountingPeriod currentAccountingPeriod = GetById(id);
         DateOnly nextMonth = currentAccountingPeriod.PeriodStartDate.AddMonths(1);
-        return databaseContext.AccountingPeriods
+        return databaseContext.AccountingPeriods.AsSplitQuery()
             .SingleOrDefault(accountingPeriod => accountingPeriod.Year == nextMonth.Year && accountingPeriod.Month == nextMonth.Month);
     }
 
@@ -53,7 +60,7 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
     {
         AccountingPeriod currentAccountingPeriod = GetById(id);
         DateOnly previousMonth = currentAccountingPeriod.PeriodStartDate.AddMonths(-1);
-        return databaseContext.AccountingPeriods
+        return databaseContext.AccountingPeriods.AsSplitQuery()
             .SingleOrDefault(accountingPeriod => accountingPeriod.Year == previousMonth.Year && accountingPeriod.Month == previousMonth.Month);
     }
 

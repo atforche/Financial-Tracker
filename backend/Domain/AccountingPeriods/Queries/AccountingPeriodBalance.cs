@@ -6,4 +6,7 @@ namespace Domain.AccountingPeriods.Queries;
 public sealed record AccountingPeriodBalance(
     AccountingPeriod AccountingPeriod,
     decimal OpeningBalance,
-    decimal ClosingBalance);
+    decimal ClosingBalance,
+    decimal ActualIncome,
+    decimal ActualTrackedIncome,
+    decimal ExpectedGoalContributions);

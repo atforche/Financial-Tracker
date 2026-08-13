@@ -82,10 +82,9 @@ const AccountingPeriodTrendsListFrame = function ({
     accountingPeriod: AccountingPeriodWithBalance,
   ): void {
     router.push(
-      routes.workspace({
+      routes.workspaceDetail(accountingPeriod.id, {
         years: [accountingPeriod.year],
         months: [accountingPeriod.month],
-        selectedAccountingPeriodId: accountingPeriod.id,
       }),
     );
   };

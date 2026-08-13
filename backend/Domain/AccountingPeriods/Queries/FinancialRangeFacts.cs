@@ -8,7 +8,6 @@ namespace Domain.AccountingPeriods.Queries;
 public sealed record FinancialRangeIncomeFact(
     decimal Amount,
     AccountType AccountType,
-    bool HasInternalSource,
     DateOnly? PostedDate);
 
 /// <summary>
