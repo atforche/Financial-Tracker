@@ -208,11 +208,32 @@ public sealed class AccountingPeriodLifecycleTests
         Assert.Equal(800m, updatedSource.ExpectedAmount.Total);
         Assert.Equal(500m, updatedSource.ExpectedAmount.Tracked);
         Assert.Equal(300m, updatedSource.ExpectedAmount.Untracked);
+
+        var changedSource = new ExpectedIncomeSourceRequestModel
+        {
+            Name = "Employer (updated)",
+            IncomeLines = source.IncomeLines,
+            IncomeDeductions = source.IncomeDeductions,
+            UntrackedTransfers = source.UntrackedTransfers,
+            ExpectedDates = [new DateOnly(2026, 7, 20)],
+        };
+        AccountingPeriodWithBalanceModel changed = await test.Api.PostAsync<IReadOnlyCollection<ExpectedIncomeSourceRequestModel>, AccountingPeriodWithBalanceModel>(
+            $"/accounting-periods/{july.Id}/expected-income-sources", [changedSource]);
+        ExpectedIncomeSourceModel changedResult = Assert.Single(changed.ExpectedIncomeSources);
+        Assert.Equal("Employer (updated)", changedResult.Name);
+        Assert.Equal(new DateOnly(2026, 7, 20), Assert.Single(changedResult.ExpectedDates));
+
+        CollectionModel<AccountingPeriodWithBalanceModel> listed = await test.Api.GetAsync<CollectionModel<AccountingPeriodWithBalanceModel>>(
+            "/accounting-periods/with-balances?filter.months=7");
+        AccountingPeriodWithBalanceModel listedPeriod = Assert.Single(listed.Items);
+        Assert.Equal(800m, listedPeriod.ExpectedIncome.Total);
+        _ = Assert.Single(listedPeriod.ExpectedIncomeSources);
+
         AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
         AccountingPeriodWithBalanceModel result = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{august.Id}");
 
         ExpectedIncomeSourceModel copied = Assert.Single(result.ExpectedIncomeSources);
-        Assert.Equal("Employer", copied.Name);
+        Assert.Equal("Employer (updated)", copied.Name);
         Assert.Equal(800m, copied.NetAmount.Total);
         Assert.Equal(500m, copied.NetAmount.Tracked);
         Assert.Equal(300m, copied.NetAmount.Untracked);

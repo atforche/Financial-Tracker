@@ -19,13 +19,18 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
 
     /// <inheritdoc/>
     public AccountingPeriod GetById(AccountingPeriodId id) => databaseContext.AccountingPeriods
-        .AsSplitQuery().SingleOrDefault(accountingPeriod => accountingPeriod.Id == id)
+        .AsSplitQuery()
+        .Include(accountingPeriod => accountingPeriod.ExpectedIncomeSources)
+        .SingleOrDefault(accountingPeriod => accountingPeriod.Id == id)
         ?? databaseContext.AccountingPeriods.Local.Single(accountingPeriod => accountingPeriod.Id == id);
 
     /// <inheritdoc/>
     public bool TryGetById(Guid id, [NotNullWhen(true)] out AccountingPeriod? accountingPeriod)
     {
-        accountingPeriod = databaseContext.AccountingPeriods.AsSplitQuery().SingleOrDefault(candidate => candidate.Id == new AccountingPeriodId(id))
+        accountingPeriod = databaseContext.AccountingPeriods
+            .AsSplitQuery()
+            .Include(candidate => candidate.ExpectedIncomeSources)
+            .SingleOrDefault(candidate => candidate.Id == new AccountingPeriodId(id))
             ?? databaseContext.AccountingPeriods.Local.SingleOrDefault(candidate => candidate.Id == new AccountingPeriodId(id));
         return accountingPeriod != null;
     }

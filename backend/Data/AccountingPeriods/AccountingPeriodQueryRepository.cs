@@ -37,6 +37,9 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
         CancellationToken cancellationToken = default)
     {
         IQueryable<AccountingPeriodBalanceRow> balances = databaseContext.AccountingPeriodBalanceHistories.AsNoTracking()
+            .AsSplitQuery()
+            .Include(history => history.AccountingPeriod)
+            .ThenInclude(accountingPeriod => accountingPeriod.ExpectedIncomeSources)
             .Select(history => new AccountingPeriodBalanceRow
             {
                 AccountingPeriod = history.AccountingPeriod,
@@ -118,6 +121,9 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
         CancellationToken cancellationToken = default)
     {
         List<AccountingPeriodBalanceRow> rows = await databaseContext.AccountingPeriodBalanceHistories.AsNoTracking()
+            .AsSplitQuery()
+            .Include(history => history.AccountingPeriod)
+            .ThenInclude(accountingPeriod => accountingPeriod.ExpectedIncomeSources)
             .Where(history => ((history.AccountingPeriod.Year * 12) + history.AccountingPeriod.Month) >= startIndex
                 && ((history.AccountingPeriod.Year * 12) + history.AccountingPeriod.Month) <= endIndex)
             .OrderBy(history => history.AccountingPeriod.Year)
