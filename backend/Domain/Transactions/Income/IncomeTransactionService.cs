@@ -3,8 +3,6 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.FundGoals;
 using Domain.Funds;
-using Domain.Income;
-using Domain.Payroll;
 using Domain.Validation;
 
 namespace Domain.Transactions.Income;
@@ -289,6 +287,10 @@ public class IncomeTransactionService(
         {
             exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(0), "Income Transactions must have at least one income destination"));
         }
+        if (destinations.Count > 0 && !destinations.Any(destination => destination.Account.Type.IsTracked()))
+        {
+            exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(0), "Income Transactions must have at least one tracked destination account"));
+        }
         foreach ((int index, IncomeTransactionDestination destination) in destinations.Index())
         {
             if (source.Account != null && destination.Account?.Id == source.Account.Id)
@@ -302,7 +304,7 @@ public class IncomeTransactionService(
     }
 
     /// <summary>
-    /// Validates the economic composition and destinations of this Income Transaction.
+    /// Validates the structure of this Income Transaction, including its income lines, deductions, and destination fund assignments
     /// </summary>
     private static bool ValidateIncomeStructure(
         decimal amount,
@@ -315,18 +317,27 @@ public class IncomeTransactionService(
     {
         exceptions = [];
 
-        exceptions = exceptions.Concat(IncomeBreakdownValidator.Validate(
-            source.Income,
-            sourcePath.Append(nameof(IncomeTransactionSource.Income))));
-        if (source.Income is ExpectedPayrollPayment)
+        if (source.IncomeLines.Count == 0)
         {
-            exceptions = exceptions.Append(new ValidationError(
-                sourcePath.Append(nameof(IncomeTransactionSource.Income)),
-                "Income transactions must record actual payroll rather than an expected payroll projection."));
+            exceptions = exceptions.Append(new ValidationError(sourcePath, "Income Transactions must have at least one income line"));
         }
         if (destinations.Count == 0)
         {
             exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(0), "Income Transactions must have at least one income destination"));
+        }
+        foreach ((int index, IncomeLine incomeLine) in source.IncomeLines.Index())
+        {
+            if (incomeLine.Amount <= 0)
+            {
+                exceptions = exceptions.Append(new ValidationError(sourcePath.AppendWithIndex(nameof(IncomeTransactionSource.IncomeLines), index), "Income line amounts must be positive"));
+            }
+        }
+        foreach ((int index, IncomeDeduction deduction) in source.IncomeDeductions.Index())
+        {
+            if (deduction.Amount <= 0)
+            {
+                exceptions = exceptions.Append(new ValidationError(sourcePath.AppendWithIndex(nameof(IncomeTransactionSource.IncomeDeductions), index), "Income deduction amounts must be positive"));
+            }
         }
         foreach ((int index, IncomeTransactionDestination destination) in destinations.Index())
         {
@@ -343,24 +354,15 @@ public class IncomeTransactionService(
                 exceptions = exceptions.Append(new ValidationError(destinationsPathBuilder(index), "Duplicate income destination accounts are not allowed"));
             }
         }
-        if (Math.Round(source.Income.TotalAmount, 2) != Math.Round(amount, 2))
+        decimal calculatedNetAmount = source.IncomeLines.Sum(line => line.Amount) - source.IncomeDeductions.Sum(deduction => deduction.Amount);
+        if (Math.Round(calculatedNetAmount, 2) != Math.Round(amount, 2))
         {
-            exceptions = exceptions.Append(new ValidationError(amountPath, "The income breakdown total must equal the transaction amount"));
+            exceptions = exceptions.Append(new ValidationError(amountPath, "Income lines minus deductions must equal the transaction amount"));
         }
         decimal totalDestinationAmount = destinations.Sum(destination => destination.Amount);
         if (Math.Round(totalDestinationAmount, 2) != Math.Round(amount, 2))
         {
             exceptions = exceptions.Append(new ValidationError(amountPath, "Income destination amounts must equal the transaction amount"));
-        }
-        decimal trackedDestinationAmount = destinations.Where(destination => destination.Account.Type.IsTracked()).Sum(destination => destination.Amount);
-        if (Math.Round(trackedDestinationAmount, 2) != Math.Round(source.Income.TrackedAmount, 2))
-        {
-            exceptions = exceptions.Append(new ValidationError(amountPath, "Tracked destination amounts must equal the tracked income amount"));
-        }
-        decimal untrackedDestinationAmount = destinations.Where(destination => !destination.Account.Type.IsTracked()).Sum(destination => destination.Amount);
-        if (Math.Round(untrackedDestinationAmount, 2) != Math.Round(source.Income.UntrackedAmount, 2))
-        {
-            exceptions = exceptions.Append(new ValidationError(amountPath, "Untracked destination amounts must equal the untracked income amount"));
         }
         return !exceptions.Any();
     }

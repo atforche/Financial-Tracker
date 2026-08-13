@@ -43,7 +43,7 @@ public sealed class MultipleCollectionQueryWarningTests
 
         Assert.Contains(transactions.Items, item => item.Id == income.Id);
         Assert.Contains(transactions.Items, item => item.Id == spending.Id);
-        Assert.Equal(40m, incomeDetails.Source.Income.TrackedAmount);
+        _ = Assert.Single(incomeDetails.Source.IncomeLines);
         Assert.Contains(accountEvents.Items, item => item.TransactionId == income.Id);
         Assert.Contains(fundEvents.Items, item => item.TransactionId == spending.Id);
         Assert.Contains(accounts.Accounts.Items, item => item.Id == cash.Id);

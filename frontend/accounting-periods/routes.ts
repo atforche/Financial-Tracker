@@ -41,32 +41,6 @@ const routes = {
       `/accounting-periods/workspace/${accountingPeriodId}`,
       accountingPeriodWorkspaceSearchParamsToSearchParams(searchParams),
     ),
-  expectedIncomeCreate: (
-    accountingPeriodId: string,
-    searchParams: AccountingPeriodWorkspaceSearchParams,
-  ): Route =>
-    buildUrl(
-      `/accounting-periods/workspace/${accountingPeriodId}/expected-income/create`,
-      accountingPeriodWorkspaceSearchParamsToSearchParams(searchParams),
-    ),
-  expectedIncomeDetail: (
-    accountingPeriodId: string,
-    sourceId: string,
-    searchParams: AccountingPeriodWorkspaceSearchParams,
-  ): Route =>
-    buildUrl(
-      `/accounting-periods/workspace/${accountingPeriodId}/expected-income/${sourceId}`,
-      accountingPeriodWorkspaceSearchParamsToSearchParams(searchParams),
-    ),
-  expectedIncomeEdit: (
-    accountingPeriodId: string,
-    sourceId: string,
-    searchParams: AccountingPeriodWorkspaceSearchParams,
-  ): Route =>
-    buildUrl(
-      `/accounting-periods/workspace/${accountingPeriodId}/expected-income/${sourceId}/edit`,
-      accountingPeriodWorkspaceSearchParamsToSearchParams(searchParams),
-    ),
 };
 
 export default routes;

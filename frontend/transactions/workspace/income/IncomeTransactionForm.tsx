@@ -235,42 +235,6 @@ const IncomeTransactionForm = function <RequestPayload>({
               ),
             );
           }}
-          employerContributions={source.employerContributions}
-          setEmployerContributions={(employerContributions): void => {
-            const nextSource = { ...source, employerContributions };
-            setSource((currentSource) => ({
-              ...currentSource,
-              employerContributions,
-            }));
-            setDestinations((currentDestinations) =>
-              syncDestinationAmountsToSource(
-                currentDestinations,
-                sourceNetAmount,
-                getNetIncomeAmount(nextSource),
-                setDestinationAmount,
-              ),
-            );
-          }}
-          taxWithholdings={source.taxWithholdings}
-          setTaxWithholdings={(taxWithholdings): void => {
-            const nextSource = { ...source, taxWithholdings };
-            setSource((currentSource) => ({
-              ...currentSource,
-              taxWithholdings,
-            }));
-            setDestinations((currentDestinations) =>
-              syncDestinationAmountsToSource(
-                currentDestinations,
-                sourceNetAmount,
-                getNetIncomeAmount(nextSource),
-                setDestinationAmount,
-              ),
-            );
-          }}
-          stateIncomeStateCode={source.stateIncomeStateCode}
-          setStateIncomeStateCode={(stateIncomeStateCode): void => {
-            setSource((current) => ({ ...current, stateIncomeStateCode }));
-          }}
           accountFilter={buildSourceAccountFilter(accounts, destinations)}
         />
       }

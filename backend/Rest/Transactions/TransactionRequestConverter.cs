@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
@@ -10,7 +11,6 @@ using Models.Funds;
 using Models.Transactions;
 using Models.Transactions.Create;
 using Models.Transactions.Update;
-using Rest.Income;
 
 namespace Rest.Transactions;
 
@@ -427,6 +427,30 @@ public sealed class TransactionRequestConverter(
         return new SpendingTransactionDestination(account, null, location, amount, fundAssignments.ToList());
     }
 
+    private static bool TryGetIncomeLines(IReadOnlyCollection<CreateIncomeLineModel> models, [NotNullWhen(true)] out IReadOnlyCollection<IncomeLine>? incomeLines)
+    {
+        incomeLines = models.Select(model => new IncomeLine(model.Description, model.Amount)).ToList();
+        return true;
+    }
+
+    private static bool TryGetIncomeLines(IReadOnlyCollection<UpdateIncomeLineModel> models, [NotNullWhen(true)] out IReadOnlyCollection<IncomeLine>? incomeLines)
+    {
+        incomeLines = models.Select(model => new IncomeLine(model.Description, model.Amount)).ToList();
+        return true;
+    }
+
+    private static bool TryGetIncomeDeductions(IReadOnlyCollection<CreateIncomeDeductionModel> models, [NotNullWhen(true)] out IReadOnlyCollection<IncomeDeduction>? incomeDeductions)
+    {
+        incomeDeductions = models.Select(model => new IncomeDeduction(model.Description, model.Amount)).ToList();
+        return true;
+    }
+
+    private static bool TryGetIncomeDeductions(IReadOnlyCollection<UpdateIncomeDeductionModel> models, [NotNullWhen(true)] out IReadOnlyCollection<IncomeDeduction>? incomeDeductions)
+    {
+        incomeDeductions = models.Select(model => new IncomeDeduction(model.Description, model.Amount)).ToList();
+        return true;
+    }
+
     private IncomeTransactionSource? GetIncomeSource(
         CreateIncomeTransactionSourceModel model,
         string errorKeyPrefix,
@@ -437,7 +461,15 @@ public sealed class TransactionRequestConverter(
         {
             return null;
         }
-        return new IncomeTransactionSource(account, null, model.Location, IncomeBreakdownConverter.ToDomain(model.Income));
+        if (!TryGetIncomeLines(model.IncomeLines, out IReadOnlyCollection<IncomeLine>? incomeLines))
+        {
+            return null;
+        }
+        if (!TryGetIncomeDeductions(model.IncomeDeductions, out IReadOnlyCollection<IncomeDeduction>? incomeDeductions))
+        {
+            return null;
+        }
+        return new IncomeTransactionSource(account, null, model.Location, incomeLines, incomeDeductions);
     }
 
     private IncomeTransactionSource? GetIncomeSource(
@@ -450,7 +482,15 @@ public sealed class TransactionRequestConverter(
         {
             return null;
         }
-        return new IncomeTransactionSource(account, null, model.Location, IncomeBreakdownConverter.ToDomain(model.Income));
+        if (!TryGetIncomeLines(model.IncomeLines, out IReadOnlyCollection<IncomeLine>? incomeLines))
+        {
+            return null;
+        }
+        if (!TryGetIncomeDeductions(model.IncomeDeductions, out IReadOnlyCollection<IncomeDeduction>? incomeDeductions))
+        {
+            return null;
+        }
+        return new IncomeTransactionSource(account, null, model.Location, incomeLines, incomeDeductions);
     }
 
     private async Task<IReadOnlyCollection<IncomeTransactionDestination>?> GetIncomeDestinationsAsync(

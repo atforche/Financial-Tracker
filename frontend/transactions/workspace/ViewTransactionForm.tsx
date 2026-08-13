@@ -164,12 +164,6 @@ const ViewTransactionForm = function ({
         setIncomeLines={null}
         incomeDeductions={source.incomeDeductions}
         setIncomeDeductions={null}
-        employerContributions={source.employerContributions}
-        setEmployerContributions={null}
-        taxWithholdings={source.taxWithholdings}
-        setTaxWithholdings={null}
-        stateIncomeStateCode={source.stateIncomeStateCode}
-        setStateIncomeStateCode={null}
       />
     );
     destinationContent = destinations.map((destination, index) => (

@@ -1,5 +1,4 @@
 using System.Globalization;
-using Domain.Income;
 
 namespace Domain.AccountingPeriods;
 
@@ -68,7 +67,8 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
         _expectedIncomeSources.AddRange(sources.Select(source => new ExpectedIncomeSource(
             this,
             source.Name,
-            IncomeBreakdownSnapshot.Create(source.Income),
+            source.IncomeLines,
+            source.IncomeDeductions,
             source.ExpectedDates)));
     }
 

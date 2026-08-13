@@ -3813,6 +3813,16 @@ export interface components {
              */
             fundId: string;
         };
+        /** @description Model representing an income deduction in a create income transaction request. */
+        CreateIncomeDeductionModel: {
+            /** @description Description for the income deduction. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the income deduction.
+             */
+            amount: number;
+        };
         /** @description Model representing a Fund amount assigned by an income transaction. */
         CreateIncomeFundAmountModel: {
             /**
@@ -3828,6 +3838,16 @@ export interface components {
             /**
              * Format: double
              * @description Amount for this Fund Amount
+             */
+            amount: number;
+        };
+        /** @description Model representing an income line in a create income transaction request. */
+        CreateIncomeLineModel: {
+            /** @description Description for the income line. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the income line.
              */
             amount: number;
         };
@@ -3855,8 +3875,10 @@ export interface components {
             accountId?: null | string;
             /** @description Optional location for the income source. */
             location?: null | string;
-            /** @description Economic composition of the income receipt. */
-            income: components["schemas"]["IncomeBreakdownRequestModel"];
+            /** @description Income lines for the source. */
+            incomeLines: components["schemas"]["CreateIncomeLineModel"][];
+            /** @description Income deductions for the source. */
+            incomeDeductions: components["schemas"]["CreateIncomeDeductionModel"][];
         };
         /** @description Model representing a destination of a spending transaction create request. */
         CreateSpendingTransactionDestinationModel: {
@@ -4008,36 +4030,6 @@ export interface components {
              */
             expiresAt?: null | string;
         };
-        /** @description Employee-funded deduction from gross compensation. */
-        EmployeePayrollDeductionModel: {
-            /** @description Description shown for the deduction. */
-            description: string;
-            /**
-             * Format: double
-             * @description Amount deducted from gross compensation.
-             */
-            amount: number;
-            /**
-             * Format: int32
-             * @description Whether the deduction reduces income or becomes an untracked contribution.
-             */
-            disposition: number;
-            /**
-             * Format: int32
-             * @description Bit flags identifying wage bases reduced by this deduction.
-             */
-            reducesTaxableWagesFor: number;
-        };
-        /** @description Employer-funded compensation outside the cash deposit. */
-        EmployerContributionModel: {
-            /** @description Description shown for the contribution. */
-            description: string;
-            /**
-             * Format: double
-             * @description Amount contributed by the employer.
-             */
-            amount: number;
-        };
         /** @description Model describing ending-balance progress. */
         EndingBalanceProgressModel: {
             /**
@@ -4077,20 +4069,17 @@ export interface components {
             id: string;
             /** @description Source name. */
             name: string;
-            /** @description Economic composition expected for each payment. */
-            income: components["schemas"]["IncomeBreakdownModel"];
+            /** @description Income lines expected for each payment. */
+            incomeLines: components["schemas"]["IncomeLineModel"][];
+            /** @description Deductions expected for each payment. */
+            incomeDeductions: components["schemas"]["IncomeDeductionModel"][];
             /** @description Expected payment dates. */
             expectedDates: string[];
             /**
              * Format: double
              * @description Net amount expected for one payment.
              */
-            trackedAmount: number;
-            /**
-             * Format: double
-             * @description Untracked income expected for one payment.
-             */
-            untrackedAmount: number;
+            netAmount: number;
             /**
              * Format: double
              * @description Total expected amount for this source.
@@ -4101,8 +4090,10 @@ export interface components {
         ExpectedIncomeSourceRequestModel: {
             /** @description Source name. */
             name: string;
-            /** @description Economic composition expected for each payment. */
-            income: components["schemas"]["IncomeBreakdownRequestModel"];
+            /** @description Income lines expected for each payment. */
+            incomeLines: components["schemas"]["CreateIncomeLineModel"][];
+            /** @description Deductions expected for each payment. */
+            incomeDeductions: components["schemas"]["CreateIncomeDeductionModel"][];
             /** @description Expected payment dates. */
             expectedDates: string[];
         };
@@ -4560,70 +4551,25 @@ export interface components {
              */
             untracked: number;
         };
-        /**
-         * @description Supported economic income breakdowns.
-         * @enum {unknown}
-         */
-        IncomeBreakdownKindModel: IncomeBreakdownKindModel;
-        /** @description Economic composition of an income receipt. */
-        IncomeBreakdownModel: {
-            /** @description Kind of income represented by this breakdown. */
-            kind: components["schemas"]["IncomeBreakdownKindModel"];
+        /** @description Model representing an income deduction on an income transaction. */
+        IncomeDeductionModel: {
+            /** @description Description for the income deduction. */
+            description: string;
             /**
              * Format: double
-             * @description Income deposited into tracked accounts.
+             * @description Amount for the income deduction.
              */
-            trackedAmount: number;
-            /**
-             * Format: double
-             * @description Income deposited into untracked accounts.
-             */
-            untrackedAmount: number;
-            /**
-             * Format: double
-             * @description Total recognized income.
-             */
-            totalAmount: number;
-            /** @description Payroll earnings, empty for simple income. */
-            earnings: components["schemas"]["PayrollEarningModel"][];
-            /** @description Employee payroll deductions, empty for simple income. */
-            employeeDeductions: components["schemas"]["EmployeePayrollDeductionModel"][];
-            /** @description Employer contributions, empty for simple income. */
-            employerContributions: components["schemas"]["EmployerContributionModel"][];
-            /** @description Tax withholdings, empty for simple income. */
-            taxWithholdings: components["schemas"]["PayrollTaxWithholdingModel"][];
-            /** @description State code for the payroll payment's state income wage base. */
-            stateIncomeStateCode?: null | string;
-            /**
-             * Format: int32
-             * @description Annual payment count for projected payroll.
-             */
-            payPeriodsPerYear?: null | number;
+            amount: number;
         };
-        /** @description Request model describing simple income or an actual payroll payment. */
-        IncomeBreakdownRequestModel: {
-            /** @description Kind of income to create. */
-            kind: components["schemas"]["IncomeBreakdownKindModel"];
+        /** @description Model representing an income line on an income transaction. */
+        IncomeLineModel: {
+            /** @description Description for the income line. */
+            description: string;
             /**
              * Format: double
-             * @description Tracked amount for simple income.
+             * @description Amount for the income line.
              */
-            trackedAmount?: null | number;
-            /**
-             * Format: double
-             * @description Untracked amount for simple income.
-             */
-            untrackedAmount?: null | number;
-            /** @description Payroll earnings. */
-            earnings: components["schemas"]["PayrollEarningModel"][];
-            /** @description Employee payroll deductions. */
-            employeeDeductions: components["schemas"]["EmployeePayrollDeductionModel"][];
-            /** @description Employer payroll contributions. */
-            employerContributions: components["schemas"]["EmployerContributionModel"][];
-            /** @description Actual payroll tax withholdings. */
-            taxWithholdings: components["schemas"]["PayrollTaxWithholdingModel"][];
-            /** @description State code for the payroll payment's state income wage base. */
-            stateIncomeStateCode?: null | string;
+            amount: number;
         };
         /** @description Model representing a destination of an income transaction response. */
         IncomeTransactionDestinationModel: {
@@ -4649,8 +4595,10 @@ export interface components {
             account?: null | components["schemas"]["AccountBalanceEventModel"];
             /** @description Optional location for the source. */
             location?: null | string;
-            /** @description Economic composition of the income receipt. */
-            income: components["schemas"]["IncomeBreakdownModel"];
+            /** @description Income lines for the source. */
+            incomeLines: components["schemas"]["IncomeLineModel"][];
+            /** @description Income deductions for the source. */
+            incomeDeductions: components["schemas"]["IncomeDeductionModel"][];
         };
         /** @description Model representing a request to onboard an Account. */
         OnboardAccountModel: {
@@ -4697,44 +4645,6 @@ export interface components {
              * @description Target ending balance for the Fund Goal.
              */
             targetEndingBalance?: null | number;
-        };
-        /** @description Cash compensation included in a payroll payment. */
-        PayrollEarningModel: {
-            /** @description Description shown for the earning. */
-            description: string;
-            /**
-             * Format: double
-             * @description Gross amount of the earning.
-             */
-            amount: number;
-            /**
-             * Format: int32
-             * @description Bit flags identifying applicable wage bases.
-             */
-        };
-        /** @description Government jurisdiction imposing a payroll tax. */
-        PayrollTaxJurisdictionModel: {
-            /** @description ISO country code. */
-            countryCode: string;
-            /** @description Optional state or subdivision code. */
-            subdivisionCode?: null | string;
-            /** @description Optional local jurisdiction name. */
-            locality?: null | string;
-        };
-        /** @description Tax withheld from a payroll payment. */
-        PayrollTaxWithholdingModel: {
-            /** @description Jurisdiction receiving the tax. */
-            jurisdiction: components["schemas"]["PayrollTaxJurisdictionModel"];
-            /**
-             * Format: int32
-             * @description Payroll tax category.
-             */
-            taxType: number;
-            /**
-             * Format: double
-             * @description Amount withheld.
-             */
-            amount: number;
         };
         /** @description Model representing a request to post a Transaction */
         PostTransactionModel: {
@@ -5150,6 +5060,26 @@ export interface components {
              */
             fundId: string;
         };
+        /** @description Model representing an income deduction in an update income transaction request. */
+        UpdateIncomeDeductionModel: {
+            /** @description Description for the income deduction. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the income deduction.
+             */
+            amount: number;
+        };
+        /** @description Model representing an income line in an update income transaction request. */
+        UpdateIncomeLineModel: {
+            /** @description Description for the income line. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the income line.
+             */
+            amount: number;
+        };
         /** @description Model representing a destination of an income transaction update request. */
         UpdateIncomeTransactionDestinationModel: {
             /**
@@ -5174,8 +5104,10 @@ export interface components {
             accountId?: null | string;
             /** @description Optional location for the income source. */
             location?: null | string;
-            /** @description Economic composition of the income receipt. */
-            income: components["schemas"]["IncomeBreakdownRequestModel"];
+            /** @description Income lines for the source. */
+            incomeLines: components["schemas"]["UpdateIncomeLineModel"][];
+            /** @description Income deductions for the source. */
+            incomeDeductions: components["schemas"]["UpdateIncomeDeductionModel"][];
         };
         /** @description Model representing a destination of a spending transaction update request. */
         UpdateSpendingTransactionDestinationModel: {
@@ -5554,11 +5486,6 @@ export enum FundWithBalanceSortModel {
     DescriptionDescending = "DescriptionDescending",
     PostedBalance = "PostedBalance",
     PostedBalanceDescending = "PostedBalanceDescending"
-}
-export enum IncomeBreakdownKindModel {
-    Simple = "Simple",
-    Payroll = "Payroll",
-    ExpectedPayroll = "ExpectedPayroll"
 }
 export enum TransactionModelAccountTransactionModelType {
     Account = "Account"

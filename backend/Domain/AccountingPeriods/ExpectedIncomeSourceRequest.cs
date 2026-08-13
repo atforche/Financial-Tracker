@@ -1,4 +1,4 @@
-using Domain.Income;
+using Domain.Transactions.Income;
 
 namespace Domain.AccountingPeriods;
 
@@ -13,9 +13,14 @@ public sealed record ExpectedIncomeSourceRequest
     public required string Name { get; init; }
 
     /// <summary>
-    /// Economic composition expected for each payment.
+    /// Income lines expected for each payment.
     /// </summary>
-    public required IncomeBreakdown Income { get; init; }
+    public required IReadOnlyCollection<IncomeLine> IncomeLines { get; init; }
+
+    /// <summary>
+    /// Deductions expected for each payment.
+    /// </summary>
+    public required IReadOnlyCollection<IncomeDeduction> IncomeDeductions { get; init; }
 
     /// <summary>
     /// Expected payment dates.

@@ -91,7 +91,12 @@ internal sealed class IncomeTransactionBuilder(TestApiClient apiClient)
             Source = new UpdateIncomeTransactionSourceModel
             {
                 Location = GetLocation(),
-                Income = IncomeBreakdownModelFactory.Simple(_amount)
+                IncomeLines = [new UpdateIncomeLineModel
+                {
+                    Description = GetLocation(),
+                    Amount = _amount
+                }],
+                IncomeDeductions = []
             },
             Destinations = [CreateUpdateDestination()]
         };
@@ -107,7 +112,12 @@ internal sealed class IncomeTransactionBuilder(TestApiClient apiClient)
         Source = new CreateIncomeTransactionSourceModel
         {
             Location = GetLocation(),
-            Income = IncomeBreakdownModelFactory.Simple(_amount)
+            IncomeLines = [new CreateIncomeLineModel
+            {
+                Description = GetLocation(),
+                Amount = _amount
+            }],
+            IncomeDeductions = []
         },
         Destinations = [CreateDestination()]
     };

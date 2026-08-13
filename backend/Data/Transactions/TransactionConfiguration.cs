@@ -128,11 +128,21 @@ internal sealed class TransactionConfiguration :
             sourceBuilder.HasOne(source => source.Account).WithMany().HasForeignKey("AccountId");
             sourceBuilder.Navigation(source => source.Account).AutoInclude();
 
-            sourceBuilder.HasOne(source => source.Income)
-                .WithOne()
-                .HasForeignKey<IncomeTransactionSource>("IncomeId")
-                .OnDelete(DeleteBehavior.Restrict);
-            sourceBuilder.Navigation(source => source.Income).AutoInclude();
+            sourceBuilder.OwnsMany<IncomeLine>(nameof(IncomeTransactionSource.IncomeLines), incomeLineBuilder =>
+            {
+                incomeLineBuilder.ToTable("IncomeTransactionIncomeLines");
+                incomeLineBuilder.WithOwner().HasForeignKey("IncomeTransactionId");
+                incomeLineBuilder.Property<int>("Id");
+                incomeLineBuilder.HasKey("Id");
+            });
+
+            sourceBuilder.OwnsMany<IncomeDeduction>(nameof(IncomeTransactionSource.IncomeDeductions), incomeDeductionBuilder =>
+            {
+                incomeDeductionBuilder.ToTable("IncomeTransactionIncomeDeductions");
+                incomeDeductionBuilder.WithOwner().HasForeignKey("IncomeTransactionId");
+                incomeDeductionBuilder.Property<int>("Id");
+                incomeDeductionBuilder.HasKey("Id");
+            });
         });
 
         builder.OwnsMany<IncomeTransactionDestination>(nameof(IncomeTransaction.Destinations), destinationBuilder =>

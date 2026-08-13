@@ -76,7 +76,7 @@ public class IncomeTransaction : Transaction
     /// <summary>
     /// Updates the income source for this income transaction.
     /// </summary>
-    internal void UpdateIncomeSource(IncomeTransactionSource incomeSource) => Source.UpdateFrom(incomeSource);
+    internal void UpdateIncomeSource(IncomeTransactionSource incomeSource) => Source = incomeSource;
 
     /// <summary>
     /// Updates the income destinations for this income transaction.

@@ -1,5 +1,3 @@
-using Models.Income;
-
 namespace Models.Transactions.Update;
 
 /// <summary>
@@ -18,7 +16,12 @@ public sealed class UpdateIncomeTransactionSourceModel
     public string? Location { get; init; }
 
     /// <summary>
-    /// Economic composition of the income receipt.
+    /// Income lines for the source.
     /// </summary>
-    public required IncomeBreakdownRequestModel Income { get; init; }
+    public required IReadOnlyCollection<UpdateIncomeLineModel> IncomeLines { get; init; }
+
+    /// <summary>
+    /// Income deductions for the source.
+    /// </summary>
+    public required IReadOnlyCollection<UpdateIncomeDeductionModel> IncomeDeductions { get; init; }
 }

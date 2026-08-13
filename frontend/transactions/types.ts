@@ -1,5 +1,4 @@
 import {
-  IncomeBreakdownKindModel,
   TransactionSortModel,
   TransactionTypeModel,
   type components,
@@ -37,23 +36,12 @@ type IncomeTransaction =
 /**
  * Type representing a line item of an income transaction.
  */
-type IncomeLine = IncomeTransaction["source"]["income"]["earnings"][number];
+type IncomeLine = IncomeTransaction["source"]["incomeLines"][number];
 
 /**
  * Type representing a deduction of an income transaction.
  */
-type IncomeDeduction =
-  IncomeTransaction["source"]["income"]["employeeDeductions"][number];
-
-/** Type representing the economic composition of an income receipt. */
-type IncomeBreakdown = components["schemas"]["IncomeBreakdownModel"];
-
-/** Type representing a payroll earning. */
-type PayrollEarning = components["schemas"]["PayrollEarningModel"];
-
-/** Type representing an employee payroll deduction. */
-type EmployeePayrollDeduction =
-  components["schemas"]["EmployeePayrollDeductionModel"];
+type IncomeDeduction = IncomeTransaction["source"]["incomeDeductions"][number];
 
 /**
  * Type representing a destination of an income transaction.
@@ -175,10 +163,6 @@ export {
   type IncomeTransaction,
   type IncomeLine,
   type IncomeDeduction,
-  type IncomeBreakdown,
-  IncomeBreakdownKindModel as IncomeBreakdownKind,
-  type PayrollEarning,
-  type EmployeePayrollDeduction,
   type IncomeTransactionDestination,
   type SpendingTransaction,
   type SpendingTransactionDestination,

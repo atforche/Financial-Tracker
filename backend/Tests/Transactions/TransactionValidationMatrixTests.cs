@@ -105,7 +105,8 @@ public sealed class TransactionValidationMatrixTests
             Source = new CreateIncomeTransactionSourceModel
             {
                 Location = "Employer",
-                Income = IncomeBreakdownModelFactory.Simple(90m)
+                IncomeLines = [new CreateIncomeLineModel { Description = "Gross", Amount = 90m }],
+                IncomeDeductions = []
             },
             Destinations = [new CreateIncomeTransactionDestinationModel
             {
@@ -138,7 +139,8 @@ public sealed class TransactionValidationMatrixTests
             Source = new CreateIncomeTransactionSourceModel
             {
                 Location = "Family",
-                Income = IncomeBreakdownModelFactory.Simple(50m),
+                IncomeLines = [new CreateIncomeLineModel { Description = "Gift", Amount = 50m }],
+                IncomeDeductions = [],
             },
             Destinations = [new CreateIncomeTransactionDestinationModel
             {
@@ -183,7 +185,8 @@ public sealed class TransactionValidationMatrixTests
             Source = new CreateIncomeTransactionSourceModel
             {
                 Location = "Employer",
-                Income = IncomeBreakdownModelFactory.Simple(60m, 40m)
+                IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = 100m }],
+                IncomeDeductions = []
             },
             Destinations = [
                 new CreateIncomeTransactionDestinationModel
@@ -204,7 +207,8 @@ public sealed class TransactionValidationMatrixTests
             Source = new CreateIncomeTransactionSourceModel
             {
                 Location = "Employer",
-                Income = IncomeBreakdownModelFactory.Simple(100m)
+                IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = 100m }],
+                IncomeDeductions = []
             },
             Destinations = [new CreateIncomeTransactionDestinationModel { AccountId = debt.Id, Amount = 100m, FundAssignments = [] }]
         });

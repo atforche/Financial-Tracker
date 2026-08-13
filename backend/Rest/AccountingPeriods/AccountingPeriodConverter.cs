@@ -1,6 +1,6 @@
 using Domain.AccountingPeriods;
 using Models.AccountingPeriods;
-using Rest.Income;
+using Models.Transactions.Types;
 
 namespace Rest.AccountingPeriods;
 
@@ -28,10 +28,18 @@ public sealed class AccountingPeriodConverter
     {
         Id = source.Id.Value,
         Name = source.Name,
-        Income = IncomeBreakdownConverter.ToModel(source.Income),
+        IncomeLines = source.IncomeLines.Select(line => new IncomeLineModel
+        {
+            Description = line.Description,
+            Amount = line.Amount,
+        }).ToList(),
+        IncomeDeductions = source.IncomeDeductions.Select(deduction => new IncomeDeductionModel
+        {
+            Description = deduction.Description,
+            Amount = deduction.Amount,
+        }).ToList(),
         ExpectedDates = source.ExpectedDates.Select(date => date.Date).ToList(),
-        TrackedAmount = source.TrackedAmount,
-        UntrackedAmount = source.UntrackedAmount,
+        NetAmount = source.NetAmount,
         ExpectedAmount = source.ExpectedAmount,
     };
 }

@@ -1,11 +1,11 @@
 using Data;
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
+using Domain.Transactions.Income;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.AccountingPeriods;
-using Rest.Income;
 
 namespace Rest.AccountingPeriods;
 
@@ -274,7 +274,8 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         IReadOnlyCollection<ExpectedIncomeSourceRequestModel> sources) => sources.Select(source => new ExpectedIncomeSourceRequest
         {
             Name = source.Name,
-            Income = IncomeBreakdownConverter.ToDomain(source.Income),
+            IncomeLines = source.IncomeLines.Select(line => new IncomeLine(line.Description, line.Amount)).ToList(),
+            IncomeDeductions = source.IncomeDeductions.Select(deduction => new IncomeDeduction(deduction.Description, deduction.Amount)).ToList(),
             ExpectedDates = source.ExpectedDates,
         }).ToList();
 }

@@ -2,9 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 using Domain.Accounts;
 using Domain.FundGoals;
 using Domain.Funds;
-using Domain.Income;
-using Domain.Payroll;
 using Domain.Transactions;
+using Domain.Transactions.Income;
 using Domain.Validation;
 
 namespace Domain.AccountingPeriods;
@@ -42,7 +41,8 @@ public class AccountingPeriodService(
             : previousAccountingPeriod?.ExpectedIncomeSources.Select(source => new ExpectedIncomeSourceRequest
             {
                 Name = source.Name,
-                Income = IncomeBreakdownSnapshot.Create(source.Income),
+                IncomeLines = source.IncomeLines.ToList(),
+                IncomeDeductions = source.IncomeDeductions.ToList(),
                 ExpectedDates = [],
             }) ?? []);
         fundGoalService.CopyToAccountingPeriod(previousAccountingPeriod, accountingPeriod);
@@ -187,32 +187,27 @@ public class AccountingPeriodService(
             {
                 errors = errors.Append(new ValidationError(sourcePath.Append(nameof(ExpectedIncomeSourceRequest.Name)), "Expected income source names are required."));
             }
-            errors = errors.Concat(IncomeBreakdownValidator.Validate(
-                source.Income,
-                sourcePath.Append(nameof(ExpectedIncomeSourceRequest.Income))));
-            if (source.Income is SimpleIncome)
+            if (source.IncomeLines.Count == 0)
             {
-                errors = errors.Append(new ValidationError(sourcePath.Append(nameof(ExpectedIncomeSourceRequest.Income)), "Expected income must use a payroll breakdown."));
+                errors = errors.Append(new ValidationError(sourcePath.Append(nameof(ExpectedIncomeSourceRequest.IncomeLines)), "Expected income sources must have at least one income line."));
             }
-            if (source.Income is ExpectedPayrollPayment expectedPayroll)
+            foreach ((int index, IncomeLine line) in source.IncomeLines.Index())
             {
-                if (expectedPayroll.PayPeriodsPerYear is <= 0 or > 366)
+                if (line.Amount <= 0)
                 {
-                    errors = errors.Append(new ValidationError(sourcePath.Append(nameof(ExpectedPayrollPayment.PayPeriodsPerYear)), "Expected payroll income must specify between 1 and 366 pay periods per year."));
+                    errors = errors.Append(new ValidationError(sourcePath.AppendWithIndex(nameof(ExpectedIncomeSourceRequest.IncomeLines), index), "Expected income line amounts must be positive."));
                 }
-                if (source.ExpectedDates.Count != 1 || source.ExpectedDates.SingleOrDefault() != expectedPayroll.WithholdingContext.PaymentDate)
+            }
+            foreach ((int index, IncomeDeduction deduction) in source.IncomeDeductions.Index())
+            {
+                if (deduction.Amount <= 0)
                 {
-                    errors = errors.Append(new ValidationError(
-                        sourcePath.Append(nameof(ExpectedIncomeSourceRequest.ExpectedDates)),
-                        "An expected payroll projection must identify its single calculated payment date."));
+                    errors = errors.Append(new ValidationError(sourcePath.AppendWithIndex(nameof(ExpectedIncomeSourceRequest.IncomeDeductions), index), "Expected income deduction amounts must be positive."));
                 }
-                foreach (DateOnly paymentDate in source.ExpectedDates.DefaultIfEmpty(expectedPayroll.WithholdingContext.PaymentDate))
-                {
-                    errors = errors.Concat(PayrollWithholdingConfigurationValidator.Validate(
-                        expectedPayroll.WithholdingConfiguration,
-                        paymentDate,
-                        sourcePath.Append(nameof(ExpectedPayrollPayment.WithholdingConfiguration))));
-                }
+            }
+            if (source.IncomeLines.Sum(line => line.Amount) - source.IncomeDeductions.Sum(deduction => deduction.Amount) < 0)
+            {
+                errors = errors.Append(new ValidationError(sourcePath, "Expected income deductions cannot exceed income lines."));
             }
             foreach ((int index, DateOnly date) in source.ExpectedDates.Index())
             {

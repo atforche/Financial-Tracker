@@ -4,18 +4,19 @@ import type {
   AccountingPeriodWithBalance,
   ExpectedIncomeSource,
 } from "@/accounting-periods/types";
+import ExpectedIncomeSourceForm, {
+  type ExpectedIncomeSourceMode,
+} from "@/accounting-periods/workspace/ExpectedIncomeSourceForm";
+import { type JSX, useState } from "react";
 import { getPaginationIndex, getRowsPerPage } from "@/framework/listframe/page";
-import { useRouter, useSearchParams } from "next/navigation";
-import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import type { JSX } from "react";
-import Link from "next/link";
+import ExpectedIncomeSourceDetailsDialog from "@/accounting-periods/workspace/ExpectedIncomeSourceDetailsDialog";
 import ListFrame from "@/framework/listframe/ListFrame";
 import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import { formatCurrency } from "@/framework/currencyHelpers";
-import routes from "@/accounting-periods/routes";
+import { useSearchParams } from "next/navigation";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
@@ -23,7 +24,7 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
  */
 interface ExpectedIncomeSourcesFrameProps {
   readonly accountingPeriod: AccountingPeriodWithBalance;
-  readonly routeSearchParams: AccountingPeriodWorkspaceSearchParams;
+  readonly redirectUrl: string;
 }
 
 /**
@@ -31,12 +32,16 @@ interface ExpectedIncomeSourcesFrameProps {
  */
 const ExpectedIncomeSourcesFrame = function ({
   accountingPeriod,
-  routeSearchParams,
+  redirectUrl,
 }: ExpectedIncomeSourcesFrameProps): JSX.Element {
   const canWrite = useWriteAccess();
   const canManageSources = canWrite && accountingPeriod.isOpen;
-  const router = useRouter();
   const searchParams = useSearchParams();
+  const [dialog, setDialog] = useState<
+    | { mode: "add" }
+    | { mode: "view" | ExpectedIncomeSourceMode; source: ExpectedIncomeSource }
+    | null
+  >(null);
   const sources = accountingPeriod.expectedIncomeSources;
   const rowsPerPage = getRowsPerPage(searchParams.get("pageSize"));
   const paginationIndex = getPaginationIndex(
@@ -64,7 +69,7 @@ const ExpectedIncomeSourcesFrame = function ({
     {
       name: "netAmount",
       headerContent: "Per Payment",
-      getBodyContent: (source) => formatCurrency(source.trackedAmount),
+      getBodyContent: (source) => formatCurrency(source.netAmount),
       alignment: "right",
     },
     {
@@ -79,14 +84,9 @@ const ExpectedIncomeSourcesFrame = function ({
       getBodyContent: (source) => (
         <ListFrameActionButton
           ariaLabel={`View ${source.name}`}
-          onClick={() => {
-            router.push(
-              routes.expectedIncomeDetail(
-                accountingPeriod.id,
-                source.id,
-                routeSearchParams,
-              ),
-            );
+          onClick={(event) => {
+            event.stopPropagation();
+            setDialog({ mode: "view", source });
           }}
         >
           <ArrowForwardOutlined fontSize="small" color="action" />
@@ -98,44 +98,63 @@ const ExpectedIncomeSourcesFrame = function ({
     },
   ];
   return (
-    <ListFrame
-      title="Expected Income Sources"
-      headerContent={
-        !canManageSources ? undefined : (
-          <Link
-            href={routes.expectedIncomeCreate(
-              accountingPeriod.id,
-              routeSearchParams,
-            )}
-            style={{ textDecoration: "none" }}
-          >
-            <Button component="span" variant="contained">
+    <>
+      <ListFrame
+        title="Expected Income Sources"
+        headerContent={
+          !canManageSources ? undefined : (
+            <Button
+              variant="contained"
+              onClick={() => {
+                setDialog({ mode: "add" });
+              }}
+            >
               Add Expected Income
             </Button>
-          </Link>
-        )
-      }
-      columns={columns}
-      getId={(source) => source.id}
-      data={paginatedSources}
-      totalCount={sources.length}
-      pageParamName="incomeSourcePage"
-      onRowClick={(source) => {
-        router.push(
-          routes.expectedIncomeDetail(
-            accountingPeriod.id,
-            source.id,
-            routeSearchParams,
-          ),
-        );
-      }}
-      initialEmptyState={{
-        title: "No expected income sources",
-        description:
-          "Add income sources to plan this period's expected income.",
-        action: null,
-      }}
-    />
+          )
+        }
+        columns={columns}
+        getId={(source) => source.id}
+        data={paginatedSources}
+        totalCount={sources.length}
+        pageParamName="incomeSourcePage"
+        onRowClick={(source) => {
+          setDialog({ mode: "view", source });
+        }}
+        initialEmptyState={{
+          title: "No expected income sources",
+          description:
+            "Add income sources to plan this period's expected income.",
+          action: null,
+        }}
+      />
+      {dialog?.mode === "view" ? (
+        <ExpectedIncomeSourceDetailsDialog
+          source={dialog.source}
+          canManage={canManageSources}
+          onClose={() => {
+            setDialog(null);
+          }}
+          onChange={() => {
+            setDialog({ mode: "change", source: dialog.source });
+          }}
+          onDelete={() => {
+            setDialog({ mode: "delete", source: dialog.source });
+          }}
+        />
+      ) : dialog === null ? null : (
+        <ExpectedIncomeSourceForm
+          accountingPeriod={accountingPeriod}
+          mode={dialog.mode}
+          {...("source" in dialog ? { source: dialog.source } : {})}
+          open
+          onClose={() => {
+            setDialog(null);
+          }}
+          redirectUrl={redirectUrl}
+        />
+      )}
+    </>
   );
 };
 

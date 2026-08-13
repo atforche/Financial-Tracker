@@ -45,7 +45,8 @@ public sealed class TransactionCalculationCoverageTests
             Source = new CreateIncomeTransactionSourceModel
             {
                 Location = "Family",
-                Income = IncomeBreakdownModelFactory.Simple(50m),
+                IncomeLines = [new CreateIncomeLineModel { Description = "Gift", Amount = 50m }],
+                IncomeDeductions = [],
             },
             Destinations = [new CreateIncomeTransactionDestinationModel
             {
@@ -137,7 +138,7 @@ public sealed class TransactionCalculationCoverageTests
             Date = new DateOnly(2026, 7, 10),
             Description = "Income",
             Amount = 25m,
-            Source = new UpdateIncomeTransactionSourceModel { Location = "Employer", Income = IncomeBreakdownModelFactory.Simple(25m) },
+            Source = new UpdateIncomeTransactionSourceModel { Location = "Employer", IncomeLines = [new UpdateIncomeLineModel { Description = "Pay", Amount = 25m }], IncomeDeductions = [] },
             Destinations = [new UpdateIncomeTransactionDestinationModel { AccountId = second.Id, Amount = 25m, FundAssignments = [new CreateIncomeFundAmountModel { FundId = newFund.Id, Amount = 25m }] }]
         };
         await test.Api.PostAsync($"/transactions/{income.Id}", incomeUpdate);

@@ -1,12 +1,12 @@
 using System.Net;
 using Models;
 using Models.AccountingPeriods;
-using Tests.Transactions;
 using Models.Accounts;
 using Models.Funds;
 using Tests.Accounts;
 using Tests.Funds;
 using Tests.Infrastructure;
+using Tests.Transactions;
 
 namespace Tests.AccountingPeriods;
 
@@ -193,9 +193,8 @@ public sealed class AccountingPeriodLifecycleTests
         var source = new ExpectedIncomeSourceRequestModel
         {
             Name = "Employer",
-            Income = IncomeBreakdownModelFactory.Payroll(
-                [("Salary", 800m)],
-                []),
+            IncomeLines = [new Models.Transactions.Create.CreateIncomeLineModel { Description = "Salary", Amount = 1_000m }],
+            IncomeDeductions = [new Models.Transactions.Create.CreateIncomeDeductionModel { Description = "Tax", Amount = 200m }],
             ExpectedDates = [new DateOnly(2026, 7, 15)],
         };
 
@@ -206,7 +205,7 @@ public sealed class AccountingPeriodLifecycleTests
 
         ExpectedIncomeSourceModel copied = Assert.Single(result.ExpectedIncomeSources);
         Assert.Equal("Employer", copied.Name);
-        Assert.Equal(800m, copied.Income.TrackedAmount);
+        Assert.Equal(800m, copied.NetAmount);
         Assert.Empty(copied.ExpectedDates);
     }
 

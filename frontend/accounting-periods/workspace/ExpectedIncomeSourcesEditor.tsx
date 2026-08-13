@@ -2,25 +2,17 @@
 
 import { Add, Delete } from "@mui/icons-material";
 import {
-  Box,
   Button,
+  Card,
+  CardContent,
   IconButton,
   Stack,
+  Typography,
 } from "@mui/material";
-import type {
-  EmployerContributionDraft,
-  IncomeDeductionDraft,
-  IncomeLineDraft,
-  PayrollTaxWithholdingDraft,
-} from "@/transactions/workspace/income/helpers";
+import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import type { ExpectedIncomeSourceRequest } from "@/accounting-periods/types";
-import Frame from "@/framework/view/Frame";
-import { IncomeBreakdownKindModel } from "@/framework/data/api";
 import type { JSX } from "react";
-import PayrollIncomeDetails from "@/transactions/workspace/income/PayrollIncomeDetails";
-import PayrollSectionHeading from "@/transactions/workspace/income/PayrollSectionHeading";
-import PayrollTaxWithholdingsSection from "@/transactions/workspace/income/PayrollTaxWithholdingsSection";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import dayjs from "dayjs";
 
@@ -40,15 +32,8 @@ interface ExpectedIncomeSourcesEditorProps {
  */
 const emptySource = (): ExpectedIncomeSourceRequest => ({
   name: "",
-  income: {
-    kind: IncomeBreakdownKindModel.Payroll,
-    trackedAmount: null,
-    untrackedAmount: null,
-    earnings: [],
-    employeeDeductions: [],
-    employerContributions: [],
-    taxWithholdings: [],
-  },
+  incomeLines: [{ description: "Income", amount: 0 }],
+  incomeDeductions: [],
   expectedDates: [],
 });
 
@@ -78,182 +63,166 @@ const ExpectedIncomeSourcesEditor = function ({
 
   return (
     <Stack spacing={1.5}>
+      <Typography variant="subtitle1">Expected Income Sources</Typography>
+      <Typography variant="body2" color="text.secondary">
+        Set the net amount for each expected payment and the dates it will be
+        received.
+      </Typography>
       {sources.map((source, sourceIndex) => (
-        <Stack key={sourceIndex} spacing={3}>
-          <Frame
-            title="Details"
-            color={source.name.trim() === "" ? "error" : "info"}
-            headerContent={
-              !showSourceControls ? null : (
-                <IconButton
-                  aria-label="Remove expected income source"
-                  color="error"
-                  onClick={() => {
-                    setSources(
-                      sources.filter((_, index) => index !== sourceIndex),
-                    );
+        <Card key={sourceIndex} variant="outlined">
+          <CardContent>
+            <Stack spacing={1.5}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <StringEntryField
+                  label="Source Name"
+                  value={source.name}
+                  setValue={(name) => {
+                    updateSource(sourceIndex, { ...source, name });
                   }}
-                >
-                  <Delete />
-                </IconButton>
-              )
-            }
-          >
-            <Box
-              sx={{
-                display: "grid",
-                gap: 1.5,
-                gridTemplateColumns: {
-                  xs: "1fr",
-                  md: "repeat(2, minmax(0, 1fr))",
-                },
-              }}
-            >
-              <StringEntryField
-                label="Source Name"
-                value={source.name}
-                setValue={(name) => {
-                  updateSource(sourceIndex, { ...source, name });
-                }}
-              />
-              <StringEntryField
-                label="State"
-                value={source.income.stateIncomeStateCode ?? null}
-                setValue={(stateIncomeStateCode): void => {
-                  updateSource(sourceIndex, {
-                    ...source,
-                    income: { ...source.income, stateIncomeStateCode },
-                  });
-                }}
-              />
-            </Box>
-          </Frame>
-          <Frame
-            title="Income Breakdown"
-            color="info"
-          >
-            <PayrollIncomeDetails
-              stateIncomeStateCode={source.income.stateIncomeStateCode ?? null}
-              setStateIncomeStateCode={null}
-              showStateField={false}
-              earnings={source.income.earnings as IncomeLineDraft[]}
-              setEarnings={(earnings): void => {
-                  updateSource(sourceIndex, {
-                    ...source,
-                    income: {
-                      ...source.income,
-                      earnings: earnings.map((item) => ({
-                        ...item,
-                        description: item.description ?? "",
-                        amount: item.amount ?? 0,
-                      })),
-                    },
-                  });
-                }}
-              deductions={source.income.employeeDeductions as IncomeDeductionDraft[]}
-              setDeductions={(employeeDeductions): void => {
-                  updateSource(sourceIndex, {
-                    ...source,
-                    income: {
-                      ...source.income,
-                      employeeDeductions: employeeDeductions.map((item) => ({
-                        ...item,
-                        description: item.description ?? "",
-                        amount: item.amount ?? 0,
-                      })),
-                    },
-                  });
-                }}
-              contributions={
-                  source.income
-                    .employerContributions as EmployerContributionDraft[]
-                }
-              setContributions={(employerContributions): void => {
-                  updateSource(sourceIndex, {
-                    ...source,
-                    income: {
-                      ...source.income,
-                      employerContributions: employerContributions.map(
-                        (item) => ({
-                          description: item.description ?? "",
-                          amount: item.amount ?? 0,
-                        }),
-                      ),
-                    },
-                  });
-                }}
-              withholdings={source.income.taxWithholdings.map(
-                  (item): PayrollTaxWithholdingDraft => ({
-                    ...item,
-                    jurisdiction: {
-                      countryCode: item.jurisdiction.countryCode,
-                      subdivisionCode:
-                        item.jurisdiction.subdivisionCode ?? null,
-                      locality: item.jurisdiction.locality ?? null,
-                    },
-                  }),
-                )}
-              setWithholdings={(taxWithholdings): void => {
-                  updateSource(sourceIndex, {
-                    ...source,
-                    income: {
-                      ...source.income,
-                      taxWithholdings: taxWithholdings.map((item) => ({
-                        ...item,
-                        amount: item.amount ?? 0,
-                        jurisdiction: {
-                          countryCode: item.jurisdiction.countryCode ?? "",
-                          subdivisionCode: item.jurisdiction.subdivisionCode,
-                          locality: item.jurisdiction.locality,
-                        },
-                      })),
-                    },
-                  });
-                }}
-              showWithholdings={false}
-            />
-            <Stack spacing={1.5} sx={{ mt: 3 }}>
-              <PayrollSectionHeading
-                title="Expected Payment Dates"
-                description="Dates on which this source is expected to pay."
-                action={
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<Add />}
-                    disabled={minDate === null}
+                />
+                {showSourceControls ? (
+                  <IconButton
+                    aria-label="Remove expected income source"
+                    onClick={() => {
+                      setSources(
+                        sources.filter((_, index) => index !== sourceIndex),
+                      );
+                    }}
+                  >
+                    <Delete />
+                  </IconButton>
+                ) : null}
+              </Stack>
+              <Typography variant="body2">Income Lines</Typography>
+              {source.incomeLines.map((line, lineIndex) => (
+                <Stack key={lineIndex} direction="row" spacing={1}>
+                  <StringEntryField
+                    label="Description"
+                    value={line.description}
+                    setValue={(description) => {
+                      const incomeLines = source.incomeLines.map(
+                        (item, index) =>
+                          index === lineIndex ? { ...item, description } : item,
+                      );
+                      updateSource(sourceIndex, { ...source, incomeLines });
+                    }}
+                  />
+                  <CurrencyEntryField
+                    label="Amount"
+                    value={line.amount}
+                    setValue={(amount) => {
+                      const incomeLines = source.incomeLines.map(
+                        (item, index) =>
+                          index === lineIndex
+                            ? { ...item, amount: amount ?? 0 }
+                            : item,
+                      );
+                      updateSource(sourceIndex, { ...source, incomeLines });
+                    }}
+                  />
+                  <IconButton
+                    aria-label="Remove income line"
+                    disabled={source.incomeLines.length === 1}
                     onClick={() => {
                       updateSource(sourceIndex, {
                         ...source,
-                        expectedDates: [
-                          ...source.expectedDates,
-                          minDate?.format("YYYY-MM-DD") ?? "",
-                        ],
+                        incomeLines: source.incomeLines.filter(
+                          (_, index) => index !== lineIndex,
+                        ),
                       });
                     }}
                   >
-                    Add Expected Date
-                  </Button>
-                }
-              />
-              <Box
-                sx={{
-                display: "grid",
-                gap: 1.5,
-                gridTemplateColumns: {
-                  xs: "1fr",
-                  sm: "repeat(auto-fit, minmax(260px, 1fr))",
-                },
-              }}
+                    <Delete />
+                  </IconButton>
+                </Stack>
+              ))}
+              <Button
+                startIcon={<Add />}
+                onClick={() => {
+                  updateSource(sourceIndex, {
+                    ...source,
+                    incomeLines: [
+                      ...source.incomeLines,
+                      { description: "", amount: 0 },
+                    ],
+                  });
+                }}
               >
-                {source.expectedDates.map((date, dateIndex) => (
-                  <Stack key={`${date}-${dateIndex}`} direction="row" spacing={1}>
-                    <DateEntryField
-                      label="Expected Date"
-                      value={dayjs(date)}
-                      minDate={minDate}
-                      maxDate={maxDate}
-                      setValue={(value) => {
+                Add Income Line
+              </Button>
+              <Typography variant="body2">Deductions</Typography>
+              {source.incomeDeductions.map((deduction, deductionIndex) => (
+                <Stack key={deductionIndex} direction="row" spacing={1}>
+                  <StringEntryField
+                    label="Description"
+                    value={deduction.description}
+                    setValue={(description) => {
+                      const incomeDeductions = source.incomeDeductions.map(
+                        (item, index) =>
+                          index === deductionIndex
+                            ? { ...item, description }
+                            : item,
+                      );
+                      updateSource(sourceIndex, {
+                        ...source,
+                        incomeDeductions,
+                      });
+                    }}
+                  />
+                  <CurrencyEntryField
+                    label="Amount"
+                    value={deduction.amount}
+                    setValue={(amount) => {
+                      const incomeDeductions = source.incomeDeductions.map(
+                        (item, index) =>
+                          index === deductionIndex
+                            ? { ...item, amount: amount ?? 0 }
+                            : item,
+                      );
+                      updateSource(sourceIndex, {
+                        ...source,
+                        incomeDeductions,
+                      });
+                    }}
+                  />
+                  <IconButton
+                    aria-label="Remove deduction"
+                    onClick={() => {
+                      updateSource(sourceIndex, {
+                        ...source,
+                        incomeDeductions: source.incomeDeductions.filter(
+                          (_, index) => index !== deductionIndex,
+                        ),
+                      });
+                    }}
+                  >
+                    <Delete />
+                  </IconButton>
+                </Stack>
+              ))}
+              <Button
+                startIcon={<Add />}
+                onClick={() => {
+                  updateSource(sourceIndex, {
+                    ...source,
+                    incomeDeductions: [
+                      ...source.incomeDeductions,
+                      { description: "", amount: 0 },
+                    ],
+                  });
+                }}
+              >
+                Add Deduction
+              </Button>
+              <Typography variant="body2">Expected Payment Dates</Typography>
+              {source.expectedDates.map((date, dateIndex) => (
+                <Stack key={`${date}-${dateIndex}`} direction="row" spacing={1}>
+                  <DateEntryField
+                    label="Expected Date"
+                    value={dayjs(date)}
+                    minDate={minDate}
+                    maxDate={maxDate}
+                    setValue={(value) => {
                       const expectedDates = source.expectedDates.map(
                         (item, index) =>
                           index === dateIndex
@@ -262,10 +231,10 @@ const ExpectedIncomeSourcesEditor = function ({
                       );
                       updateSource(sourceIndex, { ...source, expectedDates });
                     }}
-                    />
-                    <IconButton
-                      aria-label="Remove expected date"
-                      onClick={() => {
+                  />
+                  <IconButton
+                    aria-label="Remove expected date"
+                    onClick={() => {
                       updateSource(sourceIndex, {
                         ...source,
                         expectedDates: source.expectedDates.filter(
@@ -273,46 +242,29 @@ const ExpectedIncomeSourcesEditor = function ({
                         ),
                       });
                     }}
-                    >
-                      <Delete />
-                    </IconButton>
-                  </Stack>
-                ))}
-              </Box>
+                  >
+                    <Delete />
+                  </IconButton>
+                </Stack>
+              ))}
+              <Button
+                startIcon={<Add />}
+                disabled={minDate === null}
+                onClick={() => {
+                  updateSource(sourceIndex, {
+                    ...source,
+                    expectedDates: [
+                      ...source.expectedDates,
+                      minDate?.format("YYYY-MM-DD") ?? "",
+                    ],
+                  });
+                }}
+              >
+                Add Expected Date
+              </Button>
             </Stack>
-          </Frame>
-          <Frame title="Withholding" color="info">
-            <PayrollTaxWithholdingsSection
-              items={source.income.taxWithholdings.map(
-                (item): PayrollTaxWithholdingDraft => ({
-                  ...item,
-                  jurisdiction: {
-                    countryCode: item.jurisdiction.countryCode,
-                    subdivisionCode: item.jurisdiction.subdivisionCode ?? null,
-                    locality: item.jurisdiction.locality ?? null,
-                  },
-                }),
-              )}
-              setItems={(taxWithholdings): void => {
-                updateSource(sourceIndex, {
-                  ...source,
-                  income: {
-                    ...source.income,
-                    taxWithholdings: taxWithholdings.map((item) => ({
-                      ...item,
-                      amount: item.amount ?? 0,
-                      jurisdiction: {
-                        countryCode: item.jurisdiction.countryCode ?? "",
-                        subdivisionCode: item.jurisdiction.subdivisionCode,
-                        locality: item.jurisdiction.locality,
-                      },
-                    })),
-                  },
-                });
-              }}
-            />
-          </Frame>
-        </Stack>
+          </CardContent>
+        </Card>
       ))}
       {showSourceControls ? (
         <Button
