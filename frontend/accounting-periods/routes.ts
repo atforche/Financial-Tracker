@@ -41,6 +41,38 @@ const routes = {
       `/accounting-periods/workspace/${accountingPeriodId}`,
       accountingPeriodWorkspaceSearchParamsToSearchParams(searchParams),
     ),
+  expectedIncomeSourceCreate: (
+    accountingPeriodId: string,
+    returnUrl?: string,
+  ): Route =>
+    buildUrl(
+      `/accounting-periods/workspace/${accountingPeriodId}/expected-income-sources/create`,
+      objectToSearchParams(
+        typeof returnUrl === "undefined" ? {} : { returnUrl },
+      ),
+    ),
+  expectedIncomeSource: (
+    accountingPeriodId: string,
+    sourceId: string,
+    returnUrl?: string,
+  ): Route =>
+    buildUrl(
+      `/accounting-periods/workspace/${accountingPeriodId}/expected-income-sources/${sourceId}`,
+      objectToSearchParams(
+        typeof returnUrl === "undefined" ? {} : { returnUrl },
+      ),
+    ),
+  expectedIncomeSourceEdit: (
+    accountingPeriodId: string,
+    sourceId: string,
+    returnUrl?: string,
+  ): Route =>
+    buildUrl(
+      `/accounting-periods/workspace/${accountingPeriodId}/expected-income-sources/${sourceId}/edit`,
+      objectToSearchParams(
+        typeof returnUrl === "undefined" ? {} : { returnUrl },
+      ),
+    ),
 };
 
 export default routes;

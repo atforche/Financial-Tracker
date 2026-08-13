@@ -15,8 +15,8 @@ interface AccountingPeriodSummaryFrameProps {
   readonly headerContent?: ReactNode;
 }
 
-/** 
- * Displays the primary accounting period facts and lifecycle actions. 
+/**
+ * Displays the primary accounting period facts and lifecycle actions.
  */
 const AccountingPeriodSummaryFrame = function ({
   accountingPeriod,
@@ -47,21 +47,6 @@ const AccountingPeriodSummaryFrame = function ({
         <CurrencyEntryField
           label="Closing Balance"
           value={accountingPeriod.closingBalance}
-          setValue={null}
-        />
-        <CurrencyEntryField
-          label="Expected Tracked Income"
-          value={accountingPeriod.expectedIncome}
-          setValue={null}
-        />
-        <CurrencyEntryField
-          label="Posted Tracked Income"
-          value={accountingPeriod.actualIncome}
-          setValue={null}
-        />
-        <CurrencyEntryField
-          label="Expected Goal Contributions"
-          value={accountingPeriod.expectedGoalContributions}
           setValue={null}
         />
       </ResponsiveGrid>

@@ -41,6 +41,13 @@ internal sealed class AccountingPeriodConfiguration : IEntityTypeConfiguration<A
                 deductionBuilder.Property<int>("Id");
                 deductionBuilder.HasKey("Id");
             });
+            sourceBuilder.OwnsMany<ExpectedUntrackedIncomeTransfer>(nameof(ExpectedIncomeSource.UntrackedTransfers), transferBuilder =>
+            {
+                transferBuilder.ToTable("ExpectedIncomeSourceUntrackedTransfers");
+                transferBuilder.WithOwner().HasForeignKey("ExpectedIncomeSourceId");
+                transferBuilder.Property<int>("Id");
+                transferBuilder.HasKey("Id");
+            });
             sourceBuilder.OwnsMany<ExpectedIncomeDate>(nameof(ExpectedIncomeSource.ExpectedDates), dateBuilder =>
             {
                 dateBuilder.ToTable("ExpectedIncomeSourceDates");

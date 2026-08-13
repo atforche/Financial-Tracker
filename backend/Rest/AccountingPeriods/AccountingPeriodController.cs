@@ -276,6 +276,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
             Name = source.Name,
             IncomeLines = source.IncomeLines.Select(line => new IncomeLine(line.Description, line.Amount)).ToList(),
             IncomeDeductions = source.IncomeDeductions.Select(deduction => new IncomeDeduction(deduction.Description, deduction.Amount)).ToList(),
+            UntrackedTransfers = source.UntrackedTransfers.Select(transfer => new ExpectedUntrackedIncomeTransfer(transfer.Description, transfer.Amount)).ToList(),
             ExpectedDates = source.ExpectedDates,
         }).ToList();
 }

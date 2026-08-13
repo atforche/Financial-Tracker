@@ -9,6 +9,7 @@ public sealed class ExpectedIncomeSource : Entity<ExpectedIncomeSourceId>
 {
     private List<IncomeLine> _incomeLines = [];
     private List<IncomeDeduction> _incomeDeductions = [];
+    private List<ExpectedUntrackedIncomeTransfer> _untrackedTransfers = [];
     private List<ExpectedIncomeDate> _expectedDates = [];
 
     /// <summary>
@@ -40,6 +41,15 @@ public sealed class ExpectedIncomeSource : Entity<ExpectedIncomeSourceId>
     }
 
     /// <summary>
+    /// Transfers from each expected payment to untracked accounts.
+    /// </summary>
+    public IReadOnlyCollection<ExpectedUntrackedIncomeTransfer> UntrackedTransfers
+    {
+        get => _untrackedTransfers;
+        private set => _untrackedTransfers = value.ToList();
+    }
+
+    /// <summary>
     /// Dates on which this source is expected to pay during the Accounting Period.
     /// </summary>
     public IReadOnlyCollection<ExpectedIncomeDate> ExpectedDates
@@ -54,9 +64,29 @@ public sealed class ExpectedIncomeSource : Entity<ExpectedIncomeSourceId>
     public decimal NetAmount => IncomeLines.Sum(line => line.Amount) - IncomeDeductions.Sum(deduction => deduction.Amount);
 
     /// <summary>
+    /// Amount expected to reach tracked accounts from one payment.
+    /// </summary>
+    public decimal TrackedAmount => NetAmount - UntrackedAmount;
+
+    /// <summary>
+    /// Amount expected to reach untracked accounts from one payment.
+    /// </summary>
+    public decimal UntrackedAmount => UntrackedTransfers.Sum(transfer => transfer.Amount);
+
+    /// <summary>
     /// Total amount expected from this source during the Accounting Period.
     /// </summary>
     public decimal ExpectedAmount => NetAmount * ExpectedDates.Count;
+
+    /// <summary>
+    /// Total amount expected to reach tracked accounts during the Accounting Period.
+    /// </summary>
+    public decimal ExpectedTrackedAmount => TrackedAmount * ExpectedDates.Count;
+
+    /// <summary>
+    /// Total amount expected to reach untracked accounts during the Accounting Period.
+    /// </summary>
+    public decimal ExpectedUntrackedAmount => UntrackedAmount * ExpectedDates.Count;
 
     /// <summary>
     /// Constructs an expected income source.
@@ -66,6 +96,7 @@ public sealed class ExpectedIncomeSource : Entity<ExpectedIncomeSourceId>
         string name,
         IEnumerable<IncomeLine> incomeLines,
         IEnumerable<IncomeDeduction> incomeDeductions,
+        IEnumerable<ExpectedUntrackedIncomeTransfer> untrackedTransfers,
         IEnumerable<DateOnly> expectedDates)
         : base(new ExpectedIncomeSourceId(Guid.NewGuid()))
     {
@@ -73,6 +104,7 @@ public sealed class ExpectedIncomeSource : Entity<ExpectedIncomeSourceId>
         Name = name;
         _incomeLines.AddRange(incomeLines);
         _incomeDeductions.AddRange(incomeDeductions);
+        _untrackedTransfers.AddRange(untrackedTransfers);
         _expectedDates.AddRange(expectedDates.Select(date => new ExpectedIncomeDate(date)));
     }
 
@@ -84,22 +116,6 @@ public sealed class ExpectedIncomeSource : Entity<ExpectedIncomeSourceId>
         Name = null!;
         AccountingPeriod = null!;
     }
-}
-
-/// <summary>
-/// A calendar date on which an expected income source should pay.
-/// </summary>
-public sealed class ExpectedIncomeDate(DateOnly date)
-{
-    /// <summary>
-    /// Expected payment date.
-    /// </summary>
-    public DateOnly Date { get; private set; } = date;
-
-    /// <summary>
-    /// Constructs a default instance for Entity Framework.
-    /// </summary>
-    private ExpectedIncomeDate() : this(default) { }
 }
 
 /// <summary>

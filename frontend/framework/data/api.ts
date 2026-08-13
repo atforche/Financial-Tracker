@@ -3255,16 +3255,10 @@ export interface components {
             closingBalance: number;
             /** @description Sources of expected income for the Accounting Period. */
             expectedIncomeSources: components["schemas"]["ExpectedIncomeSourceModel"][];
-            /**
-             * Format: double
-             * @description Total income expected for the Accounting Period.
-             */
-            expectedIncome: number;
-            /**
-             * Format: double
-             * @description Posted income for the Accounting Period.
-             */
-            actualIncome: number;
+            /** @description Income expected for the Accounting Period. */
+            expectedIncome: components["schemas"]["IncomeAmountModel"];
+            /** @description Posted income for the Accounting Period. */
+            actualIncome: components["schemas"]["IncomeAmountModel"];
             /**
              * Format: double
              * @description Amount required to satisfy all Fund Goals for the Accounting Period.
@@ -3315,16 +3309,10 @@ export interface components {
             closingBalance: number;
             /** @description Sources of expected income for the Accounting Period. */
             expectedIncomeSources: components["schemas"]["ExpectedIncomeSourceModel"][];
-            /**
-             * Format: double
-             * @description Total income expected for the Accounting Period.
-             */
-            expectedIncome: number;
-            /**
-             * Format: double
-             * @description Posted income for the Accounting Period.
-             */
-            actualIncome: number;
+            /** @description Income expected for the Accounting Period. */
+            expectedIncome: components["schemas"]["IncomeAmountModel"];
+            /** @description Posted income for the Accounting Period. */
+            actualIncome: components["schemas"]["IncomeAmountModel"];
             /**
              * Format: double
              * @description Amount required to satisfy all Fund Goals for the Accounting Period.
@@ -4075,16 +4063,12 @@ export interface components {
             incomeDeductions: components["schemas"]["IncomeDeductionModel"][];
             /** @description Expected payment dates. */
             expectedDates: string[];
-            /**
-             * Format: double
-             * @description Net amount expected for one payment.
-             */
-            netAmount: number;
-            /**
-             * Format: double
-             * @description Total expected amount for this source.
-             */
-            expectedAmount: number;
+            /** @description Net income expected for one payment. */
+            netAmount: components["schemas"]["IncomeAmountModel"];
+            /** @description Total income expected for this source. */
+            expectedAmount: components["schemas"]["IncomeAmountModel"];
+            /** @description Transfers expected from each payment to untracked accounts. */
+            untrackedTransfers: components["schemas"]["ExpectedUntrackedIncomeTransferModel"][];
         };
         /** @description Request model for an expected income source. */
         ExpectedIncomeSourceRequestModel: {
@@ -4094,8 +4078,30 @@ export interface components {
             incomeLines: components["schemas"]["CreateIncomeLineModel"][];
             /** @description Deductions expected for each payment. */
             incomeDeductions: components["schemas"]["CreateIncomeDeductionModel"][];
+            /** @description Transfers expected from each payment to untracked accounts. */
+            untrackedTransfers: components["schemas"]["ExpectedUntrackedIncomeTransferRequestModel"][];
             /** @description Expected payment dates. */
             expectedDates: string[];
+        };
+        /** @description An expected transfer to an untracked account. */
+        ExpectedUntrackedIncomeTransferModel: {
+            /** @description Description of the transfer. */
+            description: string;
+            /**
+             * Format: double
+             * @description Expected transfer amount for each payment.
+             */
+            amount: number;
+        };
+        /** @description Request model for an expected transfer to an untracked account. */
+        ExpectedUntrackedIncomeTransferRequestModel: {
+            /** @description Description of the transfer. */
+            description: string;
+            /**
+             * Format: double
+             * @description Expected transfer amount for each payment.
+             */
+            amount: number;
         };
         FundAmountModel: {
             /** Format: uuid */

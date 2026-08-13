@@ -195,17 +195,30 @@ public sealed class AccountingPeriodLifecycleTests
             Name = "Employer",
             IncomeLines = [new Models.Transactions.Create.CreateIncomeLineModel { Description = "Salary", Amount = 1_000m }],
             IncomeDeductions = [new Models.Transactions.Create.CreateIncomeDeductionModel { Description = "Tax", Amount = 200m }],
+            UntrackedTransfers = [new ExpectedUntrackedIncomeTransferRequestModel { Description = "Debt payment", Amount = 300m }],
             ExpectedDates = [new DateOnly(2026, 7, 15)],
         };
 
-        _ = await test.Api.PostAsync<IReadOnlyCollection<ExpectedIncomeSourceRequestModel>, AccountingPeriodWithBalanceModel>(
+        AccountingPeriodWithBalanceModel updated = await test.Api.PostAsync<IReadOnlyCollection<ExpectedIncomeSourceRequestModel>, AccountingPeriodWithBalanceModel>(
             $"/accounting-periods/{july.Id}/expected-income-sources", [source]);
+        Assert.Equal(800m, updated.ExpectedIncome.Total);
+        Assert.Equal(500m, updated.ExpectedIncome.Tracked);
+        Assert.Equal(300m, updated.ExpectedIncome.Untracked);
+        ExpectedIncomeSourceModel updatedSource = Assert.Single(updated.ExpectedIncomeSources);
+        Assert.Equal(800m, updatedSource.ExpectedAmount.Total);
+        Assert.Equal(500m, updatedSource.ExpectedAmount.Tracked);
+        Assert.Equal(300m, updatedSource.ExpectedAmount.Untracked);
         AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
         AccountingPeriodWithBalanceModel result = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{august.Id}");
 
         ExpectedIncomeSourceModel copied = Assert.Single(result.ExpectedIncomeSources);
         Assert.Equal("Employer", copied.Name);
-        Assert.Equal(800m, copied.NetAmount);
+        Assert.Equal(800m, copied.NetAmount.Total);
+        Assert.Equal(500m, copied.NetAmount.Tracked);
+        Assert.Equal(300m, copied.NetAmount.Untracked);
+        ExpectedUntrackedIncomeTransferModel copiedTransfer = Assert.Single(copied.UntrackedTransfers);
+        Assert.Equal("Debt payment", copiedTransfer.Description);
+        Assert.Equal(300m, copiedTransfer.Amount);
         Assert.Empty(copied.ExpectedDates);
     }
 

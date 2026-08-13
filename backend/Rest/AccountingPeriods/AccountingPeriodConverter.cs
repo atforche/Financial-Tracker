@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Models;
 using Models.AccountingPeriods;
 using Models.Transactions.Types;
 
@@ -39,7 +40,19 @@ public sealed class AccountingPeriodConverter
             Amount = deduction.Amount,
         }).ToList(),
         ExpectedDates = source.ExpectedDates.Select(date => date.Date).ToList(),
-        NetAmount = source.NetAmount,
-        ExpectedAmount = source.ExpectedAmount,
+        NetAmount = ToIncomeAmountModel(source.NetAmount, source.TrackedAmount),
+        ExpectedAmount = ToIncomeAmountModel(source.ExpectedAmount, source.ExpectedTrackedAmount),
+        UntrackedTransfers = source.UntrackedTransfers.Select(transfer => new ExpectedUntrackedIncomeTransferModel
+        {
+            Description = transfer.Description,
+            Amount = transfer.Amount,
+        }).ToList(),
+    };
+
+    private static IncomeAmountModel ToIncomeAmountModel(decimal total, decimal tracked) => new()
+    {
+        Total = total,
+        Tracked = tracked,
+        Untracked = total - tracked,
     };
 }

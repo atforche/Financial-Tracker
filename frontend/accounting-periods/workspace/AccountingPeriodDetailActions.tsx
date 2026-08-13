@@ -17,7 +17,7 @@ interface AccountingPeriodDetailActionsProps {
   readonly deleteRedirectUrl: string;
 }
 
-/** 
+/**
  * Provides period-specific lifecycle and income setup actions.
  */
 const AccountingPeriodDetailActions = function ({

@@ -69,6 +69,7 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
             source.Name,
             source.IncomeLines,
             source.IncomeDeductions,
+            source.UntrackedTransfers,
             source.ExpectedDates)));
     }
 

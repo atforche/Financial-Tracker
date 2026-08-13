@@ -105,8 +105,13 @@ public sealed class AccountingPeriodQueryConverter(
         OpeningBalance = balance.OpeningBalance,
         ClosingBalance = balance.ClosingBalance,
         ExpectedIncomeSources = balance.AccountingPeriod.ExpectedIncomeSources.Select(accountingPeriodConverter.ToModel).ToList(),
-        ExpectedIncome = balance.AccountingPeriod.ExpectedIncomeSources.Sum(source => source.ExpectedAmount),
-        ActualIncome = balance.ActualIncome,
+        ExpectedIncome = ToExpectedIncomeAmountModel(balance.AccountingPeriod.ExpectedIncomeSources),
+        ActualIncome = new IncomeAmountModel
+        {
+            Total = balance.ActualIncome,
+            Tracked = balance.ActualTrackedIncome,
+            Untracked = balance.ActualIncome - balance.ActualTrackedIncome,
+        },
         ExpectedGoalContributions = balance.ExpectedGoalContributions,
     };
 
@@ -147,8 +152,13 @@ public sealed class AccountingPeriodQueryConverter(
         OpeningBalance = result.Balance.OpeningBalance,
         ClosingBalance = result.Balance.ClosingBalance,
         ExpectedIncomeSources = result.Balance.AccountingPeriod.ExpectedIncomeSources.Select(accountingPeriodConverter.ToModel).ToList(),
-        ExpectedIncome = result.Balance.AccountingPeriod.ExpectedIncomeSources.Sum(source => source.ExpectedAmount),
-        ActualIncome = result.Balance.ActualIncome,
+        ExpectedIncome = ToExpectedIncomeAmountModel(result.Balance.AccountingPeriod.ExpectedIncomeSources),
+        ActualIncome = new IncomeAmountModel
+        {
+            Total = result.Balance.ActualIncome,
+            Tracked = result.Balance.ActualTrackedIncome,
+            Untracked = result.Balance.ActualIncome - result.Balance.ActualTrackedIncome,
+        },
         ExpectedGoalContributions = result.Balance.ExpectedGoalContributions,
         Transactions = transactionConverter.ToModel(result.Transactions),
         TotalIncome = new IncomeAmountModel
@@ -166,6 +176,13 @@ public sealed class AccountingPeriodQueryConverter(
     private static AccountingPeriodFilter ToDomain(AccountingPeriodFilterModel? model) => new(
         model?.Years ?? [],
         model?.Months ?? []);
+
+    private static IncomeAmountModel ToExpectedIncomeAmountModel(IReadOnlyCollection<ExpectedIncomeSource> sources) => new()
+    {
+        Total = sources.Sum(source => source.ExpectedAmount),
+        Tracked = sources.Sum(source => source.ExpectedTrackedAmount),
+        Untracked = sources.Sum(source => source.ExpectedUntrackedAmount),
+    };
 
     private static AccountingPeriodBalanceSort ToDomain(AccountingPeriodWithBalanceSortModel? sort) => sort switch
     {

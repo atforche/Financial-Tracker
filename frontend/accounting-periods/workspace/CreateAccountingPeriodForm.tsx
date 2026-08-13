@@ -73,6 +73,7 @@ const CreateAccountingPeriodForm = function ({
         name: source.name,
         incomeLines: source.incomeLines,
         incomeDeductions: source.incomeDeductions,
+        untrackedTransfers: source.untrackedTransfers,
         expectedDates: [],
       })) ?? [],
     );

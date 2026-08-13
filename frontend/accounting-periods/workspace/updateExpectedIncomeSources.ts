@@ -24,7 +24,7 @@ interface ActionPayload {
   readonly sources: ExpectedIncomeSourceRequest[];
 }
 
-/** 
+/**
  * Updates expected-income sources for an open Accounting Period.
  */
 const updateExpectedIncomeSources = async function (

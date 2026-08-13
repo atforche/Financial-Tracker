@@ -33,12 +33,17 @@ public sealed class ExpectedIncomeSourceModel
     public required IReadOnlyCollection<DateOnly> ExpectedDates { get; init; }
 
     /// <summary>
-    /// Net amount expected for one payment.
+    /// Net income expected for one payment.
     /// </summary>
-    public required decimal NetAmount { get; init; }
+    public required IncomeAmountModel NetAmount { get; init; }
 
     /// <summary>
-    /// Total expected amount for this source.
+    /// Total income expected for this source.
     /// </summary>
-    public required decimal ExpectedAmount { get; init; }
+    public required IncomeAmountModel ExpectedAmount { get; init; }
+
+    /// <summary>
+    /// Transfers expected from each payment to untracked accounts.
+    /// </summary>
+    public required IReadOnlyCollection<ExpectedUntrackedIncomeTransferModel> UntrackedTransfers { get; init; }
 }

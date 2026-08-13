@@ -49,14 +49,7 @@ const AccountingPeriodWorkspace = async function ({
   searchParams,
 }: AccountingPeriodWorkspaceProps): Promise<JSX.Element> {
   const apiClient = await createApiClient();
-  const {
-    years,
-    months,
-    sort,
-    page,
-    pageSize,
-    action,
-  } = await searchParams;
+  const { years, months, sort, page, pageSize, action } = await searchParams;
   const currentPage = normalizePageValue(page);
   const rowsPerPage = getRowsPerPage(pageSize);
   const currentYear = new Date().getFullYear();

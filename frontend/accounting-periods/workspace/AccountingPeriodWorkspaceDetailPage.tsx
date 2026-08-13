@@ -8,6 +8,8 @@ import AccountingPeriodDetailActions from "@/accounting-periods/workspace/Accoun
 import AccountingPeriodSummaryFrame from "@/accounting-periods/workspace/AccountingPeriodSummaryFrame";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import ArrowBack from "@mui/icons-material/ArrowBack";
+import ExpectedIncomeActualCard from "@/accounting-periods/workspace/ExpectedIncomeActualCard";
+import ExpectedIncomeGoalContributionsCard from "@/accounting-periods/workspace/ExpectedIncomeGoalContributionsCard";
 import ExpectedIncomeSourcesFrame from "@/accounting-periods/workspace/ExpectedIncomeSourcesFrame";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import FundGoalsFrame from "@/accounting-periods/workspace/FundGoalsFrame";
@@ -16,6 +18,7 @@ import type { JSX } from "react";
 import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
 import RecentTransactionsFrame from "@/accounting-periods/workspace/RecentTransactionsFrame";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
@@ -158,20 +161,23 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
               />
             }
           />
-          <IncomeSpendingCard
-            totalIncome={transactionSnapshot.totalIncome}
-            totalSpending={transactionSnapshot.totalSpending}
-          />
         </Stack>
       </Box>
-      <Box
-        sx={{
-          display: "grid",
-          gap: 3,
-          gridTemplateColumns: { xs: "1fr", lg: "repeat(2, minmax(0, 1fr))" },
-          width: "100%",
-        }}
-      >
+      <ResponsiveGrid columns={{ xs: 1, lg: 3 }} spacing={3}>
+        <ExpectedIncomeActualCard
+          expectedIncome={period.expectedIncome}
+          actualIncome={period.actualIncome}
+        />
+        <ExpectedIncomeGoalContributionsCard
+          expectedIncome={period.expectedIncome}
+          expectedGoalContributions={period.expectedGoalContributions}
+        />
+        <IncomeSpendingCard
+          totalIncome={transactionSnapshot.totalIncome}
+          totalSpending={transactionSnapshot.totalSpending}
+        />
+      </ResponsiveGrid>
+      <ResponsiveGrid columns={{ xs: 1, lg: 2 }} spacing={3}>
         <ExpectedIncomeSourcesFrame
           accountingPeriod={period}
           redirectUrl={currentUrl}
@@ -194,7 +200,7 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
             </Link>
           }
         />
-      </Box>
+      </ResponsiveGrid>
     </PageLayout>
   );
 };

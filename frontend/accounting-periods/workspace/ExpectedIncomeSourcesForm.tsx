@@ -28,7 +28,7 @@ interface ExpectedIncomeSourcesFormProps {
   readonly redirectUrl: string;
 }
 
-/** 
+/**
  * Dialog for changing expected-income sources on an open Accounting Period.
  */
 const ExpectedIncomeSourcesForm = function ({
@@ -43,6 +43,7 @@ const ExpectedIncomeSourcesForm = function ({
       name: source.name,
       incomeLines: source.incomeLines,
       incomeDeductions: source.incomeDeductions,
+      untrackedTransfers: source.untrackedTransfers,
       expectedDates: source.expectedDates,
     })),
   );

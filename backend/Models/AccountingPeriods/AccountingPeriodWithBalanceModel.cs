@@ -21,14 +21,14 @@ public class AccountingPeriodWithBalanceModel : AccountingPeriodModel
     public required IReadOnlyCollection<ExpectedIncomeSourceModel> ExpectedIncomeSources { get; init; }
 
     /// <summary>
-    /// Total income expected for the Accounting Period.
+    /// Income expected for the Accounting Period.
     /// </summary>
-    public required decimal ExpectedIncome { get; init; }
+    public required IncomeAmountModel ExpectedIncome { get; init; }
 
     /// <summary>
     /// Posted income for the Accounting Period.
     /// </summary>
-    public required decimal ActualIncome { get; init; }
+    public required IncomeAmountModel ActualIncome { get; init; }
 
     /// <summary>
     /// Amount required to satisfy all Fund Goals for the Accounting Period.

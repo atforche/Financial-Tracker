@@ -43,6 +43,7 @@ public class AccountingPeriodService(
                 Name = source.Name,
                 IncomeLines = source.IncomeLines.ToList(),
                 IncomeDeductions = source.IncomeDeductions.ToList(),
+                UntrackedTransfers = source.UntrackedTransfers.ToList(),
                 ExpectedDates = [],
             }) ?? []);
         fundGoalService.CopyToAccountingPeriod(previousAccountingPeriod, accountingPeriod);
@@ -205,9 +206,24 @@ public class AccountingPeriodService(
                     errors = errors.Append(new ValidationError(sourcePath.AppendWithIndex(nameof(ExpectedIncomeSourceRequest.IncomeDeductions), index), "Expected income deduction amounts must be positive."));
                 }
             }
+            foreach ((int index, ExpectedUntrackedIncomeTransfer transfer) in source.UntrackedTransfers.Index())
+            {
+                if (string.IsNullOrWhiteSpace(transfer.Description))
+                {
+                    errors = errors.Append(new ValidationError(sourcePath.AppendWithIndex(nameof(ExpectedIncomeSourceRequest.UntrackedTransfers), index), "Expected untracked income transfer descriptions are required."));
+                }
+                if (transfer.Amount <= 0)
+                {
+                    errors = errors.Append(new ValidationError(sourcePath.AppendWithIndex(nameof(ExpectedIncomeSourceRequest.UntrackedTransfers), index), "Expected untracked income transfer amounts must be positive."));
+                }
+            }
             if (source.IncomeLines.Sum(line => line.Amount) - source.IncomeDeductions.Sum(deduction => deduction.Amount) < 0)
             {
                 errors = errors.Append(new ValidationError(sourcePath, "Expected income deductions cannot exceed income lines."));
+            }
+            if (source.UntrackedTransfers.Sum(transfer => transfer.Amount) > source.IncomeLines.Sum(line => line.Amount) - source.IncomeDeductions.Sum(deduction => deduction.Amount))
+            {
+                errors = errors.Append(new ValidationError(sourcePath.Append(nameof(ExpectedIncomeSourceRequest.UntrackedTransfers)), "Expected untracked income transfers cannot exceed expected net income."));
             }
             foreach ((int index, DateOnly date) in source.ExpectedDates.Index())
             {

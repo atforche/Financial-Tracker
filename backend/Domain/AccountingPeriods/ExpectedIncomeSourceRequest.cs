@@ -23,6 +23,11 @@ public sealed record ExpectedIncomeSourceRequest
     public required IReadOnlyCollection<IncomeDeduction> IncomeDeductions { get; init; }
 
     /// <summary>
+    /// Transfers expected from each payment to untracked accounts.
+    /// </summary>
+    public required IReadOnlyCollection<ExpectedUntrackedIncomeTransfer> UntrackedTransfers { get; init; }
+
+    /// <summary>
     /// Expected payment dates.
     /// </summary>
     public required IReadOnlyCollection<DateOnly> ExpectedDates { get; init; }
