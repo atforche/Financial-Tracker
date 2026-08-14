@@ -34,7 +34,9 @@ const IncomeSpendingCard = function ({
   const remaining = totalIncome.tracked - totalSpending;
   const comparisonMax = Math.max(totalIncome.tracked, totalSpending, 1);
   const spendingIsLesser = totalSpending < totalIncome.tracked;
-  const trackedDifference = spendingIsLesser ? 0 : totalSpending - totalIncome.tracked;
+  const trackedDifference = spendingIsLesser
+    ? 0
+    : totalSpending - totalIncome.tracked;
   const spendingDifference = spendingIsLesser ? remaining : 0;
   const differenceLabel = remaining >= 0 ? "Remaining" : "Shortfall";
   const differenceColor = remaining >= 0 ? "success.main" : "error.main";

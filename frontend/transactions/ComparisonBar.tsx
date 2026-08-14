@@ -38,7 +38,11 @@ const ComparisonBar = function ({
 
   return (
     <Stack spacing={0.75}>
-      <Stack direction="row" sx={{ width: "100%" }} justifyContent="space-between">
+      <Stack
+        direction="row"
+        sx={{ width: "100%" }}
+        justifyContent="space-between"
+      >
         <Typography variant="body2" fontWeight={600} color={amountColor} noWrap>
           {label}: {formatCurrency(amount)}
         </Typography>

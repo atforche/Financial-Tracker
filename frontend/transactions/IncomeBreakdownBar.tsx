@@ -27,8 +27,17 @@ const IncomeBreakdownBar = function ({
 
   return (
     <Stack spacing={0.75}>
-      <Stack direction="row" sx={{ width: "100%" }} justifyContent="space-between">
-        <Typography variant="body2" color="success.main" fontWeight={600} noWrap>
+      <Stack
+        direction="row"
+        sx={{ width: "100%" }}
+        justifyContent="space-between"
+      >
+        <Typography
+          variant="body2"
+          color="success.main"
+          fontWeight={600}
+          noWrap
+        >
           Tracked: {formatCurrency(tracked)}
         </Typography>
         <Typography
