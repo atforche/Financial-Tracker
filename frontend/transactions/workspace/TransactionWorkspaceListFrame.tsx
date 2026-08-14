@@ -110,12 +110,12 @@ const TransactionWorkspaceListFrame = function ({
       pageParamName={pageParamName}
       onRowClick={openTransaction}
       initialEmptyState={{
-        title: "No transactions found",
+        title: "No Transactions Found",
         description: "No transactions have been recorded yet.",
         action: null,
       }}
       filteredEmptyState={{
-        title: "No transactions match this search",
+        title: "No Transactions Match This Search",
         description:
           "Try a different description, amount, date, or account name, or clear the current search to see all matching transactions.",
         action: (

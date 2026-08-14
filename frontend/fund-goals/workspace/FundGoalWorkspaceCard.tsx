@@ -91,7 +91,7 @@ const FundGoalWorkspaceCard = function ({
       color={color}
       headerContentInline
       headerContent={
-        <Tooltip title="View Fund Goal details">
+        <Tooltip title="View Fund Goal Details">
           <IconButton
             aria-label="View Fund Goal details"
             size="small"

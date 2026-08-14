@@ -103,7 +103,7 @@ const AccountTrendsSummaryCards = function ({
 
   const cards: readonly CardDefinition[] = [
     {
-      title: `Starting balance (${snapshot.startLabel})`,
+      title: `Starting Balance (${snapshot.startLabel})`,
       value: formatCurrency(snapshot.totalStartingBalance),
       ...makeBreakdowns(
         (tracked) =>
@@ -116,7 +116,7 @@ const AccountTrendsSummaryCards = function ({
       ),
     },
     {
-      title: `Ending balance (${snapshot.endLabel})`,
+      title: `Ending Balance (${snapshot.endLabel})`,
       value: formatCurrency(snapshot.totalEndingBalance),
       ...makeBreakdowns(
         (tracked) =>
@@ -129,7 +129,7 @@ const AccountTrendsSummaryCards = function ({
       ),
     },
     {
-      title: "Net change",
+      title: "Net Change",
       value: (
         <ChangeValue
           startingValue={snapshot.totalStartingBalance}

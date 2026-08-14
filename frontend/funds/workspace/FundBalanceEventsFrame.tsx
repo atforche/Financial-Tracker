@@ -104,7 +104,7 @@ const FundBalanceEventsFrame = function ({
       }}
       hasActiveFilters={false}
       initialEmptyState={{
-        title: "No balance events yet",
+        title: "No Balance Events Yet",
         description:
           "Create a transaction for this fund to start building its balance history.",
         action: !canWrite ? null : (

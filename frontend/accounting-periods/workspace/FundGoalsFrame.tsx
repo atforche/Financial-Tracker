@@ -88,7 +88,7 @@ const FundGoalsFrame = function ({
       pageParamName="fundGoalPage"
       onRowClick={openFundGoal}
       initialEmptyState={{
-        title: "No fund goals",
+        title: "No Fund Goals",
         description: "There are no fund goals configured for this period.",
         action: null,
       }}

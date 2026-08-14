@@ -92,13 +92,13 @@ const AccountingPeriodTrendsTransactionListFrame = function ({
       onRowClick={openTransactionWorkspace}
       hasActiveFilters={hasActiveFilters}
       initialEmptyState={{
-        title: "No transactions found",
+        title: "No Transactions Found",
         description:
           "Try broadening the accounting period range to bring more transactions into view.",
         action: null,
       }}
       filteredEmptyState={{
-        title: "No transactions found",
+        title: "No Transactions Found",
         description:
           "Try broadening the accounting period range to bring more transactions into view.",
         action: hasActiveFilters ? (

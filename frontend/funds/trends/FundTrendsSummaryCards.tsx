@@ -47,19 +47,19 @@ const FundTrendsSummaryCards = function ({
 
   const cards: readonly CardDefinition[] = [
     {
-      title: `Starting balance (${snapshot.startLabel})`,
+      title: `Starting Balance (${snapshot.startLabel})`,
       value: formatCurrency(snapshot.totalStartingBalance),
       assignedValue: formatCurrency(snapshot.assignedStartingBalance),
       unassignedValue: formatCurrency(snapshot.unassignedStartingBalance),
     },
     {
-      title: `Ending balance (${snapshot.endLabel})`,
+      title: `Ending Balance (${snapshot.endLabel})`,
       value: formatCurrency(snapshot.totalEndingBalance),
       assignedValue: formatCurrency(snapshot.assignedEndingBalance),
       unassignedValue: formatCurrency(snapshot.unassignedEndingBalance),
     },
     {
-      title: "Net change",
+      title: "Net Change",
       value: (
         <ChangeValue
           startingValue={snapshot.totalStartingBalance}

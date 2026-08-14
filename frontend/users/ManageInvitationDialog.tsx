@@ -44,7 +44,7 @@ const ManageInvitationDialog = function ({
       onClose={pending ? undefined : onClose}
       fullWidth
       maxWidth="sm"
-      title="Invitation details"
+      title="Invitation Details"
       actions={
         <>
           <Button disabled={pending} onClick={onClose}>
@@ -62,7 +62,7 @@ const ManageInvitationDialog = function ({
                   Revoke invitation
                 </Button>
               )}
-              title="Revoke invitation"
+              title="Revoke Invitation"
               confirmationCopy={`Revoke the pending invitation for ${invitation.email}?`}
               confirmLabel="Revoke"
               confirmButtonProps={{ color: "error" }}

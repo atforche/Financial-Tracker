@@ -26,7 +26,7 @@ const FundTrendsAssignmentSpendingCard = function ({
   const spentRatio = totalSpent / maxAmount;
 
   return (
-    <SummaryCard title="Assignment vs. spending">
+    <SummaryCard title="Assignment vs. Spending">
       <Stack spacing={2}>
         <LabeledAmountBar
           label="Total assigned"

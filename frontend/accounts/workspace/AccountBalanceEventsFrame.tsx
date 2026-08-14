@@ -112,7 +112,7 @@ const AccountBalanceEventsFrame = function ({
       onRowClick={openTransaction}
       hasActiveFilters={false}
       initialEmptyState={{
-        title: "No balance events yet",
+        title: "No Balance Events Yet",
         description:
           "Create or post a transaction for this account to start building its balance history.",
         action: !canWrite ? null : (

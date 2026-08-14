@@ -31,7 +31,7 @@ const TransactionsByTypeCard = function ({
 
   if (transactionTypes.length === 0) {
     return (
-      <SummaryCard title="Transactions by type">
+      <SummaryCard title="Transactions By Type">
         <Typography color="text.secondary">
           No transaction type summaries are available.
         </Typography>
@@ -40,7 +40,7 @@ const TransactionsByTypeCard = function ({
   }
 
   return (
-    <SummaryCard title="Transactions by type">
+    <SummaryCard title="Transactions By Type">
       <Stack spacing={2.5}>
         {transactionTypes.map((summary) => (
           <Stack key={summary.transactionType} spacing={1.25}>

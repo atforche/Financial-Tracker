@@ -97,7 +97,7 @@ const RecentTransactionsFrame = function ({
 
   return (
     <ListFrame
-      title="Recent Transactions"
+      title="Transactions"
       headerContent={headerContent}
       columns={columns}
       getId={(transaction) => transaction.id}
@@ -106,7 +106,7 @@ const RecentTransactionsFrame = function ({
       pageParamName="transactionPage"
       onRowClick={openTransaction}
       initialEmptyState={{
-        title: "No transactions",
+        title: "No Transactions",
         description: "No transactions have been recorded for this period.",
         action: null,
       }}

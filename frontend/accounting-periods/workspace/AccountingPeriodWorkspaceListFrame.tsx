@@ -167,13 +167,13 @@ const AccountingPeriodWorkspaceListFrame = function ({
         openAccountingPeriod(accountingPeriod);
       }}
       initialEmptyState={{
-        title: "No accounting periods yet",
+        title: "No Accounting Periods Yet",
         description:
           "Use the create action to add the first accounting period.",
         action: null,
       }}
       filteredEmptyState={{
-        title: "No accounting periods match the current filters",
+        title: "No Accounting Periods Match The Current Filters",
         description:
           "Try a wider accounting period range to include more periods.",
         action: (

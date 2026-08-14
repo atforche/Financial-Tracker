@@ -101,7 +101,7 @@ const UserListFrame = function ({
   return (
     <>
       <ListFrame<User>
-        title="Application users"
+        title="Application Users"
         headerContent={
           <Button
             variant="contained"
@@ -122,7 +122,7 @@ const UserListFrame = function ({
           setManagedUser(user);
         }}
         initialEmptyState={{
-          title: "No application users",
+          title: "No Application Users",
           description: "Users appear here after accepting an invitation.",
         }}
       />
