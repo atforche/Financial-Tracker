@@ -1,11 +1,11 @@
 "use client";
 
+import ComparisonBarPair from "@/framework/view/ComparisonBarPair";
 import type { IncomeAmount } from "@/transactions/types";
+import IncomeBreakdownBar from "@/framework/view/IncomeBreakdownBar";
 import type { JSX } from "react";
-import LabeledAmountBar from "@/framework/view/LabeledAmountBar";
 import { Stack } from "@mui/material";
 import SummaryCard from "@/framework/view/SummaryCard";
-import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Represents an empty income amount with all values set to zero.
@@ -31,44 +31,29 @@ const IncomeSpendingCard = function ({
   totalIncome = emptyIncome,
   totalSpending = 0,
 }: IncomeSpendingCardProps): JSX.Element {
-  const maxAmount = Math.max(totalIncome.total, totalSpending, 1);
-  const trackedIncomeRatio =
-    totalIncome.total === 0 ? 0 : totalIncome.tracked / totalIncome.total;
-  const untrackedIncomeRatio =
-    totalIncome.total === 0 ? 0 : totalIncome.untracked / totalIncome.total;
-
   return (
-    <SummaryCard title="Income vs. spending">
+    <SummaryCard title="Income vs. Spending">
       <Stack spacing={2}>
-        <LabeledAmountBar
-          label="Total income"
-          value={formatCurrency(totalIncome.total)}
-          ratio={totalIncome.total / maxAmount}
-          color="success.main"
+        <IncomeBreakdownBar
+          total={totalIncome.total}
+          tracked={totalIncome.tracked}
+          untracked={totalIncome.untracked}
         />
-        <Stack spacing={1.5} sx={{ pl: 2 }}>
-          <LabeledAmountBar
-            label="Tracked income"
-            value={formatCurrency(totalIncome.tracked)}
-            ratio={trackedIncomeRatio}
-            color="success.main"
-            barHeight={12}
-            compact
-          />
-          <LabeledAmountBar
-            label="Untracked income"
-            value={formatCurrency(totalIncome.untracked)}
-            ratio={untrackedIncomeRatio}
-            color="success.main"
-            barHeight={12}
-            compact
-          />
-        </Stack>
-        <LabeledAmountBar
-          label="Total spending"
-          value={formatCurrency(totalSpending)}
-          ratio={totalSpending / maxAmount}
-          color="error.main"
+        <ComparisonBarPair
+          first={{
+            label: "Tracked income",
+            amount: totalIncome.tracked,
+            color: "success.main",
+            differenceLabel: "Shortfall",
+            differenceColor: "error.main",
+          }}
+          second={{
+            label: "Spending",
+            amount: totalSpending,
+            color: "error.main",
+            differenceLabel: "Remaining",
+            differenceColor: "success.main",
+          }}
         />
       </Stack>
     </SummaryCard>

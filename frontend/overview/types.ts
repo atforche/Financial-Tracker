@@ -1,5 +1,6 @@
 import type { AccountBalanceSummary } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { BalanceTrendChartPoint } from "@/framework/charts/balanceTrendHelpers";
 import type { FundBalanceSummary } from "@/funds/types";
 
 /**
@@ -24,6 +25,8 @@ type FundOverviewSummary = Pick<
 interface OverviewData {
   readonly accountSummary: AccountOverviewSummary;
   readonly fundSummary: FundOverviewSummary;
+  readonly accountBalanceTrend: readonly BalanceTrendChartPoint[];
+  readonly fundBalanceTrend: readonly BalanceTrendChartPoint[];
   readonly latestAccountingPeriod: AccountingPeriod | null;
   readonly currentAccountingPeriod: AccountingPeriod | null;
 }

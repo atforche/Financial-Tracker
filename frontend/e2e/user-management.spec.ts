@@ -77,11 +77,11 @@ test("list frames fit within a mobile viewport", async ({ page }) => {
   await signInAsLocalDeveloper(page);
 
   await expect(
-    page.getByText("Application users", { exact: true }),
+    page.getByText("Application Users", { exact: true }),
   ).toBeVisible();
   await expect(page.locator("table").first()).toBeHidden();
   const applicationUsersFrame = page
-    .getByText("Application users", { exact: true })
+    .getByText("Application Users", { exact: true })
     .locator("xpath=ancestor::div[contains(@class, 'MuiPaper-root')][1]");
   await expect(
     applicationUsersFrame.getByText("Email", { exact: true }).last(),
@@ -124,7 +124,7 @@ test("an administrator manages invitations and application user access", async (
   ).toBeVisible();
 
   await page.getByRole("button", { name: "Invite user" }).click();
-  const inviteUserDialog = page.getByRole("dialog", { name: "Invite user" });
+  const inviteUserDialog = page.getByRole("dialog", { name: "Invite User" });
   await inviteUserDialog
     .getByRole("textbox", { name: "Email address" })
     .fill(invitedEmail);
@@ -135,12 +135,12 @@ test("an administrator manages invitations and application user access", async (
   await expect(invitationRow).toContainText("Pending");
   await invitationRow.click();
   const invitationDialog = page.getByRole("dialog", {
-    name: "Invitation details",
+    name: "Invitation Details",
   });
   await confirmAction(
     page,
     invitationDialog.getByRole("button", { name: "Revoke invitation" }),
-    "Revoke invitation",
+    "Revoke Invitation",
     "Revoke",
   );
   await expect(invitationRow).toContainText("Revoked");

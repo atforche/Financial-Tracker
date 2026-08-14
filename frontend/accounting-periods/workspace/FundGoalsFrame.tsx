@@ -53,6 +53,13 @@ const FundGoalsFrame = function ({
       alignment: "right",
     },
     {
+      name: "actualContribution",
+      headerContent: "Actual Contribution",
+      getBodyContent: (goal) =>
+        formatCurrency(goal.progress.contribution?.assignedAmount ?? 0),
+      alignment: "right",
+    },
+    {
       name: "actions",
       headerContent: "",
       getBodyContent: (goal) => (
@@ -81,7 +88,7 @@ const FundGoalsFrame = function ({
       pageParamName="fundGoalPage"
       onRowClick={openFundGoal}
       initialEmptyState={{
-        title: "No fund goals",
+        title: "No Fund Goals",
         description: "There are no fund goals configured for this period.",
         action: null,
       }}

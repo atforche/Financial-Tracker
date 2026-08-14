@@ -52,7 +52,7 @@ const InviteUserForm = function ({
       onClose={pending ? undefined : onClose}
       fullWidth
       maxWidth="sm"
-      title="Invite user"
+      title="Invite User"
       actions={
         <>
           <Button disabled={pending} onClick={onClose}>

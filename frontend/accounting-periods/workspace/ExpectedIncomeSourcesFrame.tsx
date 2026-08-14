@@ -128,7 +128,7 @@ const ExpectedIncomeSourcesFrame = function ({
         );
       }}
       initialEmptyState={{
-        title: "No expected income sources",
+        title: "No Expected Income Sources",
         description:
           "Add income sources to plan this period's expected income.",
         action: null,

@@ -3265,6 +3265,11 @@ export interface components {
              */
             expectedGoalContributions: number;
             /**
+             * Format: double
+             * @description Amount assigned toward regular contributions for all Fund Goals in the Accounting Period.
+             */
+            actualGoalContributions: number;
+            /**
              * Format: uuid
              * @description ID for the Accounting Period
              */
@@ -3318,6 +3323,11 @@ export interface components {
              * @description Amount required to satisfy all Fund Goals for the Accounting Period.
              */
             expectedGoalContributions: number;
+            /**
+             * Format: double
+             * @description Amount assigned toward regular contributions for all Fund Goals in the Accounting Period.
+             */
+            actualGoalContributions: number;
             /**
              * Format: uuid
              * @description ID for the Accounting Period

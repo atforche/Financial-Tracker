@@ -19,7 +19,7 @@ interface ErrorPageProps {
 const ErrorPage = function ({ error, reset }: ErrorPageProps): JSX.Element {
   return (
     <PageLayout>
-      <Frame title="Unable to load this page" color="error">
+      <Frame title="Unable To Load This Page" color="error">
         <Stack spacing={2} alignItems="flex-start">
           <Typography>
             Something went wrong while loading the requested data. Try the

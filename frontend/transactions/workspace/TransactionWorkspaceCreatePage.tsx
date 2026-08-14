@@ -41,6 +41,7 @@ const TransactionWorkspaceCreatePage = async function ({
     <PageLayout>
       <TransactionWorkspacePageHeader
         backHref={returnUrl ?? workspaceUrl}
+        backLabel={returnUrl === "/" ? "Back to Overview" : "Back to Workspace"}
         title="Create Transaction"
       />
       <CreateTransactionForm

@@ -146,7 +146,7 @@ const FundTrendsBalanceEventListFrame = function ({
         openTransactionWorkspace(balanceEvent);
       }}
       initialEmptyState={{
-        title: "No balance events found",
+        title: "No Balance Events Found",
         description:
           "Try a different date range or accounting period to inspect account activity.",
         action: (
@@ -165,7 +165,7 @@ const FundTrendsBalanceEventListFrame = function ({
         ),
       }}
       filteredEmptyState={{
-        title: "No balance events match this trends filter",
+        title: "No Balance Events Match This Trends Filter",
         description:
           "Try a different fund filter or range to widen the activity feed.",
         action: (

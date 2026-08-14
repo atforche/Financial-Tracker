@@ -80,13 +80,13 @@ const TransactionTrendsListFrame = function ({
       onRowClick={openTransactionWorkspace}
       hasActiveFilters={hasActiveFilters}
       initialEmptyState={{
-        title: "No matching transactions",
+        title: "No Matching Transactions",
         description:
           "Try widening the date range or clearing some filters to see more results.",
         action: null,
       }}
       filteredEmptyState={{
-        title: "No matching transactions",
+        title: "No Matching Transactions",
         description:
           "Try widening the date range or clearing some filters to see more results.",
         action: hasActiveFilters ? (

@@ -9,6 +9,7 @@ import type { JSX } from "react";
  */
 interface AccountingPeriodTrendsSummaryCardsProps {
   readonly accountingPeriods: AccountingPeriodWithBalance[];
+  readonly showPeriodLabels?: boolean;
 }
 
 /**
@@ -16,6 +17,7 @@ interface AccountingPeriodTrendsSummaryCardsProps {
  */
 const AccountingPeriodTrendsSummaryCards = function ({
   accountingPeriods,
+  showPeriodLabels = true,
 }: AccountingPeriodTrendsSummaryCardsProps): JSX.Element {
   const firstPeriod = accountingPeriods.at(0);
   const lastPeriod = accountingPeriods.at(-1);
@@ -36,8 +38,16 @@ const AccountingPeriodTrendsSummaryCards = function ({
 
   return (
     <BalanceChangeSummaryCards
-      startingTitle={`Starting balance (${snapshot.startLabel})`}
-      endingTitle={`Ending balance (${snapshot.endLabel})`}
+      startingTitle={
+        showPeriodLabels
+          ? `Starting Balance (${snapshot.startLabel})`
+          : "Starting Balance"
+      }
+      endingTitle={
+        showPeriodLabels
+          ? `Ending Balance (${snapshot.endLabel})`
+          : "Ending Balance"
+      }
       startingBalance={snapshot.totalStartingBalance}
       endingBalance={snapshot.totalEndingBalance}
     />

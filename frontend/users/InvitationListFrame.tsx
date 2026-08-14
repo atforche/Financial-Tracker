@@ -89,7 +89,7 @@ const InvitationListFrame = function ({
   return (
     <>
       <ListFrame<UserInvitation>
-        title="Invitation history"
+        title="Invitation History"
         columns={columns}
         getId={(invitation) => invitation.id}
         data={pageInvitations}
@@ -100,7 +100,7 @@ const InvitationListFrame = function ({
           setManagedInvitation(invitation);
         }}
         initialEmptyState={{
-          title: "No invitations",
+          title: "No Invitations",
           description: "Create an invitation to grant a collaborator access.",
         }}
       />

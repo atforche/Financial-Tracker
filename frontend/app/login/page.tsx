@@ -86,7 +86,7 @@ const LoginPage = async function ({
       }}
     >
       <Box sx={{ maxWidth: 460, width: "100%" }}>
-        <Frame title="Welcome back">
+        <Frame title="Welcome Back">
           <Stack
             alignItems="center"
             spacing={2.5}

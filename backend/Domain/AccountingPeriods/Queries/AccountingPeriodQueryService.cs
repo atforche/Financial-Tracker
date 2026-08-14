@@ -145,17 +145,23 @@ public sealed class AccountingPeriodQueryService(
                 [balance.AccountingPeriod.Id.Value], cancellationToken);
             var incomeTotals = FinancialRangeTotals.Calculate(periodIncomeFacts, []);
             AccountingPeriodBalanceHistory history = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(balance.AccountingPeriod.Id);
-            decimal expectedGoalContributions = fundGoalRepository.GetAllByAccountingPeriod(balance.AccountingPeriod.Id)
+            IReadOnlyCollection<FundGoal> fundGoals = fundGoalRepository.GetAllByAccountingPeriod(balance.AccountingPeriod.Id);
+            decimal expectedGoalContributions = fundGoals
                 .Sum(goal => FundGoalProgressService.CalculateRecommendedContribution(
                     history.FundBalances.SingleOrDefault(item => item.Fund.Id == goal.Fund.Id)?.OpeningBalance ?? 0,
                     goal.RegularContribution,
                     goal.MinimumFundedBalance,
                     goal.MaximumFundedBalance));
+            decimal actualGoalContributions = fundGoals
+                .Sum(goal => history.FundGoalTotals
+                    .SingleOrDefault(item => item.Fund.Id == goal.Fund.Id)
+                    ?.GetTotals().RegularAmountAssigned ?? 0);
             result.Add(balance with
             {
                 ActualIncome = incomeTotals.TotalIncome,
                 ActualTrackedIncome = incomeTotals.TrackedIncome,
                 ExpectedGoalContributions = expectedGoalContributions,
+                ActualGoalContributions = actualGoalContributions,
             });
         }
         return result;

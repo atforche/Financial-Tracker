@@ -12,7 +12,7 @@ import { signOut } from "next-auth/react";
 const AccessDeniedView = function (): JSX.Element {
   return (
     <PageLayout>
-      <Frame title="Access unavailable" color="error">
+      <Frame title="Access Unavailable" color="error">
         <Stack spacing={2} alignItems="flex-start">
           <Typography>
             This account is not currently authorized to use Financial Tracker.

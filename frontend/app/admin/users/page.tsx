@@ -16,7 +16,7 @@ const UserManagementPage = async function (): Promise<JSX.Element> {
   if (currentUser.user?.role !== UserRoleModel.Admin) {
     return (
       <PageLayout>
-        <Frame title="Administrator access required" color="error">
+        <Frame title="Administrator Access Required" color="error">
           <Typography>
             Your current role cannot manage application users or invitations.
           </Typography>

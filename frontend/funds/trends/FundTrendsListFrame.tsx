@@ -191,7 +191,7 @@ const FundTrendsListFrame = function ({
       }}
       hasActiveFilters={hasActiveFilters}
       initialEmptyState={{
-        title: "No funds have been added",
+        title: "No Funds Have Been Added",
         description: isInOnboardingMode
           ? "Onboard a new fund to start tracking balances."
           : "Create a new fund to start tracking balances.",
@@ -211,7 +211,7 @@ const FundTrendsListFrame = function ({
         ),
       }}
       filteredEmptyState={{
-        title: "No funds match this trends filter",
+        title: "No Funds Match This Trends Filter",
         description:
           "Try a different fund name or date range to widen the trends scope.",
         action: (

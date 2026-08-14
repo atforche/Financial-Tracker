@@ -37,7 +37,7 @@ const BalanceChangeSummaryCards = function ({
         value={<Stack>{formatCurrency(endingBalance)}</Stack>}
       />
       <SummaryCard
-        title="Net change"
+        title="Net Change"
         value={
           <Stack>
             <ChangeValue

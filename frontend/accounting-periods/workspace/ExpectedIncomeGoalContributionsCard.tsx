@@ -1,11 +1,10 @@
 "use client";
 
+import ComparisonBar from "@/framework/view/ComparisonBar";
 import type { IncomeAmount } from "@/transactions/types";
 import type { JSX } from "react";
-import LabeledAmountBar from "@/framework/view/LabeledAmountBar";
 import { Stack } from "@mui/material";
 import SummaryCard from "@/framework/view/SummaryCard";
-import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for the ExpectedIncomeGoalContributionsCard component.
@@ -32,22 +31,36 @@ const ExpectedIncomeGoalContributionsCard = function ({
     Number.isFinite(expectedGoalContributions)
       ? expectedGoalContributions
       : 0;
-  const maxAmount = Math.max(trackedIncome, goalContributions, 1);
+  const remaining = trackedIncome - goalContributions;
+  const comparisonMax = Math.max(trackedIncome, goalContributions, 1);
+  const contributionsAreLesser = goalContributions < trackedIncome;
+  const incomeDifference = contributionsAreLesser
+    ? 0
+    : goalContributions - trackedIncome;
+  const contributionsDifference = contributionsAreLesser ? remaining : 0;
+  const differenceLabel = remaining >= 0 ? "Remaining" : "Shortfall";
+  const differenceColor = remaining >= 0 ? "success.main" : "error.main";
 
   return (
-    <SummaryCard title="Expected income vs. goal contributions">
+    <SummaryCard title="Expected Income vs. Goal Contributions">
       <Stack spacing={2}>
-        <LabeledAmountBar
+        <ComparisonBar
           label="Expected tracked income"
-          value={formatCurrency(trackedIncome)}
-          ratio={trackedIncome / maxAmount}
-          color="info.main"
+          amount={trackedIncome}
+          amountColor="success.main"
+          difference={incomeDifference}
+          differenceLabel={differenceLabel}
+          differenceColor={differenceColor}
+          maxAmount={comparisonMax}
         />
-        <LabeledAmountBar
+        <ComparisonBar
           label="Expected goal contributions"
-          value={formatCurrency(goalContributions)}
-          ratio={goalContributions / maxAmount}
-          color="warning.main"
+          amount={goalContributions}
+          amountColor="primary.main"
+          difference={contributionsDifference}
+          differenceLabel={differenceLabel}
+          differenceColor={differenceColor}
+          maxAmount={comparisonMax}
         />
       </Stack>
     </SummaryCard>

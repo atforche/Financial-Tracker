@@ -209,7 +209,7 @@ const AccountTrendsListFrame = function ({
       }}
       hasActiveFilters={hasActiveFilters}
       initialEmptyState={{
-        title: "No accounts have been added",
+        title: "No Accounts Have Been Added",
         description: isInOnboardingMode
           ? "Onboard a new account to start tracking balances."
           : "Create a new account to start tracking balances.",
@@ -229,7 +229,7 @@ const AccountTrendsListFrame = function ({
         ),
       }}
       filteredEmptyState={{
-        title: "No accounts match this trends filter",
+        title: "No Accounts Match This Trends Filter",
         description:
           "Try a different account type, account name, or date range to widen the trends scope.",
         action: (

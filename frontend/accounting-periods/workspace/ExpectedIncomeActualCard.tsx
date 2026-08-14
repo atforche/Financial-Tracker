@@ -1,11 +1,10 @@
 "use client";
 
+import { Stack, Typography } from "@mui/material";
+import ComparisonBarPair from "@/framework/view/ComparisonBarPair";
 import type { IncomeAmount } from "@/transactions/types";
 import type { JSX } from "react";
-import LabeledAmountBar from "@/framework/view/LabeledAmountBar";
-import { Stack } from "@mui/material";
 import SummaryCard from "@/framework/view/SummaryCard";
-import { formatCurrency } from "@/framework/currencyHelpers";
 
 const emptyIncome: IncomeAmount = {
   total: 0,
@@ -31,51 +30,47 @@ const ExpectedIncomeActualCard = function ({
   expectedIncome = emptyIncome,
   actualIncome = emptyIncome,
 }: ExpectedIncomeActualCardProps): JSX.Element {
-  const expectedTotal = getFiniteAmount(expectedIncome.total);
-  const actualTotal = getFiniteAmount(actualIncome.total);
-  const maxAmount = Math.max(expectedTotal, actualTotal, 1);
-  const getRatio = (amount: number): number => amount / maxAmount;
-  const renderBreakdown = (
-    income: IncomeAmount,
-    color: string,
+  const renderComparisonPair = (
+    label: string,
+    expectedAmount: number,
+    actualAmount: number,
   ): JSX.Element => (
-    <Stack spacing={1.5} sx={{ pl: 2 }}>
-      <LabeledAmountBar
-        label="Tracked income"
-        value={formatCurrency(getFiniteAmount(income.tracked))}
-        ratio={getRatio(getFiniteAmount(income.tracked))}
-        color={color}
-        barHeight={12}
-        compact
-      />
-      <LabeledAmountBar
-        label="Untracked income"
-        value={formatCurrency(getFiniteAmount(income.untracked))}
-        ratio={getRatio(getFiniteAmount(income.untracked))}
-        color={color}
-        barHeight={12}
-        compact
+    <Stack spacing={1}>
+      <Typography variant="body2" fontWeight={600}>
+        {label}
+      </Typography>
+      <ComparisonBarPair
+        first={{
+          label: "Expected income",
+          amount: expectedAmount,
+          color: "info.main",
+          differenceLabel: "Surplus",
+          differenceColor: "success.main",
+        }}
+        second={{
+          label: "Actual income",
+          amount: actualAmount,
+          color: "success.main",
+          differenceLabel: "Shortfall",
+          differenceColor: "error.main",
+        }}
       />
     </Stack>
   );
 
   return (
-    <SummaryCard title="Expected income vs. actual">
+    <SummaryCard title="Expected Income vs. Actual">
       <Stack spacing={2}>
-        <LabeledAmountBar
-          label="Expected income"
-          value={formatCurrency(expectedTotal)}
-          ratio={getRatio(expectedTotal)}
-          color="info.main"
-        />
-        {renderBreakdown(expectedIncome, "info.main")}
-        <LabeledAmountBar
-          label="Total income"
-          value={formatCurrency(actualTotal)}
-          ratio={getRatio(actualTotal)}
-          color="success.main"
-        />
-        {renderBreakdown(actualIncome, "success.main")}
+        {renderComparisonPair(
+          "Tracked income",
+          getFiniteAmount(expectedIncome.tracked),
+          getFiniteAmount(actualIncome.tracked),
+        )}
+        {renderComparisonPair(
+          "Untracked income",
+          getFiniteAmount(expectedIncome.untracked),
+          getFiniteAmount(actualIncome.untracked),
+        )}
       </Stack>
     </SummaryCard>
   );

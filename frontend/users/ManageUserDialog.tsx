@@ -81,7 +81,7 @@ const ManageUserDialog = function ({
                 {statusAction}
               </Button>
             )}
-            title={`${statusAction} user`}
+            title={`${statusAction} User`}
             confirmationCopy={`${statusAction} ${user.email}?${selfWarning}`}
             confirmLabel={statusAction}
             confirmButtonProps={{

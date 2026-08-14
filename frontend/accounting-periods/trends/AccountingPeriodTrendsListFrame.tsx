@@ -181,7 +181,7 @@ const AccountingPeriodTrendsListFrame = function ({
         setAccountingPeriodFilter(accountingPeriod);
       }}
       initialEmptyState={{
-        title: "No accounting periods have been added",
+        title: "No Accounting Periods Have Been Added",
         description:
           "Create an accounting period to start organizing balances by month.",
         action: !canWrite ? undefined : (
@@ -196,7 +196,7 @@ const AccountingPeriodTrendsListFrame = function ({
         ),
       }}
       filteredEmptyState={{
-        title: "No accounting periods match this search",
+        title: "No Accounting Periods Match This Search",
         description:
           "Try a different month or year, or clear the current search to see all accounting periods.",
         action: (

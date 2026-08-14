@@ -67,6 +67,7 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
             row.ClosingBalance,
             0,
             0,
+            0,
             0)).ToList();
         return new QueryPage<AccountingPeriodBalance>(items, totalCount);
     }
@@ -86,7 +87,7 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
                 OpeningBalance = history.OpeningBalance,
                 ClosingBalance = history.ClosingBalance,
             }).SingleOrDefaultAsync(cancellationToken);
-        return row == null ? null : new AccountingPeriodBalance(row.AccountingPeriod, row.OpeningBalance, row.ClosingBalance, 0, 0, 0);
+        return row == null ? null : new AccountingPeriodBalance(row.AccountingPeriod, row.OpeningBalance, row.ClosingBalance, 0, 0, 0, 0);
     }
 
     /// <inheritdoc/>
@@ -138,6 +139,7 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
             row.AccountingPeriod,
             row.OpeningBalance,
             row.ClosingBalance,
+            0,
             0,
             0,
             0)).ToList();
