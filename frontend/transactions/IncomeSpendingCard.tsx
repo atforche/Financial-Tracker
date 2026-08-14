@@ -1,6 +1,6 @@
 "use client";
 
-import ComparisonBar from "@/transactions/ComparisonBar";
+import ComparisonBar from "@/framework/view/ComparisonBar";
 import type { IncomeAmount } from "@/transactions/types";
 import IncomeBreakdownBar from "@/transactions/IncomeBreakdownBar";
 import type { JSX } from "react";
