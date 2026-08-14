@@ -42,7 +42,7 @@ const ExpectedIncomeGoalContributionsCard = function ({
   const differenceColor = remaining >= 0 ? "success.main" : "error.main";
 
   return (
-    <SummaryCard title="Expected income vs. goal contributions">
+    <SummaryCard title="Expected Income vs. Goal Contributions">
       <Stack spacing={2}>
         <ComparisonBar
           label="Expected tracked income"

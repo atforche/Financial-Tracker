@@ -11,9 +11,9 @@ interface ComparisonBarProps {
   readonly label: string;
   readonly amount: number;
   readonly amountColor: string;
-  readonly difference: number;
-  readonly differenceLabel: string;
-  readonly differenceColor: string;
+  readonly difference?: number;
+  readonly differenceLabel?: string;
+  readonly differenceColor?: string;
   readonly maxAmount: number;
 }
 
@@ -24,7 +24,7 @@ const ComparisonBar = function ({
   label,
   amount,
   amountColor,
-  difference,
+  difference = 0,
   differenceLabel,
   differenceColor,
   maxAmount,
@@ -32,7 +32,7 @@ const ComparisonBar = function ({
   const amountRatio = amount / maxAmount;
   const differenceRatio = difference / maxAmount;
   const differenceCaption =
-    difference > 0
+    difference > 0 && differenceLabel !== undefined
       ? `${differenceLabel}: ${formatCurrency(difference)}`
       : undefined;
 
@@ -50,7 +50,7 @@ const ComparisonBar = function ({
           <Typography
             variant="body2"
             fontWeight={600}
-            color={differenceColor}
+            color={differenceColor ?? "text.secondary"}
             noWrap
           >
             {differenceCaption}
