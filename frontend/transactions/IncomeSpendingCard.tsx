@@ -1,11 +1,11 @@
 "use client";
 
+import ComparisonBar from "@/transactions/ComparisonBar";
 import type { IncomeAmount } from "@/transactions/types";
+import IncomeBreakdownBar from "@/transactions/IncomeBreakdownBar";
 import type { JSX } from "react";
-import LabeledAmountBar from "@/framework/view/LabeledAmountBar";
 import { Stack } from "@mui/material";
 import SummaryCard from "@/framework/view/SummaryCard";
-import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Represents an empty income amount with all values set to zero.
@@ -31,45 +31,42 @@ const IncomeSpendingCard = function ({
   totalIncome = emptyIncome,
   totalSpending = 0,
 }: IncomeSpendingCardProps): JSX.Element {
-  const maxAmount = Math.max(totalIncome.total, totalSpending, 1);
-  const trackedIncomeRatio =
-    totalIncome.total === 0 ? 0 : totalIncome.tracked / totalIncome.total;
-  const untrackedIncomeRatio =
-    totalIncome.total === 0 ? 0 : totalIncome.untracked / totalIncome.total;
+  const remaining = totalIncome.tracked - totalSpending;
+  const comparisonMax = Math.max(totalIncome.tracked, totalSpending, 1);
+  const spendingIsLesser = totalSpending < totalIncome.tracked;
+  const trackedDifference = spendingIsLesser ? 0 : totalSpending - totalIncome.tracked;
+  const spendingDifference = spendingIsLesser ? remaining : 0;
+  const differenceLabel = remaining >= 0 ? "Remaining" : "Shortfall";
+  const differenceColor = remaining >= 0 ? "success.main" : "error.main";
 
   return (
     <SummaryCard title="Income vs. spending">
       <Stack spacing={2}>
-        <LabeledAmountBar
-          label="Total income"
-          value={formatCurrency(totalIncome.total)}
-          ratio={totalIncome.total / maxAmount}
-          color="success.main"
+        <IncomeBreakdownBar
+          total={totalIncome.total}
+          tracked={totalIncome.tracked}
+          untracked={totalIncome.untracked}
         />
-        <Stack spacing={1.5} sx={{ pl: 2 }}>
-          <LabeledAmountBar
+        <Stack spacing={1.5}>
+          <ComparisonBar
             label="Tracked income"
-            value={formatCurrency(totalIncome.tracked)}
-            ratio={trackedIncomeRatio}
-            color="success.main"
-            barHeight={12}
-            compact
+            amount={totalIncome.tracked}
+            amountColor="success.main"
+            difference={trackedDifference}
+            differenceLabel={differenceLabel}
+            differenceColor={differenceColor}
+            maxAmount={comparisonMax}
           />
-          <LabeledAmountBar
-            label="Untracked income"
-            value={formatCurrency(totalIncome.untracked)}
-            ratio={untrackedIncomeRatio}
-            color="success.main"
-            barHeight={12}
-            compact
+          <ComparisonBar
+            label="Spending"
+            amount={totalSpending}
+            amountColor="error.main"
+            difference={spendingDifference}
+            differenceLabel={differenceLabel}
+            differenceColor={differenceColor}
+            maxAmount={comparisonMax}
           />
         </Stack>
-        <LabeledAmountBar
-          label="Total spending"
-          value={formatCurrency(totalSpending)}
-          ratio={totalSpending / maxAmount}
-          color="error.main"
-        />
       </Stack>
     </SummaryCard>
   );
