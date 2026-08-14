@@ -75,7 +75,8 @@ public sealed class TransactionCalculationCoverageTests
     }
 
     /// <summary>
-    /// Verifies goal assignment and spending totals survive posting, unposting, and deleting each applicable transaction type.
+    /// Verifies assigned and regular contribution totals remain distinct across
+    /// income, spending, fund transfers, and lifecycle actions.
     /// </summary>
     [Fact]
     public async Task FundGoalTotalsReconcileAcrossIncomeSpendingTransferAndLifecycleActions()
@@ -91,26 +92,26 @@ public sealed class TransactionCalculationCoverageTests
         TransactionHandle spending = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 11)).For(30m).From(cash).To("Market", groceries).CreateAsync();
         _ = await test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 12)).For(20m).From(groceries).To(reserve).CreateAsync();
 
-        await AssertGoalAssignedAsync(test, july, groceries, -20m);
+        await AssertGoalAssignedAsync(test, july, groceries, 0m);
         FundGoalBalanceEventModel transferEvent = await GetGoalEventAsync(test, july, groceries, transfer: true);
         Assert.Equal(-20m, transferEvent.NewTotals.AmountAssigned);
         Assert.Equal(0m, transferEvent.NewTotals.AmountSpent);
 
         await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
-        await AssertGoalAssignedAsync(test, july, groceries, 80m);
+        await AssertGoalAssignedAsync(test, july, groceries, 100m);
 
         await test.Transactions.PostAsync(spending, cash, new DateOnly(2026, 7, 11));
-        await AssertGoalAssignedAsync(test, july, groceries, 80m);
+        await AssertGoalAssignedAsync(test, july, groceries, 100m);
         FundGoalBalanceEventModel spendingEvent = await GetGoalEventAsync(test, july, groceries, transfer: false);
         Assert.Equal(30m, spendingEvent.NewTotals.AmountSpent);
 
         await test.Transactions.UnpostAsync(spending);
         await test.Transactions.UnpostAsync(income);
-        await AssertGoalAssignedAsync(test, july, groceries, -20m);
+        await AssertGoalAssignedAsync(test, july, groceries, 0m);
 
         await test.Transactions.DeleteAsync(spending);
         await test.Transactions.DeleteAsync(income);
-        await AssertGoalAssignedAsync(test, july, groceries, -20m);
+        await AssertGoalAssignedAsync(test, july, groceries, 0m);
     }
 
     /// <summary>
@@ -176,8 +177,8 @@ public sealed class TransactionCalculationCoverageTests
         await AssertFundAndGoalAsync(test, newFund, 25m);
         await AssertFundAndGoalAsync(test, transferSource, -10m);
         await AssertFundAndGoalAsync(test, transferDestination, 10m);
-        await AssertGoalAssignedAsync(test, july, transferSource, -10m);
-        await AssertGoalAssignedAsync(test, july, transferDestination, 10m);
+        await AssertGoalAssignedAsync(test, july, transferSource, 0m);
+        await AssertGoalAssignedAsync(test, july, transferDestination, 0m);
     }
 
     /// <summary>

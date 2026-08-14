@@ -1,4 +1,5 @@
 using System.Net;
+using Models.AccountingPeriods;
 using Models.FundGoals;
 using Tests.AccountingPeriods;
 using Tests.Accounts;
@@ -63,20 +64,24 @@ public sealed class FundGoalPeriodLifecycleTests
         TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(60m).From("Employer").To(cash, groceries).CreateAsync();
         _ = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(20m).From(cash).To("Market", groceries).CreateAsync();
         await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
+        FundHandle dining = await test.Funds.Create("Dining").In(july).CreateAsync();
+        _ = await test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 20)).For(20m).From(groceries).To(dining).CreateAsync();
 
         FundGoalProgressModel progress = await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{groceries.Goal.Id}/progress/{july.Id}");
+        AccountingPeriodWithBalanceModel period = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}");
         FundGoalAvailabilitySnapshot availability = await test.FundGoalQueries.GetAvailabilityAsync(groceries.Goal);
 
         Assert.True(progress.AvailableBalance.IsSatisfied);
-        Assert.Equal(60m, progress.AvailableBalance.CurrentBalance);
-        Assert.Equal(60m, availability.Posted);
-        Assert.Equal(40m, availability.IncludingPending);
+        Assert.Equal(40m, progress.AvailableBalance.CurrentBalance);
+        Assert.Equal(40m, availability.Posted);
+        Assert.Equal(20m, availability.IncludingPending);
         Assert.NotNull(progress.Contribution);
         Assert.Equal(50m, progress.Contribution.TargetAmount);
         Assert.Equal(60m, progress.Contribution.AssignedAmount);
+        Assert.Equal(60m, period.ActualGoalContributions);
         Assert.NotNull(progress.FundedBalance);
-        Assert.Equal(60m, progress.FundedBalance.Balance);
+        Assert.Equal(40m, progress.FundedBalance.Balance);
         Assert.NotNull(progress.EndingBalance);
-        Assert.Equal(60m, progress.EndingBalance.CurrentBalance);
+        Assert.Equal(40m, progress.EndingBalance.CurrentBalance);
     }
 }

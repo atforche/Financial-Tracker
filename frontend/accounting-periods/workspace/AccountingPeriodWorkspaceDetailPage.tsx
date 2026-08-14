@@ -8,6 +8,7 @@ import AccountingPeriodDetailActions from "@/accounting-periods/workspace/Accoun
 import AccountingPeriodSummaryFrame from "@/accounting-periods/workspace/AccountingPeriodSummaryFrame";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import ArrowBack from "@mui/icons-material/ArrowBack";
+import ExpectedGoalContributionsActualCard from "@/accounting-periods/workspace/ExpectedGoalContributionsActualCard";
 import ExpectedIncomeActualCard from "@/accounting-periods/workspace/ExpectedIncomeActualCard";
 import ExpectedIncomeGoalContributionsCard from "@/accounting-periods/workspace/ExpectedIncomeGoalContributionsCard";
 import ExpectedIncomeSourcesFrame from "@/accounting-periods/workspace/ExpectedIncomeSourcesFrame";
@@ -163,18 +164,22 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
           />
         </Stack>
       </Box>
-      <ResponsiveGrid columns={{ xs: 1, lg: 3 }} spacing={3}>
+      <ResponsiveGrid columns={{ xs: 1, lg: 2 }} spacing={3}>
         <ExpectedIncomeActualCard
           expectedIncome={period.expectedIncome}
           actualIncome={period.actualIncome}
+        />
+        <IncomeSpendingCard
+          totalIncome={transactionSnapshot.totalIncome}
+          totalSpending={transactionSnapshot.totalSpending}
         />
         <ExpectedIncomeGoalContributionsCard
           expectedIncome={period.expectedIncome}
           expectedGoalContributions={period.expectedGoalContributions}
         />
-        <IncomeSpendingCard
-          totalIncome={transactionSnapshot.totalIncome}
-          totalSpending={transactionSnapshot.totalSpending}
+        <ExpectedGoalContributionsActualCard
+          expectedGoalContributions={period.expectedGoalContributions}
+          actualGoalContributions={period.actualGoalContributions}
         />
       </ResponsiveGrid>
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }} spacing={3}>

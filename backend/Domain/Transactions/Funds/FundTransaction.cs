@@ -99,13 +99,13 @@ public class FundTransaction : Transaction
         if (existingTotals.FundId == Source.Fund.Id)
         {
             decimal amount = reverse ? Amount : -Amount;
-            newTotals = newTotals.Assign(amount);
+            newTotals = newTotals.Assign(amount, 0);
         }
         FundTransactionDestination? destination = _destinations.FirstOrDefault(destination => destination.Fund.Id == existingTotals.FundId);
         if (destination != null)
         {
             decimal amount = reverse ? -destination.Amount : destination.Amount;
-            newTotals = newTotals.Assign(amount);
+            newTotals = newTotals.Assign(amount, 0);
         }
         return newTotals;
     }
