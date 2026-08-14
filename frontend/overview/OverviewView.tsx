@@ -7,9 +7,9 @@ import ContentSurface from "@/framework/view/ContentSurface";
 import FundOverview from "@/overview/FundOverview";
 import type { JSX } from "react";
 import type { OverviewData } from "@/overview/types";
+import OverviewPageHeader from "@/overview/OverviewPageHeader";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import { Typography } from "@mui/material";
 import createApiClient from "@/framework/data/createApiClient";
 import loadAllPages from "@/framework/data/loadAllPages";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -71,12 +71,13 @@ const OverviewView = async function (): Promise<JSX.Element> {
     <ConstrainedContent>
       <PageLayout>
         <ContentSurface>
-          <Typography variant="h4">
-            Overview
-            {data.currentAccountingPeriod === null
-              ? ""
-              : ` (${data.currentAccountingPeriod.name})`}
-          </Typography>
+          <OverviewPageHeader
+            title={`Overview${
+              data.currentAccountingPeriod === null
+                ? ""
+                : ` (${data.currentAccountingPeriod.name})`
+            }`}
+          />
         </ContentSurface>
 
         <ResponsiveGrid columns={{ xs: 1 }}>

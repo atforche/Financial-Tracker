@@ -8,6 +8,7 @@ import Link from "next/link";
  */
 interface TransactionWorkspacePageHeaderProps {
   readonly backHref: string;
+  readonly backLabel?: string;
   readonly title: string;
 }
 
@@ -16,6 +17,7 @@ interface TransactionWorkspacePageHeaderProps {
  */
 const TransactionWorkspacePageHeader = function ({
   backHref,
+  backLabel = "Back to Workspace",
   title,
 }: TransactionWorkspacePageHeaderProps): JSX.Element {
   return (
@@ -25,7 +27,7 @@ const TransactionWorkspacePageHeader = function ({
         style={{ alignSelf: "flex-start", textDecoration: "none" }}
       >
         <Button component="span" startIcon={<ArrowBack />}>
-          Back to Workspace
+          {backLabel}
         </Button>
       </Link>
       <Typography variant="h4">{title}</Typography>
