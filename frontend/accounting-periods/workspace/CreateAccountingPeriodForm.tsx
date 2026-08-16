@@ -3,7 +3,6 @@
 import type {
   AccountingPeriodWithBalance,
   CreateAccountingPeriodRequest,
-  ExpectedIncomeSourceRequest,
 } from "@/accounting-periods/types";
 import { Alert, Button, Stack, Typography } from "@mui/material";
 import {
@@ -20,7 +19,6 @@ import {
 import { ComboBoxEntryField } from "@/framework/forms/ComboBoxEntryField";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import ExpectedIncomeSourcesEditor from "@/accounting-periods/workspace/ExpectedIncomeSourcesEditor";
 import IntegerEntryField from "@/framework/forms/IntegerEntryField";
 import createAccountingPeriod from "@/accounting-periods/workspace/createAccountingPeriod";
 import { useRouter } from "next/navigation";
@@ -49,9 +47,6 @@ const CreateAccountingPeriodForm = function ({
   const router = useRouter();
   const [year, setYear] = useState<number | null>(null);
   const [month, setMonth] = useState<number | null>(null);
-  const [expectedIncomeSources, setExpectedIncomeSources] = useState<
-    ExpectedIncomeSourceRequest[]
-  >([]);
   const [state, action, pending] = useActionState(createAccountingPeriod, {});
   const selectedMonthOption =
     accountingPeriodMonthOptions.find((option) => option.value === month) ??
@@ -64,25 +59,7 @@ const CreateAccountingPeriodForm = function ({
     }
   }, [onClose, redirectUrl, router, state.success]);
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-    setExpectedIncomeSources(
-      latestAccountingPeriod?.expectedIncomeSources.map((source) => ({
-        name: source.name,
-        incomeLines: source.incomeLines,
-        incomeDeductions: source.incomeDeductions,
-        untrackedTransfers: source.untrackedTransfers,
-        expectedDates: [],
-      })) ?? [],
-    );
-  }, [latestAccountingPeriod, open]);
-
-  const nextRequest: Omit<
-    CreateAccountingPeriodRequest,
-    "expectedIncomeSources"
-  > | null =
+  const nextRequest: CreateAccountingPeriodRequest | null =
     latestAccountingPeriod === null
       ? null
       : latestAccountingPeriod.month === 12
@@ -94,11 +71,9 @@ const CreateAccountingPeriodForm = function ({
   const request: CreateAccountingPeriodRequest | null =
     isInOnboardingMode || latestAccountingPeriod === null
       ? year !== null && month !== null
-        ? { year, month, expectedIncomeSources }
+        ? { year, month }
         : null
-      : nextRequest === null
-        ? null
-        : { ...nextRequest, expectedIncomeSources };
+      : nextRequest;
   const title = isInOnboardingMode
     ? "Create First Accounting Period"
     : "Create Next Accounting Period";
@@ -167,12 +142,6 @@ const CreateAccountingPeriodForm = function ({
             Create the next accounting period, {nextPeriodName}?
           </Typography>
         )}
-        <ExpectedIncomeSourcesEditor
-          sources={expectedIncomeSources}
-          setSources={setExpectedIncomeSources}
-          year={request?.year ?? null}
-          month={request?.month ?? null}
-        />
         <ErrorAlert
           errorMessage={state.errorTitle ?? null}
           unmappedErrors={state.unmappedErrors ?? null}

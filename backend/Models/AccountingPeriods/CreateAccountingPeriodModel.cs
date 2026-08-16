@@ -14,9 +14,4 @@ public class CreateAccountingPeriodModel
     /// Month for the Accounting Period
     /// </summary>
     public required int Month { get; init; }
-
-    /// <summary>
-    /// Expected income sources for the Accounting Period.
-    /// </summary>
-    public required IReadOnlyCollection<ExpectedIncomeSourceRequestModel> ExpectedIncomeSources { get; init; }
 }

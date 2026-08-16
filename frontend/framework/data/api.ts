@@ -3698,8 +3698,6 @@ export interface components {
              * @description Month for the Accounting Period
              */
             month: number;
-            /** @description Expected income sources for the Accounting Period. */
-            expectedIncomeSources: components["schemas"]["ExpectedIncomeSourceRequestModel"][];
         };
         /** @description Model representing a request to create an Account. */
         CreateAccountModel: {

@@ -14,9 +14,4 @@ public record CreateAccountingPeriodRequest
     /// Month for the Accounting Period
     /// </summary>
     public required int Month { get; init; }
-
-    /// <summary>
-    /// Expected income sources for the Accounting Period.
-    /// </summary>
-    public required IReadOnlyCollection<ExpectedIncomeSourceRequest> ExpectedIncomeSources { get; init; }
 }

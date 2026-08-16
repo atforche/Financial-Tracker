@@ -28,13 +28,11 @@ public sealed class AccountingPeriodLifecycleTests
         {
             Year = 2026,
             Month = 7,
-            ExpectedIncomeSources = [],
         });
         using HttpResponseMessage gap = await test.Api.PostResponseAsync("/accounting-periods", new CreateAccountingPeriodModel
         {
             Year = 2026,
             Month = 9,
-            ExpectedIncomeSources = [],
         });
         AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
 

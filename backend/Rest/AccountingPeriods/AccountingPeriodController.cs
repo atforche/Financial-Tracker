@@ -114,7 +114,6 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
                 {
                     Year = createAccountingPeriodModel.Year,
                     Month = createAccountingPeriodModel.Month,
-                    ExpectedIncomeSources = ToRequest(createAccountingPeriodModel.ExpectedIncomeSources),
                 },
                 out AccountingPeriod? newAccountingPeriod,
                 out IEnumerable<ValidationError> validationErrors))
