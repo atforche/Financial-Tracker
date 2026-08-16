@@ -21,7 +21,7 @@ const AccountingPeriodTrendChart = function ({
   return (
     <BalanceTrendChart
       chartPoints={buildTrendChartPoints(accountingPeriods ?? [])}
-      color="secondary"
+      color="primary"
       xAxisLabel="Accounting Period"
     />
   );
