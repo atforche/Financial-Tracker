@@ -38,7 +38,7 @@ const IncomeBreakdownBar = function ({
           fontWeight={600}
           noWrap
         >
-          Tracked: {formatCurrency(tracked)}
+          Tracked Income: {formatCurrency(tracked)}
         </Typography>
         <Typography
           variant="body2"
@@ -48,7 +48,7 @@ const IncomeBreakdownBar = function ({
           noWrap
           sx={{ width: "max-content" }}
         >
-          Untracked: {formatCurrency(untracked)}
+          Untracked Income: {formatCurrency(untracked)}
         </Typography>
       </Stack>
       <Box
@@ -85,7 +85,7 @@ const IncomeBreakdownBar = function ({
         fontWeight={600}
         noWrap
       >
-        Total: {formatCurrency(total)}
+        Total Income: {formatCurrency(total)}
       </Typography>
     </Stack>
   );

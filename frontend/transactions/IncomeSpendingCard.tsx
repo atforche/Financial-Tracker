@@ -2,9 +2,7 @@
 
 import ComparisonBarPair from "@/framework/view/ComparisonBarPair";
 import type { IncomeAmount } from "@/transactions/types";
-import IncomeBreakdownBar from "@/framework/view/IncomeBreakdownBar";
 import type { JSX } from "react";
-import { Stack } from "@mui/material";
 import SummaryCard from "@/framework/view/SummaryCard";
 
 /**
@@ -33,29 +31,22 @@ const IncomeSpendingCard = function ({
 }: IncomeSpendingCardProps): JSX.Element {
   return (
     <SummaryCard title="Income vs. Spending">
-      <Stack spacing={2}>
-        <IncomeBreakdownBar
-          total={totalIncome.total}
-          tracked={totalIncome.tracked}
-          untracked={totalIncome.untracked}
-        />
-        <ComparisonBarPair
-          first={{
-            label: "Tracked income",
-            amount: totalIncome.tracked,
-            color: "success.main",
-            differenceLabel: "Shortfall",
-            differenceColor: "error.main",
-          }}
-          second={{
-            label: "Spending",
-            amount: totalSpending,
-            color: "error.main",
-            differenceLabel: "Remaining",
-            differenceColor: "success.main",
-          }}
-        />
-      </Stack>
+      <ComparisonBarPair
+        first={{
+          label: "Tracked Income",
+          amount: totalIncome.tracked,
+          color: "success.main",
+          differenceLabel: "Shortfall",
+          differenceColor: "error.main",
+        }}
+        second={{
+          label: "Spending",
+          amount: totalSpending,
+          color: "error.main",
+          differenceLabel: "Remaining",
+          differenceColor: "success.main",
+        }}
+      />
     </SummaryCard>
   );
 };

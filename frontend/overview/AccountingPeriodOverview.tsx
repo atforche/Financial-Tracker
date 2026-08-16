@@ -1,5 +1,6 @@
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodTrendsSummaryCards from "@/accounting-periods/trends/AccountingPeriodTrendsSummaryCards";
+import ActualIncomeCard from "@/transactions/ActualIncomeCard";
 import ExpectedGoalContributionsActualCard from "@/accounting-periods/workspace/ExpectedGoalContributionsActualCard";
 import ExpectedIncomeActualCard from "@/accounting-periods/workspace/ExpectedIncomeActualCard";
 import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
@@ -54,7 +55,8 @@ const AccountingPeriodOverview = async function ({
         accountingPeriods={periods}
         showPeriodLabels={false}
       />
-      <ResponsiveGrid minimumColumnWidth={320} spacing={2}>
+      <ResponsiveGrid columns={{ xs: 1, lg: 2 }} spacing={2}>
+        <ActualIncomeCard totalIncome={range?.totalIncome} />
         <IncomeSpendingCard
           totalIncome={range?.totalIncome}
           totalSpending={range?.totalSpending}
