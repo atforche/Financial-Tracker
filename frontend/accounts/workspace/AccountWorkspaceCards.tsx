@@ -139,7 +139,12 @@ const AccountWorkspaceCards = function ({
           maxWidth="100%"
           width="max-content"
         >
-          <CardResponsiveGrid minimumColumnWidth={280} spacing={2} wrap>
+          <CardResponsiveGrid
+            minimumColumnWidth={280}
+            spacing={2}
+            contentSized
+            wrap
+          >
             {accounts.map((account) => (
               <WorkspaceCard
                 key={account.id}
