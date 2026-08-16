@@ -64,44 +64,6 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
             facts.TransactionTypes);
     }
 
-    /// <inheritdoc/>
-    public async Task<TransactionTrendFacts> GetTrendFactsAsync(
-        TransactionFilter filter,
-        DateOnly? startDate,
-        DateOnly? endDate,
-        IReadOnlyCollection<AccountingPeriodId>? accountingPeriodIds,
-        CancellationToken cancellationToken = default)
-    {
-        IQueryable<Transaction> transactions = ApplyFilter(databaseContext.Transactions.AsNoTracking(), filter);
-        if (startDate is not null && endDate is not null)
-        {
-            transactions = transactions.Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate);
-        }
-        if (accountingPeriodIds is not null)
-        {
-            transactions = transactions.Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId));
-        }
-
-        List<TransactionTypeSummary> transactionTypes = await transactions.GroupBy(transaction => transaction.Type)
-            .Select(group => new TransactionTypeSummary(group.Key, group.Count(), group.Sum(transaction => transaction.Amount)))
-            .ToListAsync(cancellationToken);
-        List<TransactionDateSummary> dates = await transactions.GroupBy(transaction => transaction.Date)
-            .Select(group => new TransactionDateSummary(group.Key, group.Count(), group.Sum(transaction => transaction.Amount)))
-            .ToListAsync(cancellationToken);
-        List<TransactionAccountingPeriodSummary> periods = await transactions.GroupBy(transaction => transaction.AccountingPeriodId)
-            .Select(group => new TransactionAccountingPeriodSummary(group.Key, group.Count(), group.Sum(transaction => transaction.Amount)))
-            .ToListAsync(cancellationToken);
-        List<string> accountNames = await databaseContext.Accounts.AsNoTracking()
-            .OrderBy(account => account.Name)
-            .Select(account => account.Name)
-            .ToListAsync(cancellationToken);
-        List<string> fundNames = await databaseContext.Funds.AsNoTracking()
-            .OrderBy(fund => fund.Name)
-            .Select(fund => fund.Name)
-            .ToListAsync(cancellationToken);
-        return new TransactionTrendFacts(accountNames, fundNames, transactionTypes, dates, periods);
-    }
-
     /// <summary>
     /// Retrieves Transaction range metadata and an interpreted page's persisted context.
     /// </summary>

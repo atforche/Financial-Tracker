@@ -1,7 +1,11 @@
+import type { TransactionSort, TransactionType } from "@/transactions/types";
+import type { AccountType } from "@/accounts/types";
+import ArrowBack from "@mui/icons-material/ArrowBack";
+import { Button } from "@mui/material";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
+import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
-import type { TransactionSort } from "@/transactions/types";
 import TransactionWorkspaceFilter from "@/transactions/workspace/TransactionWorkspaceFilter";
 import TransactionWorkspaceListFrame from "@/transactions/workspace/TransactionWorkspaceListFrame";
 import { getTransactionWorkspaceListData } from "@/transactions/workspace/getTransactionWorkspaceData";
@@ -10,9 +14,16 @@ import { getTransactionWorkspaceListData } from "@/transactions/workspace/getTra
  * Search parameters supported by the Transactions workspace.
  */
 interface TransactionWorkspaceSearchParams {
-  accountingPeriodIds?: string | string[];
-  accountIds?: string | string[];
-  fundIds?: string | string[];
+  accountingPeriodIds?: string | readonly string[];
+  accountIds?: string | readonly string[];
+  fundIds?: string | readonly string[];
+  accountTypes?: AccountType | readonly AccountType[];
+  accountNames?: string | readonly string[];
+  transactionTypes?: TransactionType | readonly TransactionType[];
+  startDate?: string;
+  endDate?: string;
+  startAccountingPeriodId?: string;
+  endAccountingPeriodId?: string;
   sort?: TransactionSort | null;
   page?: number | string | null;
   pageSize?: number | string | null;
@@ -34,16 +45,32 @@ const TransactionWorkspace = async function ({
   searchParams,
 }: TransactionWorkspaceProps): Promise<JSX.Element> {
   const resolvedSearchParams = await searchParams;
-  const { openAccountingPeriods, accounts, funds, transactions } =
-    await getTransactionWorkspaceListData(resolvedSearchParams);
+  const {
+    allAccountingPeriods,
+    accounts,
+    funds,
+    selectedAccountIds,
+    transactions,
+  } = await getTransactionWorkspaceListData(resolvedSearchParams);
 
   return (
     <ConstrainedContent>
       <PageLayout>
+        {typeof resolvedSearchParams.returnUrl === "undefined" ? null : (
+          <Link
+            href={resolvedSearchParams.returnUrl}
+            style={{ alignSelf: "flex-start", textDecoration: "none" }}
+          >
+            <Button component="span" startIcon={<ArrowBack />}>
+              Back to Account Trends
+            </Button>
+          </Link>
+        )}
         <TransactionWorkspaceFilter
-          accountingPeriods={openAccountingPeriods}
+          accountingPeriods={allAccountingPeriods}
           accounts={accounts}
           funds={funds}
+          selectedAccountIds={selectedAccountIds}
         />
         <TransactionWorkspaceListFrame
           data={transactions.items}

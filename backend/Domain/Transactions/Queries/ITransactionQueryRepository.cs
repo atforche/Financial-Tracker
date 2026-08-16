@@ -35,16 +35,6 @@ public interface ITransactionQueryRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves grouped Transaction trend facts for an already-filtered query.
-    /// </summary>
-    Task<TransactionTrendFacts> GetTrendFactsAsync(
-        TransactionFilter filter,
-        DateOnly? startDate,
-        DateOnly? endDate,
-        IReadOnlyCollection<AccountingPeriodId>? accountingPeriodIds,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Retrieves all facts required to interpret a Transaction, or null when it does not exist.
     /// </summary>
     Task<TransactionDetailsFacts?> GetDetailsByIdAsync(

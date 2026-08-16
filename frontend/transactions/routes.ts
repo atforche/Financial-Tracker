@@ -4,24 +4,7 @@ import {
   objectToSearchParams,
 } from "@/framework/routes/helpers";
 import type { Route } from "next";
-import type { TransactionTrendsSearchParams } from "@/transactions/trends/TransactionTrends";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
-
-/**
- * Converts the provided Transaction Trends Search Params to URL Search Params.
- */
-const transactionTrendsSearchParamsToSearchParams = function (
-  searchParams: TransactionTrendsSearchParams,
-): URLSearchParams {
-  const { transactionType, accountName, fundName, ...remainingSearchParams } =
-    searchParams;
-  const params = objectToSearchParams(remainingSearchParams);
-
-  appendRepeatedSearchParam(params, "transactionType", transactionType);
-  appendRepeatedSearchParam(params, "accountName", accountName);
-  appendRepeatedSearchParam(params, "fundName", fundName);
-  return params;
-};
 
 /**
  * Converts the provided Transaction Workspace Search Params to URL Search Params.
@@ -29,13 +12,23 @@ const transactionTrendsSearchParamsToSearchParams = function (
 const transactionWorkspaceSearchParamsToSearchParams = function (
   searchParams: TransactionWorkspaceSearchParams,
 ): URLSearchParams {
-  const { accountingPeriodIds, accountIds, fundIds, ...remainingSearchParams } =
-    searchParams;
+  const {
+    accountingPeriodIds,
+    accountIds,
+    fundIds,
+    accountTypes,
+    accountNames,
+    transactionTypes,
+    ...remainingSearchParams
+  } = searchParams;
   const params = objectToSearchParams(remainingSearchParams);
 
   appendRepeatedSearchParam(params, "accountingPeriodIds", accountingPeriodIds);
   appendRepeatedSearchParam(params, "accountIds", accountIds);
   appendRepeatedSearchParam(params, "fundIds", fundIds);
+  appendRepeatedSearchParam(params, "accountTypes", accountTypes);
+  appendRepeatedSearchParam(params, "accountNames", accountNames);
+  appendRepeatedSearchParam(params, "transactionTypes", transactionTypes);
   return params;
 };
 
@@ -43,11 +36,6 @@ const transactionWorkspaceSearchParamsToSearchParams = function (
  * App routes related to accounting periods.
  */
 const routes = {
-  trends: (searchParams: TransactionTrendsSearchParams): Route =>
-    buildUrl(
-      "/transactions/trends",
-      transactionTrendsSearchParamsToSearchParams(searchParams),
-    ),
   workspace: (searchParams: TransactionWorkspaceSearchParams): Route =>
     buildUrl(
       "/transactions/workspace",

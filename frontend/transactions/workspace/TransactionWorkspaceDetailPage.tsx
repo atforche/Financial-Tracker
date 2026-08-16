@@ -29,36 +29,19 @@ const TransactionWorkspaceDetailPage = async function ({
 }: TransactionWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { transactionId } = await params;
   const resolvedSearchParams = await searchParams;
-  const { accountingPeriodIds, accountIds, fundIds, sort, page, returnUrl } =
-    resolvedSearchParams;
+  const workspaceSearchParams = { ...resolvedSearchParams };
+  delete workspaceSearchParams.selectedTransactionId;
+  const { returnUrl } = workspaceSearchParams;
   const transaction = await getTransactionById(transactionId);
 
-  const workspaceSearchParams: TransactionWorkspaceSearchParams = {
-    ...(typeof accountingPeriodIds !== "undefined"
-      ? { accountingPeriodIds }
-      : {}),
-    ...(typeof accountIds !== "undefined" ? { accountIds } : {}),
-    ...(typeof fundIds !== "undefined" ? { fundIds } : {}),
-    ...(typeof sort !== "undefined" ? { sort } : {}),
-    ...(typeof page !== "undefined" ? { page } : {}),
-    ...(typeof returnUrl !== "undefined" ? { returnUrl } : {}),
+  const selectedWorkspaceSearchParams: TransactionWorkspaceSearchParams = {
+    ...workspaceSearchParams,
     selectedTransactionId: transactionId,
   };
-  const workspaceUrl = routes.workspace(workspaceSearchParams);
+  const workspaceUrl = routes.workspace(selectedWorkspaceSearchParams);
 
   if (transaction === null) {
-    redirect(
-      routes.workspace({
-        ...(typeof accountingPeriodIds !== "undefined"
-          ? { accountingPeriodIds }
-          : {}),
-        ...(typeof accountIds !== "undefined" ? { accountIds } : {}),
-        ...(typeof fundIds !== "undefined" ? { fundIds } : {}),
-        ...(typeof sort !== "undefined" ? { sort } : {}),
-        ...(typeof page !== "undefined" ? { page } : {}),
-        ...(typeof returnUrl !== "undefined" ? { returnUrl } : {}),
-      }),
-    );
+    redirect(routes.workspace(workspaceSearchParams));
   }
 
   const referenceData = await getTransactionWorkspaceDetailReferenceData(
@@ -78,10 +61,13 @@ const TransactionWorkspaceDetailPage = async function ({
         fundGoals={referenceData.fundGoals}
         currentUrl={routes.workspaceDetail(
           transaction.id,
-          workspaceSearchParams,
+          selectedWorkspaceSearchParams,
         )}
         workspaceUrl={workspaceUrl}
-        editUrl={routes.workspaceEdit(transaction.id, workspaceSearchParams)}
+        editUrl={routes.workspaceEdit(
+          transaction.id,
+          selectedWorkspaceSearchParams,
+        )}
         returnUrl={returnUrl ?? null}
       />
     </PageLayout>

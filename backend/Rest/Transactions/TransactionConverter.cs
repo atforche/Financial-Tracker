@@ -10,7 +10,6 @@ using Domain.Transactions.Spending;
 using Models;
 using Models.Transactions;
 using Models.Transactions.Types;
-using Rest.AccountingPeriods;
 using Rest.Accounts;
 using Rest.FundGoals;
 using Rest.Funds;
@@ -23,8 +22,7 @@ namespace Rest.Transactions;
 public sealed class TransactionConverter(
     AccountBalanceEventConverter accountBalanceEventConverter,
     FundBalanceEventConverter fundBalanceEventConverter,
-    FundGoalBalanceEventConverter fundGoalBalanceEventConverter,
-    AccountingPeriodConverter accountingPeriodConverter)
+    FundGoalBalanceEventConverter fundGoalBalanceEventConverter)
 {
     /// <summary>
     /// Converts an API Transaction query to Domain criteria.
@@ -113,47 +111,6 @@ public sealed class TransactionConverter(
         Offset = range.Offset,
         Limit = range.Limit,
     };
-
-    /// <summary>
-    /// Converts date-based aggregated Transaction facts to an API model.
-    /// </summary>
-    public TransactionTrendsModel ToTrendModel(TransactionTrendFacts trends) => new()
-    {
-        AvailableAccountNames = trends.AvailableAccountNames,
-        AvailableFundNames = trends.AvailableFundNames,
-        TransactionTypes = trends.TransactionTypes.Select(ToModel).ToList(),
-        Dates = trends.Dates.OrderBy(summary => summary.Date).Select(summary => new TransactionSummaryByDateModel
-        {
-            Date = summary.Date,
-            TotalCount = summary.TotalCount,
-            TotalAmount = summary.TotalAmount,
-        }).ToList(),
-        AccountingPeriods = [],
-    };
-
-    /// <summary>
-    /// Converts Accounting Period-based aggregated Transaction facts to an API model.
-    /// </summary>
-    public TransactionTrendsModel ToTrendModel(TransactionAccountingPeriodTrendFacts trends)
-    {
-        var periods = trends.AccountingPeriods.ToDictionary(period => period.Id);
-        return new TransactionTrendsModel
-        {
-            AvailableAccountNames = trends.Trends.AvailableAccountNames,
-            AvailableFundNames = trends.Trends.AvailableFundNames,
-            TransactionTypes = trends.Trends.TransactionTypes.Select(ToModel).ToList(),
-            Dates = [],
-            AccountingPeriods = trends.Trends.AccountingPeriods
-                .OrderBy(summary => periods[summary.AccountingPeriodId].Year)
-                .ThenBy(summary => periods[summary.AccountingPeriodId].Month)
-                .Select(summary => new TransactionSummaryByPeriodModel
-                {
-                    AccountingPeriod = accountingPeriodConverter.ToModel(periods[summary.AccountingPeriodId]),
-                    TotalCount = summary.TotalCount,
-                    TotalAmount = summary.TotalAmount,
-                }).ToList(),
-        };
-    }
 
     /// <summary>
     /// Converts a Domain Transaction type summary to an API model.

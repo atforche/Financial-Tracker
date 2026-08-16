@@ -20,21 +20,12 @@ const TransactionWorkspaceCreatePage = async function ({
   searchParams,
 }: TransactionWorkspaceCreatePageProps): Promise<JSX.Element> {
   const resolvedSearchParams = await searchParams;
-  const { accountingPeriodIds, accountIds, fundIds, sort, page, returnUrl } =
-    resolvedSearchParams;
+  const workspaceSearchParams = { ...resolvedSearchParams };
+  delete workspaceSearchParams.selectedTransactionId;
+  const { returnUrl } = workspaceSearchParams;
   const { openAccountingPeriods, accounts, funds, fundGoals } =
     await getTransactionWorkspaceReferenceData();
 
-  const workspaceSearchParams: TransactionWorkspaceSearchParams = {
-    ...(typeof accountingPeriodIds !== "undefined"
-      ? { accountingPeriodIds }
-      : {}),
-    ...(typeof accountIds !== "undefined" ? { accountIds } : {}),
-    ...(typeof fundIds !== "undefined" ? { fundIds } : {}),
-    ...(typeof sort !== "undefined" ? { sort } : {}),
-    ...(typeof page !== "undefined" ? { page } : {}),
-    ...(typeof returnUrl !== "undefined" ? { returnUrl } : {}),
-  };
   const workspaceUrl = routes.workspace(workspaceSearchParams);
 
   return (
