@@ -8,14 +8,15 @@ import {
   normalizeFundNames,
   shouldPersistFundNames,
 } from "@/funds/trends/fundNameFilter";
+import { useRouter, useSearchParams } from "next/navigation";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import { Button } from "@mui/material";
 import FundTrendsFundNameFilter from "@/funds/trends/FundTrendsFundNameFilter";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
+import type { Route } from "next";
 import { fundGoalTrendsParamNames } from "@/fund-goals/trends/helpers";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
-import { useSearchParams } from "next/navigation";
 
 /**
  * Props for the FundGoalTrendsFilter component.
@@ -24,6 +25,7 @@ interface FundGoalTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly availableFundNames: readonly string[];
   readonly defaultAccountingPeriodId: string | null;
+  readonly transactionWorkspaceHref: Route | null;
   readonly disabled?: boolean;
 }
 
@@ -34,8 +36,10 @@ const FundGoalTrendsFilter = function ({
   accountingPeriods,
   availableFundNames,
   defaultAccountingPeriodId,
+  transactionWorkspaceHref,
   disabled = false,
 }: FundGoalTrendsFilterProps): JSX.Element {
+  const router = useRouter();
   const searchParams = useSearchParams();
 
   const pageParamName = fundGoalTrendsParamNames.page;
@@ -104,7 +108,21 @@ const FundGoalTrendsFilter = function ({
   };
 
   return (
-    <PageFilterFrame title="Fund Goal Trends">
+    <PageFilterFrame
+      title="Goal Trends"
+      actions={
+        transactionWorkspaceHref === null ? undefined : (
+          <Button
+            variant="outlined"
+            onClick={() => {
+              router.push(transactionWorkspaceHref);
+            }}
+          >
+            View transactions
+          </Button>
+        )
+      }
+    >
       <AccountingPeriodRangeFilter
         accountingPeriods={accountingPeriods}
         startValue={currentStartAccountingPeriodId ?? ""}

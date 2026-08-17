@@ -13,6 +13,7 @@ import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
+import type { Route } from "next";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
@@ -27,6 +28,7 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 interface AccountingPeriodTrendsListFrameProps {
   readonly data: AccountingPeriodWithBalance[] | null;
   readonly totalCount: number | null;
+  readonly transactionWorkspaceHref: Route | null;
 }
 
 /**
@@ -35,6 +37,7 @@ interface AccountingPeriodTrendsListFrameProps {
 const AccountingPeriodTrendsListFrame = function ({
   data,
   totalCount,
+  transactionWorkspaceHref,
 }: AccountingPeriodTrendsListFrameProps): JSX.Element {
   const canWrite = useWriteAccess();
   const searchParams = useSearchParams();
@@ -172,6 +175,18 @@ const AccountingPeriodTrendsListFrame = function ({
   return (
     <ListFrame<AccountingPeriodWithBalance>
       title="Accounting Periods"
+      headerContent={
+        transactionWorkspaceHref === null ? undefined : (
+          <Button
+            variant="outlined"
+            onClick={() => {
+              router.push(transactionWorkspaceHref);
+            }}
+          >
+            View transactions
+          </Button>
+        )
+      }
       columns={columns}
       getId={(accountingPeriod) => accountingPeriod.id}
       data={data ?? null}

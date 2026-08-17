@@ -25,6 +25,8 @@ import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import createApiClient from "@/framework/data/createApiClient";
 import { createEmptyTrends } from "@/accounting-periods/trends/helpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
+import routes from "@/accounting-periods/routes";
+import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -77,6 +79,27 @@ const AccountingPeriodTrends = async function ({
   const rowsPerPage = getRowsPerPage(pageSize);
 
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
+  const selectedAccountingPeriodIds = ((): string[] => {
+    if (latestAccountingPeriod === null) {
+      return [];
+    }
+    const startId = startAccountingPeriodId ?? latestAccountingPeriod.id;
+    const endId = endAccountingPeriodId ?? latestAccountingPeriod.id;
+    const startIndex = accountingPeriods.items.findIndex(
+      (period) => period.id === startId,
+    );
+    const endIndex = accountingPeriods.items.findIndex(
+      (period) => period.id === endId,
+    );
+    return startIndex < 0 || endIndex < 0
+      ? []
+      : accountingPeriods.items
+          .slice(
+            Math.min(startIndex, endIndex),
+            Math.max(startIndex, endIndex) + 1,
+          )
+          .map((period) => period.id);
+  })();
   let trends = createEmptyTrends();
   if (latestAccountingPeriod !== null) {
     const range = {
@@ -137,6 +160,25 @@ const AccountingPeriodTrends = async function ({
       actualGoalContributions: 0,
     },
   );
+  const transactionWorkspaceHref =
+    selectedAccountingPeriodIds.length === 0
+      ? null
+      : transactionRoutes.workspace({
+          accountingPeriodIds: selectedAccountingPeriodIds,
+          returnUrl: routes.trends({
+            ...(typeof sort === "undefined" ? {} : { sort }),
+            ...(typeof page === "undefined" ? {} : { page }),
+            ...(typeof pageSize === "undefined" ? {} : { pageSize }),
+            ...(latestAccountingPeriod === null
+              ? {}
+              : {
+                  startAccountingPeriodId:
+                    startAccountingPeriodId ?? latestAccountingPeriod.id,
+                  endAccountingPeriodId:
+                    endAccountingPeriodId ?? latestAccountingPeriod.id,
+                }),
+          }),
+        });
 
   return (
     <PageLayout>
@@ -180,6 +222,7 @@ const AccountingPeriodTrends = async function ({
         <AccountingPeriodTrendsListFrame
           data={trends.accountingPeriods.items}
           totalCount={trends.accountingPeriods.totalCount}
+          transactionWorkspaceHref={transactionWorkspaceHref}
         />
       </ResponsiveGrid>
     </PageLayout>

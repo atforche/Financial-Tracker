@@ -4,10 +4,7 @@ import {
   type FundGoalProgress,
   FundedBalanceStatus,
 } from "@/fund-goals/types";
-import {
-  compareCurrencyAmounts,
-  getCurrencyTotal,
-} from "@/framework/currencyHelpers";
+import { getCurrencyTotal } from "@/framework/currencyHelpers";
 import { isMaximumFundedBalanceSatisfied } from "@/fund-goals/helpers";
 
 /**
@@ -19,198 +16,117 @@ interface FundGoalPeriodProgress {
 }
 
 /**
- * Aggregated progress for one Fund Goal metric in an Accounting Period.
+ * Aggregated Fund Goal progress for one Accounting Period.
  */
-interface FundGoalMetricTrendPoint {
+interface FundGoalTrendPoint {
   readonly accountingPeriodId: string;
   readonly accountingPeriodName: string;
-  readonly currentAmount: number;
-  readonly targetAmount: number;
   readonly configuredGoalCount: number;
   readonly satisfiedGoalCount: number;
   readonly satisfiedPercentage: number;
+  readonly assignedContribution: number;
+  readonly targetContribution: number;
 }
 
 /**
- * Fund Goal metrics that can be displayed across an Accounting Period range.
+ * Summarizes the health of Fund Goals for selected Accounting Periods.
  */
-type FundGoalMetric =
-  | "availableBalance"
-  | "contribution"
-  | "minimumFundedBalance"
-  | "maximumFundedBalance"
-  | "endingBalance";
-
-/**
- * Details used to render one Fund Goal metric trend.
- */
-interface FundGoalMetricDefinition {
-  readonly title: string;
-  readonly yAxisLabel: string;
-  readonly emptyMessage: string;
-  readonly presentation: "amount" | "percentage";
-  readonly currentLabel: string;
-  readonly targetLabel: string;
+interface FundGoalHealthSummary {
+  readonly configuredGoalCount: number;
+  readonly satisfiedGoalCount: number;
+  readonly assignedContribution: number;
+  readonly targetContribution: number;
 }
-
-const fundGoalMetricDefinitions: Readonly<
-  Record<FundGoalMetric, FundGoalMetricDefinition>
-> = {
-  availableBalance: {
-    title: "Positive Available Balance",
-    yAxisLabel: "Fund Goals Satisfied",
-    emptyMessage:
-      "No available-balance progress is available for the selected trends range.",
-    presentation: "percentage",
-    currentLabel: "Positive available balance",
-    targetLabel: "Positive balance",
-  },
-  contribution: {
-    title: "Monthly Contribution",
-    yAxisLabel: "Contribution",
-    emptyMessage:
-      "No monthly contribution goals are configured for the selected trends range.",
-    presentation: "amount",
-    currentLabel: "Assigned",
-    targetLabel: "Recommended contribution",
-  },
-  minimumFundedBalance: {
-    title: "Minimum Funded Amount",
-    yAxisLabel: "Fund Goals Satisfied",
-    emptyMessage:
-      "No minimum funded amounts are configured for the selected trends range.",
-    presentation: "percentage",
-    currentLabel: "Minimum funded amount satisfied",
-    targetLabel: "Minimum funded amount",
-  },
-  maximumFundedBalance: {
-    title: "Maximum Funded Amount",
-    yAxisLabel: "Fund Goals Satisfied",
-    emptyMessage:
-      "No maximum funded amounts are configured for the selected trends range.",
-    presentation: "percentage",
-    currentLabel: "Maximum funded amount satisfied",
-    targetLabel: "Maximum funded amount",
-  },
-  endingBalance: {
-    title: "Target Ending Balance",
-    yAxisLabel: "Fund Goals Satisfied",
-    emptyMessage:
-      "No target ending balances are configured for the selected trends range.",
-    presentation: "percentage",
-    currentLabel: "Target ending balance satisfied",
-    targetLabel: "Target ending balance",
-  },
-};
 
 const sum = (values: readonly number[]): number => getCurrencyTotal(values);
 
 /**
- * Aggregates a configured Fund Goal metric for every Accounting Period in the range.
+ * Returns whether every configured metric for a Fund Goal is satisfied.
  */
-const buildFundGoalMetricTrendPoints = function (
-  metric: FundGoalMetric,
+const isFundGoalSatisfied = function ({
+  progress,
+}: FundGoalPeriodProgress): boolean {
+  const checks = [progress.availableBalance.isSatisfied];
+  if (progress.contribution !== null && progress.contribution !== undefined) {
+    checks.push(progress.contribution.isSatisfied);
+  }
+  if (
+    progress.fundedBalance?.minimumBalance !== null &&
+    progress.fundedBalance?.minimumBalance !== undefined
+  ) {
+    checks.push(
+      progress.fundedBalance.status !== FundedBalanceStatus.BelowMinimum,
+    );
+  }
+  if (
+    progress.fundedBalance?.maximumBalance !== null &&
+    progress.fundedBalance?.maximumBalance !== undefined
+  ) {
+    checks.push(isMaximumFundedBalanceSatisfied(progress.fundedBalance));
+  }
+  if (progress.endingBalance !== null && progress.endingBalance !== undefined) {
+    checks.push(progress.endingBalance.status === EndingBalanceStatus.AtTarget);
+  }
+  return checks.every((isSatisfied) => isSatisfied);
+};
+
+/**
+ * Summarizes the selected Fund Goals across Accounting Periods.
+ */
+const getFundGoalHealthSummary = function (
+  progress: readonly FundGoalPeriodProgress[],
+): FundGoalHealthSummary {
+  const contribution = progress.flatMap(({ progress: goalProgress }) =>
+    goalProgress.contribution === null ||
+    goalProgress.contribution === undefined
+      ? []
+      : [goalProgress.contribution],
+  );
+  return {
+    configuredGoalCount: progress.length,
+    satisfiedGoalCount: progress.filter(isFundGoalSatisfied).length,
+    assignedContribution: sum(
+      contribution.map(({ assignedAmount }) => assignedAmount),
+    ),
+    targetContribution: sum(
+      contribution.map(({ targetAmount }) => targetAmount),
+    ),
+  };
+};
+
+/**
+ * Aggregates Fund Goal health and contributions for every Accounting Period in the range.
+ */
+const buildFundGoalTrendPoints = function (
   accountingPeriods: readonly { id: string; name: string }[],
   progressByAccountingPeriodId: ReadonlyMap<
     string,
     readonly FundGoalPeriodProgress[]
   >,
-): readonly FundGoalMetricTrendPoint[] {
-  return accountingPeriods.flatMap((accountingPeriod) => {
-    const progress =
-      progressByAccountingPeriodId.get(accountingPeriod.id) ?? [];
-    const values = progress.flatMap(({ progress: goalProgress }) => {
-      switch (metric) {
-        case "availableBalance":
-          return [
-            {
-              currentAmount: goalProgress.availableBalance.currentBalance,
-              targetAmount: goalProgress.availableBalance.minimumBalance,
-              isSatisfied:
-                compareCurrencyAmounts(
-                  goalProgress.availableBalance.currentBalance,
-                  0,
-                ) > 0,
-            },
-          ];
-        case "contribution":
-          return goalProgress.contribution
-            ? [
-                {
-                  currentAmount: goalProgress.contribution.assignedAmount,
-                  targetAmount: goalProgress.contribution.targetAmount,
-                  isSatisfied: goalProgress.contribution.isSatisfied,
-                },
-              ]
-            : [];
-        case "minimumFundedBalance":
-          return goalProgress.fundedBalance?.minimumBalance === null ||
-            goalProgress.fundedBalance?.minimumBalance === undefined
-            ? []
-            : [
-                {
-                  currentAmount: goalProgress.fundedBalance.balance,
-                  targetAmount: goalProgress.fundedBalance.minimumBalance,
-                  isSatisfied:
-                    goalProgress.fundedBalance.status !==
-                    FundedBalanceStatus.BelowMinimum,
-                },
-              ];
-        case "maximumFundedBalance":
-          return goalProgress.fundedBalance?.maximumBalance === null ||
-            goalProgress.fundedBalance?.maximumBalance === undefined
-            ? []
-            : [
-                {
-                  currentAmount: goalProgress.fundedBalance.balance,
-                  targetAmount: goalProgress.fundedBalance.maximumBalance,
-                  isSatisfied: isMaximumFundedBalanceSatisfied(
-                    goalProgress.fundedBalance,
-                  ),
-                },
-              ];
-        case "endingBalance":
-          return goalProgress.endingBalance
-            ? [
-                {
-                  currentAmount: goalProgress.endingBalance.currentBalance,
-                  targetAmount: goalProgress.endingBalance.targetBalance,
-                  isSatisfied:
-                    goalProgress.endingBalance.status ===
-                    EndingBalanceStatus.AtTarget,
-                },
-              ]
-            : [];
-        default:
-          return [];
-      }
-    });
-
-    return values.length === 0
-      ? []
-      : [
-          {
-            accountingPeriodId: accountingPeriod.id,
-            accountingPeriodName: accountingPeriod.name,
-            currentAmount: sum(values.map((value) => value.currentAmount)),
-            targetAmount: sum(values.map((value) => value.targetAmount)),
-            configuredGoalCount: values.length,
-            satisfiedGoalCount: values.filter((value) => value.isSatisfied)
-              .length,
-            satisfiedPercentage:
-              (values.filter((value) => value.isSatisfied).length /
-                values.length) *
-              100,
-          },
-        ];
+): readonly FundGoalTrendPoint[] {
+  return accountingPeriods.map((accountingPeriod) => {
+    const summary = getFundGoalHealthSummary(
+      progressByAccountingPeriodId.get(accountingPeriod.id) ?? [],
+    );
+    return {
+      accountingPeriodId: accountingPeriod.id,
+      accountingPeriodName: accountingPeriod.name,
+      configuredGoalCount: summary.configuredGoalCount,
+      satisfiedGoalCount: summary.satisfiedGoalCount,
+      satisfiedPercentage:
+        summary.configuredGoalCount === 0
+          ? 0
+          : (summary.satisfiedGoalCount / summary.configuredGoalCount) * 100,
+      assignedContribution: summary.assignedContribution,
+      targetContribution: summary.targetContribution,
+    };
   });
 };
 
 export {
-  buildFundGoalMetricTrendPoints,
-  fundGoalMetricDefinitions,
-  type FundGoalMetric,
-  type FundGoalMetricDefinition,
-  type FundGoalMetricTrendPoint,
+  buildFundGoalTrendPoints,
+  getFundGoalHealthSummary,
   type FundGoalPeriodProgress,
+  type FundGoalHealthSummary,
+  type FundGoalTrendPoint,
 };

@@ -32,12 +32,14 @@ interface BarMetricChartProps {
   readonly title: string;
   readonly emptyMessage: string;
   readonly chartPoints: readonly BarMetricChartPoint[];
+  readonly hasData?: boolean;
   readonly xAxisLabel: string;
   readonly yAxisLabel: string;
   readonly tickFormatter: (value: number) => string;
   readonly valueFormatter: (value: number) => string;
   readonly getTooltipDescription?: (point: BarMetricChartPoint) => string;
   readonly showZeroLine?: boolean;
+  readonly yAxisDomain?: readonly [number, number];
 }
 
 /**
@@ -47,12 +49,14 @@ const BarMetricChart = function ({
   title,
   emptyMessage,
   chartPoints,
+  hasData = chartPoints.length > 0,
   xAxisLabel,
   yAxisLabel,
   tickFormatter,
   valueFormatter,
   getTooltipDescription,
   showZeroLine = false,
+  yAxisDomain,
 }: BarMetricChartProps): JSX.Element {
   const theme = useTheme();
   const themedChartPoints = chartPoints.map((point) => ({
@@ -64,7 +68,7 @@ const BarMetricChart = function ({
     <ChartFrame
       title={title}
       emptyMessage={emptyMessage}
-      hasData={chartPoints.length > 0}
+      hasData={hasData}
       xAxisLabel={xAxisLabel}
       yAxisLabel={yAxisLabel}
     >
@@ -92,6 +96,7 @@ const BarMetricChart = function ({
           />
           <YAxis
             axisLine={false}
+            {...(yAxisDomain === undefined ? {} : { domain: yAxisDomain })}
             tick={yAxisTick}
             tickFormatter={tickFormatter}
             tickLine={false}
