@@ -25,6 +25,7 @@ import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
+import type { Route } from "next";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import routes from "@/accounts/routes";
@@ -37,6 +38,7 @@ interface AccountTrendsListFrameProps {
   readonly data: readonly AccountWithBalanceRange[];
   readonly totalCount: number;
   readonly isInOnboardingMode: boolean;
+  readonly transactionWorkspaceHref: Route;
 }
 
 /**
@@ -46,6 +48,7 @@ const AccountTrendsListFrame = function ({
   data,
   totalCount,
   isInOnboardingMode,
+  transactionWorkspaceHref,
 }: AccountTrendsListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -199,6 +202,16 @@ const AccountTrendsListFrame = function ({
   return (
     <ListFrame<AccountWithBalanceRange>
       title="Accounts"
+      headerContent={
+        <Button
+          variant="outlined"
+          onClick={() => {
+            router.push(transactionWorkspaceHref);
+          }}
+        >
+          View transactions
+        </Button>
+      }
       columns={columns}
       getId={(account) => account.id}
       data={data}

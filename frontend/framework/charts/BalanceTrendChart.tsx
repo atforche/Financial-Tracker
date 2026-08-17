@@ -101,6 +101,7 @@ const BalanceTrendChart = function ({
           />
           <YAxis
             axisLine={false}
+            domain={["auto", "auto"]}
             tick={yAxisTick}
             tickFormatter={tickFormatter}
             tickLine={false}

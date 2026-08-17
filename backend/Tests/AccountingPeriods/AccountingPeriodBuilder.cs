@@ -17,7 +17,6 @@ internal sealed class AccountingPeriodBuilder(TestApiClient apiClient, int year,
         {
             Year = year,
             Month = month,
-            ExpectedIncomeSources = [],
         });
         return new AccountingPeriodHandle(model.Id, model.Name);
     }

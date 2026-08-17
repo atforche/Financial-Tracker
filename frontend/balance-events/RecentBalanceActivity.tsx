@@ -99,10 +99,6 @@ const RecentBalanceActivity = function <T extends RecentBalanceActivityEvent>({
         ? undefined
         : getNewBalance(lastEvent)
       : dailyBalances.at(-1)?.totalBalance;
-  const activityDescription =
-    typeof dailyBalances === "undefined"
-      ? "Across posted events in this recent window."
-      : "Across daily balances in this recent window.";
   const getDateLabel = (event: T): string => {
     const date = event.eventDate ?? event.transactionDate;
     return formatLongDate(new Date(`${date}T00:00:00`));
@@ -155,6 +151,11 @@ const RecentBalanceActivity = function <T extends RecentBalanceActivityEvent>({
         yAxisLabel={balanceLabel}
       />
       <SummaryCardGrid>
+        <SummaryCard title="Total Inflow" value={formatCurrency(totalInflow)} />
+        <SummaryCard
+          title="Total Outflow"
+          value={formatCurrency(totalOutflow)}
+        />
         <SummaryCard
           title="Net Change"
           value={
@@ -167,17 +168,6 @@ const RecentBalanceActivity = function <T extends RecentBalanceActivityEvent>({
               />
             )
           }
-          description={activityDescription}
-        />
-        <SummaryCard
-          title="Total Inflow"
-          value={formatCurrency(totalInflow)}
-          description={activityDescription}
-        />
-        <SummaryCard
-          title="Total Outflow"
-          value={formatCurrency(totalOutflow)}
-          description={activityDescription}
         />
       </SummaryCardGrid>
     </PageLayout>

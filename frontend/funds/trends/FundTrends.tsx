@@ -1,12 +1,11 @@
 import type {
-  FundBalanceEvent,
-  FundsInAccountingPeriodRange,
-  FundsInDateRange,
-} from "@/funds/types";
-import type {
   FundTrendsDataMode,
   FundTrendsSearchParams,
 } from "@/funds/trends/helpers";
+import type {
+  FundsInAccountingPeriodRange,
+  FundsInDateRange,
+} from "@/funds/types";
 import {
   getPageOffset,
   getRowsPerPage,
@@ -19,8 +18,6 @@ import {
 import { AccountingPeriodSort } from "@/accounting-periods/types";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import FundTrendsAssignmentSpendingCard from "@/funds/trends/FundTrendsAssignmentSpendingCard";
-import FundTrendsBalanceEventListFrame from "@/funds/trends/FundTrendsBalanceEventListFrame";
 import FundTrendsChangeChart from "@/funds/trends/FundTrendsChangeChart";
 import FundTrendsFilter from "@/funds/trends/FundTrendsFilter";
 import FundTrendsListFrame from "@/funds/trends/FundTrendsListFrame";
@@ -35,6 +32,7 @@ import dayjs from "dayjs";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
+import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -54,8 +52,6 @@ const FundTrends = async function ({
     sort,
     page,
     pageSize,
-    balanceEventSort,
-    balanceEventPage,
     mode,
     fundName,
     startAccountingPeriodId,
@@ -90,11 +86,9 @@ const FundTrends = async function ({
   );
   const currentPage = normalizePageValue(page);
   const rowsPerPage = getRowsPerPage(pageSize);
-  const currentBalanceEventPage = normalizePageValue(balanceEventPage);
 
   const persistedFilters = {
     ...(typeof sort === "string" ? { sort } : {}),
-    ...(typeof balanceEventSort === "string" ? { balanceEventSort } : {}),
     ...(shouldPersistFundNames(currentFundNames)
       ? { fundName: currentFundNames }
       : {}),
@@ -142,57 +136,32 @@ const FundTrends = async function ({
     Limit: rowsPerPage,
     Offset: getPageOffset(currentPage, rowsPerPage),
   };
-  const balanceEventQuery = {
-    ...(typeof balanceEventSort === "string" ? { Sort: balanceEventSort } : {}),
-    ...filterQuery,
-    Limit: rowsPerPage,
-    Offset: getPageOffset(currentBalanceEventPage, rowsPerPage),
-  };
-  const { trends, balanceEvents } = await (async function (): Promise<{
-    trends: FundsInDateRange | FundsInAccountingPeriodRange;
-    balanceEvents: { items: FundBalanceEvent[]; totalCount: number };
-  }> {
+  const trends = await (async function (): Promise<
+    FundsInDateRange | FundsInAccountingPeriodRange
+  > {
     if (currentMode === "date") {
       const range = {
         "Range.Start": startDate ?? defaultStartDate.format("YYYY-MM-DD"),
         "Range.End": endDate ?? defaultEndDate.format("YYYY-MM-DD"),
       };
-      const [fundResponse, balanceEventResponse] = await Promise.all([
-        apiClient.GET("/funds/date-range", {
+      return unwrapApiResponse(
+        await apiClient.GET("/funds/date-range", {
           params: { query: { ...fundQuery, ...range } },
         }),
-        apiClient.GET("/funds/balance-events/date-range", {
-          params: { query: { ...balanceEventQuery, ...range } },
-        }),
-      ]);
-      return {
-        trends: unwrapApiResponse(fundResponse, "Failed to load fund trends"),
-        balanceEvents: unwrapApiResponse(
-          balanceEventResponse,
-          "Failed to load fund balance events",
-        ),
-      };
+        "Failed to load fund trends",
+      );
     }
     const range = {
       "Range.Start":
         startAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
       "Range.End": endAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
     };
-    const [fundResponse, balanceEventResponse] = await Promise.all([
-      apiClient.GET("/funds/accounting-period-range", {
+    return unwrapApiResponse(
+      await apiClient.GET("/funds/accounting-period-range", {
         params: { query: { ...fundQuery, ...range } },
       }),
-      apiClient.GET("/funds/balance-events/accounting-period-range", {
-        params: { query: { ...balanceEventQuery, ...range } },
-      }),
-    ]);
-    return {
-      trends: unwrapApiResponse(fundResponse, "Failed to load fund trends"),
-      balanceEvents: unwrapApiResponse(
-        balanceEventResponse,
-        "Failed to load fund balance events",
-      ),
-    };
+      "Failed to load fund trends",
+    );
   })();
   const modeValue: FundTrendsDataMode =
     currentMode === "date" ? "Date" : "AccountingPeriod";
@@ -212,6 +181,68 @@ const FundTrends = async function ({
     accountingPeriods: chartPeriods,
     dates: dateSummaries,
   });
+  const selectedFundIds = trends.funds.items
+    .filter((fund) =>
+      currentFundNames.some(
+        (selectedFundName) =>
+          selectedFundName.toLocaleLowerCase() ===
+          fund.name.toLocaleLowerCase(),
+      ),
+    )
+    .map((fund) => fund.id);
+  const hasResolvedSelectedFundIds =
+    selectedFundIds.length === currentFundNames.length;
+  const currentRange =
+    currentMode === "date"
+      ? {
+          startDate: startDate ?? defaultStartDate.format("YYYY-MM-DD"),
+          endDate: endDate ?? defaultEndDate.format("YYYY-MM-DD"),
+        }
+      : {
+          startAccountingPeriodId:
+            startAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
+          endAccountingPeriodId:
+            endAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
+        };
+  const transactionWorkspaceHref = transactionRoutes.workspace({
+    ...(currentMode === "date"
+      ? currentRange
+      : {
+          accountingPeriodIds: accountingPeriods.items
+            .slice(
+              Math.min(
+                accountingPeriods.items.findIndex(
+                  (period) =>
+                    period.id === currentRange.startAccountingPeriodId,
+                ),
+                accountingPeriods.items.findIndex(
+                  (period) => period.id === currentRange.endAccountingPeriodId,
+                ),
+              ),
+              Math.max(
+                accountingPeriods.items.findIndex(
+                  (period) =>
+                    period.id === currentRange.startAccountingPeriodId,
+                ),
+                accountingPeriods.items.findIndex(
+                  (period) => period.id === currentRange.endAccountingPeriodId,
+                ),
+              ) + 1,
+            )
+            .map((period) => period.id),
+        }),
+    ...(hasResolvedSelectedFundIds && selectedFundIds.length > 0
+      ? { fundIds: selectedFundIds }
+      : {}),
+    ...(!hasResolvedSelectedFundIds && shouldPersistFundNames(currentFundNames)
+      ? { fundNames: currentFundNames }
+      : {}),
+    returnUrl: routes.trends({
+      mode: currentMode,
+      ...persistedFilters,
+      ...currentRange,
+    }),
+  });
 
   return (
     <PageLayout>
@@ -230,10 +261,6 @@ const FundTrends = async function ({
         accountingPeriods={periodSummaries}
         dates={dateSummaries}
       />
-      <FundTrendsAssignmentSpendingCard
-        totalAssigned={trends.totalIncome.tracked}
-        totalSpent={trends.totalSpending}
-      />
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
         <BalanceTrendChart
           chartPoints={balanceTrendChartPoints}
@@ -245,18 +272,12 @@ const FundTrends = async function ({
           dates={dateSummaries}
         />
       </ResponsiveGrid>
-      <ResponsiveGrid minimumColumnWidth={800}>
-        <FundTrendsListFrame
-          data={[...trends.funds.items]}
-          isInOnboardingMode={isInOnboardingMode}
-          totalCount={trends.funds.totalCount}
-        />
-        <FundTrendsBalanceEventListFrame
-          data={[...balanceEvents.items]}
-          mode={modeValue}
-          totalCount={balanceEvents.totalCount}
-        />
-      </ResponsiveGrid>
+      <FundTrendsListFrame
+        data={[...trends.funds.items]}
+        isInOnboardingMode={isInOnboardingMode}
+        totalCount={trends.funds.totalCount}
+        transactionWorkspaceHref={transactionWorkspaceHref}
+      />
     </PageLayout>
   );
 };

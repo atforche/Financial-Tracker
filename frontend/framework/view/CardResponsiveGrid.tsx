@@ -45,7 +45,9 @@ const CardResponsiveGrid = function ({
             },
         "& > *": wrap
           ? {
-              flex: `0 0 ${minimumColumnWidth}px`,
+              flex: contentSized
+                ? "0 0 max-content"
+                : `0 0 ${minimumColumnWidth}px`,
               minWidth: { xs: 0, sm: minimumColumnWidth },
               maxWidth: "100%",
             }

@@ -14,6 +14,8 @@ import type { FundWithBalance } from "@/funds/types";
 import type { Transaction } from "@/transactions/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import createApiClient from "@/framework/data/createApiClient";
+import { normalizeAccountTypes } from "@/accounts/accountTypeFilterHelpers";
+import { normalizeTransactionTypes } from "@/transactions/transactionTypeFilter";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -35,6 +37,8 @@ interface TransactionWorkspaceListData extends TransactionWorkspaceReferenceData
   readonly normalizedAccountingPeriodIds: string[];
   readonly normalizedAccountIds: string[];
   readonly normalizedFundIds: string[];
+  readonly selectedAccountIds: string[];
+  readonly selectedFundIds: string[];
   readonly transactions: {
     readonly items: Transaction[];
     readonly totalCount: number;
@@ -226,8 +230,22 @@ const getTransactionWorkspaceDetailReferenceData = async function (
 const getTransactionWorkspaceListData = async function (
   searchParams: TransactionWorkspaceSearchParams,
 ): Promise<TransactionWorkspaceListData> {
-  const { accountingPeriodIds, accountIds, fundIds, sort, page, pageSize } =
-    searchParams;
+  const {
+    accountingPeriodIds,
+    accountIds,
+    fundIds,
+    fundNames,
+    accountTypes,
+    accountNames,
+    transactionTypes,
+    startDate,
+    endDate,
+    startAccountingPeriodId,
+    endAccountingPeriodId,
+    sort,
+    page,
+    pageSize,
+  } = searchParams;
   const apiClient = await createApiClient();
   const currentPage = normalizePageValue(page);
   const rowsPerPage = getRowsPerPage(pageSize);
@@ -240,35 +258,106 @@ const getTransactionWorkspaceListData = async function (
   const normalizedFundIds = normalizeStringSearchParams(
     toRepeatedSearchParams(fundIds),
   );
-
-  const transactionsPromise = apiClient.GET("/transactions", {
-    params: {
-      query: {
-        ...(normalizedAccountingPeriodIds.length > 0
-          ? { "Filter.AccountingPeriodIds": normalizedAccountingPeriodIds }
-          : {}),
-        ...(normalizedAccountIds.length > 0
-          ? { "Filter.AccountIds": normalizedAccountIds }
-          : {}),
-        ...(normalizedFundIds.length > 0
-          ? { "Filter.FundIds": normalizedFundIds }
-          : {}),
-        Sort: sort ?? null,
-        Limit: rowsPerPage,
-        Offset: getPageOffset(currentPage, rowsPerPage),
-      },
-    },
-  });
-
-  const [referenceData, transactionsResponse] = await Promise.all([
-    getTransactionWorkspaceReferenceData(),
-    transactionsPromise,
-  ]);
-
-  const transactions = unwrapApiResponse(
-    transactionsResponse,
-    "Failed to fetch transactions",
+  const normalizedFundNames = normalizeStringSearchParams(
+    toRepeatedSearchParams(fundNames),
+    (fundName) => fundName.toLocaleLowerCase(),
   );
+  const normalizedAccountTypes = normalizeAccountTypes(
+    toRepeatedSearchParams(accountTypes),
+  );
+  const normalizedAccountNames = normalizeStringSearchParams(
+    toRepeatedSearchParams(accountNames),
+  );
+  const normalizedTransactionTypes = normalizeTransactionTypes(
+    toRepeatedSearchParams(transactionTypes),
+  );
+  const referenceData = await getTransactionWorkspaceReferenceData();
+  const hasDerivedAccountFilter =
+    normalizedAccountTypes.length > 0 || normalizedAccountNames.length > 0;
+  const selectedAccountIds = referenceData.accounts
+    .filter(
+      (account) =>
+        (normalizedAccountIds.length === 0 ||
+          normalizedAccountIds.includes(account.id)) &&
+        (normalizedAccountTypes.length === 0 ||
+          normalizedAccountTypes.includes(account.type)) &&
+        (normalizedAccountNames.length === 0 ||
+          normalizedAccountNames.includes(account.name)),
+    )
+    .map((account) => account.id);
+  const hasDerivedFundFilter = normalizedFundNames.length > 0;
+  const selectedFundIds = referenceData.funds
+    .filter(
+      (fund) =>
+        (normalizedFundIds.length === 0 ||
+          normalizedFundIds.includes(fund.id)) &&
+        (normalizedFundNames.length === 0 ||
+          normalizedFundNames.includes(fund.name.toLocaleLowerCase())),
+    )
+    .map((fund) => fund.id);
+  const hasAccountFilter =
+    normalizedAccountIds.length > 0 || hasDerivedAccountFilter;
+  const hasFundFilter = normalizedFundIds.length > 0 || hasDerivedFundFilter;
+  const query = {
+    ...(normalizedAccountingPeriodIds.length > 0
+      ? { "Filter.AccountingPeriodIds": normalizedAccountingPeriodIds }
+      : {}),
+    ...(hasAccountFilter ? { "Filter.AccountIds": selectedAccountIds } : {}),
+    ...(hasFundFilter ? { "Filter.FundIds": selectedFundIds } : {}),
+    ...(normalizedTransactionTypes.length > 0
+      ? { "Filter.Types": [...normalizedTransactionTypes] }
+      : {}),
+    Sort: sort ?? null,
+    Limit: rowsPerPage,
+    Offset: getPageOffset(currentPage, rowsPerPage),
+  };
+  const transactions =
+    (hasAccountFilter && selectedAccountIds.length === 0) ||
+    (hasFundFilter && selectedFundIds.length === 0)
+      ? { items: [], totalCount: 0 }
+      : await (async function (): Promise<{
+          items: Transaction[];
+          totalCount: number;
+        }> {
+          if (
+            typeof startDate !== "undefined" &&
+            typeof endDate !== "undefined"
+          ) {
+            return unwrapApiResponse(
+              await apiClient.GET("/transactions/date-range", {
+                params: {
+                  query: {
+                    ...query,
+                    "Range.Start": startDate,
+                    "Range.End": endDate,
+                  },
+                },
+              }),
+              "Failed to fetch transactions",
+            ).transactions;
+          }
+          if (
+            typeof startAccountingPeriodId !== "undefined" &&
+            typeof endAccountingPeriodId !== "undefined"
+          ) {
+            return unwrapApiResponse(
+              await apiClient.GET("/transactions/accounting-period-range", {
+                params: {
+                  query: {
+                    ...query,
+                    "Range.Start": startAccountingPeriodId,
+                    "Range.End": endAccountingPeriodId,
+                  },
+                },
+              }),
+              "Failed to fetch transactions",
+            ).transactions;
+          }
+          return unwrapApiResponse(
+            await apiClient.GET("/transactions", { params: { query } }),
+            "Failed to fetch transactions",
+          );
+        })();
 
   return {
     ...referenceData,
@@ -276,6 +365,8 @@ const getTransactionWorkspaceListData = async function (
     normalizedAccountingPeriodIds,
     normalizedAccountIds,
     normalizedFundIds,
+    selectedAccountIds: hasAccountFilter ? selectedAccountIds : [],
+    selectedFundIds: hasFundFilter ? selectedFundIds : [],
     transactions,
   };
 };

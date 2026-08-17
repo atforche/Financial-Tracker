@@ -1,12 +1,11 @@
 import type {
-  AccountBalanceEvent,
-  AccountsInAccountingPeriodRange,
-  AccountsInDateRange,
-} from "@/accounts/types";
-import type {
   AccountTrendsDataMode,
   AccountTrendsSearchParams,
 } from "@/accounts/trends/helpers";
+import type {
+  AccountsInAccountingPeriodRange,
+  AccountsInDateRange,
+} from "@/accounts/types";
 import {
   getPageOffset,
   getRowsPerPage,
@@ -20,7 +19,6 @@ import {
   normalizeRequestedAccountNames,
   shouldPersistAccountNames,
 } from "@/accounts/accountNameFilterHelpers";
-import AccountTrendsBalanceEventListFrame from "@/accounts/trends/AccountTrendsBalanceEventListFrame";
 import AccountTrendsChangeChart from "@/accounts/trends/AccountTrendsChangeChart";
 import AccountTrendsFilter from "@/accounts/trends/AccountTrendsFilter";
 import AccountTrendsListFrame from "@/accounts/trends/AccountTrendsListFrame";
@@ -28,7 +26,6 @@ import AccountTrendsSummaryCards from "@/accounts/trends/AccountTrendsSummaryCar
 import { AccountingPeriodSort } from "@/accounting-periods/types";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
@@ -40,6 +37,7 @@ import dayjs from "dayjs";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
+import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -59,8 +57,6 @@ const AccountTrends = async function ({
     sort,
     page,
     pageSize,
-    balanceEventSort,
-    balanceEventPage,
     mode,
     accountType,
     accountName,
@@ -99,11 +95,9 @@ const AccountTrends = async function ({
   );
   const currentPage = normalizePageValue(page);
   const rowsPerPage = getRowsPerPage(pageSize);
-  const currentBalanceEventPage = normalizePageValue(balanceEventPage);
 
   const persistedFilters = {
     ...(typeof sort === "string" ? { sort } : {}),
-    ...(typeof balanceEventSort === "string" ? { balanceEventSort } : {}),
     ...(shouldPersistAccountTypes(currentAccountTypes)
       ? { accountType: currentAccountTypes }
       : {}),
@@ -157,66 +151,32 @@ const AccountTrends = async function ({
     Limit: rowsPerPage,
     Offset: getPageOffset(currentPage, rowsPerPage),
   };
-  const balanceEventQuery = {
-    ...(typeof balanceEventSort === "string" ? { Sort: balanceEventSort } : {}),
-    ...filterQuery,
-    Limit: rowsPerPage,
-    Offset: getPageOffset(currentBalanceEventPage, rowsPerPage),
-  };
-  const { trends, balanceEvents } = await (async function (): Promise<{
-    trends: AccountsInDateRange | AccountsInAccountingPeriodRange;
-    balanceEvents: {
-      items: AccountBalanceEvent[];
-      totalCount: number;
-    };
-  }> {
+  const trends = await (async function (): Promise<
+    AccountsInDateRange | AccountsInAccountingPeriodRange
+  > {
     if (currentMode === "date") {
       const range = {
         "Range.Start": startDate ?? defaultStartDate.format("YYYY-MM-DD"),
         "Range.End": endDate ?? defaultEndDate.format("YYYY-MM-DD"),
       };
-      const [accountResponse, balanceEventResponse] = await Promise.all([
-        apiClient.GET("/accounts/date-range", {
+      return unwrapApiResponse(
+        await apiClient.GET("/accounts/date-range", {
           params: { query: { ...accountQuery, ...range } },
         }),
-        apiClient.GET("/accounts/balance-events/date-range", {
-          params: { query: { ...balanceEventQuery, ...range } },
-        }),
-      ]);
-      return {
-        trends: unwrapApiResponse(
-          accountResponse,
-          "Failed to load account trends",
-        ),
-        balanceEvents: unwrapApiResponse(
-          balanceEventResponse,
-          "Failed to load account balance events",
-        ),
-      };
+        "Failed to load account trends",
+      );
     }
     const range = {
       "Range.Start":
         startAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
       "Range.End": endAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
     };
-    const [accountResponse, balanceEventResponse] = await Promise.all([
-      apiClient.GET("/accounts/accounting-period-range", {
+    return unwrapApiResponse(
+      await apiClient.GET("/accounts/accounting-period-range", {
         params: { query: { ...accountQuery, ...range } },
       }),
-      apiClient.GET("/accounts/balance-events/accounting-period-range", {
-        params: { query: { ...balanceEventQuery, ...range } },
-      }),
-    ]);
-    return {
-      trends: unwrapApiResponse(
-        accountResponse,
-        "Failed to load account trends",
-      ),
-      balanceEvents: unwrapApiResponse(
-        balanceEventResponse,
-        "Failed to load account balance events",
-      ),
-    };
+      "Failed to load account trends",
+    );
   })();
   const modeValue: AccountTrendsDataMode =
     currentMode === "date" ? "Date" : "AccountingPeriod";
@@ -236,6 +196,57 @@ const AccountTrends = async function ({
     accountingPeriods: chartPeriods,
     dates: dateSummaries,
   });
+  const currentRange =
+    currentMode === "date"
+      ? {
+          startDate: startDate ?? defaultStartDate.format("YYYY-MM-DD"),
+          endDate: endDate ?? defaultEndDate.format("YYYY-MM-DD"),
+        }
+      : {
+          startAccountingPeriodId:
+            startAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
+          endAccountingPeriodId:
+            endAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
+        };
+  const transactionWorkspaceHref = transactionRoutes.workspace({
+    ...(currentMode === "date"
+      ? currentRange
+      : {
+          accountingPeriodIds: accountingPeriods.items
+            .slice(
+              Math.min(
+                accountingPeriods.items.findIndex(
+                  (period) =>
+                    period.id === currentRange.startAccountingPeriodId,
+                ),
+                accountingPeriods.items.findIndex(
+                  (period) => period.id === currentRange.endAccountingPeriodId,
+                ),
+              ),
+              Math.max(
+                accountingPeriods.items.findIndex(
+                  (period) =>
+                    period.id === currentRange.startAccountingPeriodId,
+                ),
+                accountingPeriods.items.findIndex(
+                  (period) => period.id === currentRange.endAccountingPeriodId,
+                ),
+              ) + 1,
+            )
+            .map((period) => period.id),
+        }),
+    ...(shouldPersistAccountTypes(currentAccountTypes)
+      ? { accountTypes: currentAccountTypes }
+      : {}),
+    ...(shouldPersistAccountNames(currentAccountNames)
+      ? { accountNames: currentAccountNames }
+      : {}),
+    returnUrl: routes.trends({
+      mode: currentMode,
+      ...persistedFilters,
+      ...currentRange,
+    }),
+  });
 
   return (
     <PageLayout>
@@ -254,10 +265,6 @@ const AccountTrends = async function ({
         accountingPeriods={periodSummaries}
         dates={dateSummaries}
       />
-      <IncomeSpendingCard
-        totalIncome={trends.totalIncome}
-        totalSpending={trends.totalSpending}
-      />
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
         <BalanceTrendChart
           chartPoints={balanceTrendChartPoints}
@@ -269,18 +276,12 @@ const AccountTrends = async function ({
           dates={dateSummaries}
         />
       </ResponsiveGrid>
-      <ResponsiveGrid minimumColumnWidth={800}>
-        <AccountTrendsListFrame
-          data={trends.accounts.items}
-          isInOnboardingMode={isInOnboardingMode}
-          totalCount={trends.accounts.totalCount}
-        />
-        <AccountTrendsBalanceEventListFrame
-          data={balanceEvents.items}
-          mode={modeValue}
-          totalCount={balanceEvents.totalCount}
-        />
-      </ResponsiveGrid>
+      <AccountTrendsListFrame
+        data={trends.accounts.items}
+        isInOnboardingMode={isInOnboardingMode}
+        totalCount={trends.accounts.totalCount}
+        transactionWorkspaceHref={transactionWorkspaceHref}
+      />
     </PageLayout>
   );
 };

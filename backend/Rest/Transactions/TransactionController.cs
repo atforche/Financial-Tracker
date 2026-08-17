@@ -85,36 +85,6 @@ public sealed class TransactionController(
     }
 
     /// <summary>
-    /// Retrieves aggregated Transaction trends for a date range.
-    /// </summary>
-    [HttpGet("trends/date-range")]
-    [ProducesResponseType(typeof(TransactionTrendsModel), StatusCodes.Status200OK)]
-    public async Task<ActionResult<TransactionTrendsModel>> GetTrendFactsAsync(
-        [FromQuery] TransactionsInDateRangeQueryParameterModel query,
-        CancellationToken cancellationToken) =>
-        Ok(transactionConverter.ToTrendModel(await transactionQueryService.GetTrendFactsAsync(
-            transactionConverter.ToDomain(query),
-            cancellationToken)));
-
-    /// <summary>
-    /// Retrieves aggregated Transaction trends for an Accounting Period range.
-    /// </summary>
-    [HttpGet("trends/accounting-period-range")]
-    [ProducesResponseType(typeof(TransactionTrendsModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<TransactionTrendsModel>> GetTrendFactsAsync(
-        [FromQuery] TransactionsInAccountingPeriodRangeQueryParameterModel query,
-        CancellationToken cancellationToken)
-    {
-        TransactionAccountingPeriodRangeTrendQueryResult result = await transactionQueryService.GetTrendFactsAsync(
-            transactionConverter.ToDomain(query),
-            cancellationToken);
-        return result.Trends == null
-            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Transaction trends."))
-            : Ok(transactionConverter.ToTrendModel(result.Trends));
-    }
-
-    /// <summary>
     /// Creates a new Transaction with the provided properties
     /// </summary>
     [HttpPost("")]

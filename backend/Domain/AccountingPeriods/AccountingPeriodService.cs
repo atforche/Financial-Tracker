@@ -36,16 +36,14 @@ public class AccountingPeriodService(
         }
         AccountingPeriod? previousAccountingPeriod = accountingPeriodRepository.GetLatestAccountingPeriod();
         accountingPeriod = new AccountingPeriod(request.Year, request.Month);
-        accountingPeriod.ReplaceExpectedIncomeSources(request.ExpectedIncomeSources.Count > 0
-            ? request.ExpectedIncomeSources
-            : previousAccountingPeriod?.ExpectedIncomeSources.Select(source => new ExpectedIncomeSourceRequest
-            {
-                Name = source.Name,
-                IncomeLines = source.IncomeLines.ToList(),
-                IncomeDeductions = source.IncomeDeductions.ToList(),
-                UntrackedTransfers = source.UntrackedTransfers.ToList(),
-                ExpectedDates = [],
-            }) ?? []);
+        accountingPeriod.ReplaceExpectedIncomeSources(previousAccountingPeriod?.ExpectedIncomeSources.Select(source => new ExpectedIncomeSourceRequest
+        {
+            Name = source.Name,
+            IncomeLines = source.IncomeLines.ToList(),
+            IncomeDeductions = source.IncomeDeductions.ToList(),
+            UntrackedTransfers = source.UntrackedTransfers.ToList(),
+            ExpectedDates = [],
+        }) ?? []);
         fundGoalService.CopyToAccountingPeriod(previousAccountingPeriod, accountingPeriod);
         accountingPeriodBalanceService.AddAccountingPeriod(accountingPeriod);
         if (previousAccountingPeriod == null)
@@ -135,9 +133,6 @@ public class AccountingPeriodService(
                 new ValidationErrorPath(nameof(CreateAccountingPeriodRequest.Year)),
                 "An Accounting Period already exists for this year and month."));
         }
-        exceptions = exceptions.Concat(ValidateExpectedIncomeSources(
-            request.ExpectedIncomeSources,
-            new AccountingPeriod(request.Year, request.Month)));
         AccountingPeriod? latestAccountingPeriod = accountingPeriodRepository.GetLatestAccountingPeriod();
         if (latestAccountingPeriod != null && latestAccountingPeriod.PeriodStartDate != new DateOnly(request.Year, request.Month, 1).AddMonths(-1))
         {
@@ -183,7 +178,7 @@ public class AccountingPeriodService(
         IEnumerable<ValidationError> errors = [];
         foreach ((int sourceIndex, ExpectedIncomeSourceRequest source) in sources.Index())
         {
-            ValidationErrorPath sourcePath = new ValidationErrorPath("").AppendWithIndex(nameof(CreateAccountingPeriodRequest.ExpectedIncomeSources), sourceIndex);
+            ValidationErrorPath sourcePath = new ValidationErrorPath("").AppendWithIndex("ExpectedIncomeSources", sourceIndex);
             if (string.IsNullOrWhiteSpace(source.Name))
             {
                 errors = errors.Append(new ValidationError(sourcePath.Append(nameof(ExpectedIncomeSourceRequest.Name)), "Expected income source names are required."));

@@ -29,39 +29,22 @@ const TransactionWorkspaceEditPage = async function ({
 }: TransactionWorkspaceEditPageProps): Promise<JSX.Element> {
   const { transactionId } = await params;
   const resolvedSearchParams = await searchParams;
-  const { accountingPeriodIds, accountIds, fundIds, sort, page, returnUrl } =
-    resolvedSearchParams;
+  const workspaceSearchParams = { ...resolvedSearchParams };
+  delete workspaceSearchParams.selectedTransactionId;
+  const { returnUrl } = workspaceSearchParams;
   const [referenceData, transaction] = await Promise.all([
     getTransactionWorkspaceReferenceData(),
     getTransactionById(transactionId),
   ]);
 
-  const workspaceSearchParams: TransactionWorkspaceSearchParams = {
-    ...(typeof accountingPeriodIds !== "undefined"
-      ? { accountingPeriodIds }
-      : {}),
-    ...(typeof accountIds !== "undefined" ? { accountIds } : {}),
-    ...(typeof fundIds !== "undefined" ? { fundIds } : {}),
-    ...(typeof sort !== "undefined" ? { sort } : {}),
-    ...(typeof page !== "undefined" ? { page } : {}),
-    ...(typeof returnUrl !== "undefined" ? { returnUrl } : {}),
+  const selectedWorkspaceSearchParams: TransactionWorkspaceSearchParams = {
+    ...workspaceSearchParams,
     selectedTransactionId: transactionId,
   };
-  const workspaceUrl = routes.workspace(workspaceSearchParams);
+  const workspaceUrl = routes.workspace(selectedWorkspaceSearchParams);
 
   if (transaction === null) {
-    redirect(
-      routes.workspace({
-        ...(typeof accountingPeriodIds !== "undefined"
-          ? { accountingPeriodIds }
-          : {}),
-        ...(typeof accountIds !== "undefined" ? { accountIds } : {}),
-        ...(typeof fundIds !== "undefined" ? { fundIds } : {}),
-        ...(typeof sort !== "undefined" ? { sort } : {}),
-        ...(typeof page !== "undefined" ? { page } : {}),
-        ...(typeof returnUrl !== "undefined" ? { returnUrl } : {}),
-      }),
-    );
+    redirect(routes.workspace(workspaceSearchParams));
   }
 
   const transactionAccountingPeriod =
@@ -87,7 +70,7 @@ const TransactionWorkspaceEditPage = async function ({
         fundGoals={referenceData.fundGoals}
         redirectUrl={routes.workspaceDetail(
           transaction.id,
-          workspaceSearchParams,
+          selectedWorkspaceSearchParams,
         )}
       />
     </PageLayout>

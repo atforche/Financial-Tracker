@@ -81,18 +81,6 @@ const navigationItems = function (): NavigationLink[] {
       name: "Transactions",
       href: transactionRoutes.workspace({}),
       icon: <ReceiptLong />,
-      childLinks: [
-        {
-          name: "Workspace",
-          href: transactionRoutes.workspace({}),
-          icon: <Workspaces />,
-        },
-        {
-          name: "Trends",
-          href: transactionRoutes.trends({}),
-          icon: <Timeline />,
-        },
-      ],
     },
   ];
   return items;

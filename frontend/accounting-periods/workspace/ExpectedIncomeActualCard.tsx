@@ -1,9 +1,9 @@
 "use client";
 
-import { Stack, Typography } from "@mui/material";
 import ComparisonBarPair from "@/framework/view/ComparisonBarPair";
 import type { IncomeAmount } from "@/transactions/types";
 import type { JSX } from "react";
+import { Stack } from "@mui/material";
 import SummaryCard from "@/framework/view/SummaryCard";
 
 const emptyIncome: IncomeAmount = {
@@ -31,43 +31,38 @@ const ExpectedIncomeActualCard = function ({
   actualIncome = emptyIncome,
 }: ExpectedIncomeActualCardProps): JSX.Element {
   const renderComparisonPair = (
-    label: string,
+    incomeType: "Tracked" | "Untracked",
     expectedAmount: number,
     actualAmount: number,
   ): JSX.Element => (
-    <Stack spacing={1}>
-      <Typography variant="body2" fontWeight={600}>
-        {label}
-      </Typography>
-      <ComparisonBarPair
-        first={{
-          label: "Expected income",
-          amount: expectedAmount,
-          color: "info.main",
-          differenceLabel: "Surplus",
-          differenceColor: "success.main",
-        }}
-        second={{
-          label: "Actual income",
-          amount: actualAmount,
-          color: "success.main",
-          differenceLabel: "Shortfall",
-          differenceColor: "error.main",
-        }}
-      />
-    </Stack>
+    <ComparisonBarPair
+      first={{
+        label: `Expected ${incomeType} Income`,
+        amount: expectedAmount,
+        color: "info.main",
+        differenceLabel: "Surplus",
+        differenceColor: "success.main",
+      }}
+      second={{
+        label: `Actual ${incomeType} Income`,
+        amount: actualAmount,
+        color: "success.main",
+        differenceLabel: "Shortfall",
+        differenceColor: "error.main",
+      }}
+    />
   );
 
   return (
     <SummaryCard title="Expected Income vs. Actual">
       <Stack spacing={2}>
         {renderComparisonPair(
-          "Tracked income",
+          "Tracked",
           getFiniteAmount(expectedIncome.tracked),
           getFiniteAmount(actualIncome.tracked),
         )}
         {renderComparisonPair(
-          "Untracked income",
+          "Untracked",
           getFiniteAmount(expectedIncome.untracked),
           getFiniteAmount(actualIncome.untracked),
         )}
