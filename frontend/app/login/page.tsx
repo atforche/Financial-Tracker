@@ -78,7 +78,7 @@ const LoginPage = async function ({
         alignItems: "center",
         backgroundColor: "background.default",
         backgroundImage:
-          "linear-gradient(135deg, rgba(25, 118, 210, 0.1), transparent 58%)",
+          "linear-gradient(135deg, rgb(var(--mui-palette-primary-mainChannel) / 0.1), transparent 58%)",
         display: "flex",
         justifyContent: "center",
         minHeight: "100vh",

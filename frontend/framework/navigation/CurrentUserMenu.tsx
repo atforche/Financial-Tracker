@@ -2,6 +2,7 @@
 
 import { Avatar, Box, Button, Stack, Typography } from "@mui/material";
 import { AdminPanelSettings } from "@mui/icons-material";
+import ColorSchemeSelector from "@/framework/navigation/ColorSchemeSelector";
 import type { CurrentApplicationUser } from "@/framework/auth/currentApplicationUser";
 import type { JSX } from "react";
 import { UserRoleModel } from "@/framework/data/api";
@@ -55,6 +56,7 @@ const CurrentUserMenu = function ({
           ) : null}
         </Box>
       </Stack>
+      <ColorSchemeSelector />
       {applicationUser?.role === UserRoleModel.Admin ? (
         <Button
           fullWidth

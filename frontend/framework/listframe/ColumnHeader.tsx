@@ -29,7 +29,7 @@ const ColumnHeader = function <T>({
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
           backgroundColor: "primary.main",
-          color: "white",
+          color: "primary.contrastText",
         },
         column.sx ?? false,
       ]}
