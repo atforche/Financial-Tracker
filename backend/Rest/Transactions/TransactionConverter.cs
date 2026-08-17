@@ -13,6 +13,7 @@ using Models.Transactions.Types;
 using Rest.Accounts;
 using Rest.FundGoals;
 using Rest.Funds;
+using Rest.Locations;
 
 namespace Rest.Transactions;
 
@@ -22,7 +23,8 @@ namespace Rest.Transactions;
 public sealed class TransactionConverter(
     AccountBalanceEventConverter accountBalanceEventConverter,
     FundBalanceEventConverter fundBalanceEventConverter,
-    FundGoalBalanceEventConverter fundGoalBalanceEventConverter)
+    FundGoalBalanceEventConverter fundGoalBalanceEventConverter,
+    LocationConverter locationConverter)
 {
     /// <summary>
     /// Converts an API Transaction query to Domain criteria.
@@ -95,6 +97,8 @@ public sealed class TransactionConverter(
         AvailableAccountNames = range.AvailableAccountNames,
         AvailableFundNames = range.AvailableFundNames,
         TransactionTypes = range.TransactionTypes.Select(ToModel).ToList(),
+        LocationIncomingAmount = range.LocationCashFlow.Incoming,
+        LocationOutgoingAmount = range.LocationCashFlow.Outgoing,
         Offset = range.Offset,
         Limit = range.Limit,
     };
@@ -108,6 +112,8 @@ public sealed class TransactionConverter(
         AvailableAccountNames = range.AvailableAccountNames,
         AvailableFundNames = range.AvailableFundNames,
         TransactionTypes = range.TransactionTypes.Select(ToModel).ToList(),
+        LocationIncomingAmount = range.LocationCashFlow.Incoming,
+        LocationOutgoingAmount = range.LocationCashFlow.Outgoing,
         Offset = range.Offset,
         Limit = range.Limit,
     };
@@ -136,6 +142,7 @@ public sealed class TransactionConverter(
         filter?.AccountingPeriodIds ?? [],
         filter?.AccountIds ?? [],
         filter?.FundIds ?? [],
+        filter?.LocationIds ?? [],
         (filter?.Types ?? []).Select(ToDomain).ToList());
 
     /// <summary>
@@ -181,7 +188,7 @@ public sealed class TransactionConverter(
                     destination.PostedDate,
                     destination.Amount,
                     BalanceEventType.Credit)),
-                Location = destination.Location,
+                Location = destination.Location == null ? null : locationConverter.ToModel(destination.Location, -destination.Amount),
                 Amount = destination.Amount,
                 PostedDate = destination.PostedDate,
                 FundAssignments = destination.FundAssignments.Select(amount =>
@@ -212,7 +219,7 @@ public sealed class TransactionConverter(
                     income.Source.PostedDate,
                     income.Amount,
                     BalanceEventType.Debit)),
-                Location = income.Source.Location,
+                Location = income.Source.Location == null ? null : locationConverter.ToModel(income.Source.Location, income.Amount),
                 IncomeLines = income.Source.IncomeLines.Select(line => new IncomeLineModel
                 {
                     Description = line.Description,
@@ -262,7 +269,7 @@ public sealed class TransactionConverter(
                     account.Source.PostedDate,
                     account.Amount,
                     BalanceEventType.Debit)),
-                Location = account.Source.Location,
+                Location = account.Source.Location == null ? null : locationConverter.ToModel(account.Source.Location, account.Amount),
             },
             Destinations = account.Destinations.Select(destination => new AccountTransactionDestinationModel
             {
@@ -271,7 +278,7 @@ public sealed class TransactionConverter(
                     destination.PostedDate,
                     destination.Amount,
                     BalanceEventType.Credit)),
-                Location = destination.Location,
+                Location = destination.Location == null ? null : locationConverter.ToModel(destination.Location, -destination.Amount),
                 Amount = destination.Amount,
                 PostedDate = destination.PostedDate,
             }).ToList(),

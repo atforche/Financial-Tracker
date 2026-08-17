@@ -1,3 +1,5 @@
+using Models.Locations;
+
 namespace Models.Transactions.Update;
 
 /// <summary>
@@ -13,5 +15,5 @@ public sealed class UpdateAccountTransactionSourceModel
     /// <summary>
     /// Optional location for the source.
     /// </summary>
-    public string? Location { get; init; }
+    public LocationInputModel? Location { get; init; }
 }

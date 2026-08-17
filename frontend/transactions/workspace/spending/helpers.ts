@@ -15,6 +15,11 @@ import {
   getSpendingGoalRemainingAmount,
 } from "@/funds/assignmentPlanner/helpers";
 import {
+  type LocationDraft,
+  toLocationDraft,
+  toLocationInput,
+} from "@/locations/types";
+import {
   compareCurrencyAmounts,
   getCurrencyDifference,
   getCurrencyTotal,
@@ -47,7 +52,7 @@ interface SpendingSourceDraft {
  */
 interface SpendingDestinationDraft {
   readonly account: AccountBalanceEventDraft | null;
-  readonly location: string | null;
+  readonly location: LocationDraft | null;
   readonly amount: number | null;
   readonly fundAssignments: FundAssignmentDraft[];
   readonly baselineFundAssignments: FundAssignmentDraft[];
@@ -126,7 +131,7 @@ const validateDestination = function (
   destination: SpendingDestinationDraft,
   sourceAccount: AccountBalanceEventDraft | null,
 ): boolean {
-  const normalizedLocation = destination.location?.trim() ?? "";
+  const normalizedLocation = destination.location?.name.trim() ?? "";
   const hasAccount = destination.account !== null;
   const hasLocation = normalizedLocation !== "";
   if (
@@ -200,7 +205,7 @@ const buildRequestFields = function (
       accountId: destination.account?.accountId ?? null,
       location:
         destination.account === null
-          ? (destination.location?.trim() ?? null)
+          ? toLocationInput(destination.location)
           : null,
       amount: destination.amount ?? 0,
       fundAssignments: destination.fundAssignments
@@ -374,7 +379,7 @@ const getDestinationsFromTransaction = function (
       account: getTransactionAccountDraftFromTransactionAccount(
         destination.account,
       ),
-      location: destination.location ?? null,
+      location: toLocationDraft(destination.location ?? null),
       amount: destination.amount,
       fundAssignments: destination.fundAssignments.map((assignment) =>
         getFundAssignmentFromTransactionFund(assignment, fundGoals),

@@ -2,6 +2,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.FundGoals;
 using Domain.Funds;
+using Domain.Locations;
 using Domain.Transactions;
 using Domain.Users;
 using Microsoft.EntityFrameworkCore;
@@ -72,6 +73,11 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     /// Collection of Transactions in the database
     /// </summary>
     internal DbSet<Transaction> Transactions { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of Locations in the database.
+    /// </summary>
+    internal DbSet<Location> Locations { get; set; } = default!;
 
     /// <summary>
     /// Collection of application users in the database.

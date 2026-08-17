@@ -26,4 +26,14 @@ public class TransactionsInAccountingPeriodRangeModel : PaginationModel
     /// Summary counts and amounts for each Transaction Type in the current Accounting Period.
     /// </summary>
     public required IReadOnlyCollection<TransactionSummaryByTypeModel> TransactionTypes { get; init; }
+
+    /// <summary>
+    /// Money received by the selected Locations in the current Accounting Period range.
+    /// </summary>
+    public required decimal LocationIncomingAmount { get; init; }
+
+    /// <summary>
+    /// Money sent to the selected Locations in the current Accounting Period range.
+    /// </summary>
+    public required decimal LocationOutgoingAmount { get; init; }
 }

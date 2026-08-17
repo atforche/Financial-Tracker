@@ -1,4 +1,5 @@
 using Domain.Accounts;
+using Domain.Locations;
 
 namespace Domain.Transactions.Income;
 
@@ -23,7 +24,7 @@ public class IncomeTransactionSource
     /// <summary>
     /// Location of the income transaction source.
     /// </summary>
-    public string? Location { get; private set; }
+    public Location? Location { get; private set; }
 
     /// <summary>
     /// Income Lines for this income transaction source
@@ -41,7 +42,7 @@ public class IncomeTransactionSource
     public IncomeTransactionSource(
         Account? account,
         DateOnly? postedDate,
-        string? location,
+        Location? location,
         IEnumerable<IncomeLine> incomeLines,
         IEnumerable<IncomeDeduction> incomeDeductions)
     {

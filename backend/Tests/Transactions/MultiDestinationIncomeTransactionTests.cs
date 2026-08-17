@@ -32,7 +32,7 @@ public sealed class MultiDestinationIncomeTransactionTests
             Amount = 100m,
             Source = new CreateIncomeTransactionSourceModel
             {
-                Location = "Employer",
+                Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" },
                 IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = 100m }],
                 IncomeDeductions = []
             },
@@ -78,7 +78,7 @@ public sealed class MultiDestinationIncomeTransactionTests
             Amount = 100m,
             Source = new CreateIncomeTransactionSourceModel
             {
-                Location = "Employer",
+                Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" },
                 IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = 100m }],
                 IncomeDeductions = []
             },

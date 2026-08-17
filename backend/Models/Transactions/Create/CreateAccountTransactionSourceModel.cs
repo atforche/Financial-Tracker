@@ -1,3 +1,5 @@
+using Models.Locations;
+
 namespace Models.Transactions.Create;
 
 /// <summary>
@@ -13,5 +15,5 @@ public sealed class CreateAccountTransactionSourceModel
     /// <summary>
     /// Optional location for the source.
     /// </summary>
-    public string? Location { get; init; }
+    public LocationInputModel? Location { get; init; }
 }

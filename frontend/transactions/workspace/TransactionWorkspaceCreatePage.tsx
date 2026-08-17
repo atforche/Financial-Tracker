@@ -23,7 +23,7 @@ const TransactionWorkspaceCreatePage = async function ({
   const workspaceSearchParams = { ...resolvedSearchParams };
   delete workspaceSearchParams.selectedTransactionId;
   const { returnUrl } = workspaceSearchParams;
-  const { openAccountingPeriods, accounts, funds, fundGoals } =
+  const { openAccountingPeriods, accounts, funds, fundGoals, locations } =
     await getTransactionWorkspaceReferenceData();
 
   const workspaceUrl = routes.workspace(workspaceSearchParams);
@@ -40,6 +40,7 @@ const TransactionWorkspaceCreatePage = async function ({
         accounts={accounts}
         funds={funds}
         fundGoals={fundGoals}
+        locations={locations}
         redirectUrl={workspaceUrl}
         showHeading={false}
       />

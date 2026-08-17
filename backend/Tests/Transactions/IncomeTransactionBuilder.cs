@@ -90,7 +90,7 @@ internal sealed class IncomeTransactionBuilder(TestApiClient apiClient)
             Amount = _amount,
             Source = new UpdateIncomeTransactionSourceModel
             {
-                Location = GetLocation(),
+                Location = GetLocation() is { } location ? new Models.Locations.LocationInputModel { NewLocationName = location } : null,
                 IncomeLines = [new UpdateIncomeLineModel
                 {
                     Description = GetLocation(),
@@ -111,7 +111,7 @@ internal sealed class IncomeTransactionBuilder(TestApiClient apiClient)
         Amount = _amount,
         Source = new CreateIncomeTransactionSourceModel
         {
-            Location = GetLocation(),
+            Location = GetLocation() is { } location ? new Models.Locations.LocationInputModel { NewLocationName = location } : null,
             IncomeLines = [new CreateIncomeLineModel
             {
                 Description = GetLocation(),

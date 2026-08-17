@@ -16,6 +16,7 @@ public sealed record TransactionFilter(
     IReadOnlyCollection<Guid> AccountingPeriodIds,
     IReadOnlyCollection<Guid> AccountIds,
     IReadOnlyCollection<Guid> FundIds,
+    IReadOnlyCollection<Guid> LocationIds,
     IReadOnlyCollection<TransactionType> Types);
 
 /// <summary>

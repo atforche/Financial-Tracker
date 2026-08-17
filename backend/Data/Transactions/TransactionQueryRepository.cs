@@ -2,6 +2,7 @@ using Domain;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Locations;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
@@ -40,7 +41,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
     {
         IQueryable<Transaction> filtered = ApplyFilter(databaseContext.Transactions.AsNoTracking(), query.Filter)
             .Where(transaction => transaction.Date >= query.Start && transaction.Date <= query.End);
-        return await GetRangeFactsAsync(filtered, query.Sort, query.Offset, query.Limit, cancellationToken);
+        return await GetRangeFactsAsync(filtered, query.Filter.LocationIds, query.Sort, query.Offset, query.Limit, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -53,6 +54,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
             .Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId));
         TransactionDateRangeFacts facts = await GetRangeFactsAsync(
             filtered,
+            query.Filter.LocationIds,
             query.Sort,
             query.Offset,
             query.Limit,
@@ -61,7 +63,8 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
             facts.QueryFacts,
             facts.AvailableAccountNames,
             facts.AvailableFundNames,
-            facts.TransactionTypes);
+            facts.TransactionTypes,
+            facts.LocationCashFlow);
     }
 
     /// <summary>
@@ -69,6 +72,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
     /// </summary>
     private async Task<TransactionDateRangeFacts> GetRangeFactsAsync(
         IQueryable<Transaction> filtered,
+        IReadOnlyCollection<Guid> locationIds,
         TransactionSort sort,
         int offset,
         int? limit,
@@ -94,7 +98,58 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
             offset,
             limit,
             cancellationToken);
-        return new TransactionDateRangeFacts(queryFacts, accountNames, fundNames, summaries);
+        LocationCashFlow locationCashFlow = await GetLocationCashFlowAsync(filtered, locationIds, cancellationToken);
+        return new TransactionDateRangeFacts(queryFacts, accountNames, fundNames, summaries, locationCashFlow);
+    }
+
+    /// <summary>
+    /// Calculates directional flow for the selected Location endpoints across the full range.
+    /// </summary>
+    private static async Task<LocationCashFlow> GetLocationCashFlowAsync(
+        IQueryable<Transaction> filtered,
+        IReadOnlyCollection<Guid> locationIds,
+        CancellationToken cancellationToken)
+    {
+        if (locationIds.Count == 0)
+        {
+            return new LocationCashFlow(0, 0);
+        }
+        var selectedIds = locationIds.ToHashSet();
+        IReadOnlyCollection<Transaction> transactions = await filtered.AsSplitQuery().ToListAsync(cancellationToken);
+        decimal incoming = 0;
+        decimal outgoing = 0;
+        foreach (Transaction transaction in transactions)
+        {
+            switch (transaction)
+            {
+                case IncomeTransaction income when income.Source.Location != null
+                    && selectedIds.Contains(income.Source.Location.Id.Value):
+                    incoming += income.Amount;
+                    break;
+                case SpendingTransaction spending:
+                    decimal spendingAmount = spending.Destinations
+                        .Where(destination => destination.Location != null
+                            && selectedIds.Contains(destination.Location.Id.Value))
+                        .Sum(destination => destination.Amount);
+                    outgoing += spendingAmount;
+                    break;
+                case AccountTransaction account:
+                    if (account.Source.Location != null
+                        && selectedIds.Contains(account.Source.Location.Id.Value))
+                    {
+                        incoming += account.Amount;
+                    }
+                    decimal accountAmount = account.Destinations
+                        .Where(destination => destination.Location != null
+                            && selectedIds.Contains(destination.Location.Id.Value))
+                        .Sum(destination => destination.Amount);
+                    outgoing += accountAmount;
+                    break;
+                default:
+                    break;
+            }
+        }
+        return new LocationCashFlow(incoming, outgoing);
     }
 
     /// <summary>
@@ -200,6 +255,24 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
                     && (fundIds.Contains(((FundTransaction)transaction).Source.Fund.Id)
                         || ((FundTransaction)transaction).Destinations.Any(destination => fundIds.Contains(destination.Fund.Id)))));
         }
+        if (filter.LocationIds.Count > 0)
+        {
+            var locationIds = filter.LocationIds.Select(id => new LocationId(id)).ToList();
+            transactions = transactions.Where(transaction =>
+                (transaction is SpendingTransaction
+                    && ((SpendingTransaction)transaction).Destinations.Any(destination =>
+                        EF.Property<LocationId?>(destination, "LocationId") != null
+                        && locationIds.Contains(EF.Property<LocationId?>(destination, "LocationId")!)))
+                || (transaction is IncomeTransaction
+                    && EF.Property<LocationId?>(((IncomeTransaction)transaction).Source, "LocationId") != null
+                    && locationIds.Contains(EF.Property<LocationId?>(((IncomeTransaction)transaction).Source, "LocationId")!))
+                || (transaction is AccountTransaction
+                    && ((EF.Property<LocationId?>(((AccountTransaction)transaction).Source, "LocationId") != null
+                            && locationIds.Contains(EF.Property<LocationId?>(((AccountTransaction)transaction).Source, "LocationId")!))
+                        || ((AccountTransaction)transaction).Destinations.Any(destination =>
+                            EF.Property<LocationId?>(destination, "LocationId") != null
+                            && locationIds.Contains(EF.Property<LocationId?>(destination, "LocationId")!)))));
+        }
         if (filter.Types.Count > 0)
         {
             transactions = transactions.Where(transaction => filter.Types.Contains(transaction.Type));
@@ -255,8 +328,8 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
     private static string? GetSource(Transaction transaction) => transaction switch
     {
         SpendingTransaction spending => spending.Source.Account.Name,
-        IncomeTransaction income => income.Source.Account?.Name ?? income.Source.Location,
-        AccountTransaction account => account.Source.Account?.Name ?? account.Source.Location,
+        IncomeTransaction income => income.Source.Account?.Name ?? income.Source.Location?.Name,
+        AccountTransaction account => account.Source.Account?.Name ?? account.Source.Location?.Name,
         FundTransaction fund => fund.Source.Fund.Name,
         _ => null,
     };
@@ -266,9 +339,9 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
     /// </summary>
     private static string GetDestination(Transaction transaction) => transaction switch
     {
-        SpendingTransaction spending => string.Join(", ", spending.Destinations.Select(destination => destination.Account?.Name ?? destination.Location).Distinct(StringComparer.OrdinalIgnoreCase)),
+        SpendingTransaction spending => string.Join(", ", spending.Destinations.Select(destination => destination.Account?.Name ?? destination.Location?.Name).Distinct(StringComparer.OrdinalIgnoreCase)),
         IncomeTransaction income => string.Join(", ", income.Destinations.Select(destination => destination.Account.Name).Distinct(StringComparer.OrdinalIgnoreCase)),
-        AccountTransaction account => string.Join(", ", account.Destinations.Select(destination => destination.Account?.Name ?? destination.Location).Distinct(StringComparer.OrdinalIgnoreCase)),
+        AccountTransaction account => string.Join(", ", account.Destinations.Select(destination => destination.Account?.Name ?? destination.Location?.Name).Distinct(StringComparer.OrdinalIgnoreCase)),
         FundTransaction fund => string.Join(", ", fund.Destinations.Select(destination => destination.Fund.Name).Distinct(StringComparer.OrdinalIgnoreCase)),
         _ => string.Empty,
     };

@@ -273,12 +273,12 @@ public class IncomeTransactionService(
         {
             exceptions = exceptions.Append(new ValidationError(sourcePath.Append(nameof(IncomeTransactionSource.Account)), "Income Transactions cannot source money from a tracked account"));
         }
-        if (source.Account == null && string.IsNullOrWhiteSpace(source.Location))
+        if (source.Account == null && source.Location == null)
         {
             exceptions = exceptions.Append(new ValidationError(sourcePath.Append(nameof(IncomeTransactionSource.Account)), "Income Transactions must have either a Source Account or a Source Location"));
             exceptions = exceptions.Append(new ValidationError(sourcePath.Append(nameof(IncomeTransactionSource.Location)), "Income Transactions must have either a Source Account or a Source Location"));
         }
-        if (source.Account != null && !string.IsNullOrWhiteSpace(source.Location))
+        if (source.Account != null && source.Location != null)
         {
             exceptions = exceptions.Append(new ValidationError(sourcePath.Append(nameof(IncomeTransactionSource.Account)), "Income Transactions cannot have both a Source Account and a Source Location"));
             exceptions = exceptions.Append(new ValidationError(sourcePath.Append(nameof(IncomeTransactionSource.Location)), "Income Transactions cannot have both a Source Account and a Source Location"));

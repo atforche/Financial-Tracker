@@ -1,4 +1,5 @@
 using Domain.Accounts;
+using Domain.Locations;
 
 namespace Domain.Transactions.Accounts;
 
@@ -20,12 +21,12 @@ public class AccountTransactionSource
     /// <summary>
     /// Location of the account transaction source
     /// </summary>
-    public string? Location { get; private set; }
+    public Location? Location { get; private set; }
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public AccountTransactionSource(Account? account, DateOnly? postedDate, string? location)
+    public AccountTransactionSource(Account? account, DateOnly? postedDate, Location? location)
     {
         Account = account;
         PostedDate = postedDate;

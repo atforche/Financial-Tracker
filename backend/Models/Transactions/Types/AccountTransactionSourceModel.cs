@@ -1,4 +1,5 @@
 using Models.Accounts;
+using Models.Locations;
 
 namespace Models.Transactions.Types;
 
@@ -15,5 +16,5 @@ public sealed class AccountTransactionSourceModel
     /// <summary>
     /// Optional location for the source.
     /// </summary>
-    public string? Location { get; init; }
+    public LocationWithAmountModel? Location { get; init; }
 }

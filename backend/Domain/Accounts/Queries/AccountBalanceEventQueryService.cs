@@ -188,20 +188,121 @@ public sealed class AccountBalanceEventQueryService(
         AccountingPeriod period,
         IReadOnlyDictionary<AccountId, List<AccountBalanceHistory>> histories) => transaction switch
         {
-            SpendingTransaction spending => new[] { Create(transaction, period, spending.Source.Account, spending.Source.PostedDate, transaction.Amount, BalanceEventType.Debit, ToParty(spending.Source.Account, null, null), spending.Destinations.Select(destination => ToParty(destination.Account, destination.Location, destination.Amount)).ToList(), histories) }
-                .Concat(spending.Destinations.Where(destination => destination.Account != null)
-                    .Select(destination => Create(transaction, period, destination.Account!, destination.PostedDate, destination.Amount, BalanceEventType.Credit, ToParty(spending.Source.Account, null, null), spending.Destinations.Select(item => ToParty(item.Account, item.Location, item.Amount)).ToList(), histories))),
-            IncomeTransaction income => (income.Source.Account == null
-                    ? Enumerable.Empty<AccountBalanceEvent>()
-                    : new[] { Create(transaction, period, income.Source.Account, income.Source.PostedDate, transaction.Amount, BalanceEventType.Debit, ToParty(income.Source.Account, income.Source.Location, null), income.Destinations.Select(destination => ToParty(destination.Account, null, destination.Amount)).ToList(), histories) })
-                .Concat(income.Destinations.Select(destination => Create(transaction, period, destination.Account, destination.PostedDate, destination.Amount, BalanceEventType.Credit, ToParty(income.Source.Account, income.Source.Location, null), income.Destinations.Select(item => ToParty(item.Account, null, item.Amount)).ToList(), histories))),
-            AccountTransaction account => (account.Source.Account == null
-                    ? Enumerable.Empty<AccountBalanceEvent>()
-                    : new[] { Create(transaction, period, account.Source.Account, account.Source.PostedDate, transaction.Amount, BalanceEventType.Debit, ToParty(account.Source.Account, account.Source.Location, null), account.Destinations.Select(destination => ToParty(destination.Account, destination.Location, destination.Amount)).ToList(), histories) })
-                .Concat(account.Destinations.Where(destination => destination.Account != null)
-                    .Select(destination => Create(transaction, period, destination.Account!, destination.PostedDate, destination.Amount, BalanceEventType.Credit, ToParty(account.Source.Account, account.Source.Location, null), account.Destinations.Select(item => ToParty(item.Account, item.Location, item.Amount)).ToList(), histories))),
+            SpendingTransaction spending => GetSpendingEvents(transaction, period, spending, histories),
+            IncomeTransaction income => GetIncomeEvents(transaction, period, income, histories),
+            AccountTransaction account => GetAccountEvents(transaction, period, account, histories),
             _ => [],
         };
+
+    private static IEnumerable<AccountBalanceEvent> GetSpendingEvents(
+        Transaction transaction,
+        AccountingPeriod period,
+        SpendingTransaction spending,
+        IReadOnlyDictionary<AccountId, List<AccountBalanceHistory>> histories)
+    {
+        var parties = spending.Destinations
+            .Select(destination => ToParty(
+                destination.Account,
+                destination.Location?.Name,
+                destination.Amount))
+            .ToList();
+        AccountBalanceEvent source = Create(
+            transaction,
+            period,
+            spending.Source.Account,
+            spending.Source.PostedDate,
+            transaction.Amount,
+            BalanceEventType.Debit,
+            ToParty(spending.Source.Account, null, null),
+            parties,
+            histories);
+        return new[] { source }.Concat(spending.Destinations
+            .Where(destination => destination.Account != null)
+            .Select(destination => Create(
+                transaction,
+                period,
+                destination.Account!,
+                destination.PostedDate,
+                destination.Amount,
+                BalanceEventType.Credit,
+                ToParty(spending.Source.Account, null, null),
+                parties,
+                histories)));
+    }
+
+    private static IEnumerable<AccountBalanceEvent> GetIncomeEvents(
+        Transaction transaction,
+        AccountingPeriod period,
+        IncomeTransaction income,
+        IReadOnlyDictionary<AccountId, List<AccountBalanceHistory>> histories)
+    {
+        var parties = income.Destinations
+            .Select(destination => ToParty(
+                destination.Account,
+                null,
+                destination.Amount))
+            .ToList();
+        IEnumerable<AccountBalanceEvent> sourceEvents = income.Source.Account == null
+            ? []
+            : new[] { Create(
+                transaction,
+                period,
+                income.Source.Account,
+                income.Source.PostedDate,
+                transaction.Amount,
+                BalanceEventType.Debit,
+                ToParty(income.Source.Account, income.Source.Location?.Name, null),
+                parties,
+                histories) };
+        return sourceEvents.Concat(income.Destinations.Select(destination => Create(
+            transaction,
+            period,
+            destination.Account,
+            destination.PostedDate,
+            destination.Amount,
+            BalanceEventType.Credit,
+            ToParty(income.Source.Account, income.Source.Location?.Name, null),
+            parties,
+            histories)));
+    }
+
+    private static IEnumerable<AccountBalanceEvent> GetAccountEvents(
+        Transaction transaction,
+        AccountingPeriod period,
+        AccountTransaction account,
+        IReadOnlyDictionary<AccountId, List<AccountBalanceHistory>> histories)
+    {
+        var parties = account.Destinations
+            .Select(destination => ToParty(
+                destination.Account,
+                destination.Location?.Name,
+                destination.Amount))
+            .ToList();
+        IEnumerable<AccountBalanceEvent> sourceEvents = account.Source.Account == null
+            ? []
+            : new[] { Create(
+                transaction,
+                period,
+                account.Source.Account,
+                account.Source.PostedDate,
+                transaction.Amount,
+                BalanceEventType.Debit,
+                ToParty(account.Source.Account, account.Source.Location?.Name, null),
+                parties,
+                histories) };
+        return sourceEvents.Concat(account.Destinations
+            .Where(destination => destination.Account != null)
+            .Select(destination => Create(
+                transaction,
+                period,
+                destination.Account!,
+                destination.PostedDate,
+                destination.Amount,
+                BalanceEventType.Credit,
+                ToParty(account.Source.Account, account.Source.Location?.Name, null),
+                parties,
+                histories)));
+    }
 
     /// <summary>
     /// Creates an interpreted Account balance event for a Transaction and Account.

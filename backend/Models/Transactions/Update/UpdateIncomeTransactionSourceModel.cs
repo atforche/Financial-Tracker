@@ -1,3 +1,5 @@
+using Models.Locations;
+
 namespace Models.Transactions.Update;
 
 /// <summary>
@@ -13,7 +15,7 @@ public sealed class UpdateIncomeTransactionSourceModel
     /// <summary>
     /// Optional location for the income source.
     /// </summary>
-    public string? Location { get; init; }
+    public LocationInputModel? Location { get; init; }
 
     /// <summary>
     /// Income lines for the source.

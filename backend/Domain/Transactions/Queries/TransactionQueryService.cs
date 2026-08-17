@@ -45,6 +45,7 @@ public sealed class TransactionQueryService(
             facts.AvailableAccountNames,
             facts.AvailableFundNames,
             facts.TransactionTypes,
+            facts.LocationCashFlow,
             query.Offset,
             query.Limit);
     }
@@ -76,6 +77,7 @@ public sealed class TransactionQueryService(
             facts.AvailableAccountNames,
             facts.AvailableFundNames,
             facts.TransactionTypes,
+            facts.LocationCashFlow,
             query.Offset,
             query.Limit);
         return new TransactionAccountingPeriodRangeQueryResult(range, AccountingPeriodRangeQueryFailure.None);

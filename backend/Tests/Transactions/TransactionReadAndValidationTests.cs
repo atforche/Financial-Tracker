@@ -35,7 +35,7 @@ public sealed class TransactionReadAndValidationTests
             Source = new CreateSpendingTransactionSourceModel { AccountId = Guid.NewGuid() },
             Destinations = [new CreateSpendingTransactionDestinationModel
             {
-                Location = "Market",
+                Location = new Models.Locations.LocationInputModel { NewLocationName = "Market" },
                 Amount = 80m,
                 FundAssignments = [new CreateFundAmountModel { FundId = groceries.Id, Amount = 80m }]
             }]

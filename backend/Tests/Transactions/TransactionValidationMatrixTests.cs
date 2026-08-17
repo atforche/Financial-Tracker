@@ -73,7 +73,7 @@ public sealed class TransactionValidationMatrixTests
             Source = new CreateSpendingTransactionSourceModel { AccountId = cash.Id },
             Destinations = [new CreateSpendingTransactionDestinationModel
             {
-                Location = "Market",
+                Location = new Models.Locations.LocationInputModel { NewLocationName = "Market" },
                 Amount = 10m,
                 FundAssignments = [
                     new CreateFundAmountModel { FundId = groceries.Id, Amount = 5m },
@@ -104,7 +104,7 @@ public sealed class TransactionValidationMatrixTests
             Amount = 100m,
             Source = new CreateIncomeTransactionSourceModel
             {
-                Location = "Employer",
+                Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" },
                 IncomeLines = [new CreateIncomeLineModel { Description = "Gross", Amount = 90m }],
                 IncomeDeductions = []
             },
@@ -138,7 +138,7 @@ public sealed class TransactionValidationMatrixTests
             Amount = 50m,
             Source = new CreateIncomeTransactionSourceModel
             {
-                Location = "Family",
+                Location = new Models.Locations.LocationInputModel { NewLocationName = "Family" },
                 IncomeLines = [new CreateIncomeLineModel { Description = "Gift", Amount = 50m }],
                 IncomeDeductions = [],
             },
@@ -184,7 +184,7 @@ public sealed class TransactionValidationMatrixTests
             Amount = 100m,
             Source = new CreateIncomeTransactionSourceModel
             {
-                Location = "Employer",
+                Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" },
                 IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = 100m }],
                 IncomeDeductions = []
             },
@@ -206,7 +206,7 @@ public sealed class TransactionValidationMatrixTests
             Amount = 100m,
             Source = new CreateIncomeTransactionSourceModel
             {
-                Location = "Employer",
+                Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" },
                 IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = 100m }],
                 IncomeDeductions = []
             },
@@ -272,7 +272,7 @@ public sealed class TransactionValidationMatrixTests
             Source = new UpdateSpendingTransactionSourceModel { AccountId = cash.Id },
             Destinations = [new UpdateSpendingTransactionDestinationModel
             {
-                Location = "Market",
+                Location = new Models.Locations.LocationInputModel { NewLocationName = "Market" },
                 Amount = 10m,
                 FundAssignments = [new CreateFundAmountModel { FundId = groceries.Id, Amount = 10m }]
             }]
@@ -352,7 +352,7 @@ public sealed class TransactionValidationMatrixTests
             Source = new CreateSpendingTransactionSourceModel { AccountId = cash.Id },
             Destinations = [new CreateSpendingTransactionDestinationModel
             {
-                Location = "Market",
+                Location = new Models.Locations.LocationInputModel { NewLocationName = "Market" },
                 Amount = 10m,
                 FundAssignments = [new CreateFundAmountModel { FundId = laterFund.Id, Amount = 10m }]
             }]

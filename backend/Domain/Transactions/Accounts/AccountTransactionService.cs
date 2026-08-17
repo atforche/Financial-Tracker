@@ -221,7 +221,7 @@ public class AccountTransactionService(
     {
         exceptions = [];
 
-        if (source.Account == null && string.IsNullOrWhiteSpace(source.Location))
+        if (source.Account == null && source.Location == null)
         {
             exceptions = exceptions.Append(new ValidationError(
                 sourcePath.Append(nameof(AccountTransactionSource.Account)),
@@ -230,7 +230,7 @@ public class AccountTransactionService(
                 sourcePath.Append(nameof(AccountTransactionSource.Location)),
                 "Account Transactions must have either a Source Account or a Source Location"));
         }
-        if (source.Account != null && !string.IsNullOrWhiteSpace(source.Location))
+        if (source.Account != null && source.Location != null)
         {
             exceptions = exceptions.Append(new ValidationError(
                 sourcePath.Append(nameof(AccountTransactionSource.Account)),
@@ -247,7 +247,7 @@ public class AccountTransactionService(
         }
         foreach ((int index, AccountTransactionDestination destination) in destinations.Index())
         {
-            if (destination.Account == null && string.IsNullOrWhiteSpace(destination.Location))
+            if (destination.Account == null && destination.Location == null)
             {
                 exceptions = exceptions.Append(new ValidationError(
                     destinationsPathBuilder(index).Append(nameof(AccountTransactionDestination.Account)),
@@ -256,7 +256,7 @@ public class AccountTransactionService(
                     destinationsPathBuilder(index).Append(nameof(AccountTransactionDestination.Location)),
                     "Account Transactions must have either a Destination Account or a Destination Location"));
             }
-            if (destination.Account != null && !string.IsNullOrWhiteSpace(destination.Location))
+            if (destination.Account != null && destination.Location != null)
             {
                 exceptions = exceptions.Append(new ValidationError(
                     destinationsPathBuilder(index).Append(nameof(AccountTransactionDestination.Account)),
@@ -297,7 +297,7 @@ public class AccountTransactionService(
                     destinationsPathBuilder(index).Append(nameof(AccountTransactionDestination.Account)),
                     "Duplicate destination accounts are not allowed"));
             }
-            if (!string.IsNullOrWhiteSpace(destination.Location) && destinations.Index().Any(pair =>
+            if (destination.Location != null && destinations.Index().Any(pair =>
                 pair.Index != index && pair.Item.Location == destination.Location))
             {
                 exceptions = exceptions.Append(new ValidationError(

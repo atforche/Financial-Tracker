@@ -1,6 +1,7 @@
 using Domain.Accounts;
 using Domain.FundGoals;
 using Domain.Funds;
+using Domain.Locations;
 
 namespace Domain.Transactions.Income;
 
@@ -38,6 +39,10 @@ public class IncomeTransaction : Transaction
             yield return accountId;
         }
     }
+
+    /// <inheritdoc/>
+    public override IEnumerable<LocationId> GetAllAffectedLocationIds() =>
+        Source.Location == null ? [] : [Source.Location.Id];
 
     /// <inheritdoc/>
     public override DateOnly? GetPostedDateForAccount(AccountId accountId)
@@ -198,5 +203,19 @@ public class IncomeTransaction : Transaction
         return amount == 0 ? existingTotals : existingTotals.Assign(
             reverse ? -amount : amount,
             reverse ? -regularAmount : regularAmount);
+    }
+
+    /// <inheritdoc/>
+    internal override void ReplaceLocation(Location source, Location target)
+    {
+        if (Source.Location == source)
+        {
+            Source = new IncomeTransactionSource(
+                Source.Account,
+                Source.PostedDate,
+                target,
+                Source.IncomeLines,
+                Source.IncomeDeductions);
+        }
     }
 }

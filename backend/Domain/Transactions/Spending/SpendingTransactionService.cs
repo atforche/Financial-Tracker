@@ -296,7 +296,7 @@ public class SpendingTransactionService(
         }
         foreach ((int index, SpendingTransactionDestination destination) in destinations.Index())
         {
-            if (destination.Account == null && string.IsNullOrWhiteSpace(destination.Location))
+            if (destination.Account == null && destination.Location == null)
             {
                 exceptions = exceptions.Append(new ValidationError(
                     destinationsPathBuilder(index).Append(nameof(SpendingTransactionDestination.Account)),
@@ -305,7 +305,7 @@ public class SpendingTransactionService(
                     destinationsPathBuilder(index).Append(nameof(SpendingTransactionDestination.Location)),
                     "Spending Transactions must have either a Destination Account or a Destination Location"));
             }
-            if (destination.Account != null && !string.IsNullOrWhiteSpace(destination.Location))
+            if (destination.Account != null && destination.Location != null)
             {
                 exceptions = exceptions.Append(new ValidationError(
                     destinationsPathBuilder(index).Append(nameof(SpendingTransactionDestination.Account)),
@@ -359,7 +359,7 @@ public class SpendingTransactionService(
                     destinationsPathBuilder(index).Append(nameof(SpendingTransactionDestination.Account)),
                     "Duplicate destination accounts are not allowed"));
             }
-            if (!string.IsNullOrWhiteSpace(destination.Location) && destinations.Index().Any(pair => pair.Item.Location == destination.Location && pair.Index != index))
+            if (destination.Location != null && destinations.Index().Any(pair => pair.Item.Location == destination.Location && pair.Index != index))
             {
                 exceptions = exceptions.Append(new ValidationError(
                     destinationsPathBuilder(index).Append(nameof(SpendingTransactionDestination.Location)),

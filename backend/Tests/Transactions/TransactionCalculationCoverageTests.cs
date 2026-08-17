@@ -44,7 +44,7 @@ public sealed class TransactionCalculationCoverageTests
             Amount = 50m,
             Source = new CreateIncomeTransactionSourceModel
             {
-                Location = "Family",
+                Location = new Models.Locations.LocationInputModel { NewLocationName = "Family" },
                 IncomeLines = [new CreateIncomeLineModel { Description = "Gift", Amount = 50m }],
                 IncomeDeductions = [],
             },
@@ -139,7 +139,7 @@ public sealed class TransactionCalculationCoverageTests
             Date = new DateOnly(2026, 7, 10),
             Description = "Income",
             Amount = 25m,
-            Source = new UpdateIncomeTransactionSourceModel { Location = "Employer", IncomeLines = [new UpdateIncomeLineModel { Description = "Pay", Amount = 25m }], IncomeDeductions = [] },
+            Source = new UpdateIncomeTransactionSourceModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" }, IncomeLines = [new UpdateIncomeLineModel { Description = "Pay", Amount = 25m }], IncomeDeductions = [] },
             Destinations = [new UpdateIncomeTransactionDestinationModel { AccountId = second.Id, Amount = 25m, FundAssignments = [new CreateIncomeFundAmountModel { FundId = newFund.Id, Amount = 25m }] }]
         };
         await test.Api.PostAsync($"/transactions/{income.Id}", incomeUpdate);
@@ -203,7 +203,7 @@ public sealed class TransactionCalculationCoverageTests
             Source = new CreateSpendingTransactionSourceModel { AccountId = cash.Id },
             Destinations = [
                 new CreateSpendingTransactionDestinationModel { AccountId = card.Id, Amount = 30m, FundAssignments = [new CreateFundAmountModel { FundId = groceries.Id, Amount = 30m }] },
-                new CreateSpendingTransactionDestinationModel { Location = "Restaurant", Amount = 20m, FundAssignments = [new CreateFundAmountModel { FundId = dining.Id, Amount = 20m }] }
+                new CreateSpendingTransactionDestinationModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Restaurant" }, Amount = 20m, FundAssignments = [new CreateFundAmountModel { FundId = dining.Id, Amount = 20m }] }
             ]
         });
         TransactionHandle spending = new(created.Id);
@@ -222,7 +222,7 @@ public sealed class TransactionCalculationCoverageTests
             Date = new DateOnly(2026, 7, 20),
             Description = "Card credit",
             Amount = 40m,
-            Source = new CreateAccountTransactionSourceModel { Location = "Adjustment" },
+            Source = new CreateAccountTransactionSourceModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Adjustment" } },
             Destinations = [new CreateAccountTransactionDestinationModel { AccountId = card.Id, Amount = 40m }]
         });
         TransactionHandle oneSided = new(oneSidedCreated.Id);

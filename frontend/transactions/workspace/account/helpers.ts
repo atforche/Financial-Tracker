@@ -10,6 +10,11 @@ import {
   UpdateTransactionModelUpdateAccountTransactionModelType,
 } from "@/framework/data/api";
 import {
+  type LocationDraft,
+  toLocationDraft,
+  toLocationInput,
+} from "@/locations/types";
+import {
   compareCurrencyAmounts,
   getCurrencyTotal,
 } from "@/framework/currencyHelpers";
@@ -27,7 +32,7 @@ import { isTrackedAccountType } from "@/accounts/helpers";
  */
 interface AccountSourceDraft {
   readonly account: AccountBalanceEventDraft | null;
-  readonly location: string;
+  readonly location: LocationDraft | null;
   readonly amount: number | null;
   readonly postedDate: string | null;
   readonly previousAccountBalance: number | null;
@@ -39,7 +44,7 @@ interface AccountSourceDraft {
  */
 interface AccountDestinationDraft {
   readonly account: AccountBalanceEventDraft | null;
-  readonly location: string;
+  readonly location: LocationDraft | null;
   readonly amount: number | null;
   readonly postedDate: string | null;
   readonly previousAccountBalance: number | null;
@@ -52,7 +57,7 @@ interface AccountDestinationDraft {
 const createEmptySource = function (): AccountSourceDraft {
   return {
     account: null,
-    location: "",
+    location: null,
     amount: null,
     postedDate: null,
     previousAccountBalance: null,
@@ -66,7 +71,7 @@ const createEmptySource = function (): AccountSourceDraft {
 const createEmptyDestination = function (): AccountDestinationDraft {
   return {
     account: null,
-    location: "",
+    location: null,
     amount: null,
     postedDate: null,
     previousAccountBalance: null,
@@ -79,7 +84,8 @@ const createEmptyDestination = function (): AccountDestinationDraft {
  */
 const validateSource = function (source: AccountSourceDraft): boolean {
   const hasAccount = source.account !== null;
-  const hasLocation = source.location.trim() !== "";
+  const hasLocation =
+    source.location !== null && source.location.name.trim() !== "";
   if ((hasAccount && hasLocation) || (!hasAccount && !hasLocation)) {
     return false;
   }
@@ -93,7 +99,7 @@ const validateDestination = function (
   destination: AccountDestinationDraft,
   sourceAccount: AccountBalanceEventDraft | null,
 ): boolean {
-  const normalizedLocation = destination.location.trim();
+  const normalizedLocation = destination.location?.name.trim() ?? "";
   const hasAccount = destination.account !== null;
   const hasLocation = normalizedLocation !== "";
   const destinationIsTracked =
@@ -146,7 +152,8 @@ const validateRequest = function (
     destination.account === null ? [] : [destination.account.accountId],
   );
   const destinationLocations = destinations.flatMap((destination) => {
-    const location = destination.location.trim();
+    const location =
+      destination.location?.id ?? destination.location?.name.trim() ?? "";
     return location === "" ? [] : [location];
   });
   const hasUniqueDestinationAccounts =
@@ -197,13 +204,13 @@ const buildCreateRequest = function (
       source: {
         accountId: source.account?.accountId ?? null,
         location:
-          source.account === null ? source.location.trim() || null : null,
+          source.account === null ? toLocationInput(source.location) : null,
       },
       destinations: destinations.map((destination) => ({
         accountId: destination.account?.accountId ?? null,
         location:
           destination.account === null
-            ? destination.location.trim() || null
+            ? toLocationInput(destination.location)
             : null,
         amount: destination.amount ?? 0,
       })),
@@ -240,13 +247,13 @@ const buildUpdateRequest = function (
       source: {
         accountId: source.account?.accountId ?? null,
         location:
-          source.account === null ? source.location.trim() || null : null,
+          source.account === null ? toLocationInput(source.location) : null,
       },
       destinations: destinations.map((destination) => ({
         accountId: destination.account?.accountId ?? null,
         location:
           destination.account === null
-            ? destination.location.trim() || null
+            ? toLocationInput(destination.location)
             : null,
         amount: destination.amount ?? 0,
       })),
@@ -319,7 +326,7 @@ const getSourceFromTransaction = function (
     account: getTransactionAccountDraftFromTransactionAccount(
       transaction.source.account,
     ),
-    location: transaction.source.location ?? "",
+    location: toLocationDraft(transaction.source.location ?? null),
     amount: transaction.amount,
     postedDate: transaction.source.account?.eventDate ?? null,
     previousAccountBalance:
@@ -340,7 +347,7 @@ const getDestinationsFromTransaction = function (
       account: getTransactionAccountDraftFromTransactionAccount(
         destination.account,
       ),
-      location: destination.location ?? "",
+      location: toLocationDraft(destination.location ?? null),
       amount: destination.amount,
       postedDate: destination.account?.eventDate ?? null,
       previousAccountBalance:

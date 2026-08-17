@@ -11,6 +11,7 @@ import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
+import type { Location } from "@/locations/types";
 import type { Transaction } from "@/transactions/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import createApiClient from "@/framework/data/createApiClient";
@@ -27,6 +28,7 @@ interface TransactionWorkspaceReferenceData {
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
+  readonly locations: Location[];
 }
 
 /**
@@ -70,13 +72,21 @@ const getTransactionWorkspaceReferenceData =
     });
     const accountsPromise = apiClient.GET("/accounts/with-balances");
     const fundsPromise = apiClient.GET("/funds/with-balances");
+    const locationsPromise = apiClient.GET("/locations", {
+      params: { query: { Limit: 500 } },
+    });
 
-    const [allAccountingPeriodsResponse, accountsResponse, fundsResponse] =
-      await Promise.all([
-        allAccountingPeriodsPromise,
-        accountsPromise,
-        fundsPromise,
-      ]);
+    const [
+      allAccountingPeriodsResponse,
+      accountsResponse,
+      fundsResponse,
+      locationsResponse,
+    ] = await Promise.all([
+      allAccountingPeriodsPromise,
+      accountsPromise,
+      fundsPromise,
+      locationsPromise,
+    ]);
 
     const allAccountingPeriods = unwrapApiResponse(
       allAccountingPeriodsResponse,
@@ -87,6 +97,10 @@ const getTransactionWorkspaceReferenceData =
       "Failed to fetch accounts",
     );
     const funds = unwrapApiResponse(fundsResponse, "Failed to fetch funds");
+    const locations = unwrapApiResponse(
+      locationsResponse,
+      "Failed to fetch Locations",
+    ).items;
 
     const openAccountingPeriods = allAccountingPeriods.items.filter(
       (period) => period.isOpen,
@@ -137,6 +151,7 @@ const getTransactionWorkspaceReferenceData =
       accounts: accounts.items,
       funds: funds.items,
       fundGoals,
+      locations,
     };
   };
 
@@ -234,6 +249,7 @@ const getTransactionWorkspaceListData = async function (
     accountingPeriodIds,
     accountIds,
     fundIds,
+    locationIds,
     fundNames,
     accountTypes,
     accountNames,
@@ -257,6 +273,9 @@ const getTransactionWorkspaceListData = async function (
   );
   const normalizedFundIds = normalizeStringSearchParams(
     toRepeatedSearchParams(fundIds),
+  );
+  const normalizedLocationIds = normalizeStringSearchParams(
+    toRepeatedSearchParams(locationIds),
   );
   const normalizedFundNames = normalizeStringSearchParams(
     toRepeatedSearchParams(fundNames),
@@ -304,6 +323,9 @@ const getTransactionWorkspaceListData = async function (
       : {}),
     ...(hasAccountFilter ? { "Filter.AccountIds": selectedAccountIds } : {}),
     ...(hasFundFilter ? { "Filter.FundIds": selectedFundIds } : {}),
+    ...(normalizedLocationIds.length > 0
+      ? { "Filter.LocationIds": normalizedLocationIds }
+      : {}),
     ...(normalizedTransactionTypes.length > 0
       ? { "Filter.Types": [...normalizedTransactionTypes] }
       : {}),
