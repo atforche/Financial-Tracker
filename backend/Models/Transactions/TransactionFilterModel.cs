@@ -21,6 +21,11 @@ public class TransactionFilterModel
     public IReadOnlyCollection<Guid>? FundIds { get; init; }
 
     /// <summary>
+    /// Location IDs to filter the Transactions by.
+    /// </summary>
+    public IReadOnlyCollection<Guid>? LocationIds { get; init; }
+
+    /// <summary>
     /// Transaction Types to filter the Transactions by.
     /// </summary>
     public IReadOnlyCollection<TransactionTypeModel>? Types { get; init; }

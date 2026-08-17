@@ -68,7 +68,7 @@ public sealed class AccountingPeriodQueryService(
 
         QueryPage<TransactionDetails> transactions = await transactionQueryService.GetAsync(
             new TransactionQuery(
-                new TransactionFilter([query.AccountingPeriodId], [], [], []),
+                new TransactionFilter([query.AccountingPeriodId], [], [], [], []),
                 query.Sort,
                 query.Offset,
                 query.Limit),

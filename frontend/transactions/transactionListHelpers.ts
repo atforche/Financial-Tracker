@@ -33,7 +33,7 @@ const getTransactionSourceLabel = function (transaction: Transaction): string {
   if (incomeTransaction !== null) {
     return (
       incomeTransaction.source.account?.account.name ??
-      incomeTransaction.source.location ??
+      incomeTransaction.source.location?.name ??
       ""
     );
   }
@@ -42,7 +42,7 @@ const getTransactionSourceLabel = function (transaction: Transaction): string {
   if (accountTransaction !== null) {
     return (
       accountTransaction.source.account?.account.name ??
-      accountTransaction.source.location ??
+      accountTransaction.source.location?.name ??
       ""
     );
   }
@@ -62,7 +62,7 @@ const getTransactionDestinationLabel = function (
     return summarizeValues(
       spendingTransaction.destinations.map(
         (destination) =>
-          destination.account?.account.name ?? destination.location ?? "",
+          destination.account?.account.name ?? destination.location?.name ?? "",
       ),
     );
   }
@@ -81,7 +81,7 @@ const getTransactionDestinationLabel = function (
     return summarizeValues(
       accountTransaction.destinations.map(
         (destination) =>
-          destination.account?.account.name ?? destination.location ?? "",
+          destination.account?.account.name ?? destination.location?.name ?? "",
       ),
     );
   }

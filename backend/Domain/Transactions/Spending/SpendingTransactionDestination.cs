@@ -1,5 +1,6 @@
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Locations;
 
 namespace Domain.Transactions.Spending;
 
@@ -23,7 +24,7 @@ public class SpendingTransactionDestination
     /// <summary>
     /// Location of the spending transaction destination.
     /// </summary>
-    public string? Location { get; private set; }
+    public Location? Location { get; private set; }
 
     /// <summary>
     /// Amount of the spending transaction destination.
@@ -38,7 +39,7 @@ public class SpendingTransactionDestination
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public SpendingTransactionDestination(Account? account, DateOnly? postedDate, string? location, decimal amount, List<FundAmount> fundAssignments)
+    public SpendingTransactionDestination(Account? account, DateOnly? postedDate, Location? location, decimal amount, List<FundAmount> fundAssignments)
     {
         Account = account;
         PostedDate = postedDate;

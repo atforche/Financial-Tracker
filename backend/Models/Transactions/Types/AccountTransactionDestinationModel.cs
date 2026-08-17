@@ -1,4 +1,5 @@
 using Models.Accounts;
+using Models.Locations;
 
 namespace Models.Transactions.Types;
 
@@ -15,7 +16,7 @@ public sealed class AccountTransactionDestinationModel
     /// <summary>
     /// Optional location for the destination.
     /// </summary>
-    public string? Location { get; init; }
+    public LocationWithAmountModel? Location { get; init; }
 
     /// <summary>
     /// Amount directed to this destination.

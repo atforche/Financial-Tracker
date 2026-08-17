@@ -17,6 +17,7 @@ interface TransactionWorkspaceSearchParams {
   accountingPeriodIds?: string | readonly string[];
   accountIds?: string | readonly string[];
   fundIds?: string | readonly string[];
+  locationIds?: string | readonly string[];
   fundNames?: string | readonly string[];
   accountTypes?: AccountType | readonly AccountType[];
   accountNames?: string | readonly string[];
@@ -50,6 +51,7 @@ const TransactionWorkspace = async function ({
     allAccountingPeriods,
     accounts,
     funds,
+    locations,
     selectedAccountIds,
     selectedFundIds,
     transactions,
@@ -72,6 +74,7 @@ const TransactionWorkspace = async function ({
           accountingPeriods={allAccountingPeriods}
           accounts={accounts}
           funds={funds}
+          locations={locations}
           selectedAccountIds={selectedAccountIds}
           selectedFundIds={selectedFundIds}
         />

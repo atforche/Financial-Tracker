@@ -531,6 +531,7 @@ export interface paths {
                     "Filter.AccountingPeriodIds"?: string[];
                     "Filter.AccountIds"?: string[];
                     "Filter.FundIds"?: string[];
+                    "Filter.LocationIds"?: string[];
                     "Filter.Types"?: components["schemas"]["TransactionTypeModel"][];
                     /** @description Sort to apply to the results */
                     Sort?: components["schemas"]["TransactionSortModel"];
@@ -735,6 +736,7 @@ export interface paths {
                     "Filter.AccountingPeriodIds"?: string[];
                     "Filter.AccountIds"?: string[];
                     "Filter.FundIds"?: string[];
+                    "Filter.LocationIds"?: string[];
                     "Filter.Types"?: components["schemas"]["TransactionTypeModel"][];
                     /** @description Sort to apply to the results */
                     Sort?: components["schemas"]["TransactionSortModel"];
@@ -784,6 +786,7 @@ export interface paths {
                     "Filter.AccountingPeriodIds"?: string[];
                     "Filter.AccountIds"?: string[];
                     "Filter.FundIds"?: string[];
+                    "Filter.LocationIds"?: string[];
                     "Filter.Types"?: components["schemas"]["TransactionTypeModel"][];
                     /** @description Sort to apply to the results */
                     Sort?: components["schemas"]["TransactionSortModel"];
@@ -915,6 +918,270 @@ export interface paths {
                         "text/plain": components["schemas"]["TransactionModel"];
                         "application/json": components["schemas"]["TransactionModel"];
                         "text/json": components["schemas"]["TransactionModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/locations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Gets Locations matching the provided query. */
+        get: {
+            parameters: {
+                query?: {
+                    "Filter.NameSearch"?: string;
+                    "Filter.Ids"?: string[];
+                    /** @description Sort order for Locations. */
+                    Sort?: components["schemas"]["LocationSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfLocationModel"];
+                        "application/json": components["schemas"]["CollectionModelOfLocationModel"];
+                        "text/json": components["schemas"]["CollectionModelOfLocationModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Creates a Location. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateLocationModel"];
+                    "text/json": components["schemas"]["CreateLocationModel"];
+                    "application/*+json": components["schemas"]["CreateLocationModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LocationModel"];
+                        "application/json": components["schemas"]["LocationModel"];
+                        "text/json": components["schemas"]["LocationModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/locations/{locationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Gets a Location by ID. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    locationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LocationModel"];
+                        "application/json": components["schemas"]["LocationModel"];
+                        "text/json": components["schemas"]["LocationModel"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Renames a Location. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    locationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateLocationModel"];
+                    "text/json": components["schemas"]["UpdateLocationModel"];
+                    "application/*+json": components["schemas"]["UpdateLocationModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LocationModel"];
+                        "application/json": components["schemas"]["LocationModel"];
+                        "text/json": components["schemas"]["LocationModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        /** Deletes an unused Location. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    locationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/locations/{sourceLocationId}/consolidate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Consolidates a duplicate Location into a surviving Location. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sourceLocationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ConsolidateLocationModel"];
+                    "text/json": components["schemas"]["ConsolidateLocationModel"];
+                    "application/*+json": components["schemas"]["ConsolidateLocationModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LocationModel"];
+                        "application/json": components["schemas"]["LocationModel"];
+                        "text/json": components["schemas"]["LocationModel"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -3290,8 +3557,7 @@ export interface components {
         /** @description Model representing a destination of an account transaction response. */
         AccountTransactionDestinationModel: {
             account?: null | components["schemas"]["AccountBalanceEventModel"];
-            /** @description Optional location for the destination. */
-            location?: null | string;
+            location?: null | components["schemas"]["LocationWithAmountModel"];
             /**
              * Format: double
              * @description Amount directed to this destination.
@@ -3306,8 +3572,7 @@ export interface components {
         /** @description Model representing the source of an account transaction response. */
         AccountTransactionSourceModel: {
             account?: null | components["schemas"]["AccountBalanceEventModel"];
-            /** @description Optional location for the source. */
-            location?: null | string;
+            location?: null | components["schemas"]["LocationWithAmountModel"];
         };
         /** @description Model representing the total posted balance for an Account Type. */
         AccountTypeBalanceModel: {
@@ -3518,6 +3783,16 @@ export interface components {
             totalCount: number;
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfLocationModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["LocationModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfstring: {
             /** @description The collection of items. */
             items: string[];
@@ -3556,6 +3831,14 @@ export interface components {
              * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
              */
             totalCount: number;
+        };
+        /** @description API request to consolidate a duplicate Location. */
+        ConsolidateLocationModel: {
+            /**
+             * Format: uuid
+             * @description ID of the Location that will survive consolidation.
+             */
+            targetLocationId: string;
         };
         /** @description Model describing contribution progress. */
         ContributionProgressModel: {
@@ -3616,8 +3899,7 @@ export interface components {
              * @description Optional account ID for the destination account.
              */
             accountId?: null | string;
-            /** @description Optional location for the destination. */
-            location?: null | string;
+            location?: null | components["schemas"]["LocationInputModel"];
             /**
              * Format: double
              * @description Amount directed to this destination.
@@ -3631,8 +3913,7 @@ export interface components {
              * @description Optional account ID for the source account.
              */
             accountId?: null | string;
-            /** @description Optional location for the source. */
-            location?: null | string;
+            location?: null | components["schemas"]["LocationInputModel"];
         };
         /** @description Model representing a request to create a Fund Amount */
         CreateFundAmountModel: {
@@ -3760,12 +4041,16 @@ export interface components {
              * @description Optional account ID for the income source.
              */
             accountId?: null | string;
-            /** @description Optional location for the income source. */
-            location?: null | string;
+            location?: null | components["schemas"]["LocationInputModel"];
             /** @description Income lines for the source. */
             incomeLines: components["schemas"]["CreateIncomeLineModel"][];
             /** @description Income deductions for the source. */
             incomeDeductions: components["schemas"]["CreateIncomeDeductionModel"][];
+        };
+        /** @description API request to create a Location. */
+        CreateLocationModel: {
+            /** @description Canonical Location name. */
+            name: string;
         };
         /** @description Model representing a destination of a spending transaction create request. */
         CreateSpendingTransactionDestinationModel: {
@@ -3774,8 +4059,7 @@ export interface components {
              * @description Optional account ID for the destination account.
              */
             accountId?: null | string;
-            /** @description Optional location for the destination. */
-            location?: null | string;
+            location?: null | components["schemas"]["LocationInputModel"];
             /**
              * Format: double
              * @description Amount directed to this destination.
@@ -4498,12 +4782,48 @@ export interface components {
         /** @description Model representing the source of an income transaction response. */
         IncomeTransactionSourceModel: {
             account?: null | components["schemas"]["AccountBalanceEventModel"];
-            /** @description Optional location for the source. */
-            location?: null | string;
+            location?: null | components["schemas"]["LocationWithAmountModel"];
             /** @description Income lines for the source. */
             incomeLines: components["schemas"]["IncomeLineModel"][];
             /** @description Income deductions for the source. */
             incomeDeductions: components["schemas"]["IncomeDeductionModel"][];
+        };
+        /** @description Selects an existing Location or explicitly requests a new one. */
+        LocationInputModel: {
+            /**
+             * Format: uuid
+             * @description Existing Location ID.
+             */
+            locationId?: null | string;
+            /** @description Confirmed name for a new Location created with the parent operation. */
+            newLocationName?: null | string;
+        };
+        /** @description API model for a Location. */
+        LocationModel: {
+            /**
+             * Format: uuid
+             * @description Location ID.
+             */
+            id: string;
+            /** @description Canonical Location name. */
+            name: string;
+        };
+        /** @enum {unknown} */
+        LocationSortModel: LocationSortModel | null;
+        /** @description Location endpoint and its signed impact on a Transaction. */
+        LocationWithAmountModel: {
+            /**
+             * Format: double
+             * @description Positive for money received and negative for money sent.
+             */
+            amount: number;
+            /**
+             * Format: uuid
+             * @description Location ID.
+             */
+            id: string;
+            /** @description Canonical Location name. */
+            name: string;
         };
         /** @description Model representing a request to onboard an Account. */
         OnboardAccountModel: {
@@ -4575,8 +4895,7 @@ export interface components {
         /** @description Model representing a destination of a spending transaction response. */
         SpendingTransactionDestinationModel: {
             account?: null | components["schemas"]["AccountBalanceEventModel"];
-            /** @description Optional location for the destination. */
-            location?: null | string;
+            location?: null | components["schemas"]["LocationWithAmountModel"];
             /**
              * Format: double
              * @description Amount directed to this destination.
@@ -4783,6 +5102,16 @@ export interface components {
             /** @description Summary counts and amounts for each Transaction Type in the current Accounting Period. */
             transactionTypes: components["schemas"]["TransactionSummaryByTypeModel"][];
             /**
+             * Format: double
+             * @description Money received by the selected Locations in the current Accounting Period range.
+             */
+            locationIncomingAmount: number;
+            /**
+             * Format: double
+             * @description Money sent to the selected Locations in the current Accounting Period range.
+             */
+            locationOutgoingAmount: number;
+            /**
              * Format: int32
              * @description Maximum number of results to return
              */
@@ -4803,6 +5132,16 @@ export interface components {
             availableFundNames: string[];
             /** @description Summary counts and amounts for each Transaction Type in the current date range. */
             transactionTypes: components["schemas"]["TransactionSummaryByTypeModel"][];
+            /**
+             * Format: double
+             * @description Money received by the selected Locations in the current date range.
+             */
+            locationIncomingAmount: number;
+            /**
+             * Format: double
+             * @description Money sent to the selected Locations in the current date range.
+             */
+            locationOutgoingAmount: number;
             /**
              * Format: int32
              * @description Maximum number of results to return
@@ -4850,8 +5189,7 @@ export interface components {
              * @description Optional account ID for the destination account.
              */
             accountId?: null | string;
-            /** @description Optional location for the destination. */
-            location?: null | string;
+            location?: null | components["schemas"]["LocationInputModel"];
             /**
              * Format: double
              * @description Amount directed to this destination.
@@ -4865,8 +5203,7 @@ export interface components {
              * @description Optional account ID for the source account.
              */
             accountId?: null | string;
-            /** @description Optional location for the source. */
-            location?: null | string;
+            location?: null | components["schemas"]["LocationInputModel"];
         };
         /** @description Model representing Fund Goal configuration updates. */
         UpdateFundGoalModel: {
@@ -4961,12 +5298,16 @@ export interface components {
              * @description Optional account ID for the income source.
              */
             accountId?: null | string;
-            /** @description Optional location for the income source. */
-            location?: null | string;
+            location?: null | components["schemas"]["LocationInputModel"];
             /** @description Income lines for the source. */
             incomeLines: components["schemas"]["UpdateIncomeLineModel"][];
             /** @description Income deductions for the source. */
             incomeDeductions: components["schemas"]["UpdateIncomeDeductionModel"][];
+        };
+        /** @description API request to rename a Location. */
+        UpdateLocationModel: {
+            /** @description New canonical Location name. */
+            name: string;
         };
         /** @description Model representing a destination of a spending transaction update request. */
         UpdateSpendingTransactionDestinationModel: {
@@ -4975,8 +5316,7 @@ export interface components {
              * @description Optional account ID for the destination account.
              */
             accountId?: null | string;
-            /** @description Optional location for the destination. */
-            location?: null | string;
+            location?: null | components["schemas"]["LocationInputModel"];
             /**
              * Format: double
              * @description Amount directed to this destination.
@@ -5345,6 +5685,10 @@ export enum FundWithBalanceSortModel {
     DescriptionDescending = "DescriptionDescending",
     PostedBalance = "PostedBalance",
     PostedBalanceDescending = "PostedBalanceDescending"
+}
+export enum LocationSortModel {
+    Name = "Name",
+    NameDescending = "NameDescending"
 }
 export enum TransactionModelAccountTransactionModelType {
     Account = "Account"

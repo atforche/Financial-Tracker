@@ -1,6 +1,7 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Locations;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
@@ -31,6 +32,9 @@ internal sealed class TransactionConfiguration :
     private static readonly ValueConverter<FundId, Guid> FundIdConverter =
         new(fundId => fundId.Value, value => new FundId(value));
 
+    private static readonly ValueConverter<LocationId?, Guid?> NullableLocationIdConverter =
+        new(locationId => ConvertNullableLocationIdToGuid(locationId), value => ConvertGuidToNullableLocationId(value));
+
     private static Guid? ConvertNullableAccountIdToGuid(AccountId? accountId)
     {
         if (accountId is null)
@@ -48,6 +52,10 @@ internal sealed class TransactionConfiguration :
         }
         return new AccountId(value.Value);
     }
+
+    private static Guid? ConvertNullableLocationIdToGuid(LocationId? locationId) => locationId?.Value;
+
+    private static LocationId? ConvertGuidToNullableLocationId(Guid? value) => value == null ? null : new LocationId(value.Value);
 
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<Transaction> builder)
@@ -92,12 +100,15 @@ internal sealed class TransactionConfiguration :
                 .HasConversion(NullableAccountIdConverter);
             destinationBuilder.Property(destination => destination.PostedDate)
                 .HasColumnName("CreditPostedDate");
-            destinationBuilder.Property(destination => destination.Location)
-                .HasColumnName("Location");
+            destinationBuilder.Property<LocationId?>("LocationId")
+                .HasColumnName("LocationId")
+                .HasConversion(NullableLocationIdConverter);
             destinationBuilder.Property(destination => destination.Amount)
                 .HasColumnName("Amount");
             destinationBuilder.HasOne(destination => destination.Account).WithMany().HasForeignKey("AccountId");
             destinationBuilder.Navigation(destination => destination.Account).AutoInclude();
+            destinationBuilder.HasOne(destination => destination.Location).WithMany().HasForeignKey("LocationId").OnDelete(DeleteBehavior.Restrict);
+            destinationBuilder.Navigation(destination => destination.Location).AutoInclude();
 
             destinationBuilder.OwnsMany<FundAmount>(nameof(SpendingTransactionDestination.FundAssignments), fundAssignmentBuilder =>
             {
@@ -123,10 +134,13 @@ internal sealed class TransactionConfiguration :
                 .HasConversion(NullableAccountIdConverter);
             sourceBuilder.Property(source => source.PostedDate)
                 .HasColumnName("IncomeTransaction_SourcePostedDate");
-            sourceBuilder.Property(source => source.Location)
-                .HasColumnName("IncomeTransaction_SourceLocation");
+            sourceBuilder.Property<LocationId?>("LocationId")
+                .HasColumnName("IncomeTransaction_SourceLocationId")
+                .HasConversion(NullableLocationIdConverter);
             sourceBuilder.HasOne(source => source.Account).WithMany().HasForeignKey("AccountId");
             sourceBuilder.Navigation(source => source.Account).AutoInclude();
+            sourceBuilder.HasOne(source => source.Location).WithMany().HasForeignKey("LocationId").OnDelete(DeleteBehavior.Restrict);
+            sourceBuilder.Navigation(source => source.Location).AutoInclude();
 
             sourceBuilder.OwnsMany<IncomeLine>(nameof(IncomeTransactionSource.IncomeLines), incomeLineBuilder =>
             {
@@ -180,10 +194,13 @@ internal sealed class TransactionConfiguration :
                 .HasConversion(NullableAccountIdConverter);
             sourceBuilder.Property(source => source.PostedDate)
                 .HasColumnName("AccountTransaction_DebitPostedDate");
-            sourceBuilder.Property(source => source.Location)
-                .HasColumnName("AccountTransaction_SourceLocation");
+            sourceBuilder.Property<LocationId?>("LocationId")
+                .HasColumnName("AccountTransaction_SourceLocationId")
+                .HasConversion(NullableLocationIdConverter);
             sourceBuilder.HasOne(source => source.Account).WithMany().HasForeignKey("AccountId");
             sourceBuilder.Navigation(source => source.Account).AutoInclude();
+            sourceBuilder.HasOne(source => source.Location).WithMany().HasForeignKey("LocationId").OnDelete(DeleteBehavior.Restrict);
+            sourceBuilder.Navigation(source => source.Location).AutoInclude();
         });
 
         builder.OwnsMany<AccountTransactionDestination>(nameof(AccountTransaction.Destinations), destinationBuilder =>
@@ -197,12 +214,15 @@ internal sealed class TransactionConfiguration :
                 .HasConversion(NullableAccountIdConverter);
             destinationBuilder.Property(destination => destination.PostedDate)
                 .HasColumnName("CreditPostedDate");
-            destinationBuilder.Property(destination => destination.Location)
-                .HasColumnName("Location");
+            destinationBuilder.Property<LocationId?>("LocationId")
+                .HasColumnName("LocationId")
+                .HasConversion(NullableLocationIdConverter);
             destinationBuilder.Property(destination => destination.Amount)
                 .HasColumnName("Amount");
             destinationBuilder.HasOne(destination => destination.Account).WithMany().HasForeignKey("AccountId");
             destinationBuilder.Navigation(destination => destination.Account).AutoInclude();
+            destinationBuilder.HasOne(destination => destination.Location).WithMany().HasForeignKey("LocationId").OnDelete(DeleteBehavior.Restrict);
+            destinationBuilder.Navigation(destination => destination.Location).AutoInclude();
         });
     }
 

@@ -4,9 +4,11 @@ import type {
   AccountWithBalance,
 } from "@/accounts/types";
 import { Box, Stack, Typography } from "@mui/material";
+import type { Location, LocationDraft } from "@/locations/types";
 
 import AccountBalanceEventFrame from "@/transactions/workspace/AccountBalanceEventFrame";
 import type { JSX } from "react";
+import LocationEntryField from "@/locations/LocationEntryField";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import type { Transaction } from "@/transactions/types";
 
@@ -21,8 +23,9 @@ interface TransactionAccountOrLocationFrameProps {
     ((account: AccountBalanceEventDraft | null) => void) | null;
   readonly accountCaption?: string;
   readonly locationCaption: string;
-  readonly location: string | null;
-  readonly setLocation: ((location: string) => void) | null;
+  readonly locations?: readonly Location[] | undefined;
+  readonly location: LocationDraft | null;
+  readonly setLocation: ((location: LocationDraft | null) => void) | null;
   readonly accountFilter?: ((account: Account) => boolean) | null;
   readonly balanceChange?: number | null;
   readonly readOnly?: boolean;
@@ -38,6 +41,7 @@ const TransactionAccountOrLocationFrame = function ({
   setAccount,
   accountCaption = "Account",
   locationCaption,
+  locations,
   location,
   setLocation,
   accountFilter = null,
@@ -45,7 +49,7 @@ const TransactionAccountOrLocationFrame = function ({
   readOnly = false,
 }: TransactionAccountOrLocationFrameProps): JSX.Element {
   const hasAccount = account !== null;
-  const hasLocation = (location ?? "").trim() !== "";
+  const hasLocation = (location?.name ?? "").trim() !== "";
 
   if (readOnly && hasAccount && !hasLocation) {
     return (
@@ -65,7 +69,7 @@ const TransactionAccountOrLocationFrame = function ({
     return (
       <StringEntryField
         label={locationCaption}
-        value={location}
+        value={location?.name ?? null}
         setValue={null}
       />
     );
@@ -96,8 +100,9 @@ const TransactionAccountOrLocationFrame = function ({
         Or
       </Typography>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <StringEntryField
+        <LocationEntryField
           label={locationCaption}
+          locations={locations}
           value={location}
           setValue={readOnly ? null : setLocation}
           disabled={!readOnly && account !== null}

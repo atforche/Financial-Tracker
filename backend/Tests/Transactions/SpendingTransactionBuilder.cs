@@ -88,7 +88,7 @@ internal sealed class SpendingTransactionBuilder(TestApiClient apiClient)
             },
             Destinations = [new CreateSpendingTransactionDestinationModel
             {
-                Location = location,
+                Location = new Models.Locations.LocationInputModel { NewLocationName = location },
                 Amount = _amount,
                 FundAssignments = [new CreateFundAmountModel
                 {
@@ -120,7 +120,7 @@ internal sealed class SpendingTransactionBuilder(TestApiClient apiClient)
             },
             Destinations = [new UpdateSpendingTransactionDestinationModel
             {
-                Location = location,
+                Location = new Models.Locations.LocationInputModel { NewLocationName = location },
                 Amount = _amount,
                 FundAssignments = [new CreateFundAmountModel
                 {

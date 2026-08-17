@@ -12,6 +12,8 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import type { JSX } from "react";
+import type { Location } from "@/locations/types";
+import { LocationProvider } from "@/locations/LocationProvider";
 import UpdateAccountTransactionForm from "@/transactions/workspace/account/UpdateAccountTransactionForm";
 import UpdateFundTransactionForm from "@/transactions/workspace/fund/UpdateFundTransactionForm";
 import UpdateIncomeTransactionForm from "@/transactions/workspace/income/UpdateIncomeTransactionForm";
@@ -26,6 +28,7 @@ interface UpdateTransactionFormProps {
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
+  readonly locations: Location[];
   readonly redirectUrl: string;
 }
 
@@ -38,10 +41,12 @@ const UpdateTransactionForm = function ({
   accounts,
   funds,
   fundGoals,
+  locations,
   redirectUrl,
 }: UpdateTransactionFormProps): JSX.Element | null {
+  let form: JSX.Element | null = null;
   if (isIncomeTransaction(transaction)) {
-    return (
+    form = (
       <UpdateIncomeTransactionForm
         transaction={transaction}
         transactionAccountingPeriod={transactionAccountingPeriod}
@@ -51,9 +56,8 @@ const UpdateTransactionForm = function ({
         redirectUrl={redirectUrl}
       />
     );
-  }
-  if (isSpendingTransaction(transaction)) {
-    return (
+  } else if (isSpendingTransaction(transaction)) {
+    form = (
       <UpdateSpendingTransactionForm
         transaction={transaction}
         transactionAccountingPeriod={transactionAccountingPeriod}
@@ -63,9 +67,8 @@ const UpdateTransactionForm = function ({
         redirectUrl={redirectUrl}
       />
     );
-  }
-  if (isAccountTransaction(transaction)) {
-    return (
+  } else if (isAccountTransaction(transaction)) {
+    form = (
       <UpdateAccountTransactionForm
         transaction={transaction}
         transactionAccountingPeriod={transactionAccountingPeriod}
@@ -73,9 +76,8 @@ const UpdateTransactionForm = function ({
         redirectUrl={redirectUrl}
       />
     );
-  }
-  if (isFundTransaction(transaction)) {
-    return (
+  } else if (isFundTransaction(transaction)) {
+    form = (
       <UpdateFundTransactionForm
         transaction={transaction}
         transactionAccountingPeriod={transactionAccountingPeriod}
@@ -84,7 +86,7 @@ const UpdateTransactionForm = function ({
       />
     );
   }
-  return null;
+  return <LocationProvider locations={locations}>{form}</LocationProvider>;
 };
 
 export default UpdateTransactionForm;

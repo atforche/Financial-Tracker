@@ -26,4 +26,14 @@ public class TransactionsInDateRangeModel : PaginationModel
     /// Summary counts and amounts for each Transaction Type in the current date range.
     /// </summary>
     public required IReadOnlyCollection<TransactionSummaryByTypeModel> TransactionTypes { get; init; }
+
+    /// <summary>
+    /// Money received by the selected Locations in the current date range.
+    /// </summary>
+    public required decimal LocationIncomingAmount { get; init; }
+
+    /// <summary>
+    /// Money sent to the selected Locations in the current date range.
+    /// </summary>
+    public required decimal LocationOutgoingAmount { get; init; }
 }

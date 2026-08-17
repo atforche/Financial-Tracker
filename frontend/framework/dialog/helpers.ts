@@ -36,7 +36,7 @@ const buildPaperSx = function (baseSx?: SxProps<Theme>): readonly ResolvedSx[] {
     overflow: "hidden",
     borderRadius: 5,
     border: `1px solid ${alpha(theme.palette.divider, 0.72)}`,
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: "background.paper",
   });
   return [sharedSx, ...toSxArray(baseSx)];
 };

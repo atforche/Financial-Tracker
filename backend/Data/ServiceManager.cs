@@ -2,6 +2,7 @@ using Data.AccountingPeriods;
 using Data.Accounts;
 using Data.FundGoals;
 using Data.Funds;
+using Data.Locations;
 using Data.Transactions;
 using Data.Users;
 using Domain.AccountingPeriods;
@@ -12,6 +13,8 @@ using Domain.FundGoals;
 using Domain.FundGoals.Queries;
 using Domain.Funds;
 using Domain.Funds.Queries;
+using Domain.Locations;
+using Domain.Locations.Queries;
 using Domain.Transactions;
 using Domain.Transactions.Queries;
 using Domain.Users;
@@ -61,6 +64,9 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<ITransactionRepository, TransactionRepository>();
         _ = serviceCollection.AddScoped<ITransactionBalanceEventQueryRepository, TransactionBalanceEventQueryRepository>();
         _ = serviceCollection.AddScoped<ITransactionQueryRepository, TransactionQueryRepository>();
+
+        _ = serviceCollection.AddScoped<ILocationRepository, LocationRepository>();
+        _ = serviceCollection.AddScoped<ILocationQueryRepository, LocationQueryRepository>();
 
         _ = serviceCollection.AddScoped<IUserRepository, UserRepository>();
         _ = serviceCollection.AddScoped<IUserInvitationRepository, UserInvitationRepository>();

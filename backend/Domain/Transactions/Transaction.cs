@@ -2,6 +2,7 @@ using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.FundGoals;
 using Domain.Funds;
+using Domain.Locations;
 
 namespace Domain.Transactions;
 
@@ -44,6 +45,11 @@ public abstract class Transaction : Entity<TransactionId>
     /// Gets all Account IDs affected by this Transaction
     /// </summary>
     public abstract IEnumerable<AccountId> GetAllAffectedAccountIds();
+
+    /// <summary>
+    /// Gets all Location IDs affected by this Transaction.
+    /// </summary>
+    public abstract IEnumerable<LocationId> GetAllAffectedLocationIds();
 
     /// <summary>
     /// Gets the posted date for the provided account ID
@@ -283,6 +289,11 @@ public abstract class Transaction : Entity<TransactionId>
     /// Posts this Transaction to the provided Fund Goal totals.
     /// </summary>
     protected abstract FundGoalTotals PostToFundGoalTotals(FundGoalTotals existingTotals, AccountId accountId, bool reverse);
+
+    /// <summary>
+    /// Replaces one Location with another while preserving Transaction values.
+    /// </summary>
+    internal abstract void ReplaceLocation(Location source, Location target);
 }
 
 /// <summary>

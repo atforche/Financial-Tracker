@@ -1,6 +1,7 @@
 using Domain.Accounts;
 using Domain.FundGoals;
 using Domain.Funds;
+using Domain.Locations;
 
 namespace Domain.Transactions.Spending;
 
@@ -33,6 +34,12 @@ public class SpendingTransaction : Transaction
             }
         }
     }
+
+    /// <inheritdoc/>
+    public override IEnumerable<LocationId> GetAllAffectedLocationIds() => Destinations
+        .Where(destination => destination.Location != null)
+        .Select(destination => destination.Location!.Id)
+        .Distinct();
 
     /// <inheritdoc/>
     public override DateOnly? GetPostedDateForAccount(AccountId accountId)
@@ -203,5 +210,37 @@ public class SpendingTransaction : Transaction
             : _destinations.Where(destination => destination.Account?.Id == accountId).SelectMany(destination => destination.FundAssignments);
         decimal amount = assignments.Where(assignment => assignment.FundId == existingTotals.FundId).Sum(assignment => assignment.Amount);
         return amount == 0 ? existingTotals : existingTotals.Spend(reverse ? -amount : amount);
+    }
+
+    /// <inheritdoc/>
+    internal override void ReplaceLocation(Location source, Location target)
+    {
+        var destinations = _destinations
+            .Select(destination => destination.Location == source
+                ? new SpendingTransactionDestination(
+                    destination.Account,
+                    destination.PostedDate,
+                    target,
+                    destination.Amount,
+                    destination.FundAssignments.ToList())
+                : destination)
+            .ToList();
+        var targetDestinations = destinations
+            .Where(destination => destination.Location == target)
+            .ToList();
+        if (targetDestinations.Count > 1)
+        {
+            _ = destinations.RemoveAll(destination => destination.Location == target);
+            destinations.Add(new SpendingTransactionDestination(
+                null,
+                null,
+                target,
+                targetDestinations.Sum(destination => destination.Amount),
+                targetDestinations.SelectMany(destination => destination.FundAssignments)
+                    .GroupBy(assignment => assignment.FundId)
+                    .Select(group => new FundAmount { FundId = group.Key, Amount = group.Sum(assignment => assignment.Amount) })
+                    .ToList()));
+        }
+        UpdateSpendingDestinations(destinations);
     }
 }

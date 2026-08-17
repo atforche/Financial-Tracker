@@ -28,7 +28,7 @@ public sealed class TransactionCalculationGapTests
         FundHandle dining = await test.Funds.Create("Dining").In(july).CreateAsync();
         TransactionHandle transaction = await CreateSpendingAsync(test, july, cash, [
             new CreateSpendingTransactionDestinationModel { AccountId = card.Id, Amount = 30m, FundAssignments = [new CreateFundAmountModel { FundId = groceries.Id, Amount = 30m }] },
-            new CreateSpendingTransactionDestinationModel { Location = "Restaurant", Amount = 20m, FundAssignments = [new CreateFundAmountModel { FundId = dining.Id, Amount = 20m }] }
+            new CreateSpendingTransactionDestinationModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Restaurant" }, Amount = 20m, FundAssignments = [new CreateFundAmountModel { FundId = dining.Id, Amount = 20m }] }
         ]);
 
         await test.Transactions.PostAsync(transaction, cash, new DateOnly(2026, 7, 16));
@@ -74,7 +74,7 @@ public sealed class TransactionCalculationGapTests
         FundHandle oldFund = await test.Funds.Create("Old").In(july).CreateAsync();
         FundHandle newFund = await test.Funds.Create("New").In(july).CreateAsync();
         TransactionHandle transaction = await CreateSpendingAsync(test, july, cash, [
-            new CreateSpendingTransactionDestinationModel { Location = "Market", Amount = 25m, FundAssignments = [new CreateFundAmountModel { FundId = oldFund.Id, Amount = 25m }] }
+            new CreateSpendingTransactionDestinationModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Market" }, Amount = 25m, FundAssignments = [new CreateFundAmountModel { FundId = oldFund.Id, Amount = 25m }] }
         ]);
 
         UpdateTransactionModel update = new UpdateSpendingTransactionModel
@@ -83,7 +83,7 @@ public sealed class TransactionCalculationGapTests
             Description = "Market",
             Amount = 25m,
             Source = new UpdateSpendingTransactionSourceModel { AccountId = cash.Id },
-            Destinations = [new UpdateSpendingTransactionDestinationModel { Location = "Market", Amount = 25m, FundAssignments = [new CreateFundAmountModel { FundId = newFund.Id, Amount = 25m }] }]
+            Destinations = [new UpdateSpendingTransactionDestinationModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Market" }, Amount = 25m, FundAssignments = [new CreateFundAmountModel { FundId = newFund.Id, Amount = 25m }] }]
         };
         await test.Api.PostAsync($"/transactions/{transaction.Id}", update);
         Assert.Equal(0m, (await test.FundQueries.GetBalanceAsync(oldFund)).IncludingPending);
@@ -181,7 +181,7 @@ public sealed class TransactionCalculationGapTests
         FundHandle income = await test.Funds.Create("Income").In(july).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
         TransactionHandle pay = await CreateIncomeAsync(test, july, null, cash, income, 60m);
-        TransactionHandle spend = await CreateSpendingAsync(test, july, cash, [new CreateSpendingTransactionDestinationModel { Location = "Market", Amount = 15m, FundAssignments = [new CreateFundAmountModel { FundId = groceries.Id, Amount = 15m }] }]);
+        TransactionHandle spend = await CreateSpendingAsync(test, july, cash, [new CreateSpendingTransactionDestinationModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Market" }, Amount = 15m, FundAssignments = [new CreateFundAmountModel { FundId = groceries.Id, Amount = 15m }] }]);
         await test.Transactions.PostAsync(pay, cash, new DateOnly(2026, 7, 15));
         await test.Transactions.PostAsync(spend, cash, new DateOnly(2026, 7, 16));
         await test.Transactions.UnpostAsync(spend);
@@ -215,17 +215,17 @@ public sealed class TransactionCalculationGapTests
 
     private static async Task<TransactionHandle> CreateIncomeAsync(FinancialTrackerTestContext test, AccountingPeriodHandle period, Guid? sourceAccountId, AccountHandle destination, FundHandle fund, decimal amount, DateOnly? date = null)
     {
-        CreateTransactionResultModel created = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", new CreateIncomeTransactionModel { AccountingPeriodId = period.Id, Date = date ?? new DateOnly(2026, 7, 15), Description = "Income", Amount = amount, Source = new CreateIncomeTransactionSourceModel { AccountId = sourceAccountId, Location = sourceAccountId == null ? "Employer" : null, IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = amount }], IncomeDeductions = [] }, Destinations = [new CreateIncomeTransactionDestinationModel { AccountId = destination.Id, Amount = amount, FundAssignments = [new CreateIncomeFundAmountModel { FundId = fund.Id, Amount = amount }] }] });
+        CreateTransactionResultModel created = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", new CreateIncomeTransactionModel { AccountingPeriodId = period.Id, Date = date ?? new DateOnly(2026, 7, 15), Description = "Income", Amount = amount, Source = new CreateIncomeTransactionSourceModel { AccountId = sourceAccountId, Location = sourceAccountId == null ? new Models.Locations.LocationInputModel { NewLocationName = "Employer" } : null, IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = amount }], IncomeDeductions = [] }, Destinations = [new CreateIncomeTransactionDestinationModel { AccountId = destination.Id, Amount = amount, FundAssignments = [new CreateIncomeFundAmountModel { FundId = fund.Id, Amount = amount }] }] });
         return new TransactionHandle(created.Id);
     }
 
     private static async Task<TransactionHandle> CreateSplitIncomeAsync(FinancialTrackerTestContext test, AccountingPeriodHandle period, AccountHandle first, FundHandle firstFund, AccountHandle second, FundHandle secondFund)
     {
-        CreateTransactionResultModel created = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", new CreateIncomeTransactionModel { AccountingPeriodId = period.Id, Date = new DateOnly(2026, 7, 15), Description = "Income", Amount = 100m, Source = new CreateIncomeTransactionSourceModel { Location = "Employer", IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = 100m }], IncomeDeductions = [] }, Destinations = [new CreateIncomeTransactionDestinationModel { AccountId = first.Id, Amount = 40m, FundAssignments = [new CreateIncomeFundAmountModel { FundId = firstFund.Id, Amount = 40m }] }, new CreateIncomeTransactionDestinationModel { AccountId = second.Id, Amount = 60m, FundAssignments = [new CreateIncomeFundAmountModel { FundId = secondFund.Id, Amount = 60m }] }] });
+        CreateTransactionResultModel created = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", new CreateIncomeTransactionModel { AccountingPeriodId = period.Id, Date = new DateOnly(2026, 7, 15), Description = "Income", Amount = 100m, Source = new CreateIncomeTransactionSourceModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" }, IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = 100m }], IncomeDeductions = [] }, Destinations = [new CreateIncomeTransactionDestinationModel { AccountId = first.Id, Amount = 40m, FundAssignments = [new CreateIncomeFundAmountModel { FundId = firstFund.Id, Amount = 40m }] }, new CreateIncomeTransactionDestinationModel { AccountId = second.Id, Amount = 60m, FundAssignments = [new CreateIncomeFundAmountModel { FundId = secondFund.Id, Amount = 60m }] }] });
         return new TransactionHandle(created.Id);
     }
 
-    private static UpdateIncomeTransactionModel CreateIncomeUpdate(AccountHandle account, FundHandle fund, decimal amount, DateOnly date) => new() { Date = date, Description = "Income", Amount = amount, Source = new UpdateIncomeTransactionSourceModel { Location = "Employer", IncomeLines = [new UpdateIncomeLineModel { Description = "Pay", Amount = amount }], IncomeDeductions = [] }, Destinations = [new UpdateIncomeTransactionDestinationModel { AccountId = account.Id, Amount = amount, FundAssignments = [new CreateIncomeFundAmountModel { FundId = fund.Id, Amount = amount }] }] };
+    private static UpdateIncomeTransactionModel CreateIncomeUpdate(AccountHandle account, FundHandle fund, decimal amount, DateOnly date) => new() { Date = date, Description = "Income", Amount = amount, Source = new UpdateIncomeTransactionSourceModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" }, IncomeLines = [new UpdateIncomeLineModel { Description = "Pay", Amount = amount }], IncomeDeductions = [] }, Destinations = [new UpdateIncomeTransactionDestinationModel { AccountId = account.Id, Amount = amount, FundAssignments = [new CreateIncomeFundAmountModel { FundId = fund.Id, Amount = amount }] }] };
 
     private static async Task AssertGoalAsync(FinancialTrackerTestContext test, FundHandle fund, decimal posted, decimal includingPending)
     {

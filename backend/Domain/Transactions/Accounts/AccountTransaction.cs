@@ -1,6 +1,7 @@
 using Domain.Accounts;
 using Domain.FundGoals;
 using Domain.Funds;
+using Domain.Locations;
 
 namespace Domain.Transactions.Accounts;
 
@@ -34,6 +35,22 @@ public class AccountTransaction : Transaction
             {
                 yield return accountId;
             }
+        }
+    }
+
+    /// <inheritdoc/>
+    public override IEnumerable<LocationId> GetAllAffectedLocationIds()
+    {
+        if (Source.Location != null)
+        {
+            yield return Source.Location.Id;
+        }
+        foreach (LocationId locationId in Destinations
+            .Where(destination => destination.Location != null)
+            .Select(destination => destination.Location!.Id)
+            .Distinct())
+        {
+            yield return locationId;
         }
     }
 
@@ -140,4 +157,31 @@ public class AccountTransaction : Transaction
 
     /// <inheritdoc/>
     protected override FundGoalTotals PostToFundGoalTotals(FundGoalTotals existingTotals, AccountId accountId, bool reverse) => existingTotals;
+
+    /// <inheritdoc/>
+    internal override void ReplaceLocation(Location source, Location target)
+    {
+        if (Source.Location == source)
+        {
+            Source = new AccountTransactionSource(Source.Account, Source.PostedDate, target);
+        }
+        var destinations = _destinations
+            .Select(destination => destination.Location == source
+                ? new AccountTransactionDestination(destination.Account, destination.PostedDate, target, destination.Amount)
+                : destination)
+            .ToList();
+        var targetDestinations = destinations
+            .Where(destination => destination.Location == target)
+            .ToList();
+        if (targetDestinations.Count > 1)
+        {
+            _ = destinations.RemoveAll(destination => destination.Location == target);
+            destinations.Add(new AccountTransactionDestination(
+                null,
+                null,
+                target,
+                targetDestinations.Sum(destination => destination.Amount)));
+        }
+        UpdateAccountDestinations(destinations);
+    }
 }

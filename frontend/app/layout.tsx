@@ -5,7 +5,9 @@ import "@fontsource/roboto/700.css";
 import AccessDeniedView from "@/framework/auth/AccessDeniedView";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import ApplicationShell from "@/framework/navigation/ApplicationShell";
+import ApplicationThemeProvider from "@/framework/theme/ApplicationThemeProvider";
 import DateLocalizationProvider from "@/framework/forms/DateLocalizationProvider";
+import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
 import type { JSX } from "react";
 import type { Metadata } from "next";
 import { auth } from "@/auth";
@@ -44,10 +46,13 @@ const RootLayout = async function ({
   );
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
+        <InitColorSchemeScript attribute="data" defaultMode="system" />
         <AppRouterCacheProvider>
-          <DateLocalizationProvider>{content}</DateLocalizationProvider>
+          <ApplicationThemeProvider>
+            <DateLocalizationProvider>{content}</DateLocalizationProvider>
+          </ApplicationThemeProvider>
         </AppRouterCacheProvider>
       </body>
     </html>

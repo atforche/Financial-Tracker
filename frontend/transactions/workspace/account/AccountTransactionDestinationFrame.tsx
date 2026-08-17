@@ -3,6 +3,7 @@ import type {
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
+import type { Location, LocationDraft } from "@/locations/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
 import type { JSX } from "react";
@@ -20,8 +21,9 @@ interface AccountTransactionDestinationFrameProps {
   readonly account: AccountBalanceEventDraft | null;
   readonly setAccount:
     ((account: AccountBalanceEventDraft | null) => void) | null;
-  readonly location: string;
-  readonly setLocation: ((location: string) => void) | null;
+  readonly locations?: readonly Location[] | undefined;
+  readonly location: LocationDraft | null;
+  readonly setLocation: ((location: LocationDraft | null) => void) | null;
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly accountFilter?: ((account: Account) => boolean) | null;
@@ -41,6 +43,7 @@ const AccountTransactionDestinationFrame = function ({
   account,
   setAccount,
   location,
+  locations,
   setLocation,
   amount,
   setAmount,
@@ -64,6 +67,7 @@ const AccountTransactionDestinationFrame = function ({
         setAccount={readOnly ? null : setAccount}
         accountCaption="Account"
         locationCaption="Location"
+        locations={locations}
         location={location}
         setLocation={readOnly ? null : setLocation}
         accountFilter={accountFilter}

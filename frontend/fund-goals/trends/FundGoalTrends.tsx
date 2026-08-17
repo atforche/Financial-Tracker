@@ -1,14 +1,14 @@
 import {
-  type FundGoalMetric,
   type FundGoalPeriodProgress,
-  buildFundGoalMetricTrendPoints,
-  fundGoalMetricDefinitions,
+  buildFundGoalTrendPoints,
 } from "@/fund-goals/trends/fundGoalProgressTrends";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import FundGoalMetricTrendChart from "@/fund-goals/trends/FundGoalMetricTrendChart";
+import FundGoalAchievementTrendChart from "@/fund-goals/trends/FundGoalAchievementTrendChart";
+import FundGoalContributionTrendChart from "@/fund-goals/trends/FundGoalContributionTrendChart";
 import FundGoalTrendsFilter from "@/fund-goals/trends/FundGoalTrendsFilter";
 import type { FundGoalTrendsSearchParams } from "@/fund-goals/trends/helpers";
+import FundGoalTrendsSummaryCards from "@/fund-goals/trends/FundGoalTrendsSummaryCards";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
@@ -18,6 +18,7 @@ import loadAllPages from "@/framework/data/loadAllPages";
 import { redirect } from "next/navigation";
 import routes from "@/fund-goals/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
+import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -90,6 +91,11 @@ const FundGoalTrends = async function ({
     (fundGoal) =>
       fundNames.length === 0 || fundNames.includes(fundGoal.fund.name),
   );
+  const selectedFundIds = [
+    ...new Set(filteredFundGoals.map((fundGoal) => fundGoal.fund.id)),
+  ];
+  const hasResolvedSelectedFundIds =
+    selectedFundIds.length === fundNames.length;
   const progressResultsByFundGoalId = new Map(
     (
       await Promise.all(
@@ -124,13 +130,30 @@ const FundGoalTrends = async function ({
     }
   });
   const chartPeriods = [...selectedPeriods].reverse();
-  const metrics: readonly FundGoalMetric[] = [
-    "availableBalance",
-    "contribution",
-    "minimumFundedBalance",
-    "maximumFundedBalance",
-    "endingBalance",
-  ];
+  const chartPoints = buildFundGoalTrendPoints(
+    chartPeriods,
+    progressByAccountingPeriodId,
+  );
+  const transactionWorkspaceHref =
+    selectedPeriods.length === 0
+      ? null
+      : transactionRoutes.workspace({
+          accountingPeriodIds: selectedPeriods.map((period) => period.id),
+          ...(hasResolvedSelectedFundIds && selectedFundIds.length > 0
+            ? { fundIds: selectedFundIds }
+            : fundNames.length === 0
+              ? {}
+              : { fundNames }),
+          returnUrl: routes.trends({
+            ...(fundNames.length === 0 ? {} : { fundName: fundNames }),
+            ...(typeof start === "undefined"
+              ? {}
+              : { startAccountingPeriodId: start }),
+            ...(typeof end === "undefined"
+              ? {}
+              : { endAccountingPeriodId: end }),
+          }),
+        });
 
   return (
     <PageLayout>
@@ -141,20 +164,17 @@ const FundGoalTrends = async function ({
             ...new Set(fundGoals.map((fundGoal) => fundGoal.fund.name)),
           ]}
           defaultAccountingPeriodId={periods[0]?.id ?? null}
+          transactionWorkspaceHref={transactionWorkspaceHref}
         />
       </ConstrainedContent>
+      <FundGoalTrendsSummaryCards
+        progress={selectedPeriods.flatMap(
+          (period) => progressByAccountingPeriodId.get(period.id) ?? [],
+        )}
+      />
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
-        {metrics.map((metric) => (
-          <FundGoalMetricTrendChart
-            key={metric}
-            definition={fundGoalMetricDefinitions[metric]}
-            chartPoints={buildFundGoalMetricTrendPoints(
-              metric,
-              chartPeriods,
-              progressByAccountingPeriodId,
-            )}
-          />
-        ))}
+        <FundGoalAchievementTrendChart chartPoints={chartPoints} />
+        <FundGoalContributionTrendChart chartPoints={chartPoints} />
       </ResponsiveGrid>
     </PageLayout>
   );

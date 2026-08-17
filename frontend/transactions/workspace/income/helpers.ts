@@ -15,6 +15,11 @@ import {
   getIncomeGoalRemainingAmount,
 } from "@/funds/assignmentPlanner/helpers";
 import {
+  type LocationDraft,
+  toLocationDraft,
+  toLocationInput,
+} from "@/locations/types";
+import {
   compareCurrencyAmounts,
   getCurrencyDifference,
   getCurrencyTotal,
@@ -52,7 +57,7 @@ interface IncomeDeductionDraft {
  */
 interface IncomeSourceDraft {
   readonly account: AccountBalanceEventDraft | null;
-  readonly location: string | null;
+  readonly location: LocationDraft | null;
   readonly incomeLines: IncomeLineDraft[];
   readonly incomeDeductions: IncomeDeductionDraft[];
 }
@@ -163,7 +168,8 @@ const validateIncomeDeduction = function (
  */
 const validateSource = function (source: IncomeSourceDraft): boolean {
   const hasAccount = source.account !== null;
-  const hasLocation = source.location !== null && source.location.trim() !== "";
+  const hasLocation =
+    source.location !== null && source.location.name.trim() !== "";
   if (!hasAccount && !hasLocation) {
     return false;
   }
@@ -255,7 +261,7 @@ const buildRequestFields = function (
     source: {
       accountId: source.account?.accountId ?? null,
       location:
-        source.account === null ? (source.location?.trim() ?? null) : null,
+        source.account === null ? toLocationInput(source.location) : null,
       incomeLines: source.incomeLines.map((line) => ({
         description: line.description?.trim() ?? "",
         amount: line.amount ?? 0,
@@ -395,7 +401,7 @@ const getSourceFromTransaction = function (
     account: getTransactionAccountDraftFromTransactionAccount(
       transaction.source.account,
     ),
-    location: transaction.source.location ?? "",
+    location: toLocationDraft(transaction.source.location ?? null),
     incomeLines: transaction.source.incomeLines.map((line) => ({
       description: line.description,
       amount: line.amount,

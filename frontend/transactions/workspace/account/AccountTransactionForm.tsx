@@ -132,7 +132,7 @@ const AccountTransactionForm = function <RequestPayload>({
     setSource((currentSource) => ({
       ...currentSource,
       account,
-      location: account === null ? currentSource.location : "",
+      location: account === null ? currentSource.location : null,
     }));
   };
 
@@ -143,7 +143,7 @@ const AccountTransactionForm = function <RequestPayload>({
     updateDestination(index, (currentDestination) => ({
       ...currentDestination,
       account,
-      location: account === null ? currentDestination.location : "",
+      location: account === null ? currentDestination.location : null,
     }));
   };
 

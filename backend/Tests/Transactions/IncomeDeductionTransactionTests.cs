@@ -35,7 +35,7 @@ public sealed class IncomeDeductionTransactionTests
             Amount = 100m,
             Source = new CreateIncomeTransactionSourceModel
             {
-                Location = "Employer",
+                Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" },
                 IncomeLines = [
                     new CreateIncomeLineModel { Description = "Salary", Amount = 120m },
                     new CreateIncomeLineModel { Description = "Bonus", Amount = 30m }
@@ -58,7 +58,7 @@ public sealed class IncomeDeductionTransactionTests
             Amount = 150m,
             Source = new UpdateIncomeTransactionSourceModel
             {
-                Location = "Employer",
+                Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" },
                 IncomeLines = [new UpdateIncomeLineModel { Description = "Salary", Amount = 200m }],
                 IncomeDeductions = [
                     new UpdateIncomeDeductionModel { Description = "Tax", Amount = 40m },

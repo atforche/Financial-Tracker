@@ -70,7 +70,7 @@ const Frame = function ({
         overflow: "hidden",
         borderRadius: 5,
         border: `1px solid ${alpha(theme.palette.divider, 0.72)}`,
-        backgroundColor: theme.palette.background.paper,
+        backgroundColor: "background.paper",
       })}
     >
       <Stack spacing={0}>
@@ -110,10 +110,10 @@ const Frame = function ({
             />
             <Typography
               variant="h6"
-              sx={(theme) => ({
-                color: theme.palette.text.primary,
+              sx={{
+                color: "text.primary",
                 overflowWrap: "anywhere",
-              })}
+              }}
             >
               {title}
             </Typography>

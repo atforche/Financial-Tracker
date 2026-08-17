@@ -1,24 +1,22 @@
 "use client";
 
-/* eslint-disable sort-imports */
-
 import { Box, Button, Stack, Typography } from "@mui/material";
-import { alpha } from "@mui/material/styles";
+import { type JSX, useState } from "react";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import DateEntryField from "@/framework/forms/DateEntryField";
-import type { ExpectedIncomeSource } from "@/accounting-periods/types";
-import dayjs from "dayjs";
 import Divider from "@mui/material/Divider";
-import Frame from "@/framework/view/Frame";
+import type { ExpectedIncomeSource } from "@/accounting-periods/types";
 import ExpectedIncomeSourceDeleteDialog from "@/accounting-periods/workspace/ExpectedIncomeSourceDeleteDialog";
 import ExpectedIncomeSourceItemSection from "@/accounting-periods/workspace/ExpectedIncomeSourceItemSection";
-import { type JSX, useState } from "react";
+import Frame from "@/framework/view/Frame";
 import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import StringEntryField from "@/framework/forms/StringEntryField";
+import { alpha } from "@mui/material/styles";
+import dayjs from "dayjs";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**

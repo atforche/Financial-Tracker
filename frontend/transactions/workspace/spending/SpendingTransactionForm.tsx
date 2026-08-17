@@ -167,7 +167,7 @@ const SpendingTransactionForm = function <RequestPayload>({
     updateDestination(index, (currentDestination) => ({
       ...currentDestination,
       account,
-      location: account === null ? currentDestination.location : "",
+      location: account === null ? currentDestination.location : null,
     }));
   };
 

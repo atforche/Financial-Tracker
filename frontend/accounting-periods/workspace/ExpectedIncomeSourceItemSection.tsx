@@ -1,10 +1,8 @@
-/* eslint-disable sort-imports */
-
 import { Box, Stack, Typography } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
-import StringEntryField from "@/framework/forms/StringEntryField";
 import type { JSX } from "react";
+import StringEntryField from "@/framework/forms/StringEntryField";
+import { alpha } from "@mui/material/styles";
 
 /**
  * Represents an item in the expected-income source section, including its description and amount.

@@ -340,6 +340,27 @@ namespace Data.Migrations
                     b.ToTable("PendingFundBalanceEffects");
                 });
 
+            modelBuilder.Entity("Domain.Locations.Location", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique();
+
+                    b.ToTable("Locations");
+                });
+
             modelBuilder.Entity("Domain.Transactions.Transaction", b =>
                 {
                     b.Property<Guid>("Id")
@@ -987,9 +1008,9 @@ namespace Data.Migrations
                                 .HasColumnType("TEXT")
                                 .HasColumnName("Amount");
 
-                            b1.Property<string>("Location")
+                            b1.Property<Guid?>("LocationId")
                                 .HasColumnType("TEXT")
-                                .HasColumnName("Location");
+                                .HasColumnName("LocationId");
 
                             b1.Property<DateOnly?>("PostedDate")
                                 .HasColumnType("TEXT")
@@ -1001,6 +1022,8 @@ namespace Data.Migrations
 
                             b1.HasIndex("AccountTransactionId");
 
+                            b1.HasIndex("LocationId");
+
                             b1.ToTable("AccountTransactionDestinations", (string)null);
 
                             b1.HasOne("Domain.Accounts.Account", "Account")
@@ -1010,7 +1033,14 @@ namespace Data.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("AccountTransactionId");
 
+                            b1.HasOne("Domain.Locations.Location", "Location")
+                                .WithMany()
+                                .HasForeignKey("LocationId")
+                                .OnDelete(DeleteBehavior.Restrict);
+
                             b1.Navigation("Account");
+
+                            b1.Navigation("Location");
                         });
 
                     b.OwnsOne("Domain.Transactions.Accounts.AccountTransactionSource", "Source", b1 =>
@@ -1022,9 +1052,9 @@ namespace Data.Migrations
                                 .HasColumnType("TEXT")
                                 .HasColumnName("AccountTransaction_DebitAccountId");
 
-                            b1.Property<string>("Location")
+                            b1.Property<Guid?>("LocationId")
                                 .HasColumnType("TEXT")
-                                .HasColumnName("AccountTransaction_SourceLocation");
+                                .HasColumnName("AccountTransaction_SourceLocationId");
 
                             b1.Property<DateOnly?>("PostedDate")
                                 .HasColumnType("TEXT")
@@ -1033,6 +1063,8 @@ namespace Data.Migrations
                             b1.HasKey("AccountTransactionId");
 
                             b1.HasIndex("AccountId");
+
+                            b1.HasIndex("LocationId");
 
                             b1.ToTable("Transactions");
 
@@ -1043,7 +1075,14 @@ namespace Data.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("AccountTransactionId");
 
+                            b1.HasOne("Domain.Locations.Location", "Location")
+                                .WithMany()
+                                .HasForeignKey("LocationId")
+                                .OnDelete(DeleteBehavior.Restrict);
+
                             b1.Navigation("Account");
+
+                            b1.Navigation("Location");
                         });
 
                     b.Navigation("Destinations");
@@ -1203,9 +1242,9 @@ namespace Data.Migrations
                                 .HasColumnType("TEXT")
                                 .HasColumnName("IncomeTransaction_SourceAccountId");
 
-                            b1.Property<string>("Location")
+                            b1.Property<Guid?>("LocationId")
                                 .HasColumnType("TEXT")
-                                .HasColumnName("IncomeTransaction_SourceLocation");
+                                .HasColumnName("IncomeTransaction_SourceLocationId");
 
                             b1.Property<DateOnly?>("PostedDate")
                                 .HasColumnType("TEXT")
@@ -1215,6 +1254,8 @@ namespace Data.Migrations
 
                             b1.HasIndex("AccountId");
 
+                            b1.HasIndex("LocationId");
+
                             b1.ToTable("Transactions");
 
                             b1.HasOne("Domain.Accounts.Account", "Account")
@@ -1223,6 +1264,11 @@ namespace Data.Migrations
 
                             b1.WithOwner()
                                 .HasForeignKey("IncomeTransactionId");
+
+                            b1.HasOne("Domain.Locations.Location", "Location")
+                                .WithMany()
+                                .HasForeignKey("LocationId")
+                                .OnDelete(DeleteBehavior.Restrict);
 
                             b1.OwnsMany("Domain.Transactions.Income.IncomeDeduction", "IncomeDeductions", b2 =>
                                 {
@@ -1281,6 +1327,8 @@ namespace Data.Migrations
                             b1.Navigation("IncomeDeductions");
 
                             b1.Navigation("IncomeLines");
+
+                            b1.Navigation("Location");
                         });
 
                     b.Navigation("Destinations");
@@ -1305,9 +1353,9 @@ namespace Data.Migrations
                                 .HasColumnType("TEXT")
                                 .HasColumnName("Amount");
 
-                            b1.Property<string>("Location")
+                            b1.Property<Guid?>("LocationId")
                                 .HasColumnType("TEXT")
-                                .HasColumnName("Location");
+                                .HasColumnName("LocationId");
 
                             b1.Property<DateOnly?>("PostedDate")
                                 .HasColumnType("TEXT")
@@ -1320,6 +1368,8 @@ namespace Data.Migrations
 
                             b1.HasIndex("AccountId");
 
+                            b1.HasIndex("LocationId");
+
                             b1.HasIndex("SpendingTransactionId");
 
                             b1.ToTable("SpendingTransactionDestinations", (string)null);
@@ -1327,6 +1377,11 @@ namespace Data.Migrations
                             b1.HasOne("Domain.Accounts.Account", "Account")
                                 .WithMany()
                                 .HasForeignKey("AccountId");
+
+                            b1.HasOne("Domain.Locations.Location", "Location")
+                                .WithMany()
+                                .HasForeignKey("LocationId")
+                                .OnDelete(DeleteBehavior.Restrict);
 
                             b1.WithOwner()
                                 .HasForeignKey("SpendingTransactionId");
@@ -1359,6 +1414,8 @@ namespace Data.Migrations
                             b1.Navigation("Account");
 
                             b1.Navigation("FundAssignments");
+
+                            b1.Navigation("Location");
                         });
 
                     b.OwnsOne("Domain.Transactions.Spending.SpendingTransactionSource", "Source", b1 =>

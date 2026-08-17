@@ -20,6 +20,7 @@ import { Button } from "@mui/material";
 import DateRangeFilter from "@/framework/forms/DateRangeFilter";
 import type { Fund } from "@/funds/types";
 import type { JSX } from "react";
+import type { Location } from "@/locations/types";
 import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import TransactionFilterControl from "@/transactions/workspace/TransactionFilterControl";
@@ -36,6 +37,7 @@ interface TransactionWorkspaceFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly accounts: readonly Account[];
   readonly funds: readonly Fund[];
+  readonly locations: readonly Location[];
   readonly selectedAccountIds: readonly string[];
   readonly selectedFundIds: readonly string[];
 }
@@ -49,6 +51,7 @@ const TransactionWorkspaceFilter = function ({
   funds,
   selectedAccountIds,
   selectedFundIds,
+  locations,
 }: TransactionWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
@@ -61,6 +64,8 @@ const TransactionWorkspaceFilter = function ({
     propertyName<TransactionWorkspaceSearchParams>("fundIds");
   const fundNameParamName =
     propertyName<TransactionWorkspaceSearchParams>("fundNames");
+  const locationParamName =
+    propertyName<TransactionWorkspaceSearchParams>("locationIds");
   const accountTypeParamName =
     propertyName<TransactionWorkspaceSearchParams>("accountTypes");
   const accountNameParamName =
@@ -94,6 +99,12 @@ const TransactionWorkspaceFilter = function ({
     (value) => value,
     (value) => value.id,
   );
+  const currentLocations = selectAvailableSearchParamValues(
+    normalizeStringSearchParams(searchParams.getAll(locationParamName)),
+    locations,
+    (value) => value,
+    (value) => value.id,
+  );
   const currentAccountTypes = normalizeAccountTypes(
     searchParams.getAll(accountTypeParamName),
   );
@@ -109,6 +120,7 @@ const TransactionWorkspaceFilter = function ({
     currentAccountingPeriods.length > 0 ||
     currentAccounts.length > 0 ||
     currentFunds.length > 0 ||
+    currentLocations.length > 0 ||
     shouldPersistAccountTypes(currentAccountTypes) ||
     shouldPersistTransactionTypes(currentTransactionTypes) ||
     currentStartDate !== "" ||
@@ -146,6 +158,17 @@ const TransactionWorkspaceFilter = function ({
       params.delete(fundNameParamName);
       nextFunds.forEach((fund) => {
         params.append(fundParamName, fund.id);
+      });
+    });
+  };
+
+  const handleLocationChange = function (
+    nextLocations: readonly Location[],
+  ): void {
+    updateParams((params) => {
+      params.delete(locationParamName);
+      nextLocations.forEach((location) => {
+        params.append(locationParamName, location.id);
       });
     });
   };
@@ -201,6 +224,7 @@ const TransactionWorkspaceFilter = function ({
       params.delete(accountingPeriodParamName);
       params.delete(accountParamName);
       params.delete(fundParamName);
+      params.delete(locationParamName);
       params.delete(fundNameParamName);
       params.delete(accountTypeParamName);
       params.delete(accountNameParamName);
@@ -283,6 +307,23 @@ const TransactionWorkspaceFilter = function ({
           isOptionEqualToValue={(option, value) => option.id === value.id}
           onChange={handleFundChange}
           getOptionLabel={(fund) => fund.name}
+        />
+      </TransactionFilterControl>
+      <TransactionFilterControl>
+        <MultiSelectAutocompleteFilter
+          label="Locations"
+          options={locations}
+          value={currentLocations}
+          disabled={locations.length === 0}
+          placeholder="All locations"
+          noOptionsText={
+            locations.length === 0
+              ? "No locations available"
+              : "No locations found"
+          }
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+          onChange={handleLocationChange}
+          getOptionLabel={(location) => location.name}
         />
       </TransactionFilterControl>
       <TransactionFilterControl expand={false}>

@@ -4,6 +4,7 @@ using Rest.Accounts;
 using Rest.Authentication;
 using Rest.FundGoals;
 using Rest.Funds;
+using Rest.Locations;
 using Rest.Transactions;
 
 namespace Rest;
@@ -40,5 +41,6 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<TransactionRequestConverter>();
         _ = serviceCollection.AddScoped<TransactionConverter>();
+        _ = serviceCollection.AddScoped<LocationConverter>();
     }
 }

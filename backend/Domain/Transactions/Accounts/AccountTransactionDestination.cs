@@ -1,4 +1,5 @@
 using Domain.Accounts;
+using Domain.Locations;
 
 namespace Domain.Transactions.Accounts;
 
@@ -20,7 +21,7 @@ public class AccountTransactionDestination
     /// <summary>
     /// Location of the account transaction destination
     /// </summary>
-    public string? Location { get; private set; }
+    public Location? Location { get; private set; }
 
     /// <summary>
     /// Amount of the account transaction destination
@@ -30,7 +31,7 @@ public class AccountTransactionDestination
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public AccountTransactionDestination(Account? account, DateOnly? postedDate, string? location, decimal amount)
+    public AccountTransactionDestination(Account? account, DateOnly? postedDate, Location? location, decimal amount)
     {
         Account = account;
         PostedDate = postedDate;

@@ -2,12 +2,14 @@ using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Locations;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Spending;
 using Models.Funds;
+using Models.Locations;
 using Models.Transactions;
 using Models.Transactions.Create;
 using Models.Transactions.Update;
@@ -19,7 +21,9 @@ namespace Rest.Transactions;
 /// </summary>
 public sealed class TransactionRequestConverter(
     IAccountRepository accountRepository,
-    IFundRepository fundRepository)
+    IFundRepository fundRepository,
+    ILocationRepository locationRepository,
+    LocationService locationService)
 {
     /// <summary>
     /// Converts a REST create model to a Domain create request.
@@ -408,7 +412,7 @@ public sealed class TransactionRequestConverter(
 
     private async Task<SpendingTransactionDestination?> GetSpendingDestinationAsync(
         Guid? accountId,
-        string? location,
+        LocationInputModel? locationModel,
         decimal amount,
         IReadOnlyCollection<CreateFundAmountModel> fundAssignmentModels,
         string errorKeyPrefix,
@@ -416,6 +420,11 @@ public sealed class TransactionRequestConverter(
     {
         Account? account = null;
         if (accountId != null && (account = TryGetAccount(accountId.Value, $"{errorKeyPrefix}.AccountId", errors)) == null)
+        {
+            return null;
+        }
+        Location? location = GetLocation(locationModel, $"{errorKeyPrefix}.Location", errors);
+        if (locationModel != null && location == null)
         {
             return null;
         }
@@ -469,7 +478,10 @@ public sealed class TransactionRequestConverter(
         {
             return null;
         }
-        return new IncomeTransactionSource(account, null, model.Location, incomeLines, incomeDeductions);
+        Location? location = GetLocation(model.Location, $"{errorKeyPrefix}.{nameof(CreateIncomeTransactionSourceModel.Location)}", errors);
+        return model.Location != null && location == null
+            ? null
+            : new IncomeTransactionSource(account, null, location, incomeLines, incomeDeductions);
     }
 
     private IncomeTransactionSource? GetIncomeSource(
@@ -490,7 +502,10 @@ public sealed class TransactionRequestConverter(
         {
             return null;
         }
-        return new IncomeTransactionSource(account, null, model.Location, incomeLines, incomeDeductions);
+        Location? location = GetLocation(model.Location, $"{errorKeyPrefix}.{nameof(UpdateIncomeTransactionSourceModel.Location)}", errors);
+        return model.Location != null && location == null
+            ? null
+            : new IncomeTransactionSource(account, null, location, incomeLines, incomeDeductions);
     }
 
     private async Task<IReadOnlyCollection<IncomeTransactionDestination>?> GetIncomeDestinationsAsync(
@@ -559,7 +574,8 @@ public sealed class TransactionRequestConverter(
         {
             return null;
         }
-        return new AccountTransactionSource(account, null, model.Location);
+        Location? location = GetLocation(model.Location, $"{errorKeyPrefix}.{nameof(CreateAccountTransactionSourceModel.Location)}", errors);
+        return model.Location != null && location == null ? null : new AccountTransactionSource(account, null, location);
     }
 
     private AccountTransactionSource? GetAccountSource(
@@ -572,7 +588,8 @@ public sealed class TransactionRequestConverter(
         {
             return null;
         }
-        return new AccountTransactionSource(account, null, model.Location);
+        Location? location = GetLocation(model.Location, $"{errorKeyPrefix}.{nameof(UpdateAccountTransactionSourceModel.Location)}", errors);
+        return model.Location != null && location == null ? null : new AccountTransactionSource(account, null, location);
     }
 
     private async Task<IReadOnlyCollection<AccountTransactionDestination>?> GetAccountDestinationsAsync(
@@ -613,7 +630,7 @@ public sealed class TransactionRequestConverter(
 
     private Task<AccountTransactionDestination?> GetAccountDestinationAsync(
         Guid? accountId,
-        string? location,
+        LocationInputModel? locationModel,
         decimal amount,
         string errorKeyPrefix,
         Dictionary<string, string[]> errors)
@@ -623,7 +640,53 @@ public sealed class TransactionRequestConverter(
         {
             return Task.FromResult<AccountTransactionDestination?>(null);
         }
+        Location? location = GetLocation(locationModel, $"{errorKeyPrefix}.Location", errors);
+        if (locationModel != null && location == null)
+        {
+            return Task.FromResult<AccountTransactionDestination?>(null);
+        }
         return Task.FromResult<AccountTransactionDestination?>(new AccountTransactionDestination(account, null, location, amount));
+    }
+
+    private Location? GetLocation(
+        LocationInputModel? model,
+        string errorKey,
+        Dictionary<string, string[]> errors)
+    {
+        if (model == null)
+        {
+            return null;
+        }
+        bool hasLocationId = model.LocationId != null;
+        bool hasNewLocationName = !string.IsNullOrWhiteSpace(model.NewLocationName);
+        if (hasLocationId == hasNewLocationName)
+        {
+            errors.Add(errorKey, ["Select an existing Location or explicitly add a new Location"]);
+            return null;
+        }
+        if (model.LocationId != null)
+        {
+            if (locationRepository.TryGetById(model.LocationId.Value, out Location? existingLocation))
+            {
+                return existingLocation;
+            }
+            errors.Add($"{errorKey}.LocationId", [$"Location with ID {model.LocationId.Value} was not found."]);
+            return null;
+        }
+        string normalizedName = LocationService.NormalizeName(model.NewLocationName!);
+        if (locationRepository.TryGetByNormalizedName(normalizedName, out Location? matchingLocation))
+        {
+            return matchingLocation;
+        }
+        if (locationService.TryCreate(
+            new CreateLocationRequest { Name = model.NewLocationName! },
+            out Location? newLocation,
+            out IEnumerable<Domain.Validation.ValidationError> validationErrors))
+        {
+            return newLocation;
+        }
+        errors.Add(errorKey, validationErrors.Select(error => error.Message).ToArray());
+        return null;
     }
 
     private FundTransactionSource? GetFundSource(

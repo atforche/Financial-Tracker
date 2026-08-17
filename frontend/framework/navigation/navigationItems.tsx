@@ -4,6 +4,7 @@ import {
   CalendarMonth,
   EmojiEvents,
   GridView,
+  Place,
   ReceiptLong,
   Timeline,
   Workspaces,
@@ -75,6 +76,15 @@ const navigationItems = function (): NavigationLink[] {
           icon: <Workspaces />,
         },
         { name: "Trends", href: fundGoalRoutes.trends({}), icon: <Timeline /> },
+      ],
+    },
+    {
+      name: "Locations",
+      href: "/locations",
+      icon: <Place />,
+      childLinks: [
+        { name: "Workspace", href: "/locations", icon: <Workspaces /> },
+        { name: "Trends", href: "/locations/trends", icon: <Timeline /> },
       ],
     },
     {

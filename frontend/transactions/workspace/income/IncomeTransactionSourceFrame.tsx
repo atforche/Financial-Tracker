@@ -10,6 +10,7 @@ import {
   createEmptyLine,
   getNetIncomeAmount,
 } from "@/transactions/workspace/income/helpers";
+import type { Location, LocationDraft } from "@/locations/types";
 import type { FrameColor } from "@/framework/view/Frame";
 import IncomeTransactionItemSection from "@/transactions/workspace/income/IncomeTransactionSourceItemFrame";
 import type { JSX } from "react";
@@ -26,8 +27,9 @@ interface IncomeTransactionSourceFrameProps {
   readonly account: AccountBalanceEventDraft | null;
   readonly setAccount:
     ((account: AccountBalanceEventDraft | null) => void) | null;
-  readonly location: string | null;
-  readonly setLocation: ((location: string) => void) | null;
+  readonly locations?: readonly Location[] | undefined;
+  readonly location: LocationDraft | null;
+  readonly setLocation: ((location: LocationDraft | null) => void) | null;
   readonly incomeLines: IncomeLineDraft[];
   readonly setIncomeLines: ((incomeLines: IncomeLineDraft[]) => void) | null;
   readonly incomeDeductions: IncomeDeductionDraft[];
@@ -47,6 +49,7 @@ const IncomeTransactionSourceFrame = function ({
   account,
   setAccount,
   location,
+  locations,
   setLocation,
   incomeLines,
   setIncomeLines,
@@ -72,6 +75,7 @@ const IncomeTransactionSourceFrame = function ({
         setAccount={readOnly ? null : setAccount}
         accountCaption="Source Account"
         locationCaption="Source Location"
+        locations={locations}
         location={location}
         setLocation={readOnly ? null : setLocation}
         accountFilter={accountFilter}

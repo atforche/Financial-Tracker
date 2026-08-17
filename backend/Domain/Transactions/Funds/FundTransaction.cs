@@ -1,6 +1,7 @@
 using Domain.Accounts;
 using Domain.FundGoals;
 using Domain.Funds;
+using Domain.Locations;
 
 namespace Domain.Transactions.Funds;
 
@@ -23,6 +24,9 @@ public class FundTransaction : Transaction
 
     /// <inheritdoc/>
     public override IEnumerable<AccountId> GetAllAffectedAccountIds() => [];
+
+    /// <inheritdoc/>
+    public override IEnumerable<LocationId> GetAllAffectedLocationIds() => [];
 
     /// <inheritdoc/>
     public override DateOnly? GetPostedDateForAccount(AccountId accountId) => null;
@@ -112,4 +116,9 @@ public class FundTransaction : Transaction
 
     /// <inheritdoc/>
     protected override FundGoalTotals PostToFundGoalTotals(FundGoalTotals existingTotals, AccountId accountId, bool reverse) => existingTotals;
+
+    /// <inheritdoc/>
+    internal override void ReplaceLocation(Location source, Location target)
+    {
+    }
 }
