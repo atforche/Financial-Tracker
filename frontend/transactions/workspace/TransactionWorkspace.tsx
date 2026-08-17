@@ -17,6 +17,7 @@ interface TransactionWorkspaceSearchParams {
   accountingPeriodIds?: string | readonly string[];
   accountIds?: string | readonly string[];
   fundIds?: string | readonly string[];
+  fundNames?: string | readonly string[];
   accountTypes?: AccountType | readonly AccountType[];
   accountNames?: string | readonly string[];
   transactionTypes?: TransactionType | readonly TransactionType[];
@@ -50,6 +51,7 @@ const TransactionWorkspace = async function ({
     accounts,
     funds,
     selectedAccountIds,
+    selectedFundIds,
     transactions,
   } = await getTransactionWorkspaceListData(resolvedSearchParams);
 
@@ -62,7 +64,7 @@ const TransactionWorkspace = async function ({
             style={{ alignSelf: "flex-start", textDecoration: "none" }}
           >
             <Button component="span" startIcon={<ArrowBack />}>
-              Back to Account Trends
+              Back to Trends
             </Button>
           </Link>
         )}
@@ -71,6 +73,7 @@ const TransactionWorkspace = async function ({
           accounts={accounts}
           funds={funds}
           selectedAccountIds={selectedAccountIds}
+          selectedFundIds={selectedFundIds}
         />
         <TransactionWorkspaceListFrame
           data={transactions.items}

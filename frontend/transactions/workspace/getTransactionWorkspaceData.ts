@@ -38,6 +38,7 @@ interface TransactionWorkspaceListData extends TransactionWorkspaceReferenceData
   readonly normalizedAccountIds: string[];
   readonly normalizedFundIds: string[];
   readonly selectedAccountIds: string[];
+  readonly selectedFundIds: string[];
   readonly transactions: {
     readonly items: Transaction[];
     readonly totalCount: number;
@@ -233,6 +234,7 @@ const getTransactionWorkspaceListData = async function (
     accountingPeriodIds,
     accountIds,
     fundIds,
+    fundNames,
     accountTypes,
     accountNames,
     transactionTypes,
@@ -255,6 +257,10 @@ const getTransactionWorkspaceListData = async function (
   );
   const normalizedFundIds = normalizeStringSearchParams(
     toRepeatedSearchParams(fundIds),
+  );
+  const normalizedFundNames = normalizeStringSearchParams(
+    toRepeatedSearchParams(fundNames),
+    (fundName) => fundName.toLocaleLowerCase(),
   );
   const normalizedAccountTypes = normalizeAccountTypes(
     toRepeatedSearchParams(accountTypes),
@@ -279,16 +285,25 @@ const getTransactionWorkspaceListData = async function (
           normalizedAccountNames.includes(account.name)),
     )
     .map((account) => account.id);
+  const hasDerivedFundFilter = normalizedFundNames.length > 0;
+  const selectedFundIds = referenceData.funds
+    .filter(
+      (fund) =>
+        (normalizedFundIds.length === 0 ||
+          normalizedFundIds.includes(fund.id)) &&
+        (normalizedFundNames.length === 0 ||
+          normalizedFundNames.includes(fund.name.toLocaleLowerCase())),
+    )
+    .map((fund) => fund.id);
   const hasAccountFilter =
     normalizedAccountIds.length > 0 || hasDerivedAccountFilter;
+  const hasFundFilter = normalizedFundIds.length > 0 || hasDerivedFundFilter;
   const query = {
     ...(normalizedAccountingPeriodIds.length > 0
       ? { "Filter.AccountingPeriodIds": normalizedAccountingPeriodIds }
       : {}),
     ...(hasAccountFilter ? { "Filter.AccountIds": selectedAccountIds } : {}),
-    ...(normalizedFundIds.length > 0
-      ? { "Filter.FundIds": normalizedFundIds }
-      : {}),
+    ...(hasFundFilter ? { "Filter.FundIds": selectedFundIds } : {}),
     ...(normalizedTransactionTypes.length > 0
       ? { "Filter.Types": [...normalizedTransactionTypes] }
       : {}),
@@ -297,7 +312,8 @@ const getTransactionWorkspaceListData = async function (
     Offset: getPageOffset(currentPage, rowsPerPage),
   };
   const transactions =
-    hasAccountFilter && selectedAccountIds.length === 0
+    (hasAccountFilter && selectedAccountIds.length === 0) ||
+    (hasFundFilter && selectedFundIds.length === 0)
       ? { items: [], totalCount: 0 }
       : await (async function (): Promise<{
           items: Transaction[];
@@ -350,6 +366,7 @@ const getTransactionWorkspaceListData = async function (
     normalizedAccountIds,
     normalizedFundIds,
     selectedAccountIds: hasAccountFilter ? selectedAccountIds : [],
+    selectedFundIds: hasFundFilter ? selectedFundIds : [],
     transactions,
   };
 };

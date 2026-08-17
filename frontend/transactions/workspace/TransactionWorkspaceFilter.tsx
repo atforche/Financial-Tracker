@@ -37,6 +37,7 @@ interface TransactionWorkspaceFilterProps {
   readonly accounts: readonly Account[];
   readonly funds: readonly Fund[];
   readonly selectedAccountIds: readonly string[];
+  readonly selectedFundIds: readonly string[];
 }
 
 /**
@@ -47,6 +48,7 @@ const TransactionWorkspaceFilter = function ({
   accounts,
   funds,
   selectedAccountIds,
+  selectedFundIds,
 }: TransactionWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
@@ -57,6 +59,8 @@ const TransactionWorkspaceFilter = function ({
     propertyName<TransactionWorkspaceSearchParams>("accountIds");
   const fundParamName =
     propertyName<TransactionWorkspaceSearchParams>("fundIds");
+  const fundNameParamName =
+    propertyName<TransactionWorkspaceSearchParams>("fundNames");
   const accountTypeParamName =
     propertyName<TransactionWorkspaceSearchParams>("accountTypes");
   const accountNameParamName =
@@ -85,7 +89,7 @@ const TransactionWorkspaceFilter = function ({
     (value) => value.id,
   );
   const currentFunds = selectAvailableSearchParamValues(
-    normalizeStringSearchParams(searchParams.getAll(fundParamName)),
+    selectedFundIds,
     funds,
     (value) => value,
     (value) => value.id,
@@ -139,6 +143,7 @@ const TransactionWorkspaceFilter = function ({
   const handleFundChange = function (nextFunds: readonly Fund[]): void {
     updateParams((params) => {
       params.delete(fundParamName);
+      params.delete(fundNameParamName);
       nextFunds.forEach((fund) => {
         params.append(fundParamName, fund.id);
       });
@@ -196,6 +201,7 @@ const TransactionWorkspaceFilter = function ({
       params.delete(accountingPeriodParamName);
       params.delete(accountParamName);
       params.delete(fundParamName);
+      params.delete(fundNameParamName);
       params.delete(accountTypeParamName);
       params.delete(accountNameParamName);
       params.delete(transactionTypeParamName);

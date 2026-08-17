@@ -22,6 +22,7 @@ import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
+import type { Route } from "next";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import routes from "@/funds/routes";
@@ -35,6 +36,7 @@ interface FundTrendsListFrameProps {
   readonly data: FundWithBalanceRange[] | null;
   readonly totalCount: number | null;
   readonly isInOnboardingMode: boolean;
+  readonly transactionWorkspaceHref: Route;
 }
 
 /**
@@ -44,6 +46,7 @@ const FundTrendsListFrame = function ({
   data,
   totalCount,
   isInOnboardingMode,
+  transactionWorkspaceHref,
 }: FundTrendsListFrameProps): JSX.Element {
   const canWrite = useWriteAccess();
   const searchParams = useSearchParams();
@@ -181,6 +184,16 @@ const FundTrendsListFrame = function ({
   return (
     <ListFrame<FundWithBalanceRange>
       title="Funds"
+      headerContent={
+        <Button
+          variant="outlined"
+          onClick={() => {
+            router.push(transactionWorkspaceHref);
+          }}
+        >
+          View transactions
+        </Button>
+      }
       columns={columns}
       getId={(fund) => fund.id}
       data={data ?? null}

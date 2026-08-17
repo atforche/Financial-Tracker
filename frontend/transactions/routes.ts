@@ -16,6 +16,7 @@ const transactionWorkspaceSearchParamsToSearchParams = function (
     accountingPeriodIds,
     accountIds,
     fundIds,
+    fundNames,
     accountTypes,
     accountNames,
     transactionTypes,
@@ -26,6 +27,7 @@ const transactionWorkspaceSearchParamsToSearchParams = function (
   appendRepeatedSearchParam(params, "accountingPeriodIds", accountingPeriodIds);
   appendRepeatedSearchParam(params, "accountIds", accountIds);
   appendRepeatedSearchParam(params, "fundIds", fundIds);
+  appendRepeatedSearchParam(params, "fundNames", fundNames);
   appendRepeatedSearchParam(params, "accountTypes", accountTypes);
   appendRepeatedSearchParam(params, "accountNames", accountNames);
   appendRepeatedSearchParam(params, "transactionTypes", transactionTypes);
