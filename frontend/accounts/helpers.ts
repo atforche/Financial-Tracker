@@ -35,7 +35,7 @@ const isPositiveChangeInBalance = function (
   accountType: AccountType,
   changeInBalance: number,
 ): boolean {
-  if (accountType === AccountType.Debt) {
+  if (isDebtAccountType(accountType)) {
     return compareCurrencyAmounts(changeInBalance, 0) <= 0;
   }
   return compareCurrencyAmounts(changeInBalance, 0) >= 0;
