@@ -54,7 +54,7 @@ The versions used by local development and CI are defined in
 - Node.js 24.19.0 and npm
 - .NET SDK 10
 - Docker with the Compose plugin, when using the container stack
-- Trivy 0.73.0, when running security or container verification commands. The
+- Trivy 0.74.0, when running security or container verification commands. The
   dependency installer downloads it to the ignored `.tools/` directory when it
   is not already available on `PATH`.
 
