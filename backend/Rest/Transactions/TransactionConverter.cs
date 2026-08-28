@@ -6,6 +6,7 @@ using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Queries;
+using Domain.Transactions.Refunds;
 using Domain.Transactions.Spending;
 using Models;
 using Models.Transactions;
@@ -129,6 +130,7 @@ public sealed class TransactionConverter(
             TransactionType.Income => TransactionTypeModel.Income,
             TransactionType.Account => TransactionTypeModel.Account,
             TransactionType.Fund => TransactionTypeModel.Fund,
+            TransactionType.Refund => TransactionTypeModel.Refund,
             _ => throw new ArgumentOutOfRangeException(nameof(summary), summary.TransactionType, null),
         },
         TotalCount = summary.TotalCount,
@@ -154,6 +156,7 @@ public sealed class TransactionConverter(
         TransactionTypeModel.Income => TransactionType.Income,
         TransactionTypeModel.Account => TransactionType.Account,
         TransactionTypeModel.Fund => TransactionType.Fund,
+        TransactionTypeModel.Refund => TransactionType.Refund,
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
     };
 
@@ -250,6 +253,32 @@ public sealed class TransactionConverter(
                         destination.PostedDate,
                         BalanceEventType.Credit))).ToList(),
             }).ToList(),
+        },
+        RefundTransaction refund => new RefundTransactionModel
+        {
+            Id = refund.Id.Value,
+            TransactionType = TransactionTypeModel.Refund,
+            AccountingPeriodId = details.AccountingPeriod.Id.Value,
+            AccountingPeriodName = details.AccountingPeriod.Name,
+            Date = refund.Date,
+            Sequence = refund.Sequence,
+            Description = refund.Description,
+            Amount = refund.Amount,
+            FullyPosted = IsFullyPosted(refund),
+            Sources = refund.Sources.Select(source => new RefundTransactionSourceModel
+            {
+                Account = source.Account == null ? null : accountBalanceEventConverter.ToModel(details.GetAccountEvent(source.Account, source.PostedDate, source.Amount, BalanceEventType.Debit)),
+                Location = source.Location == null ? null : locationConverter.ToModel(source.Location, source.Amount),
+                Amount = source.Amount,
+                PostedDate = source.PostedDate,
+                FundAssignments = source.FundAssignments.Select(amount => fundBalanceEventConverter.ToModel(details.GetFundEvent(amount, BalanceEventType.Credit))).ToList(),
+                FundGoals = source.FundAssignments.Select(amount => fundGoalBalanceEventConverter.ToModel(details.GetFundGoalEvent(amount, source.Account == null ? refund.Destination.PostedDate : source.PostedDate, BalanceEventType.Credit))).ToList(),
+            }).ToList(),
+            Destination = new RefundTransactionDestinationModel
+            {
+                Account = accountBalanceEventConverter.ToModel(details.GetAccountEvent(refund.Destination.Account, refund.Destination.PostedDate, refund.Amount, BalanceEventType.Credit)),
+                PostedDate = refund.Destination.PostedDate,
+            },
         },
         AccountTransaction account => new AccountTransactionModel
         {

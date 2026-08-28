@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
+using Domain.Transactions.Refunds;
 using Domain.Transactions.Spending;
 using Domain.Validation;
 
@@ -14,7 +15,8 @@ public sealed class TransactionDispatcherService(
     SpendingTransactionService spendingTransactionService,
     IncomeTransactionService incomeTransactionService,
     AccountTransactionService accountTransactionService,
-    FundTransactionService fundTransactionService)
+    FundTransactionService fundTransactionService,
+    RefundTransactionService refundTransactionService)
 {
     /// <summary>
     /// Attempts to create a transaction using the provided concrete request.
@@ -58,6 +60,14 @@ public sealed class TransactionDispatcherService(
                 }
                 transaction = null;
                 return false;
+            case CreateRefundTransactionRequest refundRequest:
+                if (refundTransactionService.TryCreate(refundRequest, out RefundTransaction? refundTransaction, out exceptions))
+                {
+                    transaction = refundTransaction;
+                    return true;
+                }
+                transaction = null;
+                return false;
             default:
                 exceptions = [new ValidationError(ValidationErrorPath.Empty, $"Unrecognized create request type: {request.GetType().Name}")];
                 transaction = null;
@@ -79,6 +89,8 @@ public sealed class TransactionDispatcherService(
                 accountTransactionService.TryUpdate(accountTransaction, accountRequest, out exceptions),
             (FundTransaction fundTransaction, UpdateFundTransactionRequest fundRequest) =>
                 fundTransactionService.TryUpdate(fundTransaction, fundRequest, out exceptions),
+            (RefundTransaction refundTransaction, UpdateRefundTransactionRequest refundRequest) =>
+                refundTransactionService.TryUpdate(refundTransaction, refundRequest, out exceptions),
             _ => Fail(out exceptions, $"Request {request.GetType().Name} is not valid for transaction {transaction.GetType().Name}.")
         };
 
@@ -91,6 +103,7 @@ public sealed class TransactionDispatcherService(
             SpendingTransaction spendingTransaction => spendingTransactionService.TryPost(spendingTransaction, request, out exceptions),
             IncomeTransaction incomeTransaction => incomeTransactionService.TryPost(incomeTransaction, request, out exceptions),
             AccountTransaction accountTransaction => accountTransactionService.TryPost(accountTransaction, request, out exceptions),
+            RefundTransaction refundTransaction => refundTransactionService.TryPost(refundTransaction, request, out exceptions),
             FundTransaction => Fail(out exceptions, "Fund transactions cannot be posted to an account."),
             _ => Fail(out exceptions, $"Unrecognized transaction type: {transaction.GetType().Name}")
         };
@@ -104,6 +117,7 @@ public sealed class TransactionDispatcherService(
             SpendingTransaction spendingTransaction => spendingTransactionService.TryUnpost(spendingTransaction, out exceptions),
             IncomeTransaction incomeTransaction => incomeTransactionService.TryUnpost(incomeTransaction, out exceptions),
             AccountTransaction accountTransaction => accountTransactionService.TryUnpost(accountTransaction, out exceptions),
+            RefundTransaction refundTransaction => refundTransactionService.TryUnpost(refundTransaction, out exceptions),
             FundTransaction => Fail(out exceptions, "Fund transactions cannot be unposted."),
             _ => Fail(out exceptions, $"Unrecognized transaction type: {transaction.GetType().Name}")
         };
@@ -118,6 +132,7 @@ public sealed class TransactionDispatcherService(
             IncomeTransaction incomeTransaction => incomeTransactionService.TryDelete(incomeTransaction, out exceptions),
             AccountTransaction accountTransaction => accountTransactionService.TryDelete(accountTransaction, out exceptions),
             FundTransaction fundTransaction => fundTransactionService.TryDelete(fundTransaction, out exceptions),
+            RefundTransaction refundTransaction => refundTransactionService.TryDelete(refundTransaction, out exceptions),
             _ => Fail(out exceptions, $"Unrecognized transaction type: {transaction.GetType().Name}")
         };
 

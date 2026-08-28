@@ -10,10 +10,6 @@ import {
   validateDestination,
   validateSource,
 } from "@/transactions/workspace/fund/helpers";
-import {
-  appendDestinationWithAutofilledAmount,
-  syncDestinationAmountsToSource,
-} from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
@@ -85,16 +81,6 @@ const FundTransactionForm = function <RequestPayload>({
   onReset,
   onSubmit,
 }: FundTransactionFormProps<RequestPayload>): JSX.Element {
-  const setDestinationAmount = function (
-    destination: FundDestinationDraft,
-    amount: number | null,
-  ): FundDestinationDraft {
-    return {
-      ...destination,
-      amount,
-    };
-  };
-
   const updateDestination = function (
     index: number,
     recipe: (current: FundDestinationDraft) => FundDestinationDraft,
@@ -113,14 +99,10 @@ const FundTransactionForm = function <RequestPayload>({
   );
 
   const addDestination = function (): void {
-    setDestinations((currentDestinations) =>
-      appendDestinationWithAutofilledAmount(
-        currentDestinations,
-        createEmptyDestination(),
-        source.amount,
-        setDestinationAmount,
-      ),
-    );
+    setDestinations((currentDestinations) => [
+      ...currentDestinations,
+      createEmptyDestination(),
+    ]);
   };
 
   const sourceIsValid = validateSource(source);
@@ -148,21 +130,8 @@ const FundTransactionForm = function <RequestPayload>({
             }));
           }}
           filter={buildSourceFundFilter(destinations)}
-          amount={source.amount}
-          setAmount={(nextAmount: number | null): void => {
-            setSource((currentSource) => ({
-              ...currentSource,
-              amount: nextAmount,
-            }));
-            setDestinations((currentDestinations) =>
-              syncDestinationAmountsToSource(
-                currentDestinations,
-                source.amount,
-                nextAmount,
-                setDestinationAmount,
-              ),
-            );
-          }}
+          amount={destinationTotal}
+          setAmount={null}
         />
       }
       destinationContent={
@@ -210,7 +179,7 @@ const FundTransactionForm = function <RequestPayload>({
           ))}
         </>
       }
-      sourceAmount={source.amount}
+      sourceAmount={destinationTotal}
       destinationAmount={destinationTotal}
       destinationCount={destinations.length}
       submitLabel={submitLabel}

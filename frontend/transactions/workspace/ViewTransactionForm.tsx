@@ -7,6 +7,7 @@ import {
   asAccountTransaction,
   asFundTransaction,
   asIncomeTransaction,
+  asRefundTransaction,
   asSpendingTransaction,
 } from "@/transactions/types";
 import {
@@ -23,6 +24,10 @@ import {
   getNetIncomeAmount,
 } from "@/transactions/workspace/income/helpers";
 import {
+  getDestinationFromTransaction as getRefundDestinationFromTransaction,
+  getSourcesFromTransaction as getRefundSourcesFromTransaction,
+} from "@/transactions/workspace/refund/helpers";
+import {
   getDestinationsFromTransaction as getSpendingDestinationsFromTransaction,
   getSourceFromTransaction as getSpendingSourceFromTransaction,
 } from "@/transactions/workspace/spending/helpers";
@@ -38,6 +43,8 @@ import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/I
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
 import type { JSX } from "react";
 import Link from "next/link";
+import RefundTransactionDestinationFrame from "@/transactions/workspace/refund/RefundTransactionDestinationFrame";
+import RefundTransactionSourceFrame from "@/transactions/workspace/refund/RefundTransactionSourceFrame";
 import SpendingTransactionDestinationFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFrame";
 import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
@@ -82,12 +89,13 @@ const ViewTransactionForm = function ({
       fundGoal.accountingPeriod?.id === transactionAccountingPeriod.id,
   );
   const spendingTransaction = asSpendingTransaction(transaction);
+  const refundTransaction = asRefundTransaction(transaction);
   const incomeTransaction = asIncomeTransaction(transaction);
   const accountTransaction = asAccountTransaction(transaction);
   const fundTransaction = asFundTransaction(transaction);
   const postedAccountCount = getPostedTransactionAccounts(transaction).length;
 
-  let sourceContent: JSX.Element | null = null;
+  let sourceContent: JSX.Element | JSX.Element[] | null = null;
   let destinationContent: JSX.Element[] = [];
   let sourceAmount: number | null = null;
   let destinationAmount = 0;
@@ -137,6 +145,48 @@ const ViewTransactionForm = function ({
         baselineFundAssignments={destination.baselineFundAssignments}
       />
     ));
+  } else if (
+    transaction.transactionType === TransactionType.Refund &&
+    refundTransaction !== null
+  ) {
+    const sources = getRefundSourcesFromTransaction(
+      refundTransaction,
+      currentFundGoals,
+    );
+    const destination = getRefundDestinationFromTransaction(refundTransaction);
+    sourceAmount = getCurrencyTotal(sources.map((source) => source.amount));
+    destinationAmount = sourceAmount;
+    sourceContent = sources.map((source, index) => (
+      <RefundTransactionSourceFrame
+        key={`refund-source-${index}`}
+        readOnly
+        index={index}
+        accounts={[]}
+        funds={funds}
+        fundGoals={currentFundGoals}
+        transaction={refundTransaction}
+        account={source.account}
+        setAccount={null}
+        location={source.location}
+        setLocation={null}
+        amount={source.amount}
+        setAmount={null}
+        fundAssignments={source.fundAssignments}
+        setFundAssignments={null}
+        baselineFundAssignments={source.baselineFundAssignments}
+      />
+    ));
+    destinationContent = [
+      <RefundTransactionDestinationFrame
+        key="refund-destination"
+        readOnly
+        accounts={[]}
+        transaction={refundTransaction}
+        account={destination.account}
+        setAccount={null}
+        amount={destinationAmount}
+      />,
+    ];
   } else if (
     transaction.transactionType === TransactionType.Income &&
     incomeTransaction !== null

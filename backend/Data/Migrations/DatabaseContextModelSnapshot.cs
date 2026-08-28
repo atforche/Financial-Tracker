@@ -578,6 +578,13 @@ namespace Data.Migrations
                     b.HasDiscriminator().HasValue(1);
                 });
 
+            modelBuilder.Entity("Domain.Transactions.Refunds.RefundTransaction", b =>
+                {
+                    b.HasBaseType("Domain.Transactions.Transaction");
+
+                    b.HasDiscriminator().HasValue(4);
+                });
+
             modelBuilder.Entity("Domain.Transactions.Spending.SpendingTransaction", b =>
                 {
                     b.HasBaseType("Domain.Transactions.Transaction");
@@ -1335,6 +1342,120 @@ namespace Data.Migrations
 
                     b.Navigation("Source")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Transactions.Refunds.RefundTransaction", b =>
+                {
+                    b.OwnsOne("Domain.Transactions.Refunds.RefundTransactionDestination", "Destination", b1 =>
+                        {
+                            b1.Property<Guid>("RefundTransactionId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("AccountId")
+                                .HasColumnType("TEXT")
+                                .HasColumnName("RefundTransaction_DestinationAccountId");
+
+                            b1.Property<DateOnly?>("PostedDate")
+                                .HasColumnType("TEXT")
+                                .HasColumnName("RefundTransaction_DestinationPostedDate");
+
+                            b1.HasKey("RefundTransactionId");
+
+                            b1.HasIndex("AccountId");
+
+                            b1.ToTable("Transactions");
+
+                            b1.HasOne("Domain.Accounts.Account", "Account")
+                                .WithMany()
+                                .HasForeignKey("AccountId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired();
+
+                            b1.WithOwner()
+                                .HasForeignKey("RefundTransactionId");
+
+                            b1.Navigation("Account");
+                        });
+
+                    b.OwnsMany("Domain.Transactions.Refunds.RefundTransactionSource", "Sources", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<Guid?>("AccountId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<decimal>("Amount")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid?>("LocationId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<DateOnly?>("PostedDate")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("RefundTransactionId")
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("AccountId");
+
+                            b1.HasIndex("LocationId");
+
+                            b1.HasIndex("RefundTransactionId");
+
+                            b1.ToTable("RefundTransactionSources", (string)null);
+
+                            b1.HasOne("Domain.Accounts.Account", "Account")
+                                .WithMany()
+                                .HasForeignKey("AccountId");
+
+                            b1.HasOne("Domain.Locations.Location", "Location")
+                                .WithMany()
+                                .HasForeignKey("LocationId")
+                                .OnDelete(DeleteBehavior.Restrict);
+
+                            b1.WithOwner()
+                                .HasForeignKey("RefundTransactionId");
+
+                            b1.OwnsMany("Domain.Funds.FundAmount", "FundAssignments", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("INTEGER");
+
+                                    b2.Property<decimal>("Amount")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<Guid>("FundId")
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<int>("SourceId")
+                                        .HasColumnType("INTEGER");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("SourceId");
+
+                                    b2.ToTable("RefundTransactionSourceFundAssignments", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("SourceId");
+                                });
+
+                            b1.Navigation("Account");
+
+                            b1.Navigation("FundAssignments");
+
+                            b1.Navigation("Location");
+                        });
+
+                    b.Navigation("Destination")
+                        .IsRequired();
+
+                    b.Navigation("Sources");
                 });
 
             modelBuilder.Entity("Domain.Transactions.Spending.SpendingTransaction", b =>

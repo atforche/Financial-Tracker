@@ -14,10 +14,6 @@ import {
   validateSource,
 } from "@/transactions/workspace/account/helpers";
 import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
-import {
-  appendDestinationWithAutofilledAmount,
-  syncDestinationAmountsToSource,
-} from "@/transactions/workspace/helpers";
 import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFrame";
 import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFrame";
 import type { AccountingPeriod } from "@/accounting-periods/types";
@@ -88,16 +84,6 @@ const AccountTransactionForm = function <RequestPayload>({
   onReset,
   onSubmit,
 }: AccountTransactionFormProps<RequestPayload>): JSX.Element {
-  const setDestinationAmount = function (
-    destination: AccountDestinationDraft,
-    amount: number | null,
-  ): AccountDestinationDraft {
-    return {
-      ...destination,
-      amount,
-    };
-  };
-
   const updateDestination = function (
     index: number,
     recipe: (current: AccountDestinationDraft) => AccountDestinationDraft,
@@ -116,14 +102,10 @@ const AccountTransactionForm = function <RequestPayload>({
   );
 
   const addDestination = function (): void {
-    setDestinations((currentDestinations) =>
-      appendDestinationWithAutofilledAmount(
-        currentDestinations,
-        createEmptyDestination(),
-        source.amount,
-        setDestinationAmount,
-      ),
-    );
+    setDestinations((currentDestinations) => [
+      ...currentDestinations,
+      createEmptyDestination(),
+    ]);
   };
 
   const setSourceAccount = function (
@@ -175,21 +157,8 @@ const AccountTransactionForm = function <RequestPayload>({
             }));
           }}
           accountFilter={buildSourceAccountFilter(accounts, destinations)}
-          amount={source.amount}
-          setAmount={(nextAmount): void => {
-            setSource((currentSource) => ({
-              ...currentSource,
-              amount: nextAmount,
-            }));
-            setDestinations((currentDestinations) =>
-              syncDestinationAmountsToSource(
-                currentDestinations,
-                source.amount,
-                nextAmount,
-                setDestinationAmount,
-              ),
-            );
-          }}
+          amount={destinationTotal}
+          setAmount={null}
         />
       }
       destinationContent={
@@ -245,7 +214,7 @@ const AccountTransactionForm = function <RequestPayload>({
           ))}
         </>
       }
-      sourceAmount={source.amount}
+      sourceAmount={destinationTotal}
       destinationAmount={destinationTotal}
       destinationCount={destinations.length}
       submitLabel={submitLabel}

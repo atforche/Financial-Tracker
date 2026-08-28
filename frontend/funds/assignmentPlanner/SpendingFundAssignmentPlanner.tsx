@@ -14,7 +14,7 @@ import {
 import {
   compareCurrencyAmounts,
   formatCurrency,
-  getCurrencyDifference,
+  getCurrencyTotal,
 } from "@/framework/currencyHelpers";
 import type { FrameColor } from "@/framework/view/Frame";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
@@ -28,6 +28,7 @@ import { getUnassignedFund } from "@/funds/helpers";
 interface SpendingFundAssignmentPlannerProps {
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
+  readonly assignmentEffect?: "spend" | "refund";
   readonly totalAmountToAssign: number | null;
   readonly fundAssignments: FundAssignmentDraft[];
   readonly setFundAssignments:
@@ -43,6 +44,7 @@ interface SpendingFundAssignmentPlannerProps {
 const SpendingFundAssignmentPlanner = function ({
   funds,
   fundGoals,
+  assignmentEffect = "spend",
   totalAmountToAssign,
   fundAssignments,
   setFundAssignments,
@@ -51,6 +53,7 @@ const SpendingFundAssignmentPlanner = function ({
   readOnly = false,
 }: SpendingFundAssignmentPlannerProps): JSX.Element {
   const unassignedFund = getUnassignedFund(funds);
+  const assignmentDirection = assignmentEffect === "refund" ? 1 : -1;
 
   const sortFunds = function (left: Fund, right: Fund): number {
     return sortFundsByRemainingAmount(left, right, (fundId: string) => {
@@ -110,15 +113,15 @@ const SpendingFundAssignmentPlanner = function ({
             amount: assignment.amount,
             isExtraContribution: false,
             previousFundBalance,
-            newFundBalance: getCurrencyDifference(
+            newFundBalance: getCurrencyTotal([
               previousFundBalance,
-              assignment.amount,
-            ),
+              assignmentDirection * assignment.amount,
+            ]),
             previousGoalAmount,
-            newGoalAmount: getCurrencyDifference(
+            newGoalAmount: getCurrencyTotal([
               previousGoalAmount,
-              assignment.amount,
-            ),
+              assignmentDirection * assignment.amount,
+            ]),
           };
         },
       ),
@@ -144,14 +147,14 @@ const SpendingFundAssignmentPlanner = function ({
           return {
             ...assignment,
             amount: newAmount ?? 0,
-            newFundBalance: getCurrencyDifference(
+            newFundBalance: getCurrencyTotal([
               assignment.previousFundBalance,
-              newAmount ?? 0,
-            ),
-            newGoalAmount: getCurrencyDifference(
+              assignmentDirection * (newAmount ?? 0),
+            ]),
+            newGoalAmount: getCurrencyTotal([
               previousGoalAmount,
-              newAmount ?? 0,
-            ),
+              assignmentDirection * (newAmount ?? 0),
+            ]),
           };
         },
       ),

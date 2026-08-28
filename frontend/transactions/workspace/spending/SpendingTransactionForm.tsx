@@ -6,10 +6,6 @@ import type {
 } from "@/accounts/types";
 import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
 import {
-  type FundAssignmentDraft,
-  updateUnassignedFundAmount,
-} from "@/funds/assignmentPlanner/helpers";
-import {
   type SpendingDestinationDraft,
   type SpendingSourceDraft,
   buildDestinationAccountFilter,
@@ -19,10 +15,6 @@ import {
   validateFundAssignments,
   validateSource,
 } from "@/transactions/workspace/spending/helpers";
-import {
-  appendDestinationWithAutofilledAmount,
-  syncDestinationAmountsToSource,
-} from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
@@ -31,6 +23,7 @@ import SpendingTransactionDestinationFrame from "@/transactions/workspace/spendi
 import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
 import { getCurrencyTotal } from "@/framework/currencyHelpers";
+import { updateUnassignedFundAmount } from "@/funds/assignmentPlanner/helpers";
 
 /**
  * Represents the state of the spending transaction form.
@@ -120,44 +113,15 @@ const SpendingTransactionForm = function <RequestPayload>({
     );
   };
 
-  const syncDestinationFundAssignments = function (
-    destinationAmount: number | null,
-    fundAssignments: FundAssignmentDraft[],
-  ): FundAssignmentDraft[] {
-    return updateUnassignedFundAmount(
-      unassignedFund,
-      destinationAmount,
-      fundAssignments,
-    );
-  };
-
-  const setDestinationAmount = function (
-    destination: SpendingDestinationDraft,
-    amount: number | null,
-  ): SpendingDestinationDraft {
-    return {
-      ...destination,
-      amount,
-      fundAssignments: syncDestinationFundAssignments(
-        amount,
-        destination.fundAssignments,
-      ),
-    };
-  };
-
   const destinationTotal = getCurrencyTotal(
     destinations.map((destination) => destination.amount),
   );
 
   const addDestination = function (): void {
-    setDestinations((currentDestinations) =>
-      appendDestinationWithAutofilledAmount(
-        currentDestinations,
-        createEmptyDestination(),
-        source.amount,
-        setDestinationAmount,
-      ),
-    );
+    setDestinations((currentDestinations) => [
+      ...currentDestinations,
+      createEmptyDestination(),
+    ]);
   };
 
   const setDestinationAccount = function (
@@ -196,21 +160,8 @@ const SpendingTransactionForm = function <RequestPayload>({
               account,
             }));
           }}
-          amount={source.amount}
-          setAmount={(amount): void => {
-            setSource((currentSource) => ({
-              ...currentSource,
-              amount,
-            }));
-            setDestinations((currentDestinations) =>
-              syncDestinationAmountsToSource(
-                currentDestinations,
-                source.amount,
-                amount,
-                setDestinationAmount,
-              ),
-            );
-          }}
+          amount={destinationTotal}
+          setAmount={null}
           accountFilter={buildSourceAccountFilter(accounts, destinations)}
         />
       }
@@ -243,9 +194,15 @@ const SpendingTransactionForm = function <RequestPayload>({
               }}
               amount={destination.amount}
               setAmount={(nextAmount): void => {
-                updateDestination(index, (currentDestination) =>
-                  setDestinationAmount(currentDestination, nextAmount),
-                );
+                updateDestination(index, (currentDestination) => ({
+                  ...currentDestination,
+                  amount: nextAmount,
+                  fundAssignments: updateUnassignedFundAmount(
+                    unassignedFund,
+                    nextAmount,
+                    currentDestination.fundAssignments,
+                  ),
+                }));
               }}
               fundAssignments={destination.fundAssignments}
               setFundAssignments={(fundAssignments): void => {
@@ -277,7 +234,7 @@ const SpendingTransactionForm = function <RequestPayload>({
           ))}
         </>
       }
-      sourceAmount={source.amount}
+      sourceAmount={destinationTotal}
       destinationAmount={destinationTotal}
       destinationCount={destinations.length}
       submitLabel={submitLabel}

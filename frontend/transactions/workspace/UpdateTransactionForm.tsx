@@ -5,6 +5,7 @@ import {
   isAccountTransaction,
   isFundTransaction,
   isIncomeTransaction,
+  isRefundTransaction,
   isSpendingTransaction,
 } from "@/transactions/types";
 import type { AccountWithBalance } from "@/accounts/types";
@@ -17,6 +18,7 @@ import { LocationProvider } from "@/locations/LocationProvider";
 import UpdateAccountTransactionForm from "@/transactions/workspace/account/UpdateAccountTransactionForm";
 import UpdateFundTransactionForm from "@/transactions/workspace/fund/UpdateFundTransactionForm";
 import UpdateIncomeTransactionForm from "@/transactions/workspace/income/UpdateIncomeTransactionForm";
+import UpdateRefundTransactionForm from "@/transactions/workspace/refund/UpdateRefundTransactionForm";
 import UpdateSpendingTransactionForm from "@/transactions/workspace/spending/UpdateSpendingTransactionForm";
 
 /**
@@ -59,6 +61,17 @@ const UpdateTransactionForm = function ({
   } else if (isSpendingTransaction(transaction)) {
     form = (
       <UpdateSpendingTransactionForm
+        transaction={transaction}
+        transactionAccountingPeriod={transactionAccountingPeriod}
+        accounts={accounts}
+        funds={funds}
+        fundGoals={fundGoals}
+        redirectUrl={redirectUrl}
+      />
+    );
+  } else if (isRefundTransaction(transaction)) {
+    form = (
+      <UpdateRefundTransactionForm
         transaction={transaction}
         transactionAccountingPeriod={transactionAccountingPeriod}
         accounts={accounts}

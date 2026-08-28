@@ -5,6 +5,7 @@ using Domain.Transactions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Income;
 using Domain.Transactions.Queries;
+using Domain.Transactions.Refunds;
 using Domain.Transactions.Spending;
 
 namespace Domain.Accounts.Queries;
@@ -191,8 +192,23 @@ public sealed class AccountBalanceEventQueryService(
             SpendingTransaction spending => GetSpendingEvents(transaction, period, spending, histories),
             IncomeTransaction income => GetIncomeEvents(transaction, period, income, histories),
             AccountTransaction account => GetAccountEvents(transaction, period, account, histories),
+            RefundTransaction refund => GetRefundEvents(transaction, period, refund, histories),
             _ => [],
         };
+
+    private static IEnumerable<AccountBalanceEvent> GetRefundEvents(
+        Transaction transaction,
+        AccountingPeriod period,
+        RefundTransaction refund,
+        IReadOnlyDictionary<AccountId, List<AccountBalanceHistory>> histories)
+    {
+        var sourceParties = refund.Sources.Select(source => ToParty(source.Account, source.Location?.Name, source.Amount)).ToList();
+        IEnumerable<AccountBalanceEvent> sourceEvents = refund.Sources.Where(source => source.Account != null).Select(source => Create(
+            transaction, period, source.Account!, source.PostedDate, source.Amount, BalanceEventType.Debit,
+            ToParty(source.Account, source.Location?.Name, null), [ToParty(refund.Destination.Account, null, transaction.Amount)], histories));
+        return sourceEvents.Append(Create(transaction, period, refund.Destination.Account, refund.Destination.PostedDate,
+            transaction.Amount, BalanceEventType.Credit, ToParty(refund.Destination.Account, null, null), sourceParties, histories));
+    }
 
     private static IEnumerable<AccountBalanceEvent> GetSpendingEvents(
         Transaction transaction,

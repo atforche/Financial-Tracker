@@ -4052,6 +4052,30 @@ export interface components {
             /** @description Canonical Location name. */
             name: string;
         };
+        /** @description Model representing the destination of a refund transaction create request. */
+        CreateRefundTransactionDestinationModel: {
+            /**
+             * Format: uuid
+             * @description Account ID for the destination account.
+             */
+            accountId: string;
+        };
+        /** @description Model representing a source of a refund transaction create request. */
+        CreateRefundTransactionSourceModel: {
+            /**
+             * Format: uuid
+             * @description Optional account ID for the source account.
+             */
+            accountId?: null | string;
+            location?: null | components["schemas"]["LocationInputModel"];
+            /**
+             * Format: double
+             * @description Amount received from this source.
+             */
+            amount: number;
+            /** @description Fund assignments for this source. */
+            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
+        };
         /** @description Model representing a destination of a spending transaction create request. */
         CreateSpendingTransactionDestinationModel: {
             /**
@@ -4077,7 +4101,7 @@ export interface components {
             accountId: string;
         };
         /** @description Model representing a request to create a Transaction. */
-        CreateTransactionModel: components["schemas"]["CreateTransactionModelCreateSpendingTransactionModel"] | components["schemas"]["CreateTransactionModelCreateIncomeTransactionModel"] | components["schemas"]["CreateTransactionModelCreateAccountTransactionModel"] | components["schemas"]["CreateTransactionModelCreateFundTransactionModel"];
+        CreateTransactionModel: components["schemas"]["CreateTransactionModelCreateSpendingTransactionModel"] | components["schemas"]["CreateTransactionModelCreateIncomeTransactionModel"] | components["schemas"]["CreateTransactionModelCreateAccountTransactionModel"] | components["schemas"]["CreateTransactionModelCreateFundTransactionModel"] | components["schemas"]["CreateTransactionModelCreateRefundTransactionModel"];
         /** @description Model representing a request to create an account transaction. */
         CreateTransactionModelCreateAccountTransactionModel: {
             /** @enum {string} */
@@ -4138,6 +4162,32 @@ export interface components {
             source: components["schemas"]["CreateIncomeTransactionSourceModel"];
             /** @description Destinations for the income transaction. */
             destinations: components["schemas"]["CreateIncomeTransactionDestinationModel"][];
+            /**
+             * Format: uuid
+             * @description Accounting Period for the Transaction.
+             */
+            accountingPeriodId: string;
+            /**
+             * Format: date
+             * @description Date for the Transaction.
+             */
+            date: string;
+            /** @description Description for the Transaction. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the Transaction.
+             */
+            amount: number;
+        };
+        /** @description Model representing a request to create a refund transaction. */
+        CreateTransactionModelCreateRefundTransactionModel: {
+            /** @enum {string} */
+            type?: CreateTransactionModelCreateRefundTransactionModelType;
+            /** @description Sources for the refund transaction. */
+            sources: components["schemas"]["CreateRefundTransactionSourceModel"][];
+            /** @description Destination for the refund transaction. */
+            destination: components["schemas"]["CreateRefundTransactionDestinationModel"];
             /**
              * Format: uuid
              * @description Accounting Period for the Transaction.
@@ -4892,6 +4942,35 @@ export interface components {
             detail?: null | string;
             instance?: null | string;
         };
+        /** @description Model representing the destination of a refund transaction response. */
+        RefundTransactionDestinationModel: {
+            /** @description Account for the destination. */
+            account: components["schemas"]["AccountBalanceEventModel"];
+            /**
+             * Format: date
+             * @description Posted date for the destination.
+             */
+            postedDate?: null | string;
+        };
+        /** @description Model representing a source of a refund transaction response. */
+        RefundTransactionSourceModel: {
+            account?: null | components["schemas"]["AccountBalanceEventModel"];
+            location?: null | components["schemas"]["LocationWithAmountModel"];
+            /**
+             * Format: double
+             * @description Amount received from this source.
+             */
+            amount: number;
+            /**
+             * Format: date
+             * @description Posted date for this source.
+             */
+            postedDate?: null | string;
+            /** @description Fund assignments for this source. */
+            fundAssignments: components["schemas"]["FundBalanceEventModel"][];
+            /** @description Fund Goal balance events for this source. */
+            fundGoals: components["schemas"]["FundGoalBalanceEventModel"][];
+        };
         /** @description Model representing a destination of a spending transaction response. */
         SpendingTransactionDestinationModel: {
             account?: null | components["schemas"]["AccountBalanceEventModel"];
@@ -4917,7 +4996,7 @@ export interface components {
             account: components["schemas"]["AccountBalanceEventModel"];
         };
         /** @description Model representing a Transaction. */
-        TransactionModel: components["schemas"]["TransactionModelSpendingTransactionModel"] | components["schemas"]["TransactionModelIncomeTransactionModel"] | components["schemas"]["TransactionModelAccountTransactionModel"] | components["schemas"]["TransactionModelFundTransactionModel"];
+        TransactionModel: components["schemas"]["TransactionModelSpendingTransactionModel"] | components["schemas"]["TransactionModelIncomeTransactionModel"] | components["schemas"]["TransactionModelAccountTransactionModel"] | components["schemas"]["TransactionModelFundTransactionModel"] | components["schemas"]["TransactionModelRefundTransactionModel"];
         /** @description Model representing an account transaction. */
         TransactionModelAccountTransactionModel: {
             /** @enum {string} */
@@ -5015,6 +5094,48 @@ export interface components {
             trackedAmount: number;
             /** @description Destinations for the income transaction. */
             destinations: components["schemas"]["IncomeTransactionDestinationModel"][];
+            /**
+             * Format: uuid
+             * @description ID for the Transaction.
+             */
+            id: string;
+            /** @description Type of the Transaction. */
+            transactionType: components["schemas"]["TransactionTypeModel"];
+            /**
+             * Format: uuid
+             * @description Accounting Period ID for the Transaction.
+             */
+            accountingPeriodId: string;
+            /** @description Name of the Accounting Period for the Transaction. */
+            accountingPeriodName: string;
+            /**
+             * Format: date
+             * @description Date for the Transaction.
+             */
+            date: string;
+            /**
+             * Format: int32
+             * @description Sequence number for the Transaction.
+             */
+            sequence: number;
+            /** @description Description for the Transaction. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the Transaction.
+             */
+            amount: number;
+            /** @description Whether the Transaction is posted to every affected Account. */
+            fullyPosted: boolean;
+        };
+        /** @description Model representing a refund transaction. */
+        TransactionModelRefundTransactionModel: {
+            /** @enum {string} */
+            type?: TransactionModelRefundTransactionModelType;
+            /** @description Sources for the refund transaction. */
+            sources: components["schemas"]["RefundTransactionSourceModel"][];
+            /** @description Destination for the refund transaction. */
+            destination: components["schemas"]["RefundTransactionDestinationModel"];
             /**
              * Format: uuid
              * @description ID for the Transaction.
@@ -5309,6 +5430,30 @@ export interface components {
             /** @description New canonical Location name. */
             name: string;
         };
+        /** @description Model representing the destination of a refund transaction update request. */
+        UpdateRefundTransactionDestinationModel: {
+            /**
+             * Format: uuid
+             * @description Account ID for the destination account.
+             */
+            accountId: string;
+        };
+        /** @description Model representing a source of a refund transaction update request. */
+        UpdateRefundTransactionSourceModel: {
+            /**
+             * Format: uuid
+             * @description Optional account ID for the source account.
+             */
+            accountId?: null | string;
+            location?: null | components["schemas"]["LocationInputModel"];
+            /**
+             * Format: double
+             * @description Amount received from this source.
+             */
+            amount: number;
+            /** @description Fund assignments for this source. */
+            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
+        };
         /** @description Model representing a destination of a spending transaction update request. */
         UpdateSpendingTransactionDestinationModel: {
             /**
@@ -5334,7 +5479,7 @@ export interface components {
             accountId: string;
         };
         /** @description Model representing a request to update a Transaction. */
-        UpdateTransactionModel: components["schemas"]["UpdateTransactionModelUpdateSpendingTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateIncomeTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateAccountTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateFundTransactionModel"];
+        UpdateTransactionModel: components["schemas"]["UpdateTransactionModelUpdateSpendingTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateIncomeTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateAccountTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateFundTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateRefundTransactionModel"];
         /** @description Model representing a request to update an account transaction. */
         UpdateTransactionModelUpdateAccountTransactionModel: {
             /** @enum {string} */
@@ -5385,6 +5530,27 @@ export interface components {
             source: components["schemas"]["UpdateIncomeTransactionSourceModel"];
             /** @description Destinations for the income transaction. */
             destinations: components["schemas"]["UpdateIncomeTransactionDestinationModel"][];
+            /**
+             * Format: date
+             * @description Date for the Transaction.
+             */
+            date: string;
+            /** @description Description for the Transaction. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the Transaction.
+             */
+            amount: number;
+        };
+        /** @description Model representing a request to update a refund transaction. */
+        UpdateTransactionModelUpdateRefundTransactionModel: {
+            /** @enum {string} */
+            type?: UpdateTransactionModelUpdateRefundTransactionModelType;
+            /** @description Sources for the refund transaction. */
+            sources: components["schemas"]["UpdateRefundTransactionSourceModel"][];
+            /** @description Destination for the refund transaction. */
+            destination: components["schemas"]["UpdateRefundTransactionDestinationModel"];
             /**
              * Format: date
              * @description Date for the Transaction.
@@ -5615,6 +5781,9 @@ export enum CreateTransactionModelCreateFundTransactionModelType {
 export enum CreateTransactionModelCreateIncomeTransactionModelType {
     Income = "Income"
 }
+export enum CreateTransactionModelCreateRefundTransactionModelType {
+    Refund = "Refund"
+}
 export enum CreateTransactionModelCreateSpendingTransactionModelType {
     Spending = "Spending"
 }
@@ -5699,6 +5868,9 @@ export enum TransactionModelFundTransactionModelType {
 export enum TransactionModelIncomeTransactionModelType {
     Income = "Income"
 }
+export enum TransactionModelRefundTransactionModelType {
+    Refund = "Refund"
+}
 export enum TransactionModelSpendingTransactionModelType {
     Spending = "Spending"
 }
@@ -5722,7 +5894,8 @@ export enum TransactionTypeModel {
     Spending = "Spending",
     Income = "Income",
     Account = "Account",
-    Fund = "Fund"
+    Fund = "Fund",
+    Refund = "Refund"
 }
 export enum UpdateTransactionModelUpdateAccountTransactionModelType {
     Account = "Account"
@@ -5732,6 +5905,9 @@ export enum UpdateTransactionModelUpdateFundTransactionModelType {
 }
 export enum UpdateTransactionModelUpdateIncomeTransactionModelType {
     Income = "Income"
+}
+export enum UpdateTransactionModelUpdateRefundTransactionModelType {
+    Refund = "Refund"
 }
 export enum UpdateTransactionModelUpdateSpendingTransactionModelType {
     Spending = "Spending"

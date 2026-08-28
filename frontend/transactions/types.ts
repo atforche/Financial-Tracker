@@ -62,6 +62,22 @@ type SpendingTransactionDestination =
   components["schemas"]["TransactionModelSpendingTransactionModel"]["destinations"][number];
 
 /**
+ * Type representing a refund transaction.
+ */
+type RefundTransaction =
+  components["schemas"]["TransactionModelRefundTransactionModel"];
+
+/**
+ * Type representing a source of a refund transaction.
+ */
+type RefundTransactionSource = RefundTransaction["sources"][number];
+
+/**
+ * Type representing a destination of a refund transaction.
+ */
+type RefundTransactionDestination = RefundTransaction["destination"];
+
+/**
  * Type representing a summary of transactions.
  */
 type TransactionSummaryByType =
@@ -105,6 +121,14 @@ const isSpendingTransaction = (
   transaction.transactionType === TransactionTypeModel.Spending;
 
 /**
+ * Determines whether a transaction is a refund transaction.
+ */
+const isRefundTransaction = (
+  transaction: Transaction,
+): transaction is RefundTransaction =>
+  transaction.transactionType === TransactionTypeModel.Refund;
+
+/**
  * Narrows an account transaction, returning null for other types.
  */
 const asAccountTransaction = (
@@ -135,6 +159,14 @@ const asSpendingTransaction = (
   isSpendingTransaction(transaction) ? transaction : null;
 
 /**
+ * Narrows a refund transaction, returning null for other types.
+ */
+const asRefundTransaction = (
+  transaction: Transaction,
+): RefundTransaction | null =>
+  isRefundTransaction(transaction) ? transaction : null;
+
+/**
  * Type representing a request to create a transaction.
  */
 type CreateTransactionRequest = components["schemas"]["CreateTransactionModel"];
@@ -146,7 +178,8 @@ type UpdateTransactionRequest =
   | components["schemas"]["UpdateTransactionModelUpdateAccountTransactionModel"]
   | components["schemas"]["UpdateTransactionModelUpdateFundTransactionModel"]
   | components["schemas"]["UpdateTransactionModelUpdateIncomeTransactionModel"]
-  | components["schemas"]["UpdateTransactionModelUpdateSpendingTransactionModel"];
+  | components["schemas"]["UpdateTransactionModelUpdateSpendingTransactionModel"]
+  | components["schemas"]["UpdateTransactionModelUpdateRefundTransactionModel"];
 
 /**
  * Type representing a request to post a transaction.
@@ -166,6 +199,9 @@ export {
   type IncomeTransactionDestination,
   type SpendingTransaction,
   type SpendingTransactionDestination,
+  type RefundTransaction,
+  type RefundTransactionSource,
+  type RefundTransactionDestination,
   type TransactionSummaryByType,
   type IncomeAmount,
   type CreateTransactionRequest,
@@ -175,8 +211,10 @@ export {
   isFundTransaction,
   isIncomeTransaction,
   isSpendingTransaction,
+  isRefundTransaction,
   asAccountTransaction,
   asFundTransaction,
   asIncomeTransaction,
   asSpendingTransaction,
+  asRefundTransaction,
 };

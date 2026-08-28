@@ -30,6 +30,11 @@ internal sealed class TransactionBuilderFactory(TestApiClient apiClient)
     public FundTransactionBuilder Fund() => new(apiClient);
 
     /// <summary>
+    /// Starts a builder for a refund transaction.
+    /// </summary>
+    public RefundTransactionBuilder Refund() => new(apiClient);
+
+    /// <summary>
     /// Posts a transaction to an affected account.
     /// </summary>
     public Task PostAsync(TransactionHandle transaction, AccountHandle account, DateOnly date) => apiClient.PostAsync(

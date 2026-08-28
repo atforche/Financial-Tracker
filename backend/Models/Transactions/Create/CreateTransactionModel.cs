@@ -10,6 +10,7 @@ namespace Models.Transactions.Create;
 [JsonDerivedType(typeof(CreateIncomeTransactionModel), nameof(TransactionTypeModel.Income))]
 [JsonDerivedType(typeof(CreateAccountTransactionModel), nameof(TransactionTypeModel.Account))]
 [JsonDerivedType(typeof(CreateFundTransactionModel), nameof(TransactionTypeModel.Fund))]
+[JsonDerivedType(typeof(CreateRefundTransactionModel), nameof(TransactionTypeModel.Refund))]
 public abstract class CreateTransactionModel
 {
     /// <summary>

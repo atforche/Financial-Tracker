@@ -5,6 +5,7 @@ using Domain.Transactions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
+using Domain.Transactions.Refunds;
 using Domain.Transactions.Spending;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +32,8 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
             .Any(t => t.Source.Account.Id == account.Id || t.Destinations.Any(d => d.Account != null && d.Account.Id == account.Id)) ||
         databaseContext.Transactions.OfType<IncomeTransaction>()
             .Any(t => (t.Source.Account != null && t.Source.Account.Id == account.Id) || t.Destinations.Any(d => d.Account.Id == account.Id)) ||
+        databaseContext.Transactions.OfType<RefundTransaction>()
+            .Any(t => t.Sources.Any(s => s.Account != null && s.Account.Id == account.Id) || t.Destination.Account.Id == account.Id) ||
         databaseContext.Transactions.OfType<AccountTransaction>()
             .Any(t => (t.Source.Account != null && t.Source.Account.Id == account.Id) || t.Destinations.Any(d => d.Account != null && d.Account.Id == account.Id));
 
@@ -58,6 +61,8 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
             .Any(t => t.Destinations.Any(d => d.FundAssignments.Any(f => f.FundId == fundId))) ||
         databaseContext.Transactions.OfType<IncomeTransaction>()
             .Any(t => t.Destinations.Any(d => d.FundAssignments.Any(f => f.FundId == fundId))) ||
+        databaseContext.Transactions.OfType<RefundTransaction>()
+            .Any(t => t.Sources.Any(s => s.FundAssignments.Any(f => f.FundId == fundId))) ||
         databaseContext.Transactions.OfType<FundTransaction>()
             .Any(t => t.Source.Fund.Id == fundId || t.Destinations.Any(d => d.Fund.Id == fundId));
 

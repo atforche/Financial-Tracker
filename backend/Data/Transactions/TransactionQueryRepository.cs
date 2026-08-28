@@ -8,6 +8,7 @@ using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Queries;
+using Domain.Transactions.Refunds;
 using Domain.Transactions.Spending;
 using Microsoft.EntityFrameworkCore;
 
@@ -133,6 +134,9 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
                         .Sum(destination => destination.Amount);
                     outgoing += spendingAmount;
                     break;
+                case RefundTransaction refund:
+                    incoming += refund.Sources.Where(source => source.Location != null && selectedIds.Contains(source.Location.Id.Value)).Sum(source => source.Amount);
+                    break;
                 case AccountTransaction account:
                     if (account.Source.Location != null
                         && selectedIds.Contains(account.Source.Location.Id.Value))
@@ -243,7 +247,10 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
                         || ((IncomeTransaction)transaction).Destinations.Any(destination => accountIds.Contains(destination.Account.Id))))
                 || (transaction is AccountTransaction
                     && ((((AccountTransaction)transaction).Source.Account != null && accountIds.Contains(((AccountTransaction)transaction).Source.Account!.Id))
-                        || ((AccountTransaction)transaction).Destinations.Any(destination => destination.Account != null && accountIds.Contains(destination.Account.Id)))));
+                        || ((AccountTransaction)transaction).Destinations.Any(destination => destination.Account != null && accountIds.Contains(destination.Account.Id))))
+                || (transaction is RefundTransaction
+                    && (((RefundTransaction)transaction).Sources.Any(source => source.Account != null && accountIds.Contains(source.Account.Id))
+                        || accountIds.Contains(((RefundTransaction)transaction).Destination.Account.Id))));
         }
         if (filter.FundIds.Count > 0)
         {
@@ -251,6 +258,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
             transactions = transactions.Where(transaction =>
                 (transaction is SpendingTransaction && ((SpendingTransaction)transaction).Destinations.Any(destination => destination.FundAssignments.Any(amount => fundIds.Contains(amount.FundId))))
                 || (transaction is IncomeTransaction && ((IncomeTransaction)transaction).Destinations.Any(destination => destination.FundAssignments.Any(amount => fundIds.Contains(amount.FundId))))
+                || (transaction is RefundTransaction && ((RefundTransaction)transaction).Sources.Any(source => source.FundAssignments.Any(amount => fundIds.Contains(amount.FundId))))
                 || (transaction is FundTransaction
                     && (fundIds.Contains(((FundTransaction)transaction).Source.Fund.Id)
                         || ((FundTransaction)transaction).Destinations.Any(destination => fundIds.Contains(destination.Fund.Id)))));
@@ -266,6 +274,8 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
                 || (transaction is IncomeTransaction
                     && EF.Property<LocationId?>(((IncomeTransaction)transaction).Source, "LocationId") != null
                     && locationIds.Contains(EF.Property<LocationId?>(((IncomeTransaction)transaction).Source, "LocationId")!))
+                || (transaction is RefundTransaction
+                    && ((RefundTransaction)transaction).Sources.Any(source => EF.Property<LocationId?>(source, "LocationId") != null && locationIds.Contains(EF.Property<LocationId?>(source, "LocationId")!)))
                 || (transaction is AccountTransaction
                     && ((EF.Property<LocationId?>(((AccountTransaction)transaction).Source, "LocationId") != null
                             && locationIds.Contains(EF.Property<LocationId?>(((AccountTransaction)transaction).Source, "LocationId")!))
@@ -331,6 +341,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
         IncomeTransaction income => income.Source.Account?.Name ?? income.Source.Location?.Name,
         AccountTransaction account => account.Source.Account?.Name ?? account.Source.Location?.Name,
         FundTransaction fund => fund.Source.Fund.Name,
+        RefundTransaction refund => string.Join(", ", refund.Sources.Select(source => source.Account?.Name ?? source.Location?.Name)),
         _ => null,
     };
 
@@ -343,6 +354,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
         IncomeTransaction income => string.Join(", ", income.Destinations.Select(destination => destination.Account.Name).Distinct(StringComparer.OrdinalIgnoreCase)),
         AccountTransaction account => string.Join(", ", account.Destinations.Select(destination => destination.Account?.Name ?? destination.Location?.Name).Distinct(StringComparer.OrdinalIgnoreCase)),
         FundTransaction fund => string.Join(", ", fund.Destinations.Select(destination => destination.Fund.Name).Distinct(StringComparer.OrdinalIgnoreCase)),
+        RefundTransaction refund => refund.Destination.Account.Name,
         _ => string.Empty,
     };
 

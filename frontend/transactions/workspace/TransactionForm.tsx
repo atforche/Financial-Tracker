@@ -48,7 +48,7 @@ interface TransactionFormProps<RequestPayload> {
   readonly description: string;
   readonly setDescription?: Dispatch<SetStateAction<string>> | null;
   readonly headerContent?: ReactNode;
-  readonly sourceContent?: JSX.Element;
+  readonly sourceContent?: ReactNode;
   readonly destinationContent?: ReactNode;
   readonly sourceAmount?: number | null;
   readonly destinationAmount?: number;
@@ -116,11 +116,7 @@ const TransactionForm = function <RequestPayload>({
           />
           <TransactionSourceDestinationLayout
             sourceFrame={sourceContent ?? emptyFrame}
-            destinationFrames={[
-              <Stack key="destination-content" spacing={2}>
-                {destinationContent}
-              </Stack>,
-            ]}
+            destinationFrames={destinationContent ?? emptyFrame}
           />
           {typeof destinationAmount === "number" ? (
             <TransactionSourceDestinationSummary

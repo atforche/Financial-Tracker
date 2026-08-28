@@ -5,6 +5,7 @@ using Domain.Transactions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Income;
 using Domain.Transactions.Queries;
+using Domain.Transactions.Refunds;
 using Domain.Transactions.Spending;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,7 +41,11 @@ public sealed class TransactionBalanceEventQueryRepository(DatabaseContext datab
             .Where(transaction => (transaction.Source.Account != null && transaction.Source.Account.Id == accountId)
                 || transaction.Destinations.Any(destination => destination.Account != null && destination.Account.Id == accountId))
             .ToListAsync(cancellationToken);
-        return spendingTransactions.Concat<Transaction>(incomeTransactions).Concat(accountTransactions).ToList();
+        List<RefundTransaction> refundTransactions = await databaseContext.Transactions.OfType<RefundTransaction>().AsNoTracking().AsSplitQuery()
+            .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
+            .Where(transaction => transaction.Sources.Any(source => source.Account != null && source.Account.Id == accountId) || transaction.Destination.Account.Id == accountId)
+            .ToListAsync(cancellationToken);
+        return spendingTransactions.Concat<Transaction>(incomeTransactions).Concat(accountTransactions).Concat(refundTransactions).ToList();
     }
 
     /// <inheritdoc/>
@@ -80,7 +85,10 @@ public sealed class TransactionBalanceEventQueryRepository(DatabaseContext datab
             .Where(transaction => (transaction.Source.Account != null && accountIds.Contains(transaction.Source.Account.Id) && transaction.Source.PostedDate == null)
                 || transaction.Destinations.Any(destination => destination.Account != null && accountIds.Contains(destination.Account.Id) && destination.PostedDate == null))
             .ToListAsync(cancellationToken);
-        return spendingTransactions.Concat<Transaction>(incomeTransactions).Concat(accountTransactions).ToList();
+        List<RefundTransaction> refundTransactions = await databaseContext.Transactions.OfType<RefundTransaction>().AsNoTracking().AsSplitQuery()
+            .Where(transaction => transaction.Sources.Any(source => source.Account != null && accountIds.Contains(source.Account.Id) && source.PostedDate == null) || (accountIds.Contains(transaction.Destination.Account.Id) && transaction.Destination.PostedDate == null))
+            .ToListAsync(cancellationToken);
+        return spendingTransactions.Concat<Transaction>(incomeTransactions).Concat(accountTransactions).Concat(refundTransactions).ToList();
     }
 
     /// <inheritdoc/>
@@ -98,6 +106,9 @@ public sealed class TransactionBalanceEventQueryRepository(DatabaseContext datab
             .Where(transaction => transaction.Destinations.Any(destination => destination.PostedDate == null
                 && destination.FundAssignments.Any(amount => fundIds.Contains(amount.FundId))))
             .ToListAsync(cancellationToken);
-        return spendingTransactions.Concat<Transaction>(incomeTransactions).ToList();
+        List<RefundTransaction> refundTransactions = await databaseContext.Transactions.OfType<RefundTransaction>().AsNoTracking().AsSplitQuery()
+            .Where(transaction => transaction.Sources.Any(source => (source.Account == null ? transaction.Destination.PostedDate : source.PostedDate) == null && source.FundAssignments.Any(amount => fundIds.Contains(amount.FundId))))
+            .ToListAsync(cancellationToken);
+        return spendingTransactions.Concat<Transaction>(incomeTransactions).Concat(refundTransactions).ToList();
     }
 }

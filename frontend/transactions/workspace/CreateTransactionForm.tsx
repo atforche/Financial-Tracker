@@ -7,6 +7,7 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import CreateAccountTransactionForm from "@/transactions/workspace/account/CreateAccountTransactionForm";
 import CreateFundTransactionForm from "@/transactions/workspace/fund/CreateFundTransactionForm";
 import CreateIncomeTransactionForm from "@/transactions/workspace/income/CreateIncomeTransactionForm";
+import CreateRefundTransactionForm from "@/transactions/workspace/refund/CreateRefundTransactionForm";
 import CreateSpendingTransactionForm from "@/transactions/workspace/spending/CreateSpendingTransactionForm";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
@@ -42,7 +43,8 @@ const CreateTransactionForm = function ({
   showHeading = true,
 }: CreateTransactionFormProps): JSX.Element | null {
   const canWrite = useWriteAccess();
-  type TransactionFormKind = "spending" | "income" | "account" | "fund";
+  type TransactionFormKind =
+    "spending" | "refund" | "income" | "account" | "fund";
   const [transactionType, setTransactionType] =
     useState<TransactionFormKind>("spending");
 
@@ -67,6 +69,7 @@ const CreateTransactionForm = function ({
             onChange={setTransactionType}
             options={[
               { value: "spending", label: "Spending" },
+              { value: "refund", label: "Refund" },
               { value: "income", label: "Income" },
               { value: "account", label: "Account" },
               { value: "fund", label: "Fund" },
@@ -85,6 +88,15 @@ const CreateTransactionForm = function ({
         ) : null}
         {transactionType === "spending" ? (
           <CreateSpendingTransactionForm
+            accountingPeriods={accountingPeriods}
+            accounts={accounts}
+            funds={funds}
+            fundGoals={fundGoals}
+            redirectUrl={redirectUrl}
+          />
+        ) : null}
+        {transactionType === "refund" ? (
+          <CreateRefundTransactionForm
             accountingPeriods={accountingPeriods}
             accounts={accounts}
             funds={funds}

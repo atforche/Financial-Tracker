@@ -89,7 +89,7 @@ const validateSource = function (source: AccountSourceDraft): boolean {
   if ((hasAccount && hasLocation) || (!hasAccount && !hasLocation)) {
     return false;
   }
-  return source.amount !== null && compareCurrencyAmounts(source.amount, 0) > 0;
+  return hasAccount !== hasLocation;
 };
 
 /**
@@ -166,7 +166,7 @@ const validateRequest = function (
   return (
     validateDetails(accountingPeriod, date, defaultDate, description) &&
     validateSource(source) &&
-    validateSummary(source.amount, destinationTotal, destinations.length) &&
+    validateSummary(destinationTotal, destinationTotal, destinations.length) &&
     hasUniqueDestinationAccounts &&
     hasUniqueDestinationLocations &&
     areDestinationsComplete
@@ -184,6 +184,9 @@ const buildCreateRequest = function (
   source: AccountSourceDraft,
   destinations: AccountDestinationDraft[],
 ): CreateTransactionRequest | null {
+  const destinationTotal = getCurrencyTotal(
+    destinations.map((destination) => destination.amount),
+  );
   if (
     validateRequest(
       accountingPeriod,
@@ -200,7 +203,7 @@ const buildCreateRequest = function (
       date:
         date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
       description,
-      amount: source.amount ?? 0,
+      amount: destinationTotal,
       source: {
         accountId: source.account?.accountId ?? null,
         location:
@@ -229,6 +232,9 @@ const buildUpdateRequest = function (
   source: AccountSourceDraft,
   destinations: AccountDestinationDraft[],
 ): UpdateTransactionRequest | null {
+  const destinationTotal = getCurrencyTotal(
+    destinations.map((destination) => destination.amount),
+  );
   if (
     validateRequest(
       accountingPeriod,
@@ -243,7 +249,7 @@ const buildUpdateRequest = function (
       type: UpdateTransactionModelUpdateAccountTransactionModelType.Account,
       date: date?.format("YYYY-MM-DD") ?? "",
       description,
-      amount: source.amount ?? 0,
+      amount: destinationTotal,
       source: {
         accountId: source.account?.accountId ?? null,
         location:

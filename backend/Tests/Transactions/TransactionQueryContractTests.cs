@@ -1,4 +1,5 @@
 using Models;
+using Models.Accounts;
 using Models.Transactions.Types;
 using Tests.AccountingPeriods;
 using Tests.Accounts;
@@ -66,5 +67,32 @@ public sealed class TransactionQueryContractTests
 
         Assert.Equal(spending.Id, Assert.Single(marketTransactions.Items).Id);
         Assert.Equal(income.Id, Assert.Single(employerTransactions.Items).Id);
+    }
+
+    /// <summary>
+    /// Preserves every refund source and matches a refund through each source account.
+    /// </summary>
+    [Fact]
+    public async Task RefundDetailsAndFiltersSupportMultipleSources()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle firstSource = await test.Accounts.Onboard("First Merchant Credit").WithType(AccountTypeModel.Investment).CreateAsync();
+        AccountHandle secondSource = await test.Accounts.Onboard("Second Merchant Credit").WithType(AccountTypeModel.Investment).CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        TransactionHandle refund = await test.Transactions.Refund().In(july).On(new DateOnly(2026, 7, 15)).For(25m)
+            .From(firstSource, 10m).From(secondSource, 15m).To(cash, groceries).CreateAsync();
+
+        RefundTransactionModel detail = await test.Api.GetAsync<RefundTransactionModel>($"/transactions/{refund.Id}");
+        CollectionModel<TransactionModel> firstSourceTransactions = await test.Api.GetAsync<CollectionModel<TransactionModel>>(
+            $"/transactions?filter.accountIds={firstSource.Id}");
+        CollectionModel<TransactionModel> secondSourceTransactions = await test.Api.GetAsync<CollectionModel<TransactionModel>>(
+            $"/transactions?filter.accountIds={secondSource.Id}");
+
+        Assert.Equal(2, detail.Sources.Count);
+        Assert.Equal(["First Merchant Credit", "Second Merchant Credit"], detail.Sources.Select(source => source.Account!.Account.Name));
+        Assert.Equal(refund.Id, Assert.Single(firstSourceTransactions.Items).Id);
+        Assert.Equal(refund.Id, Assert.Single(secondSourceTransactions.Items).Id);
     }
 }

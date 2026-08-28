@@ -2,6 +2,7 @@ import {
   type AccountTransaction,
   type FundTransaction,
   type IncomeTransaction,
+  type RefundTransaction,
   type SpendingTransaction,
   type Transaction,
   TransactionType,
@@ -79,13 +80,33 @@ const asSpendingTransaction = function (
   return isSpendingTransaction(transaction) ? transaction : null;
 };
 
+/**
+ * Determines if the provided transaction is a refund transaction.
+ */
+const isRefundTransaction = function (
+  transaction: Transaction,
+): transaction is RefundTransaction {
+  return transaction.transactionType === TransactionType.Refund;
+};
+
+/**
+ * Converts the provided transaction to a refund transaction.
+ */
+const asRefundTransaction = function (
+  transaction: Transaction,
+): RefundTransaction | null {
+  return isRefundTransaction(transaction) ? transaction : null;
+};
+
 export {
   asAccountTransaction,
   asFundTransaction,
   asIncomeTransaction,
   asSpendingTransaction,
+  asRefundTransaction,
   isAccountTransaction,
   isFundTransaction,
   isIncomeTransaction,
   isSpendingTransaction,
+  isRefundTransaction,
 };

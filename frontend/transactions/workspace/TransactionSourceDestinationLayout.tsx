@@ -1,14 +1,14 @@
 import { Box, Stack } from "@mui/material";
+import type { JSX, ReactNode } from "react";
 import EastOutlined from "@mui/icons-material/EastOutlined";
-import type { JSX } from "react";
 import SouthOutlined from "@mui/icons-material/SouthOutlined";
 
 /**
  * Props for the TransactionSourceDestinationLayout component.
  */
 interface TransactionSourceDestinationLayoutProps {
-  readonly sourceFrame: JSX.Element;
-  readonly destinationFrames: JSX.Element[];
+  readonly sourceFrame: ReactNode;
+  readonly destinationFrames: ReactNode;
 }
 
 /**
@@ -31,7 +31,9 @@ const TransactionSourceDestinationLayout = function ({
         },
       }}
     >
-      <Box sx={{ position: "relative", zIndex: 1 }}>{sourceFrame}</Box>
+      <Stack spacing={2} sx={{ position: "relative", zIndex: 1 }}>
+        {sourceFrame}
+      </Stack>
       <EastOutlined
         sx={{
           display: { xs: "none", lg: "block" },

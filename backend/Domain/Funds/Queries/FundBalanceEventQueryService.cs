@@ -6,6 +6,7 @@ using Domain.Transactions;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Queries;
+using Domain.Transactions.Refunds;
 using Domain.Transactions.Spending;
 
 namespace Domain.Funds.Queries;
@@ -151,6 +152,17 @@ public sealed class FundBalanceEventQueryService(
                     BalanceEventType.Credit,
                     ToParty(destination.Account, null, destination.Amount),
                     [ToParty(destination.Account, null, destination.Amount)],
+                    histories))),
+            RefundTransaction refund => refund.Sources.SelectMany(source => source.FundAssignments
+                .Select(amount => Create(
+                    transaction,
+                    period,
+                    funds[amount.FundId],
+                    source.Account == null ? refund.Destination.PostedDate : source.PostedDate,
+                    amount.Amount,
+                    BalanceEventType.Credit,
+                    ToParty(source.Account, source.Location?.Name, source.Amount),
+                    [ToParty(refund.Destination.Account, null, transaction.Amount)],
                     histories))),
             FundTransaction fund => new[] { Create(
                 transaction,

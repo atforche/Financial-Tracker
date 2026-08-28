@@ -18,6 +18,7 @@ internal static class TransactionTypeConverter
         TransactionType.Income => TransactionTypeModel.Income,
         TransactionType.Account => TransactionTypeModel.Account,
         TransactionType.Fund => TransactionTypeModel.Fund,
+        TransactionType.Refund => TransactionTypeModel.Refund,
         _ => throw new InvalidOperationException($"Unrecognized transaction type: {transactionType}")
     };
 
@@ -30,6 +31,7 @@ internal static class TransactionTypeConverter
         UpdateIncomeTransactionModel => TransactionTypeModel.Income,
         UpdateAccountTransactionModel => TransactionTypeModel.Account,
         UpdateFundTransactionModel => TransactionTypeModel.Fund,
+        UpdateRefundTransactionModel => TransactionTypeModel.Refund,
         _ => throw new InvalidOperationException($"Unrecognized transaction model type: {transactionModel.GetType().Name}")
     };
 
@@ -42,6 +44,7 @@ internal static class TransactionTypeConverter
         TransactionTypeModel.Income => TransactionType.Income,
         TransactionTypeModel.Account => TransactionType.Account,
         TransactionTypeModel.Fund => TransactionType.Fund,
+        TransactionTypeModel.Refund => TransactionType.Refund,
         _ => throw new InvalidOperationException($"Unrecognized transaction type: {transactionType}")
     };
 }
