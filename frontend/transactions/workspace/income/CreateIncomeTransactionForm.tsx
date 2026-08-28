@@ -8,17 +8,14 @@ import {
   createEmptySource,
 } from "@/transactions/workspace/income/helpers";
 import { type JSX, useState } from "react";
-import {
-  getDefaultAccountingPeriod,
-  getDefaultDate,
-} from "@/transactions/workspace/helpers";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { CreateTransactionRequest } from "@/transactions/types";
-import type { Dayjs } from "dayjs";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import IncomeTransactionForm from "@/transactions/workspace/income/IncomeTransactionForm";
+import type { TransactionDetails } from "@/transactions/workspace/TransactionForm";
+import { getDefaultDate } from "@/transactions/workspace/helpers";
 import { useCreateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
 /**
@@ -30,6 +27,7 @@ interface CreateIncomeTransactionFormProps {
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
   readonly redirectUrl: string;
+  readonly details: TransactionDetails;
 }
 
 /**
@@ -41,14 +39,17 @@ const CreateIncomeTransactionForm = function ({
   funds,
   fundGoals,
   redirectUrl,
+  details,
 }: CreateIncomeTransactionFormProps): JSX.Element {
-  const [accountingPeriod, setAccountingPeriod] =
-    useState<AccountingPeriod | null>(
-      getDefaultAccountingPeriod(accountingPeriods),
-    );
+  const {
+    accountingPeriod,
+    setAccountingPeriod,
+    date,
+    setDate,
+    description,
+    setDescription,
+  } = details;
   const defaultDate = getDefaultDate(accountingPeriod);
-  const [date, setDate] = useState<Dayjs | null>(null);
-  const [description, setDescription] = useState<string>("");
   const [source, setSource] = useState<IncomeSourceDraft>(createEmptySource());
   const [destinations, setDestinations] = useState<IncomeDestinationDraft[]>([
     createEmptyDestination(),
@@ -58,9 +59,7 @@ const CreateIncomeTransactionForm = function ({
     {
       redirectUrl,
       resetDraft: (): void => {
-        setAccountingPeriod(getDefaultAccountingPeriod(accountingPeriods));
-        setDate(null);
-        setDescription("");
+        details.reset();
         setSource(createEmptySource());
         setDestinations([createEmptyDestination()]);
       },

@@ -8,17 +8,14 @@ import {
   createEmptyDestination,
   createEmptySource,
 } from "@/transactions/workspace/spending/helpers";
-import {
-  getDefaultAccountingPeriod,
-  getDefaultDate,
-} from "@/transactions/workspace/helpers";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { CreateTransactionRequest } from "@/transactions/types";
-import type { Dayjs } from "dayjs";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import SpendingTransactionForm from "@/transactions/workspace/spending/SpendingTransactionForm";
+import type { TransactionDetails } from "@/transactions/workspace/TransactionForm";
+import { getDefaultDate } from "@/transactions/workspace/helpers";
 import { useCreateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
 /**
@@ -30,6 +27,7 @@ interface CreateSpendingTransactionFormProps {
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
   readonly redirectUrl: string;
+  readonly details: TransactionDetails;
 }
 
 /**
@@ -41,14 +39,17 @@ const CreateSpendingTransactionForm = function ({
   funds,
   fundGoals,
   redirectUrl,
+  details,
 }: CreateSpendingTransactionFormProps): JSX.Element {
-  const [accountingPeriod, setAccountingPeriod] =
-    useState<AccountingPeriod | null>(
-      getDefaultAccountingPeriod(accountingPeriods),
-    );
+  const {
+    accountingPeriod,
+    setAccountingPeriod,
+    date,
+    setDate,
+    description,
+    setDescription,
+  } = details;
   const defaultDate = getDefaultDate(accountingPeriod);
-  const [date, setDate] = useState<Dayjs | null>(defaultDate);
-  const [description, setDescription] = useState<string>("");
   const [source, setSource] =
     useState<SpendingSourceDraft>(createEmptySource());
   const [destinations, setDestinations] = useState<SpendingDestinationDraft[]>([
@@ -59,9 +60,7 @@ const CreateSpendingTransactionForm = function ({
     {
       redirectUrl,
       resetDraft: (): void => {
-        setAccountingPeriod(getDefaultAccountingPeriod(accountingPeriods));
-        setDate(null);
-        setDescription("");
+        details.reset();
         setSource(createEmptySource());
         setDestinations([createEmptyDestination()]);
       },

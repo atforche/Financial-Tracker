@@ -8,15 +8,12 @@ import {
   createEmptySource,
 } from "@/transactions/workspace/fund/helpers";
 import { type JSX, useState } from "react";
-import {
-  getDefaultAccountingPeriod,
-  getDefaultDate,
-} from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { CreateTransactionRequest } from "@/transactions/types";
-import type { Dayjs } from "dayjs";
 import FundTransactionForm from "@/transactions/workspace/fund/FundTransactionForm";
 import type { FundWithBalance } from "@/funds/types";
+import type { TransactionDetails } from "@/transactions/workspace/TransactionForm";
+import { getDefaultDate } from "@/transactions/workspace/helpers";
 import { useCreateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
 /**
@@ -26,6 +23,7 @@ interface CreateFundTransactionFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly funds: FundWithBalance[];
   readonly redirectUrl: string;
+  readonly details: TransactionDetails;
 }
 
 /**
@@ -35,14 +33,17 @@ const CreateFundTransactionForm = function ({
   accountingPeriods,
   funds,
   redirectUrl,
+  details,
 }: CreateFundTransactionFormProps): JSX.Element {
-  const [accountingPeriod, setAccountingPeriod] =
-    useState<AccountingPeriod | null>(
-      getDefaultAccountingPeriod(accountingPeriods),
-    );
+  const {
+    accountingPeriod,
+    setAccountingPeriod,
+    date,
+    setDate,
+    description,
+    setDescription,
+  } = details;
   const defaultDate = getDefaultDate(accountingPeriod);
-  const [date, setDate] = useState<Dayjs | null>(null);
-  const [description, setDescription] = useState<string>("");
   const [source, setSource] = useState<FundSourceDraft>(createEmptySource());
   const [destinations, setDestinations] = useState<FundDestinationDraft[]>([
     createEmptyDestination(),
@@ -52,9 +53,7 @@ const CreateFundTransactionForm = function ({
     {
       redirectUrl,
       resetDraft: (): void => {
-        setAccountingPeriod(getDefaultAccountingPeriod(accountingPeriods));
-        setDate(null);
-        setDescription("");
+        details.reset();
         setSource(createEmptySource());
         setDestinations([createEmptyDestination()]);
       },

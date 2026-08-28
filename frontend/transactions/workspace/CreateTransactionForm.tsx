@@ -9,12 +9,15 @@ import CreateFundTransactionForm from "@/transactions/workspace/fund/CreateFundT
 import CreateIncomeTransactionForm from "@/transactions/workspace/income/CreateIncomeTransactionForm";
 import CreateRefundTransactionForm from "@/transactions/workspace/refund/CreateRefundTransactionForm";
 import CreateSpendingTransactionForm from "@/transactions/workspace/spending/CreateSpendingTransactionForm";
+import type { Dayjs } from "dayjs";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import type { Location } from "@/locations/types";
 import { LocationProvider } from "@/locations/LocationProvider";
 import PageLayout from "@/framework/view/PageLayout";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
+import type { TransactionDetails } from "@/transactions/workspace/TransactionForm";
+import { getDefaultAccountingPeriod } from "@/transactions/workspace/helpers";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
@@ -47,6 +50,25 @@ const CreateTransactionForm = function ({
     "spending" | "refund" | "income" | "account" | "fund";
   const [transactionType, setTransactionType] =
     useState<TransactionFormKind>("spending");
+  const [accountingPeriod, setAccountingPeriod] =
+    useState<AccountingPeriod | null>(
+      getDefaultAccountingPeriod(accountingPeriods),
+    );
+  const [date, setDate] = useState<Dayjs | null>(null);
+  const [description, setDescription] = useState("");
+  const details: TransactionDetails = {
+    accountingPeriod,
+    setAccountingPeriod,
+    date,
+    setDate,
+    description,
+    setDescription,
+    reset: (): void => {
+      setAccountingPeriod(getDefaultAccountingPeriod(accountingPeriods));
+      setDate(null);
+      setDescription("");
+    },
+  };
 
   if (!canWrite) {
     return null;
@@ -84,6 +106,7 @@ const CreateTransactionForm = function ({
             funds={funds}
             fundGoals={fundGoals}
             redirectUrl={redirectUrl}
+            details={details}
           />
         ) : null}
         {transactionType === "spending" ? (
@@ -93,6 +116,7 @@ const CreateTransactionForm = function ({
             funds={funds}
             fundGoals={fundGoals}
             redirectUrl={redirectUrl}
+            details={details}
           />
         ) : null}
         {transactionType === "refund" ? (
@@ -102,6 +126,7 @@ const CreateTransactionForm = function ({
             funds={funds}
             fundGoals={fundGoals}
             redirectUrl={redirectUrl}
+            details={details}
           />
         ) : null}
         {transactionType === "account" ? (
@@ -109,6 +134,7 @@ const CreateTransactionForm = function ({
             accountingPeriods={accountingPeriods}
             accounts={accounts}
             redirectUrl={redirectUrl}
+            details={details}
           />
         ) : null}
         {transactionType === "fund" ? (
@@ -116,6 +142,7 @@ const CreateTransactionForm = function ({
             accountingPeriods={accountingPeriods}
             funds={funds}
             redirectUrl={redirectUrl}
+            details={details}
           />
         ) : null}
       </PageLayout>
