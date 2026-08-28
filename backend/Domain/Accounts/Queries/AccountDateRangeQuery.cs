@@ -4,8 +4,8 @@ namespace Domain.Accounts.Queries;
 /// Criteria for querying Account balances over a date range.
 /// </summary>
 public sealed record AccountDateRangeQuery(
-    DateOnly Start,
-    DateOnly End,
+    DateOnly? Start,
+    DateOnly? End,
     AccountFilter Filter,
     AccountRangeSort Sort,
     int Offset,

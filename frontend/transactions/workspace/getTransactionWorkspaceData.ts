@@ -342,7 +342,7 @@ const getTransactionWorkspaceListData = async function (
           totalCount: number;
         }> {
           if (
-            typeof startDate !== "undefined" &&
+            typeof startDate !== "undefined" ||
             typeof endDate !== "undefined"
           ) {
             return unwrapApiResponse(
@@ -350,8 +350,10 @@ const getTransactionWorkspaceListData = async function (
                 params: {
                   query: {
                     ...query,
-                    "Range.Start": startDate,
-                    "Range.End": endDate,
+                    ...(startDate === undefined
+                      ? {}
+                      : { "Range.Start": startDate }),
+                    ...(endDate === undefined ? {} : { "Range.End": endDate }),
                   },
                 },
               }),

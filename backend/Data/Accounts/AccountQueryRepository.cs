@@ -118,8 +118,8 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<AccountRangeBalance>> GetDateRangeBalancesAsync(
         AccountFilter filter,
-        DateOnly startDate,
-        DateOnly endDate,
+        DateOnly? startDate,
+        DateOnly? endDate,
         CancellationToken cancellationToken = default)
     {
         List<AccountDateRangeBalanceRow> rows = await ApplyFilter(databaseContext.Accounts.AsNoTracking(), filter)
@@ -127,11 +127,13 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
             {
                 Account = account,
                 StartingBalance = databaseContext.AccountBalanceHistories
-                    .Where(history => history.Account.Id == account.Id && history.Date < startDate)
+                    .Where(history => history.Account.Id == account.Id
+                        && (startDate == null || history.Date < startDate))
                     .OrderByDescending(history => history.Date).ThenByDescending(history => history.Sequence)
                     .Select(history => (decimal?)history.PostedBalance).FirstOrDefault() ?? account.OnboardedBalance ?? 0,
                 EndingBalance = databaseContext.AccountBalanceHistories
-                    .Where(history => history.Account.Id == account.Id && history.Date <= endDate)
+                    .Where(history => history.Account.Id == account.Id
+                        && (endDate == null || history.Date <= endDate))
                     .OrderByDescending(history => history.Date).ThenByDescending(history => history.Sequence)
                     .Select(history => (decimal?)history.PostedBalance).FirstOrDefault() ?? account.OnboardedBalance ?? 0,
             }).ToListAsync(cancellationToken);
@@ -141,13 +143,13 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<AccountDateBalanceFact>> GetDateBalanceFactsAsync(
         IReadOnlyCollection<AccountId> accountIds,
-        DateOnly startDate,
-        DateOnly endDate,
+        DateOnly? startDate,
+        DateOnly? endDate,
         CancellationToken cancellationToken = default) =>
         await databaseContext.AccountBalanceHistories.AsNoTracking()
             .Where(history => accountIds.Contains(history.Account.Id)
-                && history.Date >= startDate
-                && history.Date <= endDate)
+                && (startDate == null || history.Date >= startDate)
+                && (endDate == null || history.Date <= endDate))
             .OrderBy(history => history.Date).ThenBy(history => history.Sequence)
             .Select(history => new AccountDateBalanceFact(history.Account.Id, history.Date, history.Sequence, history.PostedBalance))
             .ToListAsync(cancellationToken);
@@ -155,11 +157,12 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetDateRangeIncomeFactsAsync(
         IReadOnlyCollection<AccountId> accountIds,
-        DateOnly startDate,
-        DateOnly endDate,
+        DateOnly? startDate,
+        DateOnly? endDate,
         CancellationToken cancellationToken = default) =>
         await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
-            .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
+            .Where(transaction => (startDate == null || transaction.Date >= startDate)
+                && (endDate == null || transaction.Date <= endDate))
             .SelectMany(transaction => transaction.Destinations.Where(destination => accountIds.Contains(destination.Account.Id)), (transaction, destination) => new FinancialRangeIncomeFact(
                 destination.Amount,
                 destination.Account.Type,
@@ -169,18 +172,19 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<FinancialRangeSpendingFact>> GetDateRangeSpendingFactsAsync(
         IReadOnlyCollection<AccountId> accountIds,
-        DateOnly startDate,
-        DateOnly endDate,
+        DateOnly? startDate,
+        DateOnly? endDate,
         CancellationToken cancellationToken = default)
     {
         List<FinancialRangeSpendingFact> spending = await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
-            .Where(transaction => transaction.Date >= startDate
-                && transaction.Date <= endDate
+            .Where(transaction => (startDate == null || transaction.Date >= startDate)
+                && (endDate == null || transaction.Date <= endDate)
                 && accountIds.Contains(transaction.Source.Account.Id))
             .Select(transaction => new FinancialRangeSpendingFact(transaction.Amount, transaction.Source.PostedDate))
             .ToListAsync(cancellationToken);
         List<FinancialRangeSpendingFact> refunds = await databaseContext.Transactions.AsNoTracking().OfType<RefundTransaction>()
-            .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
+            .Where(transaction => (startDate == null || transaction.Date >= startDate)
+                && (endDate == null || transaction.Date <= endDate))
             .Where(transaction => accountIds.Contains(transaction.Destination.Account.Id))
             .Select(transaction => new FinancialRangeSpendingFact(-transaction.Amount, transaction.Destination.PostedDate))
             .ToListAsync(cancellationToken);

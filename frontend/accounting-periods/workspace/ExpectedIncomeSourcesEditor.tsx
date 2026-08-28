@@ -435,7 +435,7 @@ const ExpectedIncomeSourcesEditor = function ({
             >
               {source.expectedDates.map((date, dateIndex) => (
                 <Box
-                  key={`${date}-${dateIndex}`}
+                  key={dateIndex}
                   sx={{
                     display: "grid",
                     gap: 1.5,
@@ -458,10 +458,22 @@ const ExpectedIncomeSourcesEditor = function ({
                     minDate={minDate}
                     maxDate={maxDate}
                     setValue={(value) => {
+                      if (value === null) {
+                        updateSource(sourceIndex, {
+                          ...source,
+                          expectedDates: source.expectedDates.filter(
+                            (_, index) => index !== dateIndex,
+                          ),
+                        });
+                        return;
+                      }
+                      if (!value.isValid()) {
+                        return;
+                      }
                       const expectedDates = source.expectedDates.map(
                         (item, index) =>
                           index === dateIndex
-                            ? (value?.format("YYYY-MM-DD") ?? item)
+                            ? value.format("YYYY-MM-DD")
                             : item,
                       );
                       updateSource(sourceIndex, { ...source, expectedDates });

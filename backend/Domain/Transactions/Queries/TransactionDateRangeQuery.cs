@@ -4,8 +4,8 @@ namespace Domain.Transactions.Queries;
 /// Criteria for querying Transactions over a date range.
 /// </summary>
 public sealed record TransactionDateRangeQuery(
-    DateOnly Start,
-    DateOnly End,
+    DateOnly? Start,
+    DateOnly? End,
     TransactionFilter Filter,
     TransactionSort Sort,
     int Offset,

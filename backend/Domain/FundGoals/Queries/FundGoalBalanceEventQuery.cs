@@ -4,8 +4,8 @@ namespace Domain.FundGoals.Queries;
 /// Criteria for querying Fund Goal balance events over a date range.
 /// </summary>
 public sealed record FundGoalBalanceEventQuery(
-    DateOnly Start,
-    DateOnly End,
+    DateOnly? Start,
+    DateOnly? End,
     FundGoalBalanceEventFilter Filter,
     FundGoalBalanceEventSort Sort,
     int Offset,

@@ -15,6 +15,7 @@ interface DateEntryFieldProps {
   readonly minDate?: Dayjs | null;
   readonly maxDate?: Dayjs | null;
   readonly disabled?: boolean;
+  readonly size?: "small" | "medium";
 }
 
 const defaultMinDate = dayjs("1900-01-01");
@@ -31,6 +32,7 @@ const DateEntryField = function ({
   minDate = null,
   maxDate = null,
   disabled = false,
+  size = "medium",
 }: DateEntryFieldProps): JSX.Element {
   const [internalErrorMessage, setInternalErrorMessage] = useState<
     string | null
@@ -60,13 +62,12 @@ const DateEntryField = function ({
         setInternalErrorMessage(
           internalError === "maxDate" || internalError === "minDate"
             ? `Please pick a date between ${effectiveMinDate.format("MM/DD/YYYY")} and ${effectiveMaxDate.format("MM/DD/YYYY")}`
-            : internalError === "invalidDate"
-              ? "Please enter a valid date"
-              : null,
+            : null,
         );
       }}
       slotProps={{
         textField: {
+          size,
           error: errorMessage !== null || internalErrorMessage !== null,
           helperText: internalErrorMessage ?? errorMessage,
         },

@@ -5,8 +5,8 @@ namespace Domain.Accounts.Queries;
 /// </summary>
 public sealed record AccountBalanceEventAccountQuery(
     Guid AccountId,
-    DateOnly Start,
-    DateOnly End,
+    DateOnly? Start,
+    DateOnly? End,
     AccountBalanceEventSort Sort,
     int Offset,
     int? Limit);

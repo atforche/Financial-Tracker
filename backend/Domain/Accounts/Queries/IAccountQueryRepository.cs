@@ -54,8 +54,8 @@ public interface IAccountQueryRepository
     /// </summary>
     Task<IReadOnlyCollection<AccountRangeBalance>> GetDateRangeBalancesAsync(
         AccountFilter filter,
-        DateOnly startDate,
-        DateOnly endDate,
+        DateOnly? startDate,
+        DateOnly? endDate,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -63,8 +63,8 @@ public interface IAccountQueryRepository
     /// </summary>
     Task<IReadOnlyCollection<AccountDateBalanceFact>> GetDateBalanceFactsAsync(
         IReadOnlyCollection<AccountId> accountIds,
-        DateOnly startDate,
-        DateOnly endDate,
+        DateOnly? startDate,
+        DateOnly? endDate,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -72,8 +72,8 @@ public interface IAccountQueryRepository
     /// </summary>
     Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetDateRangeIncomeFactsAsync(
         IReadOnlyCollection<AccountId> accountIds,
-        DateOnly startDate,
-        DateOnly endDate,
+        DateOnly? startDate,
+        DateOnly? endDate,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -81,8 +81,8 @@ public interface IAccountQueryRepository
     /// </summary>
     Task<IReadOnlyCollection<FinancialRangeSpendingFact>> GetDateRangeSpendingFactsAsync(
         IReadOnlyCollection<AccountId> accountIds,
-        DateOnly startDate,
-        DateOnly endDate,
+        DateOnly? startDate,
+        DateOnly? endDate,
         CancellationToken cancellationToken = default);
 
     /// <summary>

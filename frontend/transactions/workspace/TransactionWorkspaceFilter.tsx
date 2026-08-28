@@ -209,11 +209,14 @@ const TransactionWorkspaceFilter = function ({
     updateParams((params) => {
       params.delete(startAccountingPeriodIdParamName);
       params.delete(endAccountingPeriodIdParamName);
-      if (start === "" || end === "") {
+      if (start === "") {
         params.delete(startDateParamName);
-        params.delete(endDateParamName);
       } else {
         params.set(startDateParamName, start);
+      }
+      if (end === "") {
+        params.delete(endDateParamName);
+      } else {
         params.set(endDateParamName, end);
       }
     });
