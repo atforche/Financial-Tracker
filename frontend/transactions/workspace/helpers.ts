@@ -1,13 +1,8 @@
-import {
-  compareCurrencyAmounts,
-  getCurrencyDifference,
-  getCurrencyTotal,
-  getMaximumCurrencyAmount,
-} from "@/framework/currencyHelpers";
 import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import { buildUrl } from "@/framework/routes/helpers";
+import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import propertyName from "@/framework/data/propertyName";
 
@@ -50,13 +45,6 @@ const redirectWithSelectedTransaction = function (
 };
 
 /**
- * Interface representing a destination draft that has an amount property.
- */
-interface AmountedDestinationDraft {
-  readonly amount: number | null;
-}
-
-/**
  * Validates the shared transaction details section.
  */
 const validateDetails = function (
@@ -87,71 +75,10 @@ const validateSummary = function (
   );
 };
 
-/**
- * Updates the sole destination amount when it is still effectively mirroring
- * the source amount.
- */
-const syncDestinationAmountsToSource = function <
-  DestinationDraft extends AmountedDestinationDraft,
->(
-  destinations: DestinationDraft[],
-  previousSourceAmount: number | null,
-  nextSourceAmount: number | null,
-  setAmount: (
-    destination: DestinationDraft,
-    amount: number | null,
-  ) => DestinationDraft,
-): DestinationDraft[] {
-  if (destinations.length !== 1) {
-    return destinations;
-  }
-  const [destination] = destinations;
-  if (
-    typeof destination === "undefined" ||
-    (compareCurrencyAmounts(destination.amount ?? 0, 0) !== 0 &&
-      previousSourceAmount !== null &&
-      compareCurrencyAmounts(destination.amount ?? 0, previousSourceAmount) !==
-        0)
-  ) {
-    return destinations;
-  }
-  return [setAmount(destination, nextSourceAmount)];
-};
-
-/**
- * Appends a destination and seeds its amount with the remaining unallocated
- * source amount when a source amount is already available.
- */
-const appendDestinationWithAutofilledAmount = function <
-  DestinationDraft extends AmountedDestinationDraft,
->(
-  destinations: DestinationDraft[],
-  newDestination: DestinationDraft,
-  sourceAmount: number | null,
-  setAmount: (
-    destination: DestinationDraft,
-    amount: number | null,
-  ) => DestinationDraft,
-): DestinationDraft[] {
-  if (sourceAmount === null) {
-    return [...destinations, newDestination];
-  }
-  const allocatedAmount = getCurrencyTotal(
-    destinations.map((destination) => destination.amount),
-  );
-  const remainingAmount = getMaximumCurrencyAmount(
-    getCurrencyDifference(sourceAmount, allocatedAmount),
-    0,
-  );
-  return [...destinations, setAmount(newDestination, remainingAmount)];
-};
-
 export {
   getDefaultAccountingPeriod,
   getDefaultDate,
   redirectWithSelectedTransaction,
-  syncDestinationAmountsToSource,
-  appendDestinationWithAutofilledAmount,
   validateDetails,
   validateSummary,
 };

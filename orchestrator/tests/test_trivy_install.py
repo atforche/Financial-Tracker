@@ -11,10 +11,10 @@ def test_install_downloads_pinned_trivy_to_local_tools(tmp_path, monkeypatch):
     config = tmp_path / "config"
     config.mkdir()
     (config / "toolchain.toml").write_text(
-        '[tools]\ntrivy = "0.73.0"\n', encoding="utf-8"
+        '[tools]\ntrivy = "0.74.0"\n', encoding="utf-8"
     )
     context = Context(paths=RepoPaths(tmp_path))
-    archive_name = "trivy_0.73.0_Linux-64bit.tar.gz"
+    archive_name = "trivy_0.74.0_Linux-64bit.tar.gz"
     archive = b"test archive"
     checksum = hashlib.sha256(archive).hexdigest()
     downloads: list[str] = []
@@ -34,8 +34,8 @@ def test_install_downloads_pinned_trivy_to_local_tools(tmp_path, monkeypatch):
     trivy_install.run(context, Namespace())
 
     assert downloads == [
-        f"https://github.com/aquasecurity/trivy/releases/download/v0.73.0/{archive_name}",
-        "https://github.com/aquasecurity/trivy/releases/download/v0.73.0/trivy_0.73.0_checksums.txt",
+        f"https://github.com/aquasecurity/trivy/releases/download/v0.74.0/{archive_name}",
+        "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_checksums.txt",
     ]
     assert context.paths.trivy.read_bytes() == b"trivy"
     assert os.access(context.paths.trivy, os.X_OK)

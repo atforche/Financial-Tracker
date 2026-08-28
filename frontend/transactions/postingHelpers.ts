@@ -3,6 +3,7 @@ import {
   asAccountTransaction,
   asFundTransaction,
   asIncomeTransaction,
+  asRefundTransaction,
   asSpendingTransaction,
 } from "@/transactions/types";
 import type { AccountBalanceEvent } from "@/accounts/types";
@@ -42,6 +43,14 @@ const getTransactionAccountBalanceEvents = function (
       ...incomeTransaction.destinations.map(
         (destination) => destination.account,
       ),
+    ].filter(isNotNullOrUndefined);
+  }
+
+  const refundTransaction = asRefundTransaction(transaction);
+  if (refundTransaction !== null) {
+    return [
+      ...refundTransaction.sources.map((source) => source.account),
+      refundTransaction.destination.account,
     ].filter(isNotNullOrUndefined);
   }
 
@@ -90,6 +99,13 @@ const getTransactionFundBalanceEvents = function (
     );
   }
 
+  const refundTransaction = asRefundTransaction(transaction);
+  if (refundTransaction !== null) {
+    return refundTransaction.sources.flatMap(
+      (source) => source.fundAssignments,
+    );
+  }
+
   const fundTransaction = asFundTransaction(transaction);
   if (fundTransaction !== null) {
     return [
@@ -131,6 +147,11 @@ const getTransactionFundGoalBalanceEvents = function (
     return incomeTransaction.destinations.flatMap(
       (destination) => destination.fundGoals,
     );
+  }
+
+  const refundTransaction = asRefundTransaction(transaction);
+  if (refundTransaction !== null) {
+    return refundTransaction.sources.flatMap((source) => source.fundGoals);
   }
 
   const fundTransaction = asFundTransaction(transaction);

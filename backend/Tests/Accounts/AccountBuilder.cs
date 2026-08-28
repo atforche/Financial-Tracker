@@ -10,6 +10,14 @@ internal sealed class AccountBuilder(TestApiClient apiClient, string name)
 {
     private decimal _openingBalance;
     private string? _financialInstitution;
+    private AccountTypeModel _type = AccountTypeModel.Standard;
+
+    /// <summary>Sets the account type.</summary>
+    public AccountBuilder WithType(AccountTypeModel value)
+    {
+        _type = value;
+        return this;
+    }
 
     /// <summary>
     /// Sets the account's financial institution.
@@ -38,7 +46,7 @@ internal sealed class AccountBuilder(TestApiClient apiClient, string name)
         {
             Name = name,
             FinancialInstitution = _financialInstitution,
-            Type = AccountTypeModel.Standard,
+            Type = _type,
             OnboardedBalance = _openingBalance
         });
         return new AccountHandle(model.Id, model.Name);

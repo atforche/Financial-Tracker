@@ -4,6 +4,7 @@ using Domain.AccountingPeriods.Queries;
 using Domain.Funds;
 using Domain.Funds.Queries;
 using Domain.Transactions.Income;
+using Domain.Transactions.Refunds;
 using Domain.Transactions.Spending;
 using Microsoft.EntityFrameworkCore;
 
@@ -161,12 +162,20 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
         IReadOnlyCollection<FundId> fundIds,
         DateOnly startDate,
         DateOnly endDate,
-        CancellationToken cancellationToken = default) =>
-        await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
+        CancellationToken cancellationToken = default)
+    {
+        List<FinancialRangeSpendingFact> spending = await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
             .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
             .SelectMany(transaction => transaction.Destinations, (transaction, destination) => new { transaction, destination })
             .SelectMany(item => item.destination.FundAssignments.Where(assignment => fundIds.Contains(assignment.FundId)), (item, assignment) => new FinancialRangeSpendingFact(assignment.Amount, item.transaction.Source.PostedDate))
             .ToListAsync(cancellationToken);
+        List<FinancialRangeSpendingFact> refunds = await databaseContext.Transactions.AsNoTracking().OfType<RefundTransaction>()
+            .Where(transaction => transaction.Date >= startDate && transaction.Date <= endDate)
+            .SelectMany(transaction => transaction.Sources, (transaction, source) => new { transaction, source })
+            .SelectMany(item => item.source.FundAssignments.Where(assignment => fundIds.Contains(assignment.FundId)), (item, assignment) => new FinancialRangeSpendingFact(-assignment.Amount, item.transaction.Destination.PostedDate))
+            .ToListAsync(cancellationToken);
+        return spending.Concat(refunds).ToList();
+    }
 
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetAccountingPeriodRangeIncomeFactsAsync(
@@ -192,11 +201,17 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
         CancellationToken cancellationToken = default)
     {
         var periodIds = accountingPeriodIds.Select(id => new AccountingPeriodId(id)).ToList();
-        return await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
+        List<FinancialRangeSpendingFact> spending = await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
             .Where(transaction => periodIds.Contains(transaction.AccountingPeriodId))
             .SelectMany(transaction => transaction.Destinations, (transaction, destination) => new { transaction, destination })
             .SelectMany(item => item.destination.FundAssignments.Where(assignment => fundIds.Contains(assignment.FundId)), (item, assignment) => new FinancialRangeSpendingFact(assignment.Amount, item.transaction.Source.PostedDate))
             .ToListAsync(cancellationToken);
+        List<FinancialRangeSpendingFact> refunds = await databaseContext.Transactions.AsNoTracking().OfType<RefundTransaction>()
+            .Where(transaction => periodIds.Contains(transaction.AccountingPeriodId))
+            .SelectMany(transaction => transaction.Sources, (transaction, source) => new { transaction, source })
+            .SelectMany(item => item.source.FundAssignments.Where(assignment => fundIds.Contains(assignment.FundId)), (item, assignment) => new FinancialRangeSpendingFact(-assignment.Amount, item.transaction.Destination.PostedDate))
+            .ToListAsync(cancellationToken);
+        return spending.Concat(refunds).ToList();
     }
 
     /// <summary>

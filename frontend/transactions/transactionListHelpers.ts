@@ -3,6 +3,7 @@ import {
   asAccountTransaction,
   asFundTransaction,
   asIncomeTransaction,
+  asRefundTransaction,
   asSpendingTransaction,
 } from "@/transactions/types";
 
@@ -27,6 +28,15 @@ const getTransactionSourceLabel = function (transaction: Transaction): string {
   const spendingTransaction = asSpendingTransaction(transaction);
   if (spendingTransaction !== null) {
     return spendingTransaction.source.account.account.name;
+  }
+
+  const refundTransaction = asRefundTransaction(transaction);
+  if (refundTransaction !== null) {
+    return summarizeValues(
+      refundTransaction.sources.map(
+        (source) => source.account?.account.name ?? source.location?.name ?? "",
+      ),
+    );
   }
 
   const incomeTransaction = asIncomeTransaction(transaction);
@@ -65,6 +75,11 @@ const getTransactionDestinationLabel = function (
           destination.account?.account.name ?? destination.location?.name ?? "",
       ),
     );
+  }
+
+  const refundTransaction = asRefundTransaction(transaction);
+  if (refundTransaction !== null) {
+    return refundTransaction.destination.account.account.name;
   }
 
   const incomeTransaction = asIncomeTransaction(transaction);

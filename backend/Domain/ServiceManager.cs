@@ -12,6 +12,7 @@ using Domain.Transactions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
+using Domain.Transactions.Refunds;
 using Domain.Transactions.Spending;
 using Domain.Users;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,6 +53,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<FundGoalQueryService>();
 
         _ = serviceCollection.AddScoped<SpendingTransactionService>();
+        _ = serviceCollection.AddScoped<RefundTransactionService>();
         _ = serviceCollection.AddScoped<IncomeTransactionService>();
         _ = serviceCollection.AddScoped<AccountTransactionService>();
         _ = serviceCollection.AddScoped<FundTransactionService>();

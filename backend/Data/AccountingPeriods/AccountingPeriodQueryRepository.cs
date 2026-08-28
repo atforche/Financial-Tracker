@@ -2,6 +2,7 @@ using Domain;
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
 using Domain.Transactions.Income;
+using Domain.Transactions.Refunds;
 using Domain.Transactions.Spending;
 using Microsoft.EntityFrameworkCore;
 
@@ -166,10 +167,15 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
         CancellationToken cancellationToken = default)
     {
         var ids = accountingPeriodIds.Select(id => new AccountingPeriodId(id)).ToList();
-        return await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
+        List<FinancialRangeSpendingFact> spending = await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
             .Where(transaction => ids.Contains(transaction.AccountingPeriodId))
             .Select(transaction => new FinancialRangeSpendingFact(transaction.Amount, transaction.Source.PostedDate))
             .ToListAsync(cancellationToken);
+        List<FinancialRangeSpendingFact> refunds = await databaseContext.Transactions.AsNoTracking().OfType<RefundTransaction>()
+            .Where(transaction => ids.Contains(transaction.AccountingPeriodId))
+            .Select(transaction => new FinancialRangeSpendingFact(-transaction.Amount, transaction.Destination.PostedDate))
+            .ToListAsync(cancellationToken);
+        return spending.Concat(refunds).ToList();
     }
 
     /// <summary>

@@ -61,11 +61,7 @@ const createEmptyDestination = function (): FundDestinationDraft {
  * Validates the source of a fund transaction.
  */
 const validateSource = function (source: FundSourceDraft): boolean {
-  return (
-    source.fund !== null &&
-    source.amount !== null &&
-    compareCurrencyAmounts(source.amount, 0) > 0
-  );
+  return source.fund !== null;
 };
 
 /**
@@ -109,7 +105,7 @@ const validateRequest = function (
   return (
     validateDetails(accountingPeriod, date, defaultDate, description) &&
     validateSource(source) &&
-    validateSummary(source.amount, destinationTotal, destinations.length) &&
+    validateSummary(destinationTotal, destinationTotal, destinations.length) &&
     hasUniqueDestinationFunds &&
     areDestinationsComplete
   );
@@ -126,6 +122,9 @@ const buildCreateRequest = function (
   source: FundSourceDraft,
   destinations: FundDestinationDraft[],
 ): CreateTransactionRequest | null {
+  const destinationTotal = getCurrencyTotal(
+    destinations.map((destination) => destination.amount),
+  );
   if (
     validateRequest(
       accountingPeriod,
@@ -142,7 +141,7 @@ const buildCreateRequest = function (
       date:
         date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
       description,
-      amount: source.amount ?? 0,
+      amount: destinationTotal,
       source: {
         fundId: source.fund?.fundId ?? "",
       },
@@ -165,6 +164,9 @@ const buildUpdateRequest = function (
   source: FundSourceDraft,
   destinations: FundDestinationDraft[],
 ): UpdateTransactionRequest | null {
+  const destinationTotal = getCurrencyTotal(
+    destinations.map((destination) => destination.amount),
+  );
   if (
     validateRequest(
       accountingPeriod,
@@ -179,7 +181,7 @@ const buildUpdateRequest = function (
       type: UpdateTransactionModelUpdateFundTransactionModelType.Fund,
       date: date?.format("YYYY-MM-DD") ?? "",
       description,
-      amount: source.amount ?? 0,
+      amount: destinationTotal,
       source: {
         fundId: source.fund?.fundId ?? "",
       },

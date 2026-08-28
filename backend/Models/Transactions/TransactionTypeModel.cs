@@ -24,4 +24,9 @@ public enum TransactionTypeModel
     /// Fund transaction.
     /// </summary>
     Fund,
+
+    /// <summary>
+    /// Refund transaction.
+    /// </summary>
+    Refund,
 }

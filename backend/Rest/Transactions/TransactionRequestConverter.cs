@@ -7,6 +7,7 @@ using Domain.Transactions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
+using Domain.Transactions.Refunds;
 using Domain.Transactions.Spending;
 using Models.Funds;
 using Models.Locations;
@@ -39,6 +40,7 @@ public sealed class TransactionRequestConverter(
             CreateIncomeTransactionModel income => await BuildIncomeCreateRequestAsync(accountingPeriod, income, errors),
             CreateAccountTransactionModel account => await BuildAccountCreateRequestAsync(accountingPeriod, account, errors),
             CreateFundTransactionModel fund => await BuildFundCreateRequestAsync(accountingPeriod, fund, errors),
+            CreateRefundTransactionModel refund => await BuildRefundCreateRequestAsync(accountingPeriod, refund, errors),
             _ => null
         };
         if (request != null)
@@ -72,6 +74,7 @@ public sealed class TransactionRequestConverter(
             (IncomeTransaction, UpdateIncomeTransactionModel income) => await BuildIncomeUpdateRequestAsync(income, errors),
             (AccountTransaction, UpdateAccountTransactionModel account) => await BuildAccountUpdateRequestAsync(account, errors),
             (FundTransaction, UpdateFundTransactionModel fund) => await BuildFundUpdateRequestAsync(fund, errors),
+            (RefundTransaction, UpdateRefundTransactionModel refund) => await BuildRefundUpdateRequestAsync(refund, errors),
             _ => null
         };
         if (request != null)
@@ -134,6 +137,21 @@ public sealed class TransactionRequestConverter(
             Amount = model.Amount,
             Source = source,
             Destinations = destinations,
+        };
+    }
+
+    private async Task<CreateRefundTransactionRequest?> BuildRefundCreateRequestAsync(AccountingPeriod accountingPeriod, CreateRefundTransactionModel model, Dictionary<string, string[]> errors)
+    {
+        IReadOnlyCollection<RefundTransactionSource>? sources = await GetRefundSourcesAsync(model.Sources.Select(item => (item.AccountId, item.Location, item.Amount, item.FundAssignments)).ToList(), nameof(CreateRefundTransactionModel.Sources), errors);
+        Account? account = TryGetAccount(model.Destination.AccountId, $"{nameof(CreateRefundTransactionModel.Destination)}.AccountId", errors);
+        return sources == null || account == null ? null : new CreateRefundTransactionRequest
+        {
+            AccountingPeriodId = accountingPeriod.Id,
+            TransactionDate = model.Date,
+            Description = model.Description,
+            Amount = model.Amount,
+            Sources = sources,
+            Destination = new RefundTransactionDestination(account, null),
         };
     }
 
@@ -230,6 +248,20 @@ public sealed class TransactionRequestConverter(
             Amount = model.Amount,
             Source = source,
             Destinations = destinations,
+        };
+    }
+
+    private async Task<UpdateRefundTransactionRequest?> BuildRefundUpdateRequestAsync(UpdateRefundTransactionModel model, Dictionary<string, string[]> errors)
+    {
+        IReadOnlyCollection<RefundTransactionSource>? sources = await GetRefundSourcesAsync(model.Sources.Select(item => (item.AccountId, item.Location, item.Amount, item.FundAssignments)).ToList(), nameof(UpdateRefundTransactionModel.Sources), errors);
+        Account? account = TryGetAccount(model.Destination.AccountId, $"{nameof(UpdateRefundTransactionModel.Destination)}.AccountId", errors);
+        return sources == null || account == null ? null : new UpdateRefundTransactionRequest
+        {
+            TransactionDate = model.Date,
+            Description = model.Description,
+            Amount = model.Amount,
+            Sources = sources,
+            Destination = new RefundTransactionDestination(account, null),
         };
     }
 
@@ -562,6 +594,29 @@ public sealed class TransactionRequestConverter(
             return null;
         }
         return new IncomeTransactionDestination(account, amount, null, fundAssignments);
+    }
+
+    private async Task<IReadOnlyCollection<RefundTransactionSource>?> GetRefundSourcesAsync(
+        IReadOnlyCollection<(Guid? AccountId, LocationInputModel? Location, decimal Amount, IReadOnlyCollection<CreateFundAmountModel> FundAssignments)> models,
+        string errorKeyPrefix,
+        Dictionary<string, string[]> errors)
+    {
+        List<RefundTransactionSource> sources = [];
+        foreach ((int Index, (Guid? AccountId, LocationInputModel? Location, decimal Amount, IReadOnlyCollection<CreateFundAmountModel> FundAssignments) Item) pair in models.Index())
+        {
+            (Guid? accountId, LocationInputModel? locationModel, decimal amount, IReadOnlyCollection<CreateFundAmountModel> assignments) = pair.Item;
+            int index = pair.Index;
+            Account? account = accountId == null ? null : TryGetAccount(accountId.Value, $"{errorKeyPrefix}[{index}].AccountId", errors);
+            Location? location = GetLocation(locationModel, $"{errorKeyPrefix}[{index}].Location", errors);
+            IReadOnlyCollection<FundAmount>? funds = await GetFundAmountsAsync(assignments, $"{errorKeyPrefix}[{index}].FundAssignments", errors);
+            if ((accountId != null && account == null) || (locationModel != null && location == null) || funds == null)
+            {
+                return null;
+            }
+
+            sources.Add(new RefundTransactionSource(account, null, location, amount, funds));
+        }
+        return sources;
     }
 
     private AccountTransactionSource? GetAccountSource(

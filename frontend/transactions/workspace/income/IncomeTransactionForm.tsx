@@ -20,10 +20,6 @@ import {
   validateFundAssignments,
   validateSource,
 } from "@/transactions/workspace/income/helpers";
-import {
-  appendDestinationWithAutofilledAmount,
-  syncDestinationAmountsToSource,
-} from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
@@ -150,14 +146,10 @@ const IncomeTransactionForm = function <RequestPayload>({
   };
 
   const addDestination = function (): void {
-    setDestinations((currentDestinations) =>
-      appendDestinationWithAutofilledAmount(
-        currentDestinations,
-        createEmptyDestination(),
-        sourceNetAmount,
-        setDestinationAmount,
-      ),
-    );
+    setDestinations((currentDestinations) => [
+      ...currentDestinations,
+      createEmptyDestination(),
+    ]);
   };
 
   const setSourceAccount = function (
@@ -199,41 +191,17 @@ const IncomeTransactionForm = function <RequestPayload>({
           }}
           incomeLines={source.incomeLines}
           setIncomeLines={(incomeLines): void => {
-            const nextSource = {
-              ...source,
-              incomeLines,
-            };
             setSource((currentSource) => ({
               ...currentSource,
               incomeLines,
             }));
-            setDestinations((currentDestinations) =>
-              syncDestinationAmountsToSource(
-                currentDestinations,
-                sourceNetAmount,
-                getNetIncomeAmount(nextSource),
-                setDestinationAmount,
-              ),
-            );
           }}
           incomeDeductions={source.incomeDeductions}
           setIncomeDeductions={(incomeDeductions): void => {
-            const nextSource = {
-              ...source,
-              incomeDeductions,
-            };
             setSource((currentSource) => ({
               ...currentSource,
               incomeDeductions,
             }));
-            setDestinations((currentDestinations) =>
-              syncDestinationAmountsToSource(
-                currentDestinations,
-                sourceNetAmount,
-                getNetIncomeAmount(nextSource),
-                setDestinationAmount,
-              ),
-            );
           }}
           accountFilter={buildSourceAccountFilter(accounts, destinations)}
         />

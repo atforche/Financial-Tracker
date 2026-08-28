@@ -6,6 +6,7 @@ using Domain.Transactions;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
+using Domain.Transactions.Refunds;
 using Domain.Transactions.Spending;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -21,7 +22,8 @@ internal sealed class TransactionConfiguration :
     IEntityTypeConfiguration<SpendingTransaction>,
     IEntityTypeConfiguration<IncomeTransaction>,
     IEntityTypeConfiguration<AccountTransaction>,
-    IEntityTypeConfiguration<FundTransaction>
+    IEntityTypeConfiguration<FundTransaction>,
+    IEntityTypeConfiguration<RefundTransaction>
 {
     private static readonly ValueConverter<AccountId, Guid> AccountIdConverter =
         new(accountId => accountId.Value, value => new AccountId(value));
@@ -72,7 +74,8 @@ internal sealed class TransactionConfiguration :
             .HasValue<SpendingTransaction>(TransactionType.Spending)
             .HasValue<IncomeTransaction>(TransactionType.Income)
             .HasValue<AccountTransaction>(TransactionType.Account)
-            .HasValue<FundTransaction>(TransactionType.Fund);
+            .HasValue<FundTransaction>(TransactionType.Fund)
+            .HasValue<RefundTransaction>(TransactionType.Refund);
     }
 
     /// <inheritdoc/>
@@ -119,6 +122,44 @@ internal sealed class TransactionConfiguration :
                 fundAssignmentBuilder.Property(fundAssignment => fundAssignment.FundId)
                     .HasConversion(FundIdConverter);
             });
+        });
+    }
+
+    /// <inheritdoc/>
+    public void Configure(EntityTypeBuilder<RefundTransaction> builder)
+    {
+        builder.OwnsMany<RefundTransactionSource>(nameof(RefundTransaction.Sources), sourceBuilder =>
+        {
+            sourceBuilder.ToTable("RefundTransactionSources");
+            sourceBuilder.WithOwner().HasForeignKey("RefundTransactionId");
+            sourceBuilder.Property<int>("Id");
+            sourceBuilder.HasKey("Id");
+            sourceBuilder.Property<AccountId?>("AccountId")
+                .HasConversion(NullableAccountIdConverter);
+            sourceBuilder.Property(source => source.PostedDate);
+            sourceBuilder.Property<LocationId?>("LocationId")
+                .HasConversion(NullableLocationIdConverter);
+            sourceBuilder.Property(source => source.Amount);
+            sourceBuilder.HasOne(source => source.Account).WithMany().HasForeignKey("AccountId");
+            sourceBuilder.Navigation(source => source.Account).AutoInclude();
+            sourceBuilder.HasOne(source => source.Location).WithMany().HasForeignKey("LocationId").OnDelete(DeleteBehavior.Restrict);
+            sourceBuilder.Navigation(source => source.Location).AutoInclude();
+            sourceBuilder.OwnsMany<FundAmount>(nameof(RefundTransactionSource.FundAssignments), assignmentBuilder =>
+            {
+                assignmentBuilder.ToTable("RefundTransactionSourceFundAssignments");
+                assignmentBuilder.WithOwner().HasForeignKey("SourceId");
+                assignmentBuilder.Property<int>("Id");
+                assignmentBuilder.HasKey("Id");
+                assignmentBuilder.Property(assignment => assignment.FundId).HasConversion(FundIdConverter);
+            });
+        });
+
+        builder.OwnsOne(transaction => transaction.Destination, destinationBuilder =>
+        {
+            destinationBuilder.Property<AccountId>("AccountId").HasColumnName("RefundTransaction_DestinationAccountId").HasConversion(AccountIdConverter);
+            destinationBuilder.Property(destination => destination.PostedDate).HasColumnName("RefundTransaction_DestinationPostedDate");
+            destinationBuilder.HasOne(destination => destination.Account).WithMany().HasForeignKey("AccountId");
+            destinationBuilder.Navigation(destination => destination.Account).AutoInclude();
         });
     }
 

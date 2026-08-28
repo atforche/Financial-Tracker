@@ -102,7 +102,7 @@ const validateSource = function (source: SpendingSourceDraft): boolean {
   ) {
     return false;
   }
-  return source.amount !== null && compareCurrencyAmounts(source.amount, 0) > 0;
+  return true;
 };
 
 /**
@@ -182,7 +182,7 @@ const validateRequest = function (
     destinations.every((destination) =>
       validateDestination(destination, source.account),
     ) &&
-    validateSummary(source.amount, destinationTotal, destinations.length)
+    validateSummary(destinationTotal, destinationTotal, destinations.length)
   );
 };
 
@@ -194,10 +194,13 @@ const buildRequestFields = function (
   source: SpendingSourceDraft,
   destinations: SpendingDestinationDraft[],
 ): SpendingRequestFields {
+  const destinationTotal = getCurrencyTotal(
+    destinations.map((destination) => destination.amount),
+  );
   return {
     date: date?.format("YYYY-MM-DD") ?? defaultDate?.format("YYYY-MM-DD") ?? "",
     description,
-    amount: source.amount ?? 0,
+    amount: destinationTotal,
     source: {
       accountId: source.account?.accountId ?? "",
     },
