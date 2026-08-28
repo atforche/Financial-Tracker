@@ -3,6 +3,7 @@ import type { Fund, FundWithBalance } from "@/funds/types";
 import {
   type FundAssignmentDraft,
   addFundAssignment as appendFundAssignment,
+  autoAssignIncomeFundAssignments,
   createFundAssignmentDraft,
   getContributionRemainingAmount,
   getFundOptionSecondaryLabel,
@@ -77,6 +78,18 @@ const IncomeFundAssignmentPlanner = function ({
         unassignedFund,
         totalAmountToAssign,
         fundAssignments,
+      ),
+    );
+  };
+
+  const autoAssign = function (): void {
+    setFundAssignments?.(
+      autoAssignIncomeFundAssignments(
+        totalAmountToAssign,
+        funds,
+        fundGoals,
+        baselineFundAssignments,
+        unassignedFund,
       ),
     );
   };
@@ -285,6 +298,7 @@ const IncomeFundAssignmentPlanner = function ({
       totalAmountToAssign={totalAmountToAssign}
       fundAssignments={fundAssignments}
       addFundAssignment={addFundAssignment}
+      onAutoAssign={readOnly ? null : autoAssign}
       deleteFundAssignment={deleteFundAssignment}
       updateFund={updateFund}
       updateAmount={updateAmount}

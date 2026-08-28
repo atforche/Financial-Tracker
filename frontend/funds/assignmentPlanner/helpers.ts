@@ -1,3 +1,4 @@
+import type { Fund, FundWithBalance } from "@/funds/types";
 import {
   compareCurrencyAmounts,
   formatCurrency,
@@ -6,7 +7,6 @@ import {
   getMaximumCurrencyAmount,
   getMinimumCurrencyAmount,
 } from "@/framework/currencyHelpers";
-import type { Fund } from "@/funds/types";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
 import { isUnassignedFund } from "@/funds/helpers";
@@ -372,9 +372,93 @@ const addFundAssignment = function (
   ]);
 };
 
+/**
+ * Creates regular income assignments in order of largest remaining contribution.
+ */
+const autoAssignIncomeFundAssignments = function (
+  totalAmountToAssign: number | null,
+  funds: readonly FundWithBalance[],
+  fundGoals: FundGoalWithProgress[],
+  baselineFundAssignments: readonly FundAssignmentDraft[],
+  unassignedFund: Fund | null,
+): FundAssignmentDraft[] {
+  if (
+    totalAmountToAssign === null ||
+    compareCurrencyAmounts(totalAmountToAssign, 0) <= 0
+  ) {
+    return updateUnassignedFundAmount(unassignedFund, totalAmountToAssign, []);
+  }
+
+  const eligibleFunds = funds.filter((fund) => {
+    if (isUnassignedFund(fund.name)) {
+      return false;
+    }
+    const remainingAmount = getContributionRemainingAmount(
+      fund.id,
+      fundGoals,
+      baselineFundAssignments,
+    );
+    return (
+      remainingAmount !== null && compareCurrencyAmounts(remainingAmount, 0) > 0
+    );
+  });
+
+  const sortedFunds = [...eligibleFunds].sort((left, right) =>
+    sortFundsByRemainingAmount(left, right, (fundId) =>
+      getContributionRemainingAmount(
+        fundId,
+        fundGoals,
+        baselineFundAssignments,
+      ),
+    ),
+  );
+  let remainingAmount = totalAmountToAssign;
+  const assignments: FundAssignmentDraft[] = [];
+
+  for (const fund of sortedFunds) {
+    if (compareCurrencyAmounts(remainingAmount, 0) <= 0) {
+      break;
+    }
+
+    const previousFundBalance = fund.currentBalance.postedBalance;
+    const previousGoalAmount =
+      getContributionRemainingAmount(
+        fund.id,
+        fundGoals,
+        baselineFundAssignments,
+      ) ?? 0;
+    const amount = getMinimumCurrencyAmount(
+      remainingAmount,
+      previousGoalAmount,
+    );
+
+    assignments.push({
+      fundId: fund.id,
+      fundName: fund.name,
+      amount,
+      isExtraContribution: false,
+      previousFundBalance,
+      newFundBalance: getCurrencyTotal([previousFundBalance, amount]),
+      previousGoalAmount,
+      newGoalAmount: getMaximumCurrencyAmount(
+        getCurrencyTotal([previousGoalAmount, -amount]),
+        0,
+      ),
+    });
+    remainingAmount = getCurrencyTotal([remainingAmount, -amount]);
+  }
+
+  return updateUnassignedFundAmount(
+    unassignedFund,
+    totalAmountToAssign,
+    assignments,
+  );
+};
+
 export type { FundAssignmentDraft };
 export {
   addFundAssignment,
+  autoAssignIncomeFundAssignments,
   createFundAssignmentDraft,
   deleteFundAssignment,
   getAssignedFundAmount,

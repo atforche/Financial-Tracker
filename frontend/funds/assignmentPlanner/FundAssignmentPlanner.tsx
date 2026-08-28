@@ -1,4 +1,8 @@
-import { AddCircleOutline, DeleteOutline } from "@mui/icons-material";
+import {
+  AddCircleOutline,
+  AutoFixHigh,
+  DeleteOutline,
+} from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -16,11 +20,14 @@ import {
   getExplicitFundAssignments,
   getRemainingFundAmount,
 } from "@/funds/assignmentPlanner/helpers";
+import {
+  compareCurrencyAmounts,
+  formatCurrency,
+} from "@/framework/currencyHelpers";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { Fund } from "@/funds/types";
 import FundEntryField from "@/funds/FundEntryField";
 import type { JSX } from "react";
-import { formatCurrency } from "@/framework/currencyHelpers";
 import { isUnassignedFund } from "@/funds/helpers";
 
 /**
@@ -31,6 +38,7 @@ interface FundAssignmentPlannerProps {
   readonly totalAmountToAssign: number | null;
   readonly fundAssignments: FundAssignmentDraft[];
   readonly addFundAssignment: () => void;
+  readonly onAutoAssign?: (() => void) | null;
   readonly deleteFundAssignment: (index: number) => void;
   readonly updateFund: (index: number, newFund: Fund | null) => void;
   readonly updateAmount: (index: number, newAmount: number | null) => void;
@@ -58,6 +66,7 @@ const FundAssignmentPlanner = function ({
   totalAmountToAssign,
   fundAssignments,
   addFundAssignment,
+  onAutoAssign = null,
   deleteFundAssignment,
   updateFund,
   updateAmount,
@@ -190,14 +199,29 @@ const FundAssignmentPlanner = function ({
                 ? `${availableFundCount} fund${availableFundCount === 1 ? "" : "s"} still available to assign.`
                 : "All available funds are already represented in this split."}
             </Typography>
-            <Button
-              variant="contained"
-              startIcon={<AddCircleOutline />}
-              onClick={addFundAssignment}
-              disabled={availableFundCount === 0}
-            >
-              Add Fund Assignment
-            </Button>
+            <Stack direction="row" spacing={1.5} justifyContent="flex-end">
+              <Button
+                variant="contained"
+                startIcon={<AddCircleOutline />}
+                onClick={addFundAssignment}
+                disabled={availableFundCount === 0}
+              >
+                Add Fund Assignment
+              </Button>
+              {onAutoAssign === null ? null : (
+                <Button
+                  variant="outlined"
+                  startIcon={<AutoFixHigh />}
+                  onClick={onAutoAssign}
+                  disabled={
+                    totalAmountToAssign === null ||
+                    compareCurrencyAmounts(totalAmountToAssign, 0) <= 0
+                  }
+                >
+                  Auto-assign
+                </Button>
+              )}
+            </Stack>
           </Stack>
         )}
       </Stack>
