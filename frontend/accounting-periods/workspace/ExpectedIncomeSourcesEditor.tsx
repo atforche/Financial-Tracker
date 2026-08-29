@@ -13,6 +13,7 @@ import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import type { ExpectedIncomeSourceRequest } from "@/accounting-periods/types";
 import Frame from "@/framework/view/Frame";
+import InsetFrame from "@/framework/view/InsetFrame";
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import { alpha } from "@mui/material/styles";
@@ -115,7 +116,7 @@ const ExpectedIncomeSourcesEditor = function ({
               }}
             >
               {source.incomeLines.map((line, lineIndex) => (
-                <Box
+                <InsetFrame
                   key={lineIndex}
                   sx={{
                     display: "grid",
@@ -125,12 +126,6 @@ const ExpectedIncomeSourcesEditor = function ({
                       md: "minmax(0, 1.8fr) minmax(180px, 1fr) auto",
                     },
                     alignItems: "start",
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 2,
-                    p: 1.5,
-                    backgroundColor: (theme) =>
-                      alpha(theme.palette.info.main, 0.04),
                   }}
                 >
                   <StringEntryField
@@ -180,7 +175,7 @@ const ExpectedIncomeSourcesEditor = function ({
                       <DeleteOutline />
                     </IconButton>
                   </Box>
-                </Box>
+                </InsetFrame>
               ))}
             </Box>
             <Button
@@ -217,7 +212,7 @@ const ExpectedIncomeSourcesEditor = function ({
               }}
             >
               {source.incomeDeductions.map((deduction, deductionIndex) => (
-                <Box
+                <InsetFrame
                   key={deductionIndex}
                   sx={{
                     display: "grid",
@@ -227,12 +222,6 @@ const ExpectedIncomeSourcesEditor = function ({
                       md: "minmax(0, 1.8fr) minmax(180px, 1fr) auto",
                     },
                     alignItems: "start",
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 2,
-                    p: 1.5,
-                    backgroundColor: (theme) =>
-                      alpha(theme.palette.info.main, 0.04),
                   }}
                 >
                   <StringEntryField
@@ -289,7 +278,7 @@ const ExpectedIncomeSourcesEditor = function ({
                       <DeleteOutline />
                     </IconButton>
                   </Box>
-                </Box>
+                </InsetFrame>
               ))}
             </Box>
             <Button

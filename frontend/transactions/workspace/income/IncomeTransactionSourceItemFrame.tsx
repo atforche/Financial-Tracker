@@ -6,6 +6,7 @@ import type {
   IncomeLineDraft,
 } from "@/transactions/workspace/income/helpers";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
+import InsetFrame from "@/framework/view/InsetFrame";
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 
@@ -22,7 +23,6 @@ interface IncomeTransactionSourceItemFrameProps<
   T extends IncomeTransactionSourceItem,
 > {
   readonly title: string;
-  readonly description: string;
   readonly items: T[];
   readonly setItems?: ((items: T[]) => void) | null;
   readonly createEmptyItem?: (() => T) | null;
@@ -37,7 +37,6 @@ const IncomeTransactionSourceItemFrame = function <
   T extends IncomeTransactionSourceItem,
 >({
   title,
-  description,
   items,
   setItems = null,
   createEmptyItem = null,
@@ -59,12 +58,7 @@ const IncomeTransactionSourceItemFrame = function <
 
   return (
     <Stack spacing={1.5}>
-      <Stack spacing={0.25}>
-        <Typography variant="subtitle2">{title}</Typography>
-        <Typography variant="body2" color="text.secondary">
-          {description}
-        </Typography>
-      </Stack>
+      <Typography variant="subtitle2">{title}</Typography>
       {items.length === 0 && !editable ? (
         <Box
           sx={{
@@ -81,7 +75,7 @@ const IncomeTransactionSourceItemFrame = function <
         </Box>
       ) : (
         items.map((item, index) => (
-          <Box
+          <InsetFrame
             key={`${title}-${index}`}
             sx={{
               display: "grid",
@@ -149,7 +143,7 @@ const IncomeTransactionSourceItemFrame = function <
                 </IconButton>
               </Box>
             ) : null}
-          </Box>
+          </InsetFrame>
         ))
       )}
       {editable ? (

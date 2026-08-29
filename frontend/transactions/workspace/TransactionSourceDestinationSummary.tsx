@@ -1,10 +1,11 @@
-import { Box, Stack, Typography, alpha } from "@mui/material";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
+import { Stack, Typography } from "@mui/material";
 import {
   formatCurrency,
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
+import InsetFrame from "@/framework/view/InsetFrame";
 import type { JSX } from "react";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 
@@ -52,22 +53,14 @@ const TransactionSourceDestinationSummary = function ({
         <Stack spacing={2}>
           <ResponsiveGrid minimumColumnWidth={180} spacing={1.5}>
             {summaryCards.map((card) => (
-              <Box
-                key={card.label}
-                sx={(theme) => ({
-                  p: 2,
-                  borderRadius: 3,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.72)}`,
-                  backgroundColor: alpha(theme.palette.text.primary, 0.02),
-                })}
-              >
+              <InsetFrame key={card.label}>
                 <Typography variant="caption" color="text.secondary">
                   {card.label}
                 </Typography>
                 <Typography variant="h6" color={card.tone}>
                   {card.value}
                 </Typography>
-              </Box>
+              </InsetFrame>
             ))}
           </ResponsiveGrid>
         </Stack>

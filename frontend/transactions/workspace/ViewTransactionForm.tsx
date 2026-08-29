@@ -331,11 +331,12 @@ const ViewTransactionForm = function ({
                 transaction={transaction}
                 redirectUrl={currentUrl}
               />
-            ) : null}
-            <DeleteTransactionForm
-              transaction={transaction}
-              redirectUrl={returnUrl ?? workspaceUrl}
-            />
+            ) : (
+              <DeleteTransactionForm
+                transaction={transaction}
+                redirectUrl={returnUrl ?? workspaceUrl}
+              />
+            )}
           </Stack>
         )
       }

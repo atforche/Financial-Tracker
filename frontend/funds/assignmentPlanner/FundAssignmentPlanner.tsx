@@ -27,6 +27,7 @@ import {
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { Fund } from "@/funds/types";
 import FundEntryField from "@/funds/FundEntryField";
+import InsetFrame from "@/framework/view/InsetFrame";
 import type { JSX } from "react";
 import { isUnassignedFund } from "@/funds/helpers";
 
@@ -108,82 +109,84 @@ const FundAssignmentPlanner = function ({
       <Stack spacing={2.5}>
         <Stack spacing={2}>
           {explicitFundAssignments.map((assignment, index) => (
-            <Stack key={assignment.fundId || `assignment-${index}`} spacing={2}>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: { xs: "column", md: "row" },
-                  alignItems: { xs: "stretch", md: "flex-start" },
-                  gap: 2,
-                }}
-              >
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <FundEntryField
-                    label="Fund"
-                    options={funds}
-                    value={{
-                      id: assignment.fundId,
-                      name: assignment.fundName,
-                      description: "",
-                    }}
-                    setValue={
-                      readOnly
-                        ? null
-                        : (newValue): void => {
-                            updateFund(index, newValue);
-                          }
-                    }
-                    filter={(fund) =>
-                      !isUnassignedFund(fund.name) &&
-                      (fund.id === assignment.fundId ||
-                        !assignedFundIds.has(fund.id))
-                    }
-                    getOptionSecondaryLabel={getFundOptionSecondaryLabel}
-                    sortComparator={sortFunds}
-                  />
-                </Box>
+            <InsetFrame key={assignment.fundId || `assignment-${index}`}>
+              <Stack spacing={2}>
                 <Box
                   sx={{
-                    flex: 1,
-                    minWidth: 0,
                     display: "flex",
-                    alignItems: { xs: "flex-start", md: "center" },
-                    gap: 1,
+                    flexDirection: { xs: "column", md: "row" },
+                    alignItems: { xs: "stretch", md: "flex-start" },
+                    gap: 2,
                   }}
                 >
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <CurrencyEntryField
-                      label="Assigned Amount"
-                      value={assignment.amount}
+                    <FundEntryField
+                      label="Fund"
+                      options={funds}
+                      value={{
+                        id: assignment.fundId,
+                        name: assignment.fundName,
+                        description: "",
+                      }}
                       setValue={
                         readOnly
                           ? null
-                          : (newAmount): void => {
-                              updateAmount(index, newAmount);
+                          : (newValue): void => {
+                              updateFund(index, newValue);
                             }
                       }
+                      filter={(fund) =>
+                        !isUnassignedFund(fund.name) &&
+                        (fund.id === assignment.fundId ||
+                          !assignedFundIds.has(fund.id))
+                      }
+                      getOptionSecondaryLabel={getFundOptionSecondaryLabel}
+                      sortComparator={sortFunds}
                     />
                   </Box>
-                  {renderAssignmentControl?.(assignment, index) ?? null}
-                </Box>
-                {readOnly ? null : (
-                  <IconButton
-                    aria-label="Delete fund assignment"
+                  <Box
                     sx={{
-                      alignSelf: { xs: "flex-end", md: "center" },
-                      flexShrink: 0,
-                    }}
-                    onClick={() => {
-                      deleteFundAssignment(index);
+                      flex: 1,
+                      minWidth: 0,
+                      display: "flex",
+                      alignItems: { xs: "flex-start", md: "center" },
+                      gap: 1,
                     }}
                   >
-                    <DeleteOutline />
-                  </IconButton>
-                )}
-              </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <CurrencyEntryField
+                        label="Assigned Amount"
+                        value={assignment.amount}
+                        setValue={
+                          readOnly
+                            ? null
+                            : (newAmount): void => {
+                                updateAmount(index, newAmount);
+                              }
+                        }
+                      />
+                    </Box>
+                    {renderAssignmentControl?.(assignment, index) ?? null}
+                  </Box>
+                  {readOnly ? null : (
+                    <IconButton
+                      aria-label="Delete fund assignment"
+                      sx={{
+                        alignSelf: { xs: "flex-end", md: "center" },
+                        flexShrink: 0,
+                      }}
+                      onClick={() => {
+                        deleteFundAssignment(index);
+                      }}
+                    >
+                      <DeleteOutline />
+                    </IconButton>
+                  )}
+                </Box>
 
-              {renderAssignmentDetails?.(assignment, index) ?? null}
-            </Stack>
+                {renderAssignmentDetails?.(assignment, index) ?? null}
+              </Stack>
+            </InsetFrame>
           ))}
         </Stack>
 

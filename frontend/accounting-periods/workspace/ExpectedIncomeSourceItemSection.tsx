@@ -1,8 +1,8 @@
 import { Box, Stack, Typography } from "@mui/material";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
+import InsetFrame from "@/framework/view/InsetFrame";
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import { alpha } from "@mui/material/styles";
 
 /**
  * Represents an item in the expected-income source section, including its description and amount.
@@ -60,23 +60,18 @@ const ExpectedIncomeSourceItemSection = function ({
           }}
         >
           {items.map((item, index) => (
-            <Box
+            <InsetFrame
               key={`${title}-${index}`}
-              sx={(theme) => ({
+              sx={{
                 display: "grid",
                 gap: 1.5,
                 gridTemplateColumns: "minmax(0, 1.8fr) minmax(180px, 1fr)",
                 alignItems: "start",
-                border: "1px solid",
-                borderColor: "divider",
-                borderRadius: 2,
-                p: 1.5,
-                backgroundColor: alpha(theme.palette.info.main, 0.04),
-              })}
+              }}
             >
               <StringEntryField label="Description" value={item.description} />
               <CurrencyEntryField label="Amount" value={item.amount} />
-            </Box>
+            </InsetFrame>
           ))}
         </Box>
       )}

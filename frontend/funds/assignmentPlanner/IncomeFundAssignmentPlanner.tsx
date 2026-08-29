@@ -1,4 +1,4 @@
-import { Checkbox, Chip, FormControlLabel, Stack } from "@mui/material";
+import { Box, Checkbox, Chip, FormControlLabel, Stack } from "@mui/material";
 import type { Fund, FundWithBalance } from "@/funds/types";
 import {
   type FundAssignmentDraft,
@@ -18,6 +18,7 @@ import {
   getCurrencyTotal,
   getMaximumCurrencyAmount,
 } from "@/framework/currencyHelpers";
+import { ArrowForward } from "@mui/icons-material";
 import type { FrameColor } from "@/framework/view/Frame";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
@@ -239,27 +240,54 @@ const IncomeFundAssignmentPlanner = function ({
       <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap>
         <Chip
           variant="outlined"
-          label={`Previous remaining to assign ${formatCurrency(assignment.previousGoalAmount)}`}
-        />
-        <Chip
           color={
             compareCurrencyAmounts(assignment.newGoalAmount, 0) <= 0
               ? "success"
               : "default"
           }
-          label={`New remaining to assign ${formatCurrency(assignment.newGoalAmount)}`}
+          label={
+            <Box
+              component="span"
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                lineHeight: 1.2,
+                gap: 0.5,
+              }}
+            >
+              <span>
+                Remaining to Assign{" "}
+                {formatCurrency(assignment.previousGoalAmount)}
+              </span>
+              <ArrowForward aria-hidden="true" sx={{ fontSize: 16 }} />
+              <span>{formatCurrency(assignment.newGoalAmount)}</span>
+            </Box>
+          }
         />
         <Chip
           variant="outlined"
-          label={`Previous balance ${formatCurrency(assignment.previousFundBalance)}`}
-        />
-        <Chip
           color={
             compareCurrencyAmounts(assignment.newFundBalance, 0) >= 0
               ? "success"
               : "error"
           }
-          label={`New balance ${formatCurrency(assignment.newFundBalance)}`}
+          label={
+            <Box
+              component="span"
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                lineHeight: 1.2,
+                gap: 0.5,
+              }}
+            >
+              <span>
+                Balance {formatCurrency(assignment.previousFundBalance)}
+              </span>
+              <ArrowForward aria-hidden="true" sx={{ fontSize: 16 }} />
+              <span>{formatCurrency(assignment.newFundBalance)}</span>
+            </Box>
+          }
         />
       </Stack>
     );

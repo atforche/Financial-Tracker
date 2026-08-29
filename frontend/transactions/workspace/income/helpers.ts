@@ -419,23 +419,27 @@ const getSourceFromTransaction = function (
 const getFundAssignmentFromTransactionFund = (
   assignment: FundBalanceEvent,
   fundGoals: FundGoalWithProgress[],
-): FundAssignmentDraft => ({
-  fundId: assignment.fund.id,
-  fundName: assignment.fund.name,
-  amount: assignment.amount,
-  isExtraContribution: assignment.isExtraContribution ?? false,
-  previousFundBalance: assignment.previousBalance.postedBalance,
-  newFundBalance: assignment.newBalance.postedBalance,
-  previousGoalAmount: getIncomeGoalRemainingAmount(
-    assignment.fund.id,
-    fundGoals,
-  ),
-  newGoalAmount: Math.max(
-    getIncomeGoalRemainingAmount(assignment.fund.id, fundGoals) -
-      (assignment.isExtraContribution === true ? 0 : assignment.amount),
-    0,
-  ),
-});
+): FundAssignmentDraft => {
+  const isExtraContribution = assignment.isExtraContribution === true;
+  const previousGoalAmount = getCurrencyTotal([
+    getIncomeGoalRemainingAmount(assignment.fund.id, fundGoals),
+    isExtraContribution ? 0 : assignment.amount,
+  ]);
+
+  return {
+    fundId: assignment.fund.id,
+    fundName: assignment.fund.name,
+    amount: assignment.amount,
+    isExtraContribution,
+    previousFundBalance: assignment.previousBalance.postedBalance,
+    newFundBalance: assignment.newBalance.postedBalance,
+    previousGoalAmount,
+    newGoalAmount: Math.max(
+      previousGoalAmount - (isExtraContribution ? 0 : assignment.amount),
+      0,
+    ),
+  };
+};
 
 /**
  * Gets the collection of destinations from the provided income transaction.

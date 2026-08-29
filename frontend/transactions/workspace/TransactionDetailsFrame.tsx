@@ -41,7 +41,12 @@ const TransactionDetailsFrame = function ({
 }: TransactionDetailsFrameProps): JSX.Element {
   return (
     <ConstrainedContent maxWidth={1200}>
-      <Frame title="Details" color={color} headerContent={headerContent}>
+      <Frame
+        title="Details"
+        color={color}
+        headerContent={headerContent}
+        headerContentInline
+      >
         <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
           <AccountingPeriodEntryField
             label="Accounting Period"
