@@ -22,6 +22,7 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 interface TransactionWorkspaceListFrameProps {
   readonly data: Transaction[] | null;
   readonly totalCount: number | null;
+  readonly hasActiveFilters: boolean;
 }
 
 /**
@@ -29,6 +30,7 @@ interface TransactionWorkspaceListFrameProps {
  */
 const TransactionWorkspaceListFrame = function ({
   data,
+  hasActiveFilters,
   totalCount,
 }: TransactionWorkspaceListFrameProps): JSX.Element {
   const canWrite = useWriteAccess();
@@ -146,8 +148,9 @@ const TransactionWorkspaceListFrame = function ({
       pageParamName={pageParamName}
       onRowClick={openTransaction}
       initialEmptyState={{
-        title: "No Transactions Found",
-        description: "No transactions have been recorded yet.",
+        title: "Search for Transactions",
+        description:
+          "Select at least one filter and click Search to load transactions.",
         action: null,
       }}
       filteredEmptyState={{
@@ -162,6 +165,7 @@ const TransactionWorkspaceListFrame = function ({
                 params.delete(accountingPeriodIdsParamName);
                 params.delete(accountIdsParamName);
                 params.delete(fundIdsParamName);
+                params.delete(locationIdsParamName);
                 params.delete(fundNamesParamName);
                 params.delete(accountTypesParamName);
                 params.delete(accountNamesParamName);
@@ -178,6 +182,7 @@ const TransactionWorkspaceListFrame = function ({
           </Button>
         ),
       }}
+      hasActiveFilters={hasActiveFilters}
     />
   );
 };

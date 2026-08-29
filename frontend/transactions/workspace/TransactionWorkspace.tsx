@@ -48,6 +48,22 @@ const TransactionWorkspace = async function ({
   searchParams,
 }: TransactionWorkspaceProps): Promise<JSX.Element> {
   const resolvedSearchParams = await searchParams;
+  const hasFilter = [
+    resolvedSearchParams.accountingPeriodIds,
+    resolvedSearchParams.accountIds,
+    resolvedSearchParams.fundIds,
+    resolvedSearchParams.locationIds,
+    resolvedSearchParams.fundNames,
+    resolvedSearchParams.accountTypes,
+    resolvedSearchParams.accountNames,
+    resolvedSearchParams.transactionTypes,
+    resolvedSearchParams.startDate,
+    resolvedSearchParams.endDate,
+    resolvedSearchParams.startAccountingPeriodId,
+    resolvedSearchParams.endAccountingPeriodId,
+  ].some((value) =>
+    Array.isArray(value) ? value.length > 0 : typeof value !== "undefined",
+  );
   const {
     allAccountingPeriods,
     accounts,
@@ -56,7 +72,7 @@ const TransactionWorkspace = async function ({
     selectedAccountIds,
     selectedFundIds,
     transactions,
-  } = await getTransactionWorkspaceListData(resolvedSearchParams);
+  } = await getTransactionWorkspaceListData(resolvedSearchParams, hasFilter);
 
   return (
     <ConstrainedContent>
@@ -83,6 +99,7 @@ const TransactionWorkspace = async function ({
         <TransactionWorkspaceListFrame
           data={transactions.items}
           totalCount={transactions.totalCount}
+          hasActiveFilters={hasFilter}
         />
       </PageLayout>
     </ConstrainedContent>

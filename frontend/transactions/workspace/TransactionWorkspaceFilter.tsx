@@ -1,6 +1,7 @@
 "use client";
 
 import type { Account, AccountType } from "@/accounts/types";
+import { type JSX, useEffect, useState } from "react";
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
@@ -19,7 +20,6 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import { Button } from "@mui/material";
 import DateRangeFilter from "@/framework/forms/DateRangeFilter";
 import type { Fund } from "@/funds/types";
-import type { JSX } from "react";
 import type { Location } from "@/locations/types";
 import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
@@ -81,40 +81,167 @@ const TransactionWorkspaceFilter = function ({
   const endAccountingPeriodIdParamName =
     propertyName<TransactionWorkspaceSearchParams>("endAccountingPeriodId");
 
-  const currentAccountingPeriods = selectAvailableSearchParamValues(
+  const initialAccountingPeriods = selectAvailableSearchParamValues(
     normalizeStringSearchParams(searchParams.getAll(accountingPeriodParamName)),
     accountingPeriods,
     (value) => value,
     (value) => value.id,
   );
-  const currentAccounts = selectAvailableSearchParamValues(
+  const initialAccounts = selectAvailableSearchParamValues(
     selectedAccountIds,
     accounts,
     (value) => value,
     (value) => value.id,
   );
-  const currentFunds = selectAvailableSearchParamValues(
+  const initialFunds = selectAvailableSearchParamValues(
     selectedFundIds,
     funds,
     (value) => value,
     (value) => value.id,
   );
-  const currentLocations = selectAvailableSearchParamValues(
+  const initialLocations = selectAvailableSearchParamValues(
     normalizeStringSearchParams(searchParams.getAll(locationParamName)),
     locations,
     (value) => value,
     (value) => value.id,
   );
-  const currentAccountTypes = normalizeAccountTypes(
+  const initialAccountTypes = normalizeAccountTypes(
     searchParams.getAll(accountTypeParamName),
   );
-  const currentTransactionTypes = normalizeTransactionTypes(
+  const initialTransactionTypes = normalizeTransactionTypes(
     searchParams.getAll(transactionTypeParamName),
   );
-  const currentStartDate = searchParams.get(startDateParamName) ?? "";
-  const currentEndDate = searchParams.get(endDateParamName) ?? "";
+  const initialStartDate = searchParams.get(startDateParamName) ?? "";
+  const initialEndDate = searchParams.get(endDateParamName) ?? "";
+
+  const [currentAccountingPeriods, setCurrentAccountingPeriods] = useState<
+    readonly AccountingPeriod[]
+  >(initialAccountingPeriods);
+  const [currentAccounts, setCurrentAccounts] =
+    useState<readonly Account[]>(initialAccounts);
+  const [currentFunds, setCurrentFunds] =
+    useState<readonly Fund[]>(initialFunds);
+  const [currentLocations, setCurrentLocations] =
+    useState<readonly Location[]>(initialLocations);
+  const [currentAccountTypes, setCurrentAccountTypes] =
+    useState(initialAccountTypes);
+  const [currentTransactionTypes, setCurrentTransactionTypes] = useState(
+    initialTransactionTypes,
+  );
+  const [currentStartDate, setCurrentStartDate] = useState(initialStartDate);
+  const [currentEndDate, setCurrentEndDate] = useState(initialEndDate);
+
+  const currentSearchParams = searchParams.toString();
+  useEffect(() => {
+    const params = new URLSearchParams(currentSearchParams);
+    setCurrentAccountingPeriods(
+      selectAvailableSearchParamValues(
+        normalizeStringSearchParams(params.getAll(accountingPeriodParamName)),
+        accountingPeriods,
+        (value) => value,
+        (value) => value.id,
+      ),
+    );
+    setCurrentAccounts(
+      selectAvailableSearchParamValues(
+        selectedAccountIds,
+        accounts,
+        (value) => value,
+        (value) => value.id,
+      ),
+    );
+    setCurrentFunds(
+      selectAvailableSearchParamValues(
+        selectedFundIds,
+        funds,
+        (value) => value,
+        (value) => value.id,
+      ),
+    );
+    setCurrentLocations(
+      selectAvailableSearchParamValues(
+        normalizeStringSearchParams(params.getAll(locationParamName)),
+        locations,
+        (value) => value,
+        (value) => value.id,
+      ),
+    );
+    setCurrentAccountTypes(
+      normalizeAccountTypes(params.getAll(accountTypeParamName)),
+    );
+    setCurrentTransactionTypes(
+      normalizeTransactionTypes(params.getAll(transactionTypeParamName)),
+    );
+    setCurrentStartDate(params.get(startDateParamName) ?? "");
+    setCurrentEndDate(params.get(endDateParamName) ?? "");
+  }, [
+    accountingPeriodParamName,
+    accountingPeriods,
+    accountTypeParamName,
+    accounts,
+    currentSearchParams,
+    fundParamName,
+    funds,
+    locationParamName,
+    locations,
+    selectedAccountIds,
+    selectedFundIds,
+    transactionTypeParamName,
+    startDateParamName,
+    endDateParamName,
+  ]);
 
   const updateParams = useSearchParamUpdater([pageParamName]);
+
+  const submitSearch = function (): void {
+    updateParams((params) => {
+      [
+        accountingPeriodParamName,
+        accountParamName,
+        fundParamName,
+        locationParamName,
+        fundNameParamName,
+        accountTypeParamName,
+        accountNameParamName,
+        transactionTypeParamName,
+        startDateParamName,
+        endDateParamName,
+        startAccountingPeriodIdParamName,
+        endAccountingPeriodIdParamName,
+      ].forEach((paramName) => {
+        params.delete(paramName);
+      });
+      currentAccountingPeriods.forEach((accountingPeriod) => {
+        params.append(accountingPeriodParamName, accountingPeriod.id);
+      });
+      currentAccounts.forEach((account) => {
+        params.append(accountParamName, account.id);
+      });
+      currentFunds.forEach((fund) => {
+        params.append(fundParamName, fund.id);
+      });
+      currentLocations.forEach((location) => {
+        params.append(locationParamName, location.id);
+      });
+      if (shouldPersistAccountTypes(currentAccountTypes)) {
+        currentAccountTypes.forEach((accountType) => {
+          params.append(accountTypeParamName, accountType);
+        });
+      }
+      if (shouldPersistTransactionTypes(currentTransactionTypes)) {
+        currentTransactionTypes.forEach((transactionType) => {
+          params.append(transactionTypeParamName, transactionType);
+        });
+      }
+      if (currentStartDate !== "") {
+        params.set(startDateParamName, currentStartDate);
+      }
+      if (currentEndDate !== "") {
+        params.set(endDateParamName, currentEndDate);
+      }
+      params.delete(pageParamName);
+    });
+  };
 
   const hasActiveView =
     currentAccountingPeriods.length > 0 ||
@@ -127,76 +254,54 @@ const TransactionWorkspaceFilter = function ({
     currentEndDate !== "" ||
     searchParams.has(startAccountingPeriodIdParamName) ||
     searchParams.has(endAccountingPeriodIdParamName);
+  const hasAppliedFilters = [
+    accountingPeriodParamName,
+    accountParamName,
+    fundParamName,
+    locationParamName,
+    fundNameParamName,
+    accountTypeParamName,
+    accountNameParamName,
+    transactionTypeParamName,
+    startDateParamName,
+    endDateParamName,
+    startAccountingPeriodIdParamName,
+    endAccountingPeriodIdParamName,
+  ].some((paramName) => searchParams.has(paramName));
 
   const handleAccountingPeriodChange = function (
     nextAccountingPeriods: readonly AccountingPeriod[],
   ): void {
-    updateParams((params) => {
-      params.delete(accountingPeriodParamName);
-      nextAccountingPeriods.forEach((accountingPeriod) => {
-        params.append(accountingPeriodParamName, accountingPeriod.id);
-      });
-    });
+    setCurrentAccountingPeriods(nextAccountingPeriods);
   };
 
   const handleAccountChange = function (
     nextAccounts: readonly Account[],
   ): void {
-    updateParams((params) => {
-      params.delete(accountParamName);
-      params.delete(accountNameParamName);
-      params.delete(accountTypeParamName);
-      nextAccounts.forEach((account) => {
-        params.append(accountParamName, account.id);
-      });
-    });
+    setCurrentAccounts(nextAccounts);
+    setCurrentAccountTypes([]);
   };
 
   const handleFundChange = function (nextFunds: readonly Fund[]): void {
-    updateParams((params) => {
-      params.delete(fundParamName);
-      params.delete(fundNameParamName);
-      nextFunds.forEach((fund) => {
-        params.append(fundParamName, fund.id);
-      });
-    });
+    setCurrentFunds(nextFunds);
   };
 
   const handleLocationChange = function (
     nextLocations: readonly Location[],
   ): void {
-    updateParams((params) => {
-      params.delete(locationParamName);
-      nextLocations.forEach((location) => {
-        params.append(locationParamName, location.id);
-      });
-    });
+    setCurrentLocations(nextLocations);
   };
 
   const handleAccountTypeChange = function (
     nextAccountTypes: readonly AccountType[],
   ): void {
-    updateParams((params) => {
-      params.delete(accountTypeParamName);
-      if (shouldPersistAccountTypes(nextAccountTypes)) {
-        nextAccountTypes.forEach((accountType) => {
-          params.append(accountTypeParamName, accountType);
-        });
-      }
-    });
+    setCurrentAccountTypes(nextAccountTypes);
   };
 
   const handleTransactionTypeChange = function (
     nextTransactionTypes: readonly TransactionType[],
   ): void {
-    updateParams((params) => {
-      params.delete(transactionTypeParamName);
-      if (shouldPersistTransactionTypes(nextTransactionTypes)) {
-        nextTransactionTypes.forEach((transactionType) => {
-          params.append(transactionTypeParamName, transactionType);
-        });
-      }
-    });
+    setCurrentTransactionTypes(nextTransactionTypes);
   };
 
   const handleDateRangeChange = function ({
@@ -206,23 +311,19 @@ const TransactionWorkspaceFilter = function ({
     start: string;
     end: string;
   }): void {
-    updateParams((params) => {
-      params.delete(startAccountingPeriodIdParamName);
-      params.delete(endAccountingPeriodIdParamName);
-      if (start === "") {
-        params.delete(startDateParamName);
-      } else {
-        params.set(startDateParamName, start);
-      }
-      if (end === "") {
-        params.delete(endDateParamName);
-      } else {
-        params.set(endDateParamName, end);
-      }
-    });
+    setCurrentStartDate(start);
+    setCurrentEndDate(end);
   };
 
   const clearView = function (): void {
+    setCurrentAccountingPeriods([]);
+    setCurrentAccounts([]);
+    setCurrentFunds([]);
+    setCurrentLocations([]);
+    setCurrentAccountTypes([]);
+    setCurrentTransactionTypes([]);
+    setCurrentStartDate("");
+    setCurrentEndDate("");
     updateParams((params) => {
       params.delete(accountingPeriodParamName);
       params.delete(accountParamName);
@@ -331,9 +432,16 @@ const TransactionWorkspaceFilter = function ({
       </TransactionFilterControl>
       <TransactionFilterControl expand={false}>
         <Button
+          variant="contained"
+          onClick={submitSearch}
+          disabled={!hasActiveView}
+        >
+          Search
+        </Button>
+        <Button
           variant="outlined"
           onClick={clearView}
-          disabled={!hasActiveView}
+          disabled={!(hasActiveView || hasAppliedFilters)}
         >
           Reset filters
         </Button>
