@@ -78,6 +78,7 @@ const IncomeFundAssignmentPlanner = function ({
         unassignedFund,
         totalAmountToAssign,
         fundAssignments,
+        false,
       ),
     );
   };

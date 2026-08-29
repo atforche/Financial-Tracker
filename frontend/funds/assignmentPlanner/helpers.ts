@@ -352,22 +352,26 @@ const getSuggestedAmount = function (
 };
 
 /**
- * Appends an empty explicit assignment with the remaining transaction amount.
+ * Appends an empty explicit assignment, optionally initializing it with the
+ * remaining transaction amount.
  */
 const addFundAssignment = function (
   unassignedFund: Fund | null,
   totalAmountToAssign: number | null,
   fundAssignments: readonly FundAssignmentDraft[],
+  assignRemainingAmount = true,
 ): FundAssignmentDraft[] {
   const explicitAssignments = getExplicitFundAssignments(fundAssignments);
   return updateUnassignedFundAmount(unassignedFund, totalAmountToAssign, [
     ...explicitAssignments,
     createFundAssignmentDraft(
-      getSuggestedAmount(
-        totalAmountToAssign,
-        explicitAssignments,
-        explicitAssignments.length,
-      ),
+      assignRemainingAmount
+        ? getSuggestedAmount(
+            totalAmountToAssign,
+            explicitAssignments,
+            explicitAssignments.length,
+          )
+        : 0,
     ),
   ]);
 };
