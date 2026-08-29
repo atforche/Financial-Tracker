@@ -106,7 +106,6 @@ const FundAssignmentPlanner = function ({
       color={color}
       headerContent={
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-          <Chip label={`Total ${formatCurrency(totalAmountToAssign ?? 0)}`} />
           <Chip label={`Assigned ${formatCurrency(assignedAmount)}`} />
           <Chip
             color={getRemainingAmountColor(remainingAmount)}

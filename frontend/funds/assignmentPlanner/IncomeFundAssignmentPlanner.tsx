@@ -1,4 +1,4 @@
-import { Box, Checkbox, Chip, FormControlLabel, Stack } from "@mui/material";
+import { Checkbox, FormControlLabel, Stack } from "@mui/material";
 import type { Fund, FundWithBalance } from "@/funds/types";
 import {
   type FundAssignmentDraft,
@@ -14,11 +14,10 @@ import {
 } from "@/funds/assignmentPlanner/helpers";
 import {
   compareCurrencyAmounts,
-  formatCurrency,
   getCurrencyTotal,
   getMaximumCurrencyAmount,
 } from "@/framework/currencyHelpers";
-import { ArrowForward } from "@mui/icons-material";
+import BalanceChangeChip from "@/framework/view/BalanceChangeChip";
 import type { FrameColor } from "@/framework/view/Frame";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
@@ -221,55 +220,24 @@ const IncomeFundAssignmentPlanner = function ({
     }
     return (
       <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap>
-        <Chip
-          variant="outlined"
+        <BalanceChangeChip
+          label="Remaining to Assign"
+          previousValue={assignment.previousGoalAmount}
+          newValue={assignment.newGoalAmount}
           color={
             compareCurrencyAmounts(assignment.newGoalAmount, 0) <= 0
               ? "success"
               : "default"
           }
-          label={
-            <Box
-              component="span"
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                lineHeight: 1.2,
-                gap: 0.5,
-              }}
-            >
-              <span>
-                Remaining to Assign{" "}
-                {formatCurrency(assignment.previousGoalAmount)}
-              </span>
-              <ArrowForward aria-hidden="true" sx={{ fontSize: 16 }} />
-              <span>{formatCurrency(assignment.newGoalAmount)}</span>
-            </Box>
-          }
         />
-        <Chip
-          variant="outlined"
+        <BalanceChangeChip
+          label="Balance"
+          previousValue={assignment.previousFundBalance}
+          newValue={assignment.newFundBalance}
           color={
             compareCurrencyAmounts(assignment.newFundBalance, 0) >= 0
               ? "success"
               : "error"
-          }
-          label={
-            <Box
-              component="span"
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                lineHeight: 1.2,
-                gap: 0.5,
-              }}
-            >
-              <span>
-                Balance {formatCurrency(assignment.previousFundBalance)}
-              </span>
-              <ArrowForward aria-hidden="true" sx={{ fontSize: 16 }} />
-              <span>{formatCurrency(assignment.newFundBalance)}</span>
-            </Box>
           }
         />
       </Stack>
