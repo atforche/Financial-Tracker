@@ -42,6 +42,8 @@ const TransactionWorkspaceListFrame = function ({
     propertyName<TransactionWorkspaceSearchParams>("accountIds");
   const fundIdsParamName =
     propertyName<TransactionWorkspaceSearchParams>("fundIds");
+  const locationIdsParamName =
+    propertyName<TransactionWorkspaceSearchParams>("locationIds");
   const fundNamesParamName =
     propertyName<TransactionWorkspaceSearchParams>("fundNames");
   const accountTypesParamName =
@@ -79,6 +81,7 @@ const TransactionWorkspaceListFrame = function ({
         accountingPeriodIds: params.getAll(accountingPeriodIdsParamName),
         accountIds: params.getAll(accountIdsParamName),
         fundIds: params.getAll(fundIdsParamName),
+        locationIds: params.getAll(locationIdsParamName),
         fundNames: params.getAll(fundNamesParamName),
         accountTypes: normalizeAccountTypes(
           params.getAll(accountTypesParamName),
