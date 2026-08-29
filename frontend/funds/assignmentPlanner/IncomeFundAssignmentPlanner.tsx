@@ -169,29 +169,21 @@ const IncomeFundAssignmentPlanner = function ({
         totalAmountToAssign,
         fundAssignments,
         index,
-        (assignment) => {
-          const previousGoalAmount =
-            getContributionRemainingAmount(
-              assignment.fundId,
-              fundGoals,
-              baselineFundAssignments,
-            ) ?? 0;
-          return {
-            ...assignment,
-            amount: newAmount ?? 0,
-            newFundBalance: getCurrencyTotal([
-              assignment.previousFundBalance,
-              newAmount ?? 0,
+        (assignment) => ({
+          ...assignment,
+          amount: newAmount ?? 0,
+          newFundBalance: getCurrencyTotal([
+            assignment.previousFundBalance,
+            newAmount ?? 0,
+          ]),
+          newGoalAmount: getMaximumCurrencyAmount(
+            getCurrencyTotal([
+              assignment.previousGoalAmount,
+              assignment.isExtraContribution ? 0 : -(newAmount ?? 0),
             ]),
-            newGoalAmount: getMaximumCurrencyAmount(
-              getCurrencyTotal([
-                previousGoalAmount,
-                assignment.isExtraContribution ? 0 : -(newAmount ?? 0),
-              ]),
-              0,
-            ),
-          };
-        },
+            0,
+          ),
+        }),
       ),
     );
   };
@@ -206,26 +198,17 @@ const IncomeFundAssignmentPlanner = function ({
         totalAmountToAssign,
         fundAssignments,
         index,
-        (assignment) => {
-          const previousGoalAmount =
-            getContributionRemainingAmount(
-              assignment.fundId,
-              fundGoals,
-              baselineFundAssignments,
-            ) ?? 0;
-          return {
-            ...assignment,
-            isExtraContribution,
-            previousGoalAmount,
-            newGoalAmount: getMaximumCurrencyAmount(
-              getCurrencyTotal([
-                previousGoalAmount,
-                isExtraContribution ? 0 : -assignment.amount,
-              ]),
-              0,
-            ),
-          };
-        },
+        (assignment) => ({
+          ...assignment,
+          isExtraContribution,
+          newGoalAmount: getMaximumCurrencyAmount(
+            getCurrencyTotal([
+              assignment.previousGoalAmount,
+              isExtraContribution ? 0 : -assignment.amount,
+            ]),
+            0,
+          ),
+        }),
       ),
     );
   };

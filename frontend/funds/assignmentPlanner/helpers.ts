@@ -210,19 +210,6 @@ const getContributionRemainingAmount = function (
 };
 
 /**
- * Gets the remaining contribution amount for a Fund Goal.
- */
-const getIncomeGoalRemainingAmount = function (
-  fundId: string,
-  fundGoals: FundGoalWithProgress[],
-): number {
-  return (
-    fundGoals.find((fundGoal) => fundGoal.fund.id === fundId)?.progress
-      .contribution?.remainingAmount ?? 0
-  );
-};
-
-/**
  * Gets the remaining ending-balance amount for a Fund Goal.
  */
 const getSpendingGoalRemainingAmount = function (
@@ -471,7 +458,6 @@ export {
   getFundOptionSecondaryLabel,
   getContributionRemainingAmount,
   getEndingBalanceVariance,
-  getIncomeGoalRemainingAmount,
   getRemainingFundAmount,
   getSpendingGoalRemainingAmount,
   getSuggestedAmount,
