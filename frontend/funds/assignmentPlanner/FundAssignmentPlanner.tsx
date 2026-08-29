@@ -20,6 +20,7 @@ import {
   getExplicitFundAssignments,
   getRemainingFundAmount,
 } from "@/funds/assignmentPlanner/helpers";
+import { type JSX, useEffect, useState } from "react";
 import {
   compareCurrencyAmounts,
   formatCurrency,
@@ -28,7 +29,6 @@ import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { Fund } from "@/funds/types";
 import FundEntryField from "@/funds/FundEntryField";
 import InsetFrame from "@/framework/view/InsetFrame";
-import type { JSX } from "react";
 import { isUnassignedFund } from "@/funds/helpers";
 
 /**
@@ -80,6 +80,9 @@ const FundAssignmentPlanner = function ({
   color = "info",
   readOnly = false,
 }: FundAssignmentPlannerProps): JSX.Element {
+  const [autoFocusAssignmentIndex, setAutoFocusAssignmentIndex] = useState<
+    number | null
+  >(null);
   const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
   const assignedAmount = getAssignedFundAmount(fundAssignments);
   const remainingAmount = getRemainingFundAmount(
@@ -90,6 +93,12 @@ const FundAssignmentPlanner = function ({
     explicitFundAssignments.map((assignment) => assignment.fundId),
   );
   const availableFundCount = getAvailableFundCount(funds, fundAssignments);
+
+  useEffect(() => {
+    if (autoFocusAssignmentIndex !== null) {
+      setAutoFocusAssignmentIndex(null);
+    }
+  }, [autoFocusAssignmentIndex]);
 
   return (
     <Frame
@@ -109,7 +118,7 @@ const FundAssignmentPlanner = function ({
       <Stack spacing={2.5}>
         <Stack spacing={2}>
           {explicitFundAssignments.map((assignment, index) => (
-            <InsetFrame key={assignment.fundId || `assignment-${index}`}>
+            <InsetFrame key={`assignment-${index}`}>
               <Stack spacing={2}>
                 <Box
                   sx={{
@@ -142,6 +151,7 @@ const FundAssignmentPlanner = function ({
                       }
                       getOptionSecondaryLabel={getFundOptionSecondaryLabel}
                       sortComparator={sortFunds}
+                      autoFocus={autoFocusAssignmentIndex === index}
                     />
                   </Box>
                   <Box
@@ -206,7 +216,10 @@ const FundAssignmentPlanner = function ({
               <Button
                 variant="contained"
                 startIcon={<AddCircleOutline />}
-                onClick={addFundAssignment}
+                onClick={() => {
+                  setAutoFocusAssignmentIndex(explicitFundAssignments.length);
+                  addFundAssignment();
+                }}
                 disabled={availableFundCount === 0}
               >
                 Add Fund Assignment

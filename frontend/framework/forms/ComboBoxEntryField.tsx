@@ -177,7 +177,11 @@ const ComboBoxEntryField = function <T>({
             ? optionToSelect
             : null;
 
-        if (event.key === "Tab" && highlightedExistingOption !== null) {
+        if (
+          event.key === "Tab" &&
+          inputValue.trim() !== "" &&
+          highlightedExistingOption !== null
+        ) {
           // Let the browser move focus to the next control while preventing
           // Autocomplete from applying its own highlighted-option behavior.
           event.defaultMuiPrevented = true;
