@@ -87,6 +87,21 @@ const ComboBoxEntryField = function <T>({
     useState<ComboBoxOption<T> | null>(null);
   const defaultFilterOptions = createFilterOptions<ComboBoxOption<T>>();
 
+  const getFilteredOptions = function (
+    sourceOptions: ComboBoxOption<T>[],
+    currentInputValue: string,
+  ): ComboBoxOption<T>[] {
+    const filteredOptions = defaultFilterOptions(sourceOptions, {
+      inputValue: currentInputValue,
+      getOptionLabel: (option) => option.label,
+    });
+    const createdOption = createOption?.(currentInputValue) ?? null;
+    return createdOption !== null &&
+      !filteredOptions.some((option) => option.label === createdOption.label)
+      ? [...filteredOptions, createdOption]
+      : filteredOptions;
+  };
+
   useEffect(() => {
     setInputValue(value?.label ?? "");
   }, [value]);
@@ -104,16 +119,9 @@ const ComboBoxEntryField = function <T>({
       inputValue={inputValue}
       value={value}
       isOptionEqualToValue={isOptionEqualToValue}
-      filterOptions={(sourceOptions, state) => {
-        const filteredOptions = defaultFilterOptions(sourceOptions, state);
-        const createdOption = createOption?.(state.inputValue) ?? null;
-        return createdOption !== null &&
-          !filteredOptions.some(
-            (option) => option.label === createdOption.label,
-          )
-          ? [...filteredOptions, createdOption]
-          : filteredOptions;
-      }}
+      filterOptions={(sourceOptions, state) =>
+        getFilteredOptions(sourceOptions, state.inputValue)
+      }
       renderOption={(props, option, { inputValue: optionInputValue }) => (
         <Box component="li" {...props}>
           <Box sx={{ minWidth: 0 }}>
@@ -159,13 +167,23 @@ const ComboBoxEntryField = function <T>({
         setHighlightedOption(null);
       }}
       onKeyDown={(event) => {
-        if (event.key === "Tab" && highlightedOption !== null) {
+        const optionToSelect =
+          highlightedOption ??
+          getFilteredOptions(options, inputValue)[0] ??
+          null;
+        const highlightedExistingOption =
+          optionToSelect !== null &&
+          options.some((option) => isOptionEqualToValue(option, optionToSelect))
+            ? optionToSelect
+            : null;
+
+        if (event.key === "Tab" && highlightedExistingOption !== null) {
           // Let the browser move focus to the next control while preventing
           // Autocomplete from applying its own highlighted-option behavior.
           event.defaultMuiPrevented = true;
           justSelected.current = true;
-          setInputValue(highlightedOption.label);
-          setValue(highlightedOption);
+          setInputValue(highlightedExistingOption.label);
+          setValue(highlightedExistingOption);
         }
       }}
       onHighlightChange={(_, option) => {
