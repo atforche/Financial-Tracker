@@ -1,5 +1,6 @@
 import { type JSX, useEffect, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
+import { Box } from "@mui/material";
 import DateEntryField from "@/framework/forms/DateEntryField";
 
 /**
@@ -48,34 +49,50 @@ const DateRangeFilter = function ({
 
   return (
     <>
-      <DateEntryField
-        label="Start date"
-        value={startValue}
-        disabled={disabled}
-        size="small"
-        setValue={(nextStart) => {
-          setStartValue(nextStart);
-          if (nextStart?.isValid() !== true) {
-            return;
-          }
-          const start = formatDate(nextStart);
-          onChange({ start, end: start > value.end ? start : value.end });
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          "& .MuiFormControl-root": { width: "100%", minWidth: 0 },
         }}
-      />
-      <DateEntryField
-        label="End date"
-        value={endValue}
-        disabled={disabled}
-        size="small"
-        setValue={(nextEnd) => {
-          setEndValue(nextEnd);
-          if (nextEnd?.isValid() !== true) {
-            return;
-          }
-          const end = formatDate(nextEnd);
-          onChange({ start: end < value.start ? end : value.start, end });
+      >
+        <DateEntryField
+          label="Start date"
+          value={startValue}
+          disabled={disabled}
+          size="small"
+          setValue={(nextStart) => {
+            setStartValue(nextStart);
+            if (nextStart?.isValid() !== true) {
+              return;
+            }
+            const start = formatDate(nextStart);
+            onChange({ start, end: start > value.end ? start : value.end });
+          }}
+        />
+      </Box>
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          "& .MuiFormControl-root": { width: "100%", minWidth: 0 },
         }}
-      />
+      >
+        <DateEntryField
+          label="End date"
+          value={endValue}
+          disabled={disabled}
+          size="small"
+          setValue={(nextEnd) => {
+            setEndValue(nextEnd);
+            if (nextEnd?.isValid() !== true) {
+              return;
+            }
+            const end = formatDate(nextEnd);
+            onChange({ start: end < value.start ? end : value.start, end });
+          }}
+        />
+      </Box>
     </>
   );
 };

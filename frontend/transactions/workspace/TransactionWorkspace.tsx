@@ -6,6 +6,7 @@ import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
+import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import TransactionWorkspaceFilter from "@/transactions/workspace/TransactionWorkspaceFilter";
 import TransactionWorkspaceListFrame from "@/transactions/workspace/TransactionWorkspaceListFrame";
 import { getTransactionWorkspaceListData } from "@/transactions/workspace/getTransactionWorkspaceData";
@@ -60,6 +61,7 @@ const TransactionWorkspace = async function ({
   return (
     <ConstrainedContent>
       <PageLayout>
+        <ResponsivePageSize desktopBreakpoint="lg" />
         {typeof resolvedSearchParams.returnUrl === "undefined" ? null : (
           <Link
             href={resolvedSearchParams.returnUrl}

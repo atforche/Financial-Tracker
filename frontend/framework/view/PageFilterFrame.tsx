@@ -12,6 +12,7 @@ interface PageFilterFrameProps {
   readonly actions?: ReactNode;
   readonly description?: ReactNode;
   readonly sticky?: boolean;
+  readonly mobileSticky?: boolean;
 }
 
 /**
@@ -24,9 +25,10 @@ const PageFilterFrame = function ({
   actions,
   description,
   sticky = true,
+  mobileSticky = sticky,
 }: PageFilterFrameProps): JSX.Element {
   return (
-    <ContentSurface sticky={sticky}>
+    <ContentSurface sticky={sticky} mobileSticky={mobileSticky}>
       <Stack spacing={2}>
         <Stack
           direction={{ xs: "column", lg: "row" }}

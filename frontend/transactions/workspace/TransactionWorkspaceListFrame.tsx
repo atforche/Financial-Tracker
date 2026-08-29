@@ -123,6 +123,7 @@ const TransactionWorkspaceListFrame = function ({
   return (
     <ListFrame<Transaction>
       title="Transactions"
+      headerContentInline
       headerContent={
         !canWrite ? undefined : (
           <Button
@@ -131,7 +132,7 @@ const TransactionWorkspaceListFrame = function ({
               router.push(createUrl);
             }}
           >
-            Create Transaction
+            Create
           </Button>
         )
       }
