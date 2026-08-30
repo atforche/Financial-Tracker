@@ -43,7 +43,7 @@ const FundGoalWorkspaceFilter = function ({
 
   return (
     <PageFilterFrame
-      title="Goals"
+      title="Fund Goals"
       actions={
         <Button
           variant="outlined"

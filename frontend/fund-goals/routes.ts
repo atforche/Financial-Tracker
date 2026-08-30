@@ -41,12 +41,12 @@ const fundGoalTrendsSearchParamsToSearchParams = function (
 const routes = {
   trends: (searchParams: FundGoalTrendsSearchParams): Route =>
     buildUrl(
-      "/goals/trends",
+      "/fund-goals/trends",
       fundGoalTrendsSearchParamsToSearchParams(searchParams),
     ),
   workspace: (searchParams: FundGoalWorkspaceSearchParams): Route =>
     buildUrl(
-      "/goals/workspace",
+      "/fund-goals/workspace",
       fundGoalWorkspaceSearchParamsToSearchParams(searchParams),
     ),
   workspaceDetail: (
@@ -54,7 +54,7 @@ const routes = {
     searchParams: FundGoalWorkspaceSearchParams,
   ): Route =>
     buildUrl(
-      `/goals/workspace/${fundId}`,
+      `/fund-goals/workspace/${fundId}`,
       fundGoalWorkspaceSearchParamsToSearchParams(searchParams),
     ),
 };

@@ -7,42 +7,42 @@ import { Stack } from "@mui/material";
 import SummaryCard from "@/framework/view/SummaryCard";
 
 /**
- * Props for the ExpectedIncomeGoalContributionsCard component.
+ * Props for the ExpectedIncomeFundGoalContributionsCard component.
  */
-interface ExpectedIncomeGoalContributionsCardProps {
+interface ExpectedIncomeFundGoalContributionsCardProps {
   readonly expectedIncome: IncomeAmount | undefined;
-  readonly expectedGoalContributions: number | undefined;
+  readonly expectedFundGoalContributions: number | undefined;
 }
 
 /**
  * Displays expected tracked income against expected Fund Goal contributions.
  */
-const ExpectedIncomeGoalContributionsCard = function ({
+const ExpectedIncomeFundGoalContributionsCard = function ({
   expectedIncome,
-  expectedGoalContributions,
-}: ExpectedIncomeGoalContributionsCardProps): JSX.Element {
+  expectedFundGoalContributions,
+}: ExpectedIncomeFundGoalContributionsCardProps): JSX.Element {
   const trackedIncome =
     typeof expectedIncome?.tracked === "number" &&
     Number.isFinite(expectedIncome.tracked)
       ? expectedIncome.tracked
       : 0;
-  const goalContributions =
-    typeof expectedGoalContributions === "number" &&
-    Number.isFinite(expectedGoalContributions)
-      ? expectedGoalContributions
+  const fundGoalContributions =
+    typeof expectedFundGoalContributions === "number" &&
+    Number.isFinite(expectedFundGoalContributions)
+      ? expectedFundGoalContributions
       : 0;
-  const remaining = trackedIncome - goalContributions;
-  const comparisonMax = Math.max(trackedIncome, goalContributions, 1);
-  const contributionsAreLesser = goalContributions < trackedIncome;
+  const remaining = trackedIncome - fundGoalContributions;
+  const comparisonMax = Math.max(trackedIncome, fundGoalContributions, 1);
+  const contributionsAreLesser = fundGoalContributions < trackedIncome;
   const incomeDifference = contributionsAreLesser
     ? 0
-    : goalContributions - trackedIncome;
+    : fundGoalContributions - trackedIncome;
   const contributionsDifference = contributionsAreLesser ? remaining : 0;
   const differenceLabel = remaining >= 0 ? "Remaining" : "Shortfall";
   const differenceColor = remaining >= 0 ? "success.main" : "error.main";
 
   return (
-    <SummaryCard title="Expected Income vs. Goal Contributions">
+    <SummaryCard title="Expected Income vs. Fund Goal Contributions">
       <Stack spacing={2}>
         <ComparisonBar
           label="Expected tracked income"
@@ -54,8 +54,8 @@ const ExpectedIncomeGoalContributionsCard = function ({
           maxAmount={comparisonMax}
         />
         <ComparisonBar
-          label="Expected goal contributions"
-          amount={goalContributions}
+          label="Expected Fund Goal contributions"
+          amount={fundGoalContributions}
           amountColor="primary.main"
           difference={contributionsDifference}
           differenceLabel={differenceLabel}
@@ -67,5 +67,5 @@ const ExpectedIncomeGoalContributionsCard = function ({
   );
 };
 
-export type { ExpectedIncomeGoalContributionsCardProps };
-export default ExpectedIncomeGoalContributionsCard;
+export type { ExpectedIncomeFundGoalContributionsCardProps };
+export default ExpectedIncomeFundGoalContributionsCard;

@@ -4,7 +4,7 @@ using Domain.Funds;
 namespace Domain.FundGoals;
 
 /// <summary>
-/// Entity class representing the fundGoal for a Fund in an Accounting Period.
+/// Entity class representing the Fund Goal for a Fund in an Accounting Period.
 /// </summary>
 public sealed class FundGoal : Entity<FundGoalId>
 {
@@ -14,7 +14,7 @@ public sealed class FundGoal : Entity<FundGoalId>
     public Fund Fund { get; private set; }
 
     /// <summary>
-    /// Accounting Period associated with this Fund Goal, or null for an onboarded fundGoal.
+    /// Accounting Period associated with this Fund Goal, or null for an onboarded Fund Goal.
     /// </summary>
     public AccountingPeriod? AccountingPeriod { get; private set; }
 

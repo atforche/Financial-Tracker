@@ -8,12 +8,12 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import Frame, { type FrameColor } from "@/framework/view/Frame";
 import {
-  EndingBalanceStatus,
+  FundGoalEndingBalanceStatus,
   type FundGoalWithProgress,
   FundedBalanceStatus,
 } from "@/fund-goals/types";
-import Frame, { type FrameColor } from "@/framework/view/Frame";
 import { type JSX, useState } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import ExpandLess from "@mui/icons-material/ExpandLess";
@@ -69,7 +69,7 @@ const FundGoalWorkspaceCard = function ({
       configured: isNotNullOrUndefined(fundGoal.targetEndingBalance),
       satisfied:
         fundGoal.progress.endingBalance?.status ===
-        EndingBalanceStatus.AtTarget,
+        FundGoalEndingBalanceStatus.AtTarget,
     },
   ];
   const configured = goals.filter((goal) => goal.configured).length;
@@ -127,7 +127,7 @@ const FundGoalWorkspaceCard = function ({
             })}
           >
             <Typography variant="body2" color="text.secondary">
-              {satisfied} of {configured} goals met
+              {satisfied} of {configured} Fund Goals met
             </Typography>
             <Tooltip title={toggleLabel}>
               <IconButton

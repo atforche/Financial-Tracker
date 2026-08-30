@@ -1,3 +1,4 @@
+using Data.AccountGoals;
 using Data.AccountingPeriods;
 using Data.Accounts;
 using Data.FundGoals;
@@ -5,6 +6,8 @@ using Data.Funds;
 using Data.Locations;
 using Data.Transactions;
 using Data.Users;
+using Domain.AccountGoals;
+using Domain.AccountGoals.Queries;
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
@@ -45,6 +48,9 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<IAccountBalanceEventQueryRepository, AccountBalanceEventQueryRepository>();
         _ = serviceCollection.AddScoped<IAccountRepository, AccountRepository>();
         _ = serviceCollection.AddScoped<IAccountQueryRepository, AccountQueryRepository>();
+
+        _ = serviceCollection.AddScoped<IAccountGoalRepository, AccountGoalRepository>();
+        _ = serviceCollection.AddScoped<IAccountGoalQueryRepository, AccountGoalQueryRepository>();
 
         _ = serviceCollection.AddScoped<IAccountBalanceHistoryRepository, AccountBalanceHistoryRepository>();
         _ = serviceCollection.AddScoped<IAccountPendingBalanceEffectRepository, PendingAccountBalanceEffectRepository>();

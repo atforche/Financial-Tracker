@@ -14,7 +14,7 @@ public sealed record CreateFundGoalRequest
     public Fund Fund { get; init; } = null!;
 
     /// <summary>
-    /// Accounting Period associated with the Fund Goal, or null for an onboarded fundGoal.
+    /// Accounting Period associated with the Fund Goal, or null for an onboarded Fund Goal.
     /// </summary>
     public AccountingPeriod? AccountingPeriod { get; init; }
 

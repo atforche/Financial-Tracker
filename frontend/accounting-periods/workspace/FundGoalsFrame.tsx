@@ -64,7 +64,7 @@ const FundGoalsFrame = function ({
       headerContent: "",
       getBodyContent: (goal) => (
         <ListFrameActionButton
-          ariaLabel={`View ${goal.fund.name} goal`}
+          ariaLabel={`View ${goal.fund.name} Fund Goal`}
           onClick={(event) => {
             event.stopPropagation();
             openFundGoal(goal);

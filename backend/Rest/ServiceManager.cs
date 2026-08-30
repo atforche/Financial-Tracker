@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Rest.AccountGoals;
 using Rest.AccountingPeriods;
 using Rest.Accounts;
 using Rest.Authentication;
@@ -29,6 +30,8 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<AccountingPeriodConverter>();
         _ = serviceCollection.AddScoped<AccountingPeriodQueryConverter>();
+
+        _ = serviceCollection.AddScoped<AccountGoalConverter>();
 
         _ = serviceCollection.AddScoped<AccountConverter>();
         _ = serviceCollection.AddScoped<AccountBalanceEventConverter>();

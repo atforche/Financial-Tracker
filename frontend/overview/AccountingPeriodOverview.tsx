@@ -1,7 +1,7 @@
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodTrendsSummaryCards from "@/accounting-periods/trends/AccountingPeriodTrendsSummaryCards";
 import ActualIncomeCard from "@/transactions/ActualIncomeCard";
-import ExpectedGoalContributionsActualCard from "@/accounting-periods/workspace/ExpectedGoalContributionsActualCard";
+import ExpectedFundGoalContributionsActualCard from "@/accounting-periods/workspace/ExpectedFundGoalContributionsActualCard";
 import ExpectedIncomeActualCard from "@/accounting-periods/workspace/ExpectedIncomeActualCard";
 import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
@@ -65,9 +65,11 @@ const AccountingPeriodOverview = async function ({
           expectedIncome={latestPeriod?.expectedIncome}
           actualIncome={latestPeriod?.actualIncome}
         />
-        <ExpectedGoalContributionsActualCard
-          expectedGoalContributions={latestPeriod?.expectedGoalContributions}
-          actualGoalContributions={latestPeriod?.actualGoalContributions}
+        <ExpectedFundGoalContributionsActualCard
+          expectedFundGoalContributions={
+            latestPeriod?.expectedGoalContributions
+          }
+          actualFundGoalContributions={latestPeriod?.actualGoalContributions}
         />
       </ResponsiveGrid>
     </Stack>

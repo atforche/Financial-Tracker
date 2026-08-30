@@ -19,7 +19,7 @@ public sealed class FundGoalModel
     public required FundModel Fund { get; init; }
 
     /// <summary>
-    /// Gets the associated Accounting Period, or null for an onboarded fundGoal.
+    /// Gets the associated Accounting Period, or null for an onboarded Fund Goal.
     /// </summary>
     public AccountingPeriodModel? AccountingPeriod { get; init; }
 

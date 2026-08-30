@@ -12,7 +12,7 @@ namespace Tests.FundGoals;
 public sealed class FundGoalReadContractTests
 {
     /// <summary>
-    /// Returns availability for an existing Fund Goal and Not Found for missing goal resources.
+    /// Returns availability for an existing Fund Goal and Not Found for missing Fund Goal resources.
     /// </summary>
     [Fact]
     public async Task GoalReadEndpointsExposeAvailabilityAndMissingResourceContracts()

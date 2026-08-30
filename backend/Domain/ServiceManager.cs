@@ -1,3 +1,5 @@
+using Domain.AccountGoals;
+using Domain.AccountGoals.Queries;
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
@@ -39,6 +41,9 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<PendingAccountBalanceService>();
         _ = serviceCollection.AddScoped<AccountBalanceEventQueryService>();
         _ = serviceCollection.AddScoped<AccountQueryService>();
+
+        _ = serviceCollection.AddScoped<AccountGoalService>();
+        _ = serviceCollection.AddScoped<AccountGoalQueryService>();
 
         _ = serviceCollection.AddScoped<FundService>();
         _ = serviceCollection.AddScoped<FundBalanceService>();

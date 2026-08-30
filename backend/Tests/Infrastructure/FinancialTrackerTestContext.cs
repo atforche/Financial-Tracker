@@ -1,3 +1,4 @@
+using Tests.AccountGoals;
 using Tests.AccountingPeriods;
 using Tests.Accounts;
 using Tests.FundGoals;
@@ -63,6 +64,11 @@ internal sealed class FinancialTrackerTestContext : IAsyncDisposable
     /// Gets fund-goal queries.
     /// </summary>
     public FundGoalQueries FundGoalQueries => new(ApiClient);
+
+    /// <summary>
+    /// Gets Account Goal queries.
+    /// </summary>
+    public AccountGoalQueries AccountGoalQueries => new(_factory);
 
     /// <summary>
     /// Creates an empty test context backed by the full application stack.

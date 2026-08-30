@@ -1,22 +1,20 @@
 "use client";
 
-/* eslint-disable sort-imports */
-
-import BarMetricChart from "@/framework/charts/BarMetricChart";
-import { buildRangeMetricChartPoints } from "@/framework/charts/chartPointHelpers";
-import { getSignedChartColor } from "@/framework/charts/barMetricHelpers";
+import {
+  type Transaction,
+  asAccountTransaction,
+  asIncomeTransaction,
+  asSpendingTransaction,
+} from "@/transactions/types";
 import {
   formatCompactCurrency,
   formatSignedCurrency,
 } from "@/framework/currencyHelpers";
-import {
-  asAccountTransaction,
-  asIncomeTransaction,
-  asSpendingTransaction,
-  type Transaction,
-} from "@/transactions/types";
-import dayjs from "dayjs";
+import BarMetricChart from "@/framework/charts/BarMetricChart";
 import type { JSX } from "react";
+import { buildRangeMetricChartPoints } from "@/framework/charts/chartPointHelpers";
+import dayjs from "dayjs";
+import { getSignedChartColor } from "@/framework/charts/barMetricHelpers";
 
 interface LocationCashFlowChartProps {
   readonly transactions: readonly Transaction[];

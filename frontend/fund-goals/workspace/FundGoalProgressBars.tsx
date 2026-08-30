@@ -1,6 +1,6 @@
 import {
-  EndingBalanceStatus,
   type FundGoal,
+  FundGoalEndingBalanceStatus,
   type FundGoalProgress as FundGoalProgressModel,
   FundedBalanceStatus,
 } from "@/fund-goals/types";
@@ -97,7 +97,8 @@ const FundGoalProgressBars = function ({
           current={progress.endingBalance.currentBalance}
           target={progress.endingBalance.targetBalance}
           satisfied={
-            progress.endingBalance.status === EndingBalanceStatus.AtTarget
+            progress.endingBalance.status ===
+            FundGoalEndingBalanceStatus.AtTarget
           }
         />
       ) : showUnconfigured ? (

@@ -1,3 +1,4 @@
+using Domain.AccountGoals;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.FundGoals;
@@ -28,6 +29,11 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     /// Collection of pending Account Balance effects.
     /// </summary>
     internal DbSet<PendingAccountBalanceEffect> PendingAccountBalanceEffects { get; set; } = default!;
+
+    /// <summary>
+    /// Collection of Account Goals in the database.
+    /// </summary>
+    internal DbSet<AccountGoal> AccountGoals { get; set; } = default!;
 
     /// <summary>
     /// Collection of Accounting Periods in the database

@@ -6,11 +6,11 @@ import { Stack } from "@mui/material";
 import SummaryCard from "@/framework/view/SummaryCard";
 
 /**
- * Props for the ExpectedGoalContributionsActualCard component.
+ * Props for the ExpectedFundGoalContributionsActualCard component.
  */
-interface ExpectedGoalContributionsActualCardProps {
-  readonly expectedGoalContributions: number | undefined;
-  readonly actualGoalContributions: number | undefined;
+interface ExpectedFundGoalContributionsActualCardProps {
+  readonly expectedFundGoalContributions: number | undefined;
+  readonly actualFundGoalContributions: number | undefined;
 }
 
 const getFiniteAmount = (amount: number | undefined): number =>
@@ -19,24 +19,24 @@ const getFiniteAmount = (amount: number | undefined): number =>
 /**
  * Displays expected Fund Goal contributions against actual contributions.
  */
-const ExpectedGoalContributionsActualCard = function ({
-  expectedGoalContributions,
-  actualGoalContributions,
-}: ExpectedGoalContributionsActualCardProps): JSX.Element {
+const ExpectedFundGoalContributionsActualCard = function ({
+  expectedFundGoalContributions,
+  actualFundGoalContributions,
+}: ExpectedFundGoalContributionsActualCardProps): JSX.Element {
   return (
-    <SummaryCard title="Expected Goal Contributions vs. Actual">
+    <SummaryCard title="Expected Fund Goal Contributions vs. Actual">
       <Stack spacing={2}>
         <ComparisonBarPair
           first={{
             label: "Expected contributions",
-            amount: getFiniteAmount(expectedGoalContributions),
+            amount: getFiniteAmount(expectedFundGoalContributions),
             color: "info.main",
             differenceLabel: "Surplus",
             differenceColor: "success.main",
           }}
           second={{
             label: "Actual contributions",
-            amount: getFiniteAmount(actualGoalContributions),
+            amount: getFiniteAmount(actualFundGoalContributions),
             color: "success.main",
             differenceLabel: "Shortfall",
             differenceColor: "error.main",
@@ -47,5 +47,5 @@ const ExpectedGoalContributionsActualCard = function ({
   );
 };
 
-export type { ExpectedGoalContributionsActualCardProps };
-export default ExpectedGoalContributionsActualCard;
+export type { ExpectedFundGoalContributionsActualCardProps };
+export default ExpectedFundGoalContributionsActualCard;

@@ -67,11 +67,11 @@ const FundGoalContributionTrendChart = function ({
 
   return (
     <ChartFrame
-      title="Expected Goal Contributions vs. Actual"
-      emptyMessage="No goal contributions are configured for the selected trends range."
+      title="Expected Fund Goal Contributions vs. Actual"
+      emptyMessage="No Fund Goal contributions are configured for the selected trends range."
       hasData={hasData}
       xAxisLabel="Accounting Period"
-      yAxisLabel="Goal Contributions"
+      yAxisLabel="Fund Goal Contributions"
     >
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartPoints} margin={chartMargin}>

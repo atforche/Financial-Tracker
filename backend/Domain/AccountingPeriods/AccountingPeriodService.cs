@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.AccountGoals;
 using Domain.Accounts;
 using Domain.FundGoals;
 using Domain.Funds;
@@ -19,7 +20,8 @@ public class AccountingPeriodService(
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundGoalService fundGoalService,
     IFundGoalRepository fundGoalRepository,
-    FundService fundService)
+    FundService fundService,
+    AccountGoalService accountGoalService)
 {
     /// <summary>
     /// Attempts to create a new Accounting Period
@@ -50,6 +52,7 @@ public class AccountingPeriodService(
             return false;
         }
         fundGoalService.CopyToAccountingPeriod(previousAccountingPeriod, accountingPeriod);
+        accountGoalService.CopyToAccountingPeriod(previousAccountingPeriod, accountingPeriod);
         accountingPeriodBalanceService.AddAccountingPeriod(accountingPeriod);
         exceptions = [];
         return true;
@@ -92,6 +95,7 @@ public class AccountingPeriodService(
         }
         accountingPeriodBalanceService.DeleteAccountingPeriod(accountingPeriod);
         fundGoalService.DeleteForAccountingPeriod(accountingPeriod);
+        accountGoalService.DeleteForAccountingPeriod(accountingPeriod);
         if (fundRepository.GetAllFundsAddedInPeriod(accountingPeriod.Id).FirstOrDefault(fund => fund.IsUnassignedFund) is Fund unassignedFund)
         {
             // If the unassigned fund was added in this accounting period, delete it.

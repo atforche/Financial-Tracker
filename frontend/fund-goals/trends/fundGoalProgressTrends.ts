@@ -1,6 +1,6 @@
 import {
-  EndingBalanceStatus,
   type FundGoal,
+  FundGoalEndingBalanceStatus,
   type FundGoalProgress,
   FundedBalanceStatus,
 } from "@/fund-goals/types";
@@ -65,7 +65,9 @@ const isFundGoalSatisfied = function ({
     checks.push(isMaximumFundedBalanceSatisfied(progress.fundedBalance));
   }
   if (progress.endingBalance !== null && progress.endingBalance !== undefined) {
-    checks.push(progress.endingBalance.status === EndingBalanceStatus.AtTarget);
+    checks.push(
+      progress.endingBalance.status === FundGoalEndingBalanceStatus.AtTarget,
+    );
   }
   return checks.every((isSatisfied) => isSatisfied);
 };

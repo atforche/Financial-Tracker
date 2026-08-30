@@ -207,6 +207,51 @@ test("an administrator manages invitations and application user access", async (
   await expect(standardSession.page).toHaveURL(
     (url) => url.pathname === "/accounts/trends",
   );
+  await standardSession.page.goto("/");
+  await standardSession.page.getByLabel("Open navigation").click();
+  await expect(
+    standardSession.page.getByRole("button", { name: "Goals", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    standardSession.page.getByRole("button", {
+      name: "Account Goals",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await standardSession.page
+    .getByRole("button", { name: "Account Goals", exact: true })
+    .last()
+    .click();
+  await expect(
+    standardSession.page
+      .getByRole("link", { name: "Workspace", exact: true })
+      .last(),
+  ).toHaveAttribute("href", "/account-goals/workspace");
+  await expect(
+    standardSession.page
+      .getByRole("link", { name: "Trends", exact: true })
+      .last(),
+  ).toHaveAttribute("href", "/account-goals/trends");
+  await expect(
+    standardSession.page.getByRole("button", {
+      name: "Fund Goals",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await standardSession.page
+    .getByRole("button", { name: "Fund Goals", exact: true })
+    .last()
+    .click();
+  await expect(
+    standardSession.page
+      .getByRole("link", { name: "Workspace", exact: true })
+      .last(),
+  ).toHaveAttribute("href", "/fund-goals/workspace");
+  await expect(
+    standardSession.page
+      .getByRole("link", { name: "Trends", exact: true })
+      .last(),
+  ).toHaveAttribute("href", "/fund-goals/trends");
   await standardSession.page.goto("/admin/users");
   await expect(
     standardSession.page.getByText("Administrator access required"),
@@ -216,7 +261,8 @@ test("an administrator manages invitations and application user access", async (
   await expectReadRoute(standardSession.page, "/accounting-periods/workspace");
   await expectReadRoute(standardSession.page, "/accounts/workspace");
   await expectReadRoute(standardSession.page, "/funds/workspace");
-  await expectReadRoute(standardSession.page, "/goals/workspace");
+  await expectReadRoute(standardSession.page, "/fund-goals/workspace");
+  await expectReadRoute(standardSession.page, "/account-goals/workspace");
   await expectReadRoute(standardSession.page, "/transactions/workspace");
   await standardSession.context.close();
 

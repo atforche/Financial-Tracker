@@ -4,7 +4,7 @@
 [![Production backup](https://github.com/atforche/Financial-Tracker/actions/workflows/backup-production.yml/badge.svg)](https://github.com/atforche/Financial-Tracker/actions/workflows/backup-production.yml)
 
 A self-hosted financial planning and tracking application for managing accounts,
-transactions, funds, goals, and accounting periods.
+transactions, funds, fund goals, and accounting periods.
 
 Financial Tracker helps organize financial activity into a coherent history of
 balances and transactions, then provides summaries and trends for reviewing

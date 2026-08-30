@@ -17,6 +17,37 @@ namespace Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
 
+            modelBuilder.Entity("Domain.AccountGoals.AccountGoal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("AccountingPeriodId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("MaximumEndingBalance")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("MinimumEndingBalance")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId")
+                        .IsUnique()
+                        .HasFilter("\"AccountingPeriodId\" IS NULL");
+
+                    b.HasIndex("AccountingPeriodId");
+
+                    b.HasIndex("AccountId", "AccountingPeriodId")
+                        .IsUnique();
+
+                    b.ToTable("AccountGoals", (string)null);
+                });
+
             modelBuilder.Entity("Domain.AccountingPeriods.AccountingPeriod", b =>
                 {
                     b.Property<Guid>("Id")
@@ -39,7 +70,7 @@ namespace Data.Migrations
 
                     b.HasIndex("Name");
 
-                    b.ToTable("AccountingPeriods");
+                    b.ToTable("AccountingPeriods", (string)null);
                 });
 
             modelBuilder.Entity("Domain.AccountingPeriods.AccountingPeriodBalanceHistory", b =>
@@ -60,7 +91,7 @@ namespace Data.Migrations
 
                     b.HasIndex("AccountingPeriodId");
 
-                    b.ToTable("AccountingPeriodBalanceHistories");
+                    b.ToTable("AccountingPeriodBalanceHistories", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Accounts.Account", b =>
@@ -93,7 +124,7 @@ namespace Data.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Accounts");
+                    b.ToTable("Accounts", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Accounts.AccountBalanceHistory", b =>
@@ -121,7 +152,7 @@ namespace Data.Migrations
                     b.HasIndex("AccountId", "Date", "Sequence")
                         .IsUnique();
 
-                    b.ToTable("AccountBalanceHistories");
+                    b.ToTable("AccountBalanceHistories", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Accounts.PendingAccountBalanceEffect", b =>
@@ -148,7 +179,7 @@ namespace Data.Migrations
                     b.HasIndex("TransactionId", "AccountId")
                         .IsUnique();
 
-                    b.ToTable("PendingAccountBalanceEffects");
+                    b.ToTable("PendingAccountBalanceEffects", (string)null);
                 });
 
             modelBuilder.Entity("Domain.FundGoals.FundGoal", b =>
@@ -185,7 +216,7 @@ namespace Data.Migrations
                     b.HasIndex("FundId", "AccountingPeriodId")
                         .IsUnique();
 
-                    b.ToTable("FundGoals");
+                    b.ToTable("FundGoals", (string)null);
                 });
 
             modelBuilder.Entity("Domain.FundGoals.FundGoalTotalsHistory", b =>
@@ -222,7 +253,7 @@ namespace Data.Migrations
                     b.HasIndex("FundId", "AccountingPeriodId", "Date", "Sequence")
                         .IsUnique();
 
-                    b.ToTable("FundGoalTotalsHistories");
+                    b.ToTable("FundGoalTotalsHistories", (string)null);
                 });
 
             modelBuilder.Entity("Domain.FundGoals.PendingFundGoalTotalsEffect", b =>
@@ -255,7 +286,7 @@ namespace Data.Migrations
                     b.HasIndex("TransactionId", "FundId", "AccountingPeriodId")
                         .IsUnique();
 
-                    b.ToTable("PendingFundGoalTotalsEffects");
+                    b.ToTable("PendingFundGoalTotalsEffects", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Funds.Fund", b =>
@@ -282,7 +313,7 @@ namespace Data.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Funds");
+                    b.ToTable("Funds", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Funds.FundBalanceHistory", b =>
@@ -310,7 +341,7 @@ namespace Data.Migrations
                     b.HasIndex("FundId", "Date", "Sequence")
                         .IsUnique();
 
-                    b.ToTable("FundBalanceHistories");
+                    b.ToTable("FundBalanceHistories", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Funds.PendingFundBalanceEffect", b =>
@@ -337,7 +368,7 @@ namespace Data.Migrations
                     b.HasIndex("TransactionId", "FundId")
                         .IsUnique();
 
-                    b.ToTable("PendingFundBalanceEffects");
+                    b.ToTable("PendingFundBalanceEffects", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Locations.Location", b =>
@@ -358,7 +389,7 @@ namespace Data.Migrations
                     b.HasIndex("NormalizedName")
                         .IsUnique();
 
-                    b.ToTable("Locations");
+                    b.ToTable("Locations", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Transactions.Transaction", b =>
@@ -390,7 +421,7 @@ namespace Data.Migrations
                     b.HasIndex("Date", "Sequence")
                         .IsUnique();
 
-                    b.ToTable("Transactions");
+                    b.ToTable("Transactions", (string)null);
 
                     b.HasDiscriminator<int>("Type");
 
@@ -449,7 +480,7 @@ namespace Data.Migrations
 
                     b.HasIndex("NormalizedEmail");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Users.UserAdministrationAuditEvent", b =>
@@ -492,7 +523,7 @@ namespace Data.Migrations
 
                     b.HasIndex("TargetUserId");
 
-                    b.ToTable("UserAdministrationAuditEvents");
+                    b.ToTable("UserAdministrationAuditEvents", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Users.UserInvitation", b =>
@@ -551,7 +582,7 @@ namespace Data.Migrations
                         .IsUnique()
                         .HasFilter("\"Status\" = 'Pending'");
 
-                    b.ToTable("UserInvitations");
+                    b.ToTable("UserInvitations", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Transactions.Accounts.AccountTransaction", b =>
@@ -590,6 +621,23 @@ namespace Data.Migrations
                     b.HasBaseType("Domain.Transactions.Transaction");
 
                     b.HasDiscriminator().HasValue(0);
+                });
+
+            modelBuilder.Entity("Domain.AccountGoals.AccountGoal", b =>
+                {
+                    b.HasOne("Domain.Accounts.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.AccountingPeriods.AccountingPeriod", "AccountingPeriod")
+                        .WithMany()
+                        .HasForeignKey("AccountingPeriodId");
+
+                    b.Navigation("Account");
+
+                    b.Navigation("AccountingPeriod");
                 });
 
             modelBuilder.Entity("Domain.AccountingPeriods.AccountingPeriod", b =>
@@ -765,7 +813,7 @@ namespace Data.Migrations
 
                             b1.HasIndex("AccountingPeriodId");
 
-                            b1.ToTable("AccountingPeriodAccountBalanceHistory");
+                            b1.ToTable("AccountingPeriodAccountBalanceHistory", (string)null);
 
                             b1.HasOne("Domain.Accounts.Account", "Account")
                                 .WithMany()
@@ -815,7 +863,7 @@ namespace Data.Migrations
 
                             b1.HasIndex("FundId");
 
-                            b1.ToTable("AccountingPeriodFundBalanceHistory");
+                            b1.ToTable("AccountingPeriodFundBalanceHistory", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("AccountingPeriodBalanceHistoryId");
@@ -868,7 +916,7 @@ namespace Data.Migrations
 
                             b1.HasIndex("FundId");
 
-                            b1.ToTable("AccountingPeriodFundGoalTotals");
+                            b1.ToTable("AccountingPeriodFundGoalTotals", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("AccountingPeriodBalanceHistoryId");
@@ -1073,7 +1121,7 @@ namespace Data.Migrations
 
                             b1.HasIndex("LocationId");
 
-                            b1.ToTable("Transactions");
+                            b1.ToTable("Transactions", (string)null);
 
                             b1.HasOne("Domain.Accounts.Account", "Account")
                                 .WithMany()
@@ -1150,7 +1198,7 @@ namespace Data.Migrations
 
                             b1.HasIndex("FundId");
 
-                            b1.ToTable("Transactions");
+                            b1.ToTable("Transactions", (string)null);
 
                             b1.HasOne("Domain.Funds.Fund", "Fund")
                                 .WithMany()
@@ -1263,7 +1311,7 @@ namespace Data.Migrations
 
                             b1.HasIndex("LocationId");
 
-                            b1.ToTable("Transactions");
+                            b1.ToTable("Transactions", (string)null);
 
                             b1.HasOne("Domain.Accounts.Account", "Account")
                                 .WithMany()
@@ -1363,7 +1411,7 @@ namespace Data.Migrations
 
                             b1.HasIndex("AccountId");
 
-                            b1.ToTable("Transactions");
+                            b1.ToTable("Transactions", (string)null);
 
                             b1.HasOne("Domain.Accounts.Account", "Account")
                                 .WithMany()
@@ -1556,7 +1604,7 @@ namespace Data.Migrations
 
                             b1.HasIndex("AccountId");
 
-                            b1.ToTable("Transactions");
+                            b1.ToTable("Transactions", (string)null);
 
                             b1.HasOne("Domain.Accounts.Account", "Account")
                                 .WithMany()
