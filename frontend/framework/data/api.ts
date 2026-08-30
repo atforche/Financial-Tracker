@@ -3229,6 +3229,241 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/account-goals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves Account Goals matching the provided query. */
+        get: {
+            parameters: {
+                query?: {
+                    "Filter.AccountIds"?: string[];
+                    "Filter.AccountingPeriodIds"?: string[];
+                    "Filter.IncludeOnboarded"?: boolean;
+                    /** @description Gets the optional Account Goal ordering. */
+                    Sort?: components["schemas"]["AccountGoalSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfAccountGoalModel"];
+                        "application/json": components["schemas"]["CollectionModelOfAccountGoalModel"];
+                        "text/json": components["schemas"]["CollectionModelOfAccountGoalModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/account-goals/progress/{accountingPeriodId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves progress for all Account Goals in an Accounting Period. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountingPeriodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountGoalProgressResultModel"][];
+                        "application/json": components["schemas"]["AccountGoalProgressResultModel"][];
+                        "text/json": components["schemas"]["AccountGoalProgressResultModel"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/account-goals/{accountGoalId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves an Account Goal by ID. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountGoalId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountGoalModel"];
+                        "application/json": components["schemas"]["AccountGoalModel"];
+                        "text/json": components["schemas"]["AccountGoalModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Updates Account Goal configuration for its associated open Accounting Period or onboarding state. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountGoalId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateAccountGoalModel"];
+                    "text/json": components["schemas"]["UpdateAccountGoalModel"];
+                    "application/*+json": components["schemas"]["UpdateAccountGoalModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/account-goals/account/{accountId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves the Account Goal associated with an Account and Accounting Period, or its onboarding goal when the period ID is null. */
+        get: {
+            parameters: {
+                query?: {
+                    accountingPeriodId?: string;
+                };
+                header?: never;
+                path: {
+                    accountId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountGoalModel"];
+                        "application/json": components["schemas"]["AccountGoalModel"];
+                        "text/json": components["schemas"]["AccountGoalModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/account-goals/{accountGoalId}/progress/{accountingPeriodId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves Account Goal progress for an Accounting Period. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountGoalId: string;
+                    accountingPeriodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountGoalProgressModel"];
+                        "application/json": components["schemas"]["AccountGoalProgressModel"];
+                        "text/json": components["schemas"]["AccountGoalProgressModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3363,6 +3598,47 @@ export interface components {
             /** @description Breakdown of total posted balances by Account Type. */
             balanceByAccountType: components["schemas"]["AccountTypeBalanceModel"][];
         };
+        /** @description Model representing an Account Goal for an Accounting Period. */
+        AccountGoalModel: {
+            /**
+             * Format: uuid
+             * @description Gets the Account Goal ID.
+             */
+            id: string;
+            /** @description Gets the Account associated with the Account Goal. */
+            account: components["schemas"]["AccountModel"];
+            accountingPeriod?: null | components["schemas"]["AccountingPeriodModel"];
+            /**
+             * Format: double
+             * @description Gets the minimum desired ending balance.
+             */
+            minimumEndingBalance?: null | number;
+            /**
+             * Format: double
+             * @description Gets the maximum desired ending balance.
+             */
+            maximumEndingBalance?: null | number;
+        };
+        /** @description Model comparing an Account's financial state with its Account Goal. */
+        AccountGoalProgressModel: {
+            /** @description Gets positive-balance health. */
+            positiveBalance: components["schemas"]["PositiveBalanceProgressModel"];
+            /** @description Gets whether the Account Goal is achieved. */
+            isSatisfied: boolean;
+            endingBalance?: null | components["schemas"]["EndingBalanceProgressModel"];
+        };
+        /** @description Model pairing an Account Goal with its progress for an Accounting Period. */
+        AccountGoalProgressResultModel: {
+            /**
+             * Format: uuid
+             * @description Gets the ID of the Account Goal.
+             */
+            accountGoalId: string;
+            /** @description Gets the calculated progress for the Account Goal. */
+            progress: components["schemas"]["AccountGoalProgressModel"];
+        };
+        /** @enum {unknown} */
+        AccountGoalSortModel: AccountGoalSortModel | null;
         /** @description Model representing an Accounting Period */
         AccountingPeriodModel: {
             /**
@@ -3666,6 +3942,16 @@ export interface components {
         CollectionModelOfAccountBalanceEventModel: {
             /** @description The collection of items. */
             items: components["schemas"]["AccountBalanceEventModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfAccountGoalModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["AccountGoalModel"][];
             /**
              * Format: int32
              * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
@@ -4931,6 +5217,16 @@ export interface components {
              */
             targetEndingBalance?: null | number;
         };
+        /** @description Model describing positive-balance health for an Account Goal. */
+        PositiveBalanceProgressModel: {
+            /**
+             * Format: double
+             * @description Gets the current Account balance.
+             */
+            currentBalance: number;
+            /** @description Gets whether the current balance is strictly greater than zero. */
+            isSatisfied: boolean;
+        };
         /** @description Model representing a request to post a Transaction */
         PostTransactionModel: {
             /**
@@ -5306,6 +5602,19 @@ export interface components {
          * @enum {unknown}
          */
         TransactionTypeModel: TransactionTypeModel;
+        /** @description Model representing Account Goal configuration updates. */
+        UpdateAccountGoalModel: {
+            /**
+             * Format: double
+             * @description Gets the minimum desired ending balance.
+             */
+            minimumEndingBalance?: null | number;
+            /**
+             * Format: double
+             * @description Gets the maximum desired ending balance.
+             */
+            maximumEndingBalance?: null | number;
+        };
         /** @description Model representing a request to update an Account */
         UpdateAccountModel: {
             /** @description Name for the Account */
@@ -5727,6 +6036,10 @@ export enum AccountBalanceEventSortModel {
     AmountDescending = "AmountDescending",
     Counterparty = "Counterparty",
     CounterpartyDescending = "CounterpartyDescending"
+}
+export enum AccountGoalSortModel {
+    Account = "Account",
+    AccountDescending = "AccountDescending"
 }
 export enum AccountingPeriodSortModel {
     Date = "Date",

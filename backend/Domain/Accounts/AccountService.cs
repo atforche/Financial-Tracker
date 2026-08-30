@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.AccountingPeriods;
+using Domain.AccountGoals;
 using Domain.Funds;
 using Domain.Transactions;
 using Domain.Validation;
@@ -15,7 +16,8 @@ public class AccountService(
     IAccountRepository accountRepository,
     IAccountingPeriodRepository accountingPeriodRepository,
     IFundRepository fundRepository,
-    ITransactionRepository transactionRepository)
+    ITransactionRepository transactionRepository,
+    AccountGoalService accountGoalService)
 {
     /// <summary>
     /// Attempts to create a new Account
@@ -38,6 +40,7 @@ public class AccountService(
             request.OpeningAccountingPeriod.Id,
             request.DateOpened);
         accountRepository.Add(account);
+        accountGoalService.CreateForAccount(account);
         accountingPeriodBalanceService.AddAccount(account);
         return true;
     }
@@ -77,6 +80,7 @@ public class AccountService(
             request.Type,
             request.OnboardedBalance);
         accountRepository.Add(account);
+        accountGoalService.CreateForAccount(account);
         return true;
     }
 
@@ -120,6 +124,7 @@ public class AccountService(
             unassignedFund.OnboardedBalance -= changeInUnassignedBalance;
         }
         accountingPeriodBalanceService.DeleteAccount(account);
+        accountGoalService.DeleteForAccount(account);
         accountRepository.Delete(account);
         return true;
     }
