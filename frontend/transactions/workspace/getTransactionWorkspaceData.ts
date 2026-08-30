@@ -244,6 +244,7 @@ const getTransactionWorkspaceDetailReferenceData = async function (
  */
 const getTransactionWorkspaceListData = async function (
   searchParams: TransactionWorkspaceSearchParams,
+  loadTransactions = true,
 ): Promise<TransactionWorkspaceListData> {
   const {
     accountingPeriodIds,
@@ -334,6 +335,7 @@ const getTransactionWorkspaceListData = async function (
     Offset: getPageOffset(currentPage, rowsPerPage),
   };
   const transactions =
+    !loadTransactions ||
     (hasAccountFilter && selectedAccountIds.length === 0) ||
     (hasFundFilter && selectedFundIds.length === 0)
       ? { items: [], totalCount: 0 }
@@ -342,7 +344,7 @@ const getTransactionWorkspaceListData = async function (
           totalCount: number;
         }> {
           if (
-            typeof startDate !== "undefined" &&
+            typeof startDate !== "undefined" ||
             typeof endDate !== "undefined"
           ) {
             return unwrapApiResponse(
@@ -350,8 +352,10 @@ const getTransactionWorkspaceListData = async function (
                 params: {
                   query: {
                     ...query,
-                    "Range.Start": startDate,
-                    "Range.End": endDate,
+                    ...(startDate === undefined
+                      ? {}
+                      : { "Range.Start": startDate }),
+                    ...(endDate === undefined ? {} : { "Range.End": endDate }),
                   },
                 },
               }),

@@ -41,6 +41,7 @@ interface ListFrameProps<T> {
   /** The viewport width at which the fixed-width desktop table is suitable. */
   readonly desktopBreakpoint?: "sm" | "md" | "lg" | "xl";
   readonly headerContent?: ReactNode;
+  readonly headerContentInline?: boolean;
   readonly color?: FrameColor;
   readonly columns: readonly ColumnDefinition<T>[];
   readonly getId: (item: T) => string;
@@ -62,6 +63,7 @@ const ListFrame = function <T>({
   title,
   desktopBreakpoint = "lg",
   headerContent,
+  headerContentInline = false,
   color = "primary",
   columns,
   getId,
@@ -130,7 +132,12 @@ const ListFrame = function <T>({
   }
 
   return (
-    <Frame title={title} headerContent={headerContent} color={color}>
+    <Frame
+      title={title}
+      headerContent={headerContent}
+      headerContentInline={headerContentInline}
+      color={color}
+    >
       <Paper
         sx={{
           width: "100%",

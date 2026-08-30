@@ -7,6 +7,7 @@ import { Box, Stack, Typography } from "@mui/material";
 import type { Location, LocationDraft } from "@/locations/types";
 
 import AccountBalanceEventFrame from "@/transactions/workspace/AccountBalanceEventFrame";
+import InsetFrame from "@/framework/view/InsetFrame";
 import type { JSX } from "react";
 import LocationEntryField from "@/locations/LocationEntryField";
 import StringEntryField from "@/framework/forms/StringEntryField";
@@ -75,7 +76,7 @@ const TransactionAccountOrLocationFrame = function ({
     );
   }
 
-  return (
+  const accountOrLocationContent = (
     <Stack
       direction={{ xs: "column", md: "row" }}
       spacing={2}
@@ -109,6 +110,12 @@ const TransactionAccountOrLocationFrame = function ({
         />
       </Box>
     </Stack>
+  );
+
+  return readOnly ? (
+    accountOrLocationContent
+  ) : (
+    <InsetFrame>{accountOrLocationContent}</InsetFrame>
   );
 };
 

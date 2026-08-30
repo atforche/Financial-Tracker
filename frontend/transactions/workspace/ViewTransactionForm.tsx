@@ -192,10 +192,8 @@ const ViewTransactionForm = function ({
     incomeTransaction !== null
   ) {
     const source = getIncomeSourceFromTransaction(incomeTransaction);
-    const destinations = getIncomeDestinationsFromTransaction(
-      incomeTransaction,
-      currentFundGoals,
-    );
+    const destinations =
+      getIncomeDestinationsFromTransaction(incomeTransaction);
 
     sourceAmount = getNetIncomeAmount(source);
     destinationAmount = getCurrencyTotal(
@@ -331,11 +329,12 @@ const ViewTransactionForm = function ({
                 transaction={transaction}
                 redirectUrl={currentUrl}
               />
-            ) : null}
-            <DeleteTransactionForm
-              transaction={transaction}
-              redirectUrl={returnUrl ?? workspaceUrl}
-            />
+            ) : (
+              <DeleteTransactionForm
+                transaction={transaction}
+                redirectUrl={returnUrl ?? workspaceUrl}
+              />
+            )}
           </Stack>
         )
       }

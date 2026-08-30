@@ -1,4 +1,8 @@
-import { AddCircleOutline, DeleteOutline } from "@mui/icons-material";
+import {
+  AddCircleOutline,
+  AutoFixHigh,
+  DeleteOutline,
+} from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -16,11 +20,15 @@ import {
   getExplicitFundAssignments,
   getRemainingFundAmount,
 } from "@/funds/assignmentPlanner/helpers";
+import { type JSX, useEffect, useState } from "react";
+import {
+  compareCurrencyAmounts,
+  formatCurrency,
+} from "@/framework/currencyHelpers";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { Fund } from "@/funds/types";
 import FundEntryField from "@/funds/FundEntryField";
-import type { JSX } from "react";
-import { formatCurrency } from "@/framework/currencyHelpers";
+import InsetFrame from "@/framework/view/InsetFrame";
 import { isUnassignedFund } from "@/funds/helpers";
 
 /**
@@ -31,6 +39,7 @@ interface FundAssignmentPlannerProps {
   readonly totalAmountToAssign: number | null;
   readonly fundAssignments: FundAssignmentDraft[];
   readonly addFundAssignment: () => void;
+  readonly onAutoAssign?: (() => void) | null;
   readonly deleteFundAssignment: (index: number) => void;
   readonly updateFund: (index: number, newFund: Fund | null) => void;
   readonly updateAmount: (index: number, newAmount: number | null) => void;
@@ -58,6 +67,7 @@ const FundAssignmentPlanner = function ({
   totalAmountToAssign,
   fundAssignments,
   addFundAssignment,
+  onAutoAssign = null,
   deleteFundAssignment,
   updateFund,
   updateAmount,
@@ -70,6 +80,9 @@ const FundAssignmentPlanner = function ({
   color = "info",
   readOnly = false,
 }: FundAssignmentPlannerProps): JSX.Element {
+  const [autoFocusAssignmentIndex, setAutoFocusAssignmentIndex] = useState<
+    number | null
+  >(null);
   const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
   const assignedAmount = getAssignedFundAmount(fundAssignments);
   const remainingAmount = getRemainingFundAmount(
@@ -81,13 +94,18 @@ const FundAssignmentPlanner = function ({
   );
   const availableFundCount = getAvailableFundCount(funds, fundAssignments);
 
+  useEffect(() => {
+    if (autoFocusAssignmentIndex !== null) {
+      setAutoFocusAssignmentIndex(null);
+    }
+  }, [autoFocusAssignmentIndex]);
+
   return (
     <Frame
       title="Fund Assignments"
       color={color}
       headerContent={
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-          <Chip label={`Total ${formatCurrency(totalAmountToAssign ?? 0)}`} />
           <Chip label={`Assigned ${formatCurrency(assignedAmount)}`} />
           <Chip
             color={getRemainingAmountColor(remainingAmount)}
@@ -99,82 +117,85 @@ const FundAssignmentPlanner = function ({
       <Stack spacing={2.5}>
         <Stack spacing={2}>
           {explicitFundAssignments.map((assignment, index) => (
-            <Stack key={assignment.fundId || `assignment-${index}`} spacing={2}>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: { xs: "column", md: "row" },
-                  alignItems: { xs: "stretch", md: "flex-start" },
-                  gap: 2,
-                }}
-              >
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <FundEntryField
-                    label="Fund"
-                    options={funds}
-                    value={{
-                      id: assignment.fundId,
-                      name: assignment.fundName,
-                      description: "",
-                    }}
-                    setValue={
-                      readOnly
-                        ? null
-                        : (newValue): void => {
-                            updateFund(index, newValue);
-                          }
-                    }
-                    filter={(fund) =>
-                      !isUnassignedFund(fund.name) &&
-                      (fund.id === assignment.fundId ||
-                        !assignedFundIds.has(fund.id))
-                    }
-                    getOptionSecondaryLabel={getFundOptionSecondaryLabel}
-                    sortComparator={sortFunds}
-                  />
-                </Box>
+            <InsetFrame key={`assignment-${index}`}>
+              <Stack spacing={2}>
                 <Box
                   sx={{
-                    flex: 1,
-                    minWidth: 0,
                     display: "flex",
-                    alignItems: { xs: "flex-start", md: "center" },
-                    gap: 1,
+                    flexDirection: { xs: "column", md: "row" },
+                    alignItems: { xs: "stretch", md: "flex-start" },
+                    gap: 2,
                   }}
                 >
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <CurrencyEntryField
-                      label="Assigned Amount"
-                      value={assignment.amount}
+                    <FundEntryField
+                      label="Fund"
+                      options={funds}
+                      value={{
+                        id: assignment.fundId,
+                        name: assignment.fundName,
+                        description: "",
+                      }}
                       setValue={
                         readOnly
                           ? null
-                          : (newAmount): void => {
-                              updateAmount(index, newAmount);
+                          : (newValue): void => {
+                              updateFund(index, newValue);
                             }
                       }
+                      filter={(fund) =>
+                        !isUnassignedFund(fund.name) &&
+                        (fund.id === assignment.fundId ||
+                          !assignedFundIds.has(fund.id))
+                      }
+                      getOptionSecondaryLabel={getFundOptionSecondaryLabel}
+                      sortComparator={sortFunds}
+                      autoFocus={autoFocusAssignmentIndex === index}
                     />
                   </Box>
-                  {renderAssignmentControl?.(assignment, index) ?? null}
-                </Box>
-                {readOnly ? null : (
-                  <IconButton
-                    aria-label="Delete fund assignment"
+                  <Box
                     sx={{
-                      alignSelf: { xs: "flex-end", md: "center" },
-                      flexShrink: 0,
-                    }}
-                    onClick={() => {
-                      deleteFundAssignment(index);
+                      flex: 1,
+                      minWidth: 0,
+                      display: "flex",
+                      alignItems: { xs: "flex-start", md: "center" },
+                      gap: 1,
                     }}
                   >
-                    <DeleteOutline />
-                  </IconButton>
-                )}
-              </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <CurrencyEntryField
+                        label="Assigned Amount"
+                        value={assignment.amount}
+                        setValue={
+                          readOnly
+                            ? null
+                            : (newAmount): void => {
+                                updateAmount(index, newAmount);
+                              }
+                        }
+                      />
+                    </Box>
+                    {renderAssignmentControl?.(assignment, index) ?? null}
+                  </Box>
+                  {readOnly ? null : (
+                    <IconButton
+                      aria-label="Delete fund assignment"
+                      sx={{
+                        alignSelf: { xs: "flex-end", md: "center" },
+                        flexShrink: 0,
+                      }}
+                      onClick={() => {
+                        deleteFundAssignment(index);
+                      }}
+                    >
+                      <DeleteOutline />
+                    </IconButton>
+                  )}
+                </Box>
 
-              {renderAssignmentDetails?.(assignment, index) ?? null}
-            </Stack>
+                {renderAssignmentDetails?.(assignment, index) ?? null}
+              </Stack>
+            </InsetFrame>
           ))}
         </Stack>
 
@@ -190,14 +211,32 @@ const FundAssignmentPlanner = function ({
                 ? `${availableFundCount} fund${availableFundCount === 1 ? "" : "s"} still available to assign.`
                 : "All available funds are already represented in this split."}
             </Typography>
-            <Button
-              variant="contained"
-              startIcon={<AddCircleOutline />}
-              onClick={addFundAssignment}
-              disabled={availableFundCount === 0}
-            >
-              Add Fund Assignment
-            </Button>
+            <Stack direction="row" spacing={1.5} justifyContent="flex-end">
+              <Button
+                variant="contained"
+                startIcon={<AddCircleOutline />}
+                onClick={() => {
+                  setAutoFocusAssignmentIndex(explicitFundAssignments.length);
+                  addFundAssignment();
+                }}
+                disabled={availableFundCount === 0}
+              >
+                Add Fund Assignment
+              </Button>
+              {onAutoAssign === null ? null : (
+                <Button
+                  variant="outlined"
+                  startIcon={<AutoFixHigh />}
+                  onClick={onAutoAssign}
+                  disabled={
+                    totalAmountToAssign === null ||
+                    compareCurrencyAmounts(totalAmountToAssign, 0) <= 0
+                  }
+                >
+                  Auto-assign
+                </Button>
+              )}
+            </Stack>
           </Stack>
         )}
       </Stack>

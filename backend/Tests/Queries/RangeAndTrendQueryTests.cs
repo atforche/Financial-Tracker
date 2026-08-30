@@ -73,4 +73,27 @@ public sealed class RangeAndTrendQueryTests
         Assert.Contains(transactions.Transactions.Items, item => item.Description == "End");
         Assert.DoesNotContain(transactions.Transactions.Items, item => item.Description == "Outside");
     }
+
+    /// <summary>
+    /// Allows either date-range endpoint to constrain Transaction results.
+    /// </summary>
+    [Fact]
+    public async Task TransactionDateRangeEndpointAllowsSingleEndpoints()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        _ = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 1)).For(10m).From(cash).To("Early", groceries).CreateAsync();
+        _ = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(15m).From(cash).To("Middle", groceries).CreateAsync();
+        _ = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 31)).For(20m).From(cash).To("Late", groceries).CreateAsync();
+
+        TransactionsInDateRangeModel throughMiddle = await test.Api.GetAsync<TransactionsInDateRangeModel>(
+            "/transactions/date-range?range.end=2026-07-15");
+        TransactionsInDateRangeModel fromMiddle = await test.Api.GetAsync<TransactionsInDateRangeModel>(
+            "/transactions/date-range?range.start=2026-07-15");
+
+        Assert.Equal(["Middle", "Early"], throughMiddle.Transactions.Items.Select(item => item.Description));
+        Assert.Equal(["Late", "Middle"], fromMiddle.Transactions.Items.Select(item => item.Description));
+    }
 }

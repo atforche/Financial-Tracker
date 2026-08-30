@@ -4665,6 +4665,16 @@ export interface components {
             regularAmountAssignedIncludingPending: number;
             /**
              * Format: double
+             * @description Amount remaining to assign toward the regular contribution.
+             */
+            remainingRegularAmountToAssign: number;
+            /**
+             * Format: double
+             * @description Amount remaining to assign toward the regular contribution including pending effects.
+             */
+            remainingRegularAmountToAssignIncludingPending: number;
+            /**
+             * Format: double
              * @description Posted amount spent.
              */
             amountSpent: number;

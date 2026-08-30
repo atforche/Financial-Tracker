@@ -8,10 +8,10 @@ public class DateRangeModel
     /// <summary>
     /// Start date of the range.
     /// </summary>
-    public required DateOnly Start { get; init; }
+    public DateOnly? Start { get; init; }
 
     /// <summary>
     /// End date of the range.
     /// </summary>
-    public required DateOnly End { get; init; }
+    public DateOnly? End { get; init; }
 }

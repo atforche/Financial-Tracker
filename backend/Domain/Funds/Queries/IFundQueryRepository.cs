@@ -47,8 +47,8 @@ public interface IFundQueryRepository
     /// </summary>
     Task<IReadOnlyCollection<FundRangeBalance>> GetDateRangeBalancesAsync(
         FundFilter filter,
-        DateOnly startDate,
-        DateOnly endDate,
+        DateOnly? startDate,
+        DateOnly? endDate,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -56,8 +56,8 @@ public interface IFundQueryRepository
     /// </summary>
     Task<IReadOnlyCollection<FundDateBalanceFact>> GetDateBalanceFactsAsync(
         IReadOnlyCollection<FundId> fundIds,
-        DateOnly startDate,
-        DateOnly endDate,
+        DateOnly? startDate,
+        DateOnly? endDate,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -65,8 +65,8 @@ public interface IFundQueryRepository
     /// </summary>
     Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetDateRangeIncomeFactsAsync(
         IReadOnlyCollection<FundId> fundIds,
-        DateOnly startDate,
-        DateOnly endDate,
+        DateOnly? startDate,
+        DateOnly? endDate,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -74,8 +74,8 @@ public interface IFundQueryRepository
     /// </summary>
     Task<IReadOnlyCollection<FinancialRangeSpendingFact>> GetDateRangeSpendingFactsAsync(
         IReadOnlyCollection<FundId> fundIds,
-        DateOnly startDate,
-        DateOnly endDate,
+        DateOnly? startDate,
+        DateOnly? endDate,
         CancellationToken cancellationToken = default);
 
     /// <summary>

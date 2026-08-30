@@ -19,6 +19,8 @@ public sealed class FundGoalBalanceEventQueryService(
     IFundGoalBalanceEventQueryRepository repository,
     ITransactionBalanceEventQueryRepository transactionQueryRepository,
     IAccountingPeriodQueryRepository accountingPeriodRepository,
+    IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
+    IFundGoalRepository fundGoalRepository,
     AccountingPeriodRangeService accountingPeriodRangeService)
 {
     /// <summary>
@@ -48,6 +50,7 @@ public sealed class FundGoalBalanceEventQueryService(
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFundAndPeriod))
             .Where(balanceEvent => requestedFundIds.Contains(balanceEvent.Fund.Id)).ToList();
         events = ProjectPendingEvents(events, transactions, historiesByFundAndPeriod);
+        events = AddRemainingRegularAmountToAssign(events);
         var requestedIds = requestedTransactions.Select(transaction => transaction.Id).ToHashSet();
         return events.Where(balanceEvent => requestedIds.Contains(balanceEvent.TransactionId)).ToList();
     }
@@ -119,11 +122,70 @@ public sealed class FundGoalBalanceEventQueryService(
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFundAndPeriod))
             .Where(balanceEvent => filter.FundIds.Count == 0 || filter.FundIds.Contains(balanceEvent.Fund.Id.Value)).ToList();
         events = ProjectPendingEvents(events, transactions, historiesByFundAndPeriod);
+        events = AddRemainingRegularAmountToAssign(events);
         var allItems = Sort(events, sort).ToList();
         return new QueryPage<FundGoalBalanceEvent>(
             allItems.Skip(offset).Take(limit ?? int.MaxValue).ToList(),
             allItems.Count);
     }
+
+    /// <summary>
+    /// Enriches each event's historical totals with the remaining regular contribution amounts.
+    /// </summary>
+    private List<FundGoalBalanceEvent> AddRemainingRegularAmountToAssign(IReadOnlyCollection<FundGoalBalanceEvent> events)
+    {
+        var remainingByFundAndPeriod = new Dictionary<(FundId FundId, AccountingPeriodId PeriodId), decimal>();
+
+        decimal GetTargetAmount(FundGoalBalanceEvent balanceEvent)
+        {
+            (FundId, AccountingPeriodId) key = (balanceEvent.Fund.Id, balanceEvent.AccountingPeriod.Id);
+            if (remainingByFundAndPeriod.TryGetValue(key, out decimal targetAmount))
+            {
+                return targetAmount;
+            }
+
+            FundGoal? fundGoal = fundGoalRepository.GetByFundAndAccountingPeriod(
+                balanceEvent.Fund.Id,
+                balanceEvent.AccountingPeriod.Id);
+            if (fundGoal == null)
+            {
+                remainingByFundAndPeriod[key] = 0;
+                return 0;
+            }
+
+            decimal openingBalance = accountingPeriodBalanceHistoryRepository
+                .GetForAccountingPeriod(balanceEvent.AccountingPeriod.Id)
+                .FundBalances
+                .SingleOrDefault(balance => balance.Fund.Id == balanceEvent.Fund.Id)
+                ?.OpeningBalance ?? 0;
+            targetAmount = FundGoalProgressService.CalculateRecommendedContribution(
+                openingBalance,
+                fundGoal.RegularContribution,
+                fundGoal.MinimumFundedBalance,
+                fundGoal.MaximumFundedBalance);
+            remainingByFundAndPeriod[key] = targetAmount;
+            return targetAmount;
+        }
+
+        return events.Select(balanceEvent =>
+        {
+            decimal targetAmount = GetTargetAmount(balanceEvent);
+            return balanceEvent with
+            {
+                PreviousTotals = AddRemainingAmount(balanceEvent.PreviousTotals, targetAmount),
+                NewTotals = AddRemainingAmount(balanceEvent.NewTotals, targetAmount),
+            };
+        }).ToList();
+    }
+
+    /// <summary>
+    /// Calculates remaining regular contribution amounts for a totals snapshot.
+    /// </summary>
+    private static FundGoalTotals AddRemainingAmount(
+        FundGoalTotals totals,
+        decimal targetAmount) => totals.WithRemainingRegularAmountToAssign(
+            Math.Max(targetAmount - totals.RegularAmountAssigned, 0),
+            Math.Max(targetAmount - totals.RegularAmountAssignedIncludingPending, 0));
 
     /// <summary>
     /// Retrieves interpreted Fund Goal balance events for a Transaction.

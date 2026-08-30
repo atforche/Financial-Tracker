@@ -4,8 +4,8 @@ namespace Domain.Accounts.Queries;
 /// Criteria for querying Account balance events over a date range.
 /// </summary>
 public sealed record AccountBalanceEventQuery(
-    DateOnly Start,
-    DateOnly End,
+    DateOnly? Start,
+    DateOnly? End,
     AccountFilter Filter,
     AccountBalanceEventSort Sort,
     int Offset,

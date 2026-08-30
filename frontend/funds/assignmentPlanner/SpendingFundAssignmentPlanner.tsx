@@ -1,4 +1,3 @@
-import { Chip, Stack } from "@mui/material";
 import type { Fund, FundWithBalance } from "@/funds/types";
 import {
   type FundAssignmentDraft,
@@ -13,13 +12,14 @@ import {
 } from "@/funds/assignmentPlanner/helpers";
 import {
   compareCurrencyAmounts,
-  formatCurrency,
   getCurrencyTotal,
 } from "@/framework/currencyHelpers";
+import BalanceChangeChip from "@/framework/view/BalanceChangeChip";
 import type { FrameColor } from "@/framework/view/Frame";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { JSX } from "react";
+import { Stack } from "@mui/material";
 import { getUnassignedFund } from "@/funds/helpers";
 
 /**
@@ -169,17 +169,15 @@ const SpendingFundAssignmentPlanner = function ({
     }
     return (
       <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap>
-        <Chip
-          variant="outlined"
-          label={`Previous remaining to spend ${formatCurrency(assignment.previousGoalAmount)}`}
-        />
-        <Chip
+        <BalanceChangeChip
+          label="Remaining to Spend"
+          previousValue={assignment.previousGoalAmount}
+          newValue={assignment.newGoalAmount}
           color={
             compareCurrencyAmounts(assignment.newGoalAmount, 0) >= 0
               ? "success"
               : "error"
           }
-          label={`New remaining to spend ${formatCurrency(assignment.newGoalAmount)}`}
         />
       </Stack>
     );

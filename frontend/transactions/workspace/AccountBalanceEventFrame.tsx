@@ -5,7 +5,7 @@ import type {
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
-import { Button, Stack, Typography } from "@mui/material";
+import { Button, Chip, Stack, Typography } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -21,11 +21,11 @@ import {
 } from "@/transactions/workspace/accountBalanceEventDraft";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AccountEntryField from "@/accounts/AccountEntryField";
+import BalanceChangeChip from "@/framework/view/BalanceChangeChip";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import TransactionBalanceDetails from "@/transactions/workspace/TransactionBalanceDetails";
+import InsetFrame from "@/framework/view/InsetFrame";
 import { buildUrl } from "@/framework/routes/helpers";
-import { formatLongDate } from "@/framework/dateHelpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import postTransaction from "@/transactions/workspace/postTransaction";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
@@ -109,14 +109,16 @@ const AccountBalanceEventFrame = function ({
           type: displayedAccountType,
         }
       : null;
-  const newBalanceLabel = postedDate === null ? "Projected" : "New";
-
+  const hasSelectedAccount =
+    selectedAccount !== null || readOnlyAccount !== null;
   let helperContent = null;
   if (postedDate !== null) {
     helperContent = (
-      <Typography variant="caption" color="text.secondary" sx={{ px: 1.75 }}>
-        Posted on {formatLongDate(new Date(`${postedDate}T00:00:00`))}
-      </Typography>
+      <Chip
+        label={`Posted: ${dayjs(`${postedDate}T00:00:00`).format("MM/DD/YYYY")}`}
+        size="small"
+        variant="outlined"
+      />
     );
   } else if (canWrite && setAccount === null) {
     helperContent = (
@@ -166,35 +168,67 @@ const AccountBalanceEventFrame = function ({
     );
   }
 
+  const isReadOnly = setAccount === null;
+  const accountEntryField = (
+    <AccountEntryField
+      label={label}
+      options={accounts}
+      value={selectedAccount ?? readOnlyAccount}
+      setValue={
+        setAccount === null
+          ? null
+          : (nextValue: Account | null): void => {
+              setAccount(
+                getSelectedTransactionAccountDraft(
+                  accounts,
+                  nextValue,
+                  account,
+                  balanceChange,
+                ),
+              );
+            }
+      }
+      filter={accountFilter}
+    />
+  );
+
+  if (!hasSelectedAccount) {
+    return accountEntryField;
+  }
+
   return (
-    <Stack spacing={0.75}>
-      <AccountEntryField
-        label={label}
-        options={accounts}
-        value={selectedAccount ?? readOnlyAccount}
-        setValue={
-          setAccount === null
-            ? null
-            : (nextValue: Account | null): void => {
-                setAccount(
-                  getSelectedTransactionAccountDraft(
-                    accounts,
-                    nextValue,
-                    account,
-                    balanceChange,
-                  ),
-                );
-              }
-        }
-        filter={accountFilter}
-      />
-      <TransactionBalanceDetails
-        previousPostedBalance={displayedAccount?.previousAccountBalance ?? 0}
-        newPostedBalance={displayedAccount?.newAccountBalance ?? 0}
-        newBalanceLabel={newBalanceLabel}
-      />
-      {helperContent}
-    </Stack>
+    <InsetFrame>
+      <Stack spacing={1}>
+        {isReadOnly ? (
+          <Stack spacing={0.25}>
+            <Typography variant="caption" color="text.secondary">
+              {label}
+            </Typography>
+            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+              {displayedAccountName}
+            </Typography>
+          </Stack>
+        ) : (
+          accountEntryField
+        )}
+        <Stack
+          direction="row"
+          flexWrap="wrap"
+          useFlexGap
+          spacing={0.75}
+          alignItems="center"
+        >
+          <BalanceChangeChip
+            label="Balance"
+            previousValue={displayedAccount?.previousAccountBalance ?? 0}
+            newValue={displayedAccount?.newAccountBalance ?? 0}
+            size="small"
+          />
+          {postedDate !== null ? helperContent : null}
+        </Stack>
+        {postedDate === null ? helperContent : null}
+      </Stack>
+    </InsetFrame>
   );
 };
 

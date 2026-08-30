@@ -125,6 +125,8 @@ public sealed class FundGoalBalanceEventConverter
         RegularAmountAssigned = totals.RegularAmountAssigned,
         AmountAssignedIncludingPending = totals.AmountAssignedIncludingPending,
         RegularAmountAssignedIncludingPending = totals.RegularAmountAssignedIncludingPending,
+        RemainingRegularAmountToAssign = totals.RemainingRegularAmountToAssign,
+        RemainingRegularAmountToAssignIncludingPending = totals.RemainingRegularAmountToAssignIncludingPending,
         AmountSpent = totals.AmountSpent,
         AmountSpentIncludingPending = totals.AmountSpentIncludingPending,
     };

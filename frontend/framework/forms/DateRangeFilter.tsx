@@ -1,5 +1,7 @@
-import type { JSX } from "react";
-import { TextField } from "@mui/material";
+import { type JSX, useEffect, useState } from "react";
+import dayjs, { type Dayjs } from "dayjs";
+import { Box } from "@mui/material";
+import DateEntryField from "@/framework/forms/DateEntryField";
 
 /**
  * Represents a date range with a start and end date.
@@ -19,48 +21,78 @@ interface DateRangeFilterProps {
 }
 
 /**
- * Styles for the date fields in the DateRangeFilter component.
- */
-const fieldSx = {
-  minWidth: { xs: "100%", sm: 180 },
-};
-
-/**
- * Renders a pair of native date fields while maintaining an ordered range.
+ * Renders a pair of date fields while maintaining an ordered range.
  */
 const DateRangeFilter = function ({
   value,
   onChange,
   disabled = false,
 }: DateRangeFilterProps): JSX.Element {
+  const [startValue, setStartValue] = useState<Dayjs | null>(() =>
+    value.start === "" ? null : dayjs(value.start),
+  );
+  const [endValue, setEndValue] = useState<Dayjs | null>(() =>
+    value.end === "" ? null : dayjs(value.end),
+  );
+
+  useEffect(() => {
+    setStartValue(value.start === "" ? null : dayjs(value.start));
+  }, [value.start]);
+
+  useEffect(() => {
+    setEndValue(value.end === "" ? null : dayjs(value.end));
+  }, [value.end]);
+
+  const formatDate = function (date: Dayjs | null): string {
+    return date?.isValid() === true ? date.format("YYYY-MM-DD") : "";
+  };
+
   return (
     <>
-      <TextField
-        size="small"
-        label="Start date"
-        type="date"
-        value={value.start}
-        disabled={disabled}
-        sx={fieldSx}
-        slotProps={{ inputLabel: { shrink: true } }}
-        onChange={(event) => {
-          const start = event.target.value;
-          onChange({ start, end: start > value.end ? start : value.end });
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          "& .MuiFormControl-root": { width: "100%", minWidth: 0 },
         }}
-      />
-      <TextField
-        size="small"
-        label="End date"
-        type="date"
-        value={value.end}
-        disabled={disabled}
-        sx={fieldSx}
-        slotProps={{ inputLabel: { shrink: true } }}
-        onChange={(event) => {
-          const end = event.target.value;
-          onChange({ start: end < value.start ? end : value.start, end });
+      >
+        <DateEntryField
+          label="Start date"
+          value={startValue}
+          disabled={disabled}
+          size="small"
+          setValue={(nextStart) => {
+            setStartValue(nextStart);
+            if (nextStart?.isValid() !== true) {
+              return;
+            }
+            const start = formatDate(nextStart);
+            onChange({ start, end: start > value.end ? start : value.end });
+          }}
+        />
+      </Box>
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          "& .MuiFormControl-root": { width: "100%", minWidth: 0 },
         }}
-      />
+      >
+        <DateEntryField
+          label="End date"
+          value={endValue}
+          disabled={disabled}
+          size="small"
+          setValue={(nextEnd) => {
+            setEndValue(nextEnd);
+            if (nextEnd?.isValid() !== true) {
+              return;
+            }
+            const end = formatDate(nextEnd);
+            onChange({ start: end < value.start ? end : value.start, end });
+          }}
+        />
+      </Box>
     </>
   );
 };

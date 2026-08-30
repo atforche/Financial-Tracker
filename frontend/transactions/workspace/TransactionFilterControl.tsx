@@ -22,8 +22,10 @@ const TransactionFilterControl = function ({
         display: "flex",
         gap: 1.5,
         alignItems: "center",
-        flex: expand ? "1 1 calc(33.333% - 16px)" : "0 0 auto",
-        minWidth: "min(100%, max-content)",
+        flex: expand
+          ? { xs: "1 1 100%", md: "1 1 calc(33.333% - 16px)" }
+          : "0 0 auto",
+        minWidth: expand ? { xs: 0, md: "min(100%, max-content)" } : undefined,
         "& > *": {
           flex: expand ? 1 : "0 0 auto",
           ...(expand ? { minWidth: 0 } : {}),

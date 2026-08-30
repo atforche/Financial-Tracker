@@ -125,11 +125,10 @@ public sealed class FundQueryService(
             query.End,
             cancellationToken);
         var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
-        IReadOnlyCollection<FundDateBalanceSummary> dates = SummarizeDates(
-            query.Start,
-            query.End,
-            balances,
-            history);
+        IReadOnlyCollection<FundDateBalanceSummary> dates =
+            query.Start is DateOnly start && query.End is DateOnly end
+                ? SummarizeDates(start, end, balances, history)
+                : [];
         IReadOnlyCollection<FundRangeBalance> items = Sort(balances, query.Sort)
             .Skip(query.Offset)
             .Take(query.Limit ?? int.MaxValue)

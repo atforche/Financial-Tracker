@@ -76,7 +76,10 @@ const CurrencyEntryField = function ({
         }
 
         setStringValue(nextValue);
-        setValue?.(parseCurrencyValue(nextValue));
+        const parsedValue = parseCurrencyValue(nextValue);
+        if (parsedValue !== null) {
+          setValue?.(parsedValue);
+        }
       }}
       onBlur={() => {
         setIsEditing(false);

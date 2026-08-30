@@ -43,10 +43,6 @@ const UpdateIncomeTransactionForm = function ({
   fundGoals,
   redirectUrl,
 }: UpdateIncomeTransactionFormProps): JSX.Element {
-  const currentFundGoals = fundGoals.filter(
-    (fundGoal) =>
-      fundGoal.accountingPeriod?.id === transactionAccountingPeriod.id,
-  );
   const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
   const [description, setDescription] = useState<string>(
     transaction.description,
@@ -55,7 +51,7 @@ const UpdateIncomeTransactionForm = function ({
     getSourceFromTransaction(transaction),
   );
   const [destinations, setDestinations] = useState<IncomeDestinationDraft[]>(
-    getDestinationsFromTransaction(transaction, currentFundGoals),
+    getDestinationsFromTransaction(transaction),
   );
 
   const { formRef, state, pending, reset, submit } = useUpdateTransactionEditor(
@@ -66,9 +62,7 @@ const UpdateIncomeTransactionForm = function ({
         setDate(dayjs(transaction.date));
         setDescription(transaction.description);
         setSource(getSourceFromTransaction(transaction));
-        setDestinations(
-          getDestinationsFromTransaction(transaction, currentFundGoals),
-        );
+        setDestinations(getDestinationsFromTransaction(transaction));
       },
     },
   );

@@ -14,16 +14,16 @@ public interface ITransactionBalanceEventQueryRepository
     /// </summary>
     Task<IReadOnlyCollection<Transaction>> GetForAccountAsync(
         AccountId accountId,
-        DateOnly startDate,
-        DateOnly endDate,
+        DateOnly? startDate,
+        DateOnly? endDate,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves Transactions in the provided date range.
     /// </summary>
     Task<IReadOnlyCollection<Transaction>> GetAsync(
-        DateOnly startDate,
-        DateOnly endDate,
+        DateOnly? startDate,
+        DateOnly? endDate,
         CancellationToken cancellationToken = default);
 
     /// <summary>

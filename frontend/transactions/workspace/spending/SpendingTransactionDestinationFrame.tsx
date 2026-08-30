@@ -75,6 +75,7 @@ const SpendingTransactionDestinationFrame = function ({
   return (
     <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
+      headerContentInline
       onAdd={readOnly ? null : onAdd}
       onRemove={readOnly ? null : onRemove}
       color={color}

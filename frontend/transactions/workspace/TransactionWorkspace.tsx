@@ -6,6 +6,7 @@ import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
+import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import TransactionWorkspaceFilter from "@/transactions/workspace/TransactionWorkspaceFilter";
 import TransactionWorkspaceListFrame from "@/transactions/workspace/TransactionWorkspaceListFrame";
 import { getTransactionWorkspaceListData } from "@/transactions/workspace/getTransactionWorkspaceData";
@@ -47,6 +48,22 @@ const TransactionWorkspace = async function ({
   searchParams,
 }: TransactionWorkspaceProps): Promise<JSX.Element> {
   const resolvedSearchParams = await searchParams;
+  const hasFilter = [
+    resolvedSearchParams.accountingPeriodIds,
+    resolvedSearchParams.accountIds,
+    resolvedSearchParams.fundIds,
+    resolvedSearchParams.locationIds,
+    resolvedSearchParams.fundNames,
+    resolvedSearchParams.accountTypes,
+    resolvedSearchParams.accountNames,
+    resolvedSearchParams.transactionTypes,
+    resolvedSearchParams.startDate,
+    resolvedSearchParams.endDate,
+    resolvedSearchParams.startAccountingPeriodId,
+    resolvedSearchParams.endAccountingPeriodId,
+  ].some((value) =>
+    Array.isArray(value) ? value.length > 0 : typeof value !== "undefined",
+  );
   const {
     allAccountingPeriods,
     accounts,
@@ -55,11 +72,12 @@ const TransactionWorkspace = async function ({
     selectedAccountIds,
     selectedFundIds,
     transactions,
-  } = await getTransactionWorkspaceListData(resolvedSearchParams);
+  } = await getTransactionWorkspaceListData(resolvedSearchParams, hasFilter);
 
   return (
     <ConstrainedContent>
       <PageLayout>
+        <ResponsivePageSize desktopBreakpoint="lg" />
         {typeof resolvedSearchParams.returnUrl === "undefined" ? null : (
           <Link
             href={resolvedSearchParams.returnUrl}
@@ -81,6 +99,7 @@ const TransactionWorkspace = async function ({
         <TransactionWorkspaceListFrame
           data={transactions.items}
           totalCount={transactions.totalCount}
+          hasActiveFilters={hasFilter}
         />
       </PageLayout>
     </ConstrainedContent>

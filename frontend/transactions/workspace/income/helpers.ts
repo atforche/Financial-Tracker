@@ -11,10 +11,6 @@ import type {
   UpdateTransactionRequest,
 } from "@/transactions/types";
 import {
-  type FundAssignmentDraft,
-  getIncomeGoalRemainingAmount,
-} from "@/funds/assignmentPlanner/helpers";
-import {
   type LocationDraft,
   toLocationDraft,
   toLocationInput,
@@ -30,8 +26,9 @@ import {
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
+import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 import type { FundBalanceEvent } from "@/funds/types";
-import type { FundGoalWithProgress } from "@/fund-goals/types";
+import type { FundGoalBalanceEvent } from "@/fund-goals/types";
 import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/accountBalanceEventDraft";
 import { hasIncompleteFundAssignments } from "@/funds/helpers";
 import { isTrackedAccountType } from "@/accounts/helpers";
@@ -418,45 +415,57 @@ const getSourceFromTransaction = function (
  */
 const getFundAssignmentFromTransactionFund = (
   assignment: FundBalanceEvent,
-  fundGoals: FundGoalWithProgress[],
-): FundAssignmentDraft => ({
-  fundId: assignment.fund.id,
-  fundName: assignment.fund.name,
-  amount: assignment.amount,
-  isExtraContribution: assignment.isExtraContribution ?? false,
-  previousFundBalance: assignment.previousBalance.postedBalance,
-  newFundBalance: assignment.newBalance.postedBalance,
-  previousGoalAmount: getIncomeGoalRemainingAmount(
-    assignment.fund.id,
-    fundGoals,
-  ),
-  newGoalAmount: Math.max(
-    getIncomeGoalRemainingAmount(assignment.fund.id, fundGoals) -
-      (assignment.isExtraContribution === true ? 0 : assignment.amount),
-    0,
-  ),
-});
+  fundGoalEvent: FundGoalBalanceEvent | undefined,
+): FundAssignmentDraft => {
+  const isExtraContribution = assignment.isExtraContribution === true;
+  const previousGoalAmount =
+    fundGoalEvent?.previousTotals.remainingRegularAmountToAssign ?? 0;
+
+  return {
+    fundId: assignment.fund.id,
+    fundName: assignment.fund.name,
+    amount: assignment.amount,
+    isExtraContribution,
+    previousFundBalance: assignment.previousBalance.postedBalance,
+    newFundBalance: assignment.newBalance.postedBalance,
+    previousGoalAmount,
+    newGoalAmount: fundGoalEvent?.newTotals.remainingRegularAmountToAssign ?? 0,
+  };
+};
 
 /**
  * Gets the collection of destinations from the provided income transaction.
  */
 const getDestinationsFromTransaction = function (
   transaction: IncomeTransaction,
-  fundGoals: FundGoalWithProgress[],
 ): IncomeDestinationDraft[] {
   return transaction.destinations.map(
-    (destination: IncomeTransactionDestination) => ({
-      account: getTransactionAccountDraftFromTransactionAccount(
-        destination.account,
-      ),
-      amount: destination.amount,
-      fundAssignments: destination.fundAssignments.map((assignment) =>
-        getFundAssignmentFromTransactionFund(assignment, fundGoals),
-      ),
-      baselineFundAssignments: destination.fundAssignments.map((assignment) =>
-        getFundAssignmentFromTransactionFund(assignment, fundGoals),
-      ),
-    }),
+    (destination: IncomeTransactionDestination) => {
+      const fundGoalEventsByFundId = new Map(
+        destination.fundGoals.map((fundGoalEvent) => [
+          fundGoalEvent.fund.id,
+          fundGoalEvent,
+        ]),
+      );
+      return {
+        account: getTransactionAccountDraftFromTransactionAccount(
+          destination.account,
+        ),
+        amount: destination.amount,
+        fundAssignments: destination.fundAssignments.map((assignment) =>
+          getFundAssignmentFromTransactionFund(
+            assignment,
+            fundGoalEventsByFundId.get(assignment.fund.id),
+          ),
+        ),
+        baselineFundAssignments: destination.fundAssignments.map((assignment) =>
+          getFundAssignmentFromTransactionFund(
+            assignment,
+            fundGoalEventsByFundId.get(assignment.fund.id),
+          ),
+        ),
+      };
+    },
   );
 };
 

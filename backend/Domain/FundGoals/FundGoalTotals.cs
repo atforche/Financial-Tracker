@@ -35,6 +35,16 @@ public sealed class FundGoalTotals
     public decimal RegularAmountAssignedIncludingPending { get; }
 
     /// <summary>
+    /// Amount remaining to assign toward the regular contribution.
+    /// </summary>
+    public decimal RemainingRegularAmountToAssign { get; private set; }
+
+    /// <summary>
+    /// Amount remaining to assign toward the regular contribution including pending effects.
+    /// </summary>
+    public decimal RemainingRegularAmountToAssignIncludingPending { get; private set; }
+
+    /// <summary>
     /// Posted amount spent during the Accounting Period.
     /// </summary>
     public decimal AmountSpent { get; }
@@ -72,7 +82,9 @@ public sealed class FundGoalTotals
         decimal? regularAmountAssigned = null,
         decimal? amountAssignedIncludingPending = null,
         decimal? regularAmountAssignedIncludingPending = null,
-        decimal? amountSpentIncludingPending = null)
+        decimal? amountSpentIncludingPending = null,
+        decimal? remainingRegularAmountToAssign = null,
+        decimal? remainingRegularAmountToAssignIncludingPending = null)
     {
         FundId = fundId;
         AmountAssigned = amountAssigned;
@@ -81,5 +93,23 @@ public sealed class FundGoalTotals
         RegularAmountAssignedIncludingPending = regularAmountAssignedIncludingPending ?? RegularAmountAssigned;
         AmountSpent = amountSpent;
         AmountSpentIncludingPending = amountSpentIncludingPending ?? amountSpent;
+        RemainingRegularAmountToAssign = remainingRegularAmountToAssign ?? 0;
+        RemainingRegularAmountToAssignIncludingPending = remainingRegularAmountToAssignIncludingPending ?? RemainingRegularAmountToAssign;
     }
+
+    /// <summary>
+    /// Adds the remaining regular contribution amounts calculated for API projection.
+    /// </summary>
+    internal FundGoalTotals WithRemainingRegularAmountToAssign(
+        decimal remainingRegularAmountToAssign,
+        decimal remainingRegularAmountToAssignIncludingPending) => new(
+            FundId,
+            AmountAssigned,
+            AmountSpent,
+            RegularAmountAssigned,
+            AmountAssignedIncludingPending,
+            RegularAmountAssignedIncludingPending,
+            AmountSpentIncludingPending,
+            remainingRegularAmountToAssign,
+            remainingRegularAmountToAssignIncludingPending);
 }

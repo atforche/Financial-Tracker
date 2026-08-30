@@ -12,6 +12,7 @@ interface TransactionSourceOrDestinationFrameProps {
   readonly children: ReactNode;
   readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
+  readonly headerContentInline?: boolean;
   readonly color?: FrameColor;
 }
 
@@ -23,12 +24,14 @@ const TransactionSourceOrDestinationFrame = function ({
   children,
   onAdd = null,
   onRemove = null,
+  headerContentInline = false,
   color = "info",
 }: TransactionSourceOrDestinationFrameProps): JSX.Element {
   return (
     <Frame
       title={title}
       color={color}
+      headerContentInline={headerContentInline}
       headerContent={
         onAdd === null && onRemove === null ? null : (
           <Stack direction="row" spacing={1} alignItems="center">

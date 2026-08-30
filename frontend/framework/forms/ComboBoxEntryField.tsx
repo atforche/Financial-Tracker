@@ -46,6 +46,27 @@ const compareOptionValues = function <T>(
   return Object.is(option.value, selectedValue.value);
 };
 
+const renderOptionLabel = function (
+  label: string,
+  inputValue: string,
+): JSX.Element {
+  const normalizedLabel = label.toLocaleLowerCase();
+  const normalizedInput = inputValue.toLocaleLowerCase();
+  const matchingPrefixLength =
+    normalizedInput !== "" && normalizedLabel.startsWith(normalizedInput)
+      ? inputValue.length
+      : 0;
+
+  return (
+    <Typography component="div">
+      <Box component="span" sx={{ fontWeight: 600 }}>
+        {label.slice(0, matchingPrefixLength)}
+      </Box>
+      {label.slice(matchingPrefixLength)}
+    </Typography>
+  );
+};
+
 /**
  * Component the presents the user with an entry field where they can enter string values.
  */
@@ -60,11 +81,26 @@ const ComboBoxEntryField = function <T>({
   createOption = null,
   isOptionEqualToValue = compareOptionValues,
 }: ComboBoxEntryFieldProps<T>): JSX.Element {
-  const hint = useRef("");
   const justSelected = useRef(false);
   const [inputValue, setInputValue] = useState(value?.label ?? "");
+  const [highlightedOption, setHighlightedOption] =
+    useState<ComboBoxOption<T> | null>(null);
   const defaultFilterOptions = createFilterOptions<ComboBoxOption<T>>();
-  const hintVerticalPadding = size === "small" ? 8.5 : 16.5;
+
+  const getFilteredOptions = function (
+    sourceOptions: ComboBoxOption<T>[],
+    currentInputValue: string,
+  ): ComboBoxOption<T>[] {
+    const filteredOptions = defaultFilterOptions(sourceOptions, {
+      inputValue: currentInputValue,
+      getOptionLabel: (option) => option.label,
+    });
+    const createdOption = createOption?.(currentInputValue) ?? null;
+    return createdOption !== null &&
+      !filteredOptions.some((option) => option.label === createdOption.label)
+      ? [...filteredOptions, createdOption]
+      : filteredOptions;
+  };
 
   useEffect(() => {
     setInputValue(value?.label ?? "");
@@ -77,25 +113,19 @@ const ComboBoxEntryField = function <T>({
   return (
     <Autocomplete
       className="combo-box-entry-field"
+      autoHighlight
       clearOnBlur
       options={options}
       inputValue={inputValue}
       value={value}
       isOptionEqualToValue={isOptionEqualToValue}
-      filterOptions={(sourceOptions, state) => {
-        const filteredOptions = defaultFilterOptions(sourceOptions, state);
-        const createdOption = createOption?.(state.inputValue) ?? null;
-        return createdOption !== null &&
-          !filteredOptions.some(
-            (option) => option.label === createdOption.label,
-          )
-          ? [...filteredOptions, createdOption]
-          : filteredOptions;
-      }}
-      renderOption={(props, option) => (
+      filterOptions={(sourceOptions, state) =>
+        getFilteredOptions(sourceOptions, state.inputValue)
+      }
+      renderOption={(props, option, { inputValue: optionInputValue }) => (
         <Box component="li" {...props}>
           <Box sx={{ minWidth: 0 }}>
-            <Typography>{option.label}</Typography>
+            {renderOptionLabel(option.label, optionInputValue)}
             {typeof option.secondaryLabel === "string" ? (
               <Typography variant="body2" color="text.secondary">
                 {option.secondaryLabel}
@@ -105,35 +135,19 @@ const ComboBoxEntryField = function <T>({
         </Box>
       )}
       renderInput={(params) => (
-        <Box sx={{ position: "relative" }}>
-          <Typography
-            sx={{
-              position: "absolute",
-              opacity: 0.5,
-              left: 14,
-              top: hintVerticalPadding,
-              lineHeight: 1.4375,
-              overflow: "hidden",
-              whiteSpace: "nowrap",
-              width: "calc(100% - 75px)",
-            }}
-          >
-            {hint.current}
-          </Typography>
-          <TextField
-            {...params}
-            label={label}
-            size={size}
-            error={errorMessage !== null}
-            autoFocus={autoFocus}
-            helperText={errorMessage ?? null}
-            slotProps={{
-              input: {
-                ...params.InputProps,
-              },
-            }}
-          />
-        </Box>
+        <TextField
+          {...params}
+          label={label}
+          size={size}
+          error={errorMessage !== null}
+          autoFocus={autoFocus}
+          helperText={errorMessage ?? null}
+          slotProps={{
+            input: {
+              ...params.InputProps,
+            },
+          }}
+        />
       )}
       onChange={(_, newValue, reason) => {
         if (createOption !== null && reason === "blur") {
@@ -150,28 +164,37 @@ const ComboBoxEntryField = function <T>({
         }
 
         setInputValue(newInputValue);
-        const normalizedInput = newInputValue.toLocaleLowerCase();
-        const matchingOption = options.find((option) =>
-          option.label.toLocaleLowerCase().startsWith(normalizedInput),
-        );
-        hint.current =
-          newInputValue && matchingOption ? matchingOption.label : "";
+        setHighlightedOption(null);
       }}
       onKeyDown={(event) => {
-        if (event.key === "Tab") {
-          if (hint.current) {
-            const matchingOption = options.find(
-              (option) => option.label === hint.current,
-            );
-            if (matchingOption) {
-              setInputValue(matchingOption.label);
-              setValue(matchingOption);
-            }
-          }
+        const optionToSelect =
+          highlightedOption ??
+          getFilteredOptions(options, inputValue)[0] ??
+          null;
+        const highlightedExistingOption =
+          optionToSelect !== null &&
+          options.some((option) => isOptionEqualToValue(option, optionToSelect))
+            ? optionToSelect
+            : null;
+
+        if (
+          event.key === "Tab" &&
+          inputValue.trim() !== "" &&
+          highlightedExistingOption !== null
+        ) {
+          // Let the browser move focus to the next control while preventing
+          // Autocomplete from applying its own highlighted-option behavior.
+          event.defaultMuiPrevented = true;
+          justSelected.current = true;
+          setInputValue(highlightedExistingOption.label);
+          setValue(highlightedExistingOption);
         }
       }}
+      onHighlightChange={(_, option) => {
+        setHighlightedOption(option);
+      }}
       onClose={() => {
-        hint.current = "";
+        setHighlightedOption(null);
         if (justSelected.current) {
           justSelected.current = false;
         } else {

@@ -32,6 +32,21 @@ interface TransactionFormState {
 }
 
 /**
+ * Represents the shared details used by transaction create/update forms.
+ */
+interface TransactionDetails {
+  readonly accountingPeriod: AccountingPeriod | null;
+  readonly setAccountingPeriod: Dispatch<
+    SetStateAction<AccountingPeriod | null>
+  >;
+  readonly date: Dayjs | null;
+  readonly setDate: Dispatch<SetStateAction<Dayjs | null>>;
+  readonly description: string;
+  readonly setDescription: Dispatch<SetStateAction<string>>;
+  readonly reset: () => void;
+}
+
+/**
  * Props for the TransactionForm component.
  */
 interface TransactionFormProps<RequestPayload> {
@@ -166,5 +181,5 @@ const TransactionForm = function <RequestPayload>({
   );
 };
 
-export type { TransactionFormState };
+export type { TransactionDetails, TransactionFormState };
 export default TransactionForm;

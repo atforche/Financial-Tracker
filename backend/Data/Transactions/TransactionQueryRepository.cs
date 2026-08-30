@@ -40,8 +40,15 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
         TransactionDateRangeQuery query,
         CancellationToken cancellationToken = default)
     {
-        IQueryable<Transaction> filtered = ApplyFilter(databaseContext.Transactions.AsNoTracking(), query.Filter)
-            .Where(transaction => transaction.Date >= query.Start && transaction.Date <= query.End);
+        IQueryable<Transaction> filtered = ApplyFilter(databaseContext.Transactions.AsNoTracking(), query.Filter);
+        if (query.Start is DateOnly start)
+        {
+            filtered = filtered.Where(transaction => transaction.Date >= start);
+        }
+        if (query.End is DateOnly end)
+        {
+            filtered = filtered.Where(transaction => transaction.Date <= end);
+        }
         return await GetRangeFactsAsync(filtered, query.Filter.LocationIds, query.Sort, query.Offset, query.Limit, cancellationToken);
     }
 

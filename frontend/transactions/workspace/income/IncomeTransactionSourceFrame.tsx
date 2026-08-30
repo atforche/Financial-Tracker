@@ -11,6 +11,7 @@ import {
   getNetIncomeAmount,
 } from "@/transactions/workspace/income/helpers";
 import type { Location, LocationDraft } from "@/locations/types";
+import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
 import IncomeTransactionItemSection from "@/transactions/workspace/income/IncomeTransactionSourceItemFrame";
 import type { JSX } from "react";
@@ -59,12 +60,13 @@ const IncomeTransactionSourceFrame = function ({
   color = "info",
   readOnly = false,
 }: IncomeTransactionSourceFrameProps): JSX.Element {
-  const balanceChange = -getNetIncomeAmount({
+  const netIncomeAmount = getNetIncomeAmount({
     account,
     location,
     incomeLines,
     incomeDeductions,
   });
+  const balanceChange = -netIncomeAmount;
 
   return (
     <TransactionSourceOrDestinationFrame title="Source" color={color}>
@@ -84,7 +86,6 @@ const IncomeTransactionSourceFrame = function ({
       />
       <IncomeTransactionItemSection
         title="Income Lines"
-        description="Add the gross income amounts that make up this transaction."
         items={incomeLines}
         setItems={readOnly ? null : setIncomeLines}
         createEmptyItem={readOnly ? null : createEmptyLine}
@@ -93,13 +94,13 @@ const IncomeTransactionSourceFrame = function ({
       />
       <IncomeTransactionItemSection
         title="Income Deductions"
-        description="Add optional deductions withheld before the income is deposited."
         items={incomeDeductions}
         setItems={readOnly ? null : setIncomeDeductions}
         createEmptyItem={readOnly ? null : createEmptyDeduction}
         addLabel={readOnly ? null : "Add Deduction"}
         allowEmpty
       />
+      <CurrencyEntryField label="Net Income" value={netIncomeAmount} />
     </TransactionSourceOrDestinationFrame>
   );
 };

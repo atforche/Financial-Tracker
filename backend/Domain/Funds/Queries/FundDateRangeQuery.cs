@@ -4,8 +4,8 @@ namespace Domain.Funds.Queries;
 /// Criteria for querying Fund balances over a date range.
 /// </summary>
 public sealed record FundDateRangeQuery(
-    DateOnly Start,
-    DateOnly End,
+    DateOnly? Start,
+    DateOnly? End,
     FundFilter Filter,
     FundRangeSort Sort,
     int Offset,
