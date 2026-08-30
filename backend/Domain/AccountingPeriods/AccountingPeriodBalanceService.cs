@@ -43,15 +43,12 @@ public class AccountingPeriodBalanceService(
                 newAccountingPeriod,
                 currentBalance,
                 currentBalance));
-            if (!fund.IsUnassignedFund)
-            {
-                _ = fundGoalRepository.GetByFundAndAccountingPeriod(fund.Id, newAccountingPeriod.Id)
-                    ?? throw new InvalidOperationException("Fund is missing its Fund Goal. Fund ID: " + fund.Id);
-                fundGoalTotals = fundGoalTotals.Append(new AccountingPeriodFundGoalTotals(
-                    fund,
-                    newAccountingPeriod,
-                    new FundGoalTotals(fund.Id, 0, 0)));
-            }
+            _ = fundGoalRepository.GetByFundAndAccountingPeriod(fund.Id, newAccountingPeriod.Id)
+                ?? throw new InvalidOperationException("Fund is missing its Fund Goal. Fund ID: " + fund.Id);
+            fundGoalTotals = fundGoalTotals.Append(new AccountingPeriodFundGoalTotals(
+                fund,
+                newAccountingPeriod,
+                new FundGoalTotals(fund.Id, 0, 0)));
         }
         accountingPeriodBalanceHistoryRepository.Add(new AccountingPeriodBalanceHistory(
             newAccountingPeriod,
@@ -81,15 +78,12 @@ public class AccountingPeriodBalanceService(
             AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id);
             var balance = new FundBalance(newFund, 0);
             balanceHistory.AddFundBalance(new AccountingPeriodFundBalanceHistory(newFund, accountingPeriod, balance, balance));
-            if (!newFund.IsUnassignedFund)
-            {
-                _ = fundGoalRepository.GetByFundAndAccountingPeriod(newFund.Id, accountingPeriod.Id)
-                    ?? throw new InvalidOperationException("Fund is missing its Fund Goal. Fund ID: " + newFund.Id);
-                balanceHistory.AddFundGoalTotals(new AccountingPeriodFundGoalTotals(
-                    newFund,
-                    accountingPeriod,
-                    new FundGoalTotals(newFund.Id, 0, 0)));
-            }
+            _ = fundGoalRepository.GetByFundAndAccountingPeriod(newFund.Id, accountingPeriod.Id)
+                ?? throw new InvalidOperationException("Fund is missing its Fund Goal. Fund ID: " + newFund.Id);
+            balanceHistory.AddFundGoalTotals(new AccountingPeriodFundGoalTotals(
+                newFund,
+                accountingPeriod,
+                new FundGoalTotals(newFund.Id, 0, 0)));
             accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
         }
     }

@@ -3,6 +3,9 @@ using Models.Accounts;
 using Models.BalanceEvents;
 using Models.FundGoals;
 using Models.Funds;
+using Models.Transactions;
+using Models.Transactions.Create;
+using Models.Transactions.Types;
 using Tests.AccountingPeriods;
 using Tests.Accounts;
 using Tests.Funds;
@@ -15,6 +18,67 @@ namespace Tests.Transactions;
 /// </summary>
 public sealed class BalanceEventProjectionTests
 {
+    /// <summary>
+    /// Includes automatically assigned Unassigned income in pending and posted
+    /// Fund Goal events and transaction details.
+    /// </summary>
+    [Fact]
+    public async Task AutomaticIncomeRemainderProjectsToUnassignedFundGoal()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        CollectionModel<FundModel> funds = await test.Api.GetAsync<CollectionModel<FundModel>>("/funds");
+        FundModel unassigned = Assert.Single(funds.Items, fund => fund.Name == "Unassigned");
+        FundGoalModel unassignedGoal = await test.Api.GetAsync<FundGoalModel>(
+            $"/fund-goals/fund/{unassigned.Id}?accountingPeriodId={july.Id}");
+
+        CreateTransactionResultModel created = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>(
+            "/transactions",
+            new CreateIncomeTransactionModel
+            {
+                AccountingPeriodId = july.Id,
+                Date = new DateOnly(2026, 7, 15),
+                Description = "Pay",
+                Amount = 100m,
+                Source = new CreateIncomeTransactionSourceModel
+                {
+                    Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" },
+                    IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = 100m }],
+                    IncomeDeductions = [],
+                },
+                Destinations = [new CreateIncomeTransactionDestinationModel
+                {
+                    AccountId = cash.Id,
+                    Amount = 100m,
+                    FundAssignments = [new CreateIncomeFundAmountModel { FundId = groceries.Id, Amount = 40m }],
+                }],
+            });
+
+        CollectionModel<FundGoalBalanceEventModel> pendingEvents = await test.Api.GetAsync<CollectionModel<FundGoalBalanceEventModel>>(
+            $"/fund-goals/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}");
+        IncomeTransactionModel pendingDetail = await test.Api.GetAsync<IncomeTransactionModel>($"/transactions/{created.Id}");
+        FundGoalBalanceEventModel pending = Assert.Single(pendingEvents.Items,
+            item => item.TransactionId == created.Id && item.Fund.Id == unassigned.Id);
+
+        await test.Transactions.PostAsync(new TransactionHandle(created.Id), cash, new DateOnly(2026, 7, 15));
+
+        CollectionModel<FundGoalBalanceEventModel> postedEvents = await test.Api.GetAsync<CollectionModel<FundGoalBalanceEventModel>>(
+            $"/fund-goals/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}");
+        FundGoalBalanceEventModel posted = Assert.Single(postedEvents.Items,
+            item => item.TransactionId == created.Id && item.Fund.Id == unassigned.Id);
+        IncomeTransactionModel postedDetail = await test.Api.GetAsync<IncomeTransactionModel>($"/transactions/{created.Id}");
+
+        Assert.Equal(60m, pending.NewTotals.AmountAssignedIncludingPending);
+        Assert.False(pending.IsPosted);
+        Assert.Contains(pendingDetail.Destinations.Single().FundGoals, goal => goal.Fund.Id == unassigned.Id);
+        Assert.Equal(60m, posted.NewTotals.AmountAssigned);
+        Assert.True(posted.IsPosted);
+        Assert.Contains(postedDetail.Destinations.Single().FundGoals, goal => goal.Fund.Id == unassigned.Id);
+        Assert.Equal(unassignedGoal.Fund.Id, postedDetail.Destinations.Single().FundGoals.Single(goal => goal.Fund.Id == unassigned.Id).Fund.Id);
+    }
+
     /// <summary>
     /// Projects a spending transaction with the account and location counterparties expected by each surface.
     /// </summary>

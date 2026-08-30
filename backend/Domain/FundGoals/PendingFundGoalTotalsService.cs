@@ -42,7 +42,7 @@ public sealed class PendingFundGoalTotalsService(IFundGoalPendingTotalsEffectRep
     internal void SynchronizeTransaction(Transaction transaction)
     {
         DeleteEffectsForTransaction(transaction.Id);
-        foreach (FundId fundId in transaction.GetAllAffectedFundIds(null).Where(id => id != Fund.UnassignedFundId).Distinct())
+        foreach (FundId fundId in transaction.GetAllAffectedFundIds(null).Distinct())
         {
             FundGoalTotals effect = transaction.ApplyAsPostedToFundGoalTotals(new FundGoalTotals(fundId, 0, 0));
             if (effect.AmountAssigned != 0 || effect.AmountSpent != 0)

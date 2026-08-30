@@ -27,12 +27,6 @@ public sealed class FundGoalService(
             request.MaximumFundedBalance,
             request.TargetEndingBalance,
             out exceptions);
-        if (request.Fund.IsUnassignedFund)
-        {
-            exceptions = exceptions.Append(new ValidationError(
-                new ValidationErrorPath(nameof(CreateFundGoalRequest.Fund)),
-                "The unassigned fund cannot have a fund goal."));
-        }
         if (fundGoalRepository.GetByFundAndAccountingPeriod(request.Fund.Id, request.AccountingPeriod?.Id) != null)
         {
             exceptions = exceptions.Append(new ValidationError(

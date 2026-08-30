@@ -3,6 +3,7 @@ using Models;
 using Models.AccountingPeriods;
 using Models.Accounts;
 using Models.Funds;
+using Models.FundGoals;
 using Tests.Accounts;
 using Tests.Funds;
 using Tests.Infrastructure;
@@ -48,11 +49,23 @@ public sealed class AccountingPeriodLifecycleTests
     public async Task CreateFirstAsyncInitializesUnassignedFund()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
-        _ = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
 
         CollectionModel<FundModel> funds = await test.Api.GetAsync<CollectionModel<FundModel>>("/funds");
+        FundModel unassigned = Assert.Single(funds.Items, fund => fund.Name == "Unassigned");
+        FundGoalModel goal = await test.Api.GetAsync<FundGoalModel>($"/fund-goals/fund/{unassigned.Id}?accountingPeriodId={july.Id}");
+        IReadOnlyCollection<FundGoalProgressResultModel> progresses = await test.Api.GetAsync<IReadOnlyCollection<FundGoalProgressResultModel>>(
+            $"/fund-goals/progress/{july.Id}");
+        FundGoalProgressModel directProgress = await test.Api.GetAsync<FundGoalProgressModel>(
+            $"/fund-goals/{goal.Id}/progress/{july.Id}");
 
-        Assert.Contains(funds.Items, fund => fund.Name == "Unassigned");
+        Assert.Equal("Unassigned", goal.Fund.Name);
+        Assert.Null(goal.RegularContribution);
+        Assert.Null(goal.MinimumFundedBalance);
+        Assert.Null(goal.MaximumFundedBalance);
+        Assert.Null(goal.TargetEndingBalance);
+        Assert.Contains(progresses, progress => progress.FundGoalId == goal.Id);
+        Assert.NotNull(directProgress);
     }
 
     /// <summary>
