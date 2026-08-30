@@ -42,7 +42,7 @@ namespace Data.Migrations
             // replayed during development.
             migrationBuilder.Sql("""
                 INSERT INTO "AccountGoals" ("Id", "AccountId", "AccountingPeriodId", "MinimumEndingBalance", "MaximumEndingBalance")
-                SELECT lower(
+                SELECT upper(
                     substr(replace(account."Id", '-', ''), 1, 8) || '-' ||
                     substr(replace(account."Id", '-', ''), 9, 4) || '-' ||
                     substr(replace(account."Id", '-', ''), 13, 4) || '-' ||
@@ -73,7 +73,7 @@ namespace Data.Migrations
                   );
 
                 INSERT INTO "AccountGoals" ("Id", "AccountId", "AccountingPeriodId", "MinimumEndingBalance", "MaximumEndingBalance")
-                SELECT lower(account."Id"), account."Id", NULL, NULL, NULL
+                SELECT upper(account."Id"), account."Id", NULL, NULL, NULL
                 FROM "Accounts" AS account
                 WHERE account."Type" = 'Standard'
                   AND NOT EXISTS (SELECT 1 FROM "AccountingPeriods")

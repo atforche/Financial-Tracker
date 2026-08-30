@@ -1,9 +1,9 @@
 namespace Models.FundGoals;
 
 /// <summary>
-/// Model describing ending-balance progress.
+/// Model describing ending-balance progress for a Fund Goal.
 /// </summary>
-public sealed class EndingBalanceProgressModel
+public sealed class FundGoalEndingBalanceProgressModel
 {
     /// <summary>
     /// Gets the target ending balance.
@@ -23,7 +23,7 @@ public sealed class EndingBalanceProgressModel
     /// <summary>
     /// Gets the ending-balance status.
     /// </summary>
-    public required EndingBalanceStatusModel Status { get; init; }
+    public required FundGoalEndingBalanceStatusModel Status { get; init; }
 
     /// <summary>
     /// Gets the projected ending balance when available.

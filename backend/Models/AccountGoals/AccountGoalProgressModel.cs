@@ -18,5 +18,5 @@ public sealed class AccountGoalProgressModel
     /// <summary>
     /// Gets ending-balance progress when bounds are configured.
     /// </summary>
-    public EndingBalanceProgressModel? EndingBalance { get; init; }
+    public AccountGoalEndingBalanceProgressModel? EndingBalance { get; init; }
 }

@@ -1,7 +1,7 @@
 using Domain;
-using Domain.AccountingPeriods;
 using Domain.AccountGoals;
 using Domain.AccountGoals.Queries;
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Microsoft.EntityFrameworkCore;
 

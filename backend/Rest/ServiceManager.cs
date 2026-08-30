@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
-using Rest.AccountingPeriods;
 using Rest.AccountGoals;
+using Rest.AccountingPeriods;
 using Rest.Accounts;
 using Rest.Authentication;
 using Rest.FundGoals;

@@ -3,7 +3,7 @@ namespace Models.AccountGoals;
 /// <summary>
 /// Model describing ending-balance progress for an Account Goal.
 /// </summary>
-public sealed class EndingBalanceProgressModel
+public sealed class AccountGoalEndingBalanceProgressModel
 {
     /// <summary>
     /// Gets the current Account balance.
@@ -33,5 +33,5 @@ public sealed class EndingBalanceProgressModel
     /// <summary>
     /// Gets the ending-balance status.
     /// </summary>
-    public required EndingBalanceStatusModel Status { get; init; }
+    public required AccountGoalEndingBalanceStatusModel Status { get; init; }
 }

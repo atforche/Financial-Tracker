@@ -46,6 +46,7 @@ public sealed class AccountGoalMigrationTests
         Assert.Equal(0, await database.CountAsync(creditAccount));
         Assert.Equal(1, await database.CountAsync(laterOpeningAccount));
         Assert.Equal(0, await database.CountAsync(laterOpeningAccount, july));
+        Assert.Equal(0, await database.CountNonUppercaseIdsAsync());
     }
 
     /// <summary>
@@ -64,6 +65,7 @@ public sealed class AccountGoalMigrationTests
         await database.MigrateAsync();
 
         Assert.Equal(1, await database.CountAsync(standardAccount, null));
+        Assert.Equal(0, await database.CountNonUppercaseIdsAsync());
     }
 }
 
@@ -98,6 +100,19 @@ internal sealed class MigrationTestDatabase : IAsyncDisposable
     public Task<int> CountAsync(Guid accountId) => CountAsync(accountId, null, false);
 
     public Task<int> CountAsync(Guid accountId, Guid? periodId) => CountAsync(accountId, periodId, true);
+
+    public async Task<int> CountNonUppercaseIdsAsync()
+    {
+        await using System.Data.Common.DbCommand command = Context.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM \"AccountGoals\" WHERE \"Id\" != upper(\"Id\")";
+
+        if (Context.Database.GetDbConnection().State != System.Data.ConnectionState.Open)
+        {
+            await Context.Database.OpenConnectionAsync();
+        }
+
+        return Convert.ToInt32(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
+    }
 
     [SuppressMessage("Security", "CA2100", Justification = "The command text is selected from fixed SQL strings and contains only parameter placeholders.")]
     private async Task<int> CountAsync(Guid accountId, Guid? periodId, bool filterByPeriod)

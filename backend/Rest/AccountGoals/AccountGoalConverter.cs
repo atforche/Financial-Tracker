@@ -65,14 +65,14 @@ public sealed class AccountGoalConverter(
         IsSatisfied = progress.IsSatisfied,
         EndingBalance = progress.EndingBalance == null
             ? null
-            : new EndingBalanceProgressModel
+            : new AccountGoalEndingBalanceProgressModel
             {
                 CurrentBalance = progress.EndingBalance.CurrentBalance,
                 MinimumBalance = progress.EndingBalance.MinimumBalance,
                 MaximumBalance = progress.EndingBalance.MaximumBalance,
                 AmountBelowMinimum = progress.EndingBalance.AmountBelowMinimum,
                 AmountAboveMaximum = progress.EndingBalance.AmountAboveMaximum,
-                Status = (EndingBalanceStatusModel)progress.EndingBalance.Status,
+                Status = (AccountGoalEndingBalanceStatusModel)progress.EndingBalance.Status,
             },
     };
 }

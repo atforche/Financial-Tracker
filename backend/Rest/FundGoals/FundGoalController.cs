@@ -218,12 +218,12 @@ public sealed class FundGoalController(
             AmountAboveMaximum = progress.FundedBalance.AmountAboveMaximum,
             Status = (FundedBalanceStatusModel)progress.FundedBalance.Status,
         },
-        EndingBalance = progress.EndingBalance == null ? null : new EndingBalanceProgressModel
+        EndingBalance = progress.EndingBalance == null ? null : new FundGoalEndingBalanceProgressModel
         {
             TargetBalance = progress.EndingBalance.TargetBalance,
             CurrentBalance = progress.EndingBalance.CurrentBalance,
             Variance = progress.EndingBalance.Variance,
-            Status = (EndingBalanceStatusModel)progress.EndingBalance.Status,
+            Status = (FundGoalEndingBalanceStatusModel)progress.EndingBalance.Status,
             ProjectedEndingBalance = progress.EndingBalance.ProjectedEndingBalance,
         },
     };

@@ -23,5 +23,5 @@ public sealed class FundGoalProgressModel
     /// <summary>
     /// Gets ending-balance progress when configured.
     /// </summary>
-    public EndingBalanceProgressModel? EndingBalance { get; init; }
+    public FundGoalEndingBalanceProgressModel? EndingBalance { get; init; }
 }

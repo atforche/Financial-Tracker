@@ -3,7 +3,7 @@ namespace Models.AccountGoals;
 /// <summary>
 /// Status of an Account balance relative to configured ending-balance bounds.
 /// </summary>
-public enum EndingBalanceStatusModel
+public enum AccountGoalEndingBalanceStatusModel
 {
     /// <summary>
     /// The balance is below the configured minimum.

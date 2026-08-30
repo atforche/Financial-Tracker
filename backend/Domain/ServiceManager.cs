@@ -1,7 +1,7 @@
-using Domain.AccountingPeriods;
-using Domain.AccountingPeriods.Queries;
 using Domain.AccountGoals;
 using Domain.AccountGoals.Queries;
+using Domain.AccountingPeriods;
+using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
 using Domain.FundGoals;

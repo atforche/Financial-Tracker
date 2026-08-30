@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using Domain.AccountingPeriods;
 using Domain.AccountGoals;
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Microsoft.EntityFrameworkCore;
 

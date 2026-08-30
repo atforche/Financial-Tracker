@@ -46,7 +46,7 @@ public sealed class AccountGoalEndpointTests
         Assert.Equal(100m, progress.PositiveBalance.CurrentBalance);
         Assert.True(progress.PositiveBalance.IsSatisfied);
         Assert.True(progress.IsSatisfied);
-        Assert.Equal(EndingBalanceStatusModel.WithinRange, progress.EndingBalance!.Status);
+        Assert.Equal(AccountGoalEndingBalanceStatusModel.WithinRange, progress.EndingBalance!.Status);
 
         IReadOnlyCollection<AccountGoalProgressResultModel> progresses = await test.Api.GetAsync<IReadOnlyCollection<AccountGoalProgressResultModel>>(
             $"/account-goals/progress/{period.Id}");

@@ -4,6 +4,8 @@ import {
   getRowsPerPage,
   normalizePageValue,
 } from "@/framework/listframe/page";
+import type { AccountGoalWithProgress } from "@/account-goals/types";
+import AccountGoalsFrame from "@/accounting-periods/workspace/AccountGoalsFrame";
 import AccountingPeriodDetailActions from "@/accounting-periods/workspace/AccountingPeriodDetailActions";
 import AccountingPeriodSummaryFrame from "@/accounting-periods/workspace/AccountingPeriodSummaryFrame";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
@@ -48,6 +50,9 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
   const apiClient = await createApiClient();
   const rowsPerPage = getRowsPerPage(resolvedSearchParams.pageSize);
   const fundGoalPage = normalizePageValue(resolvedSearchParams.fundGoalPage);
+  const accountGoalPage = normalizePageValue(
+    resolvedSearchParams.accountGoalPage,
+  );
   const transactionPage = normalizePageValue(
     resolvedSearchParams.transactionPage,
   );
@@ -74,6 +79,8 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
     transactionsResponse,
     goalsResponse,
     progressResponse,
+    accountGoalsResponse,
+    accountGoalProgressResponse,
   ] = await Promise.all([
     apiClient.GET("/accounting-periods/{accountingPeriodId}", {
       params: { path: { accountingPeriodId } },
@@ -97,6 +104,18 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
       },
     }),
     apiClient.GET("/fund-goals/progress/{accountingPeriodId}", {
+      params: { path: { accountingPeriodId } },
+    }),
+    apiClient.GET("/account-goals", {
+      params: {
+        query: {
+          "Filter.AccountingPeriodIds": [accountingPeriodId],
+          Limit: rowsPerPage,
+          Offset: getPageOffset(accountGoalPage, rowsPerPage),
+        },
+      },
+    }),
+    apiClient.GET("/account-goals/progress/{accountingPeriodId}", {
       params: { path: { accountingPeriodId } },
     }),
   ]);
@@ -125,10 +144,29 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
       return goalProgress ? [{ ...goal, progress: goalProgress }] : [];
     },
   );
+  const accountGoals = unwrapApiResponse(
+    accountGoalsResponse,
+    "Failed to fetch account goals",
+  );
+  const accountGoalProgress = unwrapApiResponse(
+    accountGoalProgressResponse,
+    "Failed to fetch account goal progress",
+  );
+  const progressByAccountGoal = new Map(
+    accountGoalProgress.map((item) => [item.accountGoalId, item.progress]),
+  );
+  const accountGoalsWithProgress: AccountGoalWithProgress[] =
+    accountGoals.items.flatMap((accountGoal) => {
+      const goalProgress = progressByAccountGoal.get(accountGoal.id);
+      return goalProgress ? [{ ...accountGoal, progress: goalProgress }] : [];
+    });
   const currentUrl = routes.workspaceDetail(period.id, {
     ...workspaceParams,
     ...(typeof resolvedSearchParams.fundGoalPage !== "undefined"
       ? { fundGoalPage: resolvedSearchParams.fundGoalPage }
+      : {}),
+    ...(typeof resolvedSearchParams.accountGoalPage !== "undefined"
+      ? { accountGoalPage: resolvedSearchParams.accountGoalPage }
       : {}),
     ...(typeof resolvedSearchParams.transactionPage !== "undefined"
       ? { transactionPage: resolvedSearchParams.transactionPage }
@@ -192,6 +230,12 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
         <FundGoalsFrame
           goals={goalsWithProgress}
           totalCount={goals.totalCount}
+          accountingPeriodId={period.id}
+          returnUrl={currentUrl}
+        />
+        <AccountGoalsFrame
+          goals={accountGoalsWithProgress}
+          totalCount={accountGoals.totalCount}
           accountingPeriodId={period.id}
           returnUrl={currentUrl}
         />

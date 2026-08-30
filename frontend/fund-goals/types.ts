@@ -1,6 +1,6 @@
 import {
-  EndingBalanceStatusModel,
   FundGoalBalanceEventSortModel,
+  FundGoalEndingBalanceStatusModel,
   FundGoalSortModel,
   FundedBalanceStatusModel,
   type components,
@@ -50,7 +50,7 @@ type FundGoalBalanceSummaryByDate =
 type FundGoalBalanceEventDraft = Partial<FundGoalBalanceEvent>;
 
 export {
-  EndingBalanceStatusModel as EndingBalanceStatus,
+  FundGoalEndingBalanceStatusModel as FundGoalEndingBalanceStatus,
   type FundAvailability,
   type FundGoal,
   type FundGoalBalanceEvent,

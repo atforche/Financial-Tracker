@@ -3598,6 +3598,41 @@ export interface components {
             /** @description Breakdown of total posted balances by Account Type. */
             balanceByAccountType: components["schemas"]["AccountTypeBalanceModel"][];
         };
+        /** @description Model describing ending-balance progress for an Account Goal. */
+        AccountGoalEndingBalanceProgressModel: {
+            /**
+             * Format: double
+             * @description Gets the current Account balance.
+             */
+            currentBalance: number;
+            /**
+             * Format: double
+             * @description Gets the configured minimum ending balance.
+             */
+            minimumBalance?: null | number;
+            /**
+             * Format: double
+             * @description Gets the configured maximum ending balance.
+             */
+            maximumBalance?: null | number;
+            /**
+             * Format: double
+             * @description Gets the amount below the configured minimum.
+             */
+            amountBelowMinimum: number;
+            /**
+             * Format: double
+             * @description Gets the amount above the configured maximum.
+             */
+            amountAboveMaximum: number;
+            /** @description Gets the ending-balance status. */
+            status: components["schemas"]["AccountGoalEndingBalanceStatusModel"];
+        };
+        /**
+         * @description Status of an Account balance relative to configured ending-balance bounds.
+         * @enum {unknown}
+         */
+        AccountGoalEndingBalanceStatusModel: AccountGoalEndingBalanceStatusModel;
         /** @description Model representing an Account Goal for an Accounting Period. */
         AccountGoalModel: {
             /**
@@ -3625,7 +3660,7 @@ export interface components {
             positiveBalance: components["schemas"]["PositiveBalanceProgressModel"];
             /** @description Gets whether the Account Goal is achieved. */
             isSatisfied: boolean;
-            endingBalance?: null | components["schemas"]["EndingBalanceProgressModel"];
+            endingBalance?: null | components["schemas"]["AccountGoalEndingBalanceProgressModel"];
         };
         /** @description Model pairing an Account Goal with its progress for an Accounting Period. */
         AccountGoalProgressResultModel: {
@@ -4537,36 +4572,6 @@ export interface components {
              */
             expiresAt?: null | string;
         };
-        /** @description Model describing ending-balance progress. */
-        EndingBalanceProgressModel: {
-            /**
-             * Format: double
-             * @description Gets the target ending balance.
-             */
-            targetBalance: number;
-            /**
-             * Format: double
-             * @description Gets the current balance.
-             */
-            currentBalance: number;
-            /**
-             * Format: double
-             * @description Gets current balance minus target balance.
-             */
-            variance: number;
-            /** @description Gets the ending-balance status. */
-            status: components["schemas"]["EndingBalanceStatusModel"];
-            /**
-             * Format: double
-             * @description Gets the projected ending balance when available.
-             */
-            projectedEndingBalance?: null | number;
-        };
-        /**
-         * @description Status of a balance relative to its ending target.
-         * @enum {unknown}
-         */
-        EndingBalanceStatusModel: EndingBalanceStatusModel;
         /** @description Expected income from a named source during an Accounting Period. */
         ExpectedIncomeSourceModel: {
             /**
@@ -4875,6 +4880,36 @@ export interface components {
         };
         /** @enum {unknown} */
         FundGoalBalanceEventSortModel: FundGoalBalanceEventSortModel | null;
+        /** @description Model describing ending-balance progress for a Fund Goal. */
+        FundGoalEndingBalanceProgressModel: {
+            /**
+             * Format: double
+             * @description Gets the target ending balance.
+             */
+            targetBalance: number;
+            /**
+             * Format: double
+             * @description Gets the current balance.
+             */
+            currentBalance: number;
+            /**
+             * Format: double
+             * @description Gets current balance minus target balance.
+             */
+            variance: number;
+            /** @description Gets the ending-balance status. */
+            status: components["schemas"]["FundGoalEndingBalanceStatusModel"];
+            /**
+             * Format: double
+             * @description Gets the projected ending balance when available.
+             */
+            projectedEndingBalance?: null | number;
+        };
+        /**
+         * @description Status of a Fund balance relative to its ending target.
+         * @enum {unknown}
+         */
+        FundGoalEndingBalanceStatusModel: FundGoalEndingBalanceStatusModel;
         /** @description Model representing a Fund Goal for an Accounting Period. */
         FundGoalModel: {
             /**
@@ -4912,7 +4947,7 @@ export interface components {
             availableBalance: components["schemas"]["AvailableBalanceProgressModel"];
             contribution?: null | components["schemas"]["ContributionProgressModel"];
             fundedBalance?: null | components["schemas"]["FundedBalanceProgressModel"];
-            endingBalance?: null | components["schemas"]["EndingBalanceProgressModel"];
+            endingBalance?: null | components["schemas"]["FundGoalEndingBalanceProgressModel"];
         };
         /** @description Model pairing a Fund Goal with its progress for an Accounting Period. */
         FundGoalProgressResultModel: {
@@ -6037,6 +6072,11 @@ export enum AccountBalanceEventSortModel {
     Counterparty = "Counterparty",
     CounterpartyDescending = "CounterpartyDescending"
 }
+export enum AccountGoalEndingBalanceStatusModel {
+    BelowMinimum = "BelowMinimum",
+    WithinRange = "WithinRange",
+    AboveMaximum = "AboveMaximum"
+}
 export enum AccountGoalSortModel {
     Account = "Account",
     AccountDescending = "AccountDescending"
@@ -6110,11 +6150,6 @@ export enum CreateTransactionModelCreateRefundTransactionModelType {
 export enum CreateTransactionModelCreateSpendingTransactionModelType {
     Spending = "Spending"
 }
-export enum EndingBalanceStatusModel {
-    BelowTarget = "BelowTarget",
-    AtTarget = "AtTarget",
-    AboveTarget = "AboveTarget"
-}
 export enum FundBalanceEventSortModel {
     FundName = "FundName",
     FundNameDescending = "FundNameDescending",
@@ -6149,6 +6184,11 @@ export enum FundGoalBalanceEventSortModel {
     SourceDescending = "SourceDescending",
     Destination = "Destination",
     DestinationDescending = "DestinationDescending"
+}
+export enum FundGoalEndingBalanceStatusModel {
+    BelowTarget = "BelowTarget",
+    AtTarget = "AtTarget",
+    AboveTarget = "AboveTarget"
 }
 export enum FundGoalSortModel {
     Fund = "Fund",

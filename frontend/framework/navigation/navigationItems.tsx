@@ -3,6 +3,7 @@ import {
   Assessment,
   CalendarMonth,
   EmojiEvents,
+  Flag,
   GridView,
   Place,
   ReceiptLong,
@@ -10,6 +11,7 @@ import {
   Workspaces,
 } from "@mui/icons-material";
 import type { NavigationLink } from "./navigationLinkTypes";
+import accountGoalRoutes from "@/account-goals/routes";
 import accountRoutes from "@/accounts/routes";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
 import fundGoalRoutes from "@/fund-goals/routes";
@@ -50,6 +52,23 @@ const navigationItems = function (): NavigationLink[] {
           icon: <Workspaces />,
         },
         { name: "Trends", href: accountRoutes.trends({}), icon: <Timeline /> },
+      ],
+    },
+    {
+      name: "Account Goals",
+      href: accountGoalRoutes.workspace({}),
+      icon: <Flag />,
+      childLinks: [
+        {
+          name: "Workspace",
+          href: accountGoalRoutes.workspace({}),
+          icon: <Workspaces />,
+        },
+        {
+          name: "Trends",
+          href: accountGoalRoutes.trends({}),
+          icon: <Timeline />,
+        },
       ],
     },
     {
