@@ -3,7 +3,7 @@ import { compareCurrencyAmounts } from "@/framework/currencyHelpers";
 
 /**
  * Returns whether a configured maximum funded amount has meaningful progress.
- * A zero funded balance is still below the goal, even though it is within the
+ * A zero funded balance is still below the Fund Goal, even though it is within the
  * configured upper bound.
  */
 const isMaximumFundedBalanceSatisfied = function (

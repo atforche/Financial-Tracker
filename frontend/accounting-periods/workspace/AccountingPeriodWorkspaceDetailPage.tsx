@@ -9,9 +9,9 @@ import AccountingPeriodSummaryFrame from "@/accounting-periods/workspace/Account
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import ActualIncomeCard from "@/transactions/ActualIncomeCard";
 import ArrowBack from "@mui/icons-material/ArrowBack";
-import ExpectedGoalContributionsActualCard from "@/accounting-periods/workspace/ExpectedGoalContributionsActualCard";
+import ExpectedFundGoalContributionsActualCard from "@/accounting-periods/workspace/ExpectedFundGoalContributionsActualCard";
 import ExpectedIncomeActualCard from "@/accounting-periods/workspace/ExpectedIncomeActualCard";
-import ExpectedIncomeGoalContributionsCard from "@/accounting-periods/workspace/ExpectedIncomeGoalContributionsCard";
+import ExpectedIncomeFundGoalContributionsCard from "@/accounting-periods/workspace/ExpectedIncomeFundGoalContributionsCard";
 import ExpectedIncomeSourcesFrame from "@/accounting-periods/workspace/ExpectedIncomeSourcesFrame";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import FundGoalsFrame from "@/accounting-periods/workspace/FundGoalsFrame";
@@ -171,13 +171,13 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
           totalIncome={transactionSnapshot.totalIncome}
           totalSpending={transactionSnapshot.totalSpending}
         />
-        <ExpectedIncomeGoalContributionsCard
+        <ExpectedIncomeFundGoalContributionsCard
           expectedIncome={period.expectedIncome}
-          expectedGoalContributions={period.expectedGoalContributions}
+          expectedFundGoalContributions={period.expectedGoalContributions}
         />
-        <ExpectedGoalContributionsActualCard
-          expectedGoalContributions={period.expectedGoalContributions}
-          actualGoalContributions={period.actualGoalContributions}
+        <ExpectedFundGoalContributionsActualCard
+          expectedFundGoalContributions={period.expectedGoalContributions}
+          actualFundGoalContributions={period.actualGoalContributions}
         />
         <ExpectedIncomeActualCard
           expectedIncome={period.expectedIncome}

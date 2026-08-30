@@ -15,7 +15,7 @@ namespace Tests.FundGoals;
 public sealed class FundGoalPeriodLifecycleTests
 {
     /// <summary>
-    /// Copies configured goals forward and exposes them through period-scoped lookup and progress APIs.
+    /// Copies configured Fund Goals forward and exposes them through period-scoped lookup and progress APIs.
     /// </summary>
     [Fact]
     public async Task CreatingNextPeriodCopiesGoalConfigurationAndExposesAllProgresses()

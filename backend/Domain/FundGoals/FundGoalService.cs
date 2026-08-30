@@ -82,7 +82,7 @@ public sealed class FundGoalService(
     }
 
     /// <summary>
-    /// Copies Fund Goals from the previous Accounting Period, or onboarded fundGoals for the first Accounting Period.
+    /// Copies Fund Goals from the previous Accounting Period, or onboarded Fund Goals for the first Accounting Period.
     /// </summary>
     public void CopyToAccountingPeriod(AccountingPeriod? previousAccountingPeriod, AccountingPeriod accountingPeriod)
     {
@@ -230,6 +230,6 @@ public sealed class FundGoalService(
         value < 0
             ? [new ValidationError(
                 new ValidationErrorPath(propertyName),
-                "Fund fundGoal quantities must be greater than or equal to zero.")]
+                "Fund Goal quantities must be greater than or equal to zero.")]
             : [];
 }

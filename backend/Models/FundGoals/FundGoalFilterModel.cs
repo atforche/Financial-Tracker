@@ -16,7 +16,7 @@ public sealed class FundGoalFilterModel
     public IReadOnlyCollection<Guid>? AccountingPeriodIds { get; init; }
 
     /// <summary>
-    /// Gets whether onboarded fundGoals with no Accounting Period should be included.
+    /// Gets whether onboarded Fund Goals with no Accounting Period should be included.
     /// </summary>
     public bool? IncludeOnboarded { get; init; }
 }

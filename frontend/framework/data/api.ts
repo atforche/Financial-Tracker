@@ -1968,7 +1968,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Retrieves the Fund Goal associated with a Fund and Accounting Period, or its onboarded fundGoal when the Accounting Period ID is null. */
+        /** Retrieves the Fund Goal associated with a Fund and Accounting Period, or its onboarded Fund Goal when the Accounting Period ID is null. */
         get: {
             parameters: {
                 query?: {
@@ -4528,7 +4528,7 @@ export interface components {
         FundedBalanceStatusModel: FundedBalanceStatusModel;
         /** @description Balance event showing a Transaction's effect on Fund Goal totals. */
         FundGoalBalanceEventModel: {
-            /** @description Fund whose fundGoal totals were affected. */
+            /** @description Fund whose Fund Goal totals were affected. */
             fund: components["schemas"]["FundModel"];
             /** @description Source associated with the balance event's Transaction. */
             source: components["schemas"]["FundGoalBalanceEventPartyModel"];

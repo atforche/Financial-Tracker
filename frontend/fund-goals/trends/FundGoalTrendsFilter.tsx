@@ -109,7 +109,7 @@ const FundGoalTrendsFilter = function ({
 
   return (
     <PageFilterFrame
-      title="Goal Trends"
+      title="Fund Goal Trends"
       actions={
         transactionWorkspaceHref === null ? undefined : (
           <Button

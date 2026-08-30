@@ -66,7 +66,7 @@ const navigationItems = function (): NavigationLink[] {
       ],
     },
     {
-      name: "Goals",
+      name: "Fund Goals",
       href: fundGoalRoutes.workspace({}),
       icon: <EmojiEvents />,
       childLinks: [

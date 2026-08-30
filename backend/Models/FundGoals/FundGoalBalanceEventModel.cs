@@ -9,7 +9,7 @@ namespace Models.FundGoals;
 public sealed class FundGoalBalanceEventModel : BalanceEventModel
 {
     /// <summary>
-    /// Fund whose fundGoal totals were affected.
+    /// Fund whose Fund Goal totals were affected.
     /// </summary>
     public required FundModel Fund { get; init; }
 

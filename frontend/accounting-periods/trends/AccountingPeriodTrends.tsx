@@ -14,7 +14,7 @@ import AccountingPeriodTrendsListFrame from "@/accounting-periods/trends/Account
 import AccountingPeriodTrendsSummaryCards from "@/accounting-periods/trends/AccountingPeriodTrendsSummaryCards";
 import ActualIncomeCard from "@/transactions/ActualIncomeCard";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import ExpectedGoalContributionsActualCard from "@/accounting-periods/workspace/ExpectedGoalContributionsActualCard";
+import ExpectedFundGoalContributionsActualCard from "@/accounting-periods/workspace/ExpectedFundGoalContributionsActualCard";
 import ExpectedIncomeActualCard from "@/accounting-periods/workspace/ExpectedIncomeActualCard";
 import type { IncomeAmount } from "@/transactions/types";
 import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
@@ -203,11 +203,13 @@ const AccountingPeriodTrends = async function ({
           expectedIncome={rangeExpectations.expectedIncome}
           actualIncome={rangeExpectations.actualIncome}
         />
-        <ExpectedGoalContributionsActualCard
-          expectedGoalContributions={
+        <ExpectedFundGoalContributionsActualCard
+          expectedFundGoalContributions={
             rangeExpectations.expectedGoalContributions
           }
-          actualGoalContributions={rangeExpectations.actualGoalContributions}
+          actualFundGoalContributions={
+            rangeExpectations.actualGoalContributions
+          }
         />
       </ResponsiveGrid>
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>

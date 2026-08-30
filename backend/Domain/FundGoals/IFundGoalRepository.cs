@@ -35,7 +35,7 @@ public interface IFundGoalRepository
     FundGoal? GetByFundAndAccountingPeriod(FundId fundId, AccountingPeriodId? accountingPeriodId);
 
     /// <summary>
-    /// Atomically attempts to add the provided Fund Goal when no fundGoal exists for its Fund and Accounting Period.
+    /// Atomically attempts to add the provided Fund Goal when no Fund Goal exists for its Fund and Accounting Period.
     /// </summary>
     bool TryAdd(FundGoal fundGoal);
 

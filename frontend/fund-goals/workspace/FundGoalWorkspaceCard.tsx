@@ -127,7 +127,7 @@ const FundGoalWorkspaceCard = function ({
             })}
           >
             <Typography variant="body2" color="text.secondary">
-              {satisfied} of {configured} goals met
+              {satisfied} of {configured} Fund Goals met
             </Typography>
             <Tooltip title={toggleLabel}>
               <IconButton

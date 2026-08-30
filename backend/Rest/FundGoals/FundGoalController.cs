@@ -106,7 +106,7 @@ public sealed class FundGoalController(
     }
 
     /// <summary>
-    /// Retrieves the Fund Goal associated with a Fund and Accounting Period, or its onboarded fundGoal when the Accounting Period ID is null.
+    /// Retrieves the Fund Goal associated with a Fund and Accounting Period, or its onboarded Fund Goal when the Accounting Period ID is null.
     /// </summary>
     [HttpGet("fund/{fundId:guid}")]
     public async Task<ActionResult<FundGoalModel>> GetByFundAsync(

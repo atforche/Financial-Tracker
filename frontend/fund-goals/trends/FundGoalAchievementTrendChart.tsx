@@ -19,7 +19,7 @@ const FundGoalAchievementTrendChart = function ({
 }: FundGoalAchievementTrendChartProps): JSX.Element {
   return (
     <BarMetricChart
-      title="Goals Achieved"
+      title="Fund Goals Achieved"
       emptyMessage="No Fund Goal progress is available for the selected trends range."
       hasData={chartPoints.some((point) => point.configuredGoalCount > 0)}
       chartPoints={chartPoints.map((point) => ({
@@ -28,7 +28,7 @@ const FundGoalAchievementTrendChart = function ({
         value: point.satisfiedPercentage,
       }))}
       xAxisLabel="Accounting Period"
-      yAxisLabel="Goals Achieved"
+      yAxisLabel="Fund Goals Achieved"
       tickFormatter={(value) => `${value}%`}
       valueFormatter={(value) => `${value.toFixed(0)}%`}
       getTooltipDescription={(point) => {
@@ -37,7 +37,7 @@ const FundGoalAchievementTrendChart = function ({
         );
         return goal === undefined
           ? ""
-          : `${goal.satisfiedGoalCount} of ${goal.configuredGoalCount} goals achieved.`;
+          : `${goal.satisfiedGoalCount} of ${goal.configuredGoalCount} Fund Goals achieved.`;
       }}
       yAxisDomain={[0, 100]}
     />

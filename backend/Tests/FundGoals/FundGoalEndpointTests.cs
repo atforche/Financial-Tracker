@@ -13,7 +13,7 @@ namespace Tests.FundGoals;
 public sealed class FundGoalEndpointTests
 {
     /// <summary>
-    /// Persists goal configuration and exposes it through progress and list projections.
+    /// Persists Fund Goal configuration and exposes it through progress and list projections.
     /// </summary>
     [Fact]
     public async Task UpdateAsyncExposesConfiguredGoalProgress()
