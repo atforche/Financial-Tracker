@@ -10,14 +10,19 @@ namespace Data.Funds;
 public class FundRepository(DatabaseContext databaseContext) : IFundRepository
 {
     /// <inheritdoc/>
-    public IReadOnlyCollection<Fund> GetAll() => databaseContext.Funds.ToList();
+    public IReadOnlyCollection<Fund> GetAll() => databaseContext.Funds
+        .ToList()
+        .Concat(databaseContext.Funds.Local)
+        .DistinctBy(fund => fund.Id)
+        .ToList();
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Fund> GetAllFundsAddedInPeriod(AccountingPeriodId accountingPeriodId) =>
         databaseContext.Funds.Where(fund => fund.OpeningAccountingPeriodId == accountingPeriodId).ToList();
 
     /// <inheritdoc/>
-    public Fund GetById(FundId id) => databaseContext.Funds.Single(fund => fund.Id == id);
+    public Fund GetById(FundId id) => databaseContext.Funds.SingleOrDefault(fund => fund.Id == id)
+        ?? databaseContext.Funds.Local.Single(fund => fund.Id == id);
 
     /// <inheritdoc/>
     public bool TryGetById(Guid id, [NotNullWhen(true)] out Fund? fund)

@@ -18,6 +18,7 @@ public class AccountingPeriodService(
     ITransactionRepository transactionRepository,
     AccountingPeriodBalanceService accountingPeriodBalanceService,
     FundGoalService fundGoalService,
+    IFundGoalRepository fundGoalRepository,
     FundService fundService)
 {
     /// <summary>
@@ -44,12 +45,12 @@ public class AccountingPeriodService(
             UntrackedTransfers = source.UntrackedTransfers.ToList(),
             ExpectedDates = [],
         }) ?? []);
+        if (previousAccountingPeriod == null && !TryCreateFirstAccountingPeriod(accountingPeriod, out exceptions))
+        {
+            return false;
+        }
         fundGoalService.CopyToAccountingPeriod(previousAccountingPeriod, accountingPeriod);
         accountingPeriodBalanceService.AddAccountingPeriod(accountingPeriod);
-        if (previousAccountingPeriod == null)
-        {
-            return TryCreateFirstAccountingPeriod(accountingPeriod, out exceptions);
-        }
         exceptions = [];
         return true;
     }
@@ -314,14 +315,37 @@ public class AccountingPeriodService(
     {
         exceptions = [];
 
-        if (fundRepository.GetUnassignedFund() == null)
+        Fund? unassignedFund = fundRepository.GetUnassignedFund();
+        if (unassignedFund == null)
         {
-            if (!fundService.TryCreateUnassignedFund(accountingPeriod, out Fund? unassignedFund, out IEnumerable<ValidationError> unassignedFundExceptions))
+            if (!fundService.TryCreateUnassignedFund(accountingPeriod, out unassignedFund, out IEnumerable<ValidationError> unassignedFundExceptions))
             {
                 exceptions = exceptions.Concat(unassignedFundExceptions);
                 return false;
             }
             fundRepository.Add(unassignedFund);
+        }
+
+        if (!fundGoalService.TryCreate(
+                new CreateFundGoalRequest
+                {
+                    Fund = unassignedFund,
+                    AccountingPeriod = accountingPeriod,
+                    RegularContribution = null,
+                    MinimumFundedBalance = null,
+                    MaximumFundedBalance = null,
+                    TargetEndingBalance = null,
+                },
+                out FundGoal? unassignedFundGoal,
+                out IEnumerable<ValidationError> goalExceptions))
+        {
+            throw new InvalidOperationException(
+                "Unable to create the required Unassigned Fund Goal: "
+                + string.Join(" ", goalExceptions.Select(exception => exception.Message)));
+        }
+        if (!fundGoalRepository.TryAdd(unassignedFundGoal))
+        {
+            throw new InvalidOperationException("The required Unassigned Fund Goal could not be added.");
         }
 
         return true;

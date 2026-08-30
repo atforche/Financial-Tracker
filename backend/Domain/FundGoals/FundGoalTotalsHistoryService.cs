@@ -45,7 +45,7 @@ public sealed class FundGoalTotalsHistoryService(IFundGoalTotalsHistoryRepositor
     private void SynchronizePostedHistories(Transaction transaction)
     {
         DeleteTransaction(transaction);
-        foreach (FundId fundId in transaction.GetAllAffectedFundIds(null).Where(id => id != Fund.UnassignedFundId).Distinct())
+        foreach (FundId fundId in transaction.GetAllAffectedFundIds(null).Distinct())
         {
             if (!HasPostedEffect(transaction, fundId))
             {

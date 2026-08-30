@@ -35,11 +35,11 @@ public sealed class FundGoalBalanceEventQueryService(
             return [];
         }
         IReadOnlyCollection<FundId> requestedFundIds = requestedTransactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null))
-            .Where(fundId => fundId != Fund.UnassignedFundId).Distinct().ToList();
+            .Distinct().ToList();
         IReadOnlyCollection<Transaction> pendingTransactions = await transactionQueryRepository.GetPendingForFundsAsync(requestedFundIds, cancellationToken);
         IReadOnlyCollection<Transaction> transactions = requestedTransactions.Concat(pendingTransactions).DistinctBy(transaction => transaction.Id).ToList();
         IReadOnlyCollection<FundId> fundIds = transactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null))
-            .Where(fundId => fundId != Fund.UnassignedFundId).Distinct().ToList();
+            .Distinct().ToList();
         IReadOnlyCollection<AccountingPeriodId> periodIds = transactions.Select(transaction => transaction.AccountingPeriodId).Distinct().ToList();
         var periods = (await accountingPeriodRepository.GetByIdsAsync(periodIds, cancellationToken)).ToDictionary(period => period.Id);
         var funds = (await repository.GetFundsAsync(fundIds, cancellationToken)).ToDictionary(fund => fund.Id);
@@ -112,7 +112,7 @@ public sealed class FundGoalBalanceEventQueryService(
     {
         var periods = accountingPeriods.ToDictionary(period => period.Id);
         IReadOnlyCollection<FundId> fundIds = transactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null))
-            .Where(fundId => fundId != Fund.UnassignedFundId).Distinct().ToList();
+            .Distinct().ToList();
         var funds = (await repository.GetFundsAsync(fundIds, cancellationToken)).ToDictionary(fund => fund.Id);
         IReadOnlyCollection<FundGoalTotalsHistory> histories = await repository.GetFundGoalHistoriesAsync(fundIds, cancellationToken);
         Dictionary<(FundId FundId, AccountingPeriodId PeriodId), List<FundGoalTotalsHistory>> historiesByFundAndPeriod = histories
@@ -197,7 +197,6 @@ public sealed class FundGoalBalanceEventQueryService(
         IReadOnlyDictionary<(FundId FundId, AccountingPeriodId PeriodId), List<FundGoalTotalsHistory>> histories) => transaction switch
         {
             SpendingTransaction spending => spending.Destinations.SelectMany(destination => destination.FundAssignments
-                .Where(amount => amount.FundId != Fund.UnassignedFundId)
                 .Select(amount => Create(
                     transaction,
                     period,
@@ -211,7 +210,6 @@ public sealed class FundGoalBalanceEventQueryService(
                         .ToList(),
                     histories))),
             IncomeTransaction income => income.Destinations.SelectMany(destination => destination.FundAssignments
-                .Where(amount => amount.FundId != Fund.UnassignedFundId)
                 .Select(amount => Create(
                     transaction,
                     period,
@@ -223,7 +221,6 @@ public sealed class FundGoalBalanceEventQueryService(
                     [ToParty(destination.Account, null, destination.Amount)],
                     histories))),
             RefundTransaction refund => refund.Sources.SelectMany(source => source.FundAssignments
-                .Where(amount => amount.FundId != Fund.UnassignedFundId)
                 .Select(amount => Create(
                     transaction,
                     period,
@@ -234,9 +231,7 @@ public sealed class FundGoalBalanceEventQueryService(
                     ToParty(source.Account, source.Location?.Name, source.Amount),
                     [ToParty(refund.Destination.Account, null, transaction.Amount)],
                     histories))),
-            FundTransaction fund => (fund.Source.Fund.Id == Fund.UnassignedFundId
-                    ? Enumerable.Empty<FundGoalBalanceEvent>()
-                    : new[] { Create(
+            FundTransaction fund => new[] { Create(
                         transaction,
                         period,
                         fund.Source.Fund,
@@ -245,8 +240,8 @@ public sealed class FundGoalBalanceEventQueryService(
                         BalanceEventType.Debit,
                         new FundGoalBalanceEventParty(fund.Source.Fund.Name, null),
                         fund.Destinations.Select(item => new FundGoalBalanceEventParty(item.Fund.Name, item.Amount)).ToList(),
-                        histories) })
-                .Concat(fund.Destinations.Where(destination => destination.Fund.Id != Fund.UnassignedFundId)
+                        histories) }
+                .Concat(fund.Destinations
                     .Select(destination => Create(
                         transaction,
                         period,

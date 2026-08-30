@@ -191,7 +191,6 @@ public class FundService(
         }
 
         fund = new Fund(openingAccountingPeriod.Id);
-        accountingPeriodBalanceService.AddFund(fund);
         return true;
     }
 

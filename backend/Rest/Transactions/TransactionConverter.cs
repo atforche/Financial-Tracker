@@ -196,7 +196,7 @@ public sealed class TransactionConverter(
                 PostedDate = destination.PostedDate,
                 FundAssignments = destination.FundAssignments.Select(amount =>
                     fundBalanceEventConverter.ToModel(details.GetFundEvent(amount, BalanceEventType.Debit))).ToList(),
-                FundGoals = destination.FundAssignments.Where(amount => amount.FundId != Fund.UnassignedFundId).Select(amount =>
+                FundGoals = destination.FundAssignments.Select(amount =>
                     fundGoalBalanceEventConverter.ToModel(details.GetFundGoalEvent(
                         amount,
                         destination.Account == null ? spending.Source.PostedDate : destination.PostedDate,
@@ -247,7 +247,7 @@ public sealed class TransactionConverter(
                     fundBalanceEventConverter.ToModel(
                         details.GetFundEvent(amount, BalanceEventType.Credit),
                         amount.IsExtraContribution)).ToList(),
-                FundGoals = destination.FundAssignments.Where(amount => amount.FundId != Fund.UnassignedFundId).Select(amount =>
+                FundGoals = destination.FundAssignments.Select(amount =>
                     fundGoalBalanceEventConverter.ToModel(details.GetFundGoalEvent(
                         amount,
                         destination.PostedDate,
@@ -328,7 +328,7 @@ public sealed class TransactionConverter(
                 Fund = fundBalanceEventConverter.ToModel(details.GetFundEvent(
                     new FundAmount { FundId = fund.Source.Fund.Id, Amount = fund.Amount },
                     BalanceEventType.Debit)),
-                FundGoal = fund.Source.Fund.Id == Fund.UnassignedFundId ? null : fundGoalBalanceEventConverter.ToModel(
+                FundGoal = fundGoalBalanceEventConverter.ToModel(
                     details.GetFundGoalEvent(
                         new FundAmount { FundId = fund.Source.Fund.Id, Amount = fund.Amount },
                         fund.Date,
@@ -339,7 +339,7 @@ public sealed class TransactionConverter(
                 Fund = fundBalanceEventConverter.ToModel(details.GetFundEvent(
                     new FundAmount { FundId = destination.Fund.Id, Amount = destination.Amount },
                     BalanceEventType.Credit)),
-                FundGoal = destination.Fund.Id == Fund.UnassignedFundId ? null : fundGoalBalanceEventConverter.ToModel(
+                FundGoal = fundGoalBalanceEventConverter.ToModel(
                     details.GetFundGoalEvent(
                         new FundAmount { FundId = destination.Fund.Id, Amount = destination.Amount },
                         fund.Date,
