@@ -109,7 +109,8 @@ const AccountBalanceEventFrame = function ({
           type: displayedAccountType,
         }
       : null;
-  const hasSelectedAccount = selectedAccount !== null || readOnlyAccount !== null;
+  const hasSelectedAccount =
+    selectedAccount !== null || readOnlyAccount !== null;
   let helperContent = null;
   if (postedDate !== null) {
     helperContent = (

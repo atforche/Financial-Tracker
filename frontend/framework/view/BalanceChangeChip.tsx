@@ -39,7 +39,9 @@ const BalanceChangeChip = function ({
             gap: 0.5,
           }}
         >
-          <span>{label}: {formatCurrency(previousValue)}</span>
+          <span>
+            {label}: {formatCurrency(previousValue)}
+          </span>
           <ArrowForward aria-hidden="true" sx={{ fontSize: 16 }} />
           <span>{formatCurrency(newValue)}</span>
         </Box>
