@@ -146,6 +146,8 @@ public sealed class AccountingPeriodQueryService(
             var incomeTotals = FinancialRangeTotals.Calculate(periodIncomeFacts, []);
             AccountingPeriodBalanceHistory history = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(balance.AccountingPeriod.Id);
             IReadOnlyCollection<FundGoal> fundGoals = fundGoalRepository.GetAllByAccountingPeriod(balance.AccountingPeriod.Id);
+            decimal plannedGoalContributions = fundGoals
+                .Sum(goal => goal.PlannedMonthlyContribution ?? 0);
             decimal expectedGoalContributions = fundGoals
                 .Sum(goal => FundGoalProgressService.CalculateExpectedContribution(
                     history.FundBalances.SingleOrDefault(item => item.Fund.Id == goal.Fund.Id)?.ClosingBalance ?? 0,
@@ -161,6 +163,7 @@ public sealed class AccountingPeriodQueryService(
             {
                 ActualIncome = incomeTotals.TotalIncome,
                 ActualTrackedIncome = incomeTotals.TrackedIncome,
+                PlannedGoalContributions = plannedGoalContributions,
                 ExpectedGoalContributions = expectedGoalContributions,
                 ActualGoalContributions = actualGoalContributions,
             });

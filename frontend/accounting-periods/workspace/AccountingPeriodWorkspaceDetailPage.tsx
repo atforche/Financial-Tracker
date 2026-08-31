@@ -204,23 +204,24 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
         </Stack>
       </Box>
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }} spacing={3}>
-        <ActualIncomeCard totalIncome={transactionSnapshot.totalIncome} />
         <IncomeSpendingCard
           totalIncome={transactionSnapshot.totalIncome}
           totalSpending={transactionSnapshot.totalSpending}
-        />
-        <ExpectedIncomeFundGoalContributionsCard
-          expectedIncome={period.expectedIncome}
-          expectedFundGoalContributions={period.expectedGoalContributions}
         />
         <ExpectedFundGoalContributionsActualCard
           expectedFundGoalContributions={period.expectedGoalContributions}
           actualFundGoalContributions={period.actualGoalContributions}
         />
+        <ExpectedIncomeFundGoalContributionsCard
+          expectedIncome={period.expectedIncome}
+          plannedFundGoalContributions={period.plannedGoalContributions}
+          expectedFundGoalContributions={period.expectedGoalContributions}
+        />
         <ExpectedIncomeActualCard
           expectedIncome={period.expectedIncome}
           actualIncome={period.actualIncome}
         />
+        <ActualIncomeCard totalIncome={transactionSnapshot.totalIncome} />
       </ResponsiveGrid>
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }} spacing={3}>
         <ExpectedIncomeSourcesFrame

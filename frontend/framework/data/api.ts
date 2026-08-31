@@ -3730,6 +3730,11 @@ export interface components {
             actualIncome: components["schemas"]["IncomeAmountModel"];
             /**
              * Format: double
+             * @description Sum of the planned monthly contributions for all Fund Goals in the Accounting Period.
+             */
+            plannedGoalContributions: number;
+            /**
+             * Format: double
              * @description Amount required to satisfy all Fund Goals for the Accounting Period.
              */
             expectedGoalContributions: number;
@@ -3787,6 +3792,11 @@ export interface components {
             expectedIncome: components["schemas"]["IncomeAmountModel"];
             /** @description Posted income for the Accounting Period. */
             actualIncome: components["schemas"]["IncomeAmountModel"];
+            /**
+             * Format: double
+             * @description Sum of the planned monthly contributions for all Fund Goals in the Accounting Period.
+             */
+            plannedGoalContributions: number;
             /**
              * Format: double
              * @description Amount required to satisfy all Fund Goals for the Accounting Period.
