@@ -75,7 +75,7 @@ public sealed class FundGoalPeriodLifecycleTests
         Assert.Equal(20m, availability.IncludingPending);
         Assert.NotNull(progress.Contribution);
         Assert.Equal(50m, progress.Contribution.ExpectedAmount);
-        Assert.Equal(60m, progress.Contribution.AssignedAmount);
+        Assert.Equal(40m, progress.Contribution.AssignedAmount);
         Assert.Equal(60m, period.ActualGoalContributions);
         Assert.NotNull(progress.EndingBalance);
         Assert.Equal(40m, progress.EndingBalance.CurrentBalance);

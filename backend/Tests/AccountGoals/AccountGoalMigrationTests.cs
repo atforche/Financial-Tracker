@@ -98,6 +98,25 @@ internal sealed class MigrationTestDatabase : IAsyncDisposable
     public Task ExecuteAsync(string sql, params object[] arguments) =>
         Context.Database.ExecuteSqlRawAsync(sql, arguments);
 
+    [SuppressMessage("Security", "CA2100", Justification = "The command text is selected from fixed test SQL strings and contains only parameter placeholders.")]
+    public async Task<decimal> ScalarDecimalAsync(string sql, params object[] arguments)
+    {
+        await using System.Data.Common.DbCommand command = Context.Database.GetDbConnection().CreateCommand();
+        command.CommandText = string.Format(CultureInfo.InvariantCulture, sql, arguments.Select((_, index) => $"$p{index}").ToArray());
+        foreach ((object argument, int index) in arguments.Select((argument, index) => (argument, index)))
+        {
+            System.Data.Common.DbParameter parameter = command.CreateParameter();
+            parameter.ParameterName = $"$p{index}";
+            parameter.Value = argument;
+            _ = command.Parameters.Add(parameter);
+        }
+        if (Context.Database.GetDbConnection().State != System.Data.ConnectionState.Open)
+        {
+            await Context.Database.OpenConnectionAsync();
+        }
+        return Convert.ToDecimal(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
+    }
+
     public Task<int> CountAsync(Guid accountId) => CountAsync(accountId, null, false);
 
     public Task<int> CountAsync(Guid accountId, Guid? periodId) => CountAsync(accountId, periodId, true);

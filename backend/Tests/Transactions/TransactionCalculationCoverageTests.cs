@@ -92,26 +92,27 @@ public sealed class TransactionCalculationCoverageTests
         TransactionHandle spending = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 11)).For(30m).From(cash).To("Market", groceries).CreateAsync();
         _ = await test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 12)).For(20m).From(groceries).To(reserve).CreateAsync();
 
-        await AssertGoalAssignedAsync(test, july, groceries, 0m);
+        await AssertGoalAssignedAsync(test, july, groceries, -20m);
         FundGoalBalanceEventModel transferEvent = await GetGoalEventAsync(test, july, groceries, transfer: true);
         Assert.Equal(-20m, transferEvent.NewTotals.AmountAssigned);
+        Assert.Equal(-20m, transferEvent.NewTotals.AmountAssignedToExpectedContribution);
         Assert.Equal(0m, transferEvent.NewTotals.AmountSpent);
 
         await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
-        await AssertGoalAssignedAsync(test, july, groceries, 100m);
+        await AssertGoalAssignedAsync(test, july, groceries, 80m);
 
         await test.Transactions.PostAsync(spending, cash, new DateOnly(2026, 7, 11));
-        await AssertGoalAssignedAsync(test, july, groceries, 100m);
+        await AssertGoalAssignedAsync(test, july, groceries, 80m);
         FundGoalBalanceEventModel spendingEvent = await GetGoalEventAsync(test, july, groceries, transfer: false);
         Assert.Equal(30m, spendingEvent.NewTotals.AmountSpent);
 
         await test.Transactions.UnpostAsync(spending);
         await test.Transactions.UnpostAsync(income);
-        await AssertGoalAssignedAsync(test, july, groceries, 0m);
+        await AssertGoalAssignedAsync(test, july, groceries, -20m);
 
         await test.Transactions.DeleteAsync(spending);
         await test.Transactions.DeleteAsync(income);
-        await AssertGoalAssignedAsync(test, july, groceries, 0m);
+        await AssertGoalAssignedAsync(test, july, groceries, -20m);
     }
 
     /// <summary>
@@ -177,8 +178,66 @@ public sealed class TransactionCalculationCoverageTests
         await AssertFundAndGoalAsync(test, newFund, 25m);
         await AssertFundAndGoalAsync(test, transferSource, -10m);
         await AssertFundAndGoalAsync(test, transferDestination, 10m);
-        await AssertGoalAssignedAsync(test, july, transferSource, 0m);
-        await AssertGoalAssignedAsync(test, july, transferDestination, 0m);
+        await AssertGoalAssignedAsync(test, july, transferSource, -10m);
+        await AssertGoalAssignedAsync(test, july, transferDestination, 10m);
+    }
+
+    /// <summary>
+    /// Verifies moving an automatic Unassigned income remainder into a configured
+    /// Fund Goal moves contribution credit without changing the period aggregate.
+    /// </summary>
+    [Fact]
+    public async Task UnassignedTopUpMovesContributionCreditWithoutCreatingAContribution()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle phone = await test.Funds.Create("Phone").In(july).CreateAsync();
+        _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{phone.Goal.Id}", new UpdateFundGoalModel
+        {
+            PlannedMonthlyContribution = 105m,
+        });
+        CollectionModel<FundModel> funds = await test.Api.GetAsync<CollectionModel<FundModel>>("/funds");
+        FundModel unassignedModel = Assert.Single(funds.Items, fund => fund.Name == "Unassigned");
+        FundGoalModel unassignedGoal = await test.Api.GetAsync<FundGoalModel>(
+            $"/fund-goals/fund/{unassignedModel.Id}?accountingPeriodId={july.Id}");
+        var unassigned = new FundHandle(unassignedModel.Id, unassignedModel.Name, new FundGoalHandle(unassignedGoal.Id));
+        CreateTransactionResultModel income = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", new CreateIncomeTransactionModel
+        {
+            AccountingPeriodId = july.Id,
+            Date = new DateOnly(2026, 7, 10),
+            Description = "Pay",
+            Amount = 105m,
+            Source = new CreateIncomeTransactionSourceModel
+            {
+                Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" },
+                IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = 105m }],
+                IncomeDeductions = [],
+            },
+            Destinations = [new CreateIncomeTransactionDestinationModel
+            {
+                AccountId = cash.Id,
+                Amount = 105m,
+                FundAssignments = [new CreateIncomeFundAmountModel { FundId = phone.Id, Amount = 100m }],
+            }],
+        });
+        await test.Transactions.PostAsync(new TransactionHandle(income.Id), cash, new DateOnly(2026, 7, 10));
+
+        await AssertGoalContributionTotalAsync(test, july, unassigned, 5m);
+        await AssertGoalAssignedAsync(test, july, phone, 100m);
+        Assert.Equal(105m, (await test.Api.GetAsync<Models.AccountingPeriods.AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}")).ActualGoalContributions);
+
+        TransactionHandle transfer = await test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 11)).For(5m).From(unassigned).To(phone).CreateAsync();
+
+        await AssertGoalContributionTotalAsync(test, july, unassigned, 0m);
+        await AssertGoalAssignedAsync(test, july, phone, 105m);
+        Assert.Equal(105m, (await test.Api.GetAsync<Models.AccountingPeriods.AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}")).ActualGoalContributions);
+
+        await test.Transactions.DeleteAsync(transfer);
+
+        await AssertGoalContributionTotalAsync(test, july, unassigned, 5m);
+        await AssertGoalAssignedAsync(test, july, phone, 100m);
+        Assert.Equal(105m, (await test.Api.GetAsync<Models.AccountingPeriods.AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}")).ActualGoalContributions);
     }
 
     /// <summary>
@@ -241,6 +300,22 @@ public sealed class TransactionCalculationCoverageTests
         FundGoalProgressModel progress = await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{fund.Goal.Id}/progress/{period.Id}");
         Assert.NotNull(progress.Contribution);
         Assert.Equal(assigned, progress.Contribution.AssignedAmount);
+    }
+
+    private static async Task AssertGoalContributionTotalAsync(
+        FinancialTrackerTestContext test,
+        AccountingPeriodHandle period,
+        FundHandle fund,
+        decimal expected)
+    {
+        CollectionModel<FundGoalBalanceEventModel> events = await test.Api.GetAsync<CollectionModel<FundGoalBalanceEventModel>>(
+            $"/fund-goals/balance-events/accounting-period-range?range.start={period.Id}&range.end={period.Id}");
+        FundGoalBalanceEventModel latest = events.Items
+            .Where(item => item.Fund.Id == fund.Id)
+            .OrderBy(item => item.TransactionDate)
+            .ThenBy(item => item.TransactionSequence)
+            .Last();
+        Assert.Equal(expected, latest.NewTotals.AmountAssignedToExpectedContribution);
     }
 
     private static async Task<FundGoalBalanceEventModel> GetGoalEventAsync(FinancialTrackerTestContext test, AccountingPeriodHandle period, FundHandle fund, bool transfer)
