@@ -21,9 +21,9 @@ public class OnboardFundModel
     public required decimal OnboardedBalance { get; init; }
 
     /// <summary>
-    /// Regular contribution for the Fund Goal.
+    /// Planned monthly contribution for the Fund Goal.
     /// </summary>
-    public decimal? RegularContribution { get; init; }
+    public decimal? PlannedMonthlyContribution { get; init; }
 
     /// <summary>
     /// Minimum ending balance for the Fund Goal.

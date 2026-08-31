@@ -54,11 +54,11 @@ const IncomeFundAssignmentPlanner = function ({
 }: IncomeFundAssignmentPlannerProps): JSX.Element {
   const unassignedFund = getUnassignedFund(funds);
 
-  const hasRegularContribution = function (fundId: string): boolean {
+  const hasPlannedMonthlyContribution = function (fundId: string): boolean {
     const fundGoal = fundGoals.find((goal) => goal.fund.id === fundId);
     return (
-      fundGoal?.regularContribution !== null &&
-      fundGoal?.regularContribution !== undefined
+      fundGoal?.plannedMonthlyContribution !== null &&
+      fundGoal?.plannedMonthlyContribution !== undefined
     );
   };
 
@@ -132,7 +132,7 @@ const IncomeFundAssignmentPlanner = function ({
             previousGoalAmount,
           );
           const isExtraContribution =
-            hasRegularContribution(newFund.id) &&
+            hasPlannedMonthlyContribution(newFund.id) &&
             assignment.isExtraContribution;
           return {
             fundId: newFund.id,
@@ -250,7 +250,7 @@ const IncomeFundAssignmentPlanner = function ({
   ): JSX.Element | null {
     if (
       assignment.fundId === "" ||
-      (!hasRegularContribution(assignment.fundId) &&
+      (!hasPlannedMonthlyContribution(assignment.fundId) &&
         !assignment.isExtraContribution)
     ) {
       return null;

@@ -42,18 +42,18 @@ const FundGoalProgressBars = function ({
           availableBalance={progress.availableBalance}
         />
       ) : null}
-      {isNotNullOrUndefined(fundGoal.regularContribution) &&
+      {isNotNullOrUndefined(fundGoal.plannedMonthlyContribution) &&
       progress.contribution ? (
         <FundGoalProgress
-          label="Regular Monthly Contribution"
+          label="Expected Contribution"
           current={progress.contribution.assignedAmount}
-          target={progress.contribution.targetAmount}
+          target={progress.contribution.expectedAmount}
           satisfied={progress.contribution.isSatisfied}
         />
       ) : showUnconfigured ? (
         <StringEntryField
-          label="Regular Monthly Contribution"
-          value={displayAmount(fundGoal.regularContribution)}
+          label="Planned Monthly Contribution"
+          value={displayAmount(fundGoal.plannedMonthlyContribution)}
           setValue={null}
         />
       ) : null}

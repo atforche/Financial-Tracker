@@ -24,9 +24,9 @@ public sealed class FundGoalModel
     public AccountingPeriodModel? AccountingPeriod { get; init; }
 
     /// <summary>
-    /// Gets the regular contribution.
+    /// Gets the planned monthly contribution.
     /// </summary>
-    public decimal? RegularContribution { get; init; }
+    public decimal? PlannedMonthlyContribution { get; init; }
 
     /// <summary>
     /// Gets the minimum ending balance.

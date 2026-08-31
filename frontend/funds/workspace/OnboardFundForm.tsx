@@ -53,8 +53,8 @@ const OnboardFundForm = function ({
     setName,
     description,
     setDescription,
-    regularContribution,
-    setRegularContribution,
+    plannedMonthlyContribution,
+    setPlannedMonthlyContribution,
     minimumEndingBalance,
     setMinimumEndingBalance,
     maximumEndingBalance,
@@ -88,7 +88,7 @@ const OnboardFundForm = function ({
     name,
     description,
     onboardedBalance,
-    regularContribution,
+    plannedMonthlyContribution,
     minimumEndingBalance,
     maximumEndingBalance,
   });
@@ -142,8 +142,8 @@ const OnboardFundForm = function ({
 
         <FundGoalSetupSection
           color="success"
-          regularContribution={regularContribution}
-          setRegularContribution={setRegularContribution}
+          plannedMonthlyContribution={plannedMonthlyContribution}
+          setPlannedMonthlyContribution={setPlannedMonthlyContribution}
           minimumEndingBalance={minimumEndingBalance}
           setMinimumEndingBalance={setMinimumEndingBalance}
           maximumEndingBalance={maximumEndingBalance}

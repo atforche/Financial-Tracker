@@ -22,7 +22,7 @@ public sealed class FundGoalService(
         fundGoal = null;
 
         _ = Validate(
-            request.RegularContribution,
+            request.PlannedMonthlyContribution,
             request.MinimumEndingBalance,
             request.MaximumEndingBalance,
             out exceptions);
@@ -40,7 +40,7 @@ public sealed class FundGoalService(
         fundGoal = new FundGoal(
             request.Fund,
             request.AccountingPeriod,
-            request.RegularContribution,
+            request.PlannedMonthlyContribution,
             request.MinimumEndingBalance,
             request.MaximumEndingBalance);
         return true;
@@ -55,7 +55,7 @@ public sealed class FundGoalService(
         out IEnumerable<ValidationError> exceptions)
     {
         _ = Validate(
-            request.RegularContribution,
+            request.PlannedMonthlyContribution,
             request.MinimumEndingBalance,
             request.MaximumEndingBalance,
             out exceptions);
@@ -71,7 +71,7 @@ public sealed class FundGoalService(
         }
 
         fundGoal.Update(
-            request.RegularContribution,
+            request.PlannedMonthlyContribution,
             request.MinimumEndingBalance,
             request.MaximumEndingBalance);
         return true;
@@ -87,7 +87,7 @@ public sealed class FundGoalService(
             var copiedGoal = new FundGoal(
                 existingGoal.Fund,
                 accountingPeriod,
-                existingGoal.RegularContribution,
+                existingGoal.PlannedMonthlyContribution,
                 existingGoal.MinimumEndingBalance,
                 existingGoal.MaximumEndingBalance);
             if (!fundGoalRepository.TryAdd(copiedGoal))
@@ -141,9 +141,9 @@ public sealed class FundGoalService(
         }
 
         progress = FundGoalProgressService.Calculate(
-            totals.RegularAmountAssigned,
+            totals.AmountAssignedToExpectedContribution,
             fundBalanceHistory.ClosingBalance,
-            fundGoal.RegularContribution,
+            fundGoal.PlannedMonthlyContribution,
             fundGoal.MinimumEndingBalance,
             fundGoal.MaximumEndingBalance);
         return true;
@@ -174,9 +174,9 @@ public sealed class FundGoalService(
                 continue;
             }
             results.Add(fundGoal.Id, FundGoalProgressService.Calculate(
-                totals.RegularAmountAssigned,
+                totals.AmountAssignedToExpectedContribution,
                 fundBalanceHistory.ClosingBalance,
-                fundGoal.RegularContribution,
+                fundGoal.PlannedMonthlyContribution,
                 fundGoal.MinimumEndingBalance,
                 fundGoal.MaximumEndingBalance));
         }
@@ -187,7 +187,7 @@ public sealed class FundGoalService(
     /// Validates configurable Fund Goal quantities.
     /// </summary>
     private static bool Validate(
-        decimal? regularContribution,
+        decimal? plannedMonthlyContribution,
         decimal? minimumEndingBalance,
         decimal? maximumEndingBalance,
         out IEnumerable<ValidationError> exceptions)
@@ -195,7 +195,7 @@ public sealed class FundGoalService(
         exceptions = [];
 
         exceptions = exceptions
-            .Concat(ValidateNonnegative(regularContribution, nameof(UpdateFundGoalRequest.RegularContribution)))
+            .Concat(ValidateNonnegative(plannedMonthlyContribution, nameof(UpdateFundGoalRequest.PlannedMonthlyContribution)))
             .Concat(ValidateNonnegative(minimumEndingBalance, nameof(UpdateFundGoalRequest.MinimumEndingBalance)))
             .Concat(ValidateNonnegative(maximumEndingBalance, nameof(UpdateFundGoalRequest.MaximumEndingBalance)));
         if (minimumEndingBalance > maximumEndingBalance)

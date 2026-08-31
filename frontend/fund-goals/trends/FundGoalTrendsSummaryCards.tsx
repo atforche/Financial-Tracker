@@ -47,7 +47,7 @@ const FundGoalTrendsSummaryCards = function ({
           <ComparisonBarPair
             first={{
               label: "Expected contributions",
-              amount: summary.targetContribution,
+              amount: summary.expectedContribution,
               color: "info.main",
               differenceLabel: "Surplus",
               differenceColor: "success.main",

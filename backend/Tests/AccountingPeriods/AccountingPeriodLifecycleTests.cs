@@ -60,7 +60,7 @@ public sealed class AccountingPeriodLifecycleTests
             $"/fund-goals/{goal.Id}/progress/{july.Id}");
 
         Assert.Equal("Unassigned", goal.Fund.Name);
-        Assert.Null(goal.RegularContribution);
+        Assert.Null(goal.PlannedMonthlyContribution);
         Assert.Null(goal.MinimumEndingBalance);
         Assert.Null(goal.MaximumEndingBalance);
         Assert.Contains(progresses, progress => progress.FundGoalId == goal.Id);

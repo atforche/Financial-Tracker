@@ -8,15 +8,15 @@ import { Stack } from "@mui/material";
  */
 interface FundGoalSetupSectionProps {
   readonly color?: FrameColor;
-  readonly regularContribution: number | null;
-  readonly setRegularContribution: ((value: number | null) => void) | null;
+  readonly plannedMonthlyContribution: number | null;
+  readonly setPlannedMonthlyContribution: ((value: number | null) => void) | null;
   readonly minimumEndingBalance: number | null;
   readonly setMinimumEndingBalance: ((value: number | null) => void) | null;
   readonly maximumEndingBalance: number | null;
   readonly setMaximumEndingBalance: ((value: number | null) => void) | null;
   readonly errors?: Partial<
     Record<
-      "regularContribution" | "minimumEndingBalance" | "maximumEndingBalance",
+      "plannedMonthlyContribution" | "minimumEndingBalance" | "maximumEndingBalance",
       string | null
     >
   >;
@@ -27,8 +27,8 @@ interface FundGoalSetupSectionProps {
  */
 const FundGoalSetupSection = function ({
   color = "primary",
-  regularContribution,
-  setRegularContribution,
+  plannedMonthlyContribution,
+  setPlannedMonthlyContribution,
   minimumEndingBalance,
   setMinimumEndingBalance,
   maximumEndingBalance,
@@ -73,11 +73,11 @@ const FundGoalSetupSection = function ({
     <Frame title="Fund Goal Setup" color={color}>
       <Stack spacing={2}>
         <FundGoalAmountOption
-          label="Regular Monthly Contribution"
+          label="Planned Monthly Contribution"
           description="This is a baseline amount that should be contributed to the fund every accounting period."
-          value={regularContribution}
-          setValue={setRegularContribution}
-          errorMessage={errors?.regularContribution ?? null}
+          value={plannedMonthlyContribution}
+          setValue={setPlannedMonthlyContribution}
+          errorMessage={errors?.plannedMonthlyContribution ?? null}
         />
         <FundGoalAmountOption
           label="Minimum Ending Balance"
@@ -88,7 +88,7 @@ const FundGoalSetupSection = function ({
         />
         <FundGoalAmountOption
           label="Maximum Ending Balance"
-          description="This is the maximum balance you want remaining at the end of the accounting period. It also caps the recommended regular contribution."
+          description="This is the maximum balance you want remaining at the end of the accounting period. It also caps the expected contribution."
           value={maximumEndingBalance}
           setValue={setMaximumEndingBalanceWithDefault}
           errorMessage={errors?.maximumEndingBalance ?? null}

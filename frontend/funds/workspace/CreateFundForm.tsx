@@ -49,8 +49,8 @@ const CreateFundForm = function ({
     setName,
     description,
     setDescription,
-    regularContribution,
-    setRegularContribution,
+    plannedMonthlyContribution,
+    setPlannedMonthlyContribution,
     minimumEndingBalance,
     setMinimumEndingBalance,
     maximumEndingBalance,
@@ -81,7 +81,7 @@ const CreateFundForm = function ({
     name,
     description,
     accountingPeriod,
-    regularContribution,
+    plannedMonthlyContribution,
     minimumEndingBalance,
     maximumEndingBalance,
   });
@@ -122,8 +122,8 @@ const CreateFundForm = function ({
 
         <FundGoalSetupSection
           color="info"
-          regularContribution={regularContribution}
-          setRegularContribution={setRegularContribution}
+          plannedMonthlyContribution={plannedMonthlyContribution}
+          setPlannedMonthlyContribution={setPlannedMonthlyContribution}
           minimumEndingBalance={minimumEndingBalance}
           setMinimumEndingBalance={setMinimumEndingBalance}
           maximumEndingBalance={maximumEndingBalance}

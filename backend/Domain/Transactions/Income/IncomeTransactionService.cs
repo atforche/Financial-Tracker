@@ -396,13 +396,13 @@ public class IncomeTransactionService(
             foreach ((int fundAssignmentIndex, IncomeFundAmount fundAssignment) in destination.FundAssignments.Index())
             {
                 if (fundAssignment.IsExtraContribution
-                    && fundGoalRepository.GetByFundAndAccountingPeriod(fundAssignment.FundId, accountingPeriodId)?.RegularContribution == null)
+                    && fundGoalRepository.GetByFundAndAccountingPeriod(fundAssignment.FundId, accountingPeriodId)?.PlannedMonthlyContribution == null)
                 {
                     exceptions = exceptions.Append(new ValidationError(
                         destinationsPathBuilder(index)
                             .AppendWithIndex(nameof(IncomeTransactionDestination.FundAssignments), fundAssignmentIndex)
                             .Append(nameof(IncomeFundAmount.IsExtraContribution)),
-                        "Extra contributions require a Fund Goal with a regular contribution"));
+                        "Extra contributions require a Fund Goal with a planned monthly contribution"));
                 }
             }
         }

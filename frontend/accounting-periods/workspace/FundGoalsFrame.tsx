@@ -49,7 +49,7 @@ const FundGoalsFrame = function ({
       name: "expectedContributions",
       headerContent: "Expected Contributions",
       getBodyContent: (goal) =>
-        formatCurrency(goal.progress.contribution?.targetAmount ?? 0),
+        formatCurrency(goal.progress.contribution?.expectedAmount ?? 0),
       alignment: "right",
     },
     {

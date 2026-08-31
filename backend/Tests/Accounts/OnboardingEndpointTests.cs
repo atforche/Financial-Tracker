@@ -30,7 +30,7 @@ public sealed class OnboardingEndpointTests
             Name = "Emergency",
             Description = "Emergency",
             OnboardedBalance = 80m,
-            RegularContribution = 25m,
+            PlannedMonthlyContribution = 25m,
             MinimumEndingBalance = 50m,
             MaximumEndingBalance = 100m
         });
@@ -41,7 +41,7 @@ public sealed class OnboardingEndpointTests
 
         Assert.Equal(120m, Assert.Single(accounts.Items, item => item.Id == account.Id).CurrentBalance.PostedBalance);
         Assert.Equal(80m, Assert.Single(funds.Items, item => item.Id == fund.Id).CurrentBalance.PostedBalance);
-        Assert.Equal(25m, goal.RegularContribution);
+        Assert.Equal(25m, goal.PlannedMonthlyContribution);
         Assert.Equal(50m, goal.MinimumEndingBalance);
         Assert.Equal(100m, goal.MaximumEndingBalance);
     }

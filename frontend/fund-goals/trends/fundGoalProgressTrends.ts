@@ -23,7 +23,7 @@ interface FundGoalTrendPoint {
   readonly satisfiedGoalCount: number;
   readonly satisfiedPercentage: number;
   readonly assignedContribution: number;
-  readonly targetContribution: number;
+  readonly expectedContribution: number;
 }
 
 /**
@@ -33,7 +33,7 @@ interface FundGoalHealthSummary {
   readonly configuredGoalCount: number;
   readonly satisfiedGoalCount: number;
   readonly assignedContribution: number;
-  readonly targetContribution: number;
+  readonly expectedContribution: number;
 }
 
 const sum = (values: readonly number[]): number => getCurrencyTotal(values);
@@ -87,8 +87,8 @@ const getFundGoalHealthSummary = function (
     assignedContribution: sum(
       contribution.map(({ assignedAmount }) => assignedAmount),
     ),
-    targetContribution: sum(
-      contribution.map(({ targetAmount }) => targetAmount),
+    expectedContribution: sum(
+      contribution.map(({ expectedAmount }) => expectedAmount),
     ),
   };
 };
@@ -117,7 +117,7 @@ const buildFundGoalTrendPoints = function (
           ? 0
           : (summary.satisfiedGoalCount / summary.configuredGoalCount) * 100,
       assignedContribution: summary.assignedContribution,
-      targetContribution: summary.targetContribution,
+      expectedContribution: summary.expectedContribution,
     };
   });
 };

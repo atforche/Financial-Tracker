@@ -8,7 +8,7 @@ public sealed record UpdateFundGoalRequest
     /// <summary>
     /// Amount normally contributed during each Accounting Period.
     /// </summary>
-    public decimal? RegularContribution { get; init; }
+    public decimal? PlannedMonthlyContribution { get; init; }
 
     /// <summary>
     /// Minimum desired balance at the end of an Accounting Period.

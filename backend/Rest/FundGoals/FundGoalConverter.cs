@@ -45,7 +45,7 @@ public sealed class FundGoalConverter
             Month = fundGoal.AccountingPeriod.Month,
             IsOpen = fundGoal.AccountingPeriod.IsOpen,
         },
-        RegularContribution = fundGoal.RegularContribution,
+        PlannedMonthlyContribution = fundGoal.PlannedMonthlyContribution,
         MinimumEndingBalance = fundGoal.MinimumEndingBalance,
         MaximumEndingBalance = fundGoal.MaximumEndingBalance,
     };

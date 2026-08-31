@@ -8,7 +8,7 @@ namespace Domain.Transactions.Income;
 public sealed class IncomeFundAmount : FundAmount
 {
     /// <summary>
-    /// Whether this assignment is extra funding rather than a regular monthly
+    /// Whether this assignment is extra funding rather than an expected monthly
     /// contribution toward the Fund Goal.
     /// </summary>
     public bool IsExtraContribution { get; init; }

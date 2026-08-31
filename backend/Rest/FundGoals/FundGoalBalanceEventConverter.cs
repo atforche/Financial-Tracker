@@ -122,11 +122,11 @@ public sealed class FundGoalBalanceEventConverter
     private static FundGoalTotalsModel ToModel(FundGoalTotals totals) => new()
     {
         AmountAssigned = totals.AmountAssigned,
-        RegularAmountAssigned = totals.RegularAmountAssigned,
+        AmountAssignedToExpectedContribution = totals.AmountAssignedToExpectedContribution,
         AmountAssignedIncludingPending = totals.AmountAssignedIncludingPending,
-        RegularAmountAssignedIncludingPending = totals.RegularAmountAssignedIncludingPending,
-        RemainingRegularAmountToAssign = totals.RemainingRegularAmountToAssign,
-        RemainingRegularAmountToAssignIncludingPending = totals.RemainingRegularAmountToAssignIncludingPending,
+        AmountAssignedToExpectedContributionIncludingPending = totals.AmountAssignedToExpectedContributionIncludingPending,
+        RemainingAmountToAssignToExpectedContribution = totals.RemainingAmountToAssignToExpectedContribution,
+        RemainingAmountToAssignToExpectedContributionIncludingPending = totals.RemainingAmountToAssignToExpectedContributionIncludingPending,
         AmountSpent = totals.AmountSpent,
         AmountSpentIncludingPending = totals.AmountSpentIncludingPending,
     };

@@ -41,7 +41,7 @@ public class FundService(
                 {
                     Fund = fund,
                     AccountingPeriod = accountingPeriod,
-                    RegularContribution = request.RegularContribution,
+                    PlannedMonthlyContribution = request.PlannedMonthlyContribution,
                     MinimumEndingBalance = request.MinimumEndingBalance,
                     MaximumEndingBalance = request.MaximumEndingBalance,
                 },
@@ -96,7 +96,7 @@ public class FundService(
             {
                 Fund = fund,
                 AccountingPeriod = null,
-                RegularContribution = request.RegularContribution,
+                PlannedMonthlyContribution = request.PlannedMonthlyContribution,
                 MinimumEndingBalance = request.MinimumEndingBalance,
                 MaximumEndingBalance = request.MaximumEndingBalance,
             },
@@ -178,7 +178,7 @@ public class FundService(
             Name = Fund.UnassignedFundName,
             Description = Fund.UnassignedFundDescription,
             OpeningAccountingPeriod = openingAccountingPeriod,
-            RegularContribution = null,
+            PlannedMonthlyContribution = null,
             MinimumEndingBalance = null,
             MaximumEndingBalance = null,
         };
@@ -206,7 +206,7 @@ public class FundService(
             Name = Fund.UnassignedFundName,
             Description = Fund.UnassignedFundDescription,
             OnboardedBalance = onboardedBalance,
-            RegularContribution = null,
+            PlannedMonthlyContribution = null,
             MinimumEndingBalance = null,
             MaximumEndingBalance = null,
         };

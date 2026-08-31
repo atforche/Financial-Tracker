@@ -49,7 +49,7 @@ const getTooltipPoint = function (
       typeof value["accountingPeriodId"] === "string" &&
       typeof value["accountingPeriodName"] === "string" &&
       typeof value["assignedContribution"] === "number" &&
-      typeof value["targetContribution"] === "number",
+      typeof value["expectedContribution"] === "number",
   );
 };
 
@@ -62,7 +62,7 @@ const FundGoalContributionTrendChart = function ({
   const theme = useTheme();
   const hasData = chartPoints.some(
     (point) =>
-      point.assignedContribution !== 0 || point.targetContribution !== 0,
+      point.assignedContribution !== 0 || point.expectedContribution !== 0,
   );
 
   return (
@@ -108,14 +108,14 @@ const FundGoalContributionTrendChart = function ({
                 <ChartTooltip
                   label={point.accountingPeriodName}
                   value={`Assigned: ${formatCurrency(point.assignedContribution)}`}
-                  description={`Expected: ${formatCurrency(point.targetContribution)}`}
+                  description={`Expected: ${formatCurrency(point.expectedContribution)}`}
                 />
               );
             }}
             cursor={{ fill: alpha(theme.palette.primary.main, 0.08) }}
           />
           <Bar
-            dataKey="targetContribution"
+            dataKey="expectedContribution"
             fill={theme.palette.info.main}
             name="Expected contributions"
             radius={[4, 4, 0, 0]}

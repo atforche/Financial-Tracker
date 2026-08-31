@@ -364,7 +364,7 @@ const addFundAssignment = function (
 };
 
 /**
- * Creates regular income assignments in order of largest remaining contribution.
+ * Creates expected income assignments in order of largest remaining contribution.
  */
 const autoAssignIncomeFundAssignments = function (
   totalAmountToAssign: number | null,

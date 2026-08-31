@@ -21,7 +21,7 @@ public sealed class FundGoal : Entity<FundGoalId>
     /// <summary>
     /// Amount normally contributed during each Accounting Period.
     /// </summary>
-    public decimal? RegularContribution { get; private set; }
+    public decimal? PlannedMonthlyContribution { get; private set; }
 
     /// <summary>
     /// Minimum desired balance at the end of an Accounting Period.
@@ -37,11 +37,11 @@ public sealed class FundGoal : Entity<FundGoalId>
     /// Updates the configurable quantities for this Fund Goal.
     /// </summary>
     internal void Update(
-        decimal? regularContribution,
+        decimal? plannedMonthlyContribution,
         decimal? minimumEndingBalance,
         decimal? maximumEndingBalance)
     {
-        RegularContribution = regularContribution;
+        PlannedMonthlyContribution = plannedMonthlyContribution;
         MinimumEndingBalance = minimumEndingBalance;
         MaximumEndingBalance = maximumEndingBalance;
     }
@@ -52,14 +52,14 @@ public sealed class FundGoal : Entity<FundGoalId>
     internal FundGoal(
         Fund fund,
         AccountingPeriod? accountingPeriod,
-        decimal? regularContribution,
+        decimal? plannedMonthlyContribution,
         decimal? minimumEndingBalance,
         decimal? maximumEndingBalance)
         : base(new FundGoalId(Guid.NewGuid()))
     {
         Fund = fund;
         AccountingPeriod = accountingPeriod;
-        Update(regularContribution, minimumEndingBalance, maximumEndingBalance);
+        Update(plannedMonthlyContribution, minimumEndingBalance, maximumEndingBalance);
     }
 
     /// <summary>

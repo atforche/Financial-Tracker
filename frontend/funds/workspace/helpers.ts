@@ -21,7 +21,7 @@ const validateOnboardFundSetup = (
  * Fields required to build a Fund Goal.
  */
 interface FundGoalFields {
-  readonly regularContribution: number | null;
+  readonly plannedMonthlyContribution: number | null;
   readonly minimumEndingBalance: number | null;
   readonly maximumEndingBalance: number | null;
 }
@@ -68,7 +68,7 @@ const buildCreateFundRequest = (
     name: fields.name,
     description: fields.description,
     accountingPeriodId: fields.accountingPeriod?.id ?? "",
-    regularContribution: fields.regularContribution,
+    plannedMonthlyContribution: fields.plannedMonthlyContribution,
     minimumEndingBalance: fields.minimumEndingBalance,
     maximumEndingBalance: fields.maximumEndingBalance,
   };
@@ -90,7 +90,7 @@ const buildOnboardFundRequest = (
     name: fields.name,
     description: fields.description,
     onboardedBalance: fields.onboardedBalance ?? 0,
-    regularContribution: fields.regularContribution,
+    plannedMonthlyContribution: fields.plannedMonthlyContribution,
     minimumEndingBalance: fields.minimumEndingBalance,
     maximumEndingBalance: fields.maximumEndingBalance,
   };

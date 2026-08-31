@@ -6,9 +6,9 @@ namespace Models.FundGoals;
 public sealed class UpdateFundGoalModel
 {
     /// <summary>
-    /// Gets the new regular contribution.
+    /// Gets the new planned monthly contribution.
     /// </summary>
-    public decimal? RegularContribution { get; init; }
+    public decimal? PlannedMonthlyContribution { get; init; }
 
     /// <summary>
     /// Gets the new minimum ending balance.

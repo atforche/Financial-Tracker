@@ -21,9 +21,9 @@ public record OnboardFundRequest
     public required decimal OnboardedBalance { get; init; }
 
     /// <summary>
-    /// Regular contribution for the onboarded Fund Goal.
+    /// Planned monthly contribution for the onboarded Fund Goal.
     /// </summary>
-    public required decimal? RegularContribution { get; init; }
+    public required decimal? PlannedMonthlyContribution { get; init; }
 
     /// <summary>
     /// Minimum ending balance for the onboarded Fund Goal.

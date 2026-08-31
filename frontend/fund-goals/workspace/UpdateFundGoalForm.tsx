@@ -34,8 +34,8 @@ const UpdateFundGoalForm = function ({
 }: UpdateFundGoalFormProps): JSX.Element | null {
   const canWrite = useWriteAccess();
   const [open, setOpen] = useState(false);
-  const [regularContribution, setRegularContribution] = useState(
-    fundGoal.regularContribution ?? null,
+  const [plannedMonthlyContribution, setPlannedMonthlyContribution] = useState(
+    fundGoal.plannedMonthlyContribution ?? null,
   );
   const [minimumEndingBalance, setMinimumEndingBalance] = useState(
     fundGoal.minimumEndingBalance ?? null,
@@ -46,7 +46,7 @@ const UpdateFundGoalForm = function ({
   const formRef = useRef<HTMLDivElement | null>(null);
   const [state, action, pending] = useActionState(updateFundGoal, {});
   const reset = (): void => {
-    setRegularContribution(fundGoal.regularContribution ?? null);
+    setPlannedMonthlyContribution(fundGoal.plannedMonthlyContribution ?? null);
     setMinimumEndingBalance(fundGoal.minimumEndingBalance ?? null);
     setMaximumEndingBalance(fundGoal.maximumEndingBalance ?? null);
     focusFirstEntryControl(formRef.current);
@@ -59,7 +59,7 @@ const UpdateFundGoalForm = function ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.success]);
   const request: UpdateFundGoalRequest = {
-    regularContribution,
+    plannedMonthlyContribution,
     minimumEndingBalance,
     maximumEndingBalance,
   };
@@ -125,8 +125,8 @@ const UpdateFundGoalForm = function ({
       >
         <Stack ref={formRef} spacing={3}>
           <FundGoalSetupSection
-            regularContribution={regularContribution}
-            setRegularContribution={setRegularContribution}
+            plannedMonthlyContribution={plannedMonthlyContribution}
+            setPlannedMonthlyContribution={setPlannedMonthlyContribution}
             minimumEndingBalance={minimumEndingBalance}
             setMinimumEndingBalance={setMinimumEndingBalance}
             maximumEndingBalance={maximumEndingBalance}

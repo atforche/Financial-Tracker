@@ -8,16 +8,16 @@ namespace Tests.FundGoals;
 public sealed class FundGoalProgressServiceTests
 {
     /// <summary>
-    /// Applies the regular contribution and maximum ending-balance cap to the recommendation.
+    /// Applies the planned monthly contribution and maximum ending-balance cap to the expectation.
     /// </summary>
     [Fact]
-    public void CalculateRecommendedContributionAppliesBounds()
+    public void CalculateExpectedContributionAppliesBounds()
     {
-        Assert.Equal(25m, FundGoalProgressService.CalculateRecommendedContribution(100m, 0m, 25m, null));
-        Assert.Equal(25m, FundGoalProgressService.CalculateRecommendedContribution(100m, 10m, 25m, 150m));
-        Assert.Equal(50m, FundGoalProgressService.CalculateRecommendedContribution(100m, 0m, 100m, 150m));
-        Assert.Equal(10m, FundGoalProgressService.CalculateRecommendedContribution(175m, 10m, 25m, 150m));
-        Assert.Equal(0m, FundGoalProgressService.CalculateRecommendedContribution(100m, 0m, -25m, null));
+        Assert.Equal(25m, FundGoalProgressService.CalculateExpectedContribution(100m, 0m, 25m, null));
+        Assert.Equal(25m, FundGoalProgressService.CalculateExpectedContribution(100m, 10m, 25m, 150m));
+        Assert.Equal(50m, FundGoalProgressService.CalculateExpectedContribution(100m, 0m, 100m, 150m));
+        Assert.Equal(10m, FundGoalProgressService.CalculateExpectedContribution(175m, 10m, 25m, 150m));
+        Assert.Equal(0m, FundGoalProgressService.CalculateExpectedContribution(100m, 0m, -25m, null));
     }
 
     /// <summary>
@@ -30,15 +30,15 @@ public sealed class FundGoalProgressServiceTests
 
         Assert.True(progress.AvailableBalance.IsSatisfied);
         Assert.NotNull(progress.Contribution);
-        Assert.Equal(40m, progress.Contribution.TargetAmount);
+        Assert.Equal(40m, progress.Contribution.ExpectedAmount);
         Assert.NotNull(progress.EndingBalance);
     }
 
     /// <summary>
-    /// Counts only regular assignments toward regular-contribution progress.
+    /// Counts only planned assignments toward planned-contribution progress.
     /// </summary>
     [Fact]
-    public void CalculateSeparatesExtraFundingFromRegularContribution()
+    public void CalculateSeparatesExtraFundingFromPlannedMonthlyContribution()
     {
         FundGoalProgress progress = FundGoalProgressService.Calculate(
             0m,

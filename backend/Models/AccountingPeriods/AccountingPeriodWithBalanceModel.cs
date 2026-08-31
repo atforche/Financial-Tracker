@@ -36,7 +36,7 @@ public class AccountingPeriodWithBalanceModel : AccountingPeriodModel
     public required decimal ExpectedGoalContributions { get; init; }
 
     /// <summary>
-    /// Amount assigned toward regular contributions for all Fund Goals in the Accounting Period.
+    /// Amount assigned toward expected monthly contributions for all Fund Goals in the Accounting Period.
     /// </summary>
     public required decimal ActualGoalContributions { get; init; }
 }

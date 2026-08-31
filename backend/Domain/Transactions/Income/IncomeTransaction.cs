@@ -197,12 +197,12 @@ public class IncomeTransaction : Transaction
             .SelectMany(destination => destination.FundAssignments)
             .Where(assignment => assignment.FundId == existingTotals.FundId).ToList();
         decimal amount = fundAmounts.Sum(assignment => assignment.Amount);
-        decimal regularAmount = fundAmounts
+        decimal expectedAmount = fundAmounts
             .Where(assignment => !assignment.IsExtraContribution)
             .Sum(assignment => assignment.Amount);
         return amount == 0 ? existingTotals : existingTotals.Assign(
             reverse ? -amount : amount,
-            reverse ? -regularAmount : regularAmount);
+            reverse ? -expectedAmount : expectedAmount);
     }
 
     /// <inheritdoc/>

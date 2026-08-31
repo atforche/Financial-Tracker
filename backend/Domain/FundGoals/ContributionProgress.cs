@@ -6,9 +6,9 @@ namespace Domain.FundGoals;
 public sealed class ContributionProgress
 {
     /// <summary>
-    /// Recommended contribution after applying the configured bounds.
+    /// Expected contribution after applying the configured bounds.
     /// </summary>
-    public decimal TargetAmount { get; }
+    public decimal ExpectedAmount { get; }
 
     /// <summary>
     /// Amount assigned during the Accounting Period.
@@ -18,19 +18,19 @@ public sealed class ContributionProgress
     /// <summary>
     /// Nonnegative amount remaining to reach the recommendation.
     /// </summary>
-    public decimal RemainingAmount => Math.Max(TargetAmount - AssignedAmount, 0);
+    public decimal RemainingAmount => Math.Max(ExpectedAmount - AssignedAmount, 0);
 
     /// <summary>
     /// True when the assigned amount reaches the recommendation.
     /// </summary>
-    public bool IsSatisfied => AssignedAmount >= TargetAmount;
+    public bool IsSatisfied => AssignedAmount >= ExpectedAmount;
 
     /// <summary>
     /// Constructs a new instance of this class.
     /// </summary>
-    internal ContributionProgress(decimal targetAmount, decimal assignedAmount)
+    internal ContributionProgress(decimal expectedAmount, decimal assignedAmount)
     {
-        TargetAmount = targetAmount;
+        ExpectedAmount = expectedAmount;
         AssignedAmount = assignedAmount;
     }
 }

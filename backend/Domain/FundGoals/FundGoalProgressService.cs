@@ -9,21 +9,21 @@ public static class FundGoalProgressService
     /// Calculates progress for a Fund Goal in an Accounting Period.
     /// </summary>
     public static FundGoalProgress Calculate(
-        decimal regularAssignedAmount,
+        decimal amountAssignedToExpectedContribution,
         decimal currentAvailableBalance,
-        decimal? regularContribution,
+        decimal? plannedMonthlyContribution,
         decimal? minimumEndingBalance,
         decimal? maximumEndingBalance)
     {
-        decimal recommendedContribution = CalculateRecommendedContribution(
+        decimal expectedContribution = CalculateExpectedContribution(
             currentAvailableBalance,
-            regularAssignedAmount,
-            regularContribution,
+            amountAssignedToExpectedContribution,
+            plannedMonthlyContribution,
             maximumEndingBalance);
-        ContributionProgress? contribution = regularContribution != null
+        ContributionProgress? contribution = plannedMonthlyContribution != null
             || minimumEndingBalance != null
             || maximumEndingBalance != null
-            ? new ContributionProgress(recommendedContribution, regularAssignedAmount)
+            ? new ContributionProgress(expectedContribution, amountAssignedToExpectedContribution)
             : null;
         FundGoalEndingBalanceProgress? endingBalance = minimumEndingBalance != null
             || maximumEndingBalance != null
@@ -40,16 +40,16 @@ public static class FundGoalProgressService
     }
 
     /// <summary>
-    /// Calculates the total recommended contribution after applying the maximum ending-balance constraint.
+    /// Calculates the total expected contribution after applying the maximum ending-balance constraint.
     /// </summary>
-    public static decimal CalculateRecommendedContribution(
+    public static decimal CalculateExpectedContribution(
         decimal currentAvailableBalance,
         decimal currentContributions,
-        decimal? regularContribution,
+        decimal? plannedMonthlyContribution,
         decimal? maximumEndingBalance)
     {
         decimal contributions = Math.Max(currentContributions, 0);
-        decimal remainingContribution = Math.Max((regularContribution ?? 0) - contributions, 0);
+        decimal remainingContribution = Math.Max((plannedMonthlyContribution ?? 0) - contributions, 0);
         if (maximumEndingBalance is decimal maximum)
         {
             remainingContribution = Math.Min(

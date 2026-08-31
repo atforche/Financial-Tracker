@@ -21,10 +21,10 @@ public sealed class TransactionCalculationCoverageTests
 {
     /// <summary>
     /// Verifies extra income funding increases ending-balance progress without
-    /// satisfying the regular monthly contribution.
+    /// satisfying the planned monthly contribution.
     /// </summary>
     [Fact]
-    public async Task ExtraIncomeFundingCountsTowardEndingBalanceButNotRegularContribution()
+    public async Task ExtraIncomeFundingCountsTowardEndingBalanceButNotPlannedMonthlyContribution()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
@@ -32,7 +32,7 @@ public sealed class TransactionCalculationCoverageTests
         FundHandle gifts = await test.Funds.Create("Gifts").In(july).CreateAsync();
         _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{gifts.Goal.Id}", new UpdateFundGoalModel
         {
-            RegularContribution = 200m,
+            PlannedMonthlyContribution = 200m,
             MinimumEndingBalance = 50m,
             MaximumEndingBalance = 300m,
         });
@@ -75,7 +75,7 @@ public sealed class TransactionCalculationCoverageTests
     }
 
     /// <summary>
-    /// Verifies assigned and regular contribution totals remain distinct across
+    /// Verifies assigned and planned monthly contribution totals remain distinct across
     /// income, spending, fund transfers, and lifecycle actions.
     /// </summary>
     [Fact]
@@ -86,7 +86,7 @@ public sealed class TransactionCalculationCoverageTests
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
         FundHandle reserve = await test.Funds.Create("Reserve").In(july).CreateAsync();
-        _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel { RegularContribution = 100m });
+        _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel { PlannedMonthlyContribution = 100m });
 
         TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(100m).From("Employer").To(cash, groceries).CreateAsync();
         TransactionHandle spending = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 11)).For(30m).From(cash).To("Market", groceries).CreateAsync();
@@ -130,8 +130,8 @@ public sealed class TransactionCalculationCoverageTests
         FundHandle newFund = await test.Funds.Create("New").In(july).CreateAsync();
         FundHandle transferSource = await test.Funds.Create("Transfer source").In(july).CreateAsync();
         FundHandle transferDestination = await test.Funds.Create("Transfer destination").In(july).CreateAsync();
-        _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{transferSource.Goal.Id}", new UpdateFundGoalModel { RegularContribution = 1m });
-        _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{transferDestination.Goal.Id}", new UpdateFundGoalModel { RegularContribution = 1m });
+        _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{transferSource.Goal.Id}", new UpdateFundGoalModel { PlannedMonthlyContribution = 1m });
+        _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{transferDestination.Goal.Id}", new UpdateFundGoalModel { PlannedMonthlyContribution = 1m });
 
         TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(25m).From("Employer").To(first, oldFund).CreateAsync();
         UpdateTransactionModel incomeUpdate = new UpdateIncomeTransactionModel

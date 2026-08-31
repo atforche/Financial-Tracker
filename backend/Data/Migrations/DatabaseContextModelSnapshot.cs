@@ -199,7 +199,7 @@ namespace Data.Migrations
                     b.Property<decimal?>("MinimumEndingBalance")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal?>("RegularContribution")
+                    b.Property<decimal?>("PlannedMonthlyContribution")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -236,7 +236,7 @@ namespace Data.Migrations
                     b.Property<Guid>("FundId")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("RegularAmountAssigned")
+                    b.Property<decimal>("AmountAssignedToExpectedContribution")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Sequence")
@@ -270,7 +270,7 @@ namespace Data.Migrations
                     b.Property<decimal>("PendingAmountSpent")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("PendingRegularAmountAssigned")
+                    b.Property<decimal>("PendingAmountAssignedToExpectedContribution")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("TransactionId")
@@ -902,7 +902,7 @@ namespace Data.Migrations
                             b1.Property<Guid>("FundId")
                                 .HasColumnType("TEXT");
 
-                            b1.Property<decimal>("RegularAmountAssigned")
+                            b1.Property<decimal>("AmountAssignedToExpectedContribution")
                                 .HasColumnType("TEXT");
 
                             b1.HasKey("Id");

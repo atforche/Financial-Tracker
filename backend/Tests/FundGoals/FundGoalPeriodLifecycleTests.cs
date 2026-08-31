@@ -25,7 +25,7 @@ public sealed class FundGoalPeriodLifecycleTests
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
         _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel
         {
-            RegularContribution = 50m,
+            PlannedMonthlyContribution = 50m,
             MinimumEndingBalance = 100m,
             MaximumEndingBalance = 200m
         });
@@ -36,7 +36,7 @@ public sealed class FundGoalPeriodLifecycleTests
             $"/fund-goals/progress/{august.Id}");
         using HttpResponseMessage missing = await test.Api.GetResponseAsync($"/fund-goals/progress/{Guid.NewGuid()}");
 
-        Assert.Equal(50m, copied.RegularContribution);
+        Assert.Equal(50m, copied.PlannedMonthlyContribution);
         Assert.Equal(100m, copied.MinimumEndingBalance);
         Assert.Equal(200m, copied.MaximumEndingBalance);
         Assert.Contains(progresses, item => item.FundGoalId == copied.Id && item.Progress.Contribution != null);
@@ -55,7 +55,7 @@ public sealed class FundGoalPeriodLifecycleTests
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
         _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel
         {
-            RegularContribution = 50m,
+            PlannedMonthlyContribution = 50m,
             MinimumEndingBalance = 25m,
             MaximumEndingBalance = 100m
         });
@@ -74,7 +74,7 @@ public sealed class FundGoalPeriodLifecycleTests
         Assert.Equal(40m, availability.Posted);
         Assert.Equal(20m, availability.IncludingPending);
         Assert.NotNull(progress.Contribution);
-        Assert.Equal(60m, progress.Contribution.TargetAmount);
+        Assert.Equal(60m, progress.Contribution.ExpectedAmount);
         Assert.Equal(60m, progress.Contribution.AssignedAmount);
         Assert.Equal(60m, period.ActualGoalContributions);
         Assert.NotNull(progress.EndingBalance);

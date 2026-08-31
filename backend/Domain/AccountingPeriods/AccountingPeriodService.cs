@@ -335,7 +335,7 @@ public class AccountingPeriodService(
                 {
                     Fund = unassignedFund,
                     AccountingPeriod = accountingPeriod,
-                    RegularContribution = null,
+                    PlannedMonthlyContribution = null,
                     MinimumEndingBalance = null,
                     MaximumEndingBalance = null,
                 },

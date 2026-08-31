@@ -184,7 +184,7 @@ public sealed class FundGoalController(
     /// </summary>
     private static UpdateFundGoalRequest ToRequest(UpdateFundGoalModel model) => new()
     {
-        RegularContribution = model.RegularContribution,
+        PlannedMonthlyContribution = model.PlannedMonthlyContribution,
         MinimumEndingBalance = model.MinimumEndingBalance,
         MaximumEndingBalance = model.MaximumEndingBalance,
     };
@@ -203,7 +203,7 @@ public sealed class FundGoalController(
         },
         Contribution = progress.Contribution == null ? null : new ContributionProgressModel
         {
-            TargetAmount = progress.Contribution.TargetAmount,
+            ExpectedAmount = progress.Contribution.ExpectedAmount,
             AssignedAmount = progress.Contribution.AssignedAmount,
             RemainingAmount = progress.Contribution.RemainingAmount,
             IsSatisfied = progress.Contribution.IsSatisfied,

@@ -50,7 +50,7 @@ const FundGoalWorkspaceCard = function ({
       satisfied: fundGoal.progress.availableBalance.isSatisfied,
     },
     {
-      configured: isNotNullOrUndefined(fundGoal.regularContribution),
+      configured: isNotNullOrUndefined(fundGoal.plannedMonthlyContribution),
       satisfied: fundGoal.progress.contribution?.isSatisfied === true,
     },
     {

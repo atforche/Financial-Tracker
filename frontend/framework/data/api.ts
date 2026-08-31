@@ -3735,7 +3735,7 @@ export interface components {
             expectedGoalContributions: number;
             /**
              * Format: double
-             * @description Amount assigned toward regular contributions for all Fund Goals in the Accounting Period.
+             * @description Amount assigned toward expected monthly contributions for all Fund Goals in the Accounting Period.
              */
             actualGoalContributions: number;
             /**
@@ -3794,7 +3794,7 @@ export interface components {
             expectedGoalContributions: number;
             /**
              * Format: double
-             * @description Amount assigned toward regular contributions for all Fund Goals in the Accounting Period.
+             * @description Amount assigned toward expected monthly contributions for all Fund Goals in the Accounting Period.
              */
             actualGoalContributions: number;
             /**
@@ -4165,9 +4165,9 @@ export interface components {
         ContributionProgressModel: {
             /**
              * Format: double
-             * @description Gets the recommended contribution.
+             * @description Gets the expected contribution.
              */
-            targetAmount: number;
+            expectedAmount: number;
             /**
              * Format: double
              * @description Gets the amount assigned.
@@ -4262,9 +4262,9 @@ export interface components {
             accountingPeriodId: string;
             /**
              * Format: double
-             * @description Regular contribution for the Fund Goal.
+             * @description Planned monthly contribution for the Fund Goal.
              */
-            regularContribution?: null | number;
+            plannedMonthlyContribution?: null | number;
             /**
              * Format: double
              * @description Minimum ending balance for the Fund Goal.
@@ -4310,7 +4310,7 @@ export interface components {
         /** @description Model representing a Fund amount assigned by an income transaction. */
         CreateIncomeFundAmountModel: {
             /**
-             * @description Whether this assignment is extra funding outside the regular monthly
+             * @description Whether this assignment is extra funding outside the expected monthly
              *     contribution.
              */
             isExtraContribution?: boolean;
@@ -4649,7 +4649,7 @@ export interface components {
         /** @description Model representing a balance event for a fund. */
         FundBalanceEventModel: {
             /**
-             * @description Whether this income assignment is extra funding outside the regular
+             * @description Whether this income assignment is extra funding outside the expected
              *     monthly Fund Goal contribution.
              */
             isExtraContribution?: boolean;
@@ -4887,9 +4887,9 @@ export interface components {
             accountingPeriod?: null | components["schemas"]["AccountingPeriodModel"];
             /**
              * Format: double
-             * @description Gets the regular contribution.
+             * @description Gets the planned monthly contribution.
              */
-            regularContribution?: null | number;
+            plannedMonthlyContribution?: null | number;
             /**
              * Format: double
              * @description Gets the minimum ending balance.
@@ -4929,9 +4929,9 @@ export interface components {
             amountAssigned: number;
             /**
              * Format: double
-             * @description Posted amount assigned toward the regular monthly contribution.
+             * @description Posted amount assigned toward the expected monthly contribution.
              */
-            regularAmountAssigned: number;
+            amountAssignedToExpectedContribution: number;
             /**
              * Format: double
              * @description Amount assigned including unposted Transaction effects.
@@ -4939,20 +4939,20 @@ export interface components {
             amountAssignedIncludingPending: number;
             /**
              * Format: double
-             * @description Amount assigned toward the regular monthly contribution including
+             * @description Amount to assign toward the expected monthly contribution including
              *     unposted Transaction effects.
              */
-            regularAmountAssignedIncludingPending: number;
+            amountAssignedToExpectedContributionIncludingPending: number;
             /**
              * Format: double
-             * @description Amount remaining to assign toward the regular contribution.
+             * @description Amount remaining to assign toward the expected monthly contribution.
              */
-            remainingRegularAmountToAssign: number;
+            remainingAmountToAssignToExpectedContribution: number;
             /**
              * Format: double
-             * @description Amount remaining to assign toward the regular contribution including pending effects.
+             * @description Amount remaining to assign toward the expected monthly contribution including pending effects.
              */
-            remainingRegularAmountToAssignIncludingPending: number;
+            remainingAmountToAssignToExpectedContributionIncludingPending: number;
             /**
              * Format: double
              * @description Posted amount spent.
@@ -5192,9 +5192,9 @@ export interface components {
             onboardedBalance: number;
             /**
              * Format: double
-             * @description Regular contribution for the Fund Goal.
+             * @description Planned monthly contribution for the Fund Goal.
              */
-            regularContribution?: null | number;
+            plannedMonthlyContribution?: null | number;
             /**
              * Format: double
              * @description Minimum ending balance for the Fund Goal.
@@ -5638,9 +5638,9 @@ export interface components {
         UpdateFundGoalModel: {
             /**
              * Format: double
-             * @description Gets the new regular contribution.
+             * @description Gets the new planned monthly contribution.
              */
-            regularContribution?: null | number;
+            plannedMonthlyContribution?: null | number;
             /**
              * Format: double
              * @description Gets the new minimum ending balance.
