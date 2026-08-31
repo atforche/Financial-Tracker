@@ -1,3 +1,4 @@
+using Models.AccountingPeriods;
 using Models.Accounts;
 using Models.Funds;
 using Models.Transactions;
@@ -143,11 +144,13 @@ public sealed class TransactionCalculationGapTests
         await AssertFundAndGoalAsync(test, source, -50m);
         await AssertFundAndGoalAsync(test, first, 20m);
         await AssertFundAndGoalAsync(test, second, 30m);
+        Assert.Equal(0m, (await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}")).ActualGoalContributions);
 
         await test.Transactions.DeleteAsync(transaction);
         await AssertFundAndGoalAsync(test, source, 0m);
         await AssertFundAndGoalAsync(test, first, 0m);
         await AssertFundAndGoalAsync(test, second, 0m);
+        Assert.Equal(0m, (await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}")).ActualGoalContributions);
     }
 
     /// <summary>Verifies moving an earlier transaction replays later fund and goal histories without duplication.</summary>

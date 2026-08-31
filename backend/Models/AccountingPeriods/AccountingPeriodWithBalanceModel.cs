@@ -31,6 +31,11 @@ public class AccountingPeriodWithBalanceModel : AccountingPeriodModel
     public required IncomeAmountModel ActualIncome { get; init; }
 
     /// <summary>
+    /// Sum of the planned monthly contributions for all Fund Goals in the Accounting Period.
+    /// </summary>
+    public required decimal PlannedGoalContributions { get; init; }
+
+    /// <summary>
     /// Amount required to satisfy all Fund Goals for the Accounting Period.
     /// </summary>
     public required decimal ExpectedGoalContributions { get; init; }

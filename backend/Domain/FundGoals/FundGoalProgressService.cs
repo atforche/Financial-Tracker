@@ -51,9 +51,11 @@ public static class FundGoalProgressService
         decimal expectedContribution = Math.Max(plannedMonthlyContribution ?? 0, 0);
         if (maximumEndingBalance is decimal maximum)
         {
-            decimal availableBalance = Math.Max(maximum - currentAvailableBalance, 0);
             decimal contributions = Math.Max(currentContributions, 0);
-            expectedContribution = Math.Min(expectedContribution, contributions + availableBalance);
+            decimal availableBalance = maximum - currentAvailableBalance;
+            expectedContribution = Math.Max(
+                Math.Min(expectedContribution, contributions + availableBalance),
+                0);
         }
         return expectedContribution;
     }

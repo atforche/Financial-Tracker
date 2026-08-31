@@ -112,6 +112,7 @@ public sealed class AccountingPeriodQueryConverter(
             Tracked = balance.ActualTrackedIncome,
             Untracked = balance.ActualIncome - balance.ActualTrackedIncome,
         },
+        PlannedGoalContributions = balance.PlannedGoalContributions,
         ExpectedGoalContributions = balance.ExpectedGoalContributions,
         ActualGoalContributions = balance.ActualGoalContributions,
     };
@@ -160,6 +161,7 @@ public sealed class AccountingPeriodQueryConverter(
             Tracked = result.Balance.ActualTrackedIncome,
             Untracked = result.Balance.ActualIncome - result.Balance.ActualTrackedIncome,
         },
+        PlannedGoalContributions = result.Balance.PlannedGoalContributions,
         ExpectedGoalContributions = result.Balance.ExpectedGoalContributions,
         ActualGoalContributions = result.Balance.ActualGoalContributions,
         Transactions = transactionConverter.ToModel(result.Transactions),
