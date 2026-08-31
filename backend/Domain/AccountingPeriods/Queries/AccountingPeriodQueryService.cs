@@ -148,9 +148,10 @@ public sealed class AccountingPeriodQueryService(
             IReadOnlyCollection<FundGoal> fundGoals = fundGoalRepository.GetAllByAccountingPeriod(balance.AccountingPeriod.Id);
             decimal expectedGoalContributions = fundGoals
                 .Sum(goal => FundGoalProgressService.CalculateRecommendedContribution(
-                    history.FundBalances.SingleOrDefault(item => item.Fund.Id == goal.Fund.Id)?.OpeningBalance ?? 0,
+                    history.FundBalances.SingleOrDefault(item => item.Fund.Id == goal.Fund.Id)?.ClosingBalance ?? 0,
+                    history.FundGoalTotals.SingleOrDefault(item => item.Fund.Id == goal.Fund.Id)
+                        ?.GetTotals().RegularAmountAssigned ?? 0,
                     goal.RegularContribution,
-                    goal.MinimumEndingBalance,
                     goal.MaximumEndingBalance));
             decimal actualGoalContributions = fundGoals
                 .Sum(goal => history.FundGoalTotals

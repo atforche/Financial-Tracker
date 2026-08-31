@@ -9,7 +9,6 @@ public static class FundGoalProgressService
     /// Calculates progress for a Fund Goal in an Accounting Period.
     /// </summary>
     public static FundGoalProgress Calculate(
-        decimal openingAvailableBalance,
         decimal regularAssignedAmount,
         decimal currentAvailableBalance,
         decimal? regularContribution,
@@ -17,9 +16,9 @@ public static class FundGoalProgressService
         decimal? maximumEndingBalance)
     {
         decimal recommendedContribution = CalculateRecommendedContribution(
-            openingAvailableBalance,
+            currentAvailableBalance,
+            regularAssignedAmount,
             regularContribution,
-            minimumEndingBalance,
             maximumEndingBalance);
         ContributionProgress? contribution = regularContribution != null
             || minimumEndingBalance != null
@@ -41,24 +40,22 @@ public static class FundGoalProgressService
     }
 
     /// <summary>
-    /// Calculates the recommended contribution after applying ending-balance constraints.
+    /// Calculates the total recommended contribution after applying the maximum ending-balance constraint.
     /// </summary>
     public static decimal CalculateRecommendedContribution(
-        decimal openingAvailableBalance,
+        decimal currentAvailableBalance,
+        decimal currentContributions,
         decimal? regularContribution,
-        decimal? minimumEndingBalance,
         decimal? maximumEndingBalance)
     {
-        decimal recommendedBalance = openingAvailableBalance + (regularContribution ?? 0);
-
-        if (minimumEndingBalance is decimal minimum)
-        {
-            recommendedBalance = Math.Max(recommendedBalance, minimum);
-        }
+        decimal contributions = Math.Max(currentContributions, 0);
+        decimal remainingContribution = Math.Max((regularContribution ?? 0) - contributions, 0);
         if (maximumEndingBalance is decimal maximum)
         {
-            recommendedBalance = Math.Min(recommendedBalance, maximum);
+            remainingContribution = Math.Min(
+                remainingContribution,
+                Math.Max(maximum - currentAvailableBalance, 0));
         }
-        return Math.Max(recommendedBalance - openingAvailableBalance, 0);
+        return contributions + remainingContribution;
     }
 }

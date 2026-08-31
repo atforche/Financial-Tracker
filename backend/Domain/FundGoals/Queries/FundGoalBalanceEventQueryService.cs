@@ -153,15 +153,17 @@ public sealed class FundGoalBalanceEventQueryService(
                 return 0;
             }
 
-            decimal openingBalance = accountingPeriodBalanceHistoryRepository
-                .GetForAccountingPeriod(balanceEvent.AccountingPeriod.Id)
-                .FundBalances
+            AccountingPeriodBalanceHistory history = accountingPeriodBalanceHistoryRepository
+                .GetForAccountingPeriod(balanceEvent.AccountingPeriod.Id);
+            decimal currentBalance = history.FundBalances
                 .SingleOrDefault(balance => balance.Fund.Id == balanceEvent.Fund.Id)
-                ?.OpeningBalance ?? 0;
+                ?.ClosingBalance ?? 0;
             targetAmount = FundGoalProgressService.CalculateRecommendedContribution(
-                openingBalance,
+                currentBalance,
+                history.FundGoalTotals
+                    .SingleOrDefault(totals => totals.Fund.Id == balanceEvent.Fund.Id)
+                    ?.GetTotals().RegularAmountAssigned ?? 0,
                 fundGoal.RegularContribution,
-                fundGoal.MinimumEndingBalance,
                 fundGoal.MaximumEndingBalance);
             remainingByFundAndPeriod[key] = targetAmount;
             return targetAmount;
