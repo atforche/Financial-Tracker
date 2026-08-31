@@ -17,6 +17,7 @@ public sealed class FundGoalProgressServiceTests
         Assert.Equal(25m, FundGoalProgressService.CalculateExpectedContribution(100m, 10m, 25m, 150m));
         Assert.Equal(50m, FundGoalProgressService.CalculateExpectedContribution(100m, 0m, 100m, 150m));
         Assert.Equal(10m, FundGoalProgressService.CalculateExpectedContribution(175m, 10m, 25m, 150m));
+        Assert.Equal(25m, FundGoalProgressService.CalculateExpectedContribution(100m, 60m, 25m, null));
         Assert.Equal(0m, FundGoalProgressService.CalculateExpectedContribution(100m, 0m, -25m, null));
     }
 
@@ -30,7 +31,7 @@ public sealed class FundGoalProgressServiceTests
 
         Assert.True(progress.AvailableBalance.IsSatisfied);
         Assert.NotNull(progress.Contribution);
-        Assert.Equal(40m, progress.Contribution.ExpectedAmount);
+        Assert.Equal(25m, progress.Contribution.ExpectedAmount);
         Assert.NotNull(progress.EndingBalance);
     }
 

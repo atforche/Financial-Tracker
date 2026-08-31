@@ -40,7 +40,7 @@ public static class FundGoalProgressService
     }
 
     /// <summary>
-    /// Calculates the total expected contribution after applying the maximum ending-balance constraint.
+    /// Calculates the expected contribution after applying the maximum ending-balance constraint.
     /// </summary>
     public static decimal CalculateExpectedContribution(
         decimal currentAvailableBalance,
@@ -48,14 +48,13 @@ public static class FundGoalProgressService
         decimal? plannedMonthlyContribution,
         decimal? maximumEndingBalance)
     {
-        decimal contributions = Math.Max(currentContributions, 0);
-        decimal remainingContribution = Math.Max((plannedMonthlyContribution ?? 0) - contributions, 0);
+        decimal expectedContribution = Math.Max(plannedMonthlyContribution ?? 0, 0);
         if (maximumEndingBalance is decimal maximum)
         {
-            remainingContribution = Math.Min(
-                remainingContribution,
-                Math.Max(maximum - currentAvailableBalance, 0));
+            decimal availableBalance = Math.Max(maximum - currentAvailableBalance, 0);
+            decimal contributions = Math.Max(currentContributions, 0);
+            expectedContribution = Math.Min(expectedContribution, contributions + availableBalance);
         }
-        return contributions + remainingContribution;
+        return expectedContribution;
     }
 }
