@@ -9,14 +9,17 @@ import { Stack } from "@mui/material";
 interface FundGoalSetupSectionProps {
   readonly color?: FrameColor;
   readonly plannedMonthlyContribution: number | null;
-  readonly setPlannedMonthlyContribution: ((value: number | null) => void) | null;
+  readonly setPlannedMonthlyContribution:
+    ((value: number | null) => void) | null;
   readonly minimumEndingBalance: number | null;
   readonly setMinimumEndingBalance: ((value: number | null) => void) | null;
   readonly maximumEndingBalance: number | null;
   readonly setMaximumEndingBalance: ((value: number | null) => void) | null;
   readonly errors?: Partial<
     Record<
-      "plannedMonthlyContribution" | "minimumEndingBalance" | "maximumEndingBalance",
+      | "plannedMonthlyContribution"
+      | "minimumEndingBalance"
+      | "maximumEndingBalance",
       string | null
     >
   >;

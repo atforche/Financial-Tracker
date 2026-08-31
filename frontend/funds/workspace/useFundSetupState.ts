@@ -11,7 +11,9 @@ interface FundSetupState {
   readonly description: string;
   readonly setDescription: Dispatch<SetStateAction<string>>;
   readonly plannedMonthlyContribution: number | null;
-  readonly setPlannedMonthlyContribution: Dispatch<SetStateAction<number | null>>;
+  readonly setPlannedMonthlyContribution: Dispatch<
+    SetStateAction<number | null>
+  >;
   readonly minimumEndingBalance: number | null;
   readonly setMinimumEndingBalance: Dispatch<SetStateAction<number | null>>;
   readonly maximumEndingBalance: number | null;
@@ -25,9 +27,9 @@ interface FundSetupState {
 const useFundSetupState = function (): FundSetupState {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [plannedMonthlyContribution, setPlannedMonthlyContribution] = useState<number | null>(
-    null,
-  );
+  const [plannedMonthlyContribution, setPlannedMonthlyContribution] = useState<
+    number | null
+  >(null);
   const [minimumEndingBalance, setMinimumEndingBalance] = useState<
     number | null
   >(null);

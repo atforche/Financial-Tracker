@@ -419,7 +419,8 @@ const getFundAssignmentFromTransactionFund = (
 ): FundAssignmentDraft => {
   const isExtraContribution = assignment.isExtraContribution === true;
   const previousGoalAmount =
-    fundGoalEvent?.previousTotals.remainingAmountToAssignToExpectedContribution ?? 0;
+    fundGoalEvent?.previousTotals
+      .remainingAmountToAssignToExpectedContribution ?? 0;
 
   return {
     fundId: assignment.fund.id,
@@ -429,7 +430,9 @@ const getFundAssignmentFromTransactionFund = (
     previousFundBalance: assignment.previousBalance.postedBalance,
     newFundBalance: assignment.newBalance.postedBalance,
     previousGoalAmount,
-    newGoalAmount: fundGoalEvent?.newTotals.remainingAmountToAssignToExpectedContribution ?? 0,
+    newGoalAmount:
+      fundGoalEvent?.newTotals.remainingAmountToAssignToExpectedContribution ??
+      0,
   };
 };
 
