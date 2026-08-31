@@ -31,10 +31,10 @@ public sealed class AccountGoalProgressServiceTests
         AccountGoalProgress within = AccountGoalProgressService.Calculate(150m, 100m, 200m);
         AccountGoalProgress above = AccountGoalProgressService.Calculate(250m, 100m, 200m);
 
-        Assert.Equal(EndingBalanceStatus.BelowMinimum, below.EndingBalance!.Status);
+        Assert.Equal(AccountGoalEndingBalanceStatus.BelowMinimum, below.EndingBalance!.Status);
         Assert.Equal(20m, below.EndingBalance.AmountBelowMinimum);
-        Assert.Equal(EndingBalanceStatus.WithinRange, within.EndingBalance!.Status);
-        Assert.Equal(EndingBalanceStatus.AboveMaximum, above.EndingBalance!.Status);
+        Assert.Equal(AccountGoalEndingBalanceStatus.WithinRange, within.EndingBalance!.Status);
+        Assert.Equal(AccountGoalEndingBalanceStatus.AboveMaximum, above.EndingBalance!.Status);
         Assert.Equal(50m, above.EndingBalance.AmountAboveMaximum);
         Assert.True(within.IsSatisfied);
         Assert.False(below.IsSatisfied);

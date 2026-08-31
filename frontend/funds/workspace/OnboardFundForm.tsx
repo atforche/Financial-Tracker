@@ -55,12 +55,10 @@ const OnboardFundForm = function ({
     setDescription,
     regularContribution,
     setRegularContribution,
-    minimumFundedBalance,
-    setMinimumFundedBalance,
-    maximumFundedBalance,
-    setMaximumFundedBalance,
-    targetEndingBalance,
-    setTargetEndingBalance,
+    minimumEndingBalance,
+    setMinimumEndingBalance,
+    maximumEndingBalance,
+    setMaximumEndingBalance,
   } = fundSetup;
   const formRef = useRef<HTMLDivElement | null>(null);
   const [onboardedBalance, setOnboardedBalance] = useState<number | null>(null);
@@ -91,9 +89,8 @@ const OnboardFundForm = function ({
     description,
     onboardedBalance,
     regularContribution,
-    minimumFundedBalance,
-    maximumFundedBalance,
-    targetEndingBalance,
+    minimumEndingBalance,
+    maximumEndingBalance,
   });
 
   if (!canWrite) {
@@ -147,12 +144,10 @@ const OnboardFundForm = function ({
           color="success"
           regularContribution={regularContribution}
           setRegularContribution={setRegularContribution}
-          minimumFundedBalance={minimumFundedBalance}
-          setMinimumFundedBalance={setMinimumFundedBalance}
-          maximumFundedBalance={maximumFundedBalance}
-          setMaximumFundedBalance={setMaximumFundedBalance}
-          targetEndingBalance={targetEndingBalance}
-          setTargetEndingBalance={setTargetEndingBalance}
+          minimumEndingBalance={minimumEndingBalance}
+          setMinimumEndingBalance={setMinimumEndingBalance}
+          maximumEndingBalance={maximumEndingBalance}
+          setMaximumEndingBalance={setMaximumEndingBalance}
         />
 
         <ErrorAlert

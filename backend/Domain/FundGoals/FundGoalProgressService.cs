@@ -10,58 +10,52 @@ public static class FundGoalProgressService
     /// </summary>
     public static FundGoalProgress Calculate(
         decimal openingAvailableBalance,
-        decimal assignedAmount,
         decimal regularAssignedAmount,
         decimal currentAvailableBalance,
         decimal? regularContribution,
-        decimal? minimumFundedBalance,
-        decimal? maximumFundedBalance,
-        decimal? targetEndingBalance)
+        decimal? minimumEndingBalance,
+        decimal? maximumEndingBalance)
     {
         decimal recommendedContribution = CalculateRecommendedContribution(
             openingAvailableBalance,
             regularContribution,
-            minimumFundedBalance,
-            maximumFundedBalance);
+            minimumEndingBalance,
+            maximumEndingBalance);
         ContributionProgress? contribution = regularContribution != null
-            || minimumFundedBalance != null
-            || maximumFundedBalance != null
+            || minimumEndingBalance != null
+            || maximumEndingBalance != null
             ? new ContributionProgress(recommendedContribution, regularAssignedAmount)
             : null;
-        FundedBalanceProgress? fundedBalance = minimumFundedBalance != null
-            || maximumFundedBalance != null
-            ? new FundedBalanceProgress(
-                openingAvailableBalance + assignedAmount,
-                minimumFundedBalance,
-                maximumFundedBalance)
-            : null;
-        EndingBalanceProgress? endingBalance = targetEndingBalance is decimal targetBalance
-            ? new EndingBalanceProgress(targetBalance, currentAvailableBalance)
+        FundGoalEndingBalanceProgress? endingBalance = minimumEndingBalance != null
+            || maximumEndingBalance != null
+            ? new FundGoalEndingBalanceProgress(
+                currentAvailableBalance,
+                minimumEndingBalance,
+                maximumEndingBalance)
             : null;
 
         return new FundGoalProgress(
             new AvailableBalanceProgress(currentAvailableBalance),
             contribution,
-            fundedBalance,
             endingBalance);
     }
 
     /// <summary>
-    /// Calculates the recommended contribution after applying funded-balance constraints.
+    /// Calculates the recommended contribution after applying ending-balance constraints.
     /// </summary>
     public static decimal CalculateRecommendedContribution(
         decimal openingAvailableBalance,
         decimal? regularContribution,
-        decimal? minimumFundedBalance,
-        decimal? maximumFundedBalance)
+        decimal? minimumEndingBalance,
+        decimal? maximumEndingBalance)
     {
         decimal recommendedBalance = openingAvailableBalance + (regularContribution ?? 0);
 
-        if (minimumFundedBalance is decimal minimum)
+        if (minimumEndingBalance is decimal minimum)
         {
             recommendedBalance = Math.Max(recommendedBalance, minimum);
         }
-        if (maximumFundedBalance is decimal maximum)
+        if (maximumEndingBalance is decimal maximum)
         {
             recommendedBalance = Math.Min(recommendedBalance, maximum);
         }

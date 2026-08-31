@@ -1,22 +1,22 @@
 namespace Models.FundGoals;
 
 /// <summary>
-/// Status of a Fund balance relative to its ending target.
+/// Status of a Fund balance relative to its ending-balance bounds.
 /// </summary>
 public enum FundGoalEndingBalanceStatusModel
 {
     /// <summary>
-    /// The balance is below the target.
+    /// The balance is below the configured minimum.
     /// </summary>
-    BelowTarget,
+    BelowMinimum,
 
     /// <summary>
-    /// The balance is at the target.
+    /// The balance satisfies the configured bounds.
     /// </summary>
-    AtTarget,
+    WithinRange,
 
     /// <summary>
-    /// The balance is above the target.
+    /// The balance is above the configured maximum.
     /// </summary>
-    AboveTarget,
+    AboveMaximum,
 }

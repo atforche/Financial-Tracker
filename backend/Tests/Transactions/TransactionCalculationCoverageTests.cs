@@ -20,11 +20,11 @@ namespace Tests.Transactions;
 public sealed class TransactionCalculationCoverageTests
 {
     /// <summary>
-    /// Verifies extra income funding increases funded-balance progress without
+    /// Verifies extra income funding increases ending-balance progress without
     /// satisfying the regular monthly contribution.
     /// </summary>
     [Fact]
-    public async Task ExtraIncomeFundingCountsTowardFundedBalanceButNotRegularContribution()
+    public async Task ExtraIncomeFundingCountsTowardEndingBalanceButNotRegularContribution()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
@@ -33,8 +33,8 @@ public sealed class TransactionCalculationCoverageTests
         _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{gifts.Goal.Id}", new UpdateFundGoalModel
         {
             RegularContribution = 200m,
-            MinimumFundedBalance = 50m,
-            MaximumFundedBalance = 300m,
+            MinimumEndingBalance = 50m,
+            MaximumEndingBalance = 300m,
         });
         CreateTransactionResultModel created = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", new CreateIncomeTransactionModel
         {
@@ -69,9 +69,9 @@ public sealed class TransactionCalculationCoverageTests
         Assert.NotNull(progress.Contribution);
         Assert.Equal(0m, progress.Contribution.AssignedAmount);
         Assert.Equal(200m, progress.Contribution.RemainingAmount);
-        Assert.NotNull(progress.FundedBalance);
-        Assert.Equal(50m, progress.FundedBalance.Balance);
-        Assert.Equal(FundedBalanceStatusModel.WithinRange, progress.FundedBalance.Status);
+        Assert.NotNull(progress.EndingBalance);
+        Assert.Equal(50m, progress.EndingBalance.CurrentBalance);
+        Assert.Equal(FundGoalEndingBalanceStatusModel.WithinRange, progress.EndingBalance.Status);
     }
 
     /// <summary>

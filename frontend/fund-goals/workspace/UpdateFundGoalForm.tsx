@@ -37,22 +37,18 @@ const UpdateFundGoalForm = function ({
   const [regularContribution, setRegularContribution] = useState(
     fundGoal.regularContribution ?? null,
   );
-  const [minimumFundedBalance, setMinimumFundedBalance] = useState(
-    fundGoal.minimumFundedBalance ?? null,
+  const [minimumEndingBalance, setMinimumEndingBalance] = useState(
+    fundGoal.minimumEndingBalance ?? null,
   );
-  const [maximumFundedBalance, setMaximumFundedBalance] = useState(
-    fundGoal.maximumFundedBalance ?? null,
-  );
-  const [targetEndingBalance, setTargetEndingBalance] = useState(
-    fundGoal.targetEndingBalance ?? null,
+  const [maximumEndingBalance, setMaximumEndingBalance] = useState(
+    fundGoal.maximumEndingBalance ?? null,
   );
   const formRef = useRef<HTMLDivElement | null>(null);
   const [state, action, pending] = useActionState(updateFundGoal, {});
   const reset = (): void => {
     setRegularContribution(fundGoal.regularContribution ?? null);
-    setMinimumFundedBalance(fundGoal.minimumFundedBalance ?? null);
-    setMaximumFundedBalance(fundGoal.maximumFundedBalance ?? null);
-    setTargetEndingBalance(fundGoal.targetEndingBalance ?? null);
+    setMinimumEndingBalance(fundGoal.minimumEndingBalance ?? null);
+    setMaximumEndingBalance(fundGoal.maximumEndingBalance ?? null);
     focusFirstEntryControl(formRef.current);
   };
   useEffect(() => {
@@ -64,14 +60,13 @@ const UpdateFundGoalForm = function ({
   }, [state.success]);
   const request: UpdateFundGoalRequest = {
     regularContribution,
-    minimumFundedBalance,
-    maximumFundedBalance,
-    targetEndingBalance,
+    minimumEndingBalance,
+    maximumEndingBalance,
   };
   const rangeIsValid =
-    minimumFundedBalance === null ||
-    maximumFundedBalance === null ||
-    minimumFundedBalance <= maximumFundedBalance;
+    minimumEndingBalance === null ||
+    maximumEndingBalance === null ||
+    minimumEndingBalance <= maximumEndingBalance;
   if (!canWrite) {
     return null;
   }
@@ -132,12 +127,10 @@ const UpdateFundGoalForm = function ({
           <FundGoalSetupSection
             regularContribution={regularContribution}
             setRegularContribution={setRegularContribution}
-            minimumFundedBalance={minimumFundedBalance}
-            setMinimumFundedBalance={setMinimumFundedBalance}
-            maximumFundedBalance={maximumFundedBalance}
-            setMaximumFundedBalance={setMaximumFundedBalance}
-            targetEndingBalance={targetEndingBalance}
-            setTargetEndingBalance={setTargetEndingBalance}
+            minimumEndingBalance={minimumEndingBalance}
+            setMinimumEndingBalance={setMinimumEndingBalance}
+            maximumEndingBalance={maximumEndingBalance}
+            setMaximumEndingBalance={setMaximumEndingBalance}
           />
           <ErrorAlert errorMessage={null} unmappedErrors={null} />
         </Stack>

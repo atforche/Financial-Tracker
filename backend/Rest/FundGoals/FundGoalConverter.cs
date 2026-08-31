@@ -46,9 +46,8 @@ public sealed class FundGoalConverter
             IsOpen = fundGoal.AccountingPeriod.IsOpen,
         },
         RegularContribution = fundGoal.RegularContribution,
-        MinimumFundedBalance = fundGoal.MinimumFundedBalance,
-        MaximumFundedBalance = fundGoal.MaximumFundedBalance,
-        TargetEndingBalance = fundGoal.TargetEndingBalance,
+        MinimumEndingBalance = fundGoal.MinimumEndingBalance,
+        MaximumEndingBalance = fundGoal.MaximumEndingBalance,
     };
 
     /// <summary>

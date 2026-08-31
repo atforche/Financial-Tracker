@@ -26,9 +26,8 @@ public sealed class FundGoalPeriodLifecycleTests
         _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel
         {
             RegularContribution = 50m,
-            MinimumFundedBalance = 100m,
-            MaximumFundedBalance = 200m,
-            TargetEndingBalance = 150m
+            MinimumEndingBalance = 100m,
+            MaximumEndingBalance = 200m
         });
         AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
 
@@ -38,9 +37,8 @@ public sealed class FundGoalPeriodLifecycleTests
         using HttpResponseMessage missing = await test.Api.GetResponseAsync($"/fund-goals/progress/{Guid.NewGuid()}");
 
         Assert.Equal(50m, copied.RegularContribution);
-        Assert.Equal(100m, copied.MinimumFundedBalance);
-        Assert.Equal(200m, copied.MaximumFundedBalance);
-        Assert.Equal(150m, copied.TargetEndingBalance);
+        Assert.Equal(100m, copied.MinimumEndingBalance);
+        Assert.Equal(200m, copied.MaximumEndingBalance);
         Assert.Contains(progresses, item => item.FundGoalId == copied.Id && item.Progress.Contribution != null);
         Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
     }
@@ -58,8 +56,8 @@ public sealed class FundGoalPeriodLifecycleTests
         _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel
         {
             RegularContribution = 50m,
-            MinimumFundedBalance = 25m,
-            TargetEndingBalance = 40m
+            MinimumEndingBalance = 25m,
+            MaximumEndingBalance = 100m
         });
         TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(60m).From("Employer").To(cash, groceries).CreateAsync();
         _ = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(20m).From(cash).To("Market", groceries).CreateAsync();
@@ -79,9 +77,8 @@ public sealed class FundGoalPeriodLifecycleTests
         Assert.Equal(50m, progress.Contribution.TargetAmount);
         Assert.Equal(60m, progress.Contribution.AssignedAmount);
         Assert.Equal(60m, period.ActualGoalContributions);
-        Assert.NotNull(progress.FundedBalance);
-        Assert.Equal(40m, progress.FundedBalance.Balance);
         Assert.NotNull(progress.EndingBalance);
         Assert.Equal(40m, progress.EndingBalance.CurrentBalance);
+        Assert.Equal(FundGoalEndingBalanceStatusModel.WithinRange, progress.EndingBalance.Status);
     }
 }

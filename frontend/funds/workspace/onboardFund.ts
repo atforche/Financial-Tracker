@@ -19,9 +19,8 @@ interface ActionState extends FundActionState {
   readonly descriptionErrors?: string | null;
   readonly onboardedBalanceErrors?: string | null;
   readonly regularContributionErrors?: string | null;
-  readonly minimumFundedBalanceErrors?: string | null;
-  readonly maximumFundedBalanceErrors?: string | null;
-  readonly targetEndingBalanceErrors?: string | null;
+  readonly minimumEndingBalanceErrors?: string | null;
+  readonly maximumEndingBalanceErrors?: string | null;
 }
 
 /**
@@ -49,12 +48,10 @@ const onboardFund = async function (
           "onboardedBalanceErrors",
         [propertyName<OnboardFundRequest>("regularContribution")]:
           "regularContributionErrors",
-        [propertyName<OnboardFundRequest>("minimumFundedBalance")]:
-          "minimumFundedBalanceErrors",
-        [propertyName<OnboardFundRequest>("maximumFundedBalance")]:
-          "maximumFundedBalanceErrors",
-        [propertyName<OnboardFundRequest>("targetEndingBalance")]:
-          "targetEndingBalanceErrors",
+        [propertyName<OnboardFundRequest>("minimumEndingBalance")]:
+          "minimumEndingBalanceErrors",
+        [propertyName<OnboardFundRequest>("maximumEndingBalance")]:
+          "maximumEndingBalanceErrors",
       });
       return {
         ...mappedError,

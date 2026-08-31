@@ -2,10 +2,8 @@ import {
   type FundGoal,
   FundGoalEndingBalanceStatus,
   type FundGoalProgress,
-  FundedBalanceStatus,
 } from "@/fund-goals/types";
 import { getCurrencyTotal } from "@/framework/currencyHelpers";
-import { isMaximumFundedBalanceSatisfied } from "@/fund-goals/helpers";
 
 /**
  * A Fund Goal paired with its progress for the Fund Goal's Accounting Period.
@@ -51,22 +49,21 @@ const isFundGoalSatisfied = function ({
     checks.push(progress.contribution.isSatisfied);
   }
   if (
-    progress.fundedBalance?.minimumBalance !== null &&
-    progress.fundedBalance?.minimumBalance !== undefined
+    progress.endingBalance?.minimumBalance !== null &&
+    progress.endingBalance?.minimumBalance !== undefined
   ) {
     checks.push(
-      progress.fundedBalance.status !== FundedBalanceStatus.BelowMinimum,
+      progress.endingBalance.status !==
+        FundGoalEndingBalanceStatus.BelowMinimum,
     );
   }
   if (
-    progress.fundedBalance?.maximumBalance !== null &&
-    progress.fundedBalance?.maximumBalance !== undefined
+    progress.endingBalance?.maximumBalance !== null &&
+    progress.endingBalance?.maximumBalance !== undefined
   ) {
-    checks.push(isMaximumFundedBalanceSatisfied(progress.fundedBalance));
-  }
-  if (progress.endingBalance !== null && progress.endingBalance !== undefined) {
     checks.push(
-      progress.endingBalance.status === FundGoalEndingBalanceStatus.AtTarget,
+      progress.endingBalance.status !==
+        FundGoalEndingBalanceStatus.AboveMaximum,
     );
   }
   return checks.every((isSatisfied) => isSatisfied);

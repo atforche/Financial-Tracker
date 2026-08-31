@@ -25,9 +25,8 @@ public sealed class FundGoalEndpointTests
         FundGoalModel updated = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel
         {
             RegularContribution = 50m,
-            MinimumFundedBalance = 100m,
-            MaximumFundedBalance = 200m,
-            TargetEndingBalance = 150m
+            MinimumEndingBalance = 100m,
+            MaximumEndingBalance = 200m
         });
         FundGoalProgressModel progress = await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{groceries.Goal.Id}/progress/{july.Id}");
         CollectionModel<FundGoalModel> goals = await test.Api.GetAsync<CollectionModel<FundGoalModel>>($"/fund-goals?filter.accountingPeriodIds={july.Id}");
@@ -40,7 +39,7 @@ public sealed class FundGoalEndpointTests
     }
 
     /// <summary>
-    /// Rejects negative Fund Goal quantities and inverted funded-balance bounds at the mutation boundary.
+    /// Rejects negative Fund Goal quantities and inverted ending-balance bounds at the mutation boundary.
     /// </summary>
     [Fact]
     public async Task UpdateAsyncRejectsInvalidGoalConfiguration()
@@ -55,8 +54,8 @@ public sealed class FundGoalEndpointTests
         });
         using HttpResponseMessage inverted = await test.Api.PostResponseAsync($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel
         {
-            MinimumFundedBalance = 200m,
-            MaximumFundedBalance = 100m
+            MinimumEndingBalance = 200m,
+            MaximumEndingBalance = 100m
         });
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, negative.StatusCode);

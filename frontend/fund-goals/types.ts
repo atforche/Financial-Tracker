@@ -2,7 +2,6 @@ import {
   FundGoalBalanceEventSortModel,
   FundGoalEndingBalanceStatusModel,
   FundGoalSortModel,
-  FundedBalanceStatusModel,
   type components,
 } from "@/framework/data/api";
 
@@ -58,7 +57,6 @@ export {
   type FundGoalBalanceEventDraft,
   FundGoalBalanceEventSortModel as FundGoalBalanceEventSort,
   type FundGoalProgress,
-  FundedBalanceStatusModel as FundedBalanceStatus,
   type FundGoalWithProgress,
   FundGoalSortModel as FundGoalSort,
   type UpdateFundGoalRequest,

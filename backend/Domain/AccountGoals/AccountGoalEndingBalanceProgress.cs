@@ -3,7 +3,7 @@ namespace Domain.AccountGoals;
 /// <summary>
 /// Projection of ending-balance progress for an Account Goal.
 /// </summary>
-public sealed class EndingBalanceProgress
+public sealed class AccountGoalEndingBalanceProgress
 {
     /// <summary>
     /// Current Account balance.
@@ -37,15 +37,15 @@ public sealed class EndingBalanceProgress
     /// <summary>
     /// Relationship between the current balance and configured bounds.
     /// </summary>
-    public EndingBalanceStatus Status =>
-        AmountBelowMinimum > 0 ? EndingBalanceStatus.BelowMinimum
-        : AmountAboveMaximum > 0 ? EndingBalanceStatus.AboveMaximum
-        : EndingBalanceStatus.WithinRange;
+    public AccountGoalEndingBalanceStatus Status =>
+        AmountBelowMinimum > 0 ? AccountGoalEndingBalanceStatus.BelowMinimum
+        : AmountAboveMaximum > 0 ? AccountGoalEndingBalanceStatus.AboveMaximum
+        : AccountGoalEndingBalanceStatus.WithinRange;
 
     /// <summary>
     /// Constructs a new instance of this class.
     /// </summary>
-    internal EndingBalanceProgress(
+    internal AccountGoalEndingBalanceProgress(
         decimal currentBalance,
         decimal? minimumBalance,
         decimal? maximumBalance)
@@ -59,7 +59,7 @@ public sealed class EndingBalanceProgress
 /// <summary>
 /// Status of an Account balance relative to configured ending-balance bounds.
 /// </summary>
-public enum EndingBalanceStatus
+public enum AccountGoalEndingBalanceStatus
 {
     /// <summary>
     /// The balance is below the configured minimum.

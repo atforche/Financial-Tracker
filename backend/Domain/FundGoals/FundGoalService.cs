@@ -23,9 +23,8 @@ public sealed class FundGoalService(
 
         _ = Validate(
             request.RegularContribution,
-            request.MinimumFundedBalance,
-            request.MaximumFundedBalance,
-            request.TargetEndingBalance,
+            request.MinimumEndingBalance,
+            request.MaximumEndingBalance,
             out exceptions);
         if (fundGoalRepository.GetByFundAndAccountingPeriod(request.Fund.Id, request.AccountingPeriod?.Id) != null)
         {
@@ -42,9 +41,8 @@ public sealed class FundGoalService(
             request.Fund,
             request.AccountingPeriod,
             request.RegularContribution,
-            request.MinimumFundedBalance,
-            request.MaximumFundedBalance,
-            request.TargetEndingBalance);
+            request.MinimumEndingBalance,
+            request.MaximumEndingBalance);
         return true;
     }
 
@@ -58,9 +56,8 @@ public sealed class FundGoalService(
     {
         _ = Validate(
             request.RegularContribution,
-            request.MinimumFundedBalance,
-            request.MaximumFundedBalance,
-            request.TargetEndingBalance,
+            request.MinimumEndingBalance,
+            request.MaximumEndingBalance,
             out exceptions);
         if (fundGoal.AccountingPeriod is { IsOpen: false })
         {
@@ -75,9 +72,8 @@ public sealed class FundGoalService(
 
         fundGoal.Update(
             request.RegularContribution,
-            request.MinimumFundedBalance,
-            request.MaximumFundedBalance,
-            request.TargetEndingBalance);
+            request.MinimumEndingBalance,
+            request.MaximumEndingBalance);
         return true;
     }
 
@@ -92,9 +88,8 @@ public sealed class FundGoalService(
                 existingGoal.Fund,
                 accountingPeriod,
                 existingGoal.RegularContribution,
-                existingGoal.MinimumFundedBalance,
-                existingGoal.MaximumFundedBalance,
-                existingGoal.TargetEndingBalance);
+                existingGoal.MinimumEndingBalance,
+                existingGoal.MaximumEndingBalance);
             if (!fundGoalRepository.TryAdd(copiedGoal))
             {
                 throw new InvalidOperationException("A Fund Goal already exists for the Fund and Accounting Period.");
@@ -147,13 +142,11 @@ public sealed class FundGoalService(
 
         progress = FundGoalProgressService.Calculate(
             fundBalanceHistory.OpeningBalance,
-            totals.AmountAssigned,
             totals.RegularAmountAssigned,
             fundBalanceHistory.ClosingBalance,
             fundGoal.RegularContribution,
-            fundGoal.MinimumFundedBalance,
-            fundGoal.MaximumFundedBalance,
-            fundGoal.TargetEndingBalance);
+            fundGoal.MinimumEndingBalance,
+            fundGoal.MaximumEndingBalance);
         return true;
     }
 
@@ -183,13 +176,11 @@ public sealed class FundGoalService(
             }
             results.Add(fundGoal.Id, FundGoalProgressService.Calculate(
                 fundBalanceHistory.OpeningBalance,
-                totals.AmountAssigned,
                 totals.RegularAmountAssigned,
                 fundBalanceHistory.ClosingBalance,
                 fundGoal.RegularContribution,
-                fundGoal.MinimumFundedBalance,
-                fundGoal.MaximumFundedBalance,
-                fundGoal.TargetEndingBalance));
+                fundGoal.MinimumEndingBalance,
+                fundGoal.MaximumEndingBalance));
         }
         return results;
     }
@@ -199,26 +190,24 @@ public sealed class FundGoalService(
     /// </summary>
     private static bool Validate(
         decimal? regularContribution,
-        decimal? minimumFundedBalance,
-        decimal? maximumFundedBalance,
-        decimal? targetEndingBalance,
+        decimal? minimumEndingBalance,
+        decimal? maximumEndingBalance,
         out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
         exceptions = exceptions
             .Concat(ValidateNonnegative(regularContribution, nameof(UpdateFundGoalRequest.RegularContribution)))
-            .Concat(ValidateNonnegative(minimumFundedBalance, nameof(UpdateFundGoalRequest.MinimumFundedBalance)))
-            .Concat(ValidateNonnegative(maximumFundedBalance, nameof(UpdateFundGoalRequest.MaximumFundedBalance)))
-            .Concat(ValidateNonnegative(targetEndingBalance, nameof(UpdateFundGoalRequest.TargetEndingBalance)));
-        if (minimumFundedBalance > maximumFundedBalance)
+            .Concat(ValidateNonnegative(minimumEndingBalance, nameof(UpdateFundGoalRequest.MinimumEndingBalance)))
+            .Concat(ValidateNonnegative(maximumEndingBalance, nameof(UpdateFundGoalRequest.MaximumEndingBalance)));
+        if (minimumEndingBalance > maximumEndingBalance)
         {
             exceptions = exceptions.Append(new ValidationError(
-                new ValidationErrorPath(nameof(UpdateFundGoalRequest.MinimumFundedBalance)),
-                "Minimum funded balance must be less than or equal to maximum funded balance."));
+                new ValidationErrorPath(nameof(UpdateFundGoalRequest.MinimumEndingBalance)),
+                "Minimum ending balance must be less than or equal to maximum ending balance."));
             exceptions = exceptions.Append(new ValidationError(
-                new ValidationErrorPath(nameof(UpdateFundGoalRequest.MaximumFundedBalance)),
-                "Maximum funded balance must be greater than or equal to minimum funded balance."));
+                new ValidationErrorPath(nameof(UpdateFundGoalRequest.MaximumEndingBalance)),
+                "Maximum ending balance must be greater than or equal to minimum ending balance."));
         }
         return !exceptions.Any();
     }

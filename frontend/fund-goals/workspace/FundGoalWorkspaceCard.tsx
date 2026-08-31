@@ -12,7 +12,6 @@ import Frame, { type FrameColor } from "@/framework/view/Frame";
 import {
   FundGoalEndingBalanceStatus,
   type FundGoalWithProgress,
-  FundedBalanceStatus,
 } from "@/fund-goals/types";
 import { type JSX, useState } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
@@ -21,7 +20,6 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 import FundGoalAvailableBalance from "@/fund-goals/workspace/FundGoalAvailableBalance";
 import FundGoalProgressBars from "@/fund-goals/workspace/FundGoalProgressBars";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
-import { isMaximumFundedBalanceSatisfied } from "@/fund-goals/helpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
@@ -45,7 +43,7 @@ const FundGoalWorkspaceCard = function ({
   const toggleLabel = expanded
     ? "Hide progress details"
     : "Show progress details";
-  const { fundedBalance } = fundGoal.progress;
+  const { endingBalance } = fundGoal.progress;
   const goals = [
     {
       configured: true,
@@ -56,20 +54,16 @@ const FundGoalWorkspaceCard = function ({
       satisfied: fundGoal.progress.contribution?.isSatisfied === true,
     },
     {
-      configured: isNotNullOrUndefined(fundGoal.minimumFundedBalance),
+      configured: isNotNullOrUndefined(fundGoal.minimumEndingBalance),
       satisfied:
-        isNotNullOrUndefined(fundedBalance) &&
-        fundedBalance.status !== FundedBalanceStatus.BelowMinimum,
+        isNotNullOrUndefined(endingBalance) &&
+        endingBalance.status !== FundGoalEndingBalanceStatus.BelowMinimum,
     },
     {
-      configured: isNotNullOrUndefined(fundGoal.maximumFundedBalance),
-      satisfied: isMaximumFundedBalanceSatisfied(fundedBalance),
-    },
-    {
-      configured: isNotNullOrUndefined(fundGoal.targetEndingBalance),
+      configured: isNotNullOrUndefined(fundGoal.maximumEndingBalance),
       satisfied:
-        fundGoal.progress.endingBalance?.status ===
-        FundGoalEndingBalanceStatus.AtTarget,
+        isNotNullOrUndefined(endingBalance) &&
+        endingBalance.status !== FundGoalEndingBalanceStatus.AboveMaximum,
     },
   ];
   const configured = goals.filter((goal) => goal.configured).length;

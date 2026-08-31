@@ -13,8 +13,8 @@ public static class AccountGoalProgressService
         decimal? minimumEndingBalance,
         decimal? maximumEndingBalance)
     {
-        EndingBalanceProgress? endingBalance = minimumEndingBalance != null || maximumEndingBalance != null
-            ? new EndingBalanceProgress(currentBalance, minimumEndingBalance, maximumEndingBalance)
+        AccountGoalEndingBalanceProgress? endingBalance = minimumEndingBalance != null || maximumEndingBalance != null
+            ? new AccountGoalEndingBalanceProgress(currentBalance, minimumEndingBalance, maximumEndingBalance)
             : null;
         return new AccountGoalProgress(
             new PositiveBalanceProgress(currentBalance),

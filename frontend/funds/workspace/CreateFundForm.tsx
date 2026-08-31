@@ -51,12 +51,10 @@ const CreateFundForm = function ({
     setDescription,
     regularContribution,
     setRegularContribution,
-    minimumFundedBalance,
-    setMinimumFundedBalance,
-    maximumFundedBalance,
-    setMaximumFundedBalance,
-    targetEndingBalance,
-    setTargetEndingBalance,
+    minimumEndingBalance,
+    setMinimumEndingBalance,
+    maximumEndingBalance,
+    setMaximumEndingBalance,
   } = fundSetup;
   const formRef = useRef<HTMLDivElement | null>(null);
   const [accountingPeriod, setAccountingPeriod] =
@@ -84,9 +82,8 @@ const CreateFundForm = function ({
     description,
     accountingPeriod,
     regularContribution,
-    minimumFundedBalance,
-    maximumFundedBalance,
-    targetEndingBalance,
+    minimumEndingBalance,
+    maximumEndingBalance,
   });
 
   if (!canWrite) {
@@ -127,12 +124,10 @@ const CreateFundForm = function ({
           color="info"
           regularContribution={regularContribution}
           setRegularContribution={setRegularContribution}
-          minimumFundedBalance={minimumFundedBalance}
-          setMinimumFundedBalance={setMinimumFundedBalance}
-          maximumFundedBalance={maximumFundedBalance}
-          setMaximumFundedBalance={setMaximumFundedBalance}
-          targetEndingBalance={targetEndingBalance}
-          setTargetEndingBalance={setTargetEndingBalance}
+          minimumEndingBalance={minimumEndingBalance}
+          setMinimumEndingBalance={setMinimumEndingBalance}
+          maximumEndingBalance={maximumEndingBalance}
+          setMaximumEndingBalance={setMaximumEndingBalance}
         />
 
         <ErrorAlert

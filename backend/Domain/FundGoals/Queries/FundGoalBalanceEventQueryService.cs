@@ -161,8 +161,8 @@ public sealed class FundGoalBalanceEventQueryService(
             targetAmount = FundGoalProgressService.CalculateRecommendedContribution(
                 openingBalance,
                 fundGoal.RegularContribution,
-                fundGoal.MinimumFundedBalance,
-                fundGoal.MaximumFundedBalance);
+                fundGoal.MinimumEndingBalance,
+                fundGoal.MaximumEndingBalance);
             remainingByFundAndPeriod[key] = targetAmount;
             return targetAmount;
         }

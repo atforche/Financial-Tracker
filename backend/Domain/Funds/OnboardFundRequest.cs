@@ -26,17 +26,12 @@ public record OnboardFundRequest
     public required decimal? RegularContribution { get; init; }
 
     /// <summary>
-    /// Minimum funded balance for the onboarded Fund Goal.
+    /// Minimum ending balance for the onboarded Fund Goal.
     /// </summary>
-    public required decimal? MinimumFundedBalance { get; init; }
+    public required decimal? MinimumEndingBalance { get; init; }
 
     /// <summary>
-    /// Maximum funded balance for the onboarded Fund Goal.
+    /// Maximum ending balance for the onboarded Fund Goal.
     /// </summary>
-    public required decimal? MaximumFundedBalance { get; init; }
-
-    /// <summary>
-    /// Target ending balance for the onboarded Fund Goal.
-    /// </summary>
-    public required decimal? TargetEndingBalance { get; init; }
+    public required decimal? MaximumEndingBalance { get; init; }
 }

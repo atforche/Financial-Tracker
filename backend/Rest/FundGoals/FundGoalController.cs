@@ -185,9 +185,8 @@ public sealed class FundGoalController(
     private static UpdateFundGoalRequest ToRequest(UpdateFundGoalModel model) => new()
     {
         RegularContribution = model.RegularContribution,
-        MinimumFundedBalance = model.MinimumFundedBalance,
-        MaximumFundedBalance = model.MaximumFundedBalance,
-        TargetEndingBalance = model.TargetEndingBalance,
+        MinimumEndingBalance = model.MinimumEndingBalance,
+        MaximumEndingBalance = model.MaximumEndingBalance,
     };
 
     /// <summary>
@@ -209,22 +208,14 @@ public sealed class FundGoalController(
             RemainingAmount = progress.Contribution.RemainingAmount,
             IsSatisfied = progress.Contribution.IsSatisfied,
         },
-        FundedBalance = progress.FundedBalance == null ? null : new FundedBalanceProgressModel
-        {
-            Balance = progress.FundedBalance.Balance,
-            MinimumBalance = progress.FundedBalance.MinimumBalance,
-            MaximumBalance = progress.FundedBalance.MaximumBalance,
-            AmountBelowMinimum = progress.FundedBalance.AmountBelowMinimum,
-            AmountAboveMaximum = progress.FundedBalance.AmountAboveMaximum,
-            Status = (FundedBalanceStatusModel)progress.FundedBalance.Status,
-        },
         EndingBalance = progress.EndingBalance == null ? null : new FundGoalEndingBalanceProgressModel
         {
-            TargetBalance = progress.EndingBalance.TargetBalance,
             CurrentBalance = progress.EndingBalance.CurrentBalance,
-            Variance = progress.EndingBalance.Variance,
+            MinimumBalance = progress.EndingBalance.MinimumBalance,
+            MaximumBalance = progress.EndingBalance.MaximumBalance,
+            AmountBelowMinimum = progress.EndingBalance.AmountBelowMinimum,
+            AmountAboveMaximum = progress.EndingBalance.AmountAboveMaximum,
             Status = (FundGoalEndingBalanceStatusModel)progress.EndingBalance.Status,
-            ProjectedEndingBalance = progress.EndingBalance.ProjectedEndingBalance,
         },
     };
 

@@ -81,14 +81,15 @@ internal sealed class MigrationTestDatabase : IAsyncDisposable
 
     public DatabaseContext Context { get; }
 
-    public static async Task<MigrationTestDatabase> CreateAsync()
+    public static async Task<MigrationTestDatabase> CreateAsync(
+        string targetMigration = "20260830133000_NormalizeUnassignedFundGoalIds")
     {
         string path = Path.Combine(Path.GetTempPath(), $"financial-tracker-migration-tests-{Guid.NewGuid():N}.db");
         DbContextOptions<DatabaseContext> options = new DbContextOptionsBuilder<DatabaseContext>()
             .UseSqlite($"Data Source={path}")
             .Options;
         DatabaseContext context = new(options);
-        await context.Database.MigrateAsync("20260830133000_NormalizeUnassignedFundGoalIds");
+        await context.Database.MigrateAsync(targetMigration);
         return new MigrationTestDatabase(path, context);
     }
 

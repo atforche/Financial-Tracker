@@ -42,9 +42,8 @@ public class FundService(
                     Fund = fund,
                     AccountingPeriod = accountingPeriod,
                     RegularContribution = request.RegularContribution,
-                    MinimumFundedBalance = request.MinimumFundedBalance,
-                    MaximumFundedBalance = request.MaximumFundedBalance,
-                    TargetEndingBalance = request.TargetEndingBalance,
+                    MinimumEndingBalance = request.MinimumEndingBalance,
+                    MaximumEndingBalance = request.MaximumEndingBalance,
                 },
                 out FundGoal? fundGoal,
                 out exceptions))
@@ -98,9 +97,8 @@ public class FundService(
                 Fund = fund,
                 AccountingPeriod = null,
                 RegularContribution = request.RegularContribution,
-                MinimumFundedBalance = request.MinimumFundedBalance,
-                MaximumFundedBalance = request.MaximumFundedBalance,
-                TargetEndingBalance = request.TargetEndingBalance,
+                MinimumEndingBalance = request.MinimumEndingBalance,
+                MaximumEndingBalance = request.MaximumEndingBalance,
             },
             out FundGoal? fundGoal,
             out IEnumerable<ValidationError> fundGoalExceptions))
@@ -181,9 +179,8 @@ public class FundService(
             Description = Fund.UnassignedFundDescription,
             OpeningAccountingPeriod = openingAccountingPeriod,
             RegularContribution = null,
-            MinimumFundedBalance = null,
-            MaximumFundedBalance = null,
-            TargetEndingBalance = null,
+            MinimumEndingBalance = null,
+            MaximumEndingBalance = null,
         };
         if (!ValidateCreate(request, out exceptions, allowUnassignedFund: true))
         {
@@ -210,9 +207,8 @@ public class FundService(
             Description = Fund.UnassignedFundDescription,
             OnboardedBalance = onboardedBalance,
             RegularContribution = null,
-            MinimumFundedBalance = null,
-            MaximumFundedBalance = null,
-            TargetEndingBalance = null,
+            MinimumEndingBalance = null,
+            MaximumEndingBalance = null,
         };
         if (!ValidateOnboard(request, out exceptions, allowUnassignedFund: true))
         {

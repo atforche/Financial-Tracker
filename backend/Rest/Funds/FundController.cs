@@ -149,9 +149,8 @@ public sealed class FundController(
                 Description = createFundModel.Description,
                 OpeningAccountingPeriod = accountingPeriod,
                 RegularContribution = createFundModel.RegularContribution,
-                MinimumFundedBalance = createFundModel.MinimumFundedBalance,
-                MaximumFundedBalance = createFundModel.MaximumFundedBalance,
-                TargetEndingBalance = createFundModel.TargetEndingBalance,
+                MinimumEndingBalance = createFundModel.MinimumEndingBalance,
+                MaximumEndingBalance = createFundModel.MaximumEndingBalance,
             },
             out Fund? newFund,
             out IEnumerable<ValidationError> validationErrors))
@@ -184,9 +183,8 @@ public sealed class FundController(
                 Description = onboardFundModel.Description,
                 OnboardedBalance = onboardFundModel.OnboardedBalance,
                 RegularContribution = onboardFundModel.RegularContribution,
-                MinimumFundedBalance = onboardFundModel.MinimumFundedBalance,
-                MaximumFundedBalance = onboardFundModel.MaximumFundedBalance,
-                TargetEndingBalance = onboardFundModel.TargetEndingBalance,
+                MinimumEndingBalance = onboardFundModel.MinimumEndingBalance,
+                MaximumEndingBalance = onboardFundModel.MaximumEndingBalance,
             },
             out Fund? newFund,
             out IEnumerable<ValidationError> validationErrors))

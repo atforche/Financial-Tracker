@@ -16,11 +16,6 @@ public sealed class FundGoalProgressModel
     public ContributionProgressModel? Contribution { get; init; }
 
     /// <summary>
-    /// Gets funded-balance progress when configured.
-    /// </summary>
-    public FundedBalanceProgressModel? FundedBalance { get; init; }
-
-    /// <summary>
     /// Gets ending-balance progress when configured.
     /// </summary>
     public FundGoalEndingBalanceProgressModel? EndingBalance { get; init; }

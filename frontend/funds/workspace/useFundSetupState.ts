@@ -12,12 +12,10 @@ interface FundSetupState {
   readonly setDescription: Dispatch<SetStateAction<string>>;
   readonly regularContribution: number | null;
   readonly setRegularContribution: Dispatch<SetStateAction<number | null>>;
-  readonly minimumFundedBalance: number | null;
-  readonly setMinimumFundedBalance: Dispatch<SetStateAction<number | null>>;
-  readonly maximumFundedBalance: number | null;
-  readonly setMaximumFundedBalance: Dispatch<SetStateAction<number | null>>;
-  readonly targetEndingBalance: number | null;
-  readonly setTargetEndingBalance: Dispatch<SetStateAction<number | null>>;
+  readonly minimumEndingBalance: number | null;
+  readonly setMinimumEndingBalance: Dispatch<SetStateAction<number | null>>;
+  readonly maximumEndingBalance: number | null;
+  readonly setMaximumEndingBalance: Dispatch<SetStateAction<number | null>>;
   readonly reset: () => void;
 }
 
@@ -30,22 +28,18 @@ const useFundSetupState = function (): FundSetupState {
   const [regularContribution, setRegularContribution] = useState<number | null>(
     null,
   );
-  const [minimumFundedBalance, setMinimumFundedBalance] = useState<
+  const [minimumEndingBalance, setMinimumEndingBalance] = useState<
     number | null
   >(null);
-  const [maximumFundedBalance, setMaximumFundedBalance] = useState<
+  const [maximumEndingBalance, setMaximumEndingBalance] = useState<
     number | null
   >(null);
-  const [targetEndingBalance, setTargetEndingBalance] = useState<number | null>(
-    null,
-  );
   const reset = (): void => {
     setName("");
     setDescription("");
     setRegularContribution(null);
-    setMinimumFundedBalance(null);
-    setMaximumFundedBalance(null);
-    setTargetEndingBalance(null);
+    setMinimumEndingBalance(null);
+    setMaximumEndingBalance(null);
   };
   return {
     name,
@@ -54,12 +48,10 @@ const useFundSetupState = function (): FundSetupState {
     setDescription,
     regularContribution,
     setRegularContribution,
-    minimumFundedBalance,
-    setMinimumFundedBalance,
-    maximumFundedBalance,
-    setMaximumFundedBalance,
-    targetEndingBalance,
-    setTargetEndingBalance,
+    minimumEndingBalance,
+    setMinimumEndingBalance,
+    maximumEndingBalance,
+    setMaximumEndingBalance,
     reset,
   };
 };

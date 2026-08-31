@@ -10,18 +10,13 @@ interface FundGoalSetupSectionProps {
   readonly color?: FrameColor;
   readonly regularContribution: number | null;
   readonly setRegularContribution: ((value: number | null) => void) | null;
-  readonly minimumFundedBalance: number | null;
-  readonly setMinimumFundedBalance: ((value: number | null) => void) | null;
-  readonly maximumFundedBalance: number | null;
-  readonly setMaximumFundedBalance: ((value: number | null) => void) | null;
-  readonly targetEndingBalance: number | null;
-  readonly setTargetEndingBalance: ((value: number | null) => void) | null;
+  readonly minimumEndingBalance: number | null;
+  readonly setMinimumEndingBalance: ((value: number | null) => void) | null;
+  readonly maximumEndingBalance: number | null;
+  readonly setMaximumEndingBalance: ((value: number | null) => void) | null;
   readonly errors?: Partial<
     Record<
-      | "regularContribution"
-      | "minimumFundedBalance"
-      | "maximumFundedBalance"
-      | "targetEndingBalance",
+      "regularContribution" | "minimumEndingBalance" | "maximumEndingBalance",
       string | null
     >
   >;
@@ -34,45 +29,43 @@ const FundGoalSetupSection = function ({
   color = "primary",
   regularContribution,
   setRegularContribution,
-  minimumFundedBalance,
-  setMinimumFundedBalance,
-  maximumFundedBalance,
-  setMaximumFundedBalance,
-  targetEndingBalance,
-  setTargetEndingBalance,
+  minimumEndingBalance,
+  setMinimumEndingBalance,
+  maximumEndingBalance,
+  setMaximumEndingBalance,
   errors,
 }: FundGoalSetupSectionProps): JSX.Element {
   const autoFilledBalance = useRef<"minimum" | "maximum" | null>(null);
-  const setMinimumFundedBalanceWithDefault =
-    setMinimumFundedBalance === null
+  const setMinimumEndingBalanceWithDefault =
+    setMinimumEndingBalance === null
       ? null
       : (value: number | null): void => {
-          setMinimumFundedBalance(value);
+          setMinimumEndingBalance(value);
           if (autoFilledBalance.current === "minimum") {
             autoFilledBalance.current = null;
           } else if (value === null) {
             autoFilledBalance.current = null;
-          } else if (maximumFundedBalance === null) {
+          } else if (maximumEndingBalance === null) {
             autoFilledBalance.current = "maximum";
-            setMaximumFundedBalance?.(value);
+            setMaximumEndingBalance?.(value);
           } else if (autoFilledBalance.current === "maximum") {
-            setMaximumFundedBalance?.(value);
+            setMaximumEndingBalance?.(value);
           }
         };
-  const setMaximumFundedBalanceWithDefault =
-    setMaximumFundedBalance === null
+  const setMaximumEndingBalanceWithDefault =
+    setMaximumEndingBalance === null
       ? null
       : (value: number | null): void => {
-          setMaximumFundedBalance(value);
+          setMaximumEndingBalance(value);
           if (autoFilledBalance.current === "maximum") {
             autoFilledBalance.current = null;
           } else if (value === null) {
             autoFilledBalance.current = null;
-          } else if (minimumFundedBalance === null) {
+          } else if (minimumEndingBalance === null) {
             autoFilledBalance.current = "minimum";
-            setMinimumFundedBalance?.(value);
+            setMinimumEndingBalance?.(value);
           } else if (autoFilledBalance.current === "minimum") {
-            setMinimumFundedBalance?.(value);
+            setMinimumEndingBalance?.(value);
           }
         };
 
@@ -87,25 +80,18 @@ const FundGoalSetupSection = function ({
           errorMessage={errors?.regularContribution ?? null}
         />
         <FundGoalAmountOption
-          label="Minimum Funded Amount"
-          description="This is the minimum amount that should always be available to spend from this fund every month."
-          value={minimumFundedBalance}
-          setValue={setMinimumFundedBalanceWithDefault}
-          errorMessage={errors?.minimumFundedBalance ?? null}
+          label="Minimum Ending Balance"
+          description="This is the minimum balance you want remaining at the end of the accounting period."
+          value={minimumEndingBalance}
+          setValue={setMinimumEndingBalanceWithDefault}
+          errorMessage={errors?.minimumEndingBalance ?? null}
         />
         <FundGoalAmountOption
-          label="Maximum Funded Amount"
-          description="This is the maximum amount that should be available to spend from this fund."
-          value={maximumFundedBalance}
-          setValue={setMaximumFundedBalanceWithDefault}
-          errorMessage={errors?.maximumFundedBalance ?? null}
-        />
-        <FundGoalAmountOption
-          label="Target Ending Balance"
-          description="The target balance you want remaining at the end of the accounting period."
-          value={targetEndingBalance}
-          setValue={setTargetEndingBalance}
-          errorMessage={errors?.targetEndingBalance ?? null}
+          label="Maximum Ending Balance"
+          description="This is the maximum balance you want remaining at the end of the accounting period. It also caps the recommended regular contribution."
+          value={maximumEndingBalance}
+          setValue={setMaximumEndingBalanceWithDefault}
+          errorMessage={errors?.maximumEndingBalance ?? null}
         />
       </Stack>
     </Frame>

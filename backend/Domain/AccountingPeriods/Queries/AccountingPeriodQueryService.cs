@@ -150,8 +150,8 @@ public sealed class AccountingPeriodQueryService(
                 .Sum(goal => FundGoalProgressService.CalculateRecommendedContribution(
                     history.FundBalances.SingleOrDefault(item => item.Fund.Id == goal.Fund.Id)?.OpeningBalance ?? 0,
                     goal.RegularContribution,
-                    goal.MinimumFundedBalance,
-                    goal.MaximumFundedBalance));
+                    goal.MinimumEndingBalance,
+                    goal.MaximumEndingBalance));
             decimal actualGoalContributions = fundGoals
                 .Sum(goal => history.FundGoalTotals
                     .SingleOrDefault(item => item.Fund.Id == goal.Fund.Id)
