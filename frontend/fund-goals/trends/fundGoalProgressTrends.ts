@@ -2,10 +2,8 @@ import {
   type FundGoal,
   FundGoalEndingBalanceStatus,
   type FundGoalProgress,
-  FundedBalanceStatus,
 } from "@/fund-goals/types";
 import { getCurrencyTotal } from "@/framework/currencyHelpers";
-import { isMaximumFundedBalanceSatisfied } from "@/fund-goals/helpers";
 
 /**
  * A Fund Goal paired with its progress for the Fund Goal's Accounting Period.
@@ -25,7 +23,7 @@ interface FundGoalTrendPoint {
   readonly satisfiedGoalCount: number;
   readonly satisfiedPercentage: number;
   readonly assignedContribution: number;
-  readonly targetContribution: number;
+  readonly expectedContribution: number;
 }
 
 /**
@@ -35,7 +33,7 @@ interface FundGoalHealthSummary {
   readonly configuredGoalCount: number;
   readonly satisfiedGoalCount: number;
   readonly assignedContribution: number;
-  readonly targetContribution: number;
+  readonly expectedContribution: number;
 }
 
 const sum = (values: readonly number[]): number => getCurrencyTotal(values);
@@ -51,22 +49,21 @@ const isFundGoalSatisfied = function ({
     checks.push(progress.contribution.isSatisfied);
   }
   if (
-    progress.fundedBalance?.minimumBalance !== null &&
-    progress.fundedBalance?.minimumBalance !== undefined
+    progress.endingBalance?.minimumBalance !== null &&
+    progress.endingBalance?.minimumBalance !== undefined
   ) {
     checks.push(
-      progress.fundedBalance.status !== FundedBalanceStatus.BelowMinimum,
+      progress.endingBalance.status !==
+        FundGoalEndingBalanceStatus.BelowMinimum,
     );
   }
   if (
-    progress.fundedBalance?.maximumBalance !== null &&
-    progress.fundedBalance?.maximumBalance !== undefined
+    progress.endingBalance?.maximumBalance !== null &&
+    progress.endingBalance?.maximumBalance !== undefined
   ) {
-    checks.push(isMaximumFundedBalanceSatisfied(progress.fundedBalance));
-  }
-  if (progress.endingBalance !== null && progress.endingBalance !== undefined) {
     checks.push(
-      progress.endingBalance.status === FundGoalEndingBalanceStatus.AtTarget,
+      progress.endingBalance.status !==
+        FundGoalEndingBalanceStatus.AboveMaximum,
     );
   }
   return checks.every((isSatisfied) => isSatisfied);
@@ -90,8 +87,8 @@ const getFundGoalHealthSummary = function (
     assignedContribution: sum(
       contribution.map(({ assignedAmount }) => assignedAmount),
     ),
-    targetContribution: sum(
-      contribution.map(({ targetAmount }) => targetAmount),
+    expectedContribution: sum(
+      contribution.map(({ expectedAmount }) => expectedAmount),
     ),
   };
 };
@@ -120,7 +117,7 @@ const buildFundGoalTrendPoints = function (
           ? 0
           : (summary.satisfiedGoalCount / summary.configuredGoalCount) * 100,
       assignedContribution: summary.assignedContribution,
-      targetContribution: summary.targetContribution,
+      expectedContribution: summary.expectedContribution,
     };
   });
 };

@@ -13,20 +13,20 @@ public sealed class AccountGoalProgress
     /// <summary>
     /// Ending-balance progress, or null when no ending-balance bounds are configured.
     /// </summary>
-    public EndingBalanceProgress? EndingBalance { get; }
+    public AccountGoalEndingBalanceProgress? EndingBalance { get; }
 
     /// <summary>
     /// True when the balance is positive and satisfies every configured ending-balance bound.
     /// </summary>
     public bool IsSatisfied => PositiveBalance.IsSatisfied
-        && (EndingBalance == null || EndingBalance.Status == EndingBalanceStatus.WithinRange);
+        && (EndingBalance == null || EndingBalance.Status == AccountGoalEndingBalanceStatus.WithinRange);
 
     /// <summary>
     /// Constructs a new instance of this class.
     /// </summary>
     internal AccountGoalProgress(
         PositiveBalanceProgress positiveBalance,
-        EndingBalanceProgress? endingBalance)
+        AccountGoalEndingBalanceProgress? endingBalance)
     {
         PositiveBalance = positiveBalance;
         EndingBalance = endingBalance;

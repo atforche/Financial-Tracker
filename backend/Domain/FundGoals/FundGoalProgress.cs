@@ -16,14 +16,9 @@ public sealed class FundGoalProgress
     public ContributionProgress? Contribution { get; }
 
     /// <summary>
-    /// Funded-balance progress, or null when no funded-balance bounds are configured.
+    /// Ending-balance progress, or null when no ending-balance bounds are configured.
     /// </summary>
-    public FundedBalanceProgress? FundedBalance { get; }
-
-    /// <summary>
-    /// Ending-balance progress, or null when no target ending balance is configured.
-    /// </summary>
-    public EndingBalanceProgress? EndingBalance { get; }
+    public FundGoalEndingBalanceProgress? EndingBalance { get; }
 
     /// <summary>
     /// Constructs a new instance of this class.
@@ -31,12 +26,10 @@ public sealed class FundGoalProgress
     internal FundGoalProgress(
         AvailableBalanceProgress availableBalance,
         ContributionProgress? contribution,
-        FundedBalanceProgress? fundedBalance,
-        EndingBalanceProgress? endingBalance)
+        FundGoalEndingBalanceProgress? endingBalance)
     {
         AvailableBalance = availableBalance;
         Contribution = contribution;
-        FundedBalance = fundedBalance;
         EndingBalance = endingBalance;
     }
 }

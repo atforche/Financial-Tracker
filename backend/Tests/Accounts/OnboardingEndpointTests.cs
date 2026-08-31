@@ -30,10 +30,9 @@ public sealed class OnboardingEndpointTests
             Name = "Emergency",
             Description = "Emergency",
             OnboardedBalance = 80m,
-            RegularContribution = 25m,
-            MinimumFundedBalance = 50m,
-            MaximumFundedBalance = 100m,
-            TargetEndingBalance = 75m
+            PlannedMonthlyContribution = 25m,
+            MinimumEndingBalance = 50m,
+            MaximumEndingBalance = 100m
         });
 
         CollectionModel<AccountWithBalanceModel> accounts = await test.Api.GetAsync<CollectionModel<AccountWithBalanceModel>>("/accounts/with-balances");
@@ -42,10 +41,9 @@ public sealed class OnboardingEndpointTests
 
         Assert.Equal(120m, Assert.Single(accounts.Items, item => item.Id == account.Id).CurrentBalance.PostedBalance);
         Assert.Equal(80m, Assert.Single(funds.Items, item => item.Id == fund.Id).CurrentBalance.PostedBalance);
-        Assert.Equal(25m, goal.RegularContribution);
-        Assert.Equal(50m, goal.MinimumFundedBalance);
-        Assert.Equal(100m, goal.MaximumFundedBalance);
-        Assert.Equal(75m, goal.TargetEndingBalance);
+        Assert.Equal(25m, goal.PlannedMonthlyContribution);
+        Assert.Equal(50m, goal.MinimumEndingBalance);
+        Assert.Equal(100m, goal.MaximumEndingBalance);
     }
 
     /// <summary>

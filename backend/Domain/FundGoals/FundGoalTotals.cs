@@ -18,10 +18,10 @@ public sealed class FundGoalTotals
     public decimal AmountAssigned { get; }
 
     /// <summary>
-    /// Posted amount assigned toward the regular monthly contribution during
+    /// Posted amount assigned toward the expected monthly contribution during
     /// the Accounting Period.
     /// </summary>
-    public decimal RegularAmountAssigned { get; }
+    public decimal AmountAssignedToExpectedContribution { get; }
 
     /// <summary>
     /// Amount assigned after current unposted Transaction effects are applied.
@@ -29,20 +29,20 @@ public sealed class FundGoalTotals
     public decimal AmountAssignedIncludingPending { get; }
 
     /// <summary>
-    /// Amount assigned toward the regular monthly contribution after current
+    /// Amount assigned toward the expected monthly contribution after current
     /// unposted Transaction effects are applied.
     /// </summary>
-    public decimal RegularAmountAssignedIncludingPending { get; }
+    public decimal AmountAssignedToExpectedContributionIncludingPending { get; }
 
     /// <summary>
-    /// Amount remaining to assign toward the regular contribution.
+    /// Amount remaining to assign toward the expected monthly contribution.
     /// </summary>
-    public decimal RemainingRegularAmountToAssign { get; private set; }
+    public decimal RemainingAmountToAssignToExpectedContribution { get; private set; }
 
     /// <summary>
-    /// Amount remaining to assign toward the regular contribution including pending effects.
+    /// Amount remaining to assign toward the expected monthly contribution including pending effects.
     /// </summary>
-    public decimal RemainingRegularAmountToAssignIncludingPending { get; private set; }
+    public decimal RemainingAmountToAssignToExpectedContributionIncludingPending { get; private set; }
 
     /// <summary>
     /// Posted amount spent during the Accounting Period.
@@ -57,11 +57,11 @@ public sealed class FundGoalTotals
     /// <summary>
     /// Assigns the specified amount to this Fund Goal Totals.
     /// </summary>
-    internal FundGoalTotals Assign(decimal amount, decimal? regularAmount = null) => new(
+    internal FundGoalTotals Assign(decimal amount, decimal? plannedAmount = null) => new(
         FundId,
         AmountAssigned + amount,
         AmountSpent,
-        RegularAmountAssigned + (regularAmount ?? amount));
+        AmountAssignedToExpectedContribution + (plannedAmount ?? amount));
 
     /// <summary>
     /// Spends the specified amount from this Fund Goal Totals.
@@ -70,7 +70,7 @@ public sealed class FundGoalTotals
         FundId,
         AmountAssigned,
         AmountSpent + amount,
-        RegularAmountAssigned);
+        AmountAssignedToExpectedContribution);
 
     /// <summary>
     /// Constructs a new instance of this class.
@@ -79,37 +79,37 @@ public sealed class FundGoalTotals
         FundId fundId,
         decimal amountAssigned,
         decimal amountSpent,
-        decimal? regularAmountAssigned = null,
+        decimal? amountAssignedToExpectedContribution = null,
         decimal? amountAssignedIncludingPending = null,
-        decimal? regularAmountAssignedIncludingPending = null,
+        decimal? amountAssignedToExpectedContributionIncludingPending = null,
         decimal? amountSpentIncludingPending = null,
-        decimal? remainingRegularAmountToAssign = null,
-        decimal? remainingRegularAmountToAssignIncludingPending = null)
+        decimal? remainingAmountToAssignToExpectedContribution = null,
+        decimal? remainingAmountToAssignToExpectedContributionIncludingPending = null)
     {
         FundId = fundId;
         AmountAssigned = amountAssigned;
         AmountAssignedIncludingPending = amountAssignedIncludingPending ?? amountAssigned;
-        RegularAmountAssigned = regularAmountAssigned ?? amountAssigned;
-        RegularAmountAssignedIncludingPending = regularAmountAssignedIncludingPending ?? RegularAmountAssigned;
+        AmountAssignedToExpectedContribution = amountAssignedToExpectedContribution ?? amountAssigned;
+        AmountAssignedToExpectedContributionIncludingPending = amountAssignedToExpectedContributionIncludingPending ?? AmountAssignedToExpectedContribution;
         AmountSpent = amountSpent;
         AmountSpentIncludingPending = amountSpentIncludingPending ?? amountSpent;
-        RemainingRegularAmountToAssign = remainingRegularAmountToAssign ?? 0;
-        RemainingRegularAmountToAssignIncludingPending = remainingRegularAmountToAssignIncludingPending ?? RemainingRegularAmountToAssign;
+        RemainingAmountToAssignToExpectedContribution = remainingAmountToAssignToExpectedContribution ?? 0;
+        RemainingAmountToAssignToExpectedContributionIncludingPending = remainingAmountToAssignToExpectedContributionIncludingPending ?? RemainingAmountToAssignToExpectedContribution;
     }
 
     /// <summary>
-    /// Adds the remaining regular contribution amounts calculated for API projection.
+    /// Adds the remaining planned monthly contribution amounts calculated for API projection.
     /// </summary>
-    internal FundGoalTotals WithRemainingRegularAmountToAssign(
-        decimal remainingRegularAmountToAssign,
-        decimal remainingRegularAmountToAssignIncludingPending) => new(
+    internal FundGoalTotals WithRemainingAmountToAssignToExpectedContribution(
+        decimal remainingAmountToAssignToExpectedContribution,
+        decimal remainingAmountToAssignToExpectedContributionIncludingPending) => new(
             FundId,
             AmountAssigned,
             AmountSpent,
-            RegularAmountAssigned,
+            AmountAssignedToExpectedContribution,
             AmountAssignedIncludingPending,
-            RegularAmountAssignedIncludingPending,
+            AmountAssignedToExpectedContributionIncludingPending,
             AmountSpentIncludingPending,
-            remainingRegularAmountToAssign,
-            remainingRegularAmountToAssignIncludingPending);
+            remainingAmountToAssignToExpectedContribution,
+            remainingAmountToAssignToExpectedContributionIncludingPending);
 }

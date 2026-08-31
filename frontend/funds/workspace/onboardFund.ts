@@ -18,10 +18,9 @@ interface ActionState extends FundActionState {
   readonly nameErrors?: string | null;
   readonly descriptionErrors?: string | null;
   readonly onboardedBalanceErrors?: string | null;
-  readonly regularContributionErrors?: string | null;
-  readonly minimumFundedBalanceErrors?: string | null;
-  readonly maximumFundedBalanceErrors?: string | null;
-  readonly targetEndingBalanceErrors?: string | null;
+  readonly plannedMonthlyContributionErrors?: string | null;
+  readonly minimumEndingBalanceErrors?: string | null;
+  readonly maximumEndingBalanceErrors?: string | null;
 }
 
 /**
@@ -47,14 +46,12 @@ const onboardFund = async function (
         [propertyName<OnboardFundRequest>("description")]: "descriptionErrors",
         [propertyName<OnboardFundRequest>("onboardedBalance")]:
           "onboardedBalanceErrors",
-        [propertyName<OnboardFundRequest>("regularContribution")]:
-          "regularContributionErrors",
-        [propertyName<OnboardFundRequest>("minimumFundedBalance")]:
-          "minimumFundedBalanceErrors",
-        [propertyName<OnboardFundRequest>("maximumFundedBalance")]:
-          "maximumFundedBalanceErrors",
-        [propertyName<OnboardFundRequest>("targetEndingBalance")]:
-          "targetEndingBalanceErrors",
+        [propertyName<OnboardFundRequest>("plannedMonthlyContribution")]:
+          "plannedMonthlyContributionErrors",
+        [propertyName<OnboardFundRequest>("minimumEndingBalance")]:
+          "minimumEndingBalanceErrors",
+        [propertyName<OnboardFundRequest>("maximumEndingBalance")]:
+          "maximumEndingBalanceErrors",
       });
       return {
         ...mappedError,

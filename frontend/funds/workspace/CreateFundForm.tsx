@@ -49,14 +49,12 @@ const CreateFundForm = function ({
     setName,
     description,
     setDescription,
-    regularContribution,
-    setRegularContribution,
-    minimumFundedBalance,
-    setMinimumFundedBalance,
-    maximumFundedBalance,
-    setMaximumFundedBalance,
-    targetEndingBalance,
-    setTargetEndingBalance,
+    plannedMonthlyContribution,
+    setPlannedMonthlyContribution,
+    minimumEndingBalance,
+    setMinimumEndingBalance,
+    maximumEndingBalance,
+    setMaximumEndingBalance,
   } = fundSetup;
   const formRef = useRef<HTMLDivElement | null>(null);
   const [accountingPeriod, setAccountingPeriod] =
@@ -83,10 +81,9 @@ const CreateFundForm = function ({
     name,
     description,
     accountingPeriod,
-    regularContribution,
-    minimumFundedBalance,
-    maximumFundedBalance,
-    targetEndingBalance,
+    plannedMonthlyContribution,
+    minimumEndingBalance,
+    maximumEndingBalance,
   });
 
   if (!canWrite) {
@@ -125,14 +122,12 @@ const CreateFundForm = function ({
 
         <FundGoalSetupSection
           color="info"
-          regularContribution={regularContribution}
-          setRegularContribution={setRegularContribution}
-          minimumFundedBalance={minimumFundedBalance}
-          setMinimumFundedBalance={setMinimumFundedBalance}
-          maximumFundedBalance={maximumFundedBalance}
-          setMaximumFundedBalance={setMaximumFundedBalance}
-          targetEndingBalance={targetEndingBalance}
-          setTargetEndingBalance={setTargetEndingBalance}
+          plannedMonthlyContribution={plannedMonthlyContribution}
+          setPlannedMonthlyContribution={setPlannedMonthlyContribution}
+          minimumEndingBalance={minimumEndingBalance}
+          setMinimumEndingBalance={setMinimumEndingBalance}
+          maximumEndingBalance={maximumEndingBalance}
+          setMaximumEndingBalance={setMaximumEndingBalance}
         />
 
         <ErrorAlert

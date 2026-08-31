@@ -6,9 +6,9 @@ namespace Models.FundGoals;
 public sealed class ContributionProgressModel
 {
     /// <summary>
-    /// Gets the recommended contribution.
+    /// Gets the expected contribution.
     /// </summary>
-    public required decimal TargetAmount { get; init; }
+    public required decimal ExpectedAmount { get; init; }
 
     /// <summary>
     /// Gets the amount assigned.

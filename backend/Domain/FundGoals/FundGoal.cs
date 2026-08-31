@@ -21,36 +21,29 @@ public sealed class FundGoal : Entity<FundGoalId>
     /// <summary>
     /// Amount normally contributed during each Accounting Period.
     /// </summary>
-    public decimal? RegularContribution { get; private set; }
+    public decimal? PlannedMonthlyContribution { get; private set; }
 
     /// <summary>
-    /// Minimum desired balance immediately after assignments.
+    /// Minimum desired balance at the end of an Accounting Period.
     /// </summary>
-    public decimal? MinimumFundedBalance { get; private set; }
+    public decimal? MinimumEndingBalance { get; private set; }
 
     /// <summary>
-    /// Maximum desired balance immediately after assignments.
+    /// Maximum desired balance at the end of an Accounting Period.
     /// </summary>
-    public decimal? MaximumFundedBalance { get; private set; }
-
-    /// <summary>
-    /// Desired balance at the end of an Accounting Period.
-    /// </summary>
-    public decimal? TargetEndingBalance { get; private set; }
+    public decimal? MaximumEndingBalance { get; private set; }
 
     /// <summary>
     /// Updates the configurable quantities for this Fund Goal.
     /// </summary>
     internal void Update(
-        decimal? regularContribution,
-        decimal? minimumFundedBalance,
-        decimal? maximumFundedBalance,
-        decimal? targetEndingBalance)
+        decimal? plannedMonthlyContribution,
+        decimal? minimumEndingBalance,
+        decimal? maximumEndingBalance)
     {
-        RegularContribution = regularContribution;
-        MinimumFundedBalance = minimumFundedBalance;
-        MaximumFundedBalance = maximumFundedBalance;
-        TargetEndingBalance = targetEndingBalance;
+        PlannedMonthlyContribution = plannedMonthlyContribution;
+        MinimumEndingBalance = minimumEndingBalance;
+        MaximumEndingBalance = maximumEndingBalance;
     }
 
     /// <summary>
@@ -59,15 +52,14 @@ public sealed class FundGoal : Entity<FundGoalId>
     internal FundGoal(
         Fund fund,
         AccountingPeriod? accountingPeriod,
-        decimal? regularContribution,
-        decimal? minimumFundedBalance,
-        decimal? maximumFundedBalance,
-        decimal? targetEndingBalance)
+        decimal? plannedMonthlyContribution,
+        decimal? minimumEndingBalance,
+        decimal? maximumEndingBalance)
         : base(new FundGoalId(Guid.NewGuid()))
     {
         Fund = fund;
         AccountingPeriod = accountingPeriod;
-        Update(regularContribution, minimumFundedBalance, maximumFundedBalance, targetEndingBalance);
+        Update(plannedMonthlyContribution, minimumEndingBalance, maximumEndingBalance);
     }
 
     /// <summary>

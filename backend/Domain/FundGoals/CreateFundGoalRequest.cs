@@ -21,20 +21,15 @@ public sealed record CreateFundGoalRequest
     /// <summary>
     /// Amount normally contributed during each Accounting Period.
     /// </summary>
-    public decimal? RegularContribution { get; init; }
+    public decimal? PlannedMonthlyContribution { get; init; }
 
     /// <summary>
-    /// Minimum desired balance immediately after assignments.
+    /// Minimum desired balance at the end of an Accounting Period.
     /// </summary>
-    public decimal? MinimumFundedBalance { get; init; }
+    public decimal? MinimumEndingBalance { get; init; }
 
     /// <summary>
-    /// Maximum desired balance immediately after assignments.
+    /// Maximum desired balance at the end of an Accounting Period.
     /// </summary>
-    public decimal? MaximumFundedBalance { get; init; }
-
-    /// <summary>
-    /// Desired balance at the end of an Accounting Period.
-    /// </summary>
-    public decimal? TargetEndingBalance { get; init; }
+    public decimal? MaximumEndingBalance { get; init; }
 }

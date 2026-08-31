@@ -218,11 +218,11 @@ const getSpendingGoalRemainingAmount = function (
   fundBalance: number,
 ): number {
   const fundGoal = fundGoals.find((goal) => goal.fund.id === fundId);
-  const targetEndingBalance = fundGoal?.targetEndingBalance;
-  if (targetEndingBalance === null || targetEndingBalance === undefined) {
+  const minimumEndingBalance = fundGoal?.minimumEndingBalance;
+  if (minimumEndingBalance === null || minimumEndingBalance === undefined) {
     return fundBalance;
   }
-  return getCurrencyDifference(fundBalance, targetEndingBalance);
+  return getCurrencyDifference(fundBalance, minimumEndingBalance);
 };
 
 /**
@@ -364,7 +364,7 @@ const addFundAssignment = function (
 };
 
 /**
- * Creates regular income assignments in order of largest remaining contribution.
+ * Creates expected income assignments in order of largest remaining contribution.
  */
 const autoAssignIncomeFundAssignments = function (
   totalAmountToAssign: number | null,

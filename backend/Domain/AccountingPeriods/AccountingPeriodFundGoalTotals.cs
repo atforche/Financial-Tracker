@@ -24,10 +24,10 @@ public sealed class AccountingPeriodFundGoalTotals : Entity<AccountingPeriodFund
     public decimal AmountAssigned { get; private set; }
 
     /// <summary>
-    /// Posted amount assigned toward the regular monthly contribution during
+    /// Posted amount assigned toward the expected monthly contribution during
     /// the Accounting Period.
     /// </summary>
-    public decimal RegularAmountAssigned { get; private set; }
+    public decimal AmountAssignedToExpectedContribution { get; private set; }
 
     /// <summary>
     /// Posted amount spent during the Accounting Period.
@@ -38,7 +38,7 @@ public sealed class AccountingPeriodFundGoalTotals : Entity<AccountingPeriodFund
     /// Gets the current Fund Goal totals.
     /// </summary>
     public FundGoalTotals GetTotals() =>
-        new(Fund.Id, AmountAssigned, AmountSpent, RegularAmountAssigned);
+        new(Fund.Id, AmountAssigned, AmountSpent, AmountAssignedToExpectedContribution);
 
     /// <summary>
     /// Updates this Accounting Period totals.
@@ -46,7 +46,7 @@ public sealed class AccountingPeriodFundGoalTotals : Entity<AccountingPeriodFund
     internal void Update(FundGoalTotals totals)
     {
         AmountAssigned = totals.AmountAssigned;
-        RegularAmountAssigned = totals.RegularAmountAssigned;
+        AmountAssignedToExpectedContribution = totals.AmountAssignedToExpectedContribution;
         AmountSpent = totals.AmountSpent;
     }
 

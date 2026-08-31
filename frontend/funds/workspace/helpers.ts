@@ -21,10 +21,9 @@ const validateOnboardFundSetup = (
  * Fields required to build a Fund Goal.
  */
 interface FundGoalFields {
-  readonly regularContribution: number | null;
-  readonly minimumFundedBalance: number | null;
-  readonly maximumFundedBalance: number | null;
-  readonly targetEndingBalance: number | null;
+  readonly plannedMonthlyContribution: number | null;
+  readonly minimumEndingBalance: number | null;
+  readonly maximumEndingBalance: number | null;
 }
 
 /**
@@ -46,12 +45,12 @@ interface OnboardFundRequestFields extends FundGoalFields {
 }
 
 /**
- * Validates that the minimum and maximum funded balances are in a valid range.
+ * Validates that the minimum and maximum ending balances are in a valid range.
  */
 const validRange = (fields: FundGoalFields): boolean =>
-  fields.minimumFundedBalance === null ||
-  fields.maximumFundedBalance === null ||
-  fields.minimumFundedBalance <= fields.maximumFundedBalance;
+  fields.minimumEndingBalance === null ||
+  fields.maximumEndingBalance === null ||
+  fields.minimumEndingBalance <= fields.maximumEndingBalance;
 
 /**
  * Builds a request to create a fund.
@@ -69,10 +68,9 @@ const buildCreateFundRequest = (
     name: fields.name,
     description: fields.description,
     accountingPeriodId: fields.accountingPeriod?.id ?? "",
-    regularContribution: fields.regularContribution,
-    minimumFundedBalance: fields.minimumFundedBalance,
-    maximumFundedBalance: fields.maximumFundedBalance,
-    targetEndingBalance: fields.targetEndingBalance,
+    plannedMonthlyContribution: fields.plannedMonthlyContribution,
+    minimumEndingBalance: fields.minimumEndingBalance,
+    maximumEndingBalance: fields.maximumEndingBalance,
   };
 };
 
@@ -92,10 +90,9 @@ const buildOnboardFundRequest = (
     name: fields.name,
     description: fields.description,
     onboardedBalance: fields.onboardedBalance ?? 0,
-    regularContribution: fields.regularContribution,
-    minimumFundedBalance: fields.minimumFundedBalance,
-    maximumFundedBalance: fields.maximumFundedBalance,
-    targetEndingBalance: fields.targetEndingBalance,
+    plannedMonthlyContribution: fields.plannedMonthlyContribution,
+    minimumEndingBalance: fields.minimumEndingBalance,
+    maximumEndingBalance: fields.maximumEndingBalance,
   };
 };
 

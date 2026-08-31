@@ -81,8 +81,8 @@ public sealed class AccountAndFundLifecycleTests
             Name = "Invalid bounds",
             Description = "Invalid bounds",
             AccountingPeriodId = july.Id,
-            MinimumFundedBalance = 200m,
-            MaximumFundedBalance = 100m
+            MinimumEndingBalance = 200m,
+            MaximumEndingBalance = 100m
         });
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);

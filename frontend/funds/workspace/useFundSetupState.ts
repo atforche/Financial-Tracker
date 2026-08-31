@@ -10,14 +10,14 @@ interface FundSetupState {
   readonly setName: Dispatch<SetStateAction<string>>;
   readonly description: string;
   readonly setDescription: Dispatch<SetStateAction<string>>;
-  readonly regularContribution: number | null;
-  readonly setRegularContribution: Dispatch<SetStateAction<number | null>>;
-  readonly minimumFundedBalance: number | null;
-  readonly setMinimumFundedBalance: Dispatch<SetStateAction<number | null>>;
-  readonly maximumFundedBalance: number | null;
-  readonly setMaximumFundedBalance: Dispatch<SetStateAction<number | null>>;
-  readonly targetEndingBalance: number | null;
-  readonly setTargetEndingBalance: Dispatch<SetStateAction<number | null>>;
+  readonly plannedMonthlyContribution: number | null;
+  readonly setPlannedMonthlyContribution: Dispatch<
+    SetStateAction<number | null>
+  >;
+  readonly minimumEndingBalance: number | null;
+  readonly setMinimumEndingBalance: Dispatch<SetStateAction<number | null>>;
+  readonly maximumEndingBalance: number | null;
+  readonly setMaximumEndingBalance: Dispatch<SetStateAction<number | null>>;
   readonly reset: () => void;
 }
 
@@ -27,39 +27,33 @@ interface FundSetupState {
 const useFundSetupState = function (): FundSetupState {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [regularContribution, setRegularContribution] = useState<number | null>(
-    null,
-  );
-  const [minimumFundedBalance, setMinimumFundedBalance] = useState<
+  const [plannedMonthlyContribution, setPlannedMonthlyContribution] = useState<
     number | null
   >(null);
-  const [maximumFundedBalance, setMaximumFundedBalance] = useState<
+  const [minimumEndingBalance, setMinimumEndingBalance] = useState<
     number | null
   >(null);
-  const [targetEndingBalance, setTargetEndingBalance] = useState<number | null>(
-    null,
-  );
+  const [maximumEndingBalance, setMaximumEndingBalance] = useState<
+    number | null
+  >(null);
   const reset = (): void => {
     setName("");
     setDescription("");
-    setRegularContribution(null);
-    setMinimumFundedBalance(null);
-    setMaximumFundedBalance(null);
-    setTargetEndingBalance(null);
+    setPlannedMonthlyContribution(null);
+    setMinimumEndingBalance(null);
+    setMaximumEndingBalance(null);
   };
   return {
     name,
     setName,
     description,
     setDescription,
-    regularContribution,
-    setRegularContribution,
-    minimumFundedBalance,
-    setMinimumFundedBalance,
-    maximumFundedBalance,
-    setMaximumFundedBalance,
-    targetEndingBalance,
-    setTargetEndingBalance,
+    plannedMonthlyContribution,
+    setPlannedMonthlyContribution,
+    minimumEndingBalance,
+    setMinimumEndingBalance,
+    maximumEndingBalance,
+    setMaximumEndingBalance,
     reset,
   };
 };

@@ -2,7 +2,6 @@ import {
   type FundGoal,
   FundGoalEndingBalanceStatus,
   type FundGoalProgress as FundGoalProgressModel,
-  FundedBalanceStatus,
 } from "@/fund-goals/types";
 import FundGoalAvailableBalance from "@/fund-goals/workspace/FundGoalAvailableBalance";
 import FundGoalProgress from "@/fund-goals/workspace/FundGoalProgress";
@@ -10,7 +9,6 @@ import type { JSX } from "react";
 import { Stack } from "@mui/material";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import { formatCurrency } from "@/framework/currencyHelpers";
-import { isMaximumFundedBalanceSatisfied } from "@/fund-goals/helpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
@@ -44,67 +42,60 @@ const FundGoalProgressBars = function ({
           availableBalance={progress.availableBalance}
         />
       ) : null}
-      {isNotNullOrUndefined(fundGoal.regularContribution) &&
+      {isNotNullOrUndefined(fundGoal.plannedMonthlyContribution) &&
       progress.contribution ? (
         <FundGoalProgress
-          label="Regular Monthly Contribution"
+          label="Expected Contribution"
           current={progress.contribution.assignedAmount}
-          target={progress.contribution.targetAmount}
+          target={progress.contribution.expectedAmount}
           satisfied={progress.contribution.isSatisfied}
         />
       ) : showUnconfigured ? (
         <StringEntryField
-          label="Regular Monthly Contribution"
-          value={displayAmount(fundGoal.regularContribution)}
+          label="Planned Monthly Contribution"
+          value={displayAmount(fundGoal.plannedMonthlyContribution)}
           setValue={null}
         />
       ) : null}
-      {progress.fundedBalance?.minimumBalance !== null &&
-      progress.fundedBalance?.minimumBalance !== undefined ? (
+      {progress.endingBalance?.minimumBalance !== null &&
+      progress.endingBalance?.minimumBalance !== undefined ? (
         <FundGoalProgress
-          label="Minimum Funded Amount"
-          current={progress.fundedBalance.balance}
-          target={progress.fundedBalance.minimumBalance}
-          satisfied={
-            progress.fundedBalance.status !== FundedBalanceStatus.BelowMinimum
-          }
-        />
-      ) : showUnconfigured ? (
-        <StringEntryField
-          label="Minimum Funded Amount"
-          value={displayAmount(fundGoal.minimumFundedBalance)}
-          setValue={null}
-        />
-      ) : null}
-      {progress.fundedBalance?.maximumBalance !== null &&
-      progress.fundedBalance?.maximumBalance !== undefined ? (
-        <FundGoalProgress
-          label="Maximum Funded Amount"
-          current={progress.fundedBalance.balance}
-          target={progress.fundedBalance.maximumBalance}
-          satisfied={isMaximumFundedBalanceSatisfied(progress.fundedBalance)}
-        />
-      ) : showUnconfigured ? (
-        <StringEntryField
-          label="Maximum Funded Amount"
-          value={displayAmount(fundGoal.maximumFundedBalance)}
-          setValue={null}
-        />
-      ) : null}
-      {progress.endingBalance ? (
-        <FundGoalProgress
-          label="Target Ending Balance"
+          label="Minimum Ending Balance"
           current={progress.endingBalance.currentBalance}
-          target={progress.endingBalance.targetBalance}
+          target={progress.endingBalance.minimumBalance}
           satisfied={
-            progress.endingBalance.status ===
-            FundGoalEndingBalanceStatus.AtTarget
+            progress.endingBalance.status !==
+            FundGoalEndingBalanceStatus.BelowMinimum
           }
         />
       ) : showUnconfigured ? (
         <StringEntryField
-          label="Target Ending Balance"
-          value={displayAmount(fundGoal.targetEndingBalance)}
+          label="Minimum Ending Balance"
+          value={displayAmount(fundGoal.minimumEndingBalance)}
+          setValue={null}
+        />
+      ) : null}
+      {progress.endingBalance?.maximumBalance !== null &&
+      progress.endingBalance?.maximumBalance !== undefined ? (
+        <FundGoalProgress
+          label="Maximum Ending Balance"
+          current={progress.endingBalance.currentBalance}
+          target={progress.endingBalance.maximumBalance}
+          satisfied={
+            progress.endingBalance.status !==
+            FundGoalEndingBalanceStatus.AboveMaximum
+          }
+          statusDescription={
+            progress.endingBalance.status ===
+            FundGoalEndingBalanceStatus.AboveMaximum
+              ? `${formatCurrency(progress.endingBalance.amountAboveMaximum)} above maximum`
+              : "Within maximum"
+          }
+        />
+      ) : showUnconfigured ? (
+        <StringEntryField
+          label="Maximum Ending Balance"
+          value={displayAmount(fundGoal.maximumEndingBalance)}
           setValue={null}
         />
       ) : null}

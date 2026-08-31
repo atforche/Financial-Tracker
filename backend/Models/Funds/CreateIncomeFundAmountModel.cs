@@ -6,7 +6,7 @@ namespace Models.Funds;
 public sealed class CreateIncomeFundAmountModel : CreateFundAmountModel
 {
     /// <summary>
-    /// Whether this assignment is extra funding outside the regular monthly
+    /// Whether this assignment is extra funding outside the expected monthly
     /// contribution.
     /// </summary>
     public bool IsExtraContribution { get; init; }

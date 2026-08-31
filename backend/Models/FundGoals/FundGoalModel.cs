@@ -24,22 +24,17 @@ public sealed class FundGoalModel
     public AccountingPeriodModel? AccountingPeriod { get; init; }
 
     /// <summary>
-    /// Gets the regular contribution.
+    /// Gets the planned monthly contribution.
     /// </summary>
-    public decimal? RegularContribution { get; init; }
+    public decimal? PlannedMonthlyContribution { get; init; }
 
     /// <summary>
-    /// Gets the minimum funded balance.
+    /// Gets the minimum ending balance.
     /// </summary>
-    public decimal? MinimumFundedBalance { get; init; }
+    public decimal? MinimumEndingBalance { get; init; }
 
     /// <summary>
-    /// Gets the maximum funded balance.
+    /// Gets the maximum ending balance.
     /// </summary>
-    public decimal? MaximumFundedBalance { get; init; }
-
-    /// <summary>
-    /// Gets the target ending balance.
-    /// </summary>
-    public decimal? TargetEndingBalance { get; init; }
+    public decimal? MaximumEndingBalance { get; init; }
 }

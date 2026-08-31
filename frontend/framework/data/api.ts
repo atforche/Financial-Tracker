@@ -3735,7 +3735,7 @@ export interface components {
             expectedGoalContributions: number;
             /**
              * Format: double
-             * @description Amount assigned toward regular contributions for all Fund Goals in the Accounting Period.
+             * @description Amount assigned toward expected monthly contributions for all Fund Goals in the Accounting Period.
              */
             actualGoalContributions: number;
             /**
@@ -3794,7 +3794,7 @@ export interface components {
             expectedGoalContributions: number;
             /**
              * Format: double
-             * @description Amount assigned toward regular contributions for all Fund Goals in the Accounting Period.
+             * @description Amount assigned toward expected monthly contributions for all Fund Goals in the Accounting Period.
              */
             actualGoalContributions: number;
             /**
@@ -4165,9 +4165,9 @@ export interface components {
         ContributionProgressModel: {
             /**
              * Format: double
-             * @description Gets the recommended contribution.
+             * @description Gets the expected contribution.
              */
-            targetAmount: number;
+            expectedAmount: number;
             /**
              * Format: double
              * @description Gets the amount assigned.
@@ -4262,24 +4262,19 @@ export interface components {
             accountingPeriodId: string;
             /**
              * Format: double
-             * @description Regular contribution for the Fund Goal.
+             * @description Planned monthly contribution for the Fund Goal.
              */
-            regularContribution?: null | number;
+            plannedMonthlyContribution?: null | number;
             /**
              * Format: double
-             * @description Minimum funded balance for the Fund Goal.
+             * @description Minimum ending balance for the Fund Goal.
              */
-            minimumFundedBalance?: null | number;
+            minimumEndingBalance?: null | number;
             /**
              * Format: double
-             * @description Maximum funded balance for the Fund Goal.
+             * @description Maximum ending balance for the Fund Goal.
              */
-            maximumFundedBalance?: null | number;
-            /**
-             * Format: double
-             * @description Target ending balance for the Fund Goal.
-             */
-            targetEndingBalance?: null | number;
+            maximumEndingBalance?: null | number;
         };
         /** @description Model representing a destination of a fund transaction create request. */
         CreateFundTransactionDestinationModel: {
@@ -4315,7 +4310,7 @@ export interface components {
         /** @description Model representing a Fund amount assigned by an income transaction. */
         CreateIncomeFundAmountModel: {
             /**
-             * @description Whether this assignment is extra funding outside the regular monthly
+             * @description Whether this assignment is extra funding outside the expected monthly
              *     contribution.
              */
             isExtraContribution?: boolean;
@@ -4654,7 +4649,7 @@ export interface components {
         /** @description Model representing a balance event for a fund. */
         FundBalanceEventModel: {
             /**
-             * @description Whether this income assignment is extra funding outside the regular
+             * @description Whether this income assignment is extra funding outside the expected
              *     monthly Fund Goal contribution.
              */
             isExtraContribution?: boolean;
@@ -4782,41 +4777,6 @@ export interface components {
              */
             totalUnassignedBalance: number;
         };
-        /** @description Model describing post-assignment funded-balance progress. */
-        FundedBalanceProgressModel: {
-            /**
-             * Format: double
-             * @description Gets the funded balance.
-             */
-            balance: number;
-            /**
-             * Format: double
-             * @description Gets the configured minimum balance.
-             */
-            minimumBalance?: null | number;
-            /**
-             * Format: double
-             * @description Gets the configured maximum balance.
-             */
-            maximumBalance?: null | number;
-            /**
-             * Format: double
-             * @description Gets the amount below the minimum.
-             */
-            amountBelowMinimum: number;
-            /**
-             * Format: double
-             * @description Gets the amount above the maximum.
-             */
-            amountAboveMaximum: number;
-            /** @description Gets the funded-balance status. */
-            status: components["schemas"]["FundedBalanceStatusModel"];
-        };
-        /**
-         * @description Status of a funded balance relative to configured bounds.
-         * @enum {unknown}
-         */
-        FundedBalanceStatusModel: FundedBalanceStatusModel;
         /** @description Balance event showing a Transaction's effect on Fund Goal totals. */
         FundGoalBalanceEventModel: {
             /** @description Fund whose Fund Goal totals were affected. */
@@ -4884,29 +4844,34 @@ export interface components {
         FundGoalEndingBalanceProgressModel: {
             /**
              * Format: double
-             * @description Gets the target ending balance.
-             */
-            targetBalance: number;
-            /**
-             * Format: double
              * @description Gets the current balance.
              */
             currentBalance: number;
             /**
              * Format: double
-             * @description Gets current balance minus target balance.
+             * @description Gets the configured minimum ending balance.
              */
-            variance: number;
-            /** @description Gets the ending-balance status. */
-            status: components["schemas"]["FundGoalEndingBalanceStatusModel"];
+            minimumBalance?: null | number;
             /**
              * Format: double
-             * @description Gets the projected ending balance when available.
+             * @description Gets the configured maximum ending balance.
              */
-            projectedEndingBalance?: null | number;
+            maximumBalance?: null | number;
+            /**
+             * Format: double
+             * @description Gets the nonnegative amount below the minimum.
+             */
+            amountBelowMinimum: number;
+            /**
+             * Format: double
+             * @description Gets the nonnegative amount above the maximum.
+             */
+            amountAboveMaximum: number;
+            /** @description Gets the ending-balance status. */
+            status: components["schemas"]["FundGoalEndingBalanceStatusModel"];
         };
         /**
-         * @description Status of a Fund balance relative to its ending target.
+         * @description Status of a Fund balance relative to its ending-balance bounds.
          * @enum {unknown}
          */
         FundGoalEndingBalanceStatusModel: FundGoalEndingBalanceStatusModel;
@@ -4922,31 +4887,25 @@ export interface components {
             accountingPeriod?: null | components["schemas"]["AccountingPeriodModel"];
             /**
              * Format: double
-             * @description Gets the regular contribution.
+             * @description Gets the planned monthly contribution.
              */
-            regularContribution?: null | number;
+            plannedMonthlyContribution?: null | number;
             /**
              * Format: double
-             * @description Gets the minimum funded balance.
+             * @description Gets the minimum ending balance.
              */
-            minimumFundedBalance?: null | number;
+            minimumEndingBalance?: null | number;
             /**
              * Format: double
-             * @description Gets the maximum funded balance.
+             * @description Gets the maximum ending balance.
              */
-            maximumFundedBalance?: null | number;
-            /**
-             * Format: double
-             * @description Gets the target ending balance.
-             */
-            targetEndingBalance?: null | number;
+            maximumEndingBalance?: null | number;
         };
         /** @description Model comparing a Fund's financial state with its Fund Goal. */
         FundGoalProgressModel: {
             /** @description Gets available-balance health. */
             availableBalance: components["schemas"]["AvailableBalanceProgressModel"];
             contribution?: null | components["schemas"]["ContributionProgressModel"];
-            fundedBalance?: null | components["schemas"]["FundedBalanceProgressModel"];
             endingBalance?: null | components["schemas"]["FundGoalEndingBalanceProgressModel"];
         };
         /** @description Model pairing a Fund Goal with its progress for an Accounting Period. */
@@ -4970,9 +4929,9 @@ export interface components {
             amountAssigned: number;
             /**
              * Format: double
-             * @description Posted amount assigned toward the regular monthly contribution.
+             * @description Posted amount assigned toward the expected monthly contribution.
              */
-            regularAmountAssigned: number;
+            amountAssignedToExpectedContribution: number;
             /**
              * Format: double
              * @description Amount assigned including unposted Transaction effects.
@@ -4980,20 +4939,20 @@ export interface components {
             amountAssignedIncludingPending: number;
             /**
              * Format: double
-             * @description Amount assigned toward the regular monthly contribution including
+             * @description Amount to assign toward the expected monthly contribution including
              *     unposted Transaction effects.
              */
-            regularAmountAssignedIncludingPending: number;
+            amountAssignedToExpectedContributionIncludingPending: number;
             /**
              * Format: double
-             * @description Amount remaining to assign toward the regular contribution.
+             * @description Amount remaining to assign toward the expected monthly contribution.
              */
-            remainingRegularAmountToAssign: number;
+            remainingAmountToAssignToExpectedContribution: number;
             /**
              * Format: double
-             * @description Amount remaining to assign toward the regular contribution including pending effects.
+             * @description Amount remaining to assign toward the expected monthly contribution including pending effects.
              */
-            remainingRegularAmountToAssignIncludingPending: number;
+            remainingAmountToAssignToExpectedContributionIncludingPending: number;
             /**
              * Format: double
              * @description Posted amount spent.
@@ -5233,24 +5192,19 @@ export interface components {
             onboardedBalance: number;
             /**
              * Format: double
-             * @description Regular contribution for the Fund Goal.
+             * @description Planned monthly contribution for the Fund Goal.
              */
-            regularContribution?: null | number;
+            plannedMonthlyContribution?: null | number;
             /**
              * Format: double
-             * @description Minimum funded balance for the Fund Goal.
+             * @description Minimum ending balance for the Fund Goal.
              */
-            minimumFundedBalance?: null | number;
+            minimumEndingBalance?: null | number;
             /**
              * Format: double
-             * @description Maximum funded balance for the Fund Goal.
+             * @description Maximum ending balance for the Fund Goal.
              */
-            maximumFundedBalance?: null | number;
-            /**
-             * Format: double
-             * @description Target ending balance for the Fund Goal.
-             */
-            targetEndingBalance?: null | number;
+            maximumEndingBalance?: null | number;
         };
         /** @description Model describing positive-balance health for an Account Goal. */
         PositiveBalanceProgressModel: {
@@ -5684,24 +5638,19 @@ export interface components {
         UpdateFundGoalModel: {
             /**
              * Format: double
-             * @description Gets the new regular contribution.
+             * @description Gets the new planned monthly contribution.
              */
-            regularContribution?: null | number;
+            plannedMonthlyContribution?: null | number;
             /**
              * Format: double
-             * @description Gets the new minimum funded balance.
+             * @description Gets the new minimum ending balance.
              */
-            minimumFundedBalance?: null | number;
+            minimumEndingBalance?: null | number;
             /**
              * Format: double
-             * @description Gets the new maximum funded balance.
+             * @description Gets the new maximum ending balance.
              */
-            maximumFundedBalance?: null | number;
-            /**
-             * Format: double
-             * @description Gets the new target ending balance.
-             */
-            targetEndingBalance?: null | number;
+            maximumEndingBalance?: null | number;
         };
         /** @description Model representing a request to update a Fund */
         UpdateFundModel: {
@@ -6164,11 +6113,6 @@ export enum FundBalanceEventSortModel {
     Counterparty = "Counterparty",
     CounterpartyDescending = "CounterpartyDescending"
 }
-export enum FundedBalanceStatusModel {
-    BelowMinimum = "BelowMinimum",
-    WithinRange = "WithinRange",
-    AboveMaximum = "AboveMaximum"
-}
 export enum FundGoalBalanceEventSortModel {
     FundName = "FundName",
     FundNameDescending = "FundNameDescending",
@@ -6186,9 +6130,9 @@ export enum FundGoalBalanceEventSortModel {
     DestinationDescending = "DestinationDescending"
 }
 export enum FundGoalEndingBalanceStatusModel {
-    BelowTarget = "BelowTarget",
-    AtTarget = "AtTarget",
-    AboveTarget = "AboveTarget"
+    BelowMinimum = "BelowMinimum",
+    WithinRange = "WithinRange",
+    AboveMaximum = "AboveMaximum"
 }
 export enum FundGoalSortModel {
     Fund = "Fund",

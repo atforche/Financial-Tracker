@@ -30,9 +30,9 @@ public sealed class PendingFundGoalTotalsEffect : Entity<PendingFundGoalTotalsEf
     public decimal PendingAmountAssigned { get; init; }
 
     /// <summary>
-    /// Pending amount assigned toward the regular monthly contribution.
+    /// Pending amount assigned toward the expected monthly contribution.
     /// </summary>
-    public decimal PendingRegularAmountAssigned { get; init; }
+    public decimal PendingAmountAssignedToExpectedContribution { get; init; }
 
     /// <summary>
     /// Pending amount spent for the Fund Goal.
@@ -47,7 +47,7 @@ public sealed class PendingFundGoalTotalsEffect : Entity<PendingFundGoalTotalsEf
         AccountingPeriodId accountingPeriodId,
         TransactionId transactionId,
         decimal pendingAmountAssigned,
-        decimal pendingRegularAmountAssigned,
+        decimal pendingAmountAssignedToExpectedContribution,
         decimal pendingAmountSpent)
         : base(new PendingFundGoalTotalsEffectId(Guid.NewGuid()))
     {
@@ -55,7 +55,7 @@ public sealed class PendingFundGoalTotalsEffect : Entity<PendingFundGoalTotalsEf
         AccountingPeriodId = accountingPeriodId;
         TransactionId = transactionId;
         PendingAmountAssigned = pendingAmountAssigned;
-        PendingRegularAmountAssigned = pendingRegularAmountAssigned;
+        PendingAmountAssignedToExpectedContribution = pendingAmountAssignedToExpectedContribution;
         PendingAmountSpent = pendingAmountSpent;
     }
 

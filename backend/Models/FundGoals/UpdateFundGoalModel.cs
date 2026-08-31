@@ -6,22 +6,17 @@ namespace Models.FundGoals;
 public sealed class UpdateFundGoalModel
 {
     /// <summary>
-    /// Gets the new regular contribution.
+    /// Gets the new planned monthly contribution.
     /// </summary>
-    public decimal? RegularContribution { get; init; }
+    public decimal? PlannedMonthlyContribution { get; init; }
 
     /// <summary>
-    /// Gets the new minimum funded balance.
+    /// Gets the new minimum ending balance.
     /// </summary>
-    public decimal? MinimumFundedBalance { get; init; }
+    public decimal? MinimumEndingBalance { get; init; }
 
     /// <summary>
-    /// Gets the new maximum funded balance.
+    /// Gets the new maximum ending balance.
     /// </summary>
-    public decimal? MaximumFundedBalance { get; init; }
-
-    /// <summary>
-    /// Gets the new target ending balance.
-    /// </summary>
-    public decimal? TargetEndingBalance { get; init; }
+    public decimal? MaximumEndingBalance { get; init; }
 }

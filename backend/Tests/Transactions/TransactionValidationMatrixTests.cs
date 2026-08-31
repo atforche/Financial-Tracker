@@ -120,10 +120,10 @@ public sealed class TransactionValidationMatrixTests
     }
 
     /// <summary>
-    /// Rejects extra funding when the selected Fund Goal has no regular contribution.
+    /// Rejects extra funding when the selected Fund Goal has no planned monthly contribution.
     /// </summary>
     [Fact]
-    public async Task CreateAsyncRejectsExtraContributionWithoutRegularFundGoalContribution()
+    public async Task CreateAsyncRejectsExtraContributionWithoutPlannedFundGoalContribution()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();

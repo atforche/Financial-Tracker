@@ -8,15 +8,17 @@ namespace Tests.FundGoals;
 public sealed class FundGoalProgressServiceTests
 {
     /// <summary>
-    /// Applies regular contributions and funded-balance bounds to the recommendation.
+    /// Applies the planned monthly contribution and maximum ending-balance cap to the expectation.
     /// </summary>
     [Fact]
-    public void CalculateRecommendedContributionAppliesBounds()
+    public void CalculateExpectedContributionAppliesBounds()
     {
-        Assert.Equal(25m, FundGoalProgressService.CalculateRecommendedContribution(100m, 25m, null, null));
-        Assert.Equal(50m, FundGoalProgressService.CalculateRecommendedContribution(100m, 25m, 150m, null));
-        Assert.Equal(50m, FundGoalProgressService.CalculateRecommendedContribution(100m, 100m, null, 150m));
-        Assert.Equal(0m, FundGoalProgressService.CalculateRecommendedContribution(100m, -25m, null, null));
+        Assert.Equal(25m, FundGoalProgressService.CalculateExpectedContribution(100m, 0m, 25m, null));
+        Assert.Equal(25m, FundGoalProgressService.CalculateExpectedContribution(100m, 10m, 25m, 150m));
+        Assert.Equal(50m, FundGoalProgressService.CalculateExpectedContribution(100m, 0m, 100m, 150m));
+        Assert.Equal(10m, FundGoalProgressService.CalculateExpectedContribution(175m, 10m, 25m, 150m));
+        Assert.Equal(25m, FundGoalProgressService.CalculateExpectedContribution(100m, 60m, 25m, null));
+        Assert.Equal(0m, FundGoalProgressService.CalculateExpectedContribution(100m, 0m, -25m, null));
     }
 
     /// <summary>
@@ -25,38 +27,33 @@ public sealed class FundGoalProgressServiceTests
     [Fact]
     public void CalculateIncludesConfiguredProgressSections()
     {
-        FundGoalProgress progress = FundGoalProgressService.Calculate(100m, 40m, 40m, 130m, 25m, 150m, 200m, 125m);
+        FundGoalProgress progress = FundGoalProgressService.Calculate(40m, 130m, 25m, 150m, 200m);
 
         Assert.True(progress.AvailableBalance.IsSatisfied);
         Assert.NotNull(progress.Contribution);
-        Assert.Equal(50m, progress.Contribution.TargetAmount);
-        Assert.NotNull(progress.FundedBalance);
+        Assert.Equal(25m, progress.Contribution.ExpectedAmount);
         Assert.NotNull(progress.EndingBalance);
     }
 
     /// <summary>
-    /// Counts extra funding toward funded-balance bounds but not the regular
-    /// monthly contribution.
+    /// Counts only planned assignments toward planned-contribution progress.
     /// </summary>
     [Fact]
-    public void CalculateSeparatesExtraFundingFromRegularContribution()
+    public void CalculateSeparatesExtraFundingFromPlannedMonthlyContribution()
     {
         FundGoalProgress progress = FundGoalProgressService.Calculate(
-            100m,
-            150m,
             0m,
             250m,
             200m,
             200m,
-            300m,
-            null);
+            300m);
 
         Assert.NotNull(progress.Contribution);
         Assert.Equal(0m, progress.Contribution.AssignedAmount);
-        Assert.Equal(200m, progress.Contribution.RemainingAmount);
-        Assert.NotNull(progress.FundedBalance);
-        Assert.Equal(250m, progress.FundedBalance.Balance);
-        Assert.Equal(FundedBalanceStatus.WithinRange, progress.FundedBalance.Status);
+        Assert.Equal(50m, progress.Contribution.RemainingAmount);
+        Assert.NotNull(progress.EndingBalance);
+        Assert.Equal(250m, progress.EndingBalance.CurrentBalance);
+        Assert.Equal(FundGoalEndingBalanceStatus.WithinRange, progress.EndingBalance.Status);
     }
 
     /// <summary>
@@ -65,29 +62,26 @@ public sealed class FundGoalProgressServiceTests
     [Fact]
     public void CalculateOmitsUnconfiguredProgressSections()
     {
-        FundGoalProgress progress = FundGoalProgressService.Calculate(0m, 0m, 0m, -10m, null, null, null, null);
+        FundGoalProgress progress = FundGoalProgressService.Calculate(0m, -10m, null, null, null);
 
         Assert.False(progress.AvailableBalance.IsSatisfied);
         Assert.Equal(10m, progress.AvailableBalance.Shortfall);
         Assert.Null(progress.Contribution);
-        Assert.Null(progress.FundedBalance);
         Assert.Null(progress.EndingBalance);
     }
 
     /// <summary>
-    /// Reports funded and ending balance status on both sides of configured targets.
+    /// Reports ending-balance status on both sides of configured bounds.
     /// </summary>
     [Fact]
     public void CalculateReportsFundedAndEndingBalanceStatuses()
     {
-        FundGoalProgress below = FundGoalProgressService.Calculate(100m, 20m, 20m, 80m, null, 150m, 200m, 100m);
-        FundGoalProgress above = FundGoalProgressService.Calculate(100m, 150m, 150m, 120m, null, 150m, 200m, 100m);
+        FundGoalProgress below = FundGoalProgressService.Calculate(20m, 80m, null, 150m, 200m);
+        FundGoalProgress above = FundGoalProgressService.Calculate(150m, 250m, null, 150m, 200m);
 
-        Assert.Equal(FundedBalanceStatus.BelowMinimum, below.FundedBalance!.Status);
-        Assert.Equal(30m, below.FundedBalance.AmountBelowMinimum);
-        Assert.Equal(EndingBalanceStatus.BelowTarget, below.EndingBalance!.Status);
-        Assert.Equal(FundedBalanceStatus.AboveMaximum, above.FundedBalance!.Status);
-        Assert.Equal(50m, above.FundedBalance.AmountAboveMaximum);
-        Assert.Equal(EndingBalanceStatus.AboveTarget, above.EndingBalance!.Status);
+        Assert.Equal(FundGoalEndingBalanceStatus.BelowMinimum, below.EndingBalance!.Status);
+        Assert.Equal(70m, below.EndingBalance.AmountBelowMinimum);
+        Assert.Equal(FundGoalEndingBalanceStatus.AboveMaximum, above.EndingBalance!.Status);
+        Assert.Equal(50m, above.EndingBalance.AmountAboveMaximum);
     }
 }

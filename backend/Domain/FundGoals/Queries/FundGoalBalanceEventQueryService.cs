@@ -50,7 +50,7 @@ public sealed class FundGoalBalanceEventQueryService(
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFundAndPeriod))
             .Where(balanceEvent => requestedFundIds.Contains(balanceEvent.Fund.Id)).ToList();
         events = ProjectPendingEvents(events, transactions, historiesByFundAndPeriod);
-        events = AddRemainingRegularAmountToAssign(events);
+        events = AddRemainingAmountToAssignToExpectedContribution(events);
         var requestedIds = requestedTransactions.Select(transaction => transaction.Id).ToHashSet();
         return events.Where(balanceEvent => requestedIds.Contains(balanceEvent.TransactionId)).ToList();
     }
@@ -122,7 +122,7 @@ public sealed class FundGoalBalanceEventQueryService(
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFundAndPeriod))
             .Where(balanceEvent => filter.FundIds.Count == 0 || filter.FundIds.Contains(balanceEvent.Fund.Id.Value)).ToList();
         events = ProjectPendingEvents(events, transactions, historiesByFundAndPeriod);
-        events = AddRemainingRegularAmountToAssign(events);
+        events = AddRemainingAmountToAssignToExpectedContribution(events);
         var allItems = Sort(events, sort).ToList();
         return new QueryPage<FundGoalBalanceEvent>(
             allItems.Skip(offset).Take(limit ?? int.MaxValue).ToList(),
@@ -130,18 +130,18 @@ public sealed class FundGoalBalanceEventQueryService(
     }
 
     /// <summary>
-    /// Enriches each event's historical totals with the remaining regular contribution amounts.
+    /// Enriches each event's historical totals with the remaining expected monthly contribution amounts.
     /// </summary>
-    private List<FundGoalBalanceEvent> AddRemainingRegularAmountToAssign(IReadOnlyCollection<FundGoalBalanceEvent> events)
+    private List<FundGoalBalanceEvent> AddRemainingAmountToAssignToExpectedContribution(IReadOnlyCollection<FundGoalBalanceEvent> events)
     {
         var remainingByFundAndPeriod = new Dictionary<(FundId FundId, AccountingPeriodId PeriodId), decimal>();
 
-        decimal GetTargetAmount(FundGoalBalanceEvent balanceEvent)
+        decimal GetExpectedAmount(FundGoalBalanceEvent balanceEvent)
         {
             (FundId, AccountingPeriodId) key = (balanceEvent.Fund.Id, balanceEvent.AccountingPeriod.Id);
-            if (remainingByFundAndPeriod.TryGetValue(key, out decimal targetAmount))
+            if (remainingByFundAndPeriod.TryGetValue(key, out decimal expectedAmount))
             {
-                return targetAmount;
+                return expectedAmount;
             }
 
             FundGoal? fundGoal = fundGoalRepository.GetByFundAndAccountingPeriod(
@@ -153,39 +153,41 @@ public sealed class FundGoalBalanceEventQueryService(
                 return 0;
             }
 
-            decimal openingBalance = accountingPeriodBalanceHistoryRepository
-                .GetForAccountingPeriod(balanceEvent.AccountingPeriod.Id)
-                .FundBalances
+            AccountingPeriodBalanceHistory history = accountingPeriodBalanceHistoryRepository
+                .GetForAccountingPeriod(balanceEvent.AccountingPeriod.Id);
+            decimal currentBalance = history.FundBalances
                 .SingleOrDefault(balance => balance.Fund.Id == balanceEvent.Fund.Id)
-                ?.OpeningBalance ?? 0;
-            targetAmount = FundGoalProgressService.CalculateRecommendedContribution(
-                openingBalance,
-                fundGoal.RegularContribution,
-                fundGoal.MinimumFundedBalance,
-                fundGoal.MaximumFundedBalance);
-            remainingByFundAndPeriod[key] = targetAmount;
-            return targetAmount;
+                ?.ClosingBalance ?? 0;
+            expectedAmount = FundGoalProgressService.CalculateExpectedContribution(
+                currentBalance,
+                history.FundGoalTotals
+                    .SingleOrDefault(totals => totals.Fund.Id == balanceEvent.Fund.Id)
+                    ?.GetTotals().AmountAssignedToExpectedContribution ?? 0,
+                fundGoal.PlannedMonthlyContribution,
+                fundGoal.MaximumEndingBalance);
+            remainingByFundAndPeriod[key] = expectedAmount;
+            return expectedAmount;
         }
 
         return events.Select(balanceEvent =>
         {
-            decimal targetAmount = GetTargetAmount(balanceEvent);
+            decimal expectedAmount = GetExpectedAmount(balanceEvent);
             return balanceEvent with
             {
-                PreviousTotals = AddRemainingAmount(balanceEvent.PreviousTotals, targetAmount),
-                NewTotals = AddRemainingAmount(balanceEvent.NewTotals, targetAmount),
+                PreviousTotals = AddRemainingAmount(balanceEvent.PreviousTotals, expectedAmount),
+                NewTotals = AddRemainingAmount(balanceEvent.NewTotals, expectedAmount),
             };
         }).ToList();
     }
 
     /// <summary>
-    /// Calculates remaining regular contribution amounts for a totals snapshot.
+    /// Calculates remaining expected monthly contribution amounts for a totals snapshot.
     /// </summary>
     private static FundGoalTotals AddRemainingAmount(
         FundGoalTotals totals,
-        decimal targetAmount) => totals.WithRemainingRegularAmountToAssign(
-            Math.Max(targetAmount - totals.RegularAmountAssigned, 0),
-            Math.Max(targetAmount - totals.RegularAmountAssignedIncludingPending, 0));
+        decimal expectedAmount) => totals.WithRemainingAmountToAssignToExpectedContribution(
+            Math.Max(expectedAmount - totals.AmountAssignedToExpectedContribution, 0),
+            Math.Max(expectedAmount - totals.AmountAssignedToExpectedContributionIncludingPending, 0));
 
     /// <summary>
     /// Retrieves interpreted Fund Goal balance events for a Transaction.
@@ -308,9 +310,9 @@ public sealed class FundGoalBalanceEventQueryService(
         fundId,
         history?.AmountAssigned ?? 0,
         history?.AmountSpent ?? 0,
-        history?.RegularAmountAssigned ?? 0,
+        history?.AmountAssignedToExpectedContribution ?? 0,
         history?.AmountAssigned ?? 0,
-        history?.RegularAmountAssigned ?? 0,
+        history?.AmountAssignedToExpectedContribution ?? 0,
         history?.AmountSpent ?? 0);
 
     /// <summary>

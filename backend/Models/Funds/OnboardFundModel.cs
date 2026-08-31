@@ -21,22 +21,17 @@ public class OnboardFundModel
     public required decimal OnboardedBalance { get; init; }
 
     /// <summary>
-    /// Regular contribution for the Fund Goal.
+    /// Planned monthly contribution for the Fund Goal.
     /// </summary>
-    public decimal? RegularContribution { get; init; }
+    public decimal? PlannedMonthlyContribution { get; init; }
 
     /// <summary>
-    /// Minimum funded balance for the Fund Goal.
+    /// Minimum ending balance for the Fund Goal.
     /// </summary>
-    public decimal? MinimumFundedBalance { get; init; }
+    public decimal? MinimumEndingBalance { get; init; }
 
     /// <summary>
-    /// Maximum funded balance for the Fund Goal.
+    /// Maximum ending balance for the Fund Goal.
     /// </summary>
-    public decimal? MaximumFundedBalance { get; init; }
-
-    /// <summary>
-    /// Target ending balance for the Fund Goal.
-    /// </summary>
-    public decimal? TargetEndingBalance { get; init; }
+    public decimal? MaximumEndingBalance { get; init; }
 }
