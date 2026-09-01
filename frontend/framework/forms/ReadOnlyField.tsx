@@ -9,7 +9,7 @@ interface ReadOnlyFieldProps {
   readonly label: string;
   readonly value: ReactNode;
   readonly emptyValue?: ReactNode;
-  readonly sx?: SxProps<Theme>;
+  readonly sx?: Exclude<SxProps<Theme>, readonly unknown[]>;
 }
 
 /**

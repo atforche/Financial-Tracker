@@ -16,6 +16,8 @@ import {
   validateSource,
 } from "@/transactions/workspace/spending/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
+import { Button } from "@mui/material";
 import type { Dayjs } from "dayjs";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
@@ -212,7 +214,6 @@ const SpendingTransactionForm = function <RequestPayload>({
                 }));
               }}
               baselineFundAssignments={destination.baselineFundAssignments}
-              onAdd={index === 0 ? addDestination : null}
               filter={buildDestinationAccountFilter(
                 accounts,
                 destinations,
@@ -232,6 +233,14 @@ const SpendingTransactionForm = function <RequestPayload>({
               }
             />
           ))}
+          <Button
+            variant="outlined"
+            startIcon={<AddCircleOutline />}
+            onClick={addDestination}
+            sx={{ alignSelf: "flex-end" }}
+          >
+            Add Destination
+          </Button>
         </>
       }
       sourceAmount={destinationTotal}

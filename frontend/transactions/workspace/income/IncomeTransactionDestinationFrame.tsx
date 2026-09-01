@@ -76,7 +76,7 @@ const IncomeTransactionDestinationFrame = function ({
       title={`Destination ${index + 1}`}
       onAdd={readOnly ? null : onAdd}
       onRemove={readOnly ? null : onRemove}
-      color={color}
+      color={fundAssignmentsValid ? color : "error"}
     >
       <AccountBalanceEventFrame
         accounts={accounts}
@@ -101,7 +101,6 @@ const IncomeTransactionDestinationFrame = function ({
           fundAssignments={fundAssignments}
           setFundAssignments={readOnly ? null : setFundAssignments}
           baselineFundAssignments={baselineFundAssignments}
-          frameColor={fundAssignmentsValid ? "info" : "error"}
           readOnly={readOnly}
         />
       ) : null}

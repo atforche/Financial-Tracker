@@ -56,6 +56,7 @@ const AccountTransactionSourceFrame = function ({
         setAccount={readOnly ? null : setAccount}
         accountCaption="Source Account"
         locationCaption="Source Location"
+        entryCaption="Source"
         locations={locations}
         location={location}
         setLocation={readOnly ? null : setLocation}

@@ -44,6 +44,7 @@ interface AccountBalanceEventFrameProps {
   readonly label?: string;
   readonly balanceChange?: number | null;
   readonly inset?: boolean;
+  readonly showAccountEntry?: boolean;
   readonly sx?: SxProps<Theme>;
 }
 
@@ -61,6 +62,7 @@ const AccountBalanceEventFrame = function ({
   label = "Account",
   balanceChange = null,
   inset = false,
+  showAccountEntry = true,
   sx,
 }: AccountBalanceEventFrameProps): JSX.Element {
   const canWrite = useWriteAccess();
@@ -121,7 +123,6 @@ const AccountBalanceEventFrame = function ({
     helperContent = (
       <Chip
         label={`Posted: ${dayjs(`${postedDate}T00:00:00`).format("MM/DD/YYYY")}`}
-        size="small"
         variant="outlined"
       />
     );
@@ -208,23 +209,22 @@ const AccountBalanceEventFrame = function ({
             {displayedAccountName}
           </Typography>
         </Stack>
-      ) : (
+      ) : showAccountEntry ? (
         accountEntryField
-      )}
+      ) : null}
       {hasSelectedAccount ? (
         <>
           <Stack
-            direction="row"
+            direction={{ xs: "column", sm: "row" }}
             flexWrap="wrap"
             useFlexGap
             spacing={0.75}
-            alignItems="center"
+            alignItems={{ xs: "stretch", sm: "center" }}
           >
             <BalanceChangeChip
               label="Balance"
               previousValue={displayedAccount?.previousAccountBalance ?? 0}
               newValue={displayedAccount?.newAccountBalance ?? 0}
-              size="small"
             />
             {postedDate !== null ? helperContent : null}
           </Stack>

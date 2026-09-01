@@ -88,6 +88,7 @@ const RefundTransactionSourceFrame = function ({
         location={location}
         setLocation={readOnly ? null : setLocation}
         locationCaption="Source Location"
+        entryCaption="Source"
         balanceChange={amount === null ? null : -amount}
         readOnly={readOnly}
       />
@@ -104,7 +105,6 @@ const RefundTransactionSourceFrame = function ({
         fundAssignments={fundAssignments}
         setFundAssignments={readOnly ? null : setFundAssignments}
         baselineFundAssignments={baselineFundAssignments}
-        frameColor={color}
         readOnly={readOnly}
       />
     </TransactionSourceOrDestinationFrame>

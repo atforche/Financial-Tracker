@@ -67,6 +67,7 @@ const AccountTransactionDestinationFrame = function ({
         setAccount={readOnly ? null : setAccount}
         accountCaption="Account"
         locationCaption="Location"
+        entryCaption="Destination"
         locations={locations}
         location={location}
         setLocation={readOnly ? null : setLocation}

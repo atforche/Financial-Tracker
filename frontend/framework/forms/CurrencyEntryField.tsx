@@ -19,7 +19,7 @@ interface CurrencyEntryFieldProps {
   readonly setValue?: ((newValue: number | null) => void) | null;
   readonly errorMessage?: string | null;
   readonly disabled?: boolean;
-  readonly sx?: SxProps<Theme>;
+  readonly sx?: Exclude<SxProps<Theme>, readonly unknown[]>;
 }
 
 /**
@@ -51,7 +51,7 @@ const CurrencyEntryField = function ({
       <ReadOnlyField
         label={label}
         value={value === null ? null : formatCurrency(value)}
-        sx={sx}
+        {...(sx === undefined ? {} : { sx })}
       />
     );
   }

@@ -10,6 +10,7 @@ import DeleteOutline from "@mui/icons-material/DeleteOutline";
 interface TransactionSourceOrDestinationFrameProps {
   readonly title: string;
   readonly children: ReactNode;
+  readonly headerContent?: ReactNode;
   readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
   readonly headerContentInline?: boolean;
@@ -22,6 +23,7 @@ interface TransactionSourceOrDestinationFrameProps {
 const TransactionSourceOrDestinationFrame = function ({
   title,
   children,
+  headerContent = null,
   onAdd = null,
   onRemove = null,
   headerContentInline = false,
@@ -33,8 +35,9 @@ const TransactionSourceOrDestinationFrame = function ({
       color={color}
       headerContentInline={headerContentInline}
       headerContent={
-        onAdd === null && onRemove === null ? null : (
+        headerContent === null && onAdd === null && onRemove === null ? null : (
           <Stack direction="row" spacing={1} alignItems="center">
+            {headerContent}
             {onAdd === null ? null : (
               <Button
                 variant="outlined"

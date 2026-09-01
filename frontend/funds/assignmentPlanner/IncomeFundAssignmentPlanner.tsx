@@ -18,7 +18,6 @@ import {
   getMaximumCurrencyAmount,
 } from "@/framework/currencyHelpers";
 import BalanceChangeChip from "@/framework/view/BalanceChangeChip";
-import type { FrameColor } from "@/framework/view/Frame";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { JSX } from "react";
@@ -35,7 +34,6 @@ interface IncomeFundAssignmentPlannerProps {
   readonly setFundAssignments:
     ((fundAssignments: FundAssignmentDraft[]) => void) | null;
   readonly baselineFundAssignments: FundAssignmentDraft[];
-  readonly frameColor?: FrameColor;
   readonly readOnly?: boolean;
 }
 
@@ -49,7 +47,6 @@ const IncomeFundAssignmentPlanner = function ({
   fundAssignments,
   setFundAssignments,
   baselineFundAssignments,
-  frameColor = "primary",
   readOnly = false,
 }: IncomeFundAssignmentPlannerProps): JSX.Element {
   const unassignedFund = getUnassignedFund(funds);
@@ -304,7 +301,6 @@ const IncomeFundAssignmentPlanner = function ({
       sortFunds={sortFunds}
       renderAssignmentDetails={renderAssignmentDetails}
       renderAssignmentControl={renderAssignmentControl}
-      color={frameColor}
       readOnly={readOnly}
     />
   );
