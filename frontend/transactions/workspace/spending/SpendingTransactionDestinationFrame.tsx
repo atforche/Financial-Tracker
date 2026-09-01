@@ -143,6 +143,7 @@ const SpendingTransactionDestinationFrame = function ({
             accountFilter={filter}
             balanceChange={amount}
             readOnly={readOnly}
+            insetReadOnlyAccount={false}
           />
         </Box>
         <CurrencyEntryField

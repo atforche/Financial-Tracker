@@ -215,11 +215,11 @@ const AccountBalanceEventFrame = function ({
       {hasSelectedAccount ? (
         <>
           <Stack
-            direction={{ xs: "column", sm: "row" }}
+            direction="row"
             flexWrap="wrap"
             useFlexGap
             spacing={0.75}
-            alignItems={{ xs: "stretch", sm: "center" }}
+            alignItems="center"
           >
             <BalanceChangeChip
               label="Balance"

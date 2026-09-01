@@ -233,19 +233,18 @@ const SpendingTransactionForm = function <RequestPayload>({
               }
             />
           ))}
-          <Button
-            variant="outlined"
-            startIcon={<AddCircleOutline />}
-            onClick={addDestination}
-            sx={{ alignSelf: "flex-end" }}
-          >
-            Add Destination
-          </Button>
         </>
       }
-      sourceAmount={destinationTotal}
-      destinationAmount={destinationTotal}
-      destinationCount={destinations.length}
+      showSummary={false}
+      actionsContent={
+        <Button
+          variant="outlined"
+          startIcon={<AddCircleOutline />}
+          onClick={addDestination}
+        >
+          Add Destination
+        </Button>
+      }
       submitLabel={submitLabel}
       state={state}
       pending={pending}

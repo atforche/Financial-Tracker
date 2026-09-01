@@ -68,6 +68,8 @@ interface TransactionFormProps<RequestPayload> {
   readonly sourceAmount?: number | null;
   readonly destinationAmount?: number;
   readonly destinationCount?: number;
+  readonly showSummary?: boolean;
+  readonly actionsContent?: ReactNode;
   readonly submitLabel?: string;
   readonly state?: TransactionFormState;
   readonly pending?: boolean;
@@ -100,6 +102,8 @@ const TransactionForm = function <RequestPayload>({
   sourceAmount,
   destinationAmount,
   destinationCount = 0,
+  showSummary = true,
+  actionsContent = null,
   submitLabel = "Submit",
   state = defaultState,
   pending = false,
@@ -133,7 +137,7 @@ const TransactionForm = function <RequestPayload>({
             sourceFrame={sourceContent ?? emptyFrame}
             destinationFrames={destinationContent ?? emptyFrame}
           />
-          {typeof destinationAmount === "number" ? (
+          {showSummary && typeof destinationAmount === "number" ? (
             <TransactionSourceDestinationSummary
               sourceAmount={sourceAmount ?? 0}
               destinationAmount={destinationAmount}
@@ -151,6 +155,7 @@ const TransactionForm = function <RequestPayload>({
                 spacing={1.5}
                 justifyContent="flex-end"
               >
+                {actionsContent}
                 <Button
                   variant="outlined"
                   onClick={onReset ?? ((): null => null)}
