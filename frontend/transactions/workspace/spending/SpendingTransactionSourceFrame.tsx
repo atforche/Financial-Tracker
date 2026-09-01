@@ -50,6 +50,7 @@ const SpendingTransactionSourceFrame = function ({
         accountFilter={accountFilter}
         label="Source Account"
         balanceChange={amount === null ? null : -amount}
+        inset
       />
       <CurrencyEntryField
         label="Amount"

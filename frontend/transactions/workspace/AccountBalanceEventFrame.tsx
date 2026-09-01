@@ -42,6 +42,7 @@ interface AccountBalanceEventFrameProps {
   readonly accountFilter?: ((account: Account) => boolean) | null;
   readonly label?: string;
   readonly balanceChange?: number | null;
+  readonly inset?: boolean;
 }
 
 const emptyAccounts: AccountWithBalance[] = [];
@@ -57,6 +58,7 @@ const AccountBalanceEventFrame = function ({
   accountFilter = null,
   label = "Account",
   balanceChange = null,
+  inset = false,
 }: AccountBalanceEventFrameProps): JSX.Element {
   const canWrite = useWriteAccess();
   const pathname = usePathname();
@@ -192,44 +194,44 @@ const AccountBalanceEventFrame = function ({
     />
   );
 
-  if (!hasSelectedAccount) {
-    return accountEntryField;
-  }
-
-  return (
-    <InsetFrame>
-      <Stack spacing={1}>
-        {isReadOnly ? (
-          <Stack spacing={0.25}>
-            <Typography variant="caption" color="text.secondary">
-              {label}
-            </Typography>
-            <Typography variant="body1" sx={{ fontWeight: 500 }}>
-              {displayedAccountName}
-            </Typography>
-          </Stack>
-        ) : (
-          accountEntryField
-        )}
-        <Stack
-          direction="row"
-          flexWrap="wrap"
-          useFlexGap
-          spacing={0.75}
-          alignItems="center"
-        >
-          <BalanceChangeChip
-            label="Balance"
-            previousValue={displayedAccount?.previousAccountBalance ?? 0}
-            newValue={displayedAccount?.newAccountBalance ?? 0}
-            size="small"
-          />
-          {postedDate !== null ? helperContent : null}
+  const content = (
+    <Stack spacing={1}>
+      {isReadOnly && hasSelectedAccount ? (
+        <Stack spacing={0.25}>
+          <Typography variant="caption" color="text.secondary">
+            {label}
+          </Typography>
+          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+            {displayedAccountName}
+          </Typography>
         </Stack>
-        {postedDate === null ? helperContent : null}
-      </Stack>
-    </InsetFrame>
+      ) : (
+        accountEntryField
+      )}
+      {hasSelectedAccount ? (
+        <>
+          <Stack
+            direction="row"
+            flexWrap="wrap"
+            useFlexGap
+            spacing={0.75}
+            alignItems="center"
+          >
+            <BalanceChangeChip
+              label="Balance"
+              previousValue={displayedAccount?.previousAccountBalance ?? 0}
+              newValue={displayedAccount?.newAccountBalance ?? 0}
+              size="small"
+            />
+            {postedDate !== null ? helperContent : null}
+          </Stack>
+          {postedDate === null ? helperContent : null}
+        </>
+      ) : null}
+    </Stack>
   );
+
+  return inset ? <InsetFrame>{content}</InsetFrame> : content;
 };
 
 export default AccountBalanceEventFrame;

@@ -86,6 +86,7 @@ const IncomeTransactionDestinationFrame = function ({
         accountFilter={filter}
         label="Deposit Account"
         balanceChange={amount}
+        inset
       />
       <CurrencyEntryField
         label="Destination Amount"

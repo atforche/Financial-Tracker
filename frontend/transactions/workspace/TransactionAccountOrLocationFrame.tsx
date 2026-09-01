@@ -62,6 +62,7 @@ const TransactionAccountOrLocationFrame = function ({
         accountFilter={accountFilter}
         label={accountCaption}
         balanceChange={balanceChange}
+        inset
       />
     );
   }
@@ -91,6 +92,7 @@ const TransactionAccountOrLocationFrame = function ({
           accountFilter={accountFilter}
           label={accountCaption}
           balanceChange={balanceChange}
+          inset={readOnly}
         />
       </Box>
       <Typography
