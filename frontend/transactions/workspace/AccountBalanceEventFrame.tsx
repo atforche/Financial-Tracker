@@ -14,6 +14,7 @@ import {
   useState,
 } from "react";
 import type { PostTransactionRequest, Transaction } from "@/transactions/types";
+import type { SxProps, Theme } from "@mui/material/styles";
 import dayjs, { type Dayjs } from "dayjs";
 import {
   getSelectedTransactionAccountDraft,
@@ -43,6 +44,7 @@ interface AccountBalanceEventFrameProps {
   readonly label?: string;
   readonly balanceChange?: number | null;
   readonly inset?: boolean;
+  readonly sx?: SxProps<Theme>;
 }
 
 const emptyAccounts: AccountWithBalance[] = [];
@@ -59,6 +61,7 @@ const AccountBalanceEventFrame = function ({
   label = "Account",
   balanceChange = null,
   inset = false,
+  sx,
 }: AccountBalanceEventFrameProps): JSX.Element {
   const canWrite = useWriteAccess();
   const pathname = usePathname();
@@ -195,7 +198,7 @@ const AccountBalanceEventFrame = function ({
   );
 
   const content = (
-    <Stack spacing={1}>
+    <Stack spacing={1} sx={sx}>
       {isReadOnly && hasSelectedAccount ? (
         <Stack spacing={0.25}>
           <Typography variant="caption" color="text.secondary">
