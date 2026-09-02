@@ -138,125 +138,130 @@ const FundAssignmentPlanner = function ({
       ) : null}
 
       <Stack spacing={2}>
-        {explicitFundAssignments.map((assignment, index) => (
-          <InsetFrame key={`assignment-${index}`}>
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: {
-                  xs: "minmax(0, 1fr)",
-                  sm: "minmax(0, 1fr) minmax(0, 1fr)",
-                },
-                alignItems: "start",
-                columnGap: { xs: 1, md: 2 },
-                rowGap: 2,
-              }}
-            >
+        {explicitFundAssignments.map((assignment, index) => {
+          const assignmentDetails =
+            renderAssignmentDetails?.(assignment, index) ?? null;
+
+          return (
+            <InsetFrame key={`assignment-${index}`}>
               <Box
                 sx={{
-                  minWidth: 0,
-                  gridColumn: { xs: "1 / -1", sm: "auto" },
-                  "& .combo-box-entry-field": { width: "100%" },
-                }}
-              >
-                <FundEntryField
-                  label={fundLabel}
-                  options={funds}
-                  value={{
-                    id: assignment.fundId,
-                    name: assignment.fundName,
-                    description: "",
-                  }}
-                  setValue={
-                    readOnly
-                      ? null
-                      : (newValue): void => {
-                          updateFund(index, newValue);
-                        }
-                  }
-                  filter={(fund) =>
-                    !isUnassignedFund(fund.name) &&
-                    (fund.id === assignment.fundId ||
-                      !assignedFundIds.has(fund.id))
-                  }
-                  getOptionSecondaryLabel={getFundOptionSecondaryLabel}
-                  sortComparator={sortFunds}
-                  autoFocus={autoFocusAssignmentIndex === index}
-                />
-              </Box>
-              <Box
-                sx={{
-                  minWidth: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "minmax(0, 1fr)",
+                    sm: "minmax(0, 1fr) minmax(0, 1fr)",
+                  },
+                  alignItems: "start",
+                  columnGap: { xs: 1, md: 2 },
+                  rowGap: 2,
                 }}
               >
                 <Box
                   sx={{
-                    flex: 1,
                     minWidth: 0,
-                    "& .currency-entry-field": { width: "100%" },
+                    gridColumn: { xs: "1 / -1", sm: "auto" },
+                    "& .combo-box-entry-field": { width: "100%" },
                   }}
                 >
-                  <CurrencyEntryField
-                    label="Assigned Amount"
-                    value={
-                      hasSinglePersistentAssignment
-                        ? (totalAmountToAssign ?? 0)
-                        : assignment.amount
-                    }
+                  <FundEntryField
+                    label={fundLabel}
+                    options={funds}
+                    value={{
+                      id: assignment.fundId,
+                      name: assignment.fundName,
+                      description: "",
+                    }}
                     setValue={
-                      readOnly || hasSinglePersistentAssignment
+                      readOnly
                         ? null
-                        : (newAmount): void => {
-                            updateAmount(index, newAmount);
+                        : (newValue): void => {
+                            updateFund(index, newValue);
                           }
                     }
+                    filter={(fund) =>
+                      !isUnassignedFund(fund.name) &&
+                      (fund.id === assignment.fundId ||
+                        !assignedFundIds.has(fund.id))
+                    }
+                    getOptionSecondaryLabel={getFundOptionSecondaryLabel}
+                    sortComparator={sortFunds}
+                    autoFocus={autoFocusAssignmentIndex === index}
                   />
                 </Box>
-                {renderAssignmentControl?.(assignment, index) ?? null}
-                {readOnly ? null : addAssignmentInCard && index === 0 ? (
-                  <IconButton
-                    aria-label="Add fund assignment"
-                    size="small"
-                    disabled={availableFundCount === 0}
-                    sx={{ width: 32, height: 32, p: 0 }}
-                    onClick={() => {
-                      setAutoFocusAssignmentIndex(
-                        explicitFundAssignments.length,
-                      );
-                      addFundAssignment();
-                    }}
-                  >
-                    <AddCircleOutline />
-                  </IconButton>
-                ) : persistentAssignment && index === 0 ? null : (
-                  <IconButton
-                    aria-label="Delete fund assignment"
-                    size="small"
-                    sx={{ width: 32, height: 32, p: 0 }}
-                    onClick={() => {
-                      deleteFundAssignment(index);
-                    }}
-                  >
-                    <DeleteOutline />
-                  </IconButton>
-                )}
-              </Box>
-              {renderAssignmentDetails === null ? null : (
                 <Box
                   sx={{
-                    gridColumn: { xs: "1", sm: "1 / 3" },
-                    gridRow: { xs: "3", sm: "2" },
+                    minWidth: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
                   }}
                 >
-                  {renderAssignmentDetails(assignment, index)}
+                  <Box
+                    sx={{
+                      flex: 1,
+                      minWidth: 0,
+                      "& .currency-entry-field": { width: "100%" },
+                    }}
+                  >
+                    <CurrencyEntryField
+                      label="Assigned Amount"
+                      value={
+                        hasSinglePersistentAssignment
+                          ? (totalAmountToAssign ?? 0)
+                          : assignment.amount
+                      }
+                      setValue={
+                        readOnly || hasSinglePersistentAssignment
+                          ? null
+                          : (newAmount): void => {
+                              updateAmount(index, newAmount);
+                            }
+                      }
+                    />
+                  </Box>
+                  {renderAssignmentControl?.(assignment, index) ?? null}
+                  {readOnly ? null : addAssignmentInCard && index === 0 ? (
+                    <IconButton
+                      aria-label="Add fund assignment"
+                      size="small"
+                      disabled={availableFundCount === 0}
+                      sx={{ width: 32, height: 32, p: 0 }}
+                      onClick={() => {
+                        setAutoFocusAssignmentIndex(
+                          explicitFundAssignments.length,
+                        );
+                        addFundAssignment();
+                      }}
+                    >
+                      <AddCircleOutline />
+                    </IconButton>
+                  ) : persistentAssignment && index === 0 ? null : (
+                    <IconButton
+                      aria-label="Delete fund assignment"
+                      size="small"
+                      sx={{ width: 32, height: 32, p: 0 }}
+                      onClick={() => {
+                        deleteFundAssignment(index);
+                      }}
+                    >
+                      <DeleteOutline />
+                    </IconButton>
+                  )}
                 </Box>
-              )}
-            </Box>
-          </InsetFrame>
-        ))}
+                {assignmentDetails === null ? null : (
+                  <Box
+                    sx={{
+                      gridColumn: { xs: "1", sm: "1 / 3" },
+                      gridRow: { xs: "3", sm: "2" },
+                    }}
+                  >
+                    {assignmentDetails}
+                  </Box>
+                )}
+              </Box>
+            </InsetFrame>
+          );
+        })}
       </Stack>
 
       {readOnly || (addAssignmentInCard && onAutoAssign === null) ? null : (
