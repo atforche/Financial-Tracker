@@ -354,7 +354,7 @@ const ViewTransactionForm = function ({
       sourceAmount={sourceAmount}
       destinationAmount={destinationAmount}
       destinationCount={destinationContent.length}
-      showSummary={transaction.transactionType !== TransactionType.Spending}
+      showSummary={transaction.transactionType === TransactionType.Income}
     />
   );
 };

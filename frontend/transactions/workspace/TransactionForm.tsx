@@ -102,7 +102,7 @@ const TransactionForm = function <RequestPayload>({
   sourceAmount,
   destinationAmount,
   destinationCount = 0,
-  showSummary = true,
+  showSummary = false,
   actionsContent = null,
   submitLabel = "Submit",
   state = defaultState,
