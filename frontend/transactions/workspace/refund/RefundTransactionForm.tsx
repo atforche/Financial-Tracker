@@ -12,14 +12,12 @@ import {
 } from "@/transactions/workspace/refund/helpers";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
-import Button from "@mui/material/Button";
+import AddCollectionItemButton from "@/framework/view/AddCollectionItemButton";
 import type { Dayjs } from "dayjs";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import SpendingTransactionDestinationFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFrame";
 import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
-import Stack from "@mui/material/Stack";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
 import { getCurrencyTotal } from "@/framework/currencyHelpers";
 import { updateUnassignedFundAmount } from "@/funds/assignmentPlanner/helpers";
@@ -181,18 +179,12 @@ const RefundTransactionForm = function <RequestPayload>({
               }
             />
           ))}
-          <Stack alignItems="flex-end" sx={{ mt: 2 }}>
-            <Button
-              variant="outlined"
-              startIcon={<AddCircleOutline />}
-              sx={{ width: { xs: "100%", sm: "auto" } }}
-              onClick={() => {
-                setSources((items) => [...items, createEmptySource()]);
-              }}
-            >
-              Add Source
-            </Button>
-          </Stack>
+          <AddCollectionItemButton
+            label="Add another source"
+            onClick={() => {
+              setSources((items) => [...items, createEmptySource()]);
+            }}
+          />
         </>
       }
       destinationContent={

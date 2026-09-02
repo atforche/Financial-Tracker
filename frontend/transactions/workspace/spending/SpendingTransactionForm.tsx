@@ -16,8 +16,7 @@ import {
   validateSource,
 } from "@/transactions/workspace/spending/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
-import { Button } from "@mui/material";
+import AddCollectionItemButton from "@/framework/view/AddCollectionItemButton";
 import type { Dayjs } from "dayjs";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
@@ -233,18 +232,13 @@ const SpendingTransactionForm = function <RequestPayload>({
               }
             />
           ))}
+          <AddCollectionItemButton
+            label="Add another destination"
+            onClick={addDestination}
+          />
         </>
       }
       showSummary={false}
-      actionsContent={
-        <Button
-          variant="outlined"
-          startIcon={<AddCircleOutline />}
-          onClick={addDestination}
-        >
-          Add Destination
-        </Button>
-      }
       submitLabel={submitLabel}
       state={state}
       pending={pending}

@@ -34,7 +34,6 @@ interface TransactionAccountOrLocationFrameProps {
   readonly accountFilter?: ((account: Account) => boolean) | null;
   readonly balanceChange?: number | null;
   readonly readOnly?: boolean;
-  readonly insetReadOnlyAccount?: boolean;
 }
 
 /**
@@ -54,7 +53,6 @@ const TransactionAccountOrLocationFrame = function ({
   accountFilter = null,
   balanceChange = null,
   readOnly = false,
-  insetReadOnlyAccount = true,
 }: TransactionAccountOrLocationFrameProps): JSX.Element {
   const contextLocations = useLocations();
   const availableLocations = locations ?? contextLocations;
@@ -71,7 +69,6 @@ const TransactionAccountOrLocationFrame = function ({
         accountFilter={accountFilter}
         label={accountCaption}
         balanceChange={balanceChange}
-        inset={insetReadOnlyAccount}
       />
     );
   }

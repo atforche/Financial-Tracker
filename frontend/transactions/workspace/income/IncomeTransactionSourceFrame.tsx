@@ -11,13 +11,14 @@ import {
   getNetIncomeAmount,
 } from "@/transactions/workspace/income/helpers";
 import type { Location, LocationDraft } from "@/locations/types";
-import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
+import { Chip } from "@mui/material";
 import type { FrameColor } from "@/framework/view/Frame";
 import IncomeTransactionItemSection from "@/transactions/workspace/income/IncomeTransactionSourceItemFrame";
 import type { JSX } from "react";
 import type { Transaction } from "@/transactions/types";
 import TransactionAccountOrLocationFrame from "@/transactions/workspace/TransactionAccountOrLocationFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
+import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for the IncomeTransactionSourceFrame component.
@@ -69,7 +70,13 @@ const IncomeTransactionSourceFrame = function ({
   const balanceChange = -netIncomeAmount;
 
   return (
-    <TransactionSourceOrDestinationFrame title="Source" color={color}>
+    <TransactionSourceOrDestinationFrame
+      title="Source"
+      color={color}
+      headerContent={
+        <Chip label={`Net Income ${formatCurrency(netIncomeAmount)}`} />
+      }
+    >
       <TransactionAccountOrLocationFrame
         accounts={accounts}
         transaction={transaction}
@@ -101,7 +108,6 @@ const IncomeTransactionSourceFrame = function ({
         addLabel={readOnly ? null : "Add Deduction"}
         allowEmpty
       />
-      <CurrencyEntryField label="Net Income" value={netIncomeAmount} />
     </TransactionSourceOrDestinationFrame>
   );
 };
