@@ -110,7 +110,6 @@ const SpendingTransactionDestinationFrame = function ({
   return (
     <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
-      headerContentInline
       onRemove={readOnly ? null : onRemove}
       color={fundAssignmentsValid ? color : "error"}
       headerContent={
