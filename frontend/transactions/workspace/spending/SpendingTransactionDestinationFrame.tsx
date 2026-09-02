@@ -53,6 +53,11 @@ interface SpendingTransactionDestinationFrameProps {
     ((fundAssignments: FundAssignmentDraft[]) => void) | null;
   readonly baselineFundAssignments?: FundAssignmentDraft[];
   readonly filter?: ((account: Account) => boolean) | null;
+  readonly title?: string;
+  readonly accountCaption?: string;
+  readonly locationCaption?: string;
+  readonly entryCaption?: string;
+  readonly assignmentEffect?: "refund" | "spend";
   readonly onRemove?: (() => void) | null;
   readonly color?: FrameColor;
   readonly fundAssignmentsValid?: boolean;
@@ -81,6 +86,11 @@ const SpendingTransactionDestinationFrame = function ({
   setFundAssignments,
   baselineFundAssignments = emptyFundAssignments,
   filter = null,
+  title = "Destination",
+  accountCaption = "Destination Account",
+  locationCaption = "Destination Location",
+  entryCaption = "Destination",
+  assignmentEffect = "spend",
   onRemove = null,
   color = "info",
   fundAssignmentsValid = true,
@@ -99,6 +109,7 @@ const SpendingTransactionDestinationFrame = function ({
     <SpendingFundAssignmentPlanner
       funds={funds}
       fundGoals={fundGoals}
+      assignmentEffect={assignmentEffect}
       totalAmountToAssign={amount}
       fundAssignments={fundAssignments}
       setFundAssignments={readOnly ? null : setFundAssignments}
@@ -109,7 +120,7 @@ const SpendingTransactionDestinationFrame = function ({
 
   return (
     <TransactionSourceOrDestinationFrame
-      title={`Destination ${index + 1}`}
+      title={`${title} ${index + 1}`}
       onRemove={readOnly ? null : onRemove}
       color={fundAssignmentsValid ? color : "error"}
       headerContent={
@@ -133,9 +144,9 @@ const SpendingTransactionDestinationFrame = function ({
             transaction={transaction}
             account={account}
             setAccount={readOnly ? null : setAccount}
-            accountCaption="Destination Account"
-            locationCaption="Destination Location"
-            entryCaption="Destination"
+            accountCaption={accountCaption}
+            locationCaption={locationCaption}
+            entryCaption={entryCaption}
             locations={locations}
             location={location}
             setLocation={readOnly ? null : setLocation}

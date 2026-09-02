@@ -12,11 +12,14 @@ import {
 } from "@/transactions/workspace/refund/helpers";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import AddCircleOutline from "@mui/icons-material/AddCircleOutline";
+import Button from "@mui/material/Button";
 import type { Dayjs } from "dayjs";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
-import RefundTransactionDestinationFrame from "@/transactions/workspace/refund/RefundTransactionDestinationFrame";
-import RefundTransactionSourceFrame from "@/transactions/workspace/refund/RefundTransactionSourceFrame";
+import SpendingTransactionDestinationFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFrame";
+import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
+import Stack from "@mui/material/Stack";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
 import { getCurrencyTotal } from "@/framework/currencyHelpers";
 import { updateUnassignedFundAmount } from "@/funds/assignmentPlanner/helpers";
@@ -116,7 +119,7 @@ const RefundTransactionForm = function <RequestPayload>({
       sourceContent={
         <>
           {sources.map((source, index) => (
-            <RefundTransactionSourceFrame
+            <SpendingTransactionDestinationFrame
               key={`refund-source-${index}`}
               index={index}
               accounts={accounts}
@@ -155,20 +158,18 @@ const RefundTransactionForm = function <RequestPayload>({
                 updateSource(index, (item) => ({ ...item, fundAssignments }));
               }}
               baselineFundAssignments={source.baselineFundAssignments}
-              accountFilter={buildSourceAccountFilter(
+              filter={buildSourceAccountFilter(
                 accounts,
                 sources,
                 index,
                 destination,
               )}
+              title="Source"
+              accountCaption="Source Account"
+              locationCaption="Source Location"
+              entryCaption="Source"
+              assignmentEffect="refund"
               color={validateSource(source) ? "info" : "error"}
-              onAdd={
-                index === 0
-                  ? (): void => {
-                      setSources((items) => [...items, createEmptySource()]);
-                    }
-                  : null
-              }
               onRemove={
                 sources.length > 1
                   ? (): void => {
@@ -180,17 +181,33 @@ const RefundTransactionForm = function <RequestPayload>({
               }
             />
           ))}
+          <Stack alignItems="flex-end" sx={{ mt: 2 }}>
+            <Button
+              variant="outlined"
+              startIcon={<AddCircleOutline />}
+              sx={{ width: { xs: "100%", sm: "auto" } }}
+              onClick={() => {
+                setSources((items) => [...items, createEmptySource()]);
+              }}
+            >
+              Add Source
+            </Button>
+          </Stack>
         </>
       }
       destinationContent={
-        <RefundTransactionDestinationFrame
+        <SpendingTransactionSourceFrame
           accounts={accounts}
           account={destination.account}
           setAccount={(account) => {
             setDestination({ account });
           }}
           amount={total}
-          filter={buildDestinationAccountFilter(accounts, sources)}
+          setAmount={null}
+          accountFilter={buildDestinationAccountFilter(accounts, sources)}
+          title="Destination"
+          accountLabel="Destination Account"
+          balanceChange={total}
           color={validateDestination(destination, sources) ? "info" : "error"}
         />
       }
