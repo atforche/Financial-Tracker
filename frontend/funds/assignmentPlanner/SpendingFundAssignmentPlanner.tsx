@@ -34,6 +34,7 @@ interface SpendingFundAssignmentPlannerProps {
   readonly setFundAssignments:
     ((fundAssignments: FundAssignmentDraft[]) => void) | null;
   readonly baselineFundAssignments: FundAssignmentDraft[];
+  readonly collapsible?: boolean;
   readonly readOnly?: boolean;
 }
 
@@ -48,6 +49,7 @@ const SpendingFundAssignmentPlanner = function ({
   fundAssignments,
   setFundAssignments,
   baselineFundAssignments,
+  collapsible = false,
   readOnly = false,
 }: SpendingFundAssignmentPlannerProps): JSX.Element {
   const unassignedFund = getUnassignedFund(funds);
@@ -79,10 +81,11 @@ const SpendingFundAssignmentPlanner = function ({
 
   const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
   const [singleExplicitAssignment] = explicitFundAssignments;
-  const plannerFundAssignments =
-    singleExplicitAssignment !== undefined &&
-    explicitFundAssignments.length === 1 &&
-    totalAmountToAssign !== null
+  const plannerFundAssignments = readOnly
+    ? explicitFundAssignments
+    : singleExplicitAssignment !== undefined &&
+        explicitFundAssignments.length === 1 &&
+        totalAmountToAssign !== null
       ? fundAssignments.map((assignment) =>
           assignment.fundId === singleExplicitAssignment.fundId
             ? { ...assignment, amount: totalAmountToAssign }
@@ -228,23 +231,10 @@ const SpendingFundAssignmentPlanner = function ({
       deleteFundAssignment={deleteFundAssignment}
       updateFund={updateFund}
       updateAmount={updateAmount}
-      remainingAmountLabel="Unassigned"
-      showSummary={false}
-      showTitle={false}
       persistentAssignment
-      addAssignmentInCard
+      isFundSelectable={(fund) => fund.id !== unassignedFund?.id}
+      collapsible={collapsible}
       fundLabel="Fund Assignment"
-      getRemainingAmountColor={(remainingAmount) => {
-        if (remainingAmount === null) {
-          return "default";
-        }
-
-        if (compareCurrencyAmounts(remainingAmount, 0) === 0) {
-          return "success";
-        }
-
-        return "error";
-      }}
       getFundOptionSecondaryLabel={(fund) => {
         const fundWithBalance = funds.find(
           (candidate) => candidate.id === fund.id,

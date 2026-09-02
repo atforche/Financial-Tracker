@@ -1,34 +1,18 @@
-import {
-  AddCircleOutline,
-  AutoFixHigh,
-  DeleteOutline,
-} from "@mui/icons-material";
-import {
-  Box,
-  Button,
-  Chip,
-  type ChipProps,
-  IconButton,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { AutoFixHigh, DeleteOutline } from "@mui/icons-material";
+import { Box, Collapse, IconButton, Stack, Typography } from "@mui/material";
 import {
   type FundAssignmentDraft,
-  getAssignedFundAmount,
   getAvailableFundCount,
   getExplicitFundAssignments,
-  getRemainingFundAmount,
 } from "@/funds/assignmentPlanner/helpers";
-import React, { useEffect, useState } from "react";
-import {
-  compareCurrencyAmounts,
-  formatCurrency,
-} from "@/framework/currencyHelpers";
+import React, { useEffect, useId, useState } from "react";
+import AddCollectionItemButton from "@/framework/view/AddCollectionItemButton";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
+import ExpandMore from "@mui/icons-material/ExpandMore";
 import type { Fund } from "@/funds/types";
 import FundEntryField from "@/funds/FundEntryField";
 import InsetFrame from "@/framework/view/InsetFrame";
-import { isUnassignedFund } from "@/funds/helpers";
+import { compareCurrencyAmounts } from "@/framework/currencyHelpers";
 
 /**
  * Props for the FundAssignmentPlanner component.
@@ -42,15 +26,14 @@ interface FundAssignmentPlannerProps {
   readonly deleteFundAssignment: (index: number) => void;
   readonly updateFund: (index: number, newFund: Fund | null) => void;
   readonly updateAmount: (index: number, newAmount: number | null) => void;
-  readonly remainingAmountLabel: string;
-  readonly showSummary?: boolean;
-  readonly showTitle?: boolean;
   readonly persistentAssignment?: boolean;
-  readonly addAssignmentInCard?: boolean;
+  readonly isAssignmentReadOnly?:
+    ((assignment: FundAssignmentDraft) => boolean) | null;
+  readonly isAssignmentDeletable?:
+    ((assignment: FundAssignmentDraft) => boolean) | null;
+  readonly isFundSelectable?: ((fund: Fund) => boolean) | null;
+  readonly collapsible?: boolean;
   readonly fundLabel?: string;
-  readonly getRemainingAmountColor: (
-    remainingAmount: number | null,
-  ) => ChipProps["color"];
   readonly getFundOptionSecondaryLabel?: ((fund: Fund) => string | null) | null;
   readonly sortFunds?: ((left: Fund, right: Fund) => number) | null;
   readonly renderAssignmentDetails?:
@@ -80,13 +63,12 @@ const FundAssignmentPlanner = function ({
   deleteFundAssignment,
   updateFund,
   updateAmount,
-  remainingAmountLabel,
-  showSummary = true,
-  showTitle = true,
   persistentAssignment = false,
-  addAssignmentInCard = false,
+  isAssignmentReadOnly = null,
+  isAssignmentDeletable = null,
+  isFundSelectable = null,
+  collapsible = false,
   fundLabel = "Fund",
-  getRemainingAmountColor,
   getFundOptionSecondaryLabel = null,
   sortFunds = null,
   renderAssignmentDetails = null,
@@ -96,18 +78,17 @@ const FundAssignmentPlanner = function ({
   const [autoFocusAssignmentIndex, setAutoFocusAssignmentIndex] = useState<
     number | null
   >(null);
+  const [assignmentsExpanded, setAssignmentsExpanded] = useState(false);
+  const assignmentsDetailsId = useId();
   const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
-  const assignedAmount = getAssignedFundAmount(fundAssignments);
-  const remainingAmount = getRemainingFundAmount(
-    totalAmountToAssign,
-    fundAssignments,
-  );
   const assignedFundIds = new Set(
     explicitFundAssignments.map((assignment) => assignment.fundId),
   );
   const availableFundCount = getAvailableFundCount(funds, fundAssignments);
   const hasSinglePersistentAssignment =
     persistentAssignment && explicitFundAssignments.length === 1;
+  const assignmentCount = fundAssignments.length;
+  const shouldCollapse = readOnly && collapsible && assignmentCount > 1;
 
   useEffect(() => {
     if (autoFocusAssignmentIndex !== null) {
@@ -115,30 +96,21 @@ const FundAssignmentPlanner = function ({
     }
   }, [autoFocusAssignmentIndex]);
 
-  return (
-    <Stack spacing={2.5}>
-      {showSummary ? (
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          justifyContent="space-between"
-          alignItems={{ xs: "stretch", sm: "center" }}
-        >
-          <Typography variant="subtitle1">Fund Assignments</Typography>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            <Chip label={`Assigned ${formatCurrency(assignedAmount)}`} />
-            <Chip
-              color={getRemainingAmountColor(remainingAmount)}
-              label={`${remainingAmountLabel} ${formatCurrency(remainingAmount ?? 0)}`}
-            />
-          </Stack>
-        </Stack>
-      ) : showTitle ? (
-        <Typography variant="subtitle1">Fund Assignments</Typography>
-      ) : null}
+  const assignmentsContent = (
+    <Stack spacing={2}>
+      {fundAssignments.map((assignment, index) => {
+        const assignmentDetails =
+          renderAssignmentDetails?.(assignment, index) ?? null;
+        const assignmentReadOnly =
+          readOnly || (isAssignmentReadOnly?.(assignment) ?? false);
+        const assignmentDeletable =
+          !readOnly &&
+          !(persistentAssignment && index === 0) &&
+          isAssignmentDeletable?.(assignment) !== false;
+        const showAutoAssign =
+          !readOnly && onAutoAssign !== null && index === 0;
 
-      <Stack spacing={2}>
-        {explicitFundAssignments.map((assignment, index) => (
+        return (
           <InsetFrame key={`assignment-${index}`}>
             <Box
               sx={{
@@ -168,14 +140,14 @@ const FundAssignmentPlanner = function ({
                     description: "",
                   }}
                   setValue={
-                    readOnly
+                    assignmentReadOnly
                       ? null
                       : (newValue): void => {
                           updateFund(index, newValue);
                         }
                   }
                   filter={(fund) =>
-                    !isUnassignedFund(fund.name) &&
+                    (isFundSelectable?.(fund) ?? true) &&
                     (fund.id === assignment.fundId ||
                       !assignedFundIds.has(fund.id))
                   }
@@ -207,7 +179,9 @@ const FundAssignmentPlanner = function ({
                         : assignment.amount
                     }
                     setValue={
-                      readOnly || hasSinglePersistentAssignment
+                      readOnly ||
+                      assignmentReadOnly ||
+                      hasSinglePersistentAssignment
                         ? null
                         : (newAmount): void => {
                             updateAmount(index, newAmount);
@@ -216,22 +190,22 @@ const FundAssignmentPlanner = function ({
                   />
                 </Box>
                 {renderAssignmentControl?.(assignment, index) ?? null}
-                {readOnly ? null : addAssignmentInCard && index === 0 ? (
+                {showAutoAssign ? (
                   <IconButton
-                    aria-label="Add fund assignment"
+                    aria-label="Auto-assign fund assignments"
+                    title="Auto-assign fund assignments"
                     size="small"
-                    disabled={availableFundCount === 0}
+                    disabled={
+                      totalAmountToAssign === null ||
+                      compareCurrencyAmounts(totalAmountToAssign, 0) <= 0
+                    }
                     sx={{ width: 32, height: 32, p: 0 }}
-                    onClick={() => {
-                      setAutoFocusAssignmentIndex(
-                        explicitFundAssignments.length,
-                      );
-                      addFundAssignment();
-                    }}
+                    onClick={onAutoAssign}
                   >
-                    <AddCircleOutline />
+                    <AutoFixHigh />
                   </IconButton>
-                ) : persistentAssignment && index === 0 ? null : (
+                ) : null}
+                {assignmentDeletable ? (
                   <IconButton
                     aria-label="Delete fund assignment"
                     size="small"
@@ -242,59 +216,81 @@ const FundAssignmentPlanner = function ({
                   >
                     <DeleteOutline />
                   </IconButton>
-                )}
+                ) : !readOnly && index === 0 && !showAutoAssign ? (
+                  <Box
+                    aria-hidden="true"
+                    sx={{ width: 32, height: 32, flexShrink: 0 }}
+                  />
+                ) : null}
               </Box>
-              {renderAssignmentDetails === null ? null : (
+              {assignmentDetails === null ? null : (
                 <Box
                   sx={{
                     gridColumn: { xs: "1", sm: "1 / 3" },
                     gridRow: { xs: "3", sm: "2" },
                   }}
                 >
-                  {renderAssignmentDetails(assignment, index)}
+                  {assignmentDetails}
                 </Box>
               )}
             </Box>
           </InsetFrame>
-        ))}
-      </Stack>
+        );
+      })}
+    </Stack>
+  );
 
-      {readOnly || (addAssignmentInCard && onAutoAssign === null) ? null : (
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          justifyContent="space-between"
-          alignItems={{ xs: "stretch", sm: "center" }}
-        >
-          <Stack direction="row" spacing={1.5} justifyContent="flex-end">
-            {addAssignmentInCard ? null : (
-              <Button
-                variant="contained"
-                startIcon={<AddCircleOutline />}
-                onClick={() => {
-                  setAutoFocusAssignmentIndex(explicitFundAssignments.length);
-                  addFundAssignment();
-                }}
-                disabled={availableFundCount === 0}
-              >
-                Add Fund Assignment
-              </Button>
-            )}
-            {onAutoAssign === null ? null : (
-              <Button
-                variant="outlined"
-                startIcon={<AutoFixHigh />}
-                onClick={onAutoAssign}
-                disabled={
-                  totalAmountToAssign === null ||
-                  compareCurrencyAmounts(totalAmountToAssign, 0) <= 0
-                }
-              >
-                Auto-assign
-              </Button>
-            )}
+  return (
+    <Stack spacing={2.5}>
+      {shouldCollapse ? (
+        <InsetFrame>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography variant="subtitle1">
+              Fund Assignments ({assignmentCount})
+            </Typography>
+            <IconButton
+              size="small"
+              onClick={() => {
+                setAssignmentsExpanded((expanded) => !expanded);
+              }}
+              aria-label={`${assignmentsExpanded ? "Collapse" : "Expand"} Fund Assignments`}
+              aria-expanded={assignmentsExpanded}
+              aria-controls={assignmentsDetailsId}
+              sx={{
+                p: 0.5,
+                transform: assignmentsExpanded
+                  ? "rotate(180deg)"
+                  : "rotate(0deg)",
+                transition: "transform 0.3s ease-in-out",
+              }}
+            >
+              <ExpandMore />
+            </IconButton>
           </Stack>
-        </Stack>
+          <Collapse
+            id={assignmentsDetailsId}
+            in={assignmentsExpanded}
+            timeout="auto"
+            unmountOnExit
+          >
+            <Box sx={{ pt: 1.5 }}>{assignmentsContent}</Box>
+          </Collapse>
+        </InsetFrame>
+      ) : (
+        assignmentsContent
+      )}
+      {readOnly || availableFundCount === 0 ? null : (
+        <AddCollectionItemButton
+          label="Add another fund assignment"
+          onClick={() => {
+            setAutoFocusAssignmentIndex(fundAssignments.length);
+            addFundAssignment();
+          }}
+        />
       )}
     </Stack>
   );

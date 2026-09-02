@@ -43,8 +43,6 @@ import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/I
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
 import type { JSX } from "react";
 import Link from "next/link";
-import RefundTransactionDestinationFrame from "@/transactions/workspace/refund/RefundTransactionDestinationFrame";
-import RefundTransactionSourceFrame from "@/transactions/workspace/refund/RefundTransactionSourceFrame";
 import SpendingTransactionDestinationFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFrame";
 import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
@@ -157,7 +155,7 @@ const ViewTransactionForm = function ({
     sourceAmount = getCurrencyTotal(sources.map((source) => source.amount));
     destinationAmount = sourceAmount;
     sourceContent = sources.map((source, index) => (
-      <RefundTransactionSourceFrame
+      <SpendingTransactionDestinationFrame
         key={`refund-source-${index}`}
         readOnly
         index={index}
@@ -174,10 +172,15 @@ const ViewTransactionForm = function ({
         fundAssignments={source.fundAssignments}
         setFundAssignments={null}
         baselineFundAssignments={source.baselineFundAssignments}
+        title="Source"
+        accountCaption="Source Account"
+        locationCaption="Source Location"
+        entryCaption="Source"
+        assignmentEffect="refund"
       />
     ));
     destinationContent = [
-      <RefundTransactionDestinationFrame
+      <SpendingTransactionSourceFrame
         key="refund-destination"
         readOnly
         accounts={[]}
@@ -185,6 +188,10 @@ const ViewTransactionForm = function ({
         account={destination.account}
         setAccount={null}
         amount={destinationAmount}
+        setAmount={null}
+        title="Destination"
+        accountLabel="Destination Account"
+        balanceChange={destinationAmount}
       />,
     ];
   } else if (
@@ -354,7 +361,7 @@ const ViewTransactionForm = function ({
       sourceAmount={sourceAmount}
       destinationAmount={destinationAmount}
       destinationCount={destinationContent.length}
-      showSummary={transaction.transactionType !== TransactionType.Spending}
+      showSummary={transaction.transactionType === TransactionType.Income}
     />
   );
 };

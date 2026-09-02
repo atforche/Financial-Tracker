@@ -25,7 +25,6 @@ import AccountEntryField from "@/accounts/AccountEntryField";
 import BalanceChangeChip from "@/framework/view/BalanceChangeChip";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import InsetFrame from "@/framework/view/InsetFrame";
 import { buildUrl } from "@/framework/routes/helpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import postTransaction from "@/transactions/workspace/postTransaction";
@@ -43,7 +42,6 @@ interface AccountBalanceEventFrameProps {
   readonly accountFilter?: ((account: Account) => boolean) | null;
   readonly label?: string;
   readonly balanceChange?: number | null;
-  readonly inset?: boolean;
   readonly showAccountEntry?: boolean;
   readonly sx?: SxProps<Theme>;
 }
@@ -61,7 +59,6 @@ const AccountBalanceEventFrame = function ({
   accountFilter = null,
   label = "Account",
   balanceChange = null,
-  inset = false,
   showAccountEntry = true,
   sx,
 }: AccountBalanceEventFrameProps): JSX.Element {
@@ -198,7 +195,7 @@ const AccountBalanceEventFrame = function ({
     />
   );
 
-  const content = (
+  return (
     <Stack spacing={1} sx={sx}>
       {isReadOnly && hasSelectedAccount ? (
         <Stack spacing={0.25}>
@@ -233,8 +230,6 @@ const AccountBalanceEventFrame = function ({
       ) : null}
     </Stack>
   );
-
-  return inset ? <InsetFrame>{content}</InsetFrame> : content;
 };
 
 export default AccountBalanceEventFrame;

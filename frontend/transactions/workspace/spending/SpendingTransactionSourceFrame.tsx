@@ -23,6 +23,9 @@ interface SpendingTransactionSourceFrameProps {
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly accountFilter?: ((account: Account) => boolean) | null;
+  readonly title?: string;
+  readonly accountLabel?: string;
+  readonly balanceChange?: number | null;
   readonly color?: FrameColor;
   readonly readOnly?: boolean;
 }
@@ -38,11 +41,21 @@ const SpendingTransactionSourceFrame = function ({
   amount,
   setAmount,
   accountFilter = null,
+  title = "Source",
+  accountLabel = "Source Account",
+  balanceChange,
   color = "info",
   readOnly = false,
 }: SpendingTransactionSourceFrameProps): JSX.Element {
+  const effectiveBalanceChange =
+    balanceChange === undefined
+      ? amount === null
+        ? null
+        : -amount
+      : balanceChange;
+
   return (
-    <TransactionSourceOrDestinationFrame title="Source" color={color}>
+    <TransactionSourceOrDestinationFrame title={title} color={color}>
       <Stack
         direction={{ xs: "column", sm: "row" }}
         spacing={2}
@@ -54,8 +67,8 @@ const SpendingTransactionSourceFrame = function ({
           account={account}
           setAccount={readOnly ? null : setAccount}
           accountFilter={accountFilter}
-          label="Source Account"
-          balanceChange={amount === null ? null : -amount}
+          label={accountLabel}
+          balanceChange={effectiveBalanceChange}
           sx={{ flex: { sm: "1 1 auto" }, minWidth: 0 }}
         />
         <CurrencyEntryField

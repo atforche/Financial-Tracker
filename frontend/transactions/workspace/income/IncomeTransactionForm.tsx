@@ -21,6 +21,7 @@ import {
   validateSource,
 } from "@/transactions/workspace/income/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import AddCollectionItemButton from "@/framework/view/AddCollectionItemButton";
 import type { Dayjs } from "dayjs";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
@@ -245,7 +246,6 @@ const IncomeTransactionForm = function <RequestPayload>({
                 }));
               }}
               baselineFundAssignments={destination.baselineFundAssignments}
-              onAdd={index === 0 ? addDestination : null}
               filter={buildDestinationAccountFilter(
                 accounts,
                 destinations,
@@ -265,11 +265,16 @@ const IncomeTransactionForm = function <RequestPayload>({
               }
             />
           ))}
+          <AddCollectionItemButton
+            label="Add another destination"
+            onClick={addDestination}
+          />
         </>
       }
       sourceAmount={sourceNetAmount}
       destinationAmount={destinationTotal}
       destinationCount={destinations.length}
+      showSummary
       submitLabel={submitLabel}
       state={state}
       pending={pending}

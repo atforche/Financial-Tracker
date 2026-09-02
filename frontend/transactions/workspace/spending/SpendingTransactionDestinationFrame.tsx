@@ -3,28 +3,18 @@ import type {
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
-import {
-  Box,
-  Chip,
-  Collapse,
-  IconButton,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Chip, Stack } from "@mui/material";
 import {
   type FundAssignmentDraft,
   getAssignedFundAmount,
-  getExplicitFundAssignments,
   getRemainingFundAmount,
 } from "@/funds/assignmentPlanner/helpers";
-import { type JSX, useId, useState } from "react";
 import type { Location, LocationDraft } from "@/locations/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
-import ExpandMore from "@mui/icons-material/ExpandMore";
 import type { FrameColor } from "@/framework/view/Frame";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
-import InsetFrame from "@/framework/view/InsetFrame";
+import type { JSX } from "react";
 import SpendingFundAssignmentPlanner from "@/funds/assignmentPlanner/SpendingFundAssignmentPlanner";
 import type { Transaction } from "@/transactions/types";
 import TransactionAccountOrLocationFrame from "@/transactions/workspace/TransactionAccountOrLocationFrame";
@@ -53,6 +43,11 @@ interface SpendingTransactionDestinationFrameProps {
     ((fundAssignments: FundAssignmentDraft[]) => void) | null;
   readonly baselineFundAssignments?: FundAssignmentDraft[];
   readonly filter?: ((account: Account) => boolean) | null;
+  readonly title?: string;
+  readonly accountCaption?: string;
+  readonly locationCaption?: string;
+  readonly entryCaption?: string;
+  readonly assignmentEffect?: "refund" | "spend";
   readonly onRemove?: (() => void) | null;
   readonly color?: FrameColor;
   readonly fundAssignmentsValid?: boolean;
@@ -81,36 +76,22 @@ const SpendingTransactionDestinationFrame = function ({
   setFundAssignments,
   baselineFundAssignments = emptyFundAssignments,
   filter = null,
+  title = "Destination",
+  accountCaption = "Destination Account",
+  locationCaption = "Destination Location",
+  entryCaption = "Destination",
+  assignmentEffect = "spend",
   onRemove = null,
   color = "info",
   fundAssignmentsValid = true,
   readOnly = false,
 }: SpendingTransactionDestinationFrameProps): JSX.Element {
-  const [fundAssignmentsExpanded, setFundAssignmentsExpanded] = useState(false);
-  const fundAssignmentsDetailsId = useId();
   const assignedAmount = getAssignedFundAmount(fundAssignments);
   const remainingAmount = getRemainingFundAmount(amount, fundAssignments);
-  const explicitFundAssignmentCount =
-    getExplicitFundAssignments(fundAssignments).length;
-  const shouldCollapseFundAssignments =
-    readOnly && explicitFundAssignmentCount > 1;
-
-  const fundAssignmentsContent = (
-    <SpendingFundAssignmentPlanner
-      funds={funds}
-      fundGoals={fundGoals}
-      totalAmountToAssign={amount}
-      fundAssignments={fundAssignments}
-      setFundAssignments={readOnly ? null : setFundAssignments}
-      baselineFundAssignments={baselineFundAssignments}
-      readOnly={readOnly}
-    />
-  );
 
   return (
     <TransactionSourceOrDestinationFrame
-      title={`Destination ${index + 1}`}
-      headerContentInline
+      title={`${title} ${index + 1}`}
       onRemove={readOnly ? null : onRemove}
       color={fundAssignmentsValid ? color : "error"}
       headerContent={
@@ -134,16 +115,15 @@ const SpendingTransactionDestinationFrame = function ({
             transaction={transaction}
             account={account}
             setAccount={readOnly ? null : setAccount}
-            accountCaption="Destination Account"
-            locationCaption="Destination Location"
-            entryCaption="Destination"
+            accountCaption={accountCaption}
+            locationCaption={locationCaption}
+            entryCaption={entryCaption}
             locations={locations}
             location={location}
             setLocation={readOnly ? null : setLocation}
             accountFilter={filter}
             balanceChange={amount}
             readOnly={readOnly}
-            insetReadOnlyAccount={false}
           />
         </Box>
         <CurrencyEntryField
@@ -153,47 +133,17 @@ const SpendingTransactionDestinationFrame = function ({
           sx={{ width: { xs: "100%", sm: 220 } }}
         />
       </Stack>
-      {shouldCollapseFundAssignments ? (
-        <InsetFrame>
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Typography variant="subtitle1">
-              Fund Assignments ({explicitFundAssignmentCount})
-            </Typography>
-            <IconButton
-              size="small"
-              onClick={() => {
-                setFundAssignmentsExpanded((expanded) => !expanded);
-              }}
-              aria-label={`${fundAssignmentsExpanded ? "Collapse" : "Expand"} Fund Assignments`}
-              aria-expanded={fundAssignmentsExpanded}
-              aria-controls={fundAssignmentsDetailsId}
-              sx={{
-                p: 0.5,
-                transform: fundAssignmentsExpanded
-                  ? "rotate(180deg)"
-                  : "rotate(0deg)",
-                transition: "transform 0.3s ease-in-out",
-              }}
-            >
-              <ExpandMore />
-            </IconButton>
-          </Stack>
-          <Collapse
-            id={fundAssignmentsDetailsId}
-            in={fundAssignmentsExpanded}
-            timeout="auto"
-            unmountOnExit
-          >
-            <Box sx={{ pt: 1.5 }}>{fundAssignmentsContent}</Box>
-          </Collapse>
-        </InsetFrame>
-      ) : (
-        fundAssignmentsContent
-      )}
+      <SpendingFundAssignmentPlanner
+        funds={funds}
+        fundGoals={fundGoals}
+        assignmentEffect={assignmentEffect}
+        totalAmountToAssign={amount}
+        fundAssignments={fundAssignments}
+        setFundAssignments={readOnly ? null : setFundAssignments}
+        baselineFundAssignments={baselineFundAssignments}
+        collapsible={readOnly}
+        readOnly={readOnly}
+      />
     </TransactionSourceOrDestinationFrame>
   );
 };

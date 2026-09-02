@@ -6,12 +6,15 @@ import {
   autoAssignIncomeFundAssignments,
   createFundAssignmentDraft,
   getContributionRemainingAmount,
+  getExplicitFundAssignments,
   getFundOptionSecondaryLabel,
+  getRemainingFundAmount,
   getSuggestedAmount,
   deleteFundAssignment as removeFundAssignment,
   sortFundsByRemainingAmount,
   updateFundAssignment,
 } from "@/funds/assignmentPlanner/helpers";
+import { type JSX, useState } from "react";
 import {
   compareCurrencyAmounts,
   getCurrencyTotal,
@@ -20,7 +23,7 @@ import {
 import BalanceChangeChip from "@/framework/view/BalanceChangeChip";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
-import type { JSX } from "react";
+import Toast from "@/framework/alerts/Toast";
 import { getUnassignedFund } from "@/funds/helpers";
 
 /**
@@ -49,7 +52,38 @@ const IncomeFundAssignmentPlanner = function ({
   baselineFundAssignments,
   readOnly = false,
 }: IncomeFundAssignmentPlannerProps): JSX.Element {
+  const [autoAssignMessage, setAutoAssignMessage] = useState<string | null>(
+    null,
+  );
   const unassignedFund = getUnassignedFund(funds);
+  const unassignedFundWithBalance = funds.find(
+    (fund) => fund.id === unassignedFund?.id,
+  );
+  const storedUnassignedAssignment = fundAssignments.find(
+    (assignment) => assignment.fundId === unassignedFund?.id,
+  );
+  const persistentUnassignedAssignment =
+    unassignedFund === null || readOnly
+      ? storedUnassignedAssignment
+      : (storedUnassignedAssignment ?? {
+          ...createFundAssignmentDraft(),
+          fundId: unassignedFund.id,
+          fundName: unassignedFund.name,
+          amount:
+            getRemainingFundAmount(totalAmountToAssign, fundAssignments) ?? 0,
+        });
+  const plannerFundAssignments = readOnly
+    ? fundAssignments
+    : [
+        ...(persistentUnassignedAssignment === undefined
+          ? []
+          : [persistentUnassignedAssignment]),
+        ...getExplicitFundAssignments(fundAssignments),
+      ];
+  const assignmentIndexOffset =
+    !readOnly && persistentUnassignedAssignment !== undefined ? 1 : 0;
+  const getExplicitAssignmentIndex = (index: number): number =>
+    index - assignmentIndexOffset;
 
   const hasPlannedMonthlyContribution = function (fundId: string): boolean {
     const fundGoal = fundGoals.find((goal) => goal.fund.id === fundId);
@@ -81,15 +115,33 @@ const IncomeFundAssignmentPlanner = function ({
   };
 
   const autoAssign = function (): void {
-    setFundAssignments?.(
-      autoAssignIncomeFundAssignments(
-        totalAmountToAssign,
-        funds,
-        fundGoals,
-        baselineFundAssignments,
-        unassignedFund,
-      ),
+    const nextFundAssignments = autoAssignIncomeFundAssignments(
+      totalAmountToAssign,
+      funds,
+      fundGoals,
+      baselineFundAssignments,
+      unassignedFund,
     );
+    const assignmentsChanged =
+      nextFundAssignments.length !== plannerFundAssignments.length ||
+      nextFundAssignments.some((assignment, index) => {
+        const currentAssignment = plannerFundAssignments[index];
+        return (
+          assignment.fundId !== currentAssignment?.fundId ||
+          assignment.amount !== currentAssignment.amount ||
+          assignment.isExtraContribution !==
+            currentAssignment.isExtraContribution
+        );
+      });
+
+    if (!assignmentsChanged) {
+      setAutoAssignMessage(
+        "No changes were made. Assignments are already up to date, or no funds have a remaining amount to assign.",
+      );
+      return;
+    }
+
+    setFundAssignments?.(nextFundAssignments);
   };
 
   const deleteFundAssignment = function (index: number): void {
@@ -98,7 +150,7 @@ const IncomeFundAssignmentPlanner = function ({
         unassignedFund,
         totalAmountToAssign,
         fundAssignments,
-        index,
+        getExplicitAssignmentIndex(index),
       ),
     );
   };
@@ -109,7 +161,7 @@ const IncomeFundAssignmentPlanner = function ({
         unassignedFund,
         totalAmountToAssign,
         fundAssignments,
-        index,
+        getExplicitAssignmentIndex(index),
         (assignment) => {
           if (newFund === null) {
             return createFundAssignmentDraft(assignment.amount);
@@ -125,7 +177,7 @@ const IncomeFundAssignmentPlanner = function ({
           const recommendedAmount = getSuggestedAmount(
             totalAmountToAssign,
             fundAssignments,
-            index,
+            getExplicitAssignmentIndex(index),
             previousGoalAmount,
           );
           const isExtraContribution =
@@ -164,7 +216,7 @@ const IncomeFundAssignmentPlanner = function ({
         unassignedFund,
         totalAmountToAssign,
         fundAssignments,
-        index,
+        getExplicitAssignmentIndex(index),
         (assignment) => ({
           ...assignment,
           amount: newAmount ?? 0,
@@ -193,7 +245,7 @@ const IncomeFundAssignmentPlanner = function ({
         unassignedFund,
         totalAmountToAssign,
         fundAssignments,
-        index,
+        getExplicitAssignmentIndex(index),
         (assignment) => ({
           ...assignment,
           isExtraContribution,
@@ -215,26 +267,40 @@ const IncomeFundAssignmentPlanner = function ({
     if (assignment.fundId === "") {
       return null;
     }
+    const isSyntheticUnassignedAssignment =
+      assignment.fundId === unassignedFund?.id &&
+      !fundAssignments.includes(assignment);
+    const previousFundBalance = isSyntheticUnassignedAssignment
+      ? (unassignedFundWithBalance?.currentBalance.postedBalance ?? 0)
+      : assignment.previousFundBalance;
+    const newFundBalance = isSyntheticUnassignedAssignment
+      ? getCurrencyTotal([previousFundBalance, assignment.amount])
+      : assignment.newFundBalance;
+    const previousGoalAmount = isSyntheticUnassignedAssignment
+      ? 0
+      : assignment.previousGoalAmount;
+    const newGoalAmount = isSyntheticUnassignedAssignment
+      ? assignment.amount
+      : assignment.newGoalAmount;
+
     return (
       <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap>
         <BalanceChangeChip
           label="Remaining to Assign"
-          previousValue={assignment.previousGoalAmount}
-          newValue={assignment.newGoalAmount}
+          previousValue={previousGoalAmount}
+          newValue={newGoalAmount}
           color={
-            compareCurrencyAmounts(assignment.newGoalAmount, 0) <= 0
+            compareCurrencyAmounts(newGoalAmount, 0) <= 0
               ? "success"
               : "default"
           }
         />
         <BalanceChangeChip
           label="Balance"
-          previousValue={assignment.previousFundBalance}
-          newValue={assignment.newFundBalance}
+          previousValue={previousFundBalance}
+          newValue={newFundBalance}
           color={
-            compareCurrencyAmounts(assignment.newFundBalance, 0) >= 0
-              ? "success"
-              : "error"
+            compareCurrencyAmounts(newFundBalance, 0) >= 0 ? "success" : "error"
           }
         />
       </Stack>
@@ -270,39 +336,50 @@ const IncomeFundAssignmentPlanner = function ({
   };
 
   return (
-    <FundAssignmentPlanner
-      funds={funds}
-      totalAmountToAssign={totalAmountToAssign}
-      fundAssignments={fundAssignments}
-      addFundAssignment={addFundAssignment}
-      onAutoAssign={readOnly ? null : autoAssign}
-      deleteFundAssignment={deleteFundAssignment}
-      updateFund={updateFund}
-      updateAmount={updateAmount}
-      remainingAmountLabel="Unassigned"
-      getRemainingAmountColor={(remainingAmount) => {
-        if (remainingAmount === null) {
-          return "default";
+    <>
+      <FundAssignmentPlanner
+        funds={funds}
+        totalAmountToAssign={totalAmountToAssign}
+        fundAssignments={plannerFundAssignments}
+        addFundAssignment={addFundAssignment}
+        onAutoAssign={readOnly ? null : autoAssign}
+        deleteFundAssignment={deleteFundAssignment}
+        updateFund={updateFund}
+        updateAmount={updateAmount}
+        isAssignmentReadOnly={(assignment) =>
+          assignment.fundId === unassignedFund?.id
         }
-        return compareCurrencyAmounts(remainingAmount, 0) === 0
-          ? "success"
-          : "info";
-      }}
-      getFundOptionSecondaryLabel={(fund) =>
-        getFundOptionSecondaryLabel(
-          "Remaining to assign",
-          getContributionRemainingAmount(
-            fund.id,
-            fundGoals,
-            baselineFundAssignments,
-          ),
-        )
-      }
-      sortFunds={sortFunds}
-      renderAssignmentDetails={renderAssignmentDetails}
-      renderAssignmentControl={renderAssignmentControl}
-      readOnly={readOnly}
-    />
+        isAssignmentDeletable={(assignment) =>
+          assignment.fundId !== unassignedFund?.id
+        }
+        isFundSelectable={(fund) => fund.id !== unassignedFund?.id}
+        collapsible={readOnly}
+        getFundOptionSecondaryLabel={(fund) =>
+          getFundOptionSecondaryLabel(
+            "Remaining to assign",
+            getContributionRemainingAmount(
+              fund.id,
+              fundGoals,
+              baselineFundAssignments,
+            ),
+          )
+        }
+        sortFunds={sortFunds}
+        renderAssignmentDetails={renderAssignmentDetails}
+        renderAssignmentControl={renderAssignmentControl}
+        readOnly={readOnly}
+      />
+      <Toast
+        severity="info"
+        open={autoAssignMessage !== null}
+        autoHideDuration={5000}
+        onClose={() => {
+          setAutoAssignMessage(null);
+        }}
+      >
+        {autoAssignMessage}
+      </Toast>
+    </>
   );
 };
 
