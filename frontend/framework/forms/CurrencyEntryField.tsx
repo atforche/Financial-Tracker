@@ -1,5 +1,6 @@
 import { InputAdornment, TextField } from "@mui/material";
 import { type JSX, useEffect, useState } from "react";
+import type { SxProps, Theme } from "@mui/material/styles";
 import {
   currencyEditPattern,
   formatCurrency,
@@ -18,6 +19,7 @@ interface CurrencyEntryFieldProps {
   readonly setValue?: ((newValue: number | null) => void) | null;
   readonly errorMessage?: string | null;
   readonly disabled?: boolean;
+  readonly sx?: Exclude<SxProps<Theme>, readonly unknown[]>;
 }
 
 /**
@@ -29,6 +31,7 @@ const CurrencyEntryField = function ({
   setValue = null,
   errorMessage = null,
   disabled = false,
+  sx,
 }: CurrencyEntryFieldProps): JSX.Element {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [stringValue, setStringValue] = useState<string>(
@@ -48,6 +51,7 @@ const CurrencyEntryField = function ({
       <ReadOnlyField
         label={label}
         value={value === null ? null : formatCurrency(value)}
+        {...(sx === undefined ? {} : { sx })}
       />
     );
   }
@@ -96,6 +100,7 @@ const CurrencyEntryField = function ({
       }}
       error={errorMessage !== null}
       helperText={errorMessage ?? null}
+      sx={sx}
     />
   );
 };

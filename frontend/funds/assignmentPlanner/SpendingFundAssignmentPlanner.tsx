@@ -4,21 +4,21 @@ import {
   addFundAssignment as appendFundAssignment,
   createFundAssignmentDraft,
   getEndingBalanceVariance,
+  getExplicitFundAssignments,
   getFundOptionSecondaryLabel,
   getSpendingGoalRemainingAmount,
   deleteFundAssignment as removeFundAssignment,
   sortFundsByRemainingAmount,
   updateFundAssignment,
 } from "@/funds/assignmentPlanner/helpers";
+import { type JSX, useEffect } from "react";
 import {
   compareCurrencyAmounts,
   getCurrencyTotal,
 } from "@/framework/currencyHelpers";
 import BalanceChangeChip from "@/framework/view/BalanceChangeChip";
-import type { FrameColor } from "@/framework/view/Frame";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
-import type { JSX } from "react";
 import { Stack } from "@mui/material";
 import { getUnassignedFund } from "@/funds/helpers";
 
@@ -34,7 +34,6 @@ interface SpendingFundAssignmentPlannerProps {
   readonly setFundAssignments:
     ((fundAssignments: FundAssignmentDraft[]) => void) | null;
   readonly baselineFundAssignments: FundAssignmentDraft[];
-  readonly frameColor?: FrameColor;
   readonly readOnly?: boolean;
 }
 
@@ -49,11 +48,47 @@ const SpendingFundAssignmentPlanner = function ({
   fundAssignments,
   setFundAssignments,
   baselineFundAssignments,
-  frameColor = "primary",
   readOnly = false,
 }: SpendingFundAssignmentPlannerProps): JSX.Element {
   const unassignedFund = getUnassignedFund(funds);
   const assignmentDirection = assignmentEffect === "refund" ? 1 : -1;
+
+  useEffect(() => {
+    if (
+      readOnly ||
+      setFundAssignments === null ||
+      getExplicitFundAssignments(fundAssignments).length > 0
+    ) {
+      return;
+    }
+
+    setFundAssignments(
+      appendFundAssignment(
+        unassignedFund,
+        totalAmountToAssign,
+        fundAssignments,
+      ),
+    );
+  }, [
+    fundAssignments,
+    readOnly,
+    setFundAssignments,
+    totalAmountToAssign,
+    unassignedFund,
+  ]);
+
+  const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
+  const [singleExplicitAssignment] = explicitFundAssignments;
+  const plannerFundAssignments =
+    singleExplicitAssignment !== undefined &&
+    explicitFundAssignments.length === 1 &&
+    totalAmountToAssign !== null
+      ? fundAssignments.map((assignment) =>
+          assignment.fundId === singleExplicitAssignment.fundId
+            ? { ...assignment, amount: totalAmountToAssign }
+            : assignment,
+        )
+      : fundAssignments;
 
   const sortFunds = function (left: Fund, right: Fund): number {
     return sortFundsByRemainingAmount(left, right, (fundId: string) => {
@@ -73,6 +108,7 @@ const SpendingFundAssignmentPlanner = function ({
         unassignedFund,
         totalAmountToAssign,
         fundAssignments,
+        false,
       ),
     );
   };
@@ -82,7 +118,7 @@ const SpendingFundAssignmentPlanner = function ({
       removeFundAssignment(
         unassignedFund,
         totalAmountToAssign,
-        fundAssignments,
+        plannerFundAssignments,
         index,
       ),
     );
@@ -93,7 +129,7 @@ const SpendingFundAssignmentPlanner = function ({
       updateFundAssignment(
         unassignedFund,
         totalAmountToAssign,
-        fundAssignments,
+        plannerFundAssignments,
         index,
         (assignment) => {
           if (newFund === null) {
@@ -136,7 +172,7 @@ const SpendingFundAssignmentPlanner = function ({
       updateFundAssignment(
         unassignedFund,
         totalAmountToAssign,
-        fundAssignments,
+        plannerFundAssignments,
         index,
         (assignment) => {
           const previousGoalAmount = getSpendingGoalRemainingAmount(
@@ -187,12 +223,17 @@ const SpendingFundAssignmentPlanner = function ({
     <FundAssignmentPlanner
       funds={funds}
       totalAmountToAssign={totalAmountToAssign}
-      fundAssignments={fundAssignments}
+      fundAssignments={plannerFundAssignments}
       addFundAssignment={addFundAssignment}
       deleteFundAssignment={deleteFundAssignment}
       updateFund={updateFund}
       updateAmount={updateAmount}
-      remainingAmountLabel="Remaining"
+      remainingAmountLabel="Unassigned"
+      showSummary={false}
+      showTitle={false}
+      persistentAssignment
+      addAssignmentInCard
+      fundLabel="Fund Assignment"
       getRemainingAmountColor={(remainingAmount) => {
         if (remainingAmount === null) {
           return "default";
@@ -220,7 +261,6 @@ const SpendingFundAssignmentPlanner = function ({
       }}
       sortFunds={sortFunds}
       renderAssignmentDetails={renderAssignmentDetails}
-      color={frameColor}
       readOnly={readOnly}
     />
   );

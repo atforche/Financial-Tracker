@@ -111,16 +111,19 @@ const validateSource = function (source: SpendingSourceDraft): boolean {
 const validateFundAssignments = function (
   destination: SpendingDestinationDraft,
 ): boolean {
+  const explicitFundAssignments = destination.fundAssignments.filter(
+    (assignment) => !isUnassignedFund(assignment.fundName),
+  );
+  const assignedAmount =
+    explicitFundAssignments.length === 1
+      ? (destination.amount ?? 0)
+      : getCurrencyTotal(
+          explicitFundAssignments.map((assignment) => assignment.amount),
+        );
+
   return (
     !hasIncompleteFundAssignments(destination.fundAssignments) &&
-    getCurrencyDifference(
-      getCurrencyTotal(
-        destination.fundAssignments
-          .filter((assignment) => !isUnassignedFund(assignment.fundName))
-          .map((assignment) => assignment.amount),
-      ),
-      destination.amount ?? 0,
-    ) === 0
+    getCurrencyDifference(assignedAmount, destination.amount ?? 0) === 0
   );
 };
 
@@ -213,9 +216,12 @@ const buildRequestFields = function (
       amount: destination.amount ?? 0,
       fundAssignments: destination.fundAssignments
         .filter((fundAmount) => !isUnassignedFund(fundAmount.fundName))
-        .map((fundAmount) => ({
+        .map((fundAmount, _, assignments) => ({
           fundId: fundAmount.fundId,
-          amount: fundAmount.amount,
+          amount:
+            assignments.length === 1
+              ? (destination.amount ?? 0)
+              : fundAmount.amount,
         })),
     })),
   };

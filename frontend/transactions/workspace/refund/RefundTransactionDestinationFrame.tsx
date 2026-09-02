@@ -47,6 +47,7 @@ const RefundTransactionDestinationFrame = function ({
         label="Destination Account"
         accountFilter={filter}
         balanceChange={amount}
+        inset
       />
     </TransactionSourceOrDestinationFrame>
   );

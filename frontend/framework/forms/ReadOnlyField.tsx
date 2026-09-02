@@ -1,5 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import type { JSX, ReactNode } from "react";
+import type { SxProps, Theme } from "@mui/material/styles";
 
 /**
  * Props for the ReadOnlyField component.
@@ -8,6 +9,7 @@ interface ReadOnlyFieldProps {
   readonly label: string;
   readonly value: ReactNode;
   readonly emptyValue?: ReactNode;
+  readonly sx?: Exclude<SxProps<Theme>, readonly unknown[]>;
 }
 
 /**
@@ -17,6 +19,7 @@ const ReadOnlyField = function ({
   label,
   value,
   emptyValue = "—",
+  sx,
 }: ReadOnlyFieldProps): JSX.Element {
   const displayValue =
     value === null || typeof value === "undefined" || value === ""
@@ -24,7 +27,7 @@ const ReadOnlyField = function ({
       : value;
 
   return (
-    <Box sx={{ minWidth: 0, py: 0.75 }}>
+    <Box sx={[{ minWidth: 0, py: 0.75 }, ...(sx === undefined ? [] : [sx])]}>
       <Typography
         component="div"
         variant="caption"
