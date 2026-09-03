@@ -78,10 +78,10 @@ public sealed class MultiDestinationAccountTransactionTests
     }
 
     /// <summary>
-    /// Prevents closing an Accounting Period until every affected Account has posted its transaction effect.
+    /// Allows closing an Accounting Period before every affected Account has posted, then accepts the delayed posting.
     /// </summary>
     [Fact]
-    public async Task CloseAsyncRequiresEveryAffectedAccountToPost()
+    public async Task CloseAsyncAllowsDelayedPostingOfRemainingAccountEffects()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountHandle source = await test.Accounts.Onboard("Source").WithOpeningBalance(100m).CreateAsync();
@@ -99,12 +99,10 @@ public sealed class MultiDestinationAccountTransactionTests
         TransactionHandle transaction = new(created.Id);
 
         await test.Transactions.PostAsync(transaction, source, new DateOnly(2026, 7, 15));
-        using HttpResponseMessage partiallyPostedClose = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/close", new { });
+        using HttpResponseMessage close = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/close", new { });
 
         await test.Transactions.PostAsync(transaction, destination, new DateOnly(2026, 7, 15));
-        using HttpResponseMessage fullyPostedClose = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/close", new { });
 
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, partiallyPostedClose.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, fullyPostedClose.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, close.StatusCode);
     }
 }

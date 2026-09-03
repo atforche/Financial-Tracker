@@ -251,11 +251,6 @@ public class AccountingPeriodService(
         {
             exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "This Accounting Period is already closed."));
         }
-        if (transactionRepository.GetAllByAccountingPeriod(accountingPeriod.Id).Any(transaction =>
-            transaction.GetAllAffectedAccountIds().Any(accountId => transaction.GetPostedDateForAccount(accountId) == null)))
-        {
-            exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "There are unposted transactions in this Accounting Period."));
-        }
         if (accountingPeriodRepository.GetAllOpenPeriods().Any(openPeriod => openPeriod.PeriodStartDate < accountingPeriod.PeriodStartDate))
         {
             exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "An earlier Accounting Period is still open."));
