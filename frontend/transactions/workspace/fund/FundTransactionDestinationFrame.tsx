@@ -1,3 +1,4 @@
+import { Box, Stack } from "@mui/material";
 import type {
   Fund,
   FundBalanceEventDraft,
@@ -20,10 +21,10 @@ interface FundTransactionDestinationFrameProps {
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly filter?: ((fund: Fund) => boolean) | null;
-  readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
   readonly color?: FrameColor;
   readonly readOnly?: boolean;
+  readonly autoFocus?: boolean;
 }
 
 /**
@@ -37,31 +38,40 @@ const FundTransactionDestinationFrame = function ({
   amount,
   setAmount,
   filter = null,
-  onAdd = null,
   onRemove = null,
   color = "info",
   readOnly = false,
+  autoFocus = false,
 }: FundTransactionDestinationFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
-      onAdd={readOnly ? null : onAdd}
       onRemove={readOnly ? null : onRemove}
       color={color}
     >
-      <FundBalanceEventFrame
-        funds={funds}
-        fund={fund}
-        setFund={readOnly ? null : setFund}
-        fundFilter={filter}
-        label="Destination Fund"
-        balanceChange={amount}
-      />
-      <CurrencyEntryField
-        label="Destination Amount"
-        value={amount}
-        setValue={readOnly ? null : setAmount}
-      />
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        alignItems={{ xs: "stretch", sm: "flex-start" }}
+      >
+        <Box sx={{ flex: { sm: "1 1 auto" }, minWidth: 0 }}>
+          <FundBalanceEventFrame
+            funds={funds}
+            fund={fund}
+            setFund={readOnly ? null : setFund}
+            fundFilter={filter}
+            label="Destination Fund"
+            balanceChange={amount}
+            autoFocus={autoFocus}
+          />
+        </Box>
+        <CurrencyEntryField
+          label="Destination Amount"
+          value={amount}
+          setValue={readOnly ? null : setAmount}
+          sx={{ width: { xs: "100%", sm: 220 } }}
+        />
+      </Stack>
     </TransactionSourceOrDestinationFrame>
   );
 };

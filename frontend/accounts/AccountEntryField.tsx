@@ -12,6 +12,7 @@ interface AccountEntryFieldProps {
   readonly setValue: ((newValue: Account | null) => void) | null;
   readonly errorMessage?: string | null;
   readonly filter?: ((account: Account) => boolean) | null;
+  readonly autoFocus?: boolean;
 }
 
 /**
@@ -24,6 +25,7 @@ const AccountEntryField = function ({
   setValue,
   errorMessage = null,
   filter = null,
+  autoFocus = false,
 }: AccountEntryFieldProps): JSX.Element {
   return (
     <ComboBoxEntryField<Account>
@@ -50,6 +52,7 @@ const AccountEntryField = function ({
             }
       }
       errorMessage={errorMessage}
+      autoFocus={autoFocus}
     />
   );
 };

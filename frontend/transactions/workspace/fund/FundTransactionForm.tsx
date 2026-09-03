@@ -11,6 +11,7 @@ import {
   validateSource,
 } from "@/transactions/workspace/fund/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import CollectionEditor from "@/framework/view/CollectionEditor";
 import type { Dayjs } from "dayjs";
 import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
 import FundTransactionSourceFrame from "@/transactions/workspace/fund/FundTransactionSourceFrame";
@@ -98,13 +99,6 @@ const FundTransactionForm = function <RequestPayload>({
     destinations.map((destination) => destination.amount),
   );
 
-  const addDestination = function (): void {
-    setDestinations((currentDestinations) => [
-      ...currentDestinations,
-      createEmptyDestination(),
-    ]);
-  };
-
   const sourceIsValid = validateSource(source);
 
   return (
@@ -135,8 +129,13 @@ const FundTransactionForm = function <RequestPayload>({
         />
       }
       destinationContent={
-        <>
-          {destinations.map((destination, index) => (
+        <CollectionEditor
+          items={destinations}
+          setItems={setDestinations}
+          createItem={createEmptyDestination}
+          addLabel="Add another destination"
+          canDeleteItem={(_, __, items) => items.length > 1}
+          renderItem={(destination, index, controls) => (
             <FundTransactionDestinationFrame
               key={`fund-destination-${index}`}
               color={
@@ -158,26 +157,16 @@ const FundTransactionForm = function <RequestPayload>({
                   amount: nextAmount,
                 }));
               }}
-              onAdd={index === 0 ? addDestination : null}
               filter={buildDestinationFundFilter(
                 destinations,
                 index,
                 source.fund,
               )}
-              onRemove={
-                destinations.length > 1
-                  ? (): void => {
-                      setDestinations((currentDestinations) =>
-                        currentDestinations.filter(
-                          (_, currentIndex) => currentIndex !== index,
-                        ),
-                      );
-                    }
-                  : null
-              }
+              autoFocus={controls.autoFocus}
+              onRemove={destinations.length > 1 ? controls.onRemove : null}
             />
-          ))}
-        </>
+          )}
+        />
       }
       sourceAmount={destinationTotal}
       destinationAmount={destinationTotal}

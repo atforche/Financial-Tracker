@@ -1,10 +1,10 @@
-import { AddCircleOutline, DeleteOutline } from "@mui/icons-material";
-import { Box, Button, IconButton, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import type { IncomeDeduction, IncomeLine } from "@/transactions/types";
 import type {
   IncomeDeductionDraft,
   IncomeLineDraft,
 } from "@/transactions/workspace/income/helpers";
+import CollectionEditor from "@/framework/view/CollectionEditor";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import InsetFrame from "@/framework/view/InsetFrame";
 import type { JSX } from "react";
@@ -73,8 +73,22 @@ const IncomeTransactionSourceItemFrame = function <
             No items available.
           </Typography>
         </Box>
-      ) : (
-        items.map((item, index) => (
+      ) : null}
+      <CollectionEditor
+        items={items}
+        setItems={setItems ?? ((): void => undefined)}
+        createItem={
+          createEmptyItem ??
+          ((): T => {
+            throw new Error("Cannot create an item in a read-only collection");
+          })
+        }
+        addLabel={addLabel ?? ""}
+        readOnly={!editable}
+        canDeleteItem={(_, index, currentItems) =>
+          allowEmpty || currentItems.length > 1 || index !== 0
+        }
+        renderItem={(item, index, controls) => (
           <InsetFrame
             key={`${title}-${index}`}
             sx={{
@@ -92,6 +106,7 @@ const IncomeTransactionSourceItemFrame = function <
             <StringEntryField
               label="Description"
               value={item.description}
+              autoFocus={controls.autoFocus}
               setValue={
                 editable
                   ? (nextDescription): void => {
@@ -125,39 +140,12 @@ const IncomeTransactionSourceItemFrame = function <
                   pt: { xs: 0, md: 1.25 },
                 }}
               >
-                <IconButton
-                  color="error"
-                  disabled={!allowEmpty && items.length === 1}
-                  onClick={() => {
-                    const nextItems = items.filter(
-                      (_, itemIndex) => itemIndex !== index,
-                    );
-                    if (nextItems.length === 0 && !allowEmpty) {
-                      setItems([createEmptyItem()]);
-                      return;
-                    }
-                    setItems(nextItems);
-                  }}
-                >
-                  <DeleteOutline />
-                </IconButton>
+                {controls.deleteButton}
               </Box>
             ) : null}
           </InsetFrame>
-        ))
-      )}
-      {editable ? (
-        <Button
-          variant="outlined"
-          startIcon={<AddCircleOutline />}
-          onClick={() => {
-            setItems([...items, createEmptyItem()]);
-          }}
-          sx={{ alignSelf: "flex-start" }}
-        >
-          {addLabel}
-        </Button>
-      ) : null}
+        )}
+      />
     </Stack>
   );
 };

@@ -1,14 +1,7 @@
 "use client";
 
-import { AddCircleOutline, DeleteOutline } from "@mui/icons-material";
-import {
-  Box,
-  Button,
-  Divider,
-  IconButton,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Divider, Stack, Typography } from "@mui/material";
+import CollectionEditor from "@/framework/view/CollectionEditor";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import type { ExpectedIncomeSourceRequest } from "@/accounting-periods/types";
@@ -70,461 +63,358 @@ const ExpectedIncomeSourcesEditor = function ({
       {showSourceControls ? (
         <Typography variant="subtitle1">Expected Income Sources</Typography>
       ) : null}
-      {sources.map((source, sourceIndex) => (
-        <Frame
-          key={sourceIndex}
-          title={source.name || "Expected Income Source"}
-          color="info"
-        >
-          <Stack spacing={1.5}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <StringEntryField
-                label="Source Name"
-                value={source.name}
-                setValue={(name) => {
-                  updateSource(sourceIndex, { ...source, name });
+      <CollectionEditor
+        items={sources}
+        setItems={setSources}
+        createItem={emptySource}
+        addLabel="Add Expected Income Source"
+        showAddButton={showSourceControls}
+        showDeleteButton={showSourceControls}
+        renderItem={(source, sourceIndex, sourceControls) => (
+          <Frame
+            key={sourceIndex}
+            title={source.name || "Expected Income Source"}
+            color="info"
+          >
+            <Stack spacing={1.5}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <StringEntryField
+                  label="Source Name"
+                  value={source.name}
+                  setValue={(name) => {
+                    updateSource(sourceIndex, { ...source, name });
+                  }}
+                />
+                {sourceControls.deleteButton}
+              </Stack>
+              <Divider />
+              <Stack spacing={0.25}>
+                <Typography variant="subtitle2">Income Lines</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Add the gross income amounts that make up each expected
+                  payment.
+                </Typography>
+              </Stack>
+              <CollectionEditor
+                items={source.incomeLines}
+                setItems={(incomeLines) => {
+                  updateSource(sourceIndex, { ...source, incomeLines });
                 }}
+                createItem={() => ({ description: "", amount: 0 })}
+                addLabel="Add Income Line"
+                canDeleteItem={(_, __, items) => items.length > 1}
+                itemContainerSx={{
+                  display: "grid",
+                  gap: 1.5,
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    md: "repeat(2, minmax(0, 1fr))",
+                  },
+                }}
+                renderItem={(line, lineIndex, itemControls) => (
+                  <InsetFrame
+                    key={lineIndex}
+                    sx={{
+                      display: "grid",
+                      gap: 1.5,
+                      gridTemplateColumns: {
+                        xs: "1fr",
+                        md: "minmax(0, 1.8fr) minmax(180px, 1fr) auto",
+                      },
+                      alignItems: "start",
+                    }}
+                  >
+                    <StringEntryField
+                      label="Description"
+                      value={line.description}
+                      autoFocus={itemControls.autoFocus}
+                      setValue={(description) => {
+                        const incomeLines = source.incomeLines.map(
+                          (item, index) =>
+                            index === lineIndex
+                              ? { ...item, description }
+                              : item,
+                        );
+                        updateSource(sourceIndex, { ...source, incomeLines });
+                      }}
+                    />
+                    <CurrencyEntryField
+                      label="Amount"
+                      value={line.amount}
+                      setValue={(amount) => {
+                        const incomeLines = source.incomeLines.map(
+                          (item, index) =>
+                            index === lineIndex
+                              ? { ...item, amount: amount ?? 0 }
+                              : item,
+                        );
+                        updateSource(sourceIndex, { ...source, incomeLines });
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: { xs: "flex-end", md: "center" },
+                        pt: { xs: 0, md: 1.25 },
+                      }}
+                    >
+                      {itemControls.deleteButton}
+                    </Box>
+                  </InsetFrame>
+                )}
               />
-              {showSourceControls ? (
-                <IconButton
-                  aria-label="Remove expected income source"
-                  onClick={() => {
-                    setSources(
-                      sources.filter((_, index) => index !== sourceIndex),
-                    );
-                  }}
-                >
-                  <DeleteOutline />
-                </IconButton>
-              ) : null}
-            </Stack>
-            <Divider />
-            <Stack spacing={0.25}>
-              <Typography variant="subtitle2">Income Lines</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Add the gross income amounts that make up each expected payment.
-              </Typography>
-            </Stack>
-            <Box
-              sx={{
-                display: "grid",
-                gap: 1.5,
-                gridTemplateColumns: {
-                  xs: "1fr",
-                  md: "repeat(2, minmax(0, 1fr))",
-                },
-              }}
-            >
-              {source.incomeLines.map((line, lineIndex) => (
-                <InsetFrame
-                  key={lineIndex}
-                  sx={{
-                    display: "grid",
-                    gap: 1.5,
-                    gridTemplateColumns: {
-                      xs: "1fr",
-                      md: "minmax(0, 1.8fr) minmax(180px, 1fr) auto",
-                    },
-                    alignItems: "start",
-                  }}
-                >
-                  <StringEntryField
-                    label="Description"
-                    value={line.description}
-                    setValue={(description) => {
-                      const incomeLines = source.incomeLines.map(
-                        (item, index) =>
-                          index === lineIndex ? { ...item, description } : item,
-                      );
-                      updateSource(sourceIndex, { ...source, incomeLines });
-                    }}
-                  />
-                  <CurrencyEntryField
-                    label="Amount"
-                    value={line.amount}
-                    setValue={(amount) => {
-                      const incomeLines = source.incomeLines.map(
-                        (item, index) =>
-                          index === lineIndex
-                            ? { ...item, amount: amount ?? 0 }
-                            : item,
-                      );
-                      updateSource(sourceIndex, { ...source, incomeLines });
-                    }}
-                  />
-                  <Box
+              <Divider />
+              <Stack spacing={0.25}>
+                <Typography variant="subtitle2">Deductions</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Add optional deductions withheld before the income is
+                  deposited.
+                </Typography>
+              </Stack>
+              <CollectionEditor
+                items={source.incomeDeductions}
+                setItems={(incomeDeductions) => {
+                  updateSource(sourceIndex, { ...source, incomeDeductions });
+                }}
+                createItem={() => ({ description: "", amount: 0 })}
+                addLabel="Add Deduction"
+                itemContainerSx={{
+                  display: "grid",
+                  gap: 1.5,
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    md: "repeat(2, minmax(0, 1fr))",
+                  },
+                }}
+                renderItem={(deduction, deductionIndex, itemControls) => (
+                  <InsetFrame
+                    key={deductionIndex}
                     sx={{
-                      display: "flex",
-                      justifyContent: { xs: "flex-end", md: "center" },
-                      pt: { xs: 0, md: 1.25 },
+                      display: "grid",
+                      gap: 1.5,
+                      gridTemplateColumns: {
+                        xs: "1fr",
+                        md: "minmax(0, 1.8fr) minmax(180px, 1fr) auto",
+                      },
+                      alignItems: "start",
                     }}
                   >
-                    <IconButton
-                      aria-label="Remove income line"
-                      disabled={source.incomeLines.length === 1}
-                      onClick={() => {
+                    <StringEntryField
+                      label="Description"
+                      value={deduction.description}
+                      autoFocus={itemControls.autoFocus}
+                      setValue={(description) => {
+                        const incomeDeductions = source.incomeDeductions.map(
+                          (item, index) =>
+                            index === deductionIndex
+                              ? { ...item, description }
+                              : item,
+                        );
                         updateSource(sourceIndex, {
                           ...source,
-                          incomeLines: source.incomeLines.filter(
-                            (_, index) => index !== lineIndex,
-                          ),
+                          incomeDeductions,
                         });
                       }}
-                      color="error"
+                    />
+                    <CurrencyEntryField
+                      label="Amount"
+                      value={deduction.amount}
+                      setValue={(amount) => {
+                        const incomeDeductions = source.incomeDeductions.map(
+                          (item, index) =>
+                            index === deductionIndex
+                              ? { ...item, amount: amount ?? 0 }
+                              : item,
+                        );
+                        updateSource(sourceIndex, {
+                          ...source,
+                          incomeDeductions,
+                        });
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: { xs: "flex-end", md: "center" },
+                        pt: { xs: 0, md: 1.25 },
+                      }}
                     >
-                      <DeleteOutline />
-                    </IconButton>
-                  </Box>
-                </InsetFrame>
-              ))}
-            </Box>
-            <Button
-              variant="outlined"
-              startIcon={<AddCircleOutline />}
-              sx={{ alignSelf: "flex-start" }}
-              onClick={() => {
-                updateSource(sourceIndex, {
-                  ...source,
-                  incomeLines: [
-                    ...source.incomeLines,
-                    { description: "", amount: 0 },
-                  ],
-                });
-              }}
-            >
-              Add Income Line
-            </Button>
-            <Divider />
-            <Stack spacing={0.25}>
-              <Typography variant="subtitle2">Deductions</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Add optional deductions withheld before the income is deposited.
-              </Typography>
-            </Stack>
-            <Box
-              sx={{
-                display: "grid",
-                gap: 1.5,
-                gridTemplateColumns: {
-                  xs: "1fr",
-                  md: "repeat(2, minmax(0, 1fr))",
-                },
-              }}
-            >
-              {source.incomeDeductions.map((deduction, deductionIndex) => (
-                <InsetFrame
-                  key={deductionIndex}
-                  sx={{
-                    display: "grid",
-                    gap: 1.5,
-                    gridTemplateColumns: {
-                      xs: "1fr",
-                      md: "minmax(0, 1.8fr) minmax(180px, 1fr) auto",
-                    },
-                    alignItems: "start",
-                  }}
-                >
-                  <StringEntryField
-                    label="Description"
-                    value={deduction.description}
-                    setValue={(description) => {
-                      const incomeDeductions = source.incomeDeductions.map(
-                        (item, index) =>
-                          index === deductionIndex
-                            ? { ...item, description }
-                            : item,
-                      );
-                      updateSource(sourceIndex, {
-                        ...source,
-                        incomeDeductions,
-                      });
-                    }}
-                  />
-                  <CurrencyEntryField
-                    label="Amount"
-                    value={deduction.amount}
-                    setValue={(amount) => {
-                      const incomeDeductions = source.incomeDeductions.map(
-                        (item, index) =>
-                          index === deductionIndex
-                            ? { ...item, amount: amount ?? 0 }
-                            : item,
-                      );
-                      updateSource(sourceIndex, {
-                        ...source,
-                        incomeDeductions,
-                      });
-                    }}
-                  />
+                      {itemControls.deleteButton}
+                    </Box>
+                  </InsetFrame>
+                )}
+              />
+              <Divider />
+              <Stack spacing={0.25}>
+                <Typography variant="subtitle2">Untracked Transfers</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Add amounts expected to remain outside tracked accounts.
+                </Typography>
+              </Stack>
+              <CollectionEditor
+                items={source.untrackedTransfers}
+                setItems={(untrackedTransfers) => {
+                  updateSource(sourceIndex, { ...source, untrackedTransfers });
+                }}
+                createItem={() => ({ description: "", amount: 0 })}
+                addLabel="Add Untracked Transfer"
+                itemContainerSx={{
+                  display: "grid",
+                  gap: 1.5,
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    md: "repeat(2, minmax(0, 1fr))",
+                  },
+                }}
+                renderItem={(transfer, transferIndex, itemControls) => (
                   <Box
+                    key={transferIndex}
                     sx={{
-                      display: "flex",
-                      justifyContent: { xs: "flex-end", md: "center" },
-                      pt: { xs: 0, md: 1.25 },
+                      display: "grid",
+                      gap: 1.5,
+                      gridTemplateColumns: {
+                        xs: "1fr",
+                        md: "minmax(0, 1.8fr) minmax(180px, 1fr) auto",
+                      },
+                      alignItems: "start",
+                      border: "1px solid",
+                      borderColor: "divider",
+                      borderRadius: 2,
+                      p: 1.5,
+                      backgroundColor: (theme) =>
+                        alpha(theme.palette.info.main, 0.04),
                     }}
                   >
-                    <IconButton
-                      aria-label="Remove deduction"
-                      onClick={() => {
+                    <StringEntryField
+                      label="Description"
+                      value={transfer.description}
+                      autoFocus={itemControls.autoFocus}
+                      setValue={(description) => {
+                        const untrackedTransfers =
+                          source.untrackedTransfers.map((item, index) =>
+                            index === transferIndex
+                              ? { ...item, description }
+                              : item,
+                          );
                         updateSource(sourceIndex, {
                           ...source,
-                          incomeDeductions: source.incomeDeductions.filter(
-                            (_, index) => index !== deductionIndex,
-                          ),
+                          untrackedTransfers,
                         });
                       }}
-                      color="error"
+                    />
+                    <CurrencyEntryField
+                      label="Amount"
+                      value={transfer.amount}
+                      setValue={(amount) => {
+                        const untrackedTransfers =
+                          source.untrackedTransfers.map((item, index) =>
+                            index === transferIndex
+                              ? { ...item, amount: amount ?? 0 }
+                              : item,
+                          );
+                        updateSource(sourceIndex, {
+                          ...source,
+                          untrackedTransfers,
+                        });
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: { xs: "flex-end", md: "center" },
+                        pt: { xs: 0, md: 1.25 },
+                      }}
                     >
-                      <DeleteOutline />
-                    </IconButton>
+                      {itemControls.deleteButton}
+                    </Box>
                   </Box>
-                </InsetFrame>
-              ))}
-            </Box>
-            <Button
-              variant="outlined"
-              startIcon={<AddCircleOutline />}
-              sx={{ alignSelf: "flex-start" }}
-              onClick={() => {
-                updateSource(sourceIndex, {
-                  ...source,
-                  incomeDeductions: [
-                    ...source.incomeDeductions,
-                    { description: "", amount: 0 },
-                  ],
-                });
-              }}
-            >
-              Add Deduction
-            </Button>
-            <Divider />
-            <Stack spacing={0.25}>
-              <Typography variant="subtitle2">Untracked Transfers</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Add amounts expected to remain outside tracked accounts.
-              </Typography>
-            </Stack>
-            <Box
-              sx={{
-                display: "grid",
-                gap: 1.5,
-                gridTemplateColumns: {
-                  xs: "1fr",
-                  md: "repeat(2, minmax(0, 1fr))",
-                },
-              }}
-            >
-              {source.untrackedTransfers.map((transfer, transferIndex) => (
-                <Box
-                  key={transferIndex}
-                  sx={{
-                    display: "grid",
-                    gap: 1.5,
-                    gridTemplateColumns: {
-                      xs: "1fr",
-                      md: "minmax(0, 1.8fr) minmax(180px, 1fr) auto",
-                    },
-                    alignItems: "start",
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 2,
-                    p: 1.5,
-                    backgroundColor: (theme) =>
-                      alpha(theme.palette.info.main, 0.04),
-                  }}
-                >
-                  <StringEntryField
-                    label="Description"
-                    value={transfer.description}
-                    setValue={(description) => {
-                      const untrackedTransfers = source.untrackedTransfers.map(
-                        (item, index) =>
-                          index === transferIndex
-                            ? { ...item, description }
-                            : item,
-                      );
-                      updateSource(sourceIndex, {
-                        ...source,
-                        untrackedTransfers,
-                      });
-                    }}
-                  />
-                  <CurrencyEntryField
-                    label="Amount"
-                    value={transfer.amount}
-                    setValue={(amount) => {
-                      const untrackedTransfers = source.untrackedTransfers.map(
-                        (item, index) =>
-                          index === transferIndex
-                            ? { ...item, amount: amount ?? 0 }
-                            : item,
-                      );
-                      updateSource(sourceIndex, {
-                        ...source,
-                        untrackedTransfers,
-                      });
-                    }}
-                  />
+                )}
+              />
+              <Divider />
+              <Stack spacing={0.25}>
+                <Typography variant="subtitle2">
+                  Expected Payment Dates
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Add the dates on which this source is expected to pay.
+                </Typography>
+              </Stack>
+              <CollectionEditor
+                items={source.expectedDates}
+                setItems={(expectedDates) => {
+                  updateSource(sourceIndex, { ...source, expectedDates });
+                }}
+                createItem={() => minDate?.format("YYYY-MM-DD") ?? ""}
+                addLabel="Add Expected Date"
+                showAddButton={minDate !== null}
+                itemContainerSx={{
+                  display: "grid",
+                  gap: 1.5,
+                  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                }}
+                renderItem={(date, dateIndex, itemControls) => (
                   <Box
+                    key={dateIndex}
                     sx={{
-                      display: "flex",
-                      justifyContent: { xs: "flex-end", md: "center" },
-                      pt: { xs: 0, md: 1.25 },
+                      display: "grid",
+                      gap: 1.5,
+                      gridTemplateColumns: {
+                        xs: "1fr",
+                        md: "minmax(0, 1fr) auto",
+                      },
+                      alignItems: "start",
+                      border: "1px solid",
+                      borderColor: "divider",
+                      borderRadius: 2,
+                      p: 1.5,
+                      backgroundColor: (theme) =>
+                        alpha(theme.palette.info.main, 0.04),
                     }}
                   >
-                    <IconButton
-                      aria-label="Remove untracked transfer"
-                      onClick={() => {
-                        updateSource(sourceIndex, {
-                          ...source,
-                          untrackedTransfers: source.untrackedTransfers.filter(
-                            (_, index) => index !== transferIndex,
-                          ),
-                        });
+                    <DateEntryField
+                      label="Expected Date"
+                      value={dayjs(date)}
+                      minDate={minDate}
+                      maxDate={maxDate}
+                      autoFocus={itemControls.autoFocus}
+                      setValue={(value) => {
+                        if (value === null) {
+                          updateSource(sourceIndex, {
+                            ...source,
+                            expectedDates: source.expectedDates.filter(
+                              (_, index) => index !== dateIndex,
+                            ),
+                          });
+                          return;
+                        }
+                        if (!value.isValid()) {
+                          return;
+                        }
+                        const expectedDates = source.expectedDates.map(
+                          (item, index) =>
+                            index === dateIndex
+                              ? value.format("YYYY-MM-DD")
+                              : item,
+                        );
+                        updateSource(sourceIndex, { ...source, expectedDates });
                       }}
-                      color="error"
+                    />
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: { xs: "flex-end", md: "center" },
+                        pt: { xs: 0, md: 1.25 },
+                      }}
                     >
-                      <DeleteOutline />
-                    </IconButton>
+                      {itemControls.deleteButton}
+                    </Box>
                   </Box>
-                </Box>
-              ))}
-            </Box>
-            <Button
-              variant="outlined"
-              startIcon={<AddCircleOutline />}
-              sx={{ alignSelf: "flex-start" }}
-              onClick={() => {
-                updateSource(sourceIndex, {
-                  ...source,
-                  untrackedTransfers: [
-                    ...source.untrackedTransfers,
-                    { description: "", amount: 0 },
-                  ],
-                });
-              }}
-            >
-              Add Untracked Transfer
-            </Button>
-            <Divider />
-            <Stack spacing={0.25}>
-              <Typography variant="subtitle2">
-                Expected Payment Dates
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Add the dates on which this source is expected to pay.
-              </Typography>
+                )}
+              />
             </Stack>
-            <Box
-              sx={{
-                display: "grid",
-                gap: 1.5,
-                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-              }}
-            >
-              {source.expectedDates.map((date, dateIndex) => (
-                <Box
-                  key={dateIndex}
-                  sx={{
-                    display: "grid",
-                    gap: 1.5,
-                    gridTemplateColumns: {
-                      xs: "1fr",
-                      md: "minmax(0, 1fr) auto",
-                    },
-                    alignItems: "start",
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 2,
-                    p: 1.5,
-                    backgroundColor: (theme) =>
-                      alpha(theme.palette.info.main, 0.04),
-                  }}
-                >
-                  <DateEntryField
-                    label="Expected Date"
-                    value={dayjs(date)}
-                    minDate={minDate}
-                    maxDate={maxDate}
-                    setValue={(value) => {
-                      if (value === null) {
-                        updateSource(sourceIndex, {
-                          ...source,
-                          expectedDates: source.expectedDates.filter(
-                            (_, index) => index !== dateIndex,
-                          ),
-                        });
-                        return;
-                      }
-                      if (!value.isValid()) {
-                        return;
-                      }
-                      const expectedDates = source.expectedDates.map(
-                        (item, index) =>
-                          index === dateIndex
-                            ? value.format("YYYY-MM-DD")
-                            : item,
-                      );
-                      updateSource(sourceIndex, { ...source, expectedDates });
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: { xs: "flex-end", md: "center" },
-                      pt: { xs: 0, md: 1.25 },
-                    }}
-                  >
-                    <IconButton
-                      aria-label="Remove expected date"
-                      onClick={() => {
-                        updateSource(sourceIndex, {
-                          ...source,
-                          expectedDates: source.expectedDates.filter(
-                            (_, index) => index !== dateIndex,
-                          ),
-                        });
-                      }}
-                      color="error"
-                    >
-                      <DeleteOutline />
-                    </IconButton>
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-            <Button
-              variant="outlined"
-              startIcon={<AddCircleOutline />}
-              sx={{ alignSelf: "flex-start" }}
-              disabled={minDate === null}
-              onClick={() => {
-                updateSource(sourceIndex, {
-                  ...source,
-                  expectedDates: [
-                    ...source.expectedDates,
-                    minDate?.format("YYYY-MM-DD") ?? "",
-                  ],
-                });
-              }}
-            >
-              Add Expected Date
-            </Button>
-          </Stack>
-        </Frame>
-      ))}
-      {showSourceControls ? (
-        <Button
-          variant="outlined"
-          startIcon={<AddCircleOutline />}
-          sx={{ alignSelf: "flex-start" }}
-          onClick={() => {
-            setSources([...sources, emptySource()]);
-          }}
-        >
-          Add Expected Income Source
-        </Button>
-      ) : null}
+          </Frame>
+        )}
+      />
     </Stack>
   );
 };

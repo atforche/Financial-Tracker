@@ -22,6 +22,7 @@ interface FundBalanceEventFrameProps {
   readonly fundFilter?: ((fund: Fund) => boolean) | null;
   readonly label?: string;
   readonly balanceChange?: number | null;
+  readonly autoFocus?: boolean;
 }
 
 const emptyFunds: FundWithBalance[] = [];
@@ -36,6 +37,7 @@ const FundBalanceEventFrame = function ({
   fundFilter = null,
   label = "Fund",
   balanceChange = null,
+  autoFocus = false,
 }: FundBalanceEventFrameProps): JSX.Element {
   const displayedFund = setTransactionFundDraftBalanceChange(
     fund,
@@ -63,6 +65,7 @@ const FundBalanceEventFrame = function ({
               }
         }
         filter={fundFilter}
+        autoFocus={autoFocus}
       />
       <TransactionBalanceDetails
         previousPostedBalance={displayedFund?.previousFundBalance ?? 0}

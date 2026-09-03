@@ -16,7 +16,7 @@ import {
   validateSource,
 } from "@/transactions/workspace/spending/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import AddCollectionItemButton from "@/framework/view/AddCollectionItemButton";
+import CollectionEditor from "@/framework/view/CollectionEditor";
 import type { Dayjs } from "dayjs";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
@@ -118,13 +118,6 @@ const SpendingTransactionForm = function <RequestPayload>({
     destinations.map((destination) => destination.amount),
   );
 
-  const addDestination = function (): void {
-    setDestinations((currentDestinations) => [
-      ...currentDestinations,
-      createEmptyDestination(),
-    ]);
-  };
-
   const setDestinationAccount = function (
     index: number,
     account: AccountBalanceEventDraft | null,
@@ -167,8 +160,13 @@ const SpendingTransactionForm = function <RequestPayload>({
         />
       }
       destinationContent={
-        <>
-          {destinations.map((destination, index) => (
+        <CollectionEditor
+          items={destinations}
+          setItems={setDestinations}
+          createItem={createEmptyDestination}
+          addLabel="Add another destination"
+          canDeleteItem={(_, __, items) => items.length > 1}
+          renderItem={(destination, index, controls) => (
             <SpendingTransactionDestinationFrame
               key={`spending-destination-${index}`}
               color={
@@ -219,24 +217,11 @@ const SpendingTransactionForm = function <RequestPayload>({
                 index,
                 source.account,
               )}
-              onRemove={
-                destinations.length > 1
-                  ? (): void => {
-                      setDestinations((currentDestinations) =>
-                        currentDestinations.filter(
-                          (_, currentIndex) => currentIndex !== index,
-                        ),
-                      );
-                    }
-                  : null
-              }
+              autoFocus={controls.autoFocus}
+              onRemove={destinations.length > 1 ? controls.onRemove : null}
             />
-          ))}
-          <AddCollectionItemButton
-            label="Add another destination"
-            onClick={addDestination}
-          />
-        </>
+          )}
+        />
       }
       showSummary={false}
       submitLabel={submitLabel}

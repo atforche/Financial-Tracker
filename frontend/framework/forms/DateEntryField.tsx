@@ -16,6 +16,7 @@ interface DateEntryFieldProps {
   readonly maxDate?: Dayjs | null;
   readonly disabled?: boolean;
   readonly size?: "small" | "medium";
+  readonly autoFocus?: boolean;
 }
 
 const defaultMinDate = dayjs("1900-01-01");
@@ -33,6 +34,7 @@ const DateEntryField = function ({
   maxDate = null,
   disabled = false,
   size = "medium",
+  autoFocus = false,
 }: DateEntryFieldProps): JSX.Element {
   const [internalErrorMessage, setInternalErrorMessage] = useState<
     string | null
@@ -68,6 +70,7 @@ const DateEntryField = function ({
       slotProps={{
         textField: {
           size,
+          autoFocus,
           error: errorMessage !== null || internalErrorMessage !== null,
           helperText: internalErrorMessage ?? errorMessage,
         },
