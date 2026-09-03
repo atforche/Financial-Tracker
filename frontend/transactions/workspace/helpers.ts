@@ -2,6 +2,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import { buildUrl } from "@/framework/routes/helpers";
+import { compareAccountingPeriods } from "@/accounting-periods/helpers";
 import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import propertyName from "@/framework/data/propertyName";
@@ -12,9 +13,14 @@ import propertyName from "@/framework/data/propertyName";
 const getDefaultAccountingPeriod = function (
   accountingPeriods: AccountingPeriod[],
 ): AccountingPeriod | null {
-  return accountingPeriods.length > 0
-    ? (accountingPeriods[accountingPeriods.length - 1] ?? null)
-    : null;
+  return accountingPeriods.reduce<AccountingPeriod | null>(
+    (latestAccountingPeriod, accountingPeriod) =>
+      latestAccountingPeriod === null ||
+      compareAccountingPeriods(accountingPeriod, latestAccountingPeriod) > 0
+        ? accountingPeriod
+        : latestAccountingPeriod,
+    null,
+  );
 };
 
 /**
