@@ -1,3 +1,4 @@
+using System.Net;
 using Models.Accounts;
 using Models.Funds;
 using Models.Transactions;
@@ -58,7 +59,7 @@ public sealed class MultiDestinationIncomeTransactionTests
     }
 
     /// <summary>
-    /// Propagates only posted destination effects into later Account and Fund period boundaries.
+    /// Propagates delayed posted destination effects into later Account and Fund period boundaries after closure.
     /// </summary>
     [Fact]
     public async Task PartialPostingAsyncPropagatesOnlyPostedDestinationsToLaterPeriods()
@@ -102,11 +103,17 @@ public sealed class MultiDestinationIncomeTransactionTests
         await test.Transactions.PostAsync(transaction, first, new DateOnly(2026, 7, 16));
         await AssertAugustBoundariesAsync(test, july, august, 40m, 40m);
 
+        using HttpResponseMessage close = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/close", new { });
+        Assert.Equal(HttpStatusCode.OK, close.StatusCode);
+
         await test.Transactions.PostAsync(transaction, second, new DateOnly(2026, 7, 17));
         await AssertAugustBoundariesAsync(test, july, august, 100m, 100m);
 
+        using HttpResponseMessage reopen = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/reopen", new { });
         await test.Transactions.UnpostAsync(transaction);
         await AssertAugustBoundariesAsync(test, july, august, 0m, 0m);
+
+        Assert.Equal(HttpStatusCode.OK, reopen.StatusCode);
     }
 
     private static async Task AssertAugustBoundariesAsync(

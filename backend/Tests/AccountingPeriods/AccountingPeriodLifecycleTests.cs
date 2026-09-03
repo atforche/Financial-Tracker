@@ -139,20 +139,21 @@ public sealed class AccountingPeriodLifecycleTests
     }
 
     /// <summary>
-    /// Refuses to close a period containing an unposted transaction.
+    /// Allows a period to close while an existing transaction is awaiting posting.
     /// </summary>
     [Fact]
-    public async Task CloseAsyncRejectsUnpostedTransactions()
+    public async Task CloseAsyncAllowsDelayedPostingOfExistingTransactions()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
-        _ = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(10m).From(cash).To("Market", groceries).CreateAsync();
+        TransactionHandle transaction = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(10m).From(cash).To("Market", groceries).CreateAsync();
 
-        using HttpResponseMessage response = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/close", new { });
+        using HttpResponseMessage close = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/close", new { });
+        await test.Transactions.PostAsync(transaction, cash, new DateOnly(2026, 7, 20));
 
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, close.StatusCode);
     }
 
     /// <summary>
