@@ -27,6 +27,7 @@ interface FundAssignmentPlannerProps {
   readonly updateFund: (index: number, newFund: Fund | null) => void;
   readonly updateAmount: (index: number, newAmount: number | null) => void;
   readonly persistentAssignment?: boolean;
+  readonly singleAssignmentAmountReadOnly?: boolean;
   readonly isAssignmentReadOnly?:
     ((assignment: FundAssignmentDraft) => boolean) | null;
   readonly isAssignmentDeletable?:
@@ -64,6 +65,7 @@ const FundAssignmentPlanner = function ({
   updateFund,
   updateAmount,
   persistentAssignment = false,
+  singleAssignmentAmountReadOnly = false,
   isAssignmentReadOnly = null,
   isAssignmentDeletable = null,
   isFundSelectable = null,
@@ -87,6 +89,8 @@ const FundAssignmentPlanner = function ({
   const availableFundCount = getAvailableFundCount(funds, fundAssignments);
   const hasSinglePersistentAssignment =
     persistentAssignment && explicitFundAssignments.length === 1;
+  const hasSingleAssignmentAmountReadOnly =
+    singleAssignmentAmountReadOnly && explicitFundAssignments.length === 1;
   const assignmentCount = fundAssignments.length;
   const shouldCollapse = readOnly && collapsible && assignmentCount > 1;
 
@@ -181,7 +185,8 @@ const FundAssignmentPlanner = function ({
                     setValue={
                       readOnly ||
                       assignmentReadOnly ||
-                      hasSinglePersistentAssignment
+                      hasSinglePersistentAssignment ||
+                      hasSingleAssignmentAmountReadOnly
                         ? null
                         : (newAmount): void => {
                             updateAmount(index, newAmount);

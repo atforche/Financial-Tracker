@@ -55,11 +55,12 @@ const SpendingFundAssignmentPlanner = function ({
   const unassignedFund = getUnassignedFund(funds);
   const assignmentDirection = assignmentEffect === "refund" ? 1 : -1;
 
+  const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
   useEffect(() => {
     if (
       readOnly ||
       setFundAssignments === null ||
-      getExplicitFundAssignments(fundAssignments).length > 0
+      explicitFundAssignments.length > 0
     ) {
       return;
     }
@@ -72,6 +73,7 @@ const SpendingFundAssignmentPlanner = function ({
       ),
     );
   }, [
+    explicitFundAssignments.length,
     fundAssignments,
     readOnly,
     setFundAssignments,
@@ -79,19 +81,16 @@ const SpendingFundAssignmentPlanner = function ({
     unassignedFund,
   ]);
 
-  const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
   const [singleExplicitAssignment] = explicitFundAssignments;
-  const plannerFundAssignments = readOnly
-    ? explicitFundAssignments
-    : singleExplicitAssignment !== undefined &&
-        explicitFundAssignments.length === 1 &&
-        totalAmountToAssign !== null
-      ? fundAssignments.map((assignment) =>
-          assignment.fundId === singleExplicitAssignment.fundId
-            ? { ...assignment, amount: totalAmountToAssign }
-            : assignment,
-        )
-      : fundAssignments;
+  const plannerFundAssignments =
+    singleExplicitAssignment !== undefined &&
+    explicitFundAssignments.length === 1 &&
+    totalAmountToAssign !== null
+      ? explicitFundAssignments.map((assignment) => ({
+          ...assignment,
+          amount: totalAmountToAssign,
+        }))
+      : explicitFundAssignments;
 
   const sortFunds = function (left: Fund, right: Fund): number {
     return sortFundsByRemainingAmount(left, right, (fundId: string) => {
@@ -231,8 +230,8 @@ const SpendingFundAssignmentPlanner = function ({
       deleteFundAssignment={deleteFundAssignment}
       updateFund={updateFund}
       updateAmount={updateAmount}
-      persistentAssignment
       isFundSelectable={(fund) => fund.id !== unassignedFund?.id}
+      singleAssignmentAmountReadOnly
       collapsible={collapsible}
       fundLabel="Fund Assignment"
       getFundOptionSecondaryLabel={(fund) => {
