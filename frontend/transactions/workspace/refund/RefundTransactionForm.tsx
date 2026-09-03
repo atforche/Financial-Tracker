@@ -12,7 +12,7 @@ import {
 } from "@/transactions/workspace/refund/helpers";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import AddCollectionItemButton from "@/framework/view/AddCollectionItemButton";
+import CollectionEditor from "@/framework/view/CollectionEditor";
 import type { Dayjs } from "dayjs";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
@@ -115,8 +115,13 @@ const RefundTransactionForm = function <RequestPayload>({
       description={description}
       setDescription={setDescription}
       sourceContent={
-        <>
-          {sources.map((source, index) => (
+        <CollectionEditor
+          items={sources}
+          setItems={setSources}
+          createItem={createEmptySource}
+          addLabel="Add another source"
+          canDeleteItem={(_, __, items) => items.length > 1}
+          renderItem={(source, index, controls) => (
             <SpendingTransactionDestinationFrame
               key={`refund-source-${index}`}
               index={index}
@@ -168,24 +173,11 @@ const RefundTransactionForm = function <RequestPayload>({
               entryCaption="Source"
               assignmentEffect="refund"
               color={validateSource(source) ? "info" : "error"}
-              onRemove={
-                sources.length > 1
-                  ? (): void => {
-                      setSources((items) =>
-                        items.filter((_, i) => i !== index),
-                      );
-                    }
-                  : null
-              }
+              autoFocus={controls.autoFocus}
+              onRemove={sources.length > 1 ? controls.onRemove : null}
             />
-          ))}
-          <AddCollectionItemButton
-            label="Add another source"
-            onClick={() => {
-              setSources((items) => [...items, createEmptySource()]);
-            }}
-          />
-        </>
+          )}
+        />
       }
       destinationContent={
         <SpendingTransactionSourceFrame

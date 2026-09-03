@@ -19,6 +19,7 @@ interface CurrencyEntryFieldProps {
   readonly setValue?: ((newValue: number | null) => void) | null;
   readonly errorMessage?: string | null;
   readonly disabled?: boolean;
+  readonly autoFocus?: boolean;
   readonly sx?: Exclude<SxProps<Theme>, readonly unknown[]>;
 }
 
@@ -31,6 +32,7 @@ const CurrencyEntryField = function ({
   setValue = null,
   errorMessage = null,
   disabled = false,
+  autoFocus = false,
   sx,
 }: CurrencyEntryFieldProps): JSX.Element {
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -63,6 +65,7 @@ const CurrencyEntryField = function ({
       variant="outlined"
       value={stringValue}
       disabled={disabled}
+      autoFocus={autoFocus}
       slotProps={{
         input: {
           readOnly: setValue === null,

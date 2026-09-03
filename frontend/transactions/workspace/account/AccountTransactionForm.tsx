@@ -17,6 +17,7 @@ import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
 import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFrame";
 import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFrame";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import CollectionEditor from "@/framework/view/CollectionEditor";
 import type { Dayjs } from "dayjs";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
 import { getCurrencyTotal } from "@/framework/currencyHelpers";
@@ -101,13 +102,6 @@ const AccountTransactionForm = function <RequestPayload>({
     destinations.map((destination) => destination.amount),
   );
 
-  const addDestination = function (): void {
-    setDestinations((currentDestinations) => [
-      ...currentDestinations,
-      createEmptyDestination(),
-    ]);
-  };
-
   const setSourceAccount = function (
     account: AccountBalanceEventDraft | null,
   ): void {
@@ -162,8 +156,13 @@ const AccountTransactionForm = function <RequestPayload>({
         />
       }
       destinationContent={
-        <>
-          {destinations.map((destination, index) => (
+        <CollectionEditor
+          items={destinations}
+          setItems={setDestinations}
+          createItem={createEmptyDestination}
+          addLabel="Add another destination"
+          canDeleteItem={(_, __, items) => items.length > 1}
+          renderItem={(destination, index, controls) => (
             <AccountTransactionDestinationFrame
               key={`account-destination-${index}`}
               color={
@@ -192,27 +191,17 @@ const AccountTransactionForm = function <RequestPayload>({
                   amount: nextAmount,
                 }));
               }}
-              onAdd={index === 0 ? addDestination : null}
               accountFilter={buildDestinationAccountFilter(
                 accounts,
                 destinations,
                 index,
                 source.account,
               )}
-              onRemove={
-                destinations.length > 1
-                  ? (): void => {
-                      setDestinations((currentDestinations) =>
-                        currentDestinations.filter(
-                          (_, currentIndex) => currentIndex !== index,
-                        ),
-                      );
-                    }
-                  : null
-              }
+              autoFocus={controls.autoFocus}
+              onRemove={destinations.length > 1 ? controls.onRemove : null}
             />
-          ))}
-        </>
+          )}
+        />
       }
       sourceAmount={destinationTotal}
       destinationAmount={destinationTotal}

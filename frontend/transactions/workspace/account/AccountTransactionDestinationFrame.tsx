@@ -3,6 +3,7 @@ import type {
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
+import { Box, Stack } from "@mui/material";
 import type { Location, LocationDraft } from "@/locations/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
@@ -27,10 +28,10 @@ interface AccountTransactionDestinationFrameProps {
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly accountFilter?: ((account: Account) => boolean) | null;
-  readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
   readonly color?: FrameColor;
   readonly readOnly?: boolean;
+  readonly autoFocus?: boolean;
 }
 
 /**
@@ -48,38 +49,47 @@ const AccountTransactionDestinationFrame = function ({
   amount,
   setAmount,
   accountFilter = null,
-  onAdd = null,
   onRemove = null,
   color = "info",
   readOnly = false,
+  autoFocus = false,
 }: AccountTransactionDestinationFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
-      onAdd={readOnly ? null : onAdd}
       onRemove={readOnly ? null : onRemove}
       color={color}
     >
-      <TransactionAccountOrLocationFrame
-        accounts={accounts}
-        transaction={transaction}
-        account={account}
-        setAccount={readOnly ? null : setAccount}
-        accountCaption="Account"
-        locationCaption="Location"
-        entryCaption="Destination"
-        locations={locations}
-        location={location}
-        setLocation={readOnly ? null : setLocation}
-        accountFilter={accountFilter}
-        balanceChange={amount}
-        readOnly={readOnly}
-      />
-      <CurrencyEntryField
-        label="Amount"
-        value={amount}
-        setValue={readOnly ? null : setAmount}
-      />
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        alignItems={{ xs: "stretch", sm: "flex-start" }}
+      >
+        <Box sx={{ flex: { sm: "1 1 auto" }, minWidth: 0 }}>
+          <TransactionAccountOrLocationFrame
+            accounts={accounts}
+            transaction={transaction}
+            account={account}
+            setAccount={readOnly ? null : setAccount}
+            accountCaption="Account"
+            locationCaption="Location"
+            entryCaption="Destination"
+            locations={locations}
+            location={location}
+            setLocation={readOnly ? null : setLocation}
+            accountFilter={accountFilter}
+            balanceChange={amount}
+            readOnly={readOnly}
+            autoFocus={autoFocus}
+          />
+        </Box>
+        <CurrencyEntryField
+          label="Amount"
+          value={amount}
+          setValue={readOnly ? null : setAmount}
+          sx={{ width: { xs: "100%", sm: 220 } }}
+        />
+      </Stack>
     </TransactionSourceOrDestinationFrame>
   );
 };

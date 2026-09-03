@@ -1,12 +1,13 @@
-import { AutoFixHigh, DeleteOutline } from "@mui/icons-material";
 import { Box, Collapse, IconButton, Stack, Typography } from "@mui/material";
 import {
   type FundAssignmentDraft,
   getAvailableFundCount,
   getExplicitFundAssignments,
 } from "@/funds/assignmentPlanner/helpers";
-import React, { useEffect, useId, useState } from "react";
-import AddCollectionItemButton from "@/framework/view/AddCollectionItemButton";
+import React, { useId, useState } from "react";
+import { AutoFixHigh } from "@mui/icons-material";
+import CollectionEditor from "@/framework/view/CollectionEditor";
+import CollectionItemDeleteButton from "@/framework/view/CollectionItemDeleteButton";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import type { Fund } from "@/funds/types";
@@ -77,9 +78,6 @@ const FundAssignmentPlanner = function ({
   renderAssignmentControl = null,
   readOnly = false,
 }: FundAssignmentPlannerProps): React.JSX.Element {
-  const [autoFocusAssignmentIndex, setAutoFocusAssignmentIndex] = useState<
-    number | null
-  >(null);
   const [assignmentsExpanded, setAssignmentsExpanded] = useState(false);
   const assignmentsDetailsId = useId();
   const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
@@ -94,21 +92,38 @@ const FundAssignmentPlanner = function ({
   const assignmentCount = fundAssignments.length;
   const shouldCollapse = readOnly && collapsible && assignmentCount > 1;
 
-  useEffect(() => {
-    if (autoFocusAssignmentIndex !== null) {
-      setAutoFocusAssignmentIndex(null);
-    }
-  }, [autoFocusAssignmentIndex]);
-
   const assignmentsContent = (
-    <Stack spacing={2}>
-      {fundAssignments.map((assignment, index) => {
+    <CollectionEditor
+      items={fundAssignments}
+      onAdd={addFundAssignment}
+      onRemove={(_, index) => {
+        deleteFundAssignment(index);
+      }}
+      addLabel="Add another fund assignment"
+      spacing={2}
+      showAddButton={!readOnly && availableFundCount > 0}
+      renderDeleteButton={(onRemove) => (
+        <CollectionItemDeleteButton
+          aria-label="Delete fund assignment"
+          sx={{ width: 32, height: 32, p: 0 }}
+          onClick={onRemove}
+        />
+      )}
+      canDeleteItem={(assignment, index) =>
+        !readOnly &&
+        assignmentCount > 1 &&
+        !(persistentAssignment && index === 0) &&
+        isAssignmentDeletable?.(assignment) !== false
+      }
+      readOnly={readOnly}
+      renderItem={(assignment, index, controls) => {
         const assignmentDetails =
           renderAssignmentDetails?.(assignment, index) ?? null;
         const assignmentReadOnly =
           readOnly || (isAssignmentReadOnly?.(assignment) ?? false);
         const assignmentDeletable =
           !readOnly &&
+          assignmentCount > 1 &&
           !(persistentAssignment && index === 0) &&
           isAssignmentDeletable?.(assignment) !== false;
         const showAutoAssign =
@@ -157,7 +172,7 @@ const FundAssignmentPlanner = function ({
                   }
                   getOptionSecondaryLabel={getFundOptionSecondaryLabel}
                   sortComparator={sortFunds}
-                  autoFocus={autoFocusAssignmentIndex === index}
+                  autoFocus={controls.autoFocus}
                 />
               </Box>
               <Box
@@ -211,16 +226,7 @@ const FundAssignmentPlanner = function ({
                   </IconButton>
                 ) : null}
                 {assignmentDeletable ? (
-                  <IconButton
-                    aria-label="Delete fund assignment"
-                    size="small"
-                    sx={{ width: 32, height: 32, p: 0 }}
-                    onClick={() => {
-                      deleteFundAssignment(index);
-                    }}
-                  >
-                    <DeleteOutline />
-                  </IconButton>
+                  controls.deleteButton
                 ) : !readOnly && index === 0 && !showAutoAssign ? (
                   <Box
                     aria-hidden="true"
@@ -241,8 +247,8 @@ const FundAssignmentPlanner = function ({
             </Box>
           </InsetFrame>
         );
-      })}
-    </Stack>
+      }}
+    />
   );
 
   return (
@@ -287,15 +293,6 @@ const FundAssignmentPlanner = function ({
         </InsetFrame>
       ) : (
         assignmentsContent
-      )}
-      {readOnly || availableFundCount === 0 ? null : (
-        <AddCollectionItemButton
-          label="Add another fund assignment"
-          onClick={() => {
-            setAutoFocusAssignmentIndex(fundAssignments.length);
-            addFundAssignment();
-          }}
-        />
       )}
     </Stack>
   );

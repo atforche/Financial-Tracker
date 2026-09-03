@@ -42,11 +42,11 @@ interface IncomeTransactionDestinationFrameProps {
     ((fundAssignments: FundAssignmentDraft[]) => void) | null;
   readonly baselineFundAssignments?: FundAssignmentDraft[];
   readonly filter?: ((account: Account) => boolean) | null;
-  readonly onAdd?: (() => void) | null;
   readonly onRemove?: (() => void) | null;
   readonly color?: FrameColor;
   readonly fundAssignmentsValid?: boolean;
   readonly readOnly?: boolean;
+  readonly autoFocus?: boolean;
 }
 
 /**
@@ -66,11 +66,11 @@ const IncomeTransactionDestinationFrame = function ({
   setFundAssignments,
   baselineFundAssignments = emptyFundAmounts,
   filter = null,
-  onAdd = null,
   onRemove = null,
   color = "info",
   fundAssignmentsValid = true,
   readOnly = false,
+  autoFocus = false,
 }: IncomeTransactionDestinationFrameProps): JSX.Element {
   const supportsFundAssignments =
     account?.accountType !== null &&
@@ -82,7 +82,6 @@ const IncomeTransactionDestinationFrame = function ({
   return (
     <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
-      onAdd={readOnly ? null : onAdd}
       onRemove={readOnly ? null : onRemove}
       color={fundAssignmentsValid ? color : "error"}
       headerContent={
@@ -111,6 +110,7 @@ const IncomeTransactionDestinationFrame = function ({
             accountFilter={filter}
             label="Deposit Account"
             balanceChange={amount}
+            autoFocus={autoFocus}
           />
         </Box>
         <CurrencyEntryField

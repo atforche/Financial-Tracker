@@ -34,6 +34,7 @@ interface TransactionAccountOrLocationFrameProps {
   readonly accountFilter?: ((account: Account) => boolean) | null;
   readonly balanceChange?: number | null;
   readonly readOnly?: boolean;
+  readonly autoFocus?: boolean;
 }
 
 /**
@@ -53,6 +54,7 @@ const TransactionAccountOrLocationFrame = function ({
   accountFilter = null,
   balanceChange = null,
   readOnly = false,
+  autoFocus = false,
 }: TransactionAccountOrLocationFrameProps): JSX.Element {
   const contextLocations = useLocations();
   const availableLocations = locations ?? contextLocations;
@@ -168,6 +170,7 @@ const TransactionAccountOrLocationFrame = function ({
       label={entryCaption}
       options={destinationOptions}
       value={selectedDestination}
+      autoFocus={autoFocus}
       setValue={(newValue): void => {
         setDestination(newValue?.value ?? null);
       }}

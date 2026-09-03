@@ -52,6 +52,7 @@ interface SpendingTransactionDestinationFrameProps {
   readonly color?: FrameColor;
   readonly fundAssignmentsValid?: boolean;
   readonly readOnly?: boolean;
+  readonly autoFocus?: boolean;
 }
 
 const emptyFundAssignments: FundAssignmentDraft[] = [];
@@ -85,6 +86,7 @@ const SpendingTransactionDestinationFrame = function ({
   color = "info",
   fundAssignmentsValid = true,
   readOnly = false,
+  autoFocus = false,
 }: SpendingTransactionDestinationFrameProps): JSX.Element {
   const assignedAmount = getAssignedFundAmount(fundAssignments);
   const remainingAmount = getRemainingFundAmount(amount, fundAssignments);
@@ -124,6 +126,7 @@ const SpendingTransactionDestinationFrame = function ({
             accountFilter={filter}
             balanceChange={amount}
             readOnly={readOnly}
+            autoFocus={autoFocus}
           />
         </Box>
         <CurrencyEntryField

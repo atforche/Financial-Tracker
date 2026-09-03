@@ -43,6 +43,7 @@ interface AccountBalanceEventFrameProps {
   readonly label?: string;
   readonly balanceChange?: number | null;
   readonly showAccountEntry?: boolean;
+  readonly autoFocus?: boolean;
   readonly sx?: SxProps<Theme>;
 }
 
@@ -60,6 +61,7 @@ const AccountBalanceEventFrame = function ({
   label = "Account",
   balanceChange = null,
   showAccountEntry = true,
+  autoFocus = false,
   sx,
 }: AccountBalanceEventFrameProps): JSX.Element {
   const canWrite = useWriteAccess();
@@ -192,6 +194,7 @@ const AccountBalanceEventFrame = function ({
             }
       }
       filter={accountFilter}
+      autoFocus={autoFocus}
     />
   );
 
