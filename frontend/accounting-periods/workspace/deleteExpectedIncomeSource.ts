@@ -1,40 +1,35 @@
 "use server";
 
-import type { ExpectedIncomeSourceRequest } from "@/accounting-periods/types";
 import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import mapApiValidationError from "@/framework/forms/mapApiValidationError";
 import { revalidatePath } from "next/cache";
 
-/**
- * State returned by the updateExpectedIncomeSources action.
- */
 interface ActionState {
   readonly success?: boolean;
   readonly errorTitle?: string | null;
   readonly unmappedErrors?: string | null;
 }
 
-/**
- * Payload for the updateExpectedIncomeSources action.
- */
 interface ActionPayload {
   readonly accountingPeriodId: string;
+  readonly expectedIncomeSourceId: string;
   readonly redirectUrl: string;
-  readonly sources: ExpectedIncomeSourceRequest[];
 }
 
 /**
- * Updates expected-income sources for an open Accounting Period.
+ * Deletes one expected-income source from an open Accounting Period.
  */
-const updateExpectedIncomeSources = async function (
+const deleteExpectedIncomeSource = async function (
   _: ActionState,
-  { accountingPeriodId, redirectUrl, sources }: ActionPayload,
+  { accountingPeriodId, expectedIncomeSourceId, redirectUrl }: ActionPayload,
 ): Promise<ActionState> {
   const client = await createApiClient();
-  const { error } = await client.POST(
-    "/accounting-periods/{accountingPeriodId}/expected-income-sources",
-    { params: { path: { accountingPeriodId } }, body: sources },
+  const { error } = await client.DELETE(
+    "/accounting-periods/{accountingPeriodId}/expected-income-sources/{expectedIncomeSourceId}",
+    {
+      params: { path: { accountingPeriodId, expectedIncomeSourceId } },
+    },
   );
   if (error) {
     if (isApiError(error)) {
@@ -46,4 +41,4 @@ const updateExpectedIncomeSources = async function (
   return { success: true };
 };
 
-export default updateExpectedIncomeSources;
+export default deleteExpectedIncomeSource;

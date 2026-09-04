@@ -21,7 +21,7 @@ import Frame from "@/framework/view/Frame";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import TransactionWorkspacePageHeader from "@/transactions/workspace/TransactionWorkspacePageHeader";
-import updateExpectedIncomeSources from "@/accounting-periods/workspace/updateExpectedIncomeSources";
+import saveExpectedIncomeSource from "@/accounting-periods/workspace/saveExpectedIncomeSource";
 import { useRouter } from "next/navigation";
 
 /**
@@ -78,32 +78,20 @@ const ExpectedIncomeSourceForm = function ({
   const [draft, setDraft] = useState<ExpectedIncomeSourceRequest>(() =>
     source ? toRequest(source) : emptySource(),
   );
-  const [state, action, pending] = useActionState(
-    updateExpectedIncomeSources,
-    {},
-  );
+  const [state, action, pending] = useActionState(saveExpectedIncomeSource, {});
   useEffect(() => {
     if (state.success === true) {
       router.replace(redirectUrl, { scroll: false });
     }
   }, [redirectUrl, router, state.success]);
   const save = (): void => {
-    const existing = accountingPeriod.expectedIncomeSources.map(toRequest);
-    const sourceIndex = source
-      ? accountingPeriod.expectedIncomeSources.findIndex(
-          (item) => item.id === source.id,
-        )
-      : -1;
-    const sources =
-      mode === "add"
-        ? [...existing, draft]
-        : mode === "change"
-          ? existing.map((item, index) =>
-              index === sourceIndex ? draft : item,
-            )
-          : existing.filter((_, index) => index !== sourceIndex);
     startTransition(() => {
-      action({ accountingPeriodId: accountingPeriod.id, redirectUrl, sources });
+      action({
+        accountingPeriodId: accountingPeriod.id,
+        ...(source === undefined ? {} : { expectedIncomeSourceId: source.id }),
+        redirectUrl,
+        source: draft,
+      });
     });
   };
   const actionLabel =
@@ -138,13 +126,10 @@ const ExpectedIncomeSourceForm = function ({
           ) : (
             <>
               <ExpectedIncomeSourcesEditor
-                sources={[draft]}
-                setSources={(sources) => {
-                  setDraft(sources[0] ?? emptySource());
-                }}
+                source={draft}
+                setSource={setDraft}
                 year={accountingPeriod.year}
                 month={accountingPeriod.month}
-                showSourceControls={false}
               />
               <Frame title="Calculated Totals" color="info">
                 <ResponsiveGrid columns={{ xs: 1, sm: 3 }} spacing={2}>
