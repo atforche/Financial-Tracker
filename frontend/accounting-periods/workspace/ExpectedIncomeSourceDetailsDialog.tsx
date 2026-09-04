@@ -25,7 +25,6 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 interface ExpectedIncomeSourceDetailsDialogProps {
   readonly source: ExpectedIncomeSource;
   readonly accountingPeriodId: string;
-  readonly existingSources: ExpectedIncomeSource[];
   readonly canManage: boolean;
   readonly backHref: string;
   readonly editHref: string;
@@ -37,7 +36,6 @@ interface ExpectedIncomeSourceDetailsDialogProps {
 const ExpectedIncomeSourceDetailsDialog = function ({
   source,
   accountingPeriodId,
-  existingSources,
   canManage,
   backHref,
   editHref,
@@ -243,7 +241,6 @@ const ExpectedIncomeSourceDetailsDialog = function ({
       <ExpectedIncomeSourceDeleteDialog
         source={source}
         accountingPeriodId={accountingPeriodId}
-        existingSources={existingSources}
         redirectUrl={backHref}
         open={deleteOpen}
         onClose={() => {

@@ -1,40 +1,22 @@
 "use client";
 
 import { Button, Stack, Typography } from "@mui/material";
-import type {
-  ExpectedIncomeSource,
-  ExpectedIncomeSourceRequest,
-} from "@/accounting-periods/types";
 import { type JSX, startTransition, useActionState, useEffect } from "react";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import updateExpectedIncomeSources from "@/accounting-periods/workspace/updateExpectedIncomeSources";
+import deleteExpectedIncomeSource from "@/accounting-periods/workspace/deleteExpectedIncomeSource";
 import { useRouter } from "next/navigation";
 
 /**
  * Props for the ExpectedIncomeSourceDeleteDialog component.
  */
 interface ExpectedIncomeSourceDeleteDialogProps {
-  readonly source: ExpectedIncomeSource;
+  readonly source: Readonly<{ id: string; name: string }>;
   readonly accountingPeriodId: string;
-  readonly existingSources: ExpectedIncomeSource[];
   readonly redirectUrl: string;
   readonly open: boolean;
   readonly onClose: () => void;
 }
-
-/**
- * Converts the provided expected income source into a request.
- */
-const toRequest = (
-  source: ExpectedIncomeSource,
-): ExpectedIncomeSourceRequest => ({
-  name: source.name,
-  incomeLines: source.incomeLines,
-  incomeDeductions: source.incomeDeductions,
-  untrackedTransfers: source.untrackedTransfers,
-  expectedDates: source.expectedDates,
-});
 
 /**
  * Confirms and removes an expected-income source.
@@ -42,13 +24,12 @@ const toRequest = (
 const ExpectedIncomeSourceDeleteDialog = function ({
   source,
   accountingPeriodId,
-  existingSources,
   redirectUrl,
   open,
   onClose,
 }: ExpectedIncomeSourceDeleteDialogProps): JSX.Element {
   const [state, action, pending] = useActionState(
-    updateExpectedIncomeSources,
+    deleteExpectedIncomeSource,
     {},
   );
   const router = useRouter();
@@ -80,10 +61,8 @@ const ExpectedIncomeSourceDeleteDialog = function ({
               startTransition(() => {
                 action({
                   accountingPeriodId,
+                  expectedIncomeSourceId: source.id,
                   redirectUrl,
-                  sources: existingSources
-                    .filter((item) => item.id !== source.id)
-                    .map(toRequest),
                 });
               });
             }}
