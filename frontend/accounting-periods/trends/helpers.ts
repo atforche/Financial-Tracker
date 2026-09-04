@@ -70,6 +70,11 @@ const createEmptyTrends = function (): AccountingPeriodsInRange {
       tracked: 0,
       untracked: 0,
     },
+    totalExpectedIncome: {
+      total: 0,
+      tracked: 0,
+      untracked: 0,
+    },
     totalSpending: 0,
   };
 };

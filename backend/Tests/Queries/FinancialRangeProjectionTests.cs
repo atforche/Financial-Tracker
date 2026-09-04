@@ -1,4 +1,5 @@
 using Models.Accounts;
+using Models.AccountingPeriods;
 using Models.Funds;
 using Models.Transactions;
 using Models.Transactions.Create;
@@ -46,6 +47,45 @@ public sealed class FinancialRangeProjectionTests
         Assert.Equal(25m, fund.EndingBalance);
         Assert.Equal(2, accounts.AccountingPeriods.Count);
         Assert.Equal(2, funds.AccountingPeriods.Count);
+    }
+
+    /// <summary>
+    /// Returns expected income totals across every period in the requested range.
+    /// </summary>
+    [Fact]
+    public async Task AccountingPeriodRangeReturnsExpectedIncomeTotals()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+
+        _ = await test.Api.PostAsync<IReadOnlyCollection<ExpectedIncomeSourceRequestModel>, AccountingPeriodWithBalanceModel>(
+            $"/accounting-periods/{july.Id}/expected-income-sources",
+            [new ExpectedIncomeSourceRequestModel
+            {
+                Name = "Employer",
+                IncomeLines = [new CreateIncomeLineModel { Description = "Salary", Amount = 100m }],
+                IncomeDeductions = [],
+                UntrackedTransfers = [new ExpectedUntrackedIncomeTransferRequestModel { Description = "Transfer", Amount = 20m }],
+                ExpectedDates = [new DateOnly(2026, 7, 15)],
+            }]);
+        _ = await test.Api.PostAsync<IReadOnlyCollection<ExpectedIncomeSourceRequestModel>, AccountingPeriodWithBalanceModel>(
+            $"/accounting-periods/{august.Id}/expected-income-sources",
+            [new ExpectedIncomeSourceRequestModel
+            {
+                Name = "Employer",
+                IncomeLines = [new CreateIncomeLineModel { Description = "Salary", Amount = 100m }],
+                IncomeDeductions = [],
+                UntrackedTransfers = [],
+                ExpectedDates = [new DateOnly(2026, 8, 15)],
+            }]);
+
+        AccountingPeriodsInRangeModel range = await test.Api.GetAsync<AccountingPeriodsInRangeModel>(
+            $"/accounting-periods/range?range.start={july.Id}&range.end={august.Id}");
+
+        Assert.Equal(200m, range.TotalExpectedIncome.Total);
+        Assert.Equal(180m, range.TotalExpectedIncome.Tracked);
+        Assert.Equal(20m, range.TotalExpectedIncome.Untracked);
     }
 
     /// <summary>

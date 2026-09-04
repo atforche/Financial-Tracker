@@ -3702,6 +3702,8 @@ export interface components {
             accountingPeriods: components["schemas"]["CollectionModelOfAccountingPeriodWithBalanceModel"];
             /** @description Total income for the requested range. */
             totalIncome: components["schemas"]["IncomeAmountModel"];
+            /** @description Total expected income for the requested range. */
+            totalExpectedIncome: components["schemas"]["IncomeAmountModel"];
             /**
              * Format: double
              * @description Total spending for the requested range.

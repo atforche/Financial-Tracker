@@ -138,6 +138,12 @@ public sealed class AccountingPeriodQueryConverter(
             Tracked = range.TrackedIncome,
             Untracked = range.UntrackedIncome,
         },
+        TotalExpectedIncome = new IncomeAmountModel
+        {
+            Total = range.TotalExpectedIncome,
+            Tracked = range.TrackedExpectedIncome,
+            Untracked = range.UntrackedExpectedIncome,
+        },
         TotalSpending = range.TotalSpending,
     };
 

@@ -16,12 +16,12 @@ import ActualIncomeCard from "@/transactions/ActualIncomeCard";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import ExpectedFundGoalContributionsActualCard from "@/accounting-periods/workspace/ExpectedFundGoalContributionsActualCard";
 import ExpectedIncomeActualCard from "@/accounting-periods/workspace/ExpectedIncomeActualCard";
-import type { IncomeAmount } from "@/transactions/types";
 import IncomeSpendingCard from "@/transactions/IncomeSpendingCard";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
+import { compareAccountingPeriods } from "@/accounting-periods/helpers";
 import createApiClient from "@/framework/data/createApiClient";
 import { createEmptyTrends } from "@/accounting-periods/trends/helpers";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
@@ -79,12 +79,20 @@ const AccountingPeriodTrends = async function ({
   const rowsPerPage = getRowsPerPage(pageSize);
 
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
+  const defaultStartAccountingPeriod =
+    accountingPeriods.items.at(
+      Math.min(11, accountingPeriods.items.length - 1),
+    ) ?? null;
+  const defaultStartAccountingPeriodId =
+    defaultStartAccountingPeriod?.id ?? null;
+  const defaultEndAccountingPeriodId = latestAccountingPeriod?.id ?? null;
   const selectedAccountingPeriodIds = ((): string[] => {
     if (latestAccountingPeriod === null) {
       return [];
     }
-    const startId = startAccountingPeriodId ?? latestAccountingPeriod.id;
-    const endId = endAccountingPeriodId ?? latestAccountingPeriod.id;
+    const startId =
+      startAccountingPeriodId ?? defaultStartAccountingPeriodId ?? "";
+    const endId = endAccountingPeriodId ?? defaultEndAccountingPeriodId ?? "";
     const startIndex = accountingPeriods.items.findIndex(
       (period) => period.id === startId,
     );
@@ -103,8 +111,9 @@ const AccountingPeriodTrends = async function ({
   let trends = createEmptyTrends();
   if (latestAccountingPeriod !== null) {
     const range = {
-      "Range.Start": startAccountingPeriodId ?? latestAccountingPeriod.id,
-      "Range.End": endAccountingPeriodId ?? latestAccountingPeriod.id,
+      "Range.Start":
+        startAccountingPeriodId ?? defaultStartAccountingPeriodId ?? "",
+      "Range.End": endAccountingPeriodId ?? defaultEndAccountingPeriodId ?? "",
     };
     const trendsResponse = await apiClient.GET("/accounting-periods/range", {
       params: {
@@ -122,30 +131,10 @@ const AccountingPeriodTrends = async function ({
     );
   }
   const rangeExpectations = trends.accountingPeriods.items.reduce<{
-    expectedIncome: IncomeAmount;
-    actualIncome: IncomeAmount;
     expectedGoalContributions: number;
     actualGoalContributions: number;
   }>(
     (totals, accountingPeriod) => ({
-      expectedIncome: {
-        total:
-          totals.expectedIncome.total + accountingPeriod.expectedIncome.total,
-        tracked:
-          totals.expectedIncome.tracked +
-          accountingPeriod.expectedIncome.tracked,
-        untracked:
-          totals.expectedIncome.untracked +
-          accountingPeriod.expectedIncome.untracked,
-      },
-      actualIncome: {
-        total: totals.actualIncome.total + accountingPeriod.actualIncome.total,
-        tracked:
-          totals.actualIncome.tracked + accountingPeriod.actualIncome.tracked,
-        untracked:
-          totals.actualIncome.untracked +
-          accountingPeriod.actualIncome.untracked,
-      },
       expectedGoalContributions:
         totals.expectedGoalContributions +
         accountingPeriod.expectedGoalContributions,
@@ -154,12 +143,13 @@ const AccountingPeriodTrends = async function ({
         accountingPeriod.actualGoalContributions,
     }),
     {
-      expectedIncome: { total: 0, tracked: 0, untracked: 0 },
-      actualIncome: { total: 0, tracked: 0, untracked: 0 },
       expectedGoalContributions: 0,
       actualGoalContributions: 0,
     },
   );
+  const chronologicalAccountingPeriods = [
+    ...trends.accountingPeriods.items,
+  ].sort(compareAccountingPeriods);
   const transactionWorkspaceHref =
     selectedAccountingPeriodIds.length === 0
       ? null
@@ -173,9 +163,11 @@ const AccountingPeriodTrends = async function ({
               ? {}
               : {
                   startAccountingPeriodId:
-                    startAccountingPeriodId ?? latestAccountingPeriod.id,
+                    startAccountingPeriodId ??
+                    defaultStartAccountingPeriodId ??
+                    "",
                   endAccountingPeriodId:
-                    endAccountingPeriodId ?? latestAccountingPeriod.id,
+                    endAccountingPeriodId ?? defaultEndAccountingPeriodId ?? "",
                 }),
           }),
         });
@@ -186,12 +178,13 @@ const AccountingPeriodTrends = async function ({
       <ConstrainedContent>
         <AccountingPeriodTrendsFilter
           accountingPeriods={accountingPeriods.items}
-          defaultAccountingPeriodId={latestAccountingPeriod?.id ?? null}
+          defaultStartAccountingPeriodId={defaultStartAccountingPeriodId}
+          defaultEndAccountingPeriodId={defaultEndAccountingPeriodId}
           disabled={latestAccountingPeriod === null}
         />
       </ConstrainedContent>
       <AccountingPeriodTrendsSummaryCards
-        accountingPeriods={trends.accountingPeriods.items}
+        accountingPeriods={chronologicalAccountingPeriods}
       />
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }} spacing={2}>
         <ActualIncomeCard totalIncome={trends.totalIncome} />
@@ -200,8 +193,8 @@ const AccountingPeriodTrends = async function ({
           totalSpending={trends.totalSpending}
         />
         <ExpectedIncomeActualCard
-          expectedIncome={rangeExpectations.expectedIncome}
-          actualIncome={rangeExpectations.actualIncome}
+          expectedIncome={trends.totalExpectedIncome}
+          actualIncome={trends.totalIncome}
         />
         <ExpectedFundGoalContributionsActualCard
           expectedFundGoalContributions={
@@ -214,10 +207,10 @@ const AccountingPeriodTrends = async function ({
       </ResponsiveGrid>
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
         <AccountingPeriodTrendChart
-          accountingPeriods={trends.accountingPeriods.items}
+          accountingPeriods={chronologicalAccountingPeriods}
         />
         <AccountingPeriodTrendsChangeChart
-          accountingPeriods={trends.accountingPeriods.items}
+          accountingPeriods={chronologicalAccountingPeriods}
         />
       </ResponsiveGrid>
       <ResponsiveGrid minimumColumnWidth={800}>

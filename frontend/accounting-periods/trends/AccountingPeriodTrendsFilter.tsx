@@ -15,7 +15,8 @@ import { useSearchParams } from "next/navigation";
  */
 interface AccountingPeriodTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
-  readonly defaultAccountingPeriodId: string | null;
+  readonly defaultStartAccountingPeriodId: string | null;
+  readonly defaultEndAccountingPeriodId: string | null;
   readonly disabled?: boolean;
 }
 
@@ -24,7 +25,8 @@ interface AccountingPeriodTrendsFilterProps {
  */
 const AccountingPeriodTrendsFilter = function ({
   accountingPeriods,
-  defaultAccountingPeriodId,
+  defaultStartAccountingPeriodId,
+  defaultEndAccountingPeriodId,
   disabled = false,
 }: AccountingPeriodTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
@@ -38,18 +40,18 @@ const AccountingPeriodTrendsFilter = function ({
 
   const currentStartAccountingPeriodId =
     searchParams.get(startAccountingPeriodIdParamName) ??
-    defaultAccountingPeriodId ??
+    defaultStartAccountingPeriodId ??
     "";
   const currentEndAccountingPeriodId =
     searchParams.get(endAccountingPeriodIdParamName) ??
-    defaultAccountingPeriodId ??
+    defaultEndAccountingPeriodId ??
     "";
 
   const updateParams = useSearchParamUpdater([pageParamName]);
 
   const hasActiveView =
-    currentStartAccountingPeriodId !== (defaultAccountingPeriodId ?? "") ||
-    currentEndAccountingPeriodId !== (defaultAccountingPeriodId ?? "");
+    currentStartAccountingPeriodId !== (defaultStartAccountingPeriodId ?? "") ||
+    currentEndAccountingPeriodId !== (defaultEndAccountingPeriodId ?? "");
 
   const handleAccountingPeriodRangeChange = function (range: {
     readonly start: string;
@@ -63,9 +65,18 @@ const AccountingPeriodTrendsFilter = function ({
 
   const clearView = function (): void {
     updateParams((params) => {
-      if (defaultAccountingPeriodId !== null) {
-        params.set(startAccountingPeriodIdParamName, defaultAccountingPeriodId);
-        params.set(endAccountingPeriodIdParamName, defaultAccountingPeriodId);
+      if (
+        defaultStartAccountingPeriodId !== null &&
+        defaultEndAccountingPeriodId !== null
+      ) {
+        params.set(
+          startAccountingPeriodIdParamName,
+          defaultStartAccountingPeriodId,
+        );
+        params.set(
+          endAccountingPeriodIdParamName,
+          defaultEndAccountingPeriodId,
+        );
       } else {
         params.delete(startAccountingPeriodIdParamName);
         params.delete(endAccountingPeriodIdParamName);
