@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import subprocess
 from pathlib import Path
 
 from ..core.paths import RepoPaths
@@ -26,9 +27,10 @@ def run_restic(
     password: str | None = None,
     pass_aws_credentials: bool = True,
     *,
+    capture_output: bool = False,
     image: str | None = None,
     runner: Runner | None = None,
-) -> None:
+) -> subprocess.CompletedProcess[str]:
     """Runs Restic in a restricted container with explicitly mounted paths.
 
     A supplied password is placed in the Docker process environment rather than
@@ -81,9 +83,10 @@ def run_restic(
         command.extend(["--volume", f"{source.resolve()}:{destination}{mode}"])
 
     selected_image = image or _default_restic_image()
-    (runner or Runner()).run(
+    return (runner or Runner()).run(
         [*command, selected_image, *arguments],
         env=docker_environment,
+        capture_output=capture_output,
     )
 
 
