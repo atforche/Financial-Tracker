@@ -128,8 +128,9 @@ ft debug restore \
   --aws-profile production-backups
 ```
 
-The command verifies the repository, restores the latest `financial-tracker`
-snapshot, validates and migrates the database using development authentication,
+The command verifies the repository, lets you select a `financial-tracker`
+snapshot from a newest-first list, validates and migrates the database using
+development authentication,
 and atomically replaces `debug/data/database.db`. The Restic password is
 prompted for unless `RESTIC_PASSWORD` is already set. The previous database is
 retained beside it as a rollback copy. AWS credentials are not passed into the
@@ -141,6 +142,8 @@ and [S3 sync documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli
 Because the restored database contains production financial data, keep the debug
 area local and do not expose it through a public or production-authenticated
 endpoint.
+
+For non-interactive use, select a snapshot directly with `--snapshot <id>`.
 
 Then select a launch configuration from
 [`.vscode/launch.json`](.vscode/launch.json):

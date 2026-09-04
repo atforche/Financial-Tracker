@@ -93,7 +93,11 @@ public sealed class AccountingPeriodLifecycleTests
             $"/funds/accounting-period-range?range.start={july.Id}&range.end={august.Id}");
 
         Assert.Equal(140m, Assert.Single(accounts.AccountingPeriods,
+            item => item.AccountingPeriod.Id == july.Id).ClosingBalance.TotalBalance);
+        Assert.Equal(140m, Assert.Single(accounts.AccountingPeriods,
             item => item.AccountingPeriod.Id == august.Id).OpeningBalance.TotalBalance);
+        Assert.Equal(40m, Assert.Single(funds.AccountingPeriods,
+            item => item.AccountingPeriod.Id == july.Id).ClosingBalance.TotalAssignedBalance);
         Assert.Equal(40m, Assert.Single(funds.AccountingPeriods,
             item => item.AccountingPeriod.Id == august.Id).OpeningBalance.TotalAssignedBalance);
     }
@@ -252,6 +256,22 @@ public sealed class AccountingPeriodLifecycleTests
         Assert.Equal("Debt payment", copiedTransfer.Description);
         Assert.Equal(300m, copiedTransfer.Amount);
         Assert.Empty(copied.ExpectedDates);
+
+        AccountingPeriodWithBalanceModel original = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}");
+        ExpectedIncomeSourceModel preserved = Assert.Single(original.ExpectedIncomeSources);
+        Assert.NotEqual(preserved.Id, copied.Id);
+        Assert.Equal("Employer (updated)", preserved.Name);
+        Assert.Equal("Salary", Assert.Single(preserved.IncomeLines).Description);
+        Assert.Equal(1_000m, Assert.Single(preserved.IncomeLines).Amount);
+        Assert.Equal("Tax", Assert.Single(preserved.IncomeDeductions).Description);
+        Assert.Equal(200m, Assert.Single(preserved.IncomeDeductions).Amount);
+        Assert.Equal(800m, preserved.NetAmount.Total);
+        Assert.Equal(500m, preserved.NetAmount.Tracked);
+        Assert.Equal(300m, preserved.NetAmount.Untracked);
+        ExpectedUntrackedIncomeTransferModel preservedTransfer = Assert.Single(preserved.UntrackedTransfers);
+        Assert.Equal("Debt payment", preservedTransfer.Description);
+        Assert.Equal(300m, preservedTransfer.Amount);
+        Assert.Equal(new DateOnly(2026, 7, 20), Assert.Single(preserved.ExpectedDates));
     }
 
     /// <summary>

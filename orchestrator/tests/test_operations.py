@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import json
 import sqlite3
+from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
 from urllib.request import Request
@@ -303,12 +304,16 @@ def test_debug_restore_stages_migrates_and_replaces_database(
     operations.repository = str(repository)
     operations.s3_uri = None
     operations.aws_profile = None
+    operations.snapshot = "selected-snapshot"
     operations.restic_image = "restic-image"
     operations.migrator_image = "migrator-image"
     operations.runner = object()
     monkeypatch.setattr(operations, "get_restic_password", lambda: "restic-secret")
 
+    restic_calls = []
+
     def fake_run_restic(arguments, **kwargs):
+        restic_calls.append(arguments)
         if arguments[0] == "restore":
             restore_directory = kwargs["volumes"][0][0]
             restored_database = restore_directory / "snapshot" / "database.db"
@@ -327,3 +332,75 @@ def test_debug_restore_stages_migrates_and_replaces_database(
     assert database_path.is_file()
     assert database_path.read_bytes() != b"previous database"
     assert list(debug_data.glob("database.db.before-restore-*.bak"))
+    assert restic_calls[1][:2] == ["restore", "selected-snapshot"]
+
+
+def test_debug_restore_lists_snapshots_newest_first(monkeypatch, tmp_path: Path):
+    operations = debug_restore.DebugRestoreOperations.__new__(
+        debug_restore.DebugRestoreOperations
+    )
+    operations.restic_image = "restic-image"
+    operations.runner = object()
+    listing = json.dumps(
+        [
+            {
+                "id": "older-full-id",
+                "short_id": "older-id",
+                "time": "2026-08-01T04:00:00Z",
+                "hostname": "production",
+                "paths": ["/snapshot/database.db"],
+            },
+            {
+                "id": "newer-full-id",
+                "short_id": "newer-id",
+                "time": "2026-09-01T04:00:00Z",
+                "hostname": "production",
+                "paths": ["/snapshot/database.db"],
+            },
+        ]
+    )
+    monkeypatch.setattr(
+        debug_restore,
+        "run_restic",
+        lambda *args, **kwargs: SimpleNamespace(stdout=listing),
+    )
+
+    snapshots = operations.list_snapshots(tmp_path, "restic-secret")
+
+    assert [snapshot.snapshot_id for snapshot in snapshots] == [
+        "newer-full-id",
+        "older-full-id",
+    ]
+
+
+def test_debug_restore_selects_snapshot_by_number(monkeypatch):
+    snapshots = [
+        debug_restore.ResticSnapshot(
+            "september-full-id",
+            "sept-id",
+            "2026-09-01T04:00:00Z",
+            "production",
+            ("/snapshot/database.db",),
+        ),
+        debug_restore.ResticSnapshot(
+            "august-full-id",
+            "aug-id",
+            "2026-08-01T04:00:00Z",
+            "production",
+            ("/snapshot/database.db",),
+        ),
+    ]
+    responses = iter(["not-a-number", "2"])
+    monkeypatch.setattr(debug_restore.sys.stdin, "isatty", lambda: True)
+    monkeypatch.setattr("builtins.input", lambda _prompt: next(responses))
+
+    assert (
+        debug_restore.DebugRestoreOperations.select_snapshot(snapshots)
+        == "august-full-id"
+    )
+
+
+def test_debug_restore_formats_snapshot_time_for_display():
+    assert debug_restore.ResticSnapshot.format_time(
+        datetime(2026, 9, 1, 4, 5, tzinfo=UTC)
+    ) == ("September 1, 2026 at 4:05 AM UTC")

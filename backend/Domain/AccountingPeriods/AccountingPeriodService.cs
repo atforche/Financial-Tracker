@@ -42,9 +42,15 @@ public class AccountingPeriodService(
         accountingPeriod.ReplaceExpectedIncomeSources(previousAccountingPeriod?.ExpectedIncomeSources.Select(source => new ExpectedIncomeSourceRequest
         {
             Name = source.Name,
-            IncomeLines = source.IncomeLines.ToList(),
-            IncomeDeductions = source.IncomeDeductions.ToList(),
-            UntrackedTransfers = source.UntrackedTransfers.ToList(),
+            IncomeLines = source.IncomeLines
+                .Select(line => new IncomeLine(line.Description, line.Amount))
+                .ToList(),
+            IncomeDeductions = source.IncomeDeductions
+                .Select(deduction => new IncomeDeduction(deduction.Description, deduction.Amount))
+                .ToList(),
+            UntrackedTransfers = source.UntrackedTransfers
+                .Select(transfer => new ExpectedUntrackedIncomeTransfer(transfer.Description, transfer.Amount))
+                .ToList(),
             ExpectedDates = [],
         }) ?? []);
         if (previousAccountingPeriod == null && !TryCreateFirstAccountingPeriod(accountingPeriod, out exceptions))

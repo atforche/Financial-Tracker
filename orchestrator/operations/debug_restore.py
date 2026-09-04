@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 import getpass
+import json
 import os
 import shutil
+import sys
 import tempfile
+from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlsplit
 from uuid import uuid4
@@ -19,6 +23,34 @@ from .migrator import run_migrator
 from .restic import run_restic
 
 
+@dataclass(frozen=True)
+class ResticSnapshot:
+    """Restic snapshot details displayed by the interactive selector."""
+
+    snapshot_id: str
+    short_id: str
+    time: str
+    hostname: str
+    paths: tuple[str, ...]
+
+    @staticmethod
+    def format_time(timestamp: datetime) -> str:
+        """Format a snapshot time for concise terminal display."""
+
+        hour = timestamp.strftime("%I").lstrip("0")
+        return (
+            f"{timestamp:%B} {timestamp.day}, {timestamp.year} at "
+            f"{hour}:{timestamp:%M %p %Z}"
+        )
+
+    @property
+    def label(self) -> str:
+        paths = ", ".join(self.paths)
+        timestamp = datetime.fromisoformat(self.time).astimezone()
+        display_time = self.format_time(timestamp)
+        return f"{display_time}  {self.short_id}  {self.hostname}  {paths}"
+
+
 class DebugRestoreOperations:
     """Restore, validate, migrate, and install a debug database."""
 
@@ -27,6 +59,7 @@ class DebugRestoreOperations:
         repository: str | None = None,
         s3_uri: str | None = None,
         aws_profile: str | None = None,
+        snapshot: str | None = None,
         paths: RepoPaths | None = None,
         runner: Runner | None = None,
     ) -> None:
@@ -35,6 +68,7 @@ class DebugRestoreOperations:
         self.repository = repository
         self.s3_uri = s3_uri
         self.aws_profile = aws_profile
+        self.snapshot = snapshot
         toolchain = Toolchain.read(self.paths.toolchain)
         self.restic_image = toolchain.require_image("restic")
         self.migrator_image = toolchain.require_image("migrator")
@@ -78,6 +112,11 @@ class DebugRestoreOperations:
             self.aws_profile = self.aws_profile.strip()
             if not self.aws_profile:
                 raise ValueError("--aws-profile cannot be empty")
+
+        if self.snapshot is not None:
+            self.snapshot = self.snapshot.strip()
+            if not self.snapshot:
+                raise ValueError("--snapshot cannot be empty")
 
         if not self.paths.debug_environment.is_file():
             raise ValueError(
@@ -192,8 +231,61 @@ class DebugRestoreOperations:
             ),
         }
 
+    def list_snapshots(
+        self, repository_path: Path, password: str
+    ) -> list[ResticSnapshot]:
+        """Return available Financial Tracker snapshots, newest first."""
+
+        result = run_restic(
+            ["snapshots", "--tag", BACKUP_TAG, "--json"],
+            repository=repository_path,
+            password=password,
+            pass_aws_credentials=False,
+            capture_output=True,
+            image=self.restic_image,
+            runner=self.runner,
+        )
+        try:
+            payload = json.loads(result.stdout)
+            snapshots = [
+                ResticSnapshot(
+                    snapshot_id=item["id"],
+                    short_id=item["short_id"],
+                    time=item["time"],
+                    hostname=item.get("hostname", ""),
+                    paths=tuple(item.get("paths", [])),
+                )
+                for item in payload
+            ]
+        except (json.JSONDecodeError, KeyError, TypeError) as error:
+            raise RuntimeError("Restic returned an invalid snapshot listing") from error
+        if not snapshots:
+            raise RuntimeError(f"No Restic snapshots tagged {BACKUP_TAG!r} were found")
+        return sorted(snapshots, key=lambda snapshot: snapshot.time, reverse=True)
+
+    @staticmethod
+    def select_snapshot(snapshots: list[ResticSnapshot]) -> str:
+        """Interactively choose a snapshot and return its ID."""
+
+        if not sys.stdin.isatty():
+            raise RuntimeError(
+                "Snapshot selection requires an interactive terminal; use --snapshot <id>"
+            )
+        while True:
+            print("\nAvailable Restic snapshots (newest first):")
+            for index, snapshot in enumerate(snapshots, start=1):
+                print(f"  {index:>2}. {snapshot.label}")
+            response = input("Select a snapshot number or q to cancel: ").strip()
+            if response.casefold() == "q":
+                raise KeyboardInterrupt("Snapshot selection cancelled")
+            if response.isdigit():
+                selected_index = int(response) - 1
+                if 0 <= selected_index < len(snapshots):
+                    return snapshots[selected_index].snapshot_id
+            print("That snapshot number is not available.")
+
     def restore(self) -> None:
-        """Restore and atomically install the latest tagged debug database."""
+        """Select, restore, and atomically install a tagged debug database."""
 
         password = self.get_restic_password()
         with tempfile.TemporaryDirectory(
@@ -204,6 +296,13 @@ class DebugRestoreOperations:
                 repository_path = Path(repository_directory)
             else:
                 repository_path = Path(self.repository)
+
+            snapshot_id = getattr(self, "snapshot", None)
+            if snapshot_id is None:
+                snapshot_id = self.select_snapshot(
+                    self.list_snapshots(repository_path, password)
+                )
+            print(f"Restoring Restic snapshot {snapshot_id}")
 
             with tempfile.TemporaryDirectory(
                 prefix=".financial-tracker-restore-", dir=self.paths.debug_data
@@ -220,7 +319,7 @@ class DebugRestoreOperations:
                 run_restic(
                     [
                         "restore",
-                        "latest",
+                        snapshot_id,
                         "--tag",
                         BACKUP_TAG,
                         "--target",
