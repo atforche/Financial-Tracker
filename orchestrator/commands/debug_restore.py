@@ -13,6 +13,10 @@ def configure(parser: ArgumentParser) -> None:
         "--s3-uri", help="S3 bucket or prefix containing a Restic repository"
     )
     parser.add_argument("--aws-profile", help="AWS CLI profile used for an S3 download")
+    parser.add_argument(
+        "--snapshot",
+        help="Restic snapshot ID to restore without showing the interactive selector",
+    )
 
 
 def run(context: Context, args: Namespace) -> int:
@@ -20,6 +24,7 @@ def run(context: Context, args: Namespace) -> int:
         repository=args.repository,
         s3_uri=args.s3_uri,
         aws_profile=args.aws_profile,
+        snapshot=args.snapshot,
         paths=context.paths,
         runner=context.runner,
     )
