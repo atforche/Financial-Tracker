@@ -403,6 +403,4 @@ def test_debug_restore_selects_snapshot_by_number(monkeypatch):
 def test_debug_restore_formats_snapshot_time_for_display():
     assert debug_restore.ResticSnapshot.format_time(
         datetime(2026, 9, 1, 4, 5, tzinfo=UTC)
-    ) == (
-        "September 1, 2026 at 4:05 AM UTC"
-    )
+    ) == ("September 1, 2026 at 4:05 AM UTC")

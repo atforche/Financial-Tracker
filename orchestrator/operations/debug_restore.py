@@ -260,9 +260,7 @@ class DebugRestoreOperations:
         except (json.JSONDecodeError, KeyError, TypeError) as error:
             raise RuntimeError("Restic returned an invalid snapshot listing") from error
         if not snapshots:
-            raise RuntimeError(
-                f"No Restic snapshots tagged {BACKUP_TAG!r} were found"
-            )
+            raise RuntimeError(f"No Restic snapshots tagged {BACKUP_TAG!r} were found")
         return sorted(snapshots, key=lambda snapshot: snapshot.time, reverse=True)
 
     @staticmethod
