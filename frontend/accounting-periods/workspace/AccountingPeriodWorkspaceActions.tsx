@@ -53,7 +53,6 @@ const AccountingPeriodWorkspaceActions = function ({
     <CreateAccountingPeriodForm
       isInOnboardingMode={isInOnboardingMode}
       latestAccountingPeriod={latestAccountingPeriod}
-      open
       onClose={() => {
         setAction(null);
       }}

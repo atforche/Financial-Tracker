@@ -10,7 +10,6 @@ interface ListFrameMobileRowProps<T> {
   readonly columns: readonly ColumnDefinition<T>[];
   readonly getId: (item: T) => string;
   readonly item: T;
-  readonly isRowSelected?: (item: T) => boolean;
   readonly onRowClick?: (item: T) => void;
 }
 
@@ -86,7 +85,6 @@ const ListFrameMobileValue = function ({
 const ListFrameMobileRow = function <T>({
   columns,
   getId,
-  isRowSelected,
   item,
   onRowClick,
 }: ListFrameMobileRowProps<T>): JSX.Element {
@@ -111,7 +109,6 @@ const ListFrameMobileRow = function <T>({
     (column) => !labeledColumns.includes(column),
   );
   const isClickable = typeof onRowClick === "function";
-  const isSelected = isRowSelected?.(item) ?? false;
   const id = getId(item);
 
   return (
@@ -129,20 +126,12 @@ const ListFrameMobileRow = function <T>({
           onRowClick(item);
         }
       }}
-      sx={[
-        {
-          borderRadius: 2,
-          minWidth: 0,
-          p: 1.5,
-          ...(isClickable ? { cursor: "pointer" } : {}),
-        },
-        isSelected
-          ? {
-              backgroundColor: "action.selected",
-              borderColor: "primary.main",
-            }
-          : false,
-      ]}
+      sx={{
+        borderRadius: 2,
+        minWidth: 0,
+        p: 1.5,
+        ...(isClickable ? { cursor: "pointer" } : {}),
+      }}
     >
       <Stack direction="row" spacing={1} alignItems="flex-start">
         <Box

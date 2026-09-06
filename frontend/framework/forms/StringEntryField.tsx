@@ -10,7 +10,6 @@ interface StringEntryFieldProps {
   readonly value: string | null;
   readonly setValue?: ((newValue: string) => void) | null;
   readonly errorMessage?: string | null;
-  readonly disabled?: boolean;
   readonly autoFocus?: boolean;
 }
 
@@ -22,10 +21,9 @@ const StringEntryField = function ({
   value,
   setValue = null,
   errorMessage = null,
-  disabled = false,
   autoFocus = false,
 }: StringEntryFieldProps): JSX.Element {
-  if (setValue === null && !disabled) {
+  if (setValue === null) {
     return <ReadOnlyField label={label} value={value} />;
   }
 
@@ -34,15 +32,9 @@ const StringEntryField = function ({
       label={label}
       variant="outlined"
       value={value ?? ""}
-      disabled={disabled}
       autoFocus={autoFocus}
-      slotProps={{
-        input: {
-          readOnly: setValue === null,
-        },
-      }}
       onChange={(event) => {
-        setValue?.(event.target.value);
+        setValue(event.target.value);
       }}
       error={errorMessage !== null}
       helperText={errorMessage ?? null}

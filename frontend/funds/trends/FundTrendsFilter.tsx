@@ -32,7 +32,6 @@ interface FundTrendsFilterProps {
   readonly defaultAccountingPeriodId: string | null;
   readonly defaultStartDate: string;
   readonly defaultEndDate: string;
-  readonly disabled?: boolean;
 }
 
 /**
@@ -44,7 +43,6 @@ const FundTrendsFilter = function ({
   defaultAccountingPeriodId,
   defaultStartDate,
   defaultEndDate,
-  disabled = false,
 }: FundTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
@@ -148,7 +146,6 @@ const FundTrendsFilter = function ({
     <PageFilterFrame title="Fund Trends">
       <ToggleButtonSelector
         value={currentMode}
-        disabled={disabled}
         onChange={handleModeChange}
         options={[
           { value: "date", label: "Dates" },
@@ -165,20 +162,17 @@ const FundTrendsFilter = function ({
           startValue={currentStartAccountingPeriodId}
           endValue={currentEndAccountingPeriodId}
           onChange={handleAccountingPeriodRangeChange}
-          disabled={disabled}
         />
       ) : (
         <DateRangeFilter
           value={{ start: currentStartDate, end: currentEndDate }}
           onChange={handleDateRangeChange}
-          disabled={disabled}
         />
       )}
       <FundTrendsFundNameFilter
         availableFundNames={availableFundNames}
         value={currentFundNames}
         onChange={handleFundNameChange}
-        disabled={disabled}
       />
       <Button
         variant="outlined"

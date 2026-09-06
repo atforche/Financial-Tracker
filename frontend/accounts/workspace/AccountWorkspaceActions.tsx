@@ -64,7 +64,6 @@ const AccountWorkspaceActions = function ({
         <CreateAccountForm
           accountingPeriods={accountingPeriods}
           financialInstitutions={financialInstitutions}
-          open
           onClose={() => {
             setAction(null);
           }}
@@ -74,7 +73,6 @@ const AccountWorkspaceActions = function ({
       {isOnboardDialogOpen ? (
         <OnboardAccountForm
           financialInstitutions={financialInstitutions}
-          open
           onClose={() => {
             setAction(null);
           }}

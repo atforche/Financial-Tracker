@@ -20,7 +20,6 @@ interface ExpectedIncomeSourcesEditorProps {
   readonly setSources: (sources: ExpectedIncomeSourceRequest[]) => void;
   readonly year: number | null;
   readonly month: number | null;
-  readonly showSourceControls?: boolean;
 }
 
 /**
@@ -42,7 +41,6 @@ const ExpectedIncomeSourcesEditor = function ({
   setSources,
   year,
   month,
-  showSourceControls = true,
 }: ExpectedIncomeSourcesEditorProps): JSX.Element {
   const updateSource = (
     index: number,
@@ -60,16 +58,13 @@ const ExpectedIncomeSourcesEditor = function ({
 
   return (
     <Stack spacing={1.5}>
-      {showSourceControls ? (
-        <Typography variant="subtitle1">Expected Income Sources</Typography>
-      ) : null}
       <CollectionEditor
         items={sources}
         setItems={setSources}
         createItem={emptySource}
         addLabel="Add Expected Income Source"
-        showAddButton={showSourceControls}
-        showDeleteButton={showSourceControls}
+        showAddButton={false}
+        showDeleteButton={false}
         renderItem={(source, sourceIndex, sourceControls) => (
           <Frame
             key={sourceIndex}

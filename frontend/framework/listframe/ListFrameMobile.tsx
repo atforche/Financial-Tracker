@@ -12,7 +12,6 @@ interface ListFrameMobileProps<T> {
   readonly emptyState: ReactNode;
   readonly getId: (item: T) => string;
   readonly hasLoadingCompleted: boolean;
-  readonly isRowSelected?: (item: T) => boolean;
   readonly onRowClick?: (item: T) => void;
   readonly placeholderRowCount: number;
   readonly desktopBreakpoint: "sm" | "md" | "lg" | "xl";
@@ -27,7 +26,6 @@ const ListFrameMobile = function <T>({
   emptyState,
   getId,
   hasLoadingCompleted,
-  isRowSelected,
   onRowClick,
   placeholderRowCount,
   desktopBreakpoint,
@@ -48,7 +46,6 @@ const ListFrameMobile = function <T>({
           columns={columns}
           getId={getId}
           item={item}
-          {...(isRowSelected === undefined ? {} : { isRowSelected })}
           {...(onRowClick === undefined ? {} : { onRowClick })}
         />
       ))}

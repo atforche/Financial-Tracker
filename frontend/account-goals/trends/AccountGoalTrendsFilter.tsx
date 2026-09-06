@@ -21,7 +21,6 @@ interface AccountGoalTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly availableAccountNames: readonly string[];
   readonly defaultAccountingPeriodId: string | null;
-  readonly disabled?: boolean;
 }
 
 /**
@@ -31,7 +30,6 @@ const AccountGoalTrendsFilter = function ({
   accountingPeriods,
   availableAccountNames,
   defaultAccountingPeriodId,
-  disabled = false,
 }: AccountGoalTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
   const { accountName, startAccountingPeriodId, endAccountingPeriodId } =
@@ -58,7 +56,6 @@ const AccountGoalTrendsFilter = function ({
         accountingPeriods={accountingPeriods}
         startValue={start}
         endValue={end}
-        disabled={disabled}
         onChange={(range: AccountingPeriodRange) => {
           updateParams((params) => {
             params.set(startAccountingPeriodId, range.start);
@@ -69,7 +66,6 @@ const AccountGoalTrendsFilter = function ({
       <AccountNameFilter
         availableAccountNames={availableAccountNames}
         value={currentAccountNames}
-        disabled={disabled}
         onChange={(names) => {
           updateParams((params) => {
             params.delete(accountName);

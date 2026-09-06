@@ -17,14 +17,6 @@ interface FundGoalSetupSectionProps {
   readonly setMinimumEndingBalance: ((value: number) => void) | null;
   readonly maximumEndingBalance: number | null;
   readonly setMaximumEndingBalance: ((value: number | null) => void) | null;
-  readonly errors?: Partial<
-    Record<
-      | "plannedMonthlyContribution"
-      | "minimumEndingBalance"
-      | "maximumEndingBalance",
-      string | null
-    >
-  >;
 }
 
 /**
@@ -39,7 +31,6 @@ const FundGoalSetupSection = function ({
   setMinimumEndingBalance,
   maximumEndingBalance,
   setMaximumEndingBalance,
-  errors,
 }: FundGoalSetupSectionProps): JSX.Element {
   const content = (
     <Stack spacing={2}>
@@ -53,19 +44,18 @@ const FundGoalSetupSection = function ({
                 setMinimumEndingBalance(value ?? 0);
               }
         }
-        errorMessage={errors?.minimumEndingBalance ?? null}
       />
       <GoalAmountOption
         label="Planned Monthly Contribution"
         value={plannedMonthlyContribution}
         setValue={setPlannedMonthlyContribution}
-        errorMessage={errors?.plannedMonthlyContribution ?? null}
+        errorMessage={null}
       />
       <GoalAmountOption
         label="Maximum Ending Balance"
         value={maximumEndingBalance}
         setValue={setMaximumEndingBalance}
-        errorMessage={errors?.maximumEndingBalance ?? null}
+        errorMessage={null}
       />
     </Stack>
   );

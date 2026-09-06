@@ -8,13 +8,9 @@ import type { JSX } from "react";
  * Props for the CreatableComboBoxEntryField component.
  */
 interface CreatableComboBoxEntryFieldProps {
-  readonly label: string;
   readonly options: readonly string[];
   readonly value: string | null;
   readonly setValue?: ((newValue: string | null) => void) | null;
-  readonly errorMessage?: string | null;
-  readonly autoFocus?: boolean;
-  readonly size?: "small" | "medium";
 }
 
 /**
@@ -35,13 +31,9 @@ const sortValues = function (values: readonly string[]): string[] {
  * Presents existing string values with an explicit option to add a new value.
  */
 const CreatableComboBoxEntryField = function ({
-  label,
   options,
   value,
   setValue = null,
-  errorMessage = null,
-  autoFocus = false,
-  size = "medium",
 }: CreatableComboBoxEntryFieldProps): JSX.Element {
   const availableOptions = sortValues(
     value === null ? options : [...options, value],
@@ -59,7 +51,7 @@ const CreatableComboBoxEntryField = function ({
 
   return (
     <ComboBoxEntryField<CreatableValue>
-      label={label}
+      label="Financial Institution"
       options={availableOptions.map((optionValue) => ({
         label: optionValue,
         value: { kind: "existing", value: optionValue },
@@ -72,9 +64,6 @@ const CreatableComboBoxEntryField = function ({
               setValue(newValue?.value?.value ?? null);
             }
       }
-      errorMessage={errorMessage}
-      autoFocus={autoFocus}
-      size={size}
       createOption={(inputValue) => {
         const normalizedValue = inputValue.trim();
         const matchesExistingValue = availableOptions.some(

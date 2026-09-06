@@ -10,7 +10,6 @@ interface AccountEntryFieldProps {
   readonly options: Account[];
   readonly value: Account | null;
   readonly setValue: ((newValue: Account | null) => void) | null;
-  readonly errorMessage?: string | null;
   readonly filter?: ((account: Account) => boolean) | null;
   readonly autoFocus?: boolean;
 }
@@ -23,7 +22,6 @@ const AccountEntryField = function ({
   options,
   value,
   setValue,
-  errorMessage = null,
   filter = null,
   autoFocus = false,
 }: AccountEntryFieldProps): JSX.Element {
@@ -51,7 +49,6 @@ const AccountEntryField = function ({
               setValue(newValue?.value ?? null);
             }
       }
-      errorMessage={errorMessage}
       autoFocus={autoFocus}
     />
   );

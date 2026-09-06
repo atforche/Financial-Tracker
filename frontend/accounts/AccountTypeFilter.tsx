@@ -30,7 +30,6 @@ import { formatAccountType } from "@/accounts/helpers";
 interface AccountTypeFilterProps {
   readonly value: readonly AccountType[];
   readonly onChange: (accountTypes: readonly AccountType[]) => void;
-  readonly disabled?: boolean;
 }
 
 /**
@@ -39,7 +38,6 @@ interface AccountTypeFilterProps {
 const AccountTypeFilter = function ({
   value,
   onChange,
-  disabled = false,
 }: AccountTypeFilterProps): JSX.Element {
   const labelId = useId();
   const handleChange = function (event: SelectChangeEvent<string[]>): void {
@@ -70,7 +68,6 @@ const AccountTypeFilter = function ({
         value={[...value]}
         onChange={handleChange}
         input={<OutlinedInput label="Account types" />}
-        disabled={disabled}
         renderValue={(selected) => formatSelectedAccountTypes(selected)}
       >
         {accountTypeFilterGroups.map((group) => {

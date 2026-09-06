@@ -5,7 +5,6 @@ import Link from "next/link";
 
 interface AccountGoalWorkspacePageHeaderProps {
   readonly backHref: string;
-  readonly title: string;
 }
 
 /**
@@ -13,7 +12,6 @@ interface AccountGoalWorkspacePageHeaderProps {
  */
 const AccountGoalWorkspacePageHeader = function ({
   backHref,
-  title,
 }: AccountGoalWorkspacePageHeaderProps): JSX.Element {
   return (
     <Stack spacing={2.5}>
@@ -25,7 +23,7 @@ const AccountGoalWorkspacePageHeader = function ({
           Back to Workspace
         </Button>
       </Link>
-      <Typography variant="h4">{title}</Typography>
+      <Typography variant="h4">Account Goal Details</Typography>
     </Stack>
   );
 };

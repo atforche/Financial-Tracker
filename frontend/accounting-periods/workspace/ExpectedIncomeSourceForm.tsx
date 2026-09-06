@@ -144,7 +144,6 @@ const ExpectedIncomeSourceForm = function ({
                 }}
                 year={accountingPeriod.year}
                 month={accountingPeriod.month}
-                showSourceControls={false}
               />
               <Frame title="Calculated Totals" color="info">
                 <ResponsiveGrid columns={{ xs: 1, sm: 3 }} spacing={2}>

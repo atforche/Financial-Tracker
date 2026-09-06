@@ -11,7 +11,6 @@ interface FundTrendsFundNameFilterProps {
   readonly availableFundNames: readonly string[];
   readonly value: readonly string[];
   readonly onChange: (fundNames: readonly string[]) => void;
-  readonly disabled?: boolean;
 }
 
 /**
@@ -21,14 +20,13 @@ const FundTrendsFundNameFilter = function ({
   availableFundNames,
   value,
   onChange,
-  disabled = false,
 }: FundTrendsFundNameFilterProps): JSX.Element {
   return (
     <MultiSelectAutocompleteFilter
       label="Fund names"
       options={availableFundNames}
       value={value}
-      disabled={disabled || availableFundNames.length === 0}
+      disabled={availableFundNames.length === 0}
       placeholder="All fund names"
       noOptionsText={
         availableFundNames.length === 0

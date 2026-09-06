@@ -29,7 +29,6 @@ import { useRouter } from "next/navigation";
 interface CreateAccountingPeriodFormProps {
   readonly isInOnboardingMode: boolean;
   readonly latestAccountingPeriod: AccountingPeriodWithBalance | null;
-  readonly open: boolean;
   readonly onClose: () => void;
   readonly redirectUrl: string;
 }
@@ -40,7 +39,6 @@ interface CreateAccountingPeriodFormProps {
 const CreateAccountingPeriodForm = function ({
   isInOnboardingMode,
   latestAccountingPeriod,
-  open,
   onClose,
   redirectUrl,
 }: CreateAccountingPeriodFormProps): JSX.Element {
@@ -84,7 +82,7 @@ const CreateAccountingPeriodForm = function ({
 
   return (
     <Dialog
-      open={open}
+      open
       onClose={pending ? undefined : onClose}
       fullWidth
       maxWidth="sm"
@@ -122,7 +120,6 @@ const CreateAccountingPeriodForm = function ({
         {nextPeriodName === null ? (
           <>
             <IntegerEntryField
-              label="Year"
               value={year}
               setValue={setYear}
               errorMessage={state.yearErrors ?? null}

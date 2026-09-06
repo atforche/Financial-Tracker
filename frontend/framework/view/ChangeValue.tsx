@@ -11,7 +11,6 @@ import type { JSX } from "react";
 interface ChangeValueProps {
   readonly startingValue: number;
   readonly endingValue?: number;
-  readonly change?: number;
 }
 
 /**
@@ -20,11 +19,11 @@ interface ChangeValueProps {
 const ChangeValue = function ({
   startingValue,
   endingValue,
-  change,
 }: ChangeValueProps): JSX.Element {
-  const netChange =
-    change ??
-    getCurrencyDifference(endingValue ?? startingValue, startingValue);
+  const netChange = getCurrencyDifference(
+    endingValue ?? startingValue,
+    startingValue,
+  );
   const percentChange =
     startingValue === 0 ? 0 : (netChange / Math.abs(startingValue)) * 100;
 

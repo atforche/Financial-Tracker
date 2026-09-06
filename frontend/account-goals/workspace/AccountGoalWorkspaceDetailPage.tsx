@@ -79,7 +79,6 @@ const AccountGoalWorkspaceDetailPage = async function ({
     <PageLayout>
       <AccountGoalWorkspacePageHeader
         backHref={returnUrl ?? workspaceUrl}
-        title="Account Goal Details"
       />
       <AccountGoalContextFrame
         accountGoal={accountGoal}

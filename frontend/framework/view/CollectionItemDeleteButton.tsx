@@ -6,7 +6,6 @@ import type { JSX } from "react";
 interface CollectionItemDeleteButtonProps {
   readonly onClick: () => void;
   readonly disabled?: boolean;
-  readonly ariaLabel?: string;
   readonly sx?: SxProps<Theme>;
 }
 
@@ -16,12 +15,11 @@ interface CollectionItemDeleteButtonProps {
 const CollectionItemDeleteButton = function ({
   onClick,
   disabled = false,
-  ariaLabel = "Delete item",
   sx,
 }: CollectionItemDeleteButtonProps): JSX.Element {
   return (
     <IconButton
-      aria-label={ariaLabel}
+      aria-label="Delete item"
       color="error"
       size="small"
       disabled={disabled}

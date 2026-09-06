@@ -26,7 +26,6 @@ interface FundGoalTrendsFilterProps {
   readonly availableFundNames: readonly string[];
   readonly defaultAccountingPeriodId: string | null;
   readonly transactionWorkspaceHref: Route | null;
-  readonly disabled?: boolean;
 }
 
 /**
@@ -37,7 +36,6 @@ const FundGoalTrendsFilter = function ({
   availableFundNames,
   defaultAccountingPeriodId,
   transactionWorkspaceHref,
-  disabled = false,
 }: FundGoalTrendsFilterProps): JSX.Element {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -128,13 +126,11 @@ const FundGoalTrendsFilter = function ({
         startValue={currentStartAccountingPeriodId ?? ""}
         endValue={currentEndAccountingPeriodId ?? ""}
         onChange={handleAccountingPeriodRangeChange}
-        disabled={disabled}
       />
       <FundTrendsFundNameFilter
         availableFundNames={availableFundNames}
         value={currentFundNames}
         onChange={handleFundNameChange}
-        disabled={disabled}
       />
       <Button
         variant="outlined"

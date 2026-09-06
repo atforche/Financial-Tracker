@@ -6,7 +6,6 @@ import { Box } from "@mui/material";
  */
 interface CardResponsiveGridProps {
   readonly children: ReactNode;
-  readonly columns?: number;
   readonly contentSized?: boolean;
   readonly minimumColumnWidth: number;
   readonly wrap?: boolean;
@@ -18,7 +17,6 @@ interface CardResponsiveGridProps {
  */
 const CardResponsiveGrid = function ({
   children,
-  columns,
   contentSized = false,
   minimumColumnWidth,
   wrap = false,
@@ -38,10 +36,7 @@ const CardResponsiveGrid = function ({
           ? undefined
           : {
               xs: "minmax(0, 1fr)",
-              sm:
-                typeof columns === "number"
-                  ? `repeat(${columns}, minmax(${minimumColumnWidth}px, max-content))`
-                  : `repeat(auto-fit, minmax(${minimumColumnWidth}px, max-content))`,
+              sm: `repeat(auto-fit, minmax(${minimumColumnWidth}px, max-content))`,
             },
         "& > *": wrap
           ? {

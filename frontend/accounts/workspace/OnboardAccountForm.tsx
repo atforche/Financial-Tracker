@@ -24,7 +24,6 @@ import { useRouter } from "next/navigation";
  */
 interface OnboardAccountFormProps {
   readonly financialInstitutions: readonly string[];
-  readonly open: boolean;
   readonly onClose: () => void;
   readonly redirectUrl: string;
 }
@@ -33,7 +32,6 @@ interface OnboardAccountFormProps {
  * Displays the account onboarding dialog for the workspace.
  */
 const OnboardAccountForm = function ({
-  open,
   financialInstitutions,
   onClose,
   redirectUrl,
@@ -62,7 +60,7 @@ const OnboardAccountForm = function ({
 
   return (
     <Dialog
-      open={open}
+      open
       onClose={pending ? undefined : onClose}
       fullWidth
       maxWidth="md"
@@ -101,13 +99,11 @@ const OnboardAccountForm = function ({
           errorMessage={state.nameErrors ?? null}
         />
         <CreatableComboBoxEntryField
-          label="Financial Institution"
           options={financialInstitutions}
           value={financialInstitution}
           setValue={setFinancialInstitution}
         />
         <AccountTypeEntryField
-          label="Type"
           value={accountType}
           setValue={setAccountType}
           errorMessage={state.typeErrors ?? null}

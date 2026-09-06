@@ -47,10 +47,8 @@ interface ListFrameProps<T> {
   readonly getId: (item: T) => string;
   readonly data: readonly T[] | null;
   readonly totalCount: number | null;
-  readonly searchParamName?: string;
   readonly pageParamName: string;
   readonly onRowClick?: (item: T) => void;
-  readonly isRowSelected?: (item: T) => boolean;
   readonly hasActiveFilters?: boolean;
   readonly initialEmptyState?: EmptyStateDefinition;
   readonly filteredEmptyState?: EmptyStateDefinition;
@@ -69,20 +67,14 @@ const ListFrame = function <T>({
   getId,
   data,
   totalCount,
-  searchParamName,
   pageParamName,
   onRowClick,
-  isRowSelected,
   hasActiveFilters,
   initialEmptyState,
   filteredEmptyState,
 }: ListFrameProps<T>): JSX.Element {
   const searchParams = useSearchParams();
   const updateParams = useSearchParamUpdater([]);
-  const currentSearch =
-    typeof searchParamName === "string"
-      ? searchParams.get(searchParamName)
-      : null;
   const currentPage = searchParams.get(pageParamName);
   const rowsPerPage = getRowsPerPage(searchParams.get("pageSize"));
   const paginationIndex = getPaginationIndex(
@@ -90,10 +82,7 @@ const ListFrame = function <T>({
     totalCount ?? 0,
     rowsPerPage,
   );
-  const isFiltered =
-    typeof hasActiveFilters === "boolean"
-      ? hasActiveFilters
-      : typeof currentSearch === "string" && currentSearch.trim() !== "";
+  const isFiltered = hasActiveFilters ?? false;
 
   const hasLoadingCompleted = data !== null && totalCount !== null;
   const desktopLayoutSx = {
@@ -158,12 +147,10 @@ const ListFrame = function <T>({
               {hasLoadingCompleted
                 ? data.map((item): JSX.Element => {
                     const isClickable = typeof onRowClick === "function";
-                    const isSelected = isRowSelected?.(item) ?? false;
                     const id = getId(item);
                     return (
                       <TableRow
                         hover
-                        selected={isSelected}
                         tabIndex={isClickable ? 0 : undefined}
                         key={id}
                         onClick={(): void => {
@@ -253,7 +240,6 @@ const ListFrame = function <T>({
           }
           getId={getId}
           hasLoadingCompleted={hasLoadingCompleted}
-          {...(isRowSelected === undefined ? {} : { isRowSelected })}
           {...(onRowClick === undefined ? {} : { onRowClick })}
           placeholderRowCount={
             hasLoadingCompleted ? placeholderRowCount : rowsPerPage

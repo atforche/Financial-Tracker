@@ -8,7 +8,6 @@ import { formatAccountType } from "@/accounts/helpers";
  * Props for the AccountTypeEntryField component.
  */
 interface AccountTypeEntryFieldProps {
-  readonly label: string;
   readonly value: AccountType | null;
   readonly setValue?: ((newValue: AccountType | null) => void) | null;
   readonly errorMessage?: string | null;
@@ -18,14 +17,13 @@ interface AccountTypeEntryFieldProps {
  * Component that presents the user with an entry field where they can select an Account Type.
  */
 const AccountTypeEntryField = function ({
-  label,
   value,
   setValue = null,
   errorMessage = null,
 }: AccountTypeEntryFieldProps): JSX.Element {
   return (
     <ComboBoxEntryField<AccountType>
-      label={label}
+      label="Type"
       options={enumValues(AccountType).map((type) => ({
         label: formatAccountType(type),
         value: type,

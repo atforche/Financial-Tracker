@@ -38,8 +38,6 @@ interface BalanceTrendChartProps {
   readonly headerContent?: ReactNode;
   readonly emptyMessage?: string;
   readonly yAxisLabel?: string;
-  readonly tickFormatter?: (value: number) => string;
-  readonly valueFormatter?: (value: number) => string;
   readonly color?: "primary" | "secondary";
 }
 
@@ -53,8 +51,6 @@ const BalanceTrendChart = function ({
   headerContent,
   emptyMessage = "No balance history is available for the selected trends range.",
   yAxisLabel = "Total Balance",
-  tickFormatter = formatCompactCurrency,
-  valueFormatter = formatCurrency,
   color = "primary",
 }: BalanceTrendChartProps): JSX.Element {
   const gradientId = `balance-trend-fill-${useId().replaceAll(":", "")}`;
@@ -103,7 +99,9 @@ const BalanceTrendChart = function ({
             axisLine={false}
             domain={["auto", "auto"]}
             tick={yAxisTick}
-            tickFormatter={tickFormatter}
+            tickFormatter={(value: number): string =>
+              formatCompactCurrency(value)
+            }
             tickLine={false}
             width="auto"
           />
@@ -117,7 +115,7 @@ const BalanceTrendChart = function ({
               return (
                 <ChartTooltip
                   label={point.tooltipLabel}
-                  value={valueFormatter(point.balance)}
+                  value={formatCurrency(point.balance)}
                   {...(typeof point.description === "string"
                     ? { description: point.description }
                     : {})}

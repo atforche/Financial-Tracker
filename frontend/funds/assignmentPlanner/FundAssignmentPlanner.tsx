@@ -27,7 +27,6 @@ interface FundAssignmentPlannerProps {
   readonly deleteFundAssignment: (index: number) => void;
   readonly updateFund: (index: number, newFund: Fund | null) => void;
   readonly updateAmount: (index: number, newAmount: number | null) => void;
-  readonly persistentAssignment?: boolean;
   readonly singleAssignmentAmountReadOnly?: boolean;
   readonly isAssignmentReadOnly?:
     ((assignment: FundAssignmentDraft) => boolean) | null;
@@ -65,7 +64,6 @@ const FundAssignmentPlanner = function ({
   deleteFundAssignment,
   updateFund,
   updateAmount,
-  persistentAssignment = false,
   singleAssignmentAmountReadOnly = false,
   isAssignmentReadOnly = null,
   isAssignmentDeletable = null,
@@ -85,8 +83,6 @@ const FundAssignmentPlanner = function ({
     explicitFundAssignments.map((assignment) => assignment.fundId),
   );
   const availableFundCount = getAvailableFundCount(funds, fundAssignments);
-  const hasSinglePersistentAssignment =
-    persistentAssignment && explicitFundAssignments.length === 1;
   const hasSingleAssignmentAmountReadOnly =
     singleAssignmentAmountReadOnly && explicitFundAssignments.length === 1;
   const assignmentCount = fundAssignments.length;
@@ -104,15 +100,13 @@ const FundAssignmentPlanner = function ({
       showAddButton={!readOnly && availableFundCount > 0}
       renderDeleteButton={(onRemove) => (
         <CollectionItemDeleteButton
-          aria-label="Delete fund assignment"
           sx={{ width: 32, height: 32, p: 0 }}
           onClick={onRemove}
         />
       )}
-      canDeleteItem={(assignment, index) =>
+      canDeleteItem={(assignment) =>
         !readOnly &&
         assignmentCount > 1 &&
-        !(persistentAssignment && index === 0) &&
         isAssignmentDeletable?.(assignment) !== false
       }
       readOnly={readOnly}
@@ -124,7 +118,6 @@ const FundAssignmentPlanner = function ({
         const assignmentDeletable =
           !readOnly &&
           assignmentCount > 1 &&
-          !(persistentAssignment && index === 0) &&
           isAssignmentDeletable?.(assignment) !== false;
         const showAutoAssign =
           !readOnly && onAutoAssign !== null && index === 0;
@@ -192,15 +185,10 @@ const FundAssignmentPlanner = function ({
                 >
                   <CurrencyEntryField
                     label="Assigned Amount"
-                    value={
-                      hasSinglePersistentAssignment
-                        ? (totalAmountToAssign ?? 0)
-                        : assignment.amount
-                    }
+                    value={assignment.amount}
                     setValue={
                       readOnly ||
                       assignmentReadOnly ||
-                      hasSinglePersistentAssignment ||
                       hasSingleAssignmentAmountReadOnly
                         ? null
                         : (newAmount): void => {

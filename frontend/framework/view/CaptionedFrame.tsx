@@ -1,17 +1,11 @@
 import { Box, Typography } from "@mui/material";
 import type { JSX } from "react";
 
-const defaultMinWidth = 300;
-const defaultMaxWidth = 500;
-
 /**
  * Props for CaptionedFrame component.
  */
 interface CaptionedFrameProps {
   readonly caption: string;
-  readonly minWidth?: number;
-  readonly maxWidth?: number | string | null;
-  readonly width?: number | string;
   readonly children: React.ReactNode;
 }
 
@@ -20,9 +14,6 @@ interface CaptionedFrameProps {
  */
 const CaptionedFrame = function ({
   caption,
-  minWidth = defaultMinWidth,
-  maxWidth = defaultMaxWidth,
-  width,
   children,
 }: CaptionedFrameProps): JSX.Element {
   return (
@@ -33,9 +24,9 @@ const CaptionedFrame = function ({
         borderColor: "divider",
         borderRadius: 3,
         padding: "0 15px 15px",
-        width: width ?? (maxWidth === null ? "fit-content" : undefined),
-        minWidth,
-        maxWidth: maxWidth ?? "fit-content",
+        width: "max-content",
+        minWidth: 0,
+        maxWidth: "100%",
       }}
     >
       <legend>

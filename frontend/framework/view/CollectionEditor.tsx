@@ -28,7 +28,6 @@ interface CollectionEditorProps<T> {
   readonly readOnly?: boolean;
   readonly showAddButton?: boolean;
   readonly showDeleteButton?: boolean;
-  readonly getItemKey?: ((item: T, index: number) => string | number) | null;
   readonly spacing?: number;
   readonly itemContainerSx?: Record<string, unknown>;
 }
@@ -50,7 +49,6 @@ const CollectionEditor = function <T>({
   readOnly = false,
   showAddButton = true,
   showDeleteButton = true,
-  getItemKey = null,
   spacing = 1.5,
   itemContainerSx,
 }: CollectionEditorProps<T>): JSX.Element {
@@ -78,7 +76,7 @@ const CollectionEditor = function <T>({
     };
 
     return (
-      <Fragment key={getItemKey?.(item, index) ?? index}>
+      <Fragment key={index}>
         {renderItem(item, index, {
           autoFocus: index === autoFocusItemIndex,
           onRemove: removeItem,

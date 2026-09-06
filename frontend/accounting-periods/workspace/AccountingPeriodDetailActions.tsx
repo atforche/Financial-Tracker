@@ -58,7 +58,6 @@ const AccountingPeriodDetailActions = function ({
       {dialog === "close" ? (
         <CloseAccountingPeriodForm
           accountingPeriod={accountingPeriod}
-          open
           onClose={() => {
             setDialog(null);
           }}
@@ -68,7 +67,6 @@ const AccountingPeriodDetailActions = function ({
       {dialog === "reopen" ? (
         <ReopenAccountingPeriodForm
           accountingPeriod={accountingPeriod}
-          open
           onClose={() => {
             setDialog(null);
           }}
@@ -78,7 +76,6 @@ const AccountingPeriodDetailActions = function ({
       {dialog === "delete" ? (
         <DeleteAccountingPeriodForm
           accountingPeriod={accountingPeriod}
-          open
           onClose={() => {
             setDialog(null);
           }}

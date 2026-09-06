@@ -36,7 +36,6 @@ import { useRouter } from "next/navigation";
 interface CreateAccountFormProps {
   readonly accountingPeriods: AccountingPeriod[];
   readonly financialInstitutions: readonly string[];
-  readonly open: boolean;
   readonly onClose: () => void;
   readonly redirectUrl: string;
 }
@@ -47,7 +46,6 @@ interface CreateAccountFormProps {
 const CreateAccountForm = function ({
   accountingPeriods,
   financialInstitutions,
-  open,
   onClose,
   redirectUrl,
 }: CreateAccountFormProps): JSX.Element {
@@ -89,7 +87,7 @@ const CreateAccountForm = function ({
 
   return (
     <Dialog
-      open={open}
+      open
       onClose={pending ? undefined : onClose}
       fullWidth
       maxWidth="md"
@@ -128,13 +126,11 @@ const CreateAccountForm = function ({
           errorMessage={state.nameErrors ?? null}
         />
         <CreatableComboBoxEntryField
-          label="Financial Institution"
           options={financialInstitutions}
           value={financialInstitution}
           setValue={setFinancialInstitution}
         />
         <AccountTypeEntryField
-          label="Type"
           value={accountType}
           setValue={setAccountType}
           errorMessage={state.typeErrors ?? null}

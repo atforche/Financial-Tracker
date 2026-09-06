@@ -42,7 +42,6 @@ const TransactionWorkspaceCreatePage = async function ({
         fundGoals={fundGoals}
         locations={locations}
         redirectUrl={workspaceUrl}
-        showHeading={false}
       />
     </PageLayout>
   );

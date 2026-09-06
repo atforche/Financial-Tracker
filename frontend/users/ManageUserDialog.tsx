@@ -23,7 +23,6 @@ interface ManageUserDialogProps {
   readonly activeAdministratorCount: number;
   readonly currentUserId: string;
   readonly onClose: () => void;
-  readonly open: boolean;
   readonly user: User;
 }
 
@@ -34,7 +33,6 @@ const ManageUserDialog = function ({
   activeAdministratorCount,
   currentUserId,
   onClose,
-  open,
   user,
 }: ManageUserDialogProps): JSX.Element {
   const [role, setRole] = useState<UserRole>(user.role);
@@ -58,7 +56,7 @@ const ManageUserDialog = function ({
 
   return (
     <Dialog
-      open={open}
+      open
       onClose={onClose}
       fullWidth
       maxWidth="sm"
