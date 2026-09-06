@@ -74,8 +74,6 @@ public sealed class FundGoalPeriodLifecycleTests
         AccountingPeriodWithBalanceModel period = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}");
         FundGoalAvailabilitySnapshot availability = await test.FundGoalQueries.GetAvailabilityAsync(groceries.Goal);
 
-        Assert.True(progress.AvailableBalance.IsSatisfied);
-        Assert.Equal(40m, progress.AvailableBalance.CurrentBalance);
         Assert.Equal(40m, availability.Posted);
         Assert.Equal(20m, availability.IncludingPending);
         Assert.NotNull(progress.Contribution);

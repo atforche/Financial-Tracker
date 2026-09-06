@@ -13,6 +13,36 @@ namespace Tests.FundGoals;
 public sealed class FundGoalEndpointTests
 {
     /// <summary>
+    /// Defaults new goals and cleared minimums to zero without enabling contributions.
+    /// </summary>
+    [Fact]
+    public async Task DefaultMinimumIsZeroOnCreateAndUpdate()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle fund = await test.Funds.Create("Reserve").In(july).CreateAsync();
+        FundGoalModel created = await test.Api.GetAsync<FundGoalModel>($"/fund-goals/{fund.Goal.Id}");
+        Assert.Equal(0m, created.MinimumEndingBalance);
+
+        _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{fund.Goal.Id}", new UpdateFundGoalModel
+        {
+            MinimumEndingBalance = 100m,
+        });
+        FundGoalModel updated = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{fund.Goal.Id}", new UpdateFundGoalModel
+        {
+            MinimumEndingBalance = null,
+            MaximumEndingBalance = 200m,
+        });
+        FundGoalProgressModel progress = await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{fund.Goal.Id}/progress/{july.Id}");
+
+        Assert.Equal(0m, updated.MinimumEndingBalance);
+        Assert.Equal(200m, updated.MaximumEndingBalance);
+        Assert.Equal(0m, progress.EndingBalance.MinimumBalance);
+        Assert.Equal(FundGoalEndingBalanceStatusModel.WithinRange, progress.EndingBalance.Status);
+        Assert.Null(progress.Contribution);
+    }
+
+    /// <summary>
     /// Persists Fund Goal configuration and exposes it through progress and list projections.
     /// </summary>
     [Fact]

@@ -3956,26 +3956,6 @@ export interface components {
         AccountWithBalanceRangeSortModel: AccountWithBalanceRangeSortModel | null;
         /** @enum {unknown} */
         AccountWithBalanceSortModel: AccountWithBalanceSortModel | null;
-        /** @description Model describing a Fund's available-balance health. */
-        AvailableBalanceProgressModel: {
-            /**
-             * Format: double
-             * @description Gets the current available balance.
-             */
-            currentBalance: number;
-            /**
-             * Format: double
-             * @description Gets the minimum allowed available balance.
-             */
-            minimumBalance: number;
-            /**
-             * Format: double
-             * @description Gets the amount required to restore the minimum allowed balance.
-             */
-            shortfall: number;
-            /** @description Gets whether the available balance is at least zero. */
-            isSatisfied: boolean;
-        };
         /**
          * @description Model representing the type of a balance event.
          * @enum {unknown}
@@ -4863,7 +4843,7 @@ export interface components {
              * Format: double
              * @description Gets the configured minimum ending balance.
              */
-            minimumBalance?: null | number;
+            minimumBalance: number;
             /**
              * Format: double
              * @description Gets the configured maximum ending balance.
@@ -4906,7 +4886,7 @@ export interface components {
              * Format: double
              * @description Gets the minimum ending balance.
              */
-            minimumEndingBalance?: null | number;
+            minimumEndingBalance: number;
             /**
              * Format: double
              * @description Gets the maximum ending balance.
@@ -4915,10 +4895,9 @@ export interface components {
         };
         /** @description Model comparing a Fund's financial state with its Fund Goal. */
         FundGoalProgressModel: {
-            /** @description Gets available-balance health. */
-            availableBalance: components["schemas"]["AvailableBalanceProgressModel"];
             contribution?: null | components["schemas"]["ContributionProgressModel"];
-            endingBalance?: null | components["schemas"]["FundGoalEndingBalanceProgressModel"];
+            /** @description Gets ending-balance progress, with a default minimum of zero. */
+            endingBalance: components["schemas"]["FundGoalEndingBalanceProgressModel"];
         };
         /** @description Model pairing a Fund Goal with its progress for an Accounting Period. */
         FundGoalProgressResultModel: {
@@ -5655,7 +5634,7 @@ export interface components {
             plannedMonthlyContribution?: null | number;
             /**
              * Format: double
-             * @description Gets the new minimum ending balance.
+             * @description Gets the new minimum ending balance. Omitted or null values default to zero.
              */
             minimumEndingBalance?: null | number;
             /**

@@ -33,7 +33,11 @@ const FundGoalProgress = function ({
 }: FundGoalProgressProps): JSX.Element {
   const percent =
     percentOverride ??
-    (target === 0 ? 100 : Math.min(Math.max((current / target) * 100, 0), 100));
+    (target === 0
+      ? satisfied
+        ? 100
+        : 0
+      : Math.min(Math.max((current / target) * 100, 0), 100));
   return (
     <Stack spacing={0.75}>
       <Stack direction="row" justifyContent="space-between" gap={2}>

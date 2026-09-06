@@ -1,4 +1,4 @@
-import { Checkbox, FormControlLabel, Stack, Typography } from "@mui/material";
+import { Checkbox, FormControlLabel, Stack } from "@mui/material";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { JSX } from "react";
 
@@ -7,7 +7,6 @@ import type { JSX } from "react";
  */
 interface FundGoalAmountOptionProps {
   readonly label: string;
-  readonly description: string;
   readonly value: number | null;
   readonly setValue: ((value: number | null) => void) | null;
   readonly errorMessage: string | null;
@@ -18,7 +17,6 @@ interface FundGoalAmountOptionProps {
  */
 const FundGoalAmountOption = function ({
   label,
-  description,
   value,
   setValue,
   errorMessage,
@@ -39,9 +37,6 @@ const FundGoalAmountOption = function ({
         }
         label={label}
       />
-      <Typography variant="body2" color="text.secondary">
-        {description}
-      </Typography>
       <CurrencyEntryField
         label="Amount"
         value={value}

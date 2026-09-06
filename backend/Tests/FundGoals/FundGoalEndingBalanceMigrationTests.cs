@@ -10,6 +10,39 @@ namespace Tests.FundGoals;
 public sealed class FundGoalEndingBalanceMigrationTests
 {
     /// <summary>
+    /// Backfills missing minimums while preserving explicit bounds and optional contributions.
+    /// </summary>
+    [Fact]
+    public async Task MigrationDefaultsMissingMinimumToZero()
+    {
+        await using MigrationTestDatabase database = await MigrationTestDatabase.CreateAsync(
+            "20260831130000_MoveFundGoalContributionsWithFundTransfers");
+        var defaultFundId = Guid.NewGuid();
+        var reserveFundId = Guid.NewGuid();
+        var defaultGoalId = Guid.NewGuid();
+        var reserveGoalId = Guid.NewGuid();
+        await database.ExecuteAsync(
+            """
+            INSERT INTO "Funds" ("Id", "Name", "Description", "OpeningAccountingPeriodId", "OnboardedBalance") VALUES
+                ({0}, 'Default fund', '', NULL, 0),
+                ({1}, 'Reserve fund', '', NULL, 0)
+            """, defaultFundId, reserveFundId);
+        await database.ExecuteAsync(
+            """
+            INSERT INTO "FundGoals" ("Id", "FundId", "AccountingPeriodId", "PlannedMonthlyContribution", "MinimumEndingBalance", "MaximumEndingBalance") VALUES
+                ({0}, {1}, NULL, NULL, NULL, NULL),
+                ({2}, {3}, NULL, 25, 100, 200)
+            """, defaultGoalId, defaultFundId, reserveGoalId, reserveFundId);
+
+        await database.MigrateAsync();
+
+        Assert.Equal((0m, null), await GetBoundsAsync(database, defaultGoalId));
+        Assert.Equal((100m, 200m), await GetBoundsAsync(database, reserveGoalId));
+        Assert.Equal(1m, await database.ScalarDecimalAsync(
+            "SELECT COUNT(*) FROM \"FundGoals\" WHERE \"Id\" = {0} AND \"PlannedMonthlyContribution\" IS NULL", defaultGoalId));
+    }
+
+    /// <summary>
     /// Converts funded bounds and gives a legacy exact ending target precedence.
     /// </summary>
     [Fact]

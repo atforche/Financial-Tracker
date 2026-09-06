@@ -24,7 +24,7 @@ public sealed record CreateFundGoalRequest
     public decimal? PlannedMonthlyContribution { get; init; }
 
     /// <summary>
-    /// Minimum desired balance at the end of an Accounting Period.
+    /// Minimum desired balance at the end of an Accounting Period. Null defaults to zero.
     /// </summary>
     public decimal? MinimumEndingBalance { get; init; }
 

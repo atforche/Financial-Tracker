@@ -46,23 +46,17 @@ const FundGoalWorkspaceCard = function ({
   const { endingBalance } = fundGoal.progress;
   const goals = [
     {
-      configured: true,
-      satisfied: fundGoal.progress.availableBalance.isSatisfied,
-    },
-    {
       configured: isNotNullOrUndefined(fundGoal.plannedMonthlyContribution),
       satisfied: fundGoal.progress.contribution?.isSatisfied === true,
     },
     {
-      configured: isNotNullOrUndefined(fundGoal.minimumEndingBalance),
+      configured: true,
       satisfied:
-        isNotNullOrUndefined(endingBalance) &&
         endingBalance.status !== FundGoalEndingBalanceStatus.BelowMinimum,
     },
     {
       configured: isNotNullOrUndefined(fundGoal.maximumEndingBalance),
       satisfied:
-        isNotNullOrUndefined(endingBalance) &&
         endingBalance.status !== FundGoalEndingBalanceStatus.AboveMaximum,
     },
   ];
@@ -101,7 +95,7 @@ const FundGoalWorkspaceCard = function ({
           {accountingPeriod?.name ?? "No accounting period"}
         </Typography>
         <FundGoalAvailableBalance
-          availableBalance={fundGoal.progress.availableBalance}
+          availableBalance={endingBalance.currentBalance}
         />
         <Box>
           <Collapse in={expanded} unmountOnExit>
@@ -130,7 +124,6 @@ const FundGoalWorkspaceCard = function ({
                 onClick={() => {
                   setExpanded((currentExpanded) => !currentExpanded);
                 }}
-                sx={{ visibility: configured === 1 ? "hidden" : "visible" }}
               >
                 {expanded ? <ExpandLess /> : <ExpandMore />}
               </IconButton>

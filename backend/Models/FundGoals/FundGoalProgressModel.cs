@@ -6,17 +6,12 @@ namespace Models.FundGoals;
 public sealed class FundGoalProgressModel
 {
     /// <summary>
-    /// Gets available-balance health.
-    /// </summary>
-    public required AvailableBalanceProgressModel AvailableBalance { get; init; }
-
-    /// <summary>
     /// Gets contribution progress when configured.
     /// </summary>
     public ContributionProgressModel? Contribution { get; init; }
 
     /// <summary>
-    /// Gets ending-balance progress when configured.
+    /// Gets ending-balance progress, with a default minimum of zero.
     /// </summary>
-    public FundGoalEndingBalanceProgressModel? EndingBalance { get; init; }
+    public required FundGoalEndingBalanceProgressModel EndingBalance { get; init; }
 }

@@ -11,7 +11,7 @@ public sealed class UpdateFundGoalModel
     public decimal? PlannedMonthlyContribution { get; init; }
 
     /// <summary>
-    /// Gets the new minimum ending balance.
+    /// Gets the new minimum ending balance. Omitted or null values default to zero.
     /// </summary>
     public decimal? MinimumEndingBalance { get; init; }
 

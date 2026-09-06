@@ -26,7 +26,7 @@ public sealed class FundGoal : Entity<FundGoalId>
     /// <summary>
     /// Minimum desired balance at the end of an Accounting Period.
     /// </summary>
-    public decimal? MinimumEndingBalance { get; private set; }
+    public decimal MinimumEndingBalance { get; private set; }
 
     /// <summary>
     /// Maximum desired balance at the end of an Accounting Period.
@@ -42,7 +42,7 @@ public sealed class FundGoal : Entity<FundGoalId>
         decimal? maximumEndingBalance)
     {
         PlannedMonthlyContribution = plannedMonthlyContribution;
-        MinimumEndingBalance = minimumEndingBalance;
+        MinimumEndingBalance = minimumEndingBalance ?? 0m;
         MaximumEndingBalance = maximumEndingBalance;
     }
 

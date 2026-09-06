@@ -194,13 +194,6 @@ public sealed class FundGoalController(
     /// </summary>
     private static FundGoalProgressModel ToModel(FundGoalProgress progress) => new()
     {
-        AvailableBalance = new AvailableBalanceProgressModel
-        {
-            CurrentBalance = progress.AvailableBalance.CurrentBalance,
-            MinimumBalance = progress.AvailableBalance.MinimumBalance,
-            Shortfall = progress.AvailableBalance.Shortfall,
-            IsSatisfied = progress.AvailableBalance.IsSatisfied,
-        },
         Contribution = progress.Contribution == null ? null : new ContributionProgressModel
         {
             ExpectedAmount = progress.Contribution.ExpectedAmount,
@@ -208,7 +201,7 @@ public sealed class FundGoalController(
             RemainingAmount = progress.Contribution.RemainingAmount,
             IsSatisfied = progress.Contribution.IsSatisfied,
         },
-        EndingBalance = progress.EndingBalance == null ? null : new FundGoalEndingBalanceProgressModel
+        EndingBalance = new FundGoalEndingBalanceProgressModel
         {
             CurrentBalance = progress.EndingBalance.CurrentBalance,
             MinimumBalance = progress.EndingBalance.MinimumBalance,
