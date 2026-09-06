@@ -63,10 +63,7 @@ const ConfirmActionDialog = function ({
         title={title}
         actions={
           <>
-            <Button
-              disabled={pending}
-              onClick={closeDialog}
-            >
+            <Button disabled={pending} onClick={closeDialog}>
               Cancel
             </Button>
             <Button

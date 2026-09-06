@@ -34,7 +34,11 @@ const FundGoalTrendsSummaryCards = function ({
     <ResponsiveGrid columns={{ xs: 1, md: 2 }}>
       <SummaryCard title="Fund Goals Achieved">
         <Stack spacing={2}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <Typography color="text.secondary">Achieved Fund Goals</Typography>
             <Typography fontWeight={600} color="success.main">
               {achievedPercentage.toFixed(0)}% ({summary.satisfiedGoalCount} of{" "}
