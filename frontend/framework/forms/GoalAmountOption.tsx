@@ -3,9 +3,9 @@ import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { JSX } from "react";
 
 /**
- * Props for a configurable Fund Goal amount.
+ * Props for an optional goal amount.
  */
-interface FundGoalAmountOptionProps {
+interface GoalAmountOptionProps {
   readonly label: string;
   readonly value: number | null;
   readonly setValue: ((value: number | null) => void) | null;
@@ -13,14 +13,14 @@ interface FundGoalAmountOptionProps {
 }
 
 /**
- * Renders an optional Fund Goal amount with its enablement control.
+ * Renders an optional goal amount with its enablement control.
  */
-const FundGoalAmountOption = function ({
+const GoalAmountOption = function ({
   label,
   value,
   setValue,
   errorMessage,
-}: FundGoalAmountOptionProps): JSX.Element {
+}: GoalAmountOptionProps): JSX.Element {
   const enabled = value !== null;
 
   return (
@@ -48,4 +48,4 @@ const FundGoalAmountOption = function ({
   );
 };
 
-export default FundGoalAmountOption;
+export default GoalAmountOption;

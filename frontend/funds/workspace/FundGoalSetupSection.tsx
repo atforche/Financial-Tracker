@@ -1,6 +1,6 @@
 import Frame, { type FrameColor } from "@/framework/view/Frame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
-import FundGoalAmountOption from "@/funds/workspace/FundGoalAmountOption";
+import GoalAmountOption from "@/framework/forms/GoalAmountOption";
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
 
@@ -55,13 +55,13 @@ const FundGoalSetupSection = function ({
         }
         errorMessage={errors?.minimumEndingBalance ?? null}
       />
-      <FundGoalAmountOption
+      <GoalAmountOption
         label="Planned Monthly Contribution"
         value={plannedMonthlyContribution}
         setValue={setPlannedMonthlyContribution}
         errorMessage={errors?.plannedMonthlyContribution ?? null}
       />
-      <FundGoalAmountOption
+      <GoalAmountOption
         label="Maximum Ending Balance"
         value={maximumEndingBalance}
         setValue={setMaximumEndingBalance}

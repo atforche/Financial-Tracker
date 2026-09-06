@@ -19,7 +19,7 @@ public sealed record CreateAccountGoalRequest
     public AccountingPeriod? AccountingPeriod { get; init; }
 
     /// <summary>
-    /// Minimum desired ending balance.
+    /// Minimum desired ending balance. Null defaults to zero.
     /// </summary>
     public decimal? MinimumEndingBalance { get; init; }
 

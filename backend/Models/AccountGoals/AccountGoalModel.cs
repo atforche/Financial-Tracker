@@ -26,7 +26,7 @@ public sealed class AccountGoalModel
     /// <summary>
     /// Gets the minimum desired ending balance.
     /// </summary>
-    public decimal? MinimumEndingBalance { get; init; }
+    public required decimal MinimumEndingBalance { get; init; }
 
     /// <summary>
     /// Gets the maximum desired ending balance.

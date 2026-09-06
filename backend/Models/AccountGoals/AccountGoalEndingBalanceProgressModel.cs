@@ -13,7 +13,7 @@ public sealed class AccountGoalEndingBalanceProgressModel
     /// <summary>
     /// Gets the configured minimum ending balance.
     /// </summary>
-    public decimal? MinimumBalance { get; init; }
+    public required decimal MinimumBalance { get; init; }
 
     /// <summary>
     /// Gets the configured maximum ending balance.

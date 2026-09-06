@@ -11,6 +11,41 @@ namespace Tests.AccountGoals;
 public sealed class AccountGoalMigrationTests
 {
     /// <summary>
+    /// Backfills missing minimums while preserving explicit bounds.
+    /// </summary>
+    [Fact]
+    public async Task MigrationDefaultsMissingMinimumToZero()
+    {
+        await using MigrationTestDatabase database = await MigrationTestDatabase.CreateAsync(
+            "20260906004755_DefaultFundGoalMinimumEndingBalance");
+        var defaultAccountId = Guid.NewGuid();
+        var boundedAccountId = Guid.NewGuid();
+        var defaultGoalId = Guid.NewGuid();
+        var boundedGoalId = Guid.NewGuid();
+        await database.ExecuteAsync(
+            """
+            INSERT INTO "Accounts" ("Id", "Name", "Type", "OpeningAccountingPeriodId", "DateOpened", "OnboardedBalance") VALUES
+                ({0}, 'Checking', 'Standard', NULL, NULL, 100),
+                ({1}, 'Savings', 'Standard', NULL, NULL, 100)
+            """, defaultAccountId, boundedAccountId);
+        await database.ExecuteAsync(
+            """
+            INSERT INTO "AccountGoals" ("Id", "AccountId", "AccountingPeriodId", "MinimumEndingBalance", "MaximumEndingBalance") VALUES
+                ({0}, {1}, NULL, NULL, NULL),
+                ({2}, {3}, NULL, 50, 200)
+            """, defaultGoalId, defaultAccountId, boundedGoalId, boundedAccountId);
+
+        await database.MigrateAsync();
+
+        Assert.Equal(0m, await database.ScalarDecimalAsync(
+            "SELECT \"MinimumEndingBalance\" FROM \"AccountGoals\" WHERE \"Id\" = {0}", defaultGoalId));
+        Assert.Equal(50m, await database.ScalarDecimalAsync(
+            "SELECT \"MinimumEndingBalance\" FROM \"AccountGoals\" WHERE \"Id\" = {0}", boundedGoalId));
+        Assert.Equal(200m, await database.ScalarDecimalAsync(
+            "SELECT \"MaximumEndingBalance\" FROM \"AccountGoals\" WHERE \"Id\" = {0}", boundedGoalId));
+    }
+
+    /// <summary>
     /// Backfills goals for standard accounts in applicable periods and excludes other account types.
     /// </summary>
     [Fact]

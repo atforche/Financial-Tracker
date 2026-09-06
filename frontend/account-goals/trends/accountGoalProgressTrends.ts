@@ -26,24 +26,20 @@ const getAccountGoalTrendPoint = function (
   progress: readonly AccountGoalPeriodProgress[],
 ): AccountGoalTrendPoint {
   const belowZeroCount = progress.filter(
-    ({ progress: item }) => !item.positiveBalance.isSatisfied,
+    ({ progress: item }) => item.endingBalance.currentBalance < 0,
   ).length;
   const belowMinimumCount = progress.filter(
     ({ progress: item }) =>
-      item.positiveBalance.isSatisfied &&
-      item.endingBalance?.status ===
-        AccountGoalEndingBalanceStatus.BelowMinimum,
+      item.endingBalance.currentBalance >= 0 &&
+      item.endingBalance.status === AccountGoalEndingBalanceStatus.BelowMinimum,
   ).length;
   const aboveMaximumCount = progress.filter(
     ({ progress: item }) =>
-      item.positiveBalance.isSatisfied &&
-      item.endingBalance?.status ===
-        AccountGoalEndingBalanceStatus.AboveMaximum,
+      item.endingBalance.status === AccountGoalEndingBalanceStatus.AboveMaximum,
   ).length;
   const withinRangeCount = progress.filter(
     ({ progress: item }) =>
-      item.positiveBalance.isSatisfied &&
-      item.endingBalance?.status === AccountGoalEndingBalanceStatus.WithinRange,
+      item.endingBalance.status === AccountGoalEndingBalanceStatus.WithinRange,
   ).length;
   const configuredGoalCount = progress.length;
   const satisfiedGoalCount = progress.filter(
