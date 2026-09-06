@@ -214,8 +214,8 @@ public sealed class AccountingPeriodLifecycleTests
             ExpectedDates = [new DateOnly(2026, 7, 15)],
         };
 
-        AccountingPeriodWithBalanceModel updated = await test.Api.PostAsync<IReadOnlyCollection<ExpectedIncomeSourceRequestModel>, AccountingPeriodWithBalanceModel>(
-            $"/accounting-periods/{july.Id}/expected-income-sources", [source]);
+        AccountingPeriodWithBalanceModel updated = await test.Api.PostAsync<ExpectedIncomeSourceRequestModel, AccountingPeriodWithBalanceModel>(
+            $"/accounting-periods/{july.Id}/expected-income-sources", source);
         Assert.Equal(800m, updated.ExpectedIncome.Total);
         Assert.Equal(500m, updated.ExpectedIncome.Tracked);
         Assert.Equal(300m, updated.ExpectedIncome.Untracked);
@@ -232,10 +232,11 @@ public sealed class AccountingPeriodLifecycleTests
             UntrackedTransfers = source.UntrackedTransfers,
             ExpectedDates = [new DateOnly(2026, 7, 20)],
         };
-        AccountingPeriodWithBalanceModel changed = await test.Api.PostAsync<IReadOnlyCollection<ExpectedIncomeSourceRequestModel>, AccountingPeriodWithBalanceModel>(
-            $"/accounting-periods/{july.Id}/expected-income-sources", [changedSource]);
+        AccountingPeriodWithBalanceModel changed = await test.Api.PostAsync<ExpectedIncomeSourceRequestModel, AccountingPeriodWithBalanceModel>(
+            $"/accounting-periods/{july.Id}/expected-income-sources/{updatedSource.Id}", changedSource);
         ExpectedIncomeSourceModel changedResult = Assert.Single(changed.ExpectedIncomeSources);
         Assert.Equal("Employer (updated)", changedResult.Name);
+        Assert.Equal(updatedSource.Id, changedResult.Id);
         Assert.Equal(new DateOnly(2026, 7, 20), Assert.Single(changedResult.ExpectedDates));
 
         CollectionModel<AccountingPeriodWithBalanceModel> listed = await test.Api.GetAsync<CollectionModel<AccountingPeriodWithBalanceModel>>(
@@ -282,10 +283,18 @@ public sealed class AccountingPeriodLifecycleTests
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        var source = new ExpectedIncomeSourceRequestModel
+        {
+            Name = "Employer",
+            IncomeLines = [new Models.Transactions.Create.CreateIncomeLineModel { Description = "Salary", Amount = 1_000m }],
+            IncomeDeductions = [],
+            UntrackedTransfers = [],
+            ExpectedDates = [],
+        };
         await test.Api.PostAsync($"/accounting-periods/{july.Id}/close");
 
         using HttpResponseMessage response = await test.Api.PostResponseAsync(
-            $"/accounting-periods/{july.Id}/expected-income-sources", Array.Empty<ExpectedIncomeSourceRequestModel>());
+            $"/accounting-periods/{july.Id}/expected-income-sources", source);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }

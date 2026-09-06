@@ -59,19 +59,25 @@ public class AccountingPeriod : Entity<AccountingPeriodId>
     public DateOnly GetMaximumDateInPeriod() => new DateOnly(Year, Month, 1).AddMonths(2).AddDays(-1);
 
     /// <summary>
-    /// Replaces the expected income sources for this Accounting Period.
+    /// Adds an expected income source to this Accounting Period.
     /// </summary>
-    internal void ReplaceExpectedIncomeSources(IEnumerable<ExpectedIncomeSourceRequest> sources)
+    internal ExpectedIncomeSource AddExpectedIncomeSource(ExpectedIncomeSourceRequest source)
     {
-        _expectedIncomeSources.Clear();
-        _expectedIncomeSources.AddRange(sources.Select(source => new ExpectedIncomeSource(
+        ExpectedIncomeSource expectedIncomeSource = new(
             this,
             source.Name,
             source.IncomeLines,
             source.IncomeDeductions,
             source.UntrackedTransfers,
-            source.ExpectedDates)));
+            source.ExpectedDates);
+        _expectedIncomeSources.Add(expectedIncomeSource);
+        return expectedIncomeSource;
     }
+
+    /// <summary>
+    /// Removes an expected income source from this Accounting Period.
+    /// </summary>
+    internal void RemoveExpectedIncomeSource(ExpectedIncomeSource source) => _expectedIncomeSources.Remove(source);
 
     /// <summary>
     /// Constructs a new instance of this class

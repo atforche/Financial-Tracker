@@ -109,6 +109,23 @@ public sealed class ExpectedIncomeSource : Entity<ExpectedIncomeSourceId>
     }
 
     /// <summary>
+    /// Updates this expected income source.
+    /// </summary>
+    internal void Update(
+        string name,
+        IEnumerable<IncomeLine> incomeLines,
+        IEnumerable<IncomeDeduction> incomeDeductions,
+        IEnumerable<ExpectedUntrackedIncomeTransfer> untrackedTransfers,
+        IEnumerable<DateOnly> expectedDates)
+    {
+        Name = name;
+        IncomeLines = incomeLines.ToList();
+        IncomeDeductions = incomeDeductions.ToList();
+        UntrackedTransfers = untrackedTransfers.ToList();
+        ExpectedDates = expectedDates.Select(date => new ExpectedIncomeDate(date)).ToList();
+    }
+
+    /// <summary>
     /// Constructs a default instance for Entity Framework.
     /// </summary>
     private ExpectedIncomeSource() : base()

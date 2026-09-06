@@ -132,24 +132,106 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     }
 
     /// <summary>
-    /// Replaces expected income sources for an open Accounting Period.
+    /// Adds an expected income source to an open Accounting Period.
     /// </summary>
     [HttpPost("{accountingPeriodId:guid}/expected-income-sources")]
     [ProducesResponseType(typeof(AccountingPeriodWithBalanceModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> ReplaceExpectedIncomeSourcesAsync(
+    public async Task<IActionResult> AddExpectedIncomeSourceAsync(
         Guid accountingPeriodId,
-        [FromBody] IReadOnlyCollection<ExpectedIncomeSourceRequestModel> sources)
+        [FromBody] ExpectedIncomeSourceRequestModel source)
     {
         if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out AccountingPeriod? accountingPeriod))
         {
             return NotFound();
         }
-        if (!AccountingPeriodService.TryReplaceExpectedIncomeSources(accountingPeriod, ToRequest(sources), out IEnumerable<ValidationError> validationErrors))
+        if (!AccountingPeriodService.TryAddExpectedIncomeSource(
+                accountingPeriod,
+                ToRequest(source),
+                out _,
+                out IEnumerable<ValidationError> validationErrors))
         {
             return new UnprocessableEntityObjectResult(new ValidationProblemDetails
             {
-                Title = "Unable to update expected income sources.",
+                Title = "Unable to add expected income source.",
+                Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors),
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        await unitOfWork.SaveChangesAsync();
+        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetBalanceByIdAsync(accountingPeriodId);
+        return Ok(accountingPeriodQueryConverter.ToModel(balance!));
+    }
+
+    /// <summary>
+    /// Updates one expected income source in an open Accounting Period.
+    /// </summary>
+    [HttpPost("{accountingPeriodId:guid}/expected-income-sources/{expectedIncomeSourceId:guid}")]
+    [ProducesResponseType(typeof(AccountingPeriodWithBalanceModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> UpdateExpectedIncomeSourceAsync(
+        Guid accountingPeriodId,
+        Guid expectedIncomeSourceId,
+        [FromBody] ExpectedIncomeSourceRequestModel source)
+    {
+        if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out AccountingPeriod? accountingPeriod))
+        {
+            return NotFound();
+        }
+        ExpectedIncomeSource? expectedIncomeSource = accountingPeriod.ExpectedIncomeSources
+            .SingleOrDefault(item => item.Id.Value == expectedIncomeSourceId);
+        if (expectedIncomeSource == null)
+        {
+            return NotFound();
+        }
+        if (!AccountingPeriodService.TryUpdateExpectedIncomeSource(
+                accountingPeriod,
+                expectedIncomeSource,
+                ToRequest(source),
+                out IEnumerable<ValidationError> validationErrors))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to update expected income source.",
+                Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors),
+                Status = StatusCodes.Status422UnprocessableEntity,
+            });
+        }
+        await unitOfWork.SaveChangesAsync();
+        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetBalanceByIdAsync(accountingPeriodId);
+        return Ok(accountingPeriodQueryConverter.ToModel(balance!));
+    }
+
+    /// <summary>
+    /// Deletes one expected income source from an open Accounting Period.
+    /// </summary>
+    [HttpDelete("{accountingPeriodId:guid}/expected-income-sources/{expectedIncomeSourceId:guid}")]
+    [ProducesResponseType(typeof(AccountingPeriodWithBalanceModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> DeleteExpectedIncomeSourceAsync(
+        Guid accountingPeriodId,
+        Guid expectedIncomeSourceId)
+    {
+        if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out AccountingPeriod? accountingPeriod))
+        {
+            return NotFound();
+        }
+        ExpectedIncomeSource? expectedIncomeSource = accountingPeriod.ExpectedIncomeSources
+            .SingleOrDefault(item => item.Id.Value == expectedIncomeSourceId);
+        if (expectedIncomeSource == null)
+        {
+            return NotFound();
+        }
+        if (!AccountingPeriodService.TryDeleteExpectedIncomeSource(
+                accountingPeriod,
+                expectedIncomeSource,
+                out IEnumerable<ValidationError> validationErrors))
+        {
+            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
+            {
+                Title = "Unable to delete expected income source.",
                 Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors),
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
@@ -269,13 +351,12 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     /// <summary>
     /// Converts expected-income API models to domain requests.
     /// </summary>
-    private static List<ExpectedIncomeSourceRequest> ToRequest(
-        IReadOnlyCollection<ExpectedIncomeSourceRequestModel> sources) => sources.Select(source => new ExpectedIncomeSourceRequest
-        {
-            Name = source.Name,
-            IncomeLines = source.IncomeLines.Select(line => new IncomeLine(line.Description, line.Amount)).ToList(),
-            IncomeDeductions = source.IncomeDeductions.Select(deduction => new IncomeDeduction(deduction.Description, deduction.Amount)).ToList(),
-            UntrackedTransfers = source.UntrackedTransfers.Select(transfer => new ExpectedUntrackedIncomeTransfer(transfer.Description, transfer.Amount)).ToList(),
-            ExpectedDates = source.ExpectedDates,
-        }).ToList();
+    private static ExpectedIncomeSourceRequest ToRequest(ExpectedIncomeSourceRequestModel source) => new()
+    {
+        Name = source.Name,
+        IncomeLines = source.IncomeLines.Select(line => new IncomeLine(line.Description, line.Amount)).ToList(),
+        IncomeDeductions = source.IncomeDeductions.Select(deduction => new IncomeDeduction(deduction.Description, deduction.Amount)).ToList(),
+        UntrackedTransfers = source.UntrackedTransfers.Select(transfer => new ExpectedUntrackedIncomeTransfer(transfer.Description, transfer.Amount)).ToList(),
+        ExpectedDates = source.ExpectedDates,
+    };
 }

@@ -3079,7 +3079,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Replaces expected income sources for an open Accounting Period. */
+        /** Adds an expected income source to an open Accounting Period. */
         post: {
             parameters: {
                 query?: never;
@@ -3091,9 +3091,9 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["ExpectedIncomeSourceRequestModel"][];
-                    "text/json": components["schemas"]["ExpectedIncomeSourceRequestModel"][];
-                    "application/*+json": components["schemas"]["ExpectedIncomeSourceRequestModel"][];
+                    "application/json": components["schemas"]["ExpectedIncomeSourceRequestModel"];
+                    "text/json": components["schemas"]["ExpectedIncomeSourceRequestModel"];
+                    "application/*+json": components["schemas"]["ExpectedIncomeSourceRequestModel"];
                 };
             };
             responses: {
@@ -3122,6 +3122,122 @@ export interface paths {
             };
         };
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounting-periods/{accountingPeriodId}/expected-income-sources/{expectedIncomeSourceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Updates one expected income source in an open Accounting Period. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountingPeriodId: string;
+                    expectedIncomeSourceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ExpectedIncomeSourceRequestModel"];
+                    "text/json": components["schemas"]["ExpectedIncomeSourceRequestModel"];
+                    "application/*+json": components["schemas"]["ExpectedIncomeSourceRequestModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountingPeriodWithBalanceModel"];
+                        "application/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
+                        "text/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        /** Deletes one expected income source from an open Accounting Period. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountingPeriodId: string;
+                    expectedIncomeSourceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountingPeriodWithBalanceModel"];
+                        "application/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
+                        "text/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
