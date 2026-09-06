@@ -134,7 +134,6 @@ const AccountingPeriodWorkspace = async function ({
       <AccountingPeriodWorkspaceActions
         isInOnboardingMode={isInOnboardingMode}
         latestAccountingPeriod={latestAccountingPeriod}
-        selectedAccountingPeriod={null}
         requestedAction={action ?? null}
       />
     </PageLayout>

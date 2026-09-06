@@ -1,17 +1,10 @@
 "use client";
 
-import {
-  type AccountingPeriodWorkspaceAction,
-  getAvailableAccountingPeriodWorkspaceActions,
-} from "@/accounting-periods/workspace/helpers";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
-import CloseAccountingPeriodForm from "@/accounting-periods/workspace/CloseAccountingPeriodForm";
+import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/workspace/helpers";
 import CreateAccountingPeriodForm from "@/accounting-periods/workspace/CreateAccountingPeriodForm";
-import DeleteAccountingPeriodForm from "@/accounting-periods/workspace/DeleteAccountingPeriodForm";
-import ExpectedIncomeSourcesForm from "@/accounting-periods/workspace/ExpectedIncomeSourcesForm";
 import type { JSX } from "react";
-import ReopenAccountingPeriodForm from "@/accounting-periods/workspace/ReopenAccountingPeriodForm";
 import { buildUrl } from "@/framework/routes/helpers";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
@@ -22,7 +15,6 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 interface AccountingPeriodWorkspaceActionsProps {
   readonly isInOnboardingMode: boolean;
   readonly latestAccountingPeriod: AccountingPeriodWithBalance | null;
-  readonly selectedAccountingPeriod: AccountingPeriodWithBalance | null;
   readonly requestedAction: AccountingPeriodWorkspaceAction | null;
 }
 
@@ -32,21 +24,12 @@ interface AccountingPeriodWorkspaceActionsProps {
 const AccountingPeriodWorkspaceActions = function ({
   isInOnboardingMode,
   latestAccountingPeriod,
-  selectedAccountingPeriod,
   requestedAction,
 }: AccountingPeriodWorkspaceActionsProps): JSX.Element | null {
   const canWrite = useWriteAccess();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const updateParams = useSearchParamUpdater([]);
-  const availableActions = getAvailableAccountingPeriodWorkspaceActions(
-    selectedAccountingPeriod,
-  );
-  const activeAction =
-    requestedAction !== null && availableActions.includes(requestedAction)
-      ? requestedAction
-      : null;
-
   const setAction = function (
     action: AccountingPeriodWorkspaceAction | null,
   ): void {
@@ -66,62 +49,17 @@ const AccountingPeriodWorkspaceActions = function ({
     return null;
   }
 
-  return (
-    <>
-      {activeAction === "create" ? (
-        <CreateAccountingPeriodForm
-          isInOnboardingMode={isInOnboardingMode}
-          latestAccountingPeriod={latestAccountingPeriod}
-          open
-          onClose={() => {
-            setAction(null);
-          }}
-          redirectUrl={dialogRedirectUrl}
-        />
-      ) : null}
-      {activeAction === "close" && selectedAccountingPeriod !== null ? (
-        <CloseAccountingPeriodForm
-          accountingPeriod={selectedAccountingPeriod}
-          open
-          onClose={() => {
-            setAction(null);
-          }}
-          redirectUrl={dialogRedirectUrl}
-        />
-      ) : null}
-      {activeAction === "reopen" && selectedAccountingPeriod !== null ? (
-        <ReopenAccountingPeriodForm
-          accountingPeriod={selectedAccountingPeriod}
-          open
-          onClose={() => {
-            setAction(null);
-          }}
-          redirectUrl={dialogRedirectUrl}
-        />
-      ) : null}
-      {activeAction === "editExpectedIncome" &&
-      selectedAccountingPeriod !== null ? (
-        <ExpectedIncomeSourcesForm
-          accountingPeriod={selectedAccountingPeriod}
-          open
-          onClose={() => {
-            setAction(null);
-          }}
-          redirectUrl={dialogRedirectUrl}
-        />
-      ) : null}
-      {activeAction === "delete" && selectedAccountingPeriod !== null ? (
-        <DeleteAccountingPeriodForm
-          accountingPeriod={selectedAccountingPeriod}
-          open
-          onClose={() => {
-            setAction(null);
-          }}
-          redirectUrl={dialogRedirectUrl}
-        />
-      ) : null}
-    </>
-  );
+  return requestedAction === "create" ? (
+    <CreateAccountingPeriodForm
+      isInOnboardingMode={isInOnboardingMode}
+      latestAccountingPeriod={latestAccountingPeriod}
+      open
+      onClose={() => {
+        setAction(null);
+      }}
+      redirectUrl={dialogRedirectUrl}
+    />
+  ) : null;
 };
 
 export default AccountingPeriodWorkspaceActions;
