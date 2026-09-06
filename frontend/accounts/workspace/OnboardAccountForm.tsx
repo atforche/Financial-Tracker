@@ -1,7 +1,7 @@
 "use client";
 
 import type { AccountType, OnboardAccountRequest } from "@/accounts/types";
-import { Button, Stack } from "@mui/material";
+import { Button, Divider, Stack } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -9,10 +9,12 @@ import {
   useEffect,
   useState,
 } from "react";
-import AccountDetailsFrame from "@/accounts/workspace/AccountDetailsFrame";
-import AccountStartingBalanceFrame from "@/accounts/workspace/AccountStartingBalanceFrame";
+import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
+import CreatableComboBoxEntryField from "@/framework/forms/CreatableComboBoxEntryField";
+import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import StringEntryField from "@/framework/forms/StringEntryField";
 import { buildOnboardRequest } from "@/accounts/workspace/helpers";
 import onboardAccount from "@/accounts/workspace/onboardAccount";
 import { useRouter } from "next/navigation";
@@ -92,20 +94,27 @@ const OnboardAccountForm = function ({
       }
     >
       <Stack spacing={3}>
-        <AccountDetailsFrame
-          color={name !== "" && accountType !== null ? "success" : "error"}
-          name={name}
-          setName={setName}
-          nameErrorMessage={state.nameErrors ?? null}
-          financialInstitution={financialInstitution}
-          financialInstitutions={financialInstitutions}
-          setFinancialInstitution={setFinancialInstitution}
-          accountType={accountType}
-          setAccountType={setAccountType}
-          accountTypeErrorMessage={state.typeErrors ?? null}
+        <StringEntryField
+          label="Name"
+          value={name}
+          setValue={setName}
+          errorMessage={state.nameErrors ?? null}
         />
-        <AccountStartingBalanceFrame
-          color={request !== null ? "success" : "error"}
+        <CreatableComboBoxEntryField
+          label="Financial Institution"
+          options={financialInstitutions}
+          value={financialInstitution}
+          setValue={setFinancialInstitution}
+        />
+        <AccountTypeEntryField
+          label="Type"
+          value={accountType}
+          setValue={setAccountType}
+          errorMessage={state.typeErrors ?? null}
+        />
+        <Divider />
+        <CurrencyEntryField
+          label="Starting Balance"
           value={onboardedBalance}
           setValue={setOnboardedBalance}
           errorMessage={state.onboardedBalanceErrors ?? null}

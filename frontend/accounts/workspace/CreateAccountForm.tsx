@@ -1,7 +1,7 @@
 "use client";
 
 import type { AccountType, CreateAccountRequest } from "@/accounts/types";
-import { Button, Stack } from "@mui/material";
+import { Button, Divider, Stack } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -13,14 +13,21 @@ import {
   buildCreateRequest,
   getNormalizedDateOpened,
 } from "@/accounts/workspace/helpers";
-import AccountDetailsFrame from "@/accounts/workspace/AccountDetailsFrame";
-import AccountOpeningFrame from "@/accounts/workspace/AccountOpeningFrame";
+import {
+  getDefaultDate,
+  getMaximumDate,
+  getMinimumDate,
+} from "@/accounting-periods/helpers";
+import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
+import CreatableComboBoxEntryField from "@/framework/forms/CreatableComboBoxEntryField";
+import DateEntryField from "@/framework/forms/DateEntryField";
 import type { Dayjs } from "dayjs";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import StringEntryField from "@/framework/forms/StringEntryField";
 import createAccount from "@/accounts/workspace/createAccount";
-import { getDefaultDate } from "@/accounting-periods/helpers";
 import { useRouter } from "next/navigation";
 
 /**
@@ -114,27 +121,44 @@ const CreateAccountForm = function ({
       }
     >
       <Stack spacing={3}>
-        <AccountDetailsFrame
-          color={name !== "" && accountType !== null ? "info" : "error"}
-          name={name}
-          setName={setName}
-          nameErrorMessage={state.nameErrors ?? null}
-          financialInstitution={financialInstitution}
-          financialInstitutions={financialInstitutions}
-          setFinancialInstitution={setFinancialInstitution}
-          accountType={accountType}
-          setAccountType={setAccountType}
-          accountTypeErrorMessage={state.typeErrors ?? null}
+        <StringEntryField
+          label="Name"
+          value={name}
+          setValue={setName}
+          errorMessage={state.nameErrors ?? null}
         />
-        <AccountOpeningFrame
-          color={request === null ? "error" : "info"}
-          accountingPeriods={accountingPeriods}
-          accountingPeriod={accountingPeriod}
-          setAccountingPeriod={onAccountingPeriodChange}
-          accountingPeriodErrorMessage={state.accountingPeriodErrors ?? null}
-          dateOpened={dateOpened}
-          setDateOpened={setDateOpened}
-          dateOpenedErrorMessage={state.dateOpenedErrors ?? null}
+        <CreatableComboBoxEntryField
+          label="Financial Institution"
+          options={financialInstitutions}
+          value={financialInstitution}
+          setValue={setFinancialInstitution}
+        />
+        <AccountTypeEntryField
+          label="Type"
+          value={accountType}
+          setValue={setAccountType}
+          errorMessage={state.typeErrors ?? null}
+        />
+        <Divider />
+        <AccountingPeriodEntryField
+          label="Opening Accounting Period"
+          options={accountingPeriods}
+          value={accountingPeriod}
+          setValue={onAccountingPeriodChange}
+          errorMessage={state.accountingPeriodErrors ?? null}
+        />
+        <DateEntryField
+          label="Date Opened"
+          value={dateOpened}
+          setValue={setDateOpened}
+          errorMessage={state.dateOpenedErrors ?? null}
+          minDate={
+            accountingPeriod === null ? null : getMinimumDate(accountingPeriod)
+          }
+          maxDate={
+            accountingPeriod === null ? null : getMaximumDate(accountingPeriod)
+          }
+          disabled={accountingPeriod === null}
         />
         <ErrorAlert
           errorMessage={state.errorTitle ?? null}
