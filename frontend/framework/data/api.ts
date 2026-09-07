@@ -4272,9 +4272,19 @@ export interface components {
         ContributionProgressModel: {
             /**
              * Format: double
+             * @description Gets the configured planned contribution before applying the maximum ending-balance constraint.
+             */
+            plannedAmount: number;
+            /**
+             * Format: double
              * @description Gets the expected contribution.
              */
             expectedAmount: number;
+            /**
+             * Format: double
+             * @description Gets the nonnegative amount removed from the planned contribution by the maximum ending-balance constraint.
+             */
+            amountReducedByMaximumEndingBalance: number;
             /**
              * Format: double
              * @description Gets the amount assigned.

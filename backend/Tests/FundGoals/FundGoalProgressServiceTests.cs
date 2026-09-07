@@ -38,6 +38,8 @@ public sealed class FundGoalProgressServiceTests
         Assert.Equal(FundGoalEndingBalanceStatus.BelowMinimum, progress.EndingBalance.Status);
         Assert.NotNull(progress.Contribution);
         Assert.Equal(25m, progress.Contribution.ExpectedAmount);
+        Assert.Equal(25m, progress.Contribution.PlannedAmount);
+        Assert.Equal(0m, progress.Contribution.AmountReducedByMaximumEndingBalance);
         Assert.NotNull(progress.EndingBalance);
     }
 
@@ -57,6 +59,8 @@ public sealed class FundGoalProgressServiceTests
         Assert.NotNull(progress.Contribution);
         Assert.Equal(0m, progress.Contribution.AssignedAmount);
         Assert.Equal(50m, progress.Contribution.RemainingAmount);
+        Assert.Equal(200m, progress.Contribution.PlannedAmount);
+        Assert.Equal(150m, progress.Contribution.AmountReducedByMaximumEndingBalance);
         Assert.NotNull(progress.EndingBalance);
         Assert.Equal(250m, progress.EndingBalance.CurrentBalance);
         Assert.Equal(FundGoalEndingBalanceStatus.WithinRange, progress.EndingBalance.Status);
@@ -108,5 +112,19 @@ public sealed class FundGoalProgressServiceTests
         Assert.Equal(FundGoalEndingBalanceStatus.WithinRange, progress.EndingBalance.Status);
         Assert.Equal(0m, progress.EndingBalance.AmountBelowMinimum);
         Assert.Null(progress.Contribution);
+    }
+
+    /// <summary>
+    /// Reports the full planned contribution as reduced when the current balance exceeds the maximum.
+    /// </summary>
+    [Fact]
+    public void CalculateReportsContributionReducedAboveMaximumEndingBalance()
+    {
+        FundGoalProgress progress = FundGoalProgressService.Calculate(10m, 175m, 25m, 0m, 150m);
+
+        Assert.NotNull(progress.Contribution);
+        Assert.Equal(25m, progress.Contribution.PlannedAmount);
+        Assert.Equal(0m, progress.Contribution.ExpectedAmount);
+        Assert.Equal(25m, progress.Contribution.AmountReducedByMaximumEndingBalance);
     }
 }

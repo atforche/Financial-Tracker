@@ -21,7 +21,10 @@ public static class FundGoalProgressService
             plannedMonthlyContribution,
             maximumEndingBalance);
         ContributionProgress? contribution = plannedMonthlyContribution != null
-            ? new ContributionProgress(expectedContribution, amountAssignedToExpectedContribution)
+            ? new ContributionProgress(
+                plannedMonthlyContribution.Value,
+                expectedContribution,
+                amountAssignedToExpectedContribution)
             : null;
         FundGoalEndingBalanceProgress endingBalance = new(
             currentAvailableBalance,

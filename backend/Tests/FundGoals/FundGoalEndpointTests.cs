@@ -64,6 +64,9 @@ public sealed class FundGoalEndpointTests
 
         Assert.Equal(50m, updated.PlannedMonthlyContribution);
         Assert.NotNull(progress.Contribution);
+        Assert.Equal(50m, progress.Contribution.PlannedAmount);
+        Assert.Equal(50m, progress.Contribution.ExpectedAmount);
+        Assert.Equal(0m, progress.Contribution.AmountReducedByMaximumEndingBalance);
         Assert.Contains(goals.Items, goal => goal.Id == groceries.Goal.Id);
         Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
     }

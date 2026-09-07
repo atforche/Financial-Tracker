@@ -196,7 +196,9 @@ public sealed class FundGoalController(
     {
         Contribution = progress.Contribution == null ? null : new ContributionProgressModel
         {
+            PlannedAmount = progress.Contribution.PlannedAmount,
             ExpectedAmount = progress.Contribution.ExpectedAmount,
+            AmountReducedByMaximumEndingBalance = progress.Contribution.AmountReducedByMaximumEndingBalance,
             AssignedAmount = progress.Contribution.AssignedAmount,
             RemainingAmount = progress.Contribution.RemainingAmount,
             IsSatisfied = progress.Contribution.IsSatisfied,

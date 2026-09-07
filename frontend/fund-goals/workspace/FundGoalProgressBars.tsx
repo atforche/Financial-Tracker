@@ -47,8 +47,10 @@ const FundGoalProgressBars = function ({
       progress.contribution ? (
         <Stack spacing={1}>
           <FundGoalContributionAdjustment
-            expectedAmount={progress.contribution.expectedAmount}
-            plannedAmount={fundGoal.plannedMonthlyContribution}
+            plannedAmount={progress.contribution.plannedAmount}
+            adjustmentAmount={
+              progress.contribution.amountReducedByMaximumEndingBalance
+            }
           />
           <FundGoalProgress
             label="Expected Contribution"

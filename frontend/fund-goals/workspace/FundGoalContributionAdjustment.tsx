@@ -1,25 +1,20 @@
 import { Divider, Stack, Typography } from "@mui/material";
-import {
-  compareCurrencyAmounts,
-  formatCurrency,
-  getCurrencyDifference,
-} from "@/framework/currencyHelpers";
 import type { JSX } from "react";
+import { formatCurrency } from "@/framework/currencyHelpers";
 
 interface FundGoalContributionAdjustmentProps {
-  readonly expectedAmount: number;
   readonly plannedAmount: number;
+  readonly adjustmentAmount: number;
 }
 
 /**
  * Displays how a planned contribution was adjusted to its expected amount.
  */
 const FundGoalContributionAdjustment = function ({
-  expectedAmount,
   plannedAmount,
+  adjustmentAmount,
 }: FundGoalContributionAdjustmentProps): JSX.Element {
-  const adjustment = getCurrencyDifference(plannedAmount, expectedAmount);
-  const hasAdjustment = compareCurrencyAmounts(adjustment, 0) !== 0;
+  const hasAdjustment = adjustmentAmount > 0;
 
   return (
     <Stack spacing={0.75}>
@@ -42,7 +37,7 @@ const FundGoalContributionAdjustment = function ({
             Planned Ending Balance Overage
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            −{formatCurrency(adjustment)}
+            −{formatCurrency(adjustmentAmount)}
           </Typography>
         </Stack>
       ) : null}
