@@ -110,7 +110,7 @@ const OverviewView = async function (): Promise<JSX.Element> {
     <PageLayout>
       <ConstrainedContent>
         <ContentSurface>
-          <OverviewPageHeader title="Overview" />
+          <OverviewPageHeader />
         </ContentSurface>
       </ConstrainedContent>
 

@@ -26,7 +26,7 @@ const AccountGoalProgress = function ({
 }: AccountGoalProgressProps): JSX.Element {
   const percent =
     target === 0
-      ? current > 0
+      ? satisfied
         ? 100
         : 0
       : Math.min(Math.max((current / target) * 100, 0), 100);

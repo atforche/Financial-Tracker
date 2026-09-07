@@ -106,7 +106,7 @@ public sealed class AccountGoalServiceTests
         bool calculated = service.TryGetProgress(goal, period, out AccountGoalProgress? progress, out _);
 
         Assert.True(calculated);
-        Assert.Equal(150m, progress!.PositiveBalance.CurrentBalance);
+        Assert.Equal(150m, progress!.EndingBalance.CurrentBalance);
         Assert.True(progress.IsSatisfied);
     }
 

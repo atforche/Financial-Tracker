@@ -21,7 +21,7 @@ public sealed class AccountGoal : Entity<AccountGoalId>
     /// <summary>
     /// Minimum desired ending balance.
     /// </summary>
-    public decimal? MinimumEndingBalance { get; private set; }
+    public decimal MinimumEndingBalance { get; private set; }
 
     /// <summary>
     /// Maximum desired ending balance.
@@ -33,7 +33,7 @@ public sealed class AccountGoal : Entity<AccountGoalId>
     /// </summary>
     internal void Update(decimal? minimumEndingBalance, decimal? maximumEndingBalance)
     {
-        MinimumEndingBalance = minimumEndingBalance;
+        MinimumEndingBalance = minimumEndingBalance ?? 0m;
         MaximumEndingBalance = maximumEndingBalance;
     }
 

@@ -38,7 +38,6 @@ interface AccountTrendsFilterProps {
   readonly defaultAccountingPeriodId: string | null;
   readonly defaultStartDate: string;
   readonly defaultEndDate: string;
-  readonly disabled?: boolean;
 }
 
 /**
@@ -50,7 +49,6 @@ const AccountTrendsFilter = function ({
   defaultAccountingPeriodId,
   defaultStartDate,
   defaultEndDate,
-  disabled = false,
 }: AccountTrendsFilterProps): JSX.Element {
   const searchParams = useSearchParams();
 
@@ -172,7 +170,6 @@ const AccountTrendsFilter = function ({
     <PageFilterFrame title="Account Trends">
       <ToggleButtonSelector
         value={currentMode}
-        disabled={disabled}
         onChange={handleModeChange}
         options={[
           { value: "date", label: "Dates" },
@@ -189,25 +186,21 @@ const AccountTrendsFilter = function ({
           startValue={currentStartAccountingPeriodId}
           endValue={currentEndAccountingPeriodId}
           onChange={handleAccountingPeriodRangeChange}
-          disabled={disabled}
         />
       ) : (
         <DateRangeFilter
           value={{ start: currentStartDate, end: currentEndDate }}
           onChange={handleDateRangeChange}
-          disabled={disabled}
         />
       )}
       <AccountTypeFilter
         value={currentAccountTypes}
         onChange={handleAccountTypeChange}
-        disabled={disabled}
       />
       <AccountNameFilter
         availableAccountNames={availableAccountNames}
         value={currentAccountNames}
         onChange={handleAccountNameChange}
-        disabled={disabled}
       />
       <Button
         variant="outlined"

@@ -16,6 +16,11 @@ public class AccountingPeriodsInRangeModel
     public required IncomeAmountModel TotalIncome { get; init; }
 
     /// <summary>
+    /// Total expected income for the requested range.
+    /// </summary>
+    public required IncomeAmountModel TotalExpectedIncome { get; init; }
+
+    /// <summary>
     /// Total spending for the requested range.
     /// </summary>
     public required decimal TotalSpending { get; init; }

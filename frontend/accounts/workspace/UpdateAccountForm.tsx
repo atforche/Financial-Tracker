@@ -106,7 +106,6 @@ const UpdateAccountForm = function ({
           errorMessage={state.nameErrors ?? null}
         />
         <CreatableComboBoxEntryField
-          label="Financial Institution"
           options={financialInstitutions}
           value={financialInstitution}
           setValue={setFinancialInstitution}

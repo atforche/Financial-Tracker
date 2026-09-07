@@ -135,9 +135,6 @@ const AccountWorkspaceCards = function ({
               : `financial-institution:${financialInstitution}`
           }
           caption={financialInstitution ?? noFinancialInstitutionLabel}
-          minWidth={0}
-          maxWidth="100%"
-          width="max-content"
         >
           <CardResponsiveGrid
             minimumColumnWidth={280}

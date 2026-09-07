@@ -11,7 +11,6 @@ interface BalanceChangeChipProps {
   readonly previousValue: number;
   readonly newValue: number;
   readonly color?: ChipProps["color"];
-  readonly size?: ChipProps["size"];
 }
 
 /**
@@ -22,13 +21,11 @@ const BalanceChangeChip = function ({
   previousValue,
   newValue,
   color,
-  size,
 }: BalanceChangeChipProps): JSX.Element {
   return (
     <Chip
       variant="outlined"
       color={color}
-      size={size}
       label={
         <Box
           component="span"

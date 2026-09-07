@@ -8,10 +8,7 @@ import ContentSurface from "@/framework/view/ContentSurface";
 interface PageFilterFrameProps {
   readonly title: string;
   readonly children: ReactNode;
-  readonly headerContent?: ReactNode;
   readonly actions?: ReactNode;
-  readonly description?: ReactNode;
-  readonly sticky?: boolean;
   readonly mobileSticky?: boolean;
 }
 
@@ -21,14 +18,11 @@ interface PageFilterFrameProps {
 const PageFilterFrame = function ({
   title,
   children,
-  headerContent,
   actions,
-  description,
-  sticky = true,
-  mobileSticky = sticky,
+  mobileSticky = true,
 }: PageFilterFrameProps): JSX.Element {
   return (
-    <ContentSurface sticky={sticky} mobileSticky={mobileSticky}>
+    <ContentSurface sticky mobileSticky={mobileSticky}>
       <Stack spacing={2}>
         <Stack
           direction={{ xs: "column", lg: "row" }}
@@ -36,15 +30,7 @@ const PageFilterFrame = function ({
           justifyContent="space-between"
           alignItems={{ xs: "flex-start", lg: "center" }}
         >
-          <Stack spacing={0.5}>
-            <Typography variant="h5">{title}</Typography>
-            {description === undefined ? null : (
-              <Typography color="text.secondary">{description}</Typography>
-            )}
-          </Stack>
-          {headerContent === undefined ? null : (
-            <Box sx={{ flexShrink: 0 }}>{headerContent}</Box>
-          )}
+          <Typography variant="h5">{title}</Typography>
         </Stack>
         <Stack
           direction="row"

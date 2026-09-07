@@ -13,7 +13,6 @@ import { useRouter } from "next/navigation";
  */
 interface AccountingPeriodConfirmationFormProps {
   readonly accountingPeriod: AccountingPeriod;
-  readonly open: boolean;
   readonly onClose: () => void;
   readonly redirectUrl: string;
   readonly action: AccountingPeriodServerAction;
@@ -27,7 +26,6 @@ interface AccountingPeriodConfirmationFormProps {
  */
 const AccountingPeriodConfirmationForm = function ({
   accountingPeriod,
-  open,
   onClose,
   redirectUrl,
   action: serverAction,
@@ -47,7 +45,7 @@ const AccountingPeriodConfirmationForm = function ({
 
   return (
     <Dialog
-      open={open}
+      open
       onClose={pending ? undefined : onClose}
       fullWidth
       maxWidth="sm"

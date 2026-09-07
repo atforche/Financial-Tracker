@@ -14,8 +14,6 @@ interface FundGoalProgressProps {
   readonly current: number;
   readonly target: number;
   readonly satisfied: boolean;
-  readonly percent?: number;
-  readonly currentDescription?: string;
   readonly statusDescription?: string;
 }
 
@@ -27,13 +25,14 @@ const FundGoalProgress = function ({
   current,
   target,
   satisfied,
-  percent: percentOverride,
-  currentDescription,
   statusDescription,
 }: FundGoalProgressProps): JSX.Element {
   const percent =
-    percentOverride ??
-    (target === 0 ? 100 : Math.min(Math.max((current / target) * 100, 0), 100));
+    target === 0
+      ? satisfied
+        ? 100
+        : 0
+      : Math.min(Math.max((current / target) * 100, 0), 100);
   return (
     <Stack spacing={0.75}>
       <Stack direction="row" justifyContent="space-between" gap={2}>
@@ -63,8 +62,7 @@ const FundGoalProgress = function ({
       </Box>
       <Stack direction="row" justifyContent="space-between" gap={2}>
         <Typography variant="caption" color="text.secondary">
-          {currentDescription ??
-            `${formatCurrency(current)} of ${formatCurrency(target)}`}
+          {formatCurrency(current)} of {formatCurrency(target)}
         </Typography>
         <Typography variant="caption" color="text.secondary">
           {statusDescription ??

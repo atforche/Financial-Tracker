@@ -7,18 +7,9 @@ import routes from "@/transactions/routes";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
- * Props for the OverviewPageHeader component.
- */
-interface OverviewPageHeaderProps {
-  readonly title: string;
-}
-
-/**
  * Displays the Overview page heading and its primary action.
  */
-const OverviewPageHeader = function ({
-  title,
-}: OverviewPageHeaderProps): JSX.Element {
+const OverviewPageHeader = function (): JSX.Element {
   const canWrite = useWriteAccess();
 
   return (
@@ -28,7 +19,7 @@ const OverviewPageHeader = function ({
       alignItems={{ xs: "stretch", sm: "center" }}
       justifyContent="space-between"
     >
-      <Typography variant="h4">{title}</Typography>
+      <Typography variant="h4">Overview</Typography>
       {canWrite ? (
         <Link
           href={routes.workspaceCreate({ returnUrl: "/" })}

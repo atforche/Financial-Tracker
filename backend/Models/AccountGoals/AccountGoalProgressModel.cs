@@ -6,17 +6,12 @@ namespace Models.AccountGoals;
 public sealed class AccountGoalProgressModel
 {
     /// <summary>
-    /// Gets positive-balance health.
-    /// </summary>
-    public required PositiveBalanceProgressModel PositiveBalance { get; init; }
-
-    /// <summary>
     /// Gets whether the Account Goal is achieved.
     /// </summary>
     public required bool IsSatisfied { get; init; }
 
     /// <summary>
-    /// Gets ending-balance progress when bounds are configured.
+    /// Gets ending-balance progress, with a default minimum of zero.
     /// </summary>
-    public AccountGoalEndingBalanceProgressModel? EndingBalance { get; init; }
+    public required AccountGoalEndingBalanceProgressModel EndingBalance { get; init; }
 }

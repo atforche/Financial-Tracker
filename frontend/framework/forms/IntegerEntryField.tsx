@@ -6,22 +6,18 @@ import { TextField } from "@mui/material";
  * Props for the IntegerEntryField component.
  */
 interface IntegerEntryFieldProps {
-  readonly label: string;
   readonly value: number | null;
   readonly setValue?: ((value: number | null) => void) | null;
   readonly errorMessage?: string | null;
-  readonly disabled?: boolean;
 }
 
 /**
  * Component the presents the user with an entry field where they can enter integer values.
  */
 const IntegerEntryField = function ({
-  label,
   value,
   setValue = null,
   errorMessage = null,
-  disabled = false,
 }: IntegerEntryFieldProps): JSX.Element {
   const [stringValue, setStringValue] = useState(value?.toString() ?? "");
 
@@ -29,10 +25,10 @@ const IntegerEntryField = function ({
     setStringValue(value?.toString() ?? "");
   }, [value]);
 
-  if (setValue === null && !disabled) {
+  if (setValue === null) {
     return (
       <ReadOnlyField
-        label={label}
+        label="Year"
         value={value === null ? null : value.toLocaleString()}
       />
     );
@@ -40,16 +36,14 @@ const IntegerEntryField = function ({
 
   return (
     <TextField
-      label={label}
+      label="Year"
       variant="outlined"
       value={stringValue}
-      disabled={disabled}
       error={errorMessage !== null}
       helperText={errorMessage}
       slotProps={{
         input: {
           inputMode: "numeric",
-          readOnly: setValue === null,
         },
         htmlInput: {
           pattern: "[0-9]*",
@@ -62,7 +56,7 @@ const IntegerEntryField = function ({
         }
 
         setStringValue(nextValue);
-        setValue?.(nextValue === "" ? null : Number(nextValue));
+        setValue(nextValue === "" ? null : Number(nextValue));
       }}
     />
   );

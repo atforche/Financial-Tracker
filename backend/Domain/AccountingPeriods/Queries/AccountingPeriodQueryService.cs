@@ -117,6 +117,10 @@ public sealed class AccountingPeriodQueryService(
         IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await accountingPeriodQueryRepository.GetRangeIncomeFactsAsync(ids, cancellationToken);
         IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await accountingPeriodQueryRepository.GetRangeSpendingFactsAsync(ids, cancellationToken);
         var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
+        decimal totalExpectedIncome = periods.Sum(period =>
+            period.AccountingPeriod.ExpectedIncomeSources.Sum(source => source.ExpectedAmount));
+        decimal trackedExpectedIncome = periods.Sum(period =>
+            period.AccountingPeriod.ExpectedIncomeSources.Sum(source => source.ExpectedTrackedAmount));
         IReadOnlyCollection<AccountingPeriodBalance> items = Sort(periods, query.Sort)
             .Skip(query.Offset)
             .Take(query.Limit ?? int.MaxValue)
@@ -125,7 +129,9 @@ public sealed class AccountingPeriodQueryService(
             new QueryPage<AccountingPeriodBalance>(items, periods.Count),
             totals.TotalIncome,
             totals.TrackedIncome,
-            totals.TotalSpending);
+            totals.TotalSpending,
+            totalExpectedIncome,
+            trackedExpectedIncome);
         return new AccountingPeriodRangeQueryResult(range, AccountingPeriodRangeQueryFailure.None);
     }
 

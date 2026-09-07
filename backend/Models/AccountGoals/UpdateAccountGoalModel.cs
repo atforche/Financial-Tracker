@@ -6,7 +6,7 @@ namespace Models.AccountGoals;
 public sealed class UpdateAccountGoalModel
 {
     /// <summary>
-    /// Gets the minimum desired ending balance.
+    /// Gets the minimum desired ending balance. Omitted or null values default to zero.
     /// </summary>
     public decimal? MinimumEndingBalance { get; init; }
 

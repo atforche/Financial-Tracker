@@ -136,7 +136,6 @@ const UserListFrame = function ({
         <ManageUserDialog
           activeAdministratorCount={activeAdministratorCount}
           currentUserId={currentUserId}
-          open
           user={managedUser}
           onClose={() => {
             setManagedUser(null);

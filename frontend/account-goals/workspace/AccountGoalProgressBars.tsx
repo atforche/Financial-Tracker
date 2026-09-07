@@ -13,7 +13,6 @@ interface AccountGoalProgressBarsProps {
   readonly accountGoal: AccountGoal;
   readonly progress: AccountGoalProgressModel;
   readonly showUnconfigured?: boolean;
-  readonly showPositiveBalance?: boolean;
 }
 
 const displayAmount = (value: number | null | undefined): string =>
@@ -22,49 +21,26 @@ const displayAmount = (value: number | null | undefined): string =>
     : formatCurrency(value);
 
 /**
- * Displays Account Goal ending-balance progress, optionally including positive-balance progress.
+ * Displays Account Goal ending-balance progress.
  */
 const AccountGoalProgressBars = function ({
   accountGoal,
   progress,
   showUnconfigured = false,
-  showPositiveBalance = true,
 }: AccountGoalProgressBarsProps): JSX.Element {
   const { endingBalance } = progress;
   return (
     <Stack spacing={2}>
-      {showPositiveBalance ? (
-        <AccountGoalProgress
-          label="Positive Ending Balance"
-          current={progress.positiveBalance.currentBalance}
-          target={0}
-          satisfied={progress.positiveBalance.isSatisfied}
-          statusDescription={
-            progress.positiveBalance.isSatisfied
-              ? "Positive"
-              : "Must be above $0"
-          }
-        />
-      ) : null}
-      {endingBalance?.minimumBalance !== null &&
-      endingBalance?.minimumBalance !== undefined ? (
-        <AccountGoalProgress
-          label="Minimum Ending Balance"
-          current={endingBalance.currentBalance}
-          target={endingBalance.minimumBalance}
-          satisfied={
-            endingBalance.status !== AccountGoalEndingBalanceStatus.BelowMinimum
-          }
-        />
-      ) : showUnconfigured ? (
-        <StringEntryField
-          label="Minimum Ending Balance"
-          value={displayAmount(accountGoal.minimumEndingBalance)}
-          setValue={null}
-        />
-      ) : null}
-      {endingBalance?.maximumBalance !== null &&
-      endingBalance?.maximumBalance !== undefined ? (
+      <AccountGoalProgress
+        label="Minimum Ending Balance"
+        current={endingBalance.currentBalance}
+        target={endingBalance.minimumBalance}
+        satisfied={
+          endingBalance.status !== AccountGoalEndingBalanceStatus.BelowMinimum
+        }
+      />
+      {endingBalance.maximumBalance !== null &&
+      endingBalance.maximumBalance !== undefined ? (
         <AccountGoalProgress
           label="Maximum Ending Balance"
           current={endingBalance.currentBalance}

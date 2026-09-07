@@ -77,10 +77,7 @@ const AccountGoalWorkspaceDetailPage = async function ({
   });
   return (
     <PageLayout>
-      <AccountGoalWorkspacePageHeader
-        backHref={returnUrl ?? workspaceUrl}
-        title="Account Goal Details"
-      />
+      <AccountGoalWorkspacePageHeader backHref={returnUrl ?? workspaceUrl} />
       <AccountGoalContextFrame
         accountGoal={accountGoal}
         progress={progress}

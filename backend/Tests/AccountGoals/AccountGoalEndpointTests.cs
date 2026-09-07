@@ -24,6 +24,7 @@ public sealed class AccountGoalEndpointTests
 
         AccountGoalModel goal = await test.Api.GetAsync<AccountGoalModel>(
             $"/account-goals/account/{account.Id}?accountingPeriodId={period.Id}");
+        Assert.Equal(0m, goal.MinimumEndingBalance);
         AccountGoalModel updated = await test.Api.PostAsync<UpdateAccountGoalModel, AccountGoalModel>(
             $"/account-goals/{goal.Id}",
             new UpdateAccountGoalModel
@@ -43,10 +44,9 @@ public sealed class AccountGoalEndpointTests
 
         AccountGoalProgressModel progress = await test.Api.GetAsync<AccountGoalProgressModel>(
             $"/account-goals/{goal.Id}/progress/{period.Id}");
-        Assert.Equal(100m, progress.PositiveBalance.CurrentBalance);
-        Assert.True(progress.PositiveBalance.IsSatisfied);
+        Assert.Equal(100m, progress.EndingBalance.CurrentBalance);
         Assert.True(progress.IsSatisfied);
-        Assert.Equal(AccountGoalEndingBalanceStatusModel.WithinRange, progress.EndingBalance!.Status);
+        Assert.Equal(AccountGoalEndingBalanceStatusModel.WithinRange, progress.EndingBalance.Status);
 
         IReadOnlyCollection<AccountGoalProgressResultModel> progresses = await test.Api.GetAsync<IReadOnlyCollection<AccountGoalProgressResultModel>>(
             $"/account-goals/progress/{period.Id}");

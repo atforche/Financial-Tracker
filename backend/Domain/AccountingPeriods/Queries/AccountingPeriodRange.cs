@@ -7,10 +7,17 @@ public sealed record AccountingPeriodRange(
     QueryPage<AccountingPeriodBalance> AccountingPeriods,
     decimal TotalIncome,
     decimal TrackedIncome,
-    decimal TotalSpending)
+    decimal TotalSpending,
+    decimal TotalExpectedIncome,
+    decimal TrackedExpectedIncome)
 {
     /// <summary>
     /// Gets income deposited into untracked Accounts.
     /// </summary>
     public decimal UntrackedIncome => TotalIncome - TrackedIncome;
+
+    /// <summary>
+    /// Gets expected income assigned to untracked Accounts.
+    /// </summary>
+    public decimal UntrackedExpectedIncome => TotalExpectedIncome - TrackedExpectedIncome;
 }

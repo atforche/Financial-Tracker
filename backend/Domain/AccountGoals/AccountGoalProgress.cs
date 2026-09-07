@@ -6,29 +6,21 @@ namespace Domain.AccountGoals;
 public sealed class AccountGoalProgress
 {
     /// <summary>
-    /// Positive-balance health.
+    /// Ending-balance progress, with a default minimum of zero.
     /// </summary>
-    public PositiveBalanceProgress PositiveBalance { get; }
+    public AccountGoalEndingBalanceProgress EndingBalance { get; }
 
     /// <summary>
-    /// Ending-balance progress, or null when no ending-balance bounds are configured.
+    /// True when the balance satisfies every ending-balance bound.
     /// </summary>
-    public AccountGoalEndingBalanceProgress? EndingBalance { get; }
-
-    /// <summary>
-    /// True when the balance is positive and satisfies every configured ending-balance bound.
-    /// </summary>
-    public bool IsSatisfied => PositiveBalance.IsSatisfied
-        && (EndingBalance == null || EndingBalance.Status == AccountGoalEndingBalanceStatus.WithinRange);
+    public bool IsSatisfied => EndingBalance.Status == AccountGoalEndingBalanceStatus.WithinRange;
 
     /// <summary>
     /// Constructs a new instance of this class.
     /// </summary>
     internal AccountGoalProgress(
-        PositiveBalanceProgress positiveBalance,
-        AccountGoalEndingBalanceProgress? endingBalance)
+        AccountGoalEndingBalanceProgress endingBalance)
     {
-        PositiveBalance = positiveBalance;
         EndingBalance = endingBalance;
     }
 }

@@ -8,17 +8,17 @@ namespace Tests.AccountGoals;
 public sealed class AccountGoalProgressServiceTests
 {
     /// <summary>
-    /// Treats zero as not satisfying the positive-balance rule.
+    /// Treats zero as satisfying the default minimum ending balance.
     /// </summary>
     [Fact]
-    public void CalculateTreatsZeroAsNotPositive()
+    public void CalculateTreatsZeroAsSatisfyingDefaultMinimum()
     {
         AccountGoalProgress progress = AccountGoalProgressService.Calculate(0m, null, null);
 
-        Assert.False(progress.PositiveBalance.IsSatisfied);
-        Assert.False(progress.IsSatisfied);
-        Assert.Equal(0m, progress.PositiveBalance.CurrentBalance);
-        Assert.Null(progress.EndingBalance);
+        Assert.True(progress.IsSatisfied);
+        Assert.Equal(0m, progress.EndingBalance.CurrentBalance);
+        Assert.Equal(0m, progress.EndingBalance.MinimumBalance);
+        Assert.Null(progress.EndingBalance.MaximumBalance);
     }
 
     /// <summary>
@@ -31,10 +31,10 @@ public sealed class AccountGoalProgressServiceTests
         AccountGoalProgress within = AccountGoalProgressService.Calculate(150m, 100m, 200m);
         AccountGoalProgress above = AccountGoalProgressService.Calculate(250m, 100m, 200m);
 
-        Assert.Equal(AccountGoalEndingBalanceStatus.BelowMinimum, below.EndingBalance!.Status);
+        Assert.Equal(AccountGoalEndingBalanceStatus.BelowMinimum, below.EndingBalance.Status);
         Assert.Equal(20m, below.EndingBalance.AmountBelowMinimum);
-        Assert.Equal(AccountGoalEndingBalanceStatus.WithinRange, within.EndingBalance!.Status);
-        Assert.Equal(AccountGoalEndingBalanceStatus.AboveMaximum, above.EndingBalance!.Status);
+        Assert.Equal(AccountGoalEndingBalanceStatus.WithinRange, within.EndingBalance.Status);
+        Assert.Equal(AccountGoalEndingBalanceStatus.AboveMaximum, above.EndingBalance.Status);
         Assert.Equal(50m, above.EndingBalance.AmountAboveMaximum);
         Assert.True(within.IsSatisfied);
         Assert.False(below.IsSatisfied);

@@ -3725,7 +3725,7 @@ export interface components {
              * Format: double
              * @description Gets the configured minimum ending balance.
              */
-            minimumBalance?: null | number;
+            minimumBalance: number;
             /**
              * Format: double
              * @description Gets the configured maximum ending balance.
@@ -3763,7 +3763,7 @@ export interface components {
              * Format: double
              * @description Gets the minimum desired ending balance.
              */
-            minimumEndingBalance?: null | number;
+            minimumEndingBalance: number;
             /**
              * Format: double
              * @description Gets the maximum desired ending balance.
@@ -3772,11 +3772,10 @@ export interface components {
         };
         /** @description Model comparing an Account's financial state with its Account Goal. */
         AccountGoalProgressModel: {
-            /** @description Gets positive-balance health. */
-            positiveBalance: components["schemas"]["PositiveBalanceProgressModel"];
             /** @description Gets whether the Account Goal is achieved. */
             isSatisfied: boolean;
-            endingBalance?: null | components["schemas"]["AccountGoalEndingBalanceProgressModel"];
+            /** @description Gets ending-balance progress, with a default minimum of zero. */
+            endingBalance: components["schemas"]["AccountGoalEndingBalanceProgressModel"];
         };
         /** @description Model pairing an Account Goal with its progress for an Accounting Period. */
         AccountGoalProgressResultModel: {
@@ -3818,6 +3817,8 @@ export interface components {
             accountingPeriods: components["schemas"]["CollectionModelOfAccountingPeriodWithBalanceModel"];
             /** @description Total income for the requested range. */
             totalIncome: components["schemas"]["IncomeAmountModel"];
+            /** @description Total expected income for the requested range. */
+            totalExpectedIncome: components["schemas"]["IncomeAmountModel"];
             /**
              * Format: double
              * @description Total spending for the requested range.
@@ -4070,26 +4071,6 @@ export interface components {
         AccountWithBalanceRangeSortModel: AccountWithBalanceRangeSortModel | null;
         /** @enum {unknown} */
         AccountWithBalanceSortModel: AccountWithBalanceSortModel | null;
-        /** @description Model describing a Fund's available-balance health. */
-        AvailableBalanceProgressModel: {
-            /**
-             * Format: double
-             * @description Gets the current available balance.
-             */
-            currentBalance: number;
-            /**
-             * Format: double
-             * @description Gets the minimum allowed available balance.
-             */
-            minimumBalance: number;
-            /**
-             * Format: double
-             * @description Gets the amount required to restore the minimum allowed balance.
-             */
-            shortfall: number;
-            /** @description Gets whether the available balance is at least zero. */
-            isSatisfied: boolean;
-        };
         /**
          * @description Model representing the type of a balance event.
          * @enum {unknown}
@@ -4977,7 +4958,7 @@ export interface components {
              * Format: double
              * @description Gets the configured minimum ending balance.
              */
-            minimumBalance?: null | number;
+            minimumBalance: number;
             /**
              * Format: double
              * @description Gets the configured maximum ending balance.
@@ -5020,7 +5001,7 @@ export interface components {
              * Format: double
              * @description Gets the minimum ending balance.
              */
-            minimumEndingBalance?: null | number;
+            minimumEndingBalance: number;
             /**
              * Format: double
              * @description Gets the maximum ending balance.
@@ -5029,10 +5010,9 @@ export interface components {
         };
         /** @description Model comparing a Fund's financial state with its Fund Goal. */
         FundGoalProgressModel: {
-            /** @description Gets available-balance health. */
-            availableBalance: components["schemas"]["AvailableBalanceProgressModel"];
             contribution?: null | components["schemas"]["ContributionProgressModel"];
-            endingBalance?: null | components["schemas"]["FundGoalEndingBalanceProgressModel"];
+            /** @description Gets ending-balance progress, with a default minimum of zero. */
+            endingBalance: components["schemas"]["FundGoalEndingBalanceProgressModel"];
         };
         /** @description Model pairing a Fund Goal with its progress for an Accounting Period. */
         FundGoalProgressResultModel: {
@@ -5331,16 +5311,6 @@ export interface components {
              * @description Maximum ending balance for the Fund Goal.
              */
             maximumEndingBalance?: null | number;
-        };
-        /** @description Model describing positive-balance health for an Account Goal. */
-        PositiveBalanceProgressModel: {
-            /**
-             * Format: double
-             * @description Gets the current Account balance.
-             */
-            currentBalance: number;
-            /** @description Gets whether the current balance is strictly greater than zero. */
-            isSatisfied: boolean;
         };
         /** @description Model representing a request to post a Transaction */
         PostTransactionModel: {
@@ -5721,7 +5691,7 @@ export interface components {
         UpdateAccountGoalModel: {
             /**
              * Format: double
-             * @description Gets the minimum desired ending balance.
+             * @description Gets the minimum desired ending balance. Omitted or null values default to zero.
              */
             minimumEndingBalance?: null | number;
             /**
@@ -5769,7 +5739,7 @@ export interface components {
             plannedMonthlyContribution?: null | number;
             /**
              * Format: double
-             * @description Gets the new minimum ending balance.
+             * @description Gets the new minimum ending balance. Omitted or null values default to zero.
              */
             minimumEndingBalance?: null | number;
             /**

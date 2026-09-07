@@ -44,27 +44,11 @@ const sum = (values: readonly number[]): number => getCurrencyTotal(values);
 const isFundGoalSatisfied = function ({
   progress,
 }: FundGoalPeriodProgress): boolean {
-  const checks = [progress.availableBalance.isSatisfied];
+  const checks = [
+    progress.endingBalance.status === FundGoalEndingBalanceStatus.WithinRange,
+  ];
   if (progress.contribution !== null && progress.contribution !== undefined) {
     checks.push(progress.contribution.isSatisfied);
-  }
-  if (
-    progress.endingBalance?.minimumBalance !== null &&
-    progress.endingBalance?.minimumBalance !== undefined
-  ) {
-    checks.push(
-      progress.endingBalance.status !==
-        FundGoalEndingBalanceStatus.BelowMinimum,
-    );
-  }
-  if (
-    progress.endingBalance?.maximumBalance !== null &&
-    progress.endingBalance?.maximumBalance !== undefined
-  ) {
-    checks.push(
-      progress.endingBalance.status !==
-        FundGoalEndingBalanceStatus.AboveMaximum,
-    );
   }
   return checks.every((isSatisfied) => isSatisfied);
 };

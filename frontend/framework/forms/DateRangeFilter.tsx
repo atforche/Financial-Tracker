@@ -17,7 +17,6 @@ interface DateRange {
 interface DateRangeFilterProps {
   readonly value: DateRange;
   readonly onChange: (value: DateRange) => void;
-  readonly disabled?: boolean;
 }
 
 /**
@@ -26,7 +25,6 @@ interface DateRangeFilterProps {
 const DateRangeFilter = function ({
   value,
   onChange,
-  disabled = false,
 }: DateRangeFilterProps): JSX.Element {
   const [startValue, setStartValue] = useState<Dayjs | null>(() =>
     value.start === "" ? null : dayjs(value.start),
@@ -59,7 +57,6 @@ const DateRangeFilter = function ({
         <DateEntryField
           label="Start date"
           value={startValue}
-          disabled={disabled}
           size="small"
           setValue={(nextStart) => {
             setStartValue(nextStart);
@@ -81,7 +78,6 @@ const DateRangeFilter = function ({
         <DateEntryField
           label="End date"
           value={endValue}
-          disabled={disabled}
           size="small"
           setValue={(nextEnd) => {
             setEndValue(nextEnd);

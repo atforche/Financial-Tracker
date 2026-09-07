@@ -39,7 +39,7 @@ const FundGoalProgressBars = function ({
     <Stack spacing={2}>
       {showAvailableBalance ? (
         <FundGoalAvailableBalance
-          availableBalance={progress.availableBalance}
+          availableBalance={progress.endingBalance.currentBalance}
         />
       ) : null}
       {isNotNullOrUndefined(fundGoal.plannedMonthlyContribution) &&
@@ -57,26 +57,17 @@ const FundGoalProgressBars = function ({
           setValue={null}
         />
       ) : null}
-      {progress.endingBalance?.minimumBalance !== null &&
-      progress.endingBalance?.minimumBalance !== undefined ? (
-        <FundGoalProgress
-          label="Minimum Ending Balance"
-          current={progress.endingBalance.currentBalance}
-          target={progress.endingBalance.minimumBalance}
-          satisfied={
-            progress.endingBalance.status !==
-            FundGoalEndingBalanceStatus.BelowMinimum
-          }
-        />
-      ) : showUnconfigured ? (
-        <StringEntryField
-          label="Minimum Ending Balance"
-          value={displayAmount(fundGoal.minimumEndingBalance)}
-          setValue={null}
-        />
-      ) : null}
-      {progress.endingBalance?.maximumBalance !== null &&
-      progress.endingBalance?.maximumBalance !== undefined ? (
+      <FundGoalProgress
+        label="Minimum Ending Balance"
+        current={progress.endingBalance.currentBalance}
+        target={progress.endingBalance.minimumBalance}
+        satisfied={
+          progress.endingBalance.status !==
+          FundGoalEndingBalanceStatus.BelowMinimum
+        }
+      />
+      {progress.endingBalance.maximumBalance !== null &&
+      progress.endingBalance.maximumBalance !== undefined ? (
         <FundGoalProgress
           label="Maximum Ending Balance"
           current={progress.endingBalance.currentBalance}

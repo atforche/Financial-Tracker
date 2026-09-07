@@ -168,10 +168,7 @@ const FundGoalWorkspaceDetailPage = async function ({
   return (
     <PageLayout>
       <ResponsivePageSize desktopBreakpoint="lg" />
-      <FundGoalWorkspacePageHeader
-        backHref={returnUrl ?? workspaceUrl}
-        title="Fund Goal Details"
-      />
+      <FundGoalWorkspacePageHeader backHref={returnUrl ?? workspaceUrl} />
       <ViewFundGoalForm
         fundGoal={fundGoal}
         progress={progress}

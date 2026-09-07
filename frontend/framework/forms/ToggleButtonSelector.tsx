@@ -17,7 +17,6 @@ interface ToggleButtonSelectorProps<TValue extends string> {
   readonly value: TValue;
   readonly options: readonly ToggleButtonSelectorOption<TValue>[];
   readonly onChange: (value: TValue) => void;
-  readonly disabled?: boolean;
 }
 
 /**
@@ -27,13 +26,11 @@ const ToggleButtonSelector = function <TValue extends string>({
   value,
   options,
   onChange,
-  disabled = false,
 }: ToggleButtonSelectorProps<TValue>): JSX.Element {
   return (
     <ToggleButtonGroup
       value={value}
       exclusive
-      disabled={disabled}
       size="small"
       onChange={(_, nextValue: TValue | null) => {
         if (nextValue !== null) {

@@ -6,29 +6,22 @@ namespace Domain.FundGoals;
 public sealed class FundGoalProgress
 {
     /// <summary>
-    /// Available-balance health.
-    /// </summary>
-    public AvailableBalanceProgress AvailableBalance { get; }
-
-    /// <summary>
     /// Contribution progress, or null when no contribution dimension is configured.
     /// </summary>
     public ContributionProgress? Contribution { get; }
 
     /// <summary>
-    /// Ending-balance progress, or null when no ending-balance bounds are configured.
+    /// Ending-balance progress, with a default minimum of zero.
     /// </summary>
-    public FundGoalEndingBalanceProgress? EndingBalance { get; }
+    public FundGoalEndingBalanceProgress EndingBalance { get; }
 
     /// <summary>
     /// Constructs a new instance of this class.
     /// </summary>
     internal FundGoalProgress(
-        AvailableBalanceProgress availableBalance,
         ContributionProgress? contribution,
-        FundGoalEndingBalanceProgress? endingBalance)
+        FundGoalEndingBalanceProgress endingBalance)
     {
-        AvailableBalance = availableBalance;
         Contribution = contribution;
         EndingBalance = endingBalance;
     }

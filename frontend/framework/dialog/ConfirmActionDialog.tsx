@@ -19,7 +19,6 @@ interface ConfirmActionDialogProps {
   readonly errorTitle?: string | null | undefined;
   readonly unmappedErrors?: string | null | undefined;
   readonly confirmButtonProps?: Omit<ButtonProps, "children" | "onClick">;
-  readonly cancelButtonProps?: Omit<ButtonProps, "children" | "onClick">;
 }
 
 /**
@@ -36,7 +35,6 @@ const ConfirmActionDialog = function ({
   errorTitle = null,
   unmappedErrors = null,
   confirmButtonProps,
-  cancelButtonProps,
 }: ConfirmActionDialogProps): JSX.Element {
   const [open, setOpen] = useState(false);
   const [confirmationAttempted, setConfirmationAttempted] = useState(false);
@@ -65,11 +63,7 @@ const ConfirmActionDialog = function ({
         title={title}
         actions={
           <>
-            <Button
-              {...cancelButtonProps}
-              disabled={pending}
-              onClick={closeDialog}
-            >
+            <Button disabled={pending} onClick={closeDialog}>
               Cancel
             </Button>
             <Button

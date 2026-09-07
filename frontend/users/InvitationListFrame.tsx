@@ -107,7 +107,6 @@ const InvitationListFrame = function ({
       {managedInvitation !== null ? (
         <ManageInvitationDialog
           invitation={managedInvitation}
-          open
           onClose={() => {
             setManagedInvitation(null);
           }}

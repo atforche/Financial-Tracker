@@ -61,7 +61,7 @@ public sealed class AccountingPeriodLifecycleTests
 
         Assert.Equal("Unassigned", goal.Fund.Name);
         Assert.Null(goal.PlannedMonthlyContribution);
-        Assert.Null(goal.MinimumEndingBalance);
+        Assert.Equal(0m, goal.MinimumEndingBalance);
         Assert.Null(goal.MaximumEndingBalance);
         Assert.Contains(progresses, progress => progress.FundGoalId == goal.Id);
         Assert.NotNull(directProgress);

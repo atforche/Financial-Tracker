@@ -21,20 +21,14 @@ public static class FundGoalProgressService
             plannedMonthlyContribution,
             maximumEndingBalance);
         ContributionProgress? contribution = plannedMonthlyContribution != null
-            || minimumEndingBalance != null
-            || maximumEndingBalance != null
             ? new ContributionProgress(expectedContribution, amountAssignedToExpectedContribution)
             : null;
-        FundGoalEndingBalanceProgress? endingBalance = minimumEndingBalance != null
-            || maximumEndingBalance != null
-            ? new FundGoalEndingBalanceProgress(
-                currentAvailableBalance,
-                minimumEndingBalance,
-                maximumEndingBalance)
-            : null;
+        FundGoalEndingBalanceProgress endingBalance = new(
+            currentAvailableBalance,
+            minimumEndingBalance ?? 0m,
+            maximumEndingBalance);
 
         return new FundGoalProgress(
-            new AvailableBalanceProgress(currentAvailableBalance),
             contribution,
             endingBalance);
     }

@@ -63,11 +63,13 @@ const Dialog = function ({
           const resolvedProps = paperSlotProps(ownerState);
           return {
             ...resolvedProps,
+            elevation: 1,
             sx: buildPaperSx(resolvedProps.sx),
           };
         }
       : {
           ...paperSlotProps,
+          elevation: 1,
           sx: buildPaperSx(paperSlotProps?.sx),
         };
 

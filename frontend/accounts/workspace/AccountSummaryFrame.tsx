@@ -39,7 +39,6 @@ const AccountSummaryFrame = function ({
           errorMessage={null}
         />
         <AccountTypeEntryField
-          label="Type"
           value={account.type}
           setValue={null}
           errorMessage={null}

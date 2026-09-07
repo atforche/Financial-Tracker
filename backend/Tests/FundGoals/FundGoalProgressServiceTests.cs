@@ -35,7 +35,7 @@ public sealed class FundGoalProgressServiceTests
     {
         FundGoalProgress progress = FundGoalProgressService.Calculate(40m, 130m, 25m, 150m, 200m);
 
-        Assert.True(progress.AvailableBalance.IsSatisfied);
+        Assert.Equal(FundGoalEndingBalanceStatus.BelowMinimum, progress.EndingBalance.Status);
         Assert.NotNull(progress.Contribution);
         Assert.Equal(25m, progress.Contribution.ExpectedAmount);
         Assert.NotNull(progress.EndingBalance);
@@ -70,10 +70,11 @@ public sealed class FundGoalProgressServiceTests
     {
         FundGoalProgress progress = FundGoalProgressService.Calculate(0m, -10m, null, null, null);
 
-        Assert.False(progress.AvailableBalance.IsSatisfied);
-        Assert.Equal(10m, progress.AvailableBalance.Shortfall);
+        Assert.Equal(FundGoalEndingBalanceStatus.BelowMinimum, progress.EndingBalance.Status);
+        Assert.Equal(0m, progress.EndingBalance.MinimumBalance);
+        Assert.Equal(10m, progress.EndingBalance.AmountBelowMinimum);
         Assert.Null(progress.Contribution);
-        Assert.Null(progress.EndingBalance);
+        Assert.Null(progress.EndingBalance.MaximumBalance);
     }
 
     /// <summary>
@@ -85,9 +86,27 @@ public sealed class FundGoalProgressServiceTests
         FundGoalProgress below = FundGoalProgressService.Calculate(20m, 80m, null, 150m, 200m);
         FundGoalProgress above = FundGoalProgressService.Calculate(150m, 250m, null, 150m, 200m);
 
-        Assert.Equal(FundGoalEndingBalanceStatus.BelowMinimum, below.EndingBalance!.Status);
+        Assert.Equal(FundGoalEndingBalanceStatus.BelowMinimum, below.EndingBalance.Status);
         Assert.Equal(70m, below.EndingBalance.AmountBelowMinimum);
-        Assert.Equal(FundGoalEndingBalanceStatus.AboveMaximum, above.EndingBalance!.Status);
+        Assert.Equal(FundGoalEndingBalanceStatus.AboveMaximum, above.EndingBalance.Status);
         Assert.Equal(50m, above.EndingBalance.AmountAboveMaximum);
+        Assert.Null(below.Contribution);
+        Assert.Null(above.Contribution);
+    }
+
+    /// <summary>
+    /// A zero minimum is satisfied at zero and never creates a contribution objective.
+    /// </summary>
+    [Theory]
+    [InlineData(0, null)]
+    [InlineData(20, null)]
+    [InlineData(0, 100)]
+    public void CalculateUsesZeroMinimumWithoutContribution(decimal balance, int? maximum)
+    {
+        FundGoalProgress progress = FundGoalProgressService.Calculate(0m, balance, null, 0m, maximum);
+
+        Assert.Equal(FundGoalEndingBalanceStatus.WithinRange, progress.EndingBalance.Status);
+        Assert.Equal(0m, progress.EndingBalance.AmountBelowMinimum);
+        Assert.Null(progress.Contribution);
     }
 }

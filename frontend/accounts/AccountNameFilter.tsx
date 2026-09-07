@@ -11,7 +11,6 @@ interface AccountNameFilterProps {
   readonly availableAccountNames: readonly string[];
   readonly value: readonly string[];
   readonly onChange: (accountNames: readonly string[]) => void;
-  readonly disabled?: boolean;
 }
 
 /**
@@ -21,14 +20,13 @@ const AccountNameFilter = function ({
   availableAccountNames,
   value,
   onChange,
-  disabled = false,
 }: AccountNameFilterProps): JSX.Element {
   return (
     <MultiSelectAutocompleteFilter
       label="Account names"
       options={availableAccountNames}
       value={value}
-      disabled={disabled || availableAccountNames.length === 0}
+      disabled={availableAccountNames.length === 0}
       placeholder="All account names"
       noOptionsText={
         availableAccountNames.length === 0

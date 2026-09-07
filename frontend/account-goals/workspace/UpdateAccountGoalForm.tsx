@@ -16,6 +16,7 @@ import {
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import GoalAmountOption from "@/framework/forms/GoalAmountOption";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import updateAccountGoal from "@/account-goals/workspace/updateAccountGoal";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
@@ -35,7 +36,7 @@ const UpdateAccountGoalForm = function ({
   const canWrite = useWriteAccess();
   const [open, setOpen] = useState(false);
   const [minimumEndingBalance, setMinimumEndingBalance] = useState(
-    accountGoal.minimumEndingBalance ?? null,
+    accountGoal.minimumEndingBalance,
   );
   const [maximumEndingBalance, setMaximumEndingBalance] = useState(
     accountGoal.maximumEndingBalance ?? null,
@@ -43,7 +44,7 @@ const UpdateAccountGoalForm = function ({
   const formRef = useRef<HTMLDivElement | null>(null);
   const [state, action, pending] = useActionState(updateAccountGoal, {});
   const reset = (): void => {
-    setMinimumEndingBalance(accountGoal.minimumEndingBalance ?? null);
+    setMinimumEndingBalance(accountGoal.minimumEndingBalance);
     setMaximumEndingBalance(accountGoal.maximumEndingBalance ?? null);
     focusFirstEntryControl(formRef.current);
   };
@@ -59,7 +60,6 @@ const UpdateAccountGoalForm = function ({
     maximumEndingBalance,
   };
   const rangeIsValid =
-    minimumEndingBalance === null ||
     maximumEndingBalance === null ||
     minimumEndingBalance <= maximumEndingBalance;
   if (!canWrite) {
@@ -121,10 +121,12 @@ const UpdateAccountGoalForm = function ({
           <CurrencyEntryField
             label="Minimum Ending Balance"
             value={minimumEndingBalance}
-            setValue={setMinimumEndingBalance}
+            setValue={(value) => {
+              setMinimumEndingBalance(value ?? 0);
+            }}
             errorMessage={state.minimumEndingBalanceErrors ?? null}
           />
-          <CurrencyEntryField
+          <GoalAmountOption
             label="Maximum Ending Balance"
             value={maximumEndingBalance}
             setValue={setMaximumEndingBalance}

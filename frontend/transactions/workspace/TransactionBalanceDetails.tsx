@@ -8,7 +8,6 @@ import { formatCurrency } from "@/framework/currencyHelpers";
 interface TransactionBalanceDetailsProps {
   readonly previousPostedBalance: number;
   readonly newPostedBalance: number;
-  readonly newBalanceLabel?: string;
 }
 
 /**
@@ -17,7 +16,6 @@ interface TransactionBalanceDetailsProps {
 const TransactionBalanceDetails = function ({
   previousPostedBalance,
   newPostedBalance,
-  newBalanceLabel = "New",
 }: TransactionBalanceDetailsProps): JSX.Element {
   return (
     <Stack
@@ -33,7 +31,7 @@ const TransactionBalanceDetails = function ({
         variant="outlined"
       />
       <Chip
-        label={`${newBalanceLabel} ${formatCurrency(newPostedBalance)}`}
+        label={`New ${formatCurrency(newPostedBalance)}`}
         size="small"
         color="primary"
         variant="outlined"

@@ -31,7 +31,7 @@ public sealed class FundGoalModel
     /// <summary>
     /// Gets the minimum ending balance.
     /// </summary>
-    public decimal? MinimumEndingBalance { get; init; }
+    public required decimal MinimumEndingBalance { get; init; }
 
     /// <summary>
     /// Gets the maximum ending balance.

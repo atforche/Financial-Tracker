@@ -13,7 +13,7 @@ public sealed class FundGoalEndingBalanceProgress
     /// <summary>
     /// Configured minimum ending balance.
     /// </summary>
-    public decimal? MinimumBalance { get; }
+    public decimal MinimumBalance { get; }
 
     /// <summary>
     /// Configured maximum ending balance.
@@ -23,9 +23,7 @@ public sealed class FundGoalEndingBalanceProgress
     /// <summary>
     /// Nonnegative amount below the configured minimum.
     /// </summary>
-    public decimal AmountBelowMinimum => MinimumBalance is decimal minimum
-        ? Math.Max(minimum - CurrentBalance, 0)
-        : 0;
+    public decimal AmountBelowMinimum => Math.Max(MinimumBalance - CurrentBalance, 0);
 
     /// <summary>
     /// Nonnegative amount above the configured maximum.
@@ -48,7 +46,7 @@ public sealed class FundGoalEndingBalanceProgress
     /// </summary>
     internal FundGoalEndingBalanceProgress(
         decimal currentBalance,
-        decimal? minimumBalance,
+        decimal minimumBalance,
         decimal? maximumBalance)
     {
         CurrentBalance = currentBalance;

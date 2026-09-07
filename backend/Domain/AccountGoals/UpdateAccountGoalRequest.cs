@@ -6,7 +6,7 @@ namespace Domain.AccountGoals;
 public sealed record UpdateAccountGoalRequest
 {
     /// <summary>
-    /// Minimum desired ending balance.
+    /// Minimum desired ending balance. Null defaults to zero.
     /// </summary>
     public decimal? MinimumEndingBalance { get; init; }
 

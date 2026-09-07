@@ -38,7 +38,7 @@ const UpdateFundGoalForm = function ({
     fundGoal.plannedMonthlyContribution ?? null,
   );
   const [minimumEndingBalance, setMinimumEndingBalance] = useState(
-    fundGoal.minimumEndingBalance ?? null,
+    fundGoal.minimumEndingBalance,
   );
   const [maximumEndingBalance, setMaximumEndingBalance] = useState(
     fundGoal.maximumEndingBalance ?? null,
@@ -47,7 +47,7 @@ const UpdateFundGoalForm = function ({
   const [state, action, pending] = useActionState(updateFundGoal, {});
   const reset = (): void => {
     setPlannedMonthlyContribution(fundGoal.plannedMonthlyContribution ?? null);
-    setMinimumEndingBalance(fundGoal.minimumEndingBalance ?? null);
+    setMinimumEndingBalance(fundGoal.minimumEndingBalance);
     setMaximumEndingBalance(fundGoal.maximumEndingBalance ?? null);
     focusFirstEntryControl(formRef.current);
   };
@@ -64,7 +64,6 @@ const UpdateFundGoalForm = function ({
     maximumEndingBalance,
   };
   const rangeIsValid =
-    minimumEndingBalance === null ||
     maximumEndingBalance === null ||
     minimumEndingBalance <= maximumEndingBalance;
   if (!canWrite) {
@@ -125,6 +124,7 @@ const UpdateFundGoalForm = function ({
       >
         <Stack ref={formRef} spacing={3}>
           <FundGoalSetupSection
+            showFrame={false}
             plannedMonthlyContribution={plannedMonthlyContribution}
             setPlannedMonthlyContribution={setPlannedMonthlyContribution}
             minimumEndingBalance={minimumEndingBalance}

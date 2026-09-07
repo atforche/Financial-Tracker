@@ -50,7 +50,7 @@ const AccountGoalsFrame = function ({
       name: "endingBalance",
       headerContent: "Ending Balance",
       getBodyContent: (goal) =>
-        formatCurrency(goal.progress.positiveBalance.currentBalance),
+        formatCurrency(goal.progress.endingBalance.currentBalance),
       alignment: "right",
     },
     {

@@ -17,7 +17,9 @@ interface AccountingPeriodFilterProps {
 }
 
 const fieldSx = {
-  minWidth: { xs: "100%", sm: 180 },
+  minWidth: { xs: "100%", sm: 240 },
+  flex: 1,
+  flexShrink: 0,
 };
 
 /**

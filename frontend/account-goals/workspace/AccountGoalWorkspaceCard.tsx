@@ -1,6 +1,10 @@
 "use client";
 
 import {
+  AccountGoalEndingBalanceStatus,
+  type AccountGoalWithProgress,
+} from "@/account-goals/types";
+import {
   Box,
   Collapse,
   IconButton,
@@ -10,16 +14,12 @@ import {
 } from "@mui/material";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
 import { type JSX, useState } from "react";
-import {
-  compareCurrencyAmounts,
-  formatCurrency,
-} from "@/framework/currencyHelpers";
 import AccountGoalProgressBars from "@/account-goals/workspace/AccountGoalProgressBars";
-import type { AccountGoalWithProgress } from "@/account-goals/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
+import { formatCurrency } from "@/framework/currencyHelpers";
 import { getAccountGoalDimensionSummary } from "@/account-goals/helpers";
 
 interface AccountGoalWorkspaceCardProps {
@@ -39,8 +39,6 @@ const AccountGoalWorkspaceCard = function ({
   const [expanded, setExpanded] = useState(false);
   const summary = getAccountGoalDimensionSummary(
     accountGoal.progress,
-    accountGoal.minimumEndingBalance !== null &&
-      accountGoal.minimumEndingBalance !== undefined,
     accountGoal.maximumEndingBalance !== null &&
       accountGoal.maximumEndingBalance !== undefined,
   );
@@ -82,17 +80,13 @@ const AccountGoalWorkspaceCard = function ({
             variant="body2"
             fontWeight={700}
             color={
-              compareCurrencyAmounts(
-                accountGoal.progress.positiveBalance.currentBalance,
-                0,
-              ) >= 0
+              accountGoal.progress.endingBalance.status ===
+              AccountGoalEndingBalanceStatus.WithinRange
                 ? "success.main"
                 : "error.main"
             }
           >
-            {formatCurrency(
-              accountGoal.progress.positiveBalance.currentBalance,
-            )}
+            {formatCurrency(accountGoal.progress.endingBalance.currentBalance)}
           </Typography>
         </Stack>
         <Box>
@@ -100,7 +94,6 @@ const AccountGoalWorkspaceCard = function ({
             <AccountGoalProgressBars
               accountGoal={accountGoal}
               progress={accountGoal.progress}
-              showPositiveBalance={false}
             />
           </Collapse>
           <Stack
@@ -121,9 +114,6 @@ const AccountGoalWorkspaceCard = function ({
                 size="small"
                 onClick={() => {
                   setExpanded((currentExpanded) => !currentExpanded);
-                }}
-                sx={{
-                  visibility: summary.configured === 1 ? "hidden" : "visible",
                 }}
               >
                 {expanded ? <ExpandLess /> : <ExpandMore />}

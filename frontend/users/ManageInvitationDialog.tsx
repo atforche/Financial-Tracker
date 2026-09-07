@@ -18,7 +18,6 @@ import useUserManagementAction from "@/users/useUserManagementAction";
 interface ManageInvitationDialogProps {
   readonly invitation: UserInvitation;
   readonly onClose: () => void;
-  readonly open: boolean;
 }
 
 /**
@@ -27,7 +26,6 @@ interface ManageInvitationDialogProps {
 const ManageInvitationDialog = function ({
   invitation,
   onClose,
-  open,
 }: ManageInvitationDialogProps): JSX.Element {
   const { pending, run, state } = useUserManagementAction();
   const canRevoke = invitation.status === UserInvitationStatusModel.Pending;
@@ -40,7 +38,7 @@ const ManageInvitationDialog = function ({
 
   return (
     <Dialog
-      open={open}
+      open
       onClose={pending ? undefined : onClose}
       fullWidth
       maxWidth="sm"
