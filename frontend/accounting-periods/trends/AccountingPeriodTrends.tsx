@@ -24,6 +24,7 @@ import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import { compareAccountingPeriods } from "@/accounting-periods/helpers";
 import createApiClient from "@/framework/data/createApiClient";
 import { createEmptyTrends } from "@/accounting-periods/trends/helpers";
+import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import routes from "@/accounting-periods/routes";
 import transactionRoutes from "@/transactions/routes";
@@ -79,13 +80,13 @@ const AccountingPeriodTrends = async function ({
   const rowsPerPage = getRowsPerPage(pageSize);
 
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
-  const defaultStartAccountingPeriod =
-    accountingPeriods.items.at(
-      Math.min(11, accountingPeriods.items.length - 1),
-    ) ?? null;
+  const defaultAccountingPeriodRange = getDefaultTrendAccountingPeriodRange(
+    accountingPeriods.items,
+  );
   const defaultStartAccountingPeriodId =
-    defaultStartAccountingPeriod?.id ?? null;
-  const defaultEndAccountingPeriodId = latestAccountingPeriod?.id ?? null;
+    defaultAccountingPeriodRange?.start ?? null;
+  const defaultEndAccountingPeriodId =
+    defaultAccountingPeriodRange?.end ?? null;
   const selectedAccountingPeriodIds = ((): string[] => {
     if (latestAccountingPeriod === null) {
       return [];
@@ -178,8 +179,6 @@ const AccountingPeriodTrends = async function ({
       <ConstrainedContent>
         <AccountingPeriodTrendsFilter
           accountingPeriods={accountingPeriods.items}
-          defaultStartAccountingPeriodId={defaultStartAccountingPeriodId}
-          defaultEndAccountingPeriodId={defaultEndAccountingPeriodId}
           disabled={latestAccountingPeriod === null}
         />
       </ConstrainedContent>

@@ -6,6 +6,7 @@ import type { AccountingPeriodTrendsSearchParams } from "@/accounting-periods/tr
 import { Button } from "@mui/material";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
+import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import propertyName from "@/framework/data/propertyName";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
@@ -15,8 +16,6 @@ import { useSearchParams } from "next/navigation";
  */
 interface AccountingPeriodTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
-  readonly defaultStartAccountingPeriodId: string | null;
-  readonly defaultEndAccountingPeriodId: string | null;
   readonly disabled?: boolean;
 }
 
@@ -25,10 +24,11 @@ interface AccountingPeriodTrendsFilterProps {
  */
 const AccountingPeriodTrendsFilter = function ({
   accountingPeriods,
-  defaultStartAccountingPeriodId,
-  defaultEndAccountingPeriodId,
   disabled = false,
 }: AccountingPeriodTrendsFilterProps): JSX.Element {
+  const defaultRange = getDefaultTrendAccountingPeriodRange(accountingPeriods);
+  const defaultStartAccountingPeriodId = defaultRange?.start ?? null;
+  const defaultEndAccountingPeriodId = defaultRange?.end ?? null;
   const searchParams = useSearchParams();
 
   const pageParamName =

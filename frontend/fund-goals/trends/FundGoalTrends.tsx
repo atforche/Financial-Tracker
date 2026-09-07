@@ -13,6 +13,7 @@ import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import createApiClient from "@/framework/data/createApiClient";
+import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
 import loadAllPages from "@/framework/data/loadAllPages";
 import { redirect } from "next/navigation";
@@ -47,6 +48,7 @@ const FundGoalTrends = async function ({
     ),
   );
   const latest = periods[0] ?? null;
+  const defaultRange = getDefaultTrendAccountingPeriodRange(periods);
   if (
     (isNullOrUndefined(params.startAccountingPeriodId) ||
       isNullOrUndefined(params.endAccountingPeriodId)) &&
@@ -54,13 +56,13 @@ const FundGoalTrends = async function ({
   ) {
     redirect(
       routes.trends({
-        startAccountingPeriodId: latest.id,
-        endAccountingPeriodId: latest.id,
+        startAccountingPeriodId: defaultRange?.start ?? latest.id,
+        endAccountingPeriodId: defaultRange?.end ?? latest.id,
       }),
     );
   }
-  const start = params.startAccountingPeriodId ?? latest?.id;
-  const end = params.endAccountingPeriodId ?? latest?.id;
+  const start = params.startAccountingPeriodId ?? defaultRange?.start;
+  const end = params.endAccountingPeriodId ?? defaultRange?.end;
   const startIndex = periods.findIndex((period) => period.id === start);
   const endIndex = periods.findIndex((period) => period.id === end);
   const selectedPeriods =
@@ -163,7 +165,6 @@ const FundGoalTrends = async function ({
           availableFundNames={[
             ...new Set(fundGoals.map((fundGoal) => fundGoal.fund.name)),
           ]}
-          defaultAccountingPeriodId={periods[0]?.id ?? null}
           transactionWorkspaceHref={transactionWorkspaceHref}
         />
       </ConstrainedContent>
