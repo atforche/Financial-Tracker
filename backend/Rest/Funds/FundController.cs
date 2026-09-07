@@ -151,6 +151,7 @@ public sealed class FundController(
                 PlannedMonthlyContribution = createFundModel.PlannedMonthlyContribution,
                 MinimumEndingBalance = createFundModel.MinimumEndingBalance,
                 MaximumEndingBalance = createFundModel.MaximumEndingBalance,
+                AllowExpectedContributionAboveMaximum = createFundModel.AllowExpectedContributionAboveMaximum,
             },
             out Fund? newFund,
             out IEnumerable<ValidationError> validationErrors))
@@ -185,6 +186,7 @@ public sealed class FundController(
                 PlannedMonthlyContribution = onboardFundModel.PlannedMonthlyContribution,
                 MinimumEndingBalance = onboardFundModel.MinimumEndingBalance,
                 MaximumEndingBalance = onboardFundModel.MaximumEndingBalance,
+                AllowExpectedContributionAboveMaximum = onboardFundModel.AllowExpectedContributionAboveMaximum,
             },
             out Fund? newFund,
             out IEnumerable<ValidationError> validationErrors))

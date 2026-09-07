@@ -34,4 +34,9 @@ public record OnboardFundRequest
     /// Maximum ending balance for the onboarded Fund Goal.
     /// </summary>
     public required decimal? MaximumEndingBalance { get; init; }
+
+    /// <summary>
+    /// Whether the planned contribution may exceed the maximum ending balance.
+    /// </summary>
+    public bool AllowExpectedContributionAboveMaximum { get; init; }
 }

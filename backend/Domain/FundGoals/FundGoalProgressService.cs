@@ -13,15 +13,20 @@ public static class FundGoalProgressService
         decimal currentAvailableBalance,
         decimal? plannedMonthlyContribution,
         decimal? minimumEndingBalance,
-        decimal? maximumEndingBalance)
+        decimal? maximumEndingBalance,
+        bool allowExpectedContributionAboveMaximum = false)
     {
         decimal expectedContribution = CalculateExpectedContribution(
             currentAvailableBalance,
             amountAssignedToExpectedContribution,
             plannedMonthlyContribution,
-            maximumEndingBalance);
+            maximumEndingBalance,
+            allowExpectedContributionAboveMaximum);
         ContributionProgress? contribution = plannedMonthlyContribution != null
-            ? new ContributionProgress(expectedContribution, amountAssignedToExpectedContribution)
+            ? new ContributionProgress(
+                plannedMonthlyContribution.Value,
+                expectedContribution,
+                amountAssignedToExpectedContribution)
             : null;
         FundGoalEndingBalanceProgress endingBalance = new(
             currentAvailableBalance,
@@ -40,10 +45,11 @@ public static class FundGoalProgressService
         decimal currentAvailableBalance,
         decimal currentContributions,
         decimal? plannedMonthlyContribution,
-        decimal? maximumEndingBalance)
+        decimal? maximumEndingBalance,
+        bool allowExpectedContributionAboveMaximum = false)
     {
         decimal expectedContribution = Math.Max(plannedMonthlyContribution ?? 0, 0);
-        if (maximumEndingBalance is decimal maximum)
+        if (maximumEndingBalance is decimal maximum && !allowExpectedContributionAboveMaximum)
         {
             decimal contributions = Math.Max(currentContributions, 0);
             decimal availableBalance = maximum - currentAvailableBalance;

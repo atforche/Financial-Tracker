@@ -164,7 +164,8 @@ public sealed class FundGoalBalanceEventQueryService(
                     .SingleOrDefault(totals => totals.Fund.Id == balanceEvent.Fund.Id)
                     ?.GetTotals().AmountAssignedToExpectedContribution ?? 0,
                 fundGoal.PlannedMonthlyContribution,
-                fundGoal.MaximumEndingBalance);
+                fundGoal.MaximumEndingBalance,
+                fundGoal.AllowExpectedContributionAboveMaximum);
             remainingByFundAndPeriod[key] = expectedAmount;
             return expectedAmount;
         }

@@ -34,4 +34,9 @@ public class OnboardFundModel
     /// Maximum ending balance for the Fund Goal.
     /// </summary>
     public decimal? MaximumEndingBalance { get; init; }
+
+    /// <summary>
+    /// Whether the planned contribution may exceed the maximum ending balance.
+    /// </summary>
+    public bool AllowExpectedContributionAboveMaximum { get; init; }
 }

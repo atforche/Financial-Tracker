@@ -6,9 +6,19 @@ namespace Domain.FundGoals;
 public sealed class ContributionProgress
 {
     /// <summary>
+    /// Configured planned contribution before applying the maximum ending-balance constraint.
+    /// </summary>
+    public decimal PlannedAmount { get; }
+
+    /// <summary>
     /// Expected contribution after applying the configured bounds.
     /// </summary>
     public decimal ExpectedAmount { get; }
+
+    /// <summary>
+    /// Nonnegative amount removed from the planned contribution by the maximum ending-balance constraint.
+    /// </summary>
+    public decimal AmountReducedByMaximumEndingBalance => Math.Max(PlannedAmount - ExpectedAmount, 0);
 
     /// <summary>
     /// Amount assigned during the Accounting Period.
@@ -28,8 +38,9 @@ public sealed class ContributionProgress
     /// <summary>
     /// Constructs a new instance of this class.
     /// </summary>
-    internal ContributionProgress(decimal expectedAmount, decimal assignedAmount)
+    internal ContributionProgress(decimal plannedAmount, decimal expectedAmount, decimal assignedAmount)
     {
+        PlannedAmount = plannedAmount;
         ExpectedAmount = expectedAmount;
         AssignedAmount = assignedAmount;
     }

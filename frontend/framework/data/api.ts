@@ -4272,9 +4272,19 @@ export interface components {
         ContributionProgressModel: {
             /**
              * Format: double
+             * @description Gets the configured planned contribution before applying the maximum ending-balance constraint.
+             */
+            plannedAmount: number;
+            /**
+             * Format: double
              * @description Gets the expected contribution.
              */
             expectedAmount: number;
+            /**
+             * Format: double
+             * @description Gets the nonnegative amount removed from the planned contribution by the maximum ending-balance constraint.
+             */
+            amountReducedByMaximumEndingBalance: number;
             /**
              * Format: double
              * @description Gets the amount assigned.
@@ -4382,6 +4392,8 @@ export interface components {
              * @description Maximum ending balance for the Fund Goal.
              */
             maximumEndingBalance?: null | number;
+            /** @description Whether the planned contribution may exceed the maximum ending balance. */
+            allowExpectedContributionAboveMaximum?: boolean;
         };
         /** @description Model representing a destination of a fund transaction create request. */
         CreateFundTransactionDestinationModel: {
@@ -5007,6 +5019,8 @@ export interface components {
              * @description Gets the maximum ending balance.
              */
             maximumEndingBalance?: null | number;
+            /** @description Gets whether the planned contribution may exceed the maximum ending balance. */
+            allowExpectedContributionAboveMaximum?: boolean;
         };
         /** @description Model comparing a Fund's financial state with its Fund Goal. */
         FundGoalProgressModel: {
@@ -5311,6 +5325,8 @@ export interface components {
              * @description Maximum ending balance for the Fund Goal.
              */
             maximumEndingBalance?: null | number;
+            /** @description Whether the planned contribution may exceed the maximum ending balance. */
+            allowExpectedContributionAboveMaximum?: boolean;
         };
         /** @description Model representing a request to post a Transaction */
         PostTransactionModel: {
@@ -5747,6 +5763,8 @@ export interface components {
              * @description Gets the new maximum ending balance.
              */
             maximumEndingBalance?: null | number;
+            /** @description Gets whether the planned contribution may exceed the maximum ending balance. */
+            allowExpectedContributionAboveMaximum?: boolean;
         };
         /** @description Model representing a request to update a Fund */
         UpdateFundModel: {

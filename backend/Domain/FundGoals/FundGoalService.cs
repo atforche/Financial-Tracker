@@ -42,7 +42,8 @@ public sealed class FundGoalService(
             request.AccountingPeriod,
             request.PlannedMonthlyContribution,
             request.MinimumEndingBalance,
-            request.MaximumEndingBalance);
+            request.MaximumEndingBalance,
+            request.AllowExpectedContributionAboveMaximum);
         return true;
     }
 
@@ -73,7 +74,8 @@ public sealed class FundGoalService(
         fundGoal.Update(
             request.PlannedMonthlyContribution,
             request.MinimumEndingBalance,
-            request.MaximumEndingBalance);
+            request.MaximumEndingBalance,
+            request.AllowExpectedContributionAboveMaximum);
         return true;
     }
 
@@ -89,7 +91,8 @@ public sealed class FundGoalService(
                 accountingPeriod,
                 existingGoal.PlannedMonthlyContribution,
                 existingGoal.MinimumEndingBalance,
-                existingGoal.MaximumEndingBalance);
+                existingGoal.MaximumEndingBalance,
+                existingGoal.AllowExpectedContributionAboveMaximum);
             if (!fundGoalRepository.TryAdd(copiedGoal))
             {
                 throw new InvalidOperationException("A Fund Goal already exists for the Fund and Accounting Period.");
@@ -145,7 +148,8 @@ public sealed class FundGoalService(
             fundBalanceHistory.ClosingBalance,
             fundGoal.PlannedMonthlyContribution,
             fundGoal.MinimumEndingBalance,
-            fundGoal.MaximumEndingBalance);
+            fundGoal.MaximumEndingBalance,
+            fundGoal.AllowExpectedContributionAboveMaximum);
         return true;
     }
 
@@ -178,7 +182,8 @@ public sealed class FundGoalService(
                 fundBalanceHistory.ClosingBalance,
                 fundGoal.PlannedMonthlyContribution,
                 fundGoal.MinimumEndingBalance,
-                fundGoal.MaximumEndingBalance));
+                fundGoal.MaximumEndingBalance,
+                fundGoal.AllowExpectedContributionAboveMaximum));
         }
         return results;
     }

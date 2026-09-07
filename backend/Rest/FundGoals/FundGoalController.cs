@@ -187,6 +187,7 @@ public sealed class FundGoalController(
         PlannedMonthlyContribution = model.PlannedMonthlyContribution,
         MinimumEndingBalance = model.MinimumEndingBalance,
         MaximumEndingBalance = model.MaximumEndingBalance,
+        AllowExpectedContributionAboveMaximum = model.AllowExpectedContributionAboveMaximum,
     };
 
     /// <summary>
@@ -196,7 +197,9 @@ public sealed class FundGoalController(
     {
         Contribution = progress.Contribution == null ? null : new ContributionProgressModel
         {
+            PlannedAmount = progress.Contribution.PlannedAmount,
             ExpectedAmount = progress.Contribution.ExpectedAmount,
+            AmountReducedByMaximumEndingBalance = progress.Contribution.AmountReducedByMaximumEndingBalance,
             AssignedAmount = progress.Contribution.AssignedAmount,
             RemainingAmount = progress.Contribution.RemainingAmount,
             IsSatisfied = progress.Contribution.IsSatisfied,

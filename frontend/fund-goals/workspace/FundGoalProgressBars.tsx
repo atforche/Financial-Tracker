@@ -4,6 +4,7 @@ import {
   type FundGoalProgress as FundGoalProgressModel,
 } from "@/fund-goals/types";
 import FundGoalAvailableBalance from "@/fund-goals/workspace/FundGoalAvailableBalance";
+import FundGoalContributionAdjustment from "@/fund-goals/workspace/FundGoalContributionAdjustment";
 import FundGoalProgress from "@/fund-goals/workspace/FundGoalProgress";
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
@@ -44,12 +45,20 @@ const FundGoalProgressBars = function ({
       ) : null}
       {isNotNullOrUndefined(fundGoal.plannedMonthlyContribution) &&
       progress.contribution ? (
-        <FundGoalProgress
-          label="Expected Contribution"
-          current={progress.contribution.assignedAmount}
-          target={progress.contribution.expectedAmount}
-          satisfied={progress.contribution.isSatisfied}
-        />
+        <Stack spacing={1}>
+          <FundGoalContributionAdjustment
+            plannedAmount={progress.contribution.plannedAmount}
+            adjustmentAmount={
+              progress.contribution.amountReducedByMaximumEndingBalance
+            }
+          />
+          <FundGoalProgress
+            label="Expected Contribution"
+            current={progress.contribution.assignedAmount}
+            target={progress.contribution.expectedAmount}
+            satisfied={progress.contribution.isSatisfied}
+          />
+        </Stack>
       ) : showUnconfigured ? (
         <StringEntryField
           label="Planned Monthly Contribution"

@@ -55,6 +55,8 @@ const CreateFundForm = function ({
     setMinimumEndingBalance,
     maximumEndingBalance,
     setMaximumEndingBalance,
+    allowExpectedContributionAboveMaximum,
+    setAllowExpectedContributionAboveMaximum,
   } = fundSetup;
   const formRef = useRef<HTMLDivElement | null>(null);
   const [accountingPeriod, setAccountingPeriod] =
@@ -84,6 +86,7 @@ const CreateFundForm = function ({
     plannedMonthlyContribution,
     minimumEndingBalance,
     maximumEndingBalance,
+    allowExpectedContributionAboveMaximum,
   });
 
   if (!canWrite) {
@@ -128,6 +131,12 @@ const CreateFundForm = function ({
           setMinimumEndingBalance={setMinimumEndingBalance}
           maximumEndingBalance={maximumEndingBalance}
           setMaximumEndingBalance={setMaximumEndingBalance}
+          allowExpectedContributionAboveMaximum={
+            allowExpectedContributionAboveMaximum
+          }
+          setAllowExpectedContributionAboveMaximum={
+            setAllowExpectedContributionAboveMaximum
+          }
         />
 
         <ErrorAlert

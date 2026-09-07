@@ -160,7 +160,8 @@ public sealed class AccountingPeriodQueryService(
                     history.FundGoalTotals.SingleOrDefault(item => item.Fund.Id == goal.Fund.Id)
                         ?.GetTotals().AmountAssignedToExpectedContribution ?? 0,
                     goal.PlannedMonthlyContribution,
-                    goal.MaximumEndingBalance));
+                    goal.MaximumEndingBalance,
+                    goal.AllowExpectedContributionAboveMaximum));
             decimal actualGoalContributions = fundGoals
                 .Sum(goal => history.FundGoalTotals
                     .SingleOrDefault(item => item.Fund.Id == goal.Fund.Id)

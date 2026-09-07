@@ -48,6 +48,7 @@ public sealed class FundGoalConverter
         PlannedMonthlyContribution = fundGoal.PlannedMonthlyContribution,
         MinimumEndingBalance = fundGoal.MinimumEndingBalance,
         MaximumEndingBalance = fundGoal.MaximumEndingBalance,
+        AllowExpectedContributionAboveMaximum = fundGoal.AllowExpectedContributionAboveMaximum,
     };
 
     /// <summary>

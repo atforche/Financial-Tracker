@@ -6,9 +6,19 @@ namespace Models.FundGoals;
 public sealed class ContributionProgressModel
 {
     /// <summary>
+    /// Gets the configured planned contribution before applying the maximum ending-balance constraint.
+    /// </summary>
+    public required decimal PlannedAmount { get; init; }
+
+    /// <summary>
     /// Gets the expected contribution.
     /// </summary>
     public required decimal ExpectedAmount { get; init; }
+
+    /// <summary>
+    /// Gets the nonnegative amount removed from the planned contribution by the maximum ending-balance constraint.
+    /// </summary>
+    public required decimal AmountReducedByMaximumEndingBalance { get; init; }
 
     /// <summary>
     /// Gets the amount assigned.

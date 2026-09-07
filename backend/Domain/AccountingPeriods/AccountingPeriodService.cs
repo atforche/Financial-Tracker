@@ -388,6 +388,7 @@ public class AccountingPeriodService(
                     PlannedMonthlyContribution = null,
                     MinimumEndingBalance = null,
                     MaximumEndingBalance = null,
+                    AllowExpectedContributionAboveMaximum = false,
                 },
                 out FundGoal? unassignedFundGoal,
                 out IEnumerable<ValidationError> goalExceptions))

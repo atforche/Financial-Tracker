@@ -24,6 +24,7 @@ interface FundGoalFields {
   readonly plannedMonthlyContribution: number | null;
   readonly minimumEndingBalance: number | null;
   readonly maximumEndingBalance: number | null;
+  readonly allowExpectedContributionAboveMaximum?: boolean;
 }
 
 /**
@@ -71,6 +72,8 @@ const buildCreateFundRequest = (
     plannedMonthlyContribution: fields.plannedMonthlyContribution,
     minimumEndingBalance: fields.minimumEndingBalance,
     maximumEndingBalance: fields.maximumEndingBalance,
+    allowExpectedContributionAboveMaximum:
+      fields.allowExpectedContributionAboveMaximum ?? false,
   };
 };
 
@@ -93,6 +96,8 @@ const buildOnboardFundRequest = (
     plannedMonthlyContribution: fields.plannedMonthlyContribution,
     minimumEndingBalance: fields.minimumEndingBalance,
     maximumEndingBalance: fields.maximumEndingBalance,
+    allowExpectedContributionAboveMaximum:
+      fields.allowExpectedContributionAboveMaximum ?? false,
   };
 };
 

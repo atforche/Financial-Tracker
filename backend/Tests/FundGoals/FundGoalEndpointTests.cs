@@ -64,8 +64,33 @@ public sealed class FundGoalEndpointTests
 
         Assert.Equal(50m, updated.PlannedMonthlyContribution);
         Assert.NotNull(progress.Contribution);
+        Assert.Equal(50m, progress.Contribution.PlannedAmount);
+        Assert.Equal(50m, progress.Contribution.ExpectedAmount);
+        Assert.Equal(0m, progress.Contribution.AmountReducedByMaximumEndingBalance);
         Assert.Contains(goals.Items, goal => goal.Id == groceries.Goal.Id);
         Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+    }
+
+    /// <summary>
+    /// Clears the contribution override when no maximum ending balance is configured.
+    /// </summary>
+    [Fact]
+    public async Task UpdateAsyncClearsContributionOverrideWithoutMaximumEndingBalance()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+
+        FundGoalModel updated = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>(
+            $"/fund-goals/{groceries.Goal.Id}",
+            new UpdateFundGoalModel
+            {
+                MaximumEndingBalance = null,
+                AllowExpectedContributionAboveMaximum = true,
+            });
+
+        Assert.Null(updated.MaximumEndingBalance);
+        Assert.False(updated.AllowExpectedContributionAboveMaximum);
     }
 
     /// <summary>

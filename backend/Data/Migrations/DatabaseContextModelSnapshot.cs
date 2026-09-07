@@ -193,6 +193,9 @@ namespace Data.Migrations
                     b.Property<Guid>("FundId")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("AllowExpectedContributionAboveMaximum")
+                        .HasColumnType("INTEGER");
+
                     b.Property<decimal?>("MaximumEndingBalance")
                         .HasColumnType("TEXT");
 

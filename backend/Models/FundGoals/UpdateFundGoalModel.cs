@@ -19,4 +19,9 @@ public sealed class UpdateFundGoalModel
     /// Gets the new maximum ending balance.
     /// </summary>
     public decimal? MaximumEndingBalance { get; init; }
+
+    /// <summary>
+    /// Gets whether the planned contribution may exceed the maximum ending balance.
+    /// </summary>
+    public bool AllowExpectedContributionAboveMaximum { get; init; }
 }
