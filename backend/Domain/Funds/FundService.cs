@@ -44,6 +44,7 @@ public class FundService(
                     PlannedMonthlyContribution = request.PlannedMonthlyContribution,
                     MinimumEndingBalance = request.MinimumEndingBalance,
                     MaximumEndingBalance = request.MaximumEndingBalance,
+                    AllowExpectedContributionAboveMaximum = request.AllowExpectedContributionAboveMaximum,
                 },
                 out FundGoal? fundGoal,
                 out exceptions))
@@ -99,6 +100,7 @@ public class FundService(
                 PlannedMonthlyContribution = request.PlannedMonthlyContribution,
                 MinimumEndingBalance = request.MinimumEndingBalance,
                 MaximumEndingBalance = request.MaximumEndingBalance,
+                AllowExpectedContributionAboveMaximum = request.AllowExpectedContributionAboveMaximum,
             },
             out FundGoal? fundGoal,
             out IEnumerable<ValidationError> fundGoalExceptions))

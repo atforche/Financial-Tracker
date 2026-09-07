@@ -34,16 +34,24 @@ public sealed class FundGoal : Entity<FundGoalId>
     public decimal? MaximumEndingBalance { get; private set; }
 
     /// <summary>
+    /// Whether the planned contribution may exceed the maximum ending balance.
+    /// </summary>
+    public bool AllowExpectedContributionAboveMaximum { get; private set; }
+
+    /// <summary>
     /// Updates the configurable quantities for this Fund Goal.
     /// </summary>
     internal void Update(
         decimal? plannedMonthlyContribution,
         decimal? minimumEndingBalance,
-        decimal? maximumEndingBalance)
+        decimal? maximumEndingBalance,
+        bool allowExpectedContributionAboveMaximum)
     {
         PlannedMonthlyContribution = plannedMonthlyContribution;
         MinimumEndingBalance = minimumEndingBalance ?? 0m;
         MaximumEndingBalance = maximumEndingBalance;
+        AllowExpectedContributionAboveMaximum = maximumEndingBalance != null
+            && allowExpectedContributionAboveMaximum;
     }
 
     /// <summary>
@@ -54,12 +62,13 @@ public sealed class FundGoal : Entity<FundGoalId>
         AccountingPeriod? accountingPeriod,
         decimal? plannedMonthlyContribution,
         decimal? minimumEndingBalance,
-        decimal? maximumEndingBalance)
+        decimal? maximumEndingBalance,
+        bool allowExpectedContributionAboveMaximum)
         : base(new FundGoalId(Guid.NewGuid()))
     {
         Fund = fund;
         AccountingPeriod = accountingPeriod;
-        Update(plannedMonthlyContribution, minimumEndingBalance, maximumEndingBalance);
+        Update(plannedMonthlyContribution, minimumEndingBalance, maximumEndingBalance, allowExpectedContributionAboveMaximum);
     }
 
     /// <summary>

@@ -187,6 +187,7 @@ public sealed class FundGoalController(
         PlannedMonthlyContribution = model.PlannedMonthlyContribution,
         MinimumEndingBalance = model.MinimumEndingBalance,
         MaximumEndingBalance = model.MaximumEndingBalance,
+        AllowExpectedContributionAboveMaximum = model.AllowExpectedContributionAboveMaximum,
     };
 
     /// <summary>

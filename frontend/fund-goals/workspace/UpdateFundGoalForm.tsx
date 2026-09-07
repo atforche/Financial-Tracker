@@ -43,12 +43,19 @@ const UpdateFundGoalForm = function ({
   const [maximumEndingBalance, setMaximumEndingBalance] = useState(
     fundGoal.maximumEndingBalance ?? null,
   );
+  const [
+    allowExpectedContributionAboveMaximum,
+    setAllowExpectedContributionAboveMaximum,
+  ] = useState(fundGoal.allowExpectedContributionAboveMaximum ?? false);
   const formRef = useRef<HTMLDivElement | null>(null);
   const [state, action, pending] = useActionState(updateFundGoal, {});
   const reset = (): void => {
     setPlannedMonthlyContribution(fundGoal.plannedMonthlyContribution ?? null);
     setMinimumEndingBalance(fundGoal.minimumEndingBalance);
     setMaximumEndingBalance(fundGoal.maximumEndingBalance ?? null);
+    setAllowExpectedContributionAboveMaximum(
+      fundGoal.allowExpectedContributionAboveMaximum ?? false,
+    );
     focusFirstEntryControl(formRef.current);
   };
   useEffect(() => {
@@ -62,6 +69,7 @@ const UpdateFundGoalForm = function ({
     plannedMonthlyContribution,
     minimumEndingBalance,
     maximumEndingBalance,
+    allowExpectedContributionAboveMaximum,
   };
   const rangeIsValid =
     maximumEndingBalance === null ||
@@ -131,6 +139,12 @@ const UpdateFundGoalForm = function ({
             setMinimumEndingBalance={setMinimumEndingBalance}
             maximumEndingBalance={maximumEndingBalance}
             setMaximumEndingBalance={setMaximumEndingBalance}
+            allowExpectedContributionAboveMaximum={
+              allowExpectedContributionAboveMaximum
+            }
+            setAllowExpectedContributionAboveMaximum={
+              setAllowExpectedContributionAboveMaximum
+            }
           />
           <ErrorAlert errorMessage={null} unmappedErrors={null} />
         </Stack>

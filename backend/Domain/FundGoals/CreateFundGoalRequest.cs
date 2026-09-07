@@ -32,4 +32,9 @@ public sealed record CreateFundGoalRequest
     /// Maximum desired balance at the end of an Accounting Period.
     /// </summary>
     public decimal? MaximumEndingBalance { get; init; }
+
+    /// <summary>
+    /// Whether the planned contribution may exceed the maximum ending balance.
+    /// </summary>
+    public bool AllowExpectedContributionAboveMaximum { get; init; }
 }

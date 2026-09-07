@@ -4392,6 +4392,8 @@ export interface components {
              * @description Maximum ending balance for the Fund Goal.
              */
             maximumEndingBalance?: null | number;
+            /** @description Whether the planned contribution may exceed the maximum ending balance. */
+            allowExpectedContributionAboveMaximum?: boolean;
         };
         /** @description Model representing a destination of a fund transaction create request. */
         CreateFundTransactionDestinationModel: {
@@ -5017,6 +5019,8 @@ export interface components {
              * @description Gets the maximum ending balance.
              */
             maximumEndingBalance?: null | number;
+            /** @description Gets whether the planned contribution may exceed the maximum ending balance. */
+            allowExpectedContributionAboveMaximum?: boolean;
         };
         /** @description Model comparing a Fund's financial state with its Fund Goal. */
         FundGoalProgressModel: {
@@ -5321,6 +5325,8 @@ export interface components {
              * @description Maximum ending balance for the Fund Goal.
              */
             maximumEndingBalance?: null | number;
+            /** @description Whether the planned contribution may exceed the maximum ending balance. */
+            allowExpectedContributionAboveMaximum?: boolean;
         };
         /** @description Model representing a request to post a Transaction */
         PostTransactionModel: {
@@ -5757,6 +5763,8 @@ export interface components {
              * @description Gets the new maximum ending balance.
              */
             maximumEndingBalance?: null | number;
+            /** @description Gets whether the planned contribution may exceed the maximum ending balance. */
+            allowExpectedContributionAboveMaximum?: boolean;
         };
         /** @description Model representing a request to update a Fund */
         UpdateFundModel: {

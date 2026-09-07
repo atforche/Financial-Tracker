@@ -18,6 +18,10 @@ interface FundSetupState {
   readonly setMinimumEndingBalance: Dispatch<SetStateAction<number>>;
   readonly maximumEndingBalance: number | null;
   readonly setMaximumEndingBalance: Dispatch<SetStateAction<number | null>>;
+  readonly allowExpectedContributionAboveMaximum: boolean;
+  readonly setAllowExpectedContributionAboveMaximum: Dispatch<
+    SetStateAction<boolean>
+  >;
   readonly reset: () => void;
 }
 
@@ -34,12 +38,17 @@ const useFundSetupState = function (): FundSetupState {
   const [maximumEndingBalance, setMaximumEndingBalance] = useState<
     number | null
   >(null);
+  const [
+    allowExpectedContributionAboveMaximum,
+    setAllowExpectedContributionAboveMaximum,
+  ] = useState(false);
   const reset = (): void => {
     setName("");
     setDescription("");
     setPlannedMonthlyContribution(null);
     setMinimumEndingBalance(0);
     setMaximumEndingBalance(null);
+    setAllowExpectedContributionAboveMaximum(false);
   };
   return {
     name,
@@ -52,6 +61,8 @@ const useFundSetupState = function (): FundSetupState {
     setMinimumEndingBalance,
     maximumEndingBalance,
     setMaximumEndingBalance,
+    allowExpectedContributionAboveMaximum,
+    setAllowExpectedContributionAboveMaximum,
     reset,
   };
 };

@@ -1,8 +1,8 @@
+import { Checkbox, FormControlLabel, Stack } from "@mui/material";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
+import { type JSX, useEffect } from "react";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import GoalAmountOption from "@/framework/forms/GoalAmountOption";
-import type { JSX } from "react";
-import { Stack } from "@mui/material";
 
 /**
  * Props for the FundGoalSetupSection component.
@@ -17,6 +17,9 @@ interface FundGoalSetupSectionProps {
   readonly setMinimumEndingBalance: ((value: number) => void) | null;
   readonly maximumEndingBalance: number | null;
   readonly setMaximumEndingBalance: ((value: number | null) => void) | null;
+  readonly allowExpectedContributionAboveMaximum: boolean;
+  readonly setAllowExpectedContributionAboveMaximum:
+    ((value: boolean) => void) | null;
 }
 
 /**
@@ -31,7 +34,22 @@ const FundGoalSetupSection = function ({
   setMinimumEndingBalance,
   maximumEndingBalance,
   setMaximumEndingBalance,
+  allowExpectedContributionAboveMaximum,
+  setAllowExpectedContributionAboveMaximum,
 }: FundGoalSetupSectionProps): JSX.Element {
+  useEffect(() => {
+    if (
+      maximumEndingBalance === null &&
+      allowExpectedContributionAboveMaximum
+    ) {
+      setAllowExpectedContributionAboveMaximum?.(false);
+    }
+  }, [
+    allowExpectedContributionAboveMaximum,
+    maximumEndingBalance,
+    setAllowExpectedContributionAboveMaximum,
+  ]);
+
   const content = (
     <Stack spacing={2}>
       <CurrencyEntryField
@@ -56,6 +74,22 @@ const FundGoalSetupSection = function ({
         value={maximumEndingBalance}
         setValue={setMaximumEndingBalance}
         errorMessage={null}
+        additionalControl={
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={allowExpectedContributionAboveMaximum}
+                disabled={maximumEndingBalance === null}
+                onChange={(event): void =>
+                  setAllowExpectedContributionAboveMaximum?.(
+                    event.target.checked,
+                  )
+                }
+              />
+            }
+            label="Allow expected contribution to exceed maximum"
+          />
+        }
       />
     </Stack>
   );

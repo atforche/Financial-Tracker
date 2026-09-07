@@ -127,4 +127,18 @@ public sealed class FundGoalProgressServiceTests
         Assert.Equal(0m, progress.Contribution.ExpectedAmount);
         Assert.Equal(25m, progress.Contribution.AmountReducedByMaximumEndingBalance);
     }
+
+    /// <summary>
+    /// Leaves the planned contribution uncapped when the override is enabled.
+    /// </summary>
+    [Fact]
+    public void CalculateAllowsExpectedContributionAboveMaximumWhenConfigured()
+    {
+        FundGoalProgress progress = FundGoalProgressService.Calculate(10m, 175m, 25m, 0m, 150m, true);
+
+        Assert.NotNull(progress.Contribution);
+        Assert.Equal(25m, progress.Contribution.ExpectedAmount);
+        Assert.Equal(0m, progress.Contribution.AmountReducedByMaximumEndingBalance);
+        Assert.Equal(FundGoalEndingBalanceStatus.AboveMaximum, progress.EndingBalance.Status);
+    }
 }

@@ -36,4 +36,9 @@ public record CreateFundRequest
     /// Maximum ending balance for the Fund Goal.
     /// </summary>
     public required decimal? MaximumEndingBalance { get; init; }
+
+    /// <summary>
+    /// Whether the planned contribution may exceed the maximum ending balance.
+    /// </summary>
+    public bool AllowExpectedContributionAboveMaximum { get; init; }
 }

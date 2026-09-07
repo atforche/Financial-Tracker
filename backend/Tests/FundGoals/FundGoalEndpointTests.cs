@@ -72,6 +72,28 @@ public sealed class FundGoalEndpointTests
     }
 
     /// <summary>
+    /// Clears the contribution override when no maximum ending balance is configured.
+    /// </summary>
+    [Fact]
+    public async Task UpdateAsyncClearsContributionOverrideWithoutMaximumEndingBalance()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+
+        FundGoalModel updated = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>(
+            $"/fund-goals/{groceries.Goal.Id}",
+            new UpdateFundGoalModel
+            {
+                MaximumEndingBalance = null,
+                AllowExpectedContributionAboveMaximum = true,
+            });
+
+        Assert.Null(updated.MaximumEndingBalance);
+        Assert.False(updated.AllowExpectedContributionAboveMaximum);
+    }
+
+    /// <summary>
     /// Rejects negative Fund Goal quantities and inverted ending-balance bounds at the mutation boundary.
     /// </summary>
     [Fact]

@@ -59,6 +59,8 @@ const OnboardFundForm = function ({
     setMinimumEndingBalance,
     maximumEndingBalance,
     setMaximumEndingBalance,
+    allowExpectedContributionAboveMaximum,
+    setAllowExpectedContributionAboveMaximum,
   } = fundSetup;
   const formRef = useRef<HTMLDivElement | null>(null);
   const [onboardedBalance, setOnboardedBalance] = useState<number | null>(null);
@@ -91,6 +93,7 @@ const OnboardFundForm = function ({
     plannedMonthlyContribution,
     minimumEndingBalance,
     maximumEndingBalance,
+    allowExpectedContributionAboveMaximum,
   });
 
   if (!canWrite) {
@@ -148,6 +151,12 @@ const OnboardFundForm = function ({
           setMinimumEndingBalance={setMinimumEndingBalance}
           maximumEndingBalance={maximumEndingBalance}
           setMaximumEndingBalance={setMaximumEndingBalance}
+          allowExpectedContributionAboveMaximum={
+            allowExpectedContributionAboveMaximum
+          }
+          setAllowExpectedContributionAboveMaximum={
+            setAllowExpectedContributionAboveMaximum
+          }
         />
 
         <ErrorAlert
