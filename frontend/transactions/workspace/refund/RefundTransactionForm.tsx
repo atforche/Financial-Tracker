@@ -117,6 +117,7 @@ const RefundTransactionForm = function <RequestPayload>({
       sourceContent={
         <CollectionEditor
           items={sources}
+          label="Sources"
           setItems={setSources}
           createItem={createEmptySource}
           addLabel="Add another source"

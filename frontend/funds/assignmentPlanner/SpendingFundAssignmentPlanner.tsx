@@ -34,7 +34,6 @@ interface SpendingFundAssignmentPlannerProps {
   readonly setFundAssignments:
     ((fundAssignments: FundAssignmentDraft[]) => void) | null;
   readonly baselineFundAssignments: FundAssignmentDraft[];
-  readonly collapsible?: boolean;
   readonly readOnly?: boolean;
 }
 
@@ -49,7 +48,6 @@ const SpendingFundAssignmentPlanner = function ({
   fundAssignments,
   setFundAssignments,
   baselineFundAssignments,
-  collapsible = false,
   readOnly = false,
 }: SpendingFundAssignmentPlannerProps): JSX.Element {
   const unassignedFund = getUnassignedFund(funds);
@@ -232,7 +230,6 @@ const SpendingFundAssignmentPlanner = function ({
       updateAmount={updateAmount}
       isFundSelectable={(fund) => fund.id !== unassignedFund?.id}
       singleAssignmentAmountReadOnly
-      collapsible={collapsible}
       fundLabel="Fund Assignment"
       getFundOptionSecondaryLabel={(fund) => {
         const fundWithBalance = funds.find(

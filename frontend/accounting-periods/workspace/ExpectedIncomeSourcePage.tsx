@@ -56,6 +56,8 @@ const ExpectedIncomeSourcePage = async function ({
       <ExpectedIncomeSourceDetailsDialog
         source={source}
         accountingPeriodId={accountingPeriodId}
+        year={accountingPeriod.year}
+        month={accountingPeriod.month}
         canManage={accountingPeriod.isOpen}
         backHref={backHref}
         editHref={routes.expectedIncomeSourceEdit(

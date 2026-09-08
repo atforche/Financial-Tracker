@@ -144,7 +144,6 @@ const SpendingTransactionDestinationFrame = function ({
         fundAssignments={fundAssignments}
         setFundAssignments={readOnly ? null : setFundAssignments}
         baselineFundAssignments={baselineFundAssignments}
-        collapsible={readOnly}
         readOnly={readOnly}
       />
     </TransactionSourceOrDestinationFrame>
