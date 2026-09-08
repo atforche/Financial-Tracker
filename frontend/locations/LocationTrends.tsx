@@ -1,4 +1,8 @@
 import {
+  getDefaultTrendAccountingPeriodRange,
+  getDefaultTrendDateRange,
+} from "@/framework/routes/trendRange";
+import {
   getPageOffset,
   getRowsPerPage,
   normalizePageValue,
@@ -14,7 +18,6 @@ import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import SummaryCard from "@/framework/view/SummaryCard";
 import SummaryCardGrid from "@/framework/view/SummaryCardGrid";
 import createApiClient from "@/framework/data/createApiClient";
-import dayjs from "dayjs";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { redirect } from "next/navigation";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
@@ -41,10 +44,9 @@ const LocationTrends = async function ({
   searchParams,
 }: LocationTrendsProps): Promise<JSX.Element> {
   const params = await searchParams;
-  const defaultEndDate = dayjs();
-  const defaultStartDate = defaultEndDate.subtract(90, "day");
-  const startDate = params.startDate ?? defaultStartDate.format("YYYY-MM-DD");
-  const endDate = params.endDate ?? defaultEndDate.format("YYYY-MM-DD");
+  const defaultDateRange = getDefaultTrendDateRange();
+  const startDate = params.startDate ?? defaultDateRange.start;
+  const endDate = params.endDate ?? defaultDateRange.end;
   const currentMode =
     params.mode === "accounting-period" ? "accounting-period" : "date";
   const selectedLocationIds = [
@@ -74,15 +76,18 @@ const LocationTrends = async function ({
     "Failed to fetch accounting periods",
   );
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
+  const defaultAccountingPeriodRange = getDefaultTrendAccountingPeriodRange(
+    accountingPeriods.items,
+  );
 
   if (currentMode === "accounting-period" && latestAccountingPeriod === null) {
     redirect("/locations/trends");
   }
 
   const startAccountingPeriodId =
-    params.startAccountingPeriodId ?? latestAccountingPeriod?.id ?? "";
+    params.startAccountingPeriodId ?? defaultAccountingPeriodRange?.start ?? "";
   const endAccountingPeriodId =
-    params.endAccountingPeriodId ?? latestAccountingPeriod?.id ?? "";
+    params.endAccountingPeriodId ?? defaultAccountingPeriodRange?.end ?? "";
   const query = {
     ...(selectedLocationIds.length > 0
       ? { "Filter.LocationIds": selectedLocationIds }
@@ -180,9 +185,6 @@ const LocationTrends = async function ({
         <LocationTrendsFilter
           accountingPeriods={accountingPeriods.items}
           locations={locations.items}
-          defaultAccountingPeriodId={latestAccountingPeriod?.id ?? null}
-          defaultStartDate={defaultStartDate.format("YYYY-MM-DD")}
-          defaultEndDate={defaultEndDate.format("YYYY-MM-DD")}
         />
       </ConstrainedContent>
       <SummaryCardGrid>

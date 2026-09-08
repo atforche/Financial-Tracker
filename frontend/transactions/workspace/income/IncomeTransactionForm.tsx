@@ -203,6 +203,7 @@ const IncomeTransactionForm = function <RequestPayload>({
       destinationContent={
         <CollectionEditor
           items={destinations}
+          label="Destinations"
           setItems={setDestinations}
           createItem={createEmptyDestination}
           addLabel="Add another destination"

@@ -14,13 +14,13 @@ import { Button } from "@mui/material";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import { accountGoalTrendsParamNames } from "@/account-goals/trends/helpers";
+import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
 interface AccountGoalTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly availableAccountNames: readonly string[];
-  readonly defaultAccountingPeriodId: string | null;
 }
 
 /**
@@ -29,8 +29,10 @@ interface AccountGoalTrendsFilterProps {
 const AccountGoalTrendsFilter = function ({
   accountingPeriods,
   availableAccountNames,
-  defaultAccountingPeriodId,
 }: AccountGoalTrendsFilterProps): JSX.Element {
+  const defaultRange = getDefaultTrendAccountingPeriodRange(accountingPeriods);
+  const defaultStartAccountingPeriodId = defaultRange?.start ?? null;
+  const defaultEndAccountingPeriodId = defaultRange?.end ?? null;
   const searchParams = useSearchParams();
   const { accountName, startAccountingPeriodId, endAccountingPeriodId } =
     accountGoalTrendsParamNames;
@@ -40,15 +42,17 @@ const AccountGoalTrendsFilter = function ({
   );
   const start =
     searchParams.get(startAccountingPeriodId) ??
-    defaultAccountingPeriodId ??
+    defaultStartAccountingPeriodId ??
     "";
   const end =
-    searchParams.get(endAccountingPeriodId) ?? defaultAccountingPeriodId ?? "";
+    searchParams.get(endAccountingPeriodId) ??
+    defaultEndAccountingPeriodId ??
+    "";
   const updateParams = useSearchParamUpdater([]);
   const hasActiveView =
     shouldPersistAccountNames(currentAccountNames) ||
-    start !== (defaultAccountingPeriodId ?? "") ||
-    end !== (defaultAccountingPeriodId ?? "");
+    start !== (defaultStartAccountingPeriodId ?? "") ||
+    end !== (defaultEndAccountingPeriodId ?? "");
 
   return (
     <PageFilterFrame title="Account Goal Trends">
@@ -84,9 +88,12 @@ const AccountGoalTrendsFilter = function ({
             params.delete(accountName);
             params.set(
               startAccountingPeriodId,
-              defaultAccountingPeriodId ?? "",
+              defaultStartAccountingPeriodId ?? "",
             );
-            params.set(endAccountingPeriodId, defaultAccountingPeriodId ?? "");
+            params.set(
+              endAccountingPeriodId,
+              defaultEndAccountingPeriodId ?? "",
+            );
           });
         }}
         disabled={!hasActiveView}

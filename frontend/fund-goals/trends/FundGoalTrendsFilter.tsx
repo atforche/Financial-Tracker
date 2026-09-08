@@ -16,6 +16,7 @@ import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import type { Route } from "next";
 import { fundGoalTrendsParamNames } from "@/fund-goals/trends/helpers";
+import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
@@ -24,7 +25,6 @@ import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 interface FundGoalTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly availableFundNames: readonly string[];
-  readonly defaultAccountingPeriodId: string | null;
   readonly transactionWorkspaceHref: Route | null;
 }
 
@@ -34,9 +34,11 @@ interface FundGoalTrendsFilterProps {
 const FundGoalTrendsFilter = function ({
   accountingPeriods,
   availableFundNames,
-  defaultAccountingPeriodId,
   transactionWorkspaceHref,
 }: FundGoalTrendsFilterProps): JSX.Element {
+  const defaultRange = getDefaultTrendAccountingPeriodRange(accountingPeriods);
+  const defaultStartAccountingPeriodId = defaultRange?.start ?? null;
+  const defaultEndAccountingPeriodId = defaultRange?.end ?? null;
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -54,10 +56,10 @@ const FundGoalTrendsFilter = function ({
   );
   const currentStartAccountingPeriodId =
     searchParams.get(startAccountingPeriodIdParamName) ??
-    defaultAccountingPeriodId;
+    defaultStartAccountingPeriodId;
   const currentEndAccountingPeriodId =
     searchParams.get(endAccountingPeriodIdParamName) ??
-    defaultAccountingPeriodId;
+    defaultEndAccountingPeriodId;
 
   const updateParams = useSearchParamUpdater([
     pageParamName,
@@ -66,8 +68,8 @@ const FundGoalTrendsFilter = function ({
 
   const hasActiveView =
     shouldPersistFundNames(currentFundNames) ||
-    currentStartAccountingPeriodId !== defaultAccountingPeriodId ||
-    currentEndAccountingPeriodId !== defaultAccountingPeriodId;
+    currentStartAccountingPeriodId !== defaultStartAccountingPeriodId ||
+    currentEndAccountingPeriodId !== defaultEndAccountingPeriodId;
 
   const handleFundNameChange = function (
     nextFundNames: readonly string[],
@@ -96,11 +98,11 @@ const FundGoalTrendsFilter = function ({
       params.delete(fundNameParamName);
       params.set(
         startAccountingPeriodIdParamName,
-        defaultAccountingPeriodId ?? "",
+        defaultStartAccountingPeriodId ?? "",
       );
       params.set(
         endAccountingPeriodIdParamName,
-        defaultAccountingPeriodId ?? "",
+        defaultEndAccountingPeriodId ?? "",
       );
     });
   };

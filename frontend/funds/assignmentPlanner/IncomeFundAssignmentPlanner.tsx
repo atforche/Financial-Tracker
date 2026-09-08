@@ -353,7 +353,6 @@ const IncomeFundAssignmentPlanner = function ({
           assignment.fundId !== unassignedFund?.id
         }
         isFundSelectable={(fund) => fund.id !== unassignedFund?.id}
-        collapsible={readOnly}
         getFundOptionSecondaryLabel={(fund) =>
           getFundOptionSecondaryLabel(
             "Remaining to assign",

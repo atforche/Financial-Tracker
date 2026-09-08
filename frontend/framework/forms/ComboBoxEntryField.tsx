@@ -180,6 +180,7 @@ const ComboBoxEntryField = function <T>({
         if (
           event.key === "Tab" &&
           inputValue.trim() !== "" &&
+          inputValue !== (value?.label ?? "") &&
           highlightedExistingOption !== null
         ) {
           // Let the browser move focus to the next control while preventing

@@ -58,7 +58,9 @@ const IncomeTransactionSourceItemFrame = function <
 
   return (
     <Stack spacing={1.5}>
-      <Typography variant="subtitle2">{title}</Typography>
+      {!editable && items.length > 1 ? null : (
+        <Typography variant="subtitle2">{title}</Typography>
+      )}
       {items.length === 0 && !editable ? (
         <Box
           sx={{
@@ -76,6 +78,7 @@ const IncomeTransactionSourceItemFrame = function <
       ) : null}
       <CollectionEditor
         items={items}
+        label={title}
         setItems={setItems ?? ((): void => undefined)}
         createItem={
           createEmptyItem ??

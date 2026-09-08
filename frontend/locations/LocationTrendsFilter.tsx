@@ -6,6 +6,8 @@ import type {
 } from "@/accounting-periods/types";
 import {
   type TrendRangeMode,
+  getDefaultTrendAccountingPeriodRange,
+  getDefaultTrendDateRange,
   setTrendRangeMode,
 } from "@/framework/routes/trendRange";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
@@ -21,19 +23,18 @@ import { useSearchParams } from "next/navigation";
 interface LocationTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly locations: readonly { id: string; name: string }[];
-  readonly defaultAccountingPeriodId: string | null;
-  readonly defaultStartDate: string;
-  readonly defaultEndDate: string;
 }
 
 /** Filters Location trends by range and included external parties. */
 const LocationTrendsFilter = function ({
   accountingPeriods,
   locations,
-  defaultAccountingPeriodId,
-  defaultStartDate,
-  defaultEndDate,
 }: LocationTrendsFilterProps): JSX.Element {
+  const defaultRange = getDefaultTrendAccountingPeriodRange(accountingPeriods);
+  const defaultStartAccountingPeriodId = defaultRange?.start ?? null;
+  const defaultEndAccountingPeriodId = defaultRange?.end ?? null;
+  const { start: defaultStartDate, end: defaultEndDate } =
+    getDefaultTrendDateRange();
   const searchParams = useSearchParams();
   const updateParams = useSearchParamUpdater(["page"]);
   const mode: TrendRangeMode =
@@ -45,11 +46,11 @@ const LocationTrendsFilter = function ({
   const endDate = searchParams.get("endDate") ?? defaultEndDate;
   const startAccountingPeriodId =
     searchParams.get("startAccountingPeriodId") ??
-    defaultAccountingPeriodId ??
+    defaultStartAccountingPeriodId ??
     "";
   const endAccountingPeriodId =
     searchParams.get("endAccountingPeriodId") ??
-    defaultAccountingPeriodId ??
+    defaultEndAccountingPeriodId ??
     "";
 
   const updateLocationIds = function (ids: readonly string[]): void {
@@ -68,7 +69,8 @@ const LocationTrendsFilter = function ({
         onChange={(nextMode) => {
           updateParams((params) => {
             setTrendRangeMode(params, nextMode, {
-              defaultAccountingPeriodId,
+              defaultStartAccountingPeriodId,
+              defaultEndAccountingPeriodId,
               defaultStartDate,
               defaultEndDate,
             });
@@ -79,7 +81,7 @@ const LocationTrendsFilter = function ({
           {
             value: "accounting-period",
             label: "Accounting periods",
-            disabled: defaultAccountingPeriodId === null,
+            disabled: defaultEndAccountingPeriodId === null,
           },
         ]}
       />
@@ -123,7 +125,8 @@ const LocationTrendsFilter = function ({
           updateParams((params) => {
             params.delete("locationIds");
             setTrendRangeMode(params, "date", {
-              defaultAccountingPeriodId,
+              defaultStartAccountingPeriodId,
+              defaultEndAccountingPeriodId,
               defaultStartDate,
               defaultEndDate,
             });

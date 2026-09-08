@@ -7,6 +7,11 @@ import type {
   AccountsInDateRange,
 } from "@/accounts/types";
 import {
+  type TrendRangeMode,
+  getDefaultTrendAccountingPeriodRange,
+  getDefaultTrendDateRange,
+} from "@/framework/routes/trendRange";
+import {
   getPageOffset,
   getRowsPerPage,
   normalizePageValue,
@@ -30,10 +35,8 @@ import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
-import type { TrendRangeMode } from "@/framework/routes/trendRange";
 import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
-import dayjs from "dayjs";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
@@ -66,8 +69,7 @@ const AccountTrends = async function ({
     endDate,
   } = await searchParams;
 
-  const defaultEndDate = dayjs();
-  const defaultStartDate = defaultEndDate.subtract(90, "day");
+  const defaultDateRange = getDefaultTrendDateRange();
 
   const apiClient = await createApiClient();
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
@@ -84,6 +86,9 @@ const AccountTrends = async function ({
     "Failed to fetch accounting periods",
   );
   const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
+  const defaultAccountingPeriodRange = getDefaultTrendAccountingPeriodRange(
+    accountingPeriods.items,
+  );
   const isInOnboardingMode = latestAccountingPeriod === null;
   const currentMode: TrendRangeMode =
     typeof mode === "undefined" || isInOnboardingMode ? "date" : mode;
@@ -115,8 +120,8 @@ const AccountTrends = async function ({
       routes.trends({
         mode: "date",
         ...persistedFilters,
-        startDate: defaultStartDate.format("YYYY-MM-DD"),
-        endDate: defaultEndDate.format("YYYY-MM-DD"),
+        startDate: defaultDateRange.start,
+        endDate: defaultDateRange.end,
       }),
     );
   }
@@ -131,8 +136,10 @@ const AccountTrends = async function ({
       routes.trends({
         mode: "accounting-period",
         ...persistedFilters,
-        startAccountingPeriodId: latestAccountingPeriod.id,
-        endAccountingPeriodId: latestAccountingPeriod.id,
+        startAccountingPeriodId:
+          defaultAccountingPeriodRange?.start ?? latestAccountingPeriod.id,
+        endAccountingPeriodId:
+          defaultAccountingPeriodRange?.end ?? latestAccountingPeriod.id,
       }),
     );
   }
@@ -156,8 +163,8 @@ const AccountTrends = async function ({
   > {
     if (currentMode === "date") {
       const range = {
-        "Range.Start": startDate ?? defaultStartDate.format("YYYY-MM-DD"),
-        "Range.End": endDate ?? defaultEndDate.format("YYYY-MM-DD"),
+        "Range.Start": startDate ?? defaultDateRange.start,
+        "Range.End": endDate ?? defaultDateRange.end,
       };
       return unwrapApiResponse(
         await apiClient.GET("/accounts/date-range", {
@@ -168,8 +175,9 @@ const AccountTrends = async function ({
     }
     const range = {
       "Range.Start":
-        startAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
-      "Range.End": endAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
+        startAccountingPeriodId ?? defaultAccountingPeriodRange?.start ?? "",
+      "Range.End":
+        endAccountingPeriodId ?? defaultAccountingPeriodRange?.end ?? "",
     };
     return unwrapApiResponse(
       await apiClient.GET("/accounts/accounting-period-range", {
@@ -199,14 +207,16 @@ const AccountTrends = async function ({
   const currentRange =
     currentMode === "date"
       ? {
-          startDate: startDate ?? defaultStartDate.format("YYYY-MM-DD"),
-          endDate: endDate ?? defaultEndDate.format("YYYY-MM-DD"),
+          startDate: startDate ?? defaultDateRange.start,
+          endDate: endDate ?? defaultDateRange.end,
         }
       : {
           startAccountingPeriodId:
-            startAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
+            startAccountingPeriodId ??
+            defaultAccountingPeriodRange?.start ??
+            "",
           endAccountingPeriodId:
-            endAccountingPeriodId ?? latestAccountingPeriod?.id ?? "",
+            endAccountingPeriodId ?? defaultAccountingPeriodRange?.end ?? "",
         };
   const transactionWorkspaceHref = transactionRoutes.workspace({
     ...(currentMode === "date"
@@ -255,9 +265,6 @@ const AccountTrends = async function ({
         <AccountTrendsFilter
           accountingPeriods={accountingPeriods.items}
           availableAccountNames={trends.availableAccountNames}
-          defaultAccountingPeriodId={latestAccountingPeriod?.id ?? null}
-          defaultStartDate={defaultStartDate.format("YYYY-MM-DD")}
-          defaultEndDate={defaultEndDate.format("YYYY-MM-DD")}
         />
       </ConstrainedContent>
       <AccountTrendsSummaryCards

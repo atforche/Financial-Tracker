@@ -6,6 +6,8 @@ import type {
 } from "@/accounting-periods/types";
 import {
   type TrendRangeMode,
+  getDefaultTrendAccountingPeriodRange,
+  getDefaultTrendDateRange,
   setTrendRangeMode,
 } from "@/framework/routes/trendRange";
 import {
@@ -35,9 +37,6 @@ import { useSearchParams } from "next/navigation";
 interface AccountTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly availableAccountNames: readonly string[];
-  readonly defaultAccountingPeriodId: string | null;
-  readonly defaultStartDate: string;
-  readonly defaultEndDate: string;
 }
 
 /**
@@ -46,10 +45,12 @@ interface AccountTrendsFilterProps {
 const AccountTrendsFilter = function ({
   accountingPeriods,
   availableAccountNames,
-  defaultAccountingPeriodId,
-  defaultStartDate,
-  defaultEndDate,
 }: AccountTrendsFilterProps): JSX.Element {
+  const defaultRange = getDefaultTrendAccountingPeriodRange(accountingPeriods);
+  const defaultStartAccountingPeriodId = defaultRange?.start ?? null;
+  const defaultEndAccountingPeriodId = defaultRange?.end ?? null;
+  const { start: defaultStartDate, end: defaultEndDate } =
+    getDefaultTrendDateRange();
   const searchParams = useSearchParams();
 
   const {
@@ -77,11 +78,11 @@ const AccountTrendsFilter = function ({
   );
   const currentStartAccountingPeriodId =
     searchParams.get(startAccountingPeriodIdParamName) ??
-    defaultAccountingPeriodId ??
+    defaultStartAccountingPeriodId ??
     "";
   const currentEndAccountingPeriodId =
     searchParams.get(endAccountingPeriodIdParamName) ??
-    defaultAccountingPeriodId ??
+    defaultEndAccountingPeriodId ??
     "";
   const currentStartDate =
     searchParams.get(startDateParamName) ?? defaultStartDate;
@@ -96,8 +97,8 @@ const AccountTrendsFilter = function ({
     currentMode !== "date" ||
     shouldPersistAccountTypes(currentAccountTypes) ||
     shouldPersistAccountNames(currentAccountNames) ||
-    currentStartAccountingPeriodId !== (defaultAccountingPeriodId ?? "") ||
-    currentEndAccountingPeriodId !== (defaultAccountingPeriodId ?? "") ||
+    currentStartAccountingPeriodId !== (defaultStartAccountingPeriodId ?? "") ||
+    currentEndAccountingPeriodId !== (defaultEndAccountingPeriodId ?? "") ||
     currentStartDate !== defaultStartDate ||
     currentEndDate !== defaultEndDate;
 
@@ -131,7 +132,8 @@ const AccountTrendsFilter = function ({
   const handleModeChange = function (nextMode: TrendRangeMode): void {
     updateParams((params) => {
       setTrendRangeMode(params, nextMode, {
-        defaultAccountingPeriodId,
+        defaultStartAccountingPeriodId,
+        defaultEndAccountingPeriodId,
         defaultStartDate,
         defaultEndDate,
       });
@@ -176,7 +178,7 @@ const AccountTrendsFilter = function ({
           {
             value: "accounting-period",
             label: "Accounting periods",
-            disabled: defaultAccountingPeriodId === null,
+            disabled: defaultEndAccountingPeriodId === null,
           },
         ]}
       />

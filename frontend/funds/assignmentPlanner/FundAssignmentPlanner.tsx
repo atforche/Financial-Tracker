@@ -1,18 +1,17 @@
-import { Box, Collapse, IconButton, Stack, Typography } from "@mui/material";
+import { Box, IconButton } from "@mui/material";
 import {
   type FundAssignmentDraft,
   getAvailableFundCount,
   getExplicitFundAssignments,
 } from "@/funds/assignmentPlanner/helpers";
-import React, { useId, useState } from "react";
 import { AutoFixHigh } from "@mui/icons-material";
 import CollectionEditor from "@/framework/view/CollectionEditor";
 import CollectionItemDeleteButton from "@/framework/view/CollectionItemDeleteButton";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
-import ExpandMore from "@mui/icons-material/ExpandMore";
 import type { Fund } from "@/funds/types";
 import FundEntryField from "@/funds/FundEntryField";
 import InsetFrame from "@/framework/view/InsetFrame";
+import React from "react";
 import { compareCurrencyAmounts } from "@/framework/currencyHelpers";
 
 /**
@@ -33,7 +32,6 @@ interface FundAssignmentPlannerProps {
   readonly isAssignmentDeletable?:
     ((assignment: FundAssignmentDraft) => boolean) | null;
   readonly isFundSelectable?: ((fund: Fund) => boolean) | null;
-  readonly collapsible?: boolean;
   readonly fundLabel?: string;
   readonly getFundOptionSecondaryLabel?: ((fund: Fund) => string | null) | null;
   readonly sortFunds?: ((left: Fund, right: Fund) => number) | null;
@@ -68,7 +66,6 @@ const FundAssignmentPlanner = function ({
   isAssignmentReadOnly = null,
   isAssignmentDeletable = null,
   isFundSelectable = null,
-  collapsible = false,
   fundLabel = "Fund",
   getFundOptionSecondaryLabel = null,
   sortFunds = null,
@@ -76,8 +73,6 @@ const FundAssignmentPlanner = function ({
   renderAssignmentControl = null,
   readOnly = false,
 }: FundAssignmentPlannerProps): React.JSX.Element {
-  const [assignmentsExpanded, setAssignmentsExpanded] = useState(false);
-  const assignmentsDetailsId = useId();
   const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
   const assignedFundIds = new Set(
     explicitFundAssignments.map((assignment) => assignment.fundId),
@@ -86,11 +81,11 @@ const FundAssignmentPlanner = function ({
   const hasSingleAssignmentAmountReadOnly =
     singleAssignmentAmountReadOnly && explicitFundAssignments.length === 1;
   const assignmentCount = fundAssignments.length;
-  const shouldCollapse = readOnly && collapsible && assignmentCount > 1;
 
   const assignmentsContent = (
     <CollectionEditor
       items={fundAssignments}
+      label="Fund Assignments"
       onAdd={addFundAssignment}
       onRemove={(_, index) => {
         deleteFundAssignment(index);
@@ -239,51 +234,7 @@ const FundAssignmentPlanner = function ({
     />
   );
 
-  return (
-    <Stack spacing={2.5}>
-      {shouldCollapse ? (
-        <InsetFrame>
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Typography variant="subtitle1">
-              Fund Assignments ({assignmentCount})
-            </Typography>
-            <IconButton
-              size="small"
-              onClick={() => {
-                setAssignmentsExpanded((expanded) => !expanded);
-              }}
-              aria-label={`${assignmentsExpanded ? "Collapse" : "Expand"} Fund Assignments`}
-              aria-expanded={assignmentsExpanded}
-              aria-controls={assignmentsDetailsId}
-              sx={{
-                p: 0.5,
-                transform: assignmentsExpanded
-                  ? "rotate(180deg)"
-                  : "rotate(0deg)",
-                transition: "transform 0.3s ease-in-out",
-              }}
-            >
-              <ExpandMore />
-            </IconButton>
-          </Stack>
-          <Collapse
-            id={assignmentsDetailsId}
-            in={assignmentsExpanded}
-            timeout="auto"
-            unmountOnExit
-          >
-            <Box sx={{ pt: 1.5 }}>{assignmentsContent}</Box>
-          </Collapse>
-        </InsetFrame>
-      ) : (
-        assignmentsContent
-      )}
-    </Stack>
-  );
+  return assignmentsContent;
 };
 
 export default FundAssignmentPlanner;
