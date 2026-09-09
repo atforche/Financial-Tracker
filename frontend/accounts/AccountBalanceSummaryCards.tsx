@@ -1,26 +1,18 @@
 "use client";
 
-import type {
-  AccountBalanceSummaryByDate,
-  AccountBalanceSummaryByPeriod,
-} from "@/accounts/types";
 import {
-  type AccountTrendsDataMode,
   type AccountTypeBreakdownDetail,
-  getAccountTrendsSnapshot,
   getAccountTypeBreakdownDetails,
-} from "@/accounts/trends/helpers";
+} from "@/accounts/balanceSummaryHelpers";
 import { type JSX, type ReactNode, useState } from "react";
 import { formatAccountType, isTrackedAccountType } from "@/accounts/helpers";
+import type { AccountBalanceSummary } from "@/accounts/types";
 import AccountSummaryCard from "@/accounts/AccountSummaryCard";
 import type { BreakdownDetailRow } from "@/framework/view/BreakdownSection";
 import ChangeValue from "@/framework/view/ChangeValue";
 import SummaryCardGrid from "@/framework/view/SummaryCardGrid";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
-/**
- * Defines the structure of a summary card for account trends.
- */
 interface CardDefinition {
   readonly title: string;
   readonly value: ReactNode;
@@ -30,9 +22,6 @@ interface CardDefinition {
   readonly untrackedDetailRows: readonly BreakdownDetailRow[];
 }
 
-/**
- * Converts account-type breakdown details into display rows.
- */
 const toDetailRows = function (
   details: readonly AccountTypeBreakdownDetail[],
   getValue: (detail: AccountTypeBreakdownDetail) => ReactNode,
@@ -44,31 +33,30 @@ const toDetailRows = function (
   }));
 };
 
-/**
- * Props for the AccountTrendsSummaryCards component.
- */
-interface AccountTrendsSummaryCardsProps {
-  readonly mode: AccountTrendsDataMode;
-  readonly accountingPeriods: readonly AccountBalanceSummaryByPeriod[];
-  readonly dates: readonly AccountBalanceSummaryByDate[];
+interface AccountBalanceSummaryCardsProps {
+  readonly startingLabel: string;
+  readonly endingLabel: string;
+  readonly showLabels?: boolean;
+  readonly startingBalance: AccountBalanceSummary;
+  readonly endingBalance: AccountBalanceSummary;
 }
 
 /**
- * Displays account balances for the selected trends range.
+ * Displays starting, ending, and net balance cards with account-type details.
  */
-const AccountTrendsSummaryCards = function ({
-  mode,
-  accountingPeriods,
-  dates,
-}: AccountTrendsSummaryCardsProps): JSX.Element {
-  const snapshot = getAccountTrendsSnapshot(mode, accountingPeriods, dates);
+const AccountBalanceSummaryCards = function ({
+  startingLabel,
+  endingLabel,
+  showLabels = true,
+  startingBalance,
+  endingBalance,
+}: AccountBalanceSummaryCardsProps): JSX.Element {
   const [expanded, setExpanded] = useState(false);
   const [trackedTypesExpanded, setTrackedTypesExpanded] = useState(false);
   const [untrackedTypesExpanded, setUntrackedTypesExpanded] = useState(false);
-
   const details = getAccountTypeBreakdownDetails(
-    snapshot.startingBalancesByType,
-    snapshot.endingBalancesByType,
+    startingBalance,
+    endingBalance,
   );
   const trackedDetails = details.filter(({ accountType }) =>
     isTrackedAccountType(accountType),
@@ -76,13 +64,6 @@ const AccountTrendsSummaryCards = function ({
   const untrackedDetails = details.filter(
     ({ accountType }) => !isTrackedAccountType(accountType),
   );
-  const toggleTracked = function (): void {
-    setTrackedTypesExpanded((value) => !value);
-  };
-  const toggleUntracked = function (): void {
-    setUntrackedTypesExpanded((value) => !value);
-  };
-
   const makeBreakdowns = function (
     getGroupValue: (tracked: boolean) => ReactNode,
     getDetailValue: (detail: AccountTypeBreakdownDetail) => ReactNode,
@@ -100,40 +81,41 @@ const AccountTrendsSummaryCards = function ({
       untrackedDetailRows: toDetailRows(untrackedDetails, getDetailValue),
     };
   };
-
   const cards: readonly CardDefinition[] = [
     {
-      title: `Starting Balance (${snapshot.startLabel})`,
-      value: formatCurrency(snapshot.totalStartingBalance),
+      title: showLabels
+        ? `Starting Balance (${startingLabel})`
+        : "Starting Balance",
+      value: formatCurrency(startingBalance.totalBalance),
       ...makeBreakdowns(
         (tracked) =>
           formatCurrency(
             tracked
-              ? snapshot.trackedStartingBalance
-              : snapshot.untrackedStartingBalance,
+              ? startingBalance.totalTrackedBalance
+              : startingBalance.totalUntrackedBalance,
           ),
-        ({ startingBalance }) => formatCurrency(startingBalance),
+        ({ startingBalance: value }) => formatCurrency(value),
       ),
     },
     {
-      title: `Ending Balance (${snapshot.endLabel})`,
-      value: formatCurrency(snapshot.totalEndingBalance),
+      title: showLabels ? `Ending Balance (${endingLabel})` : "Ending Balance",
+      value: formatCurrency(endingBalance.totalBalance),
       ...makeBreakdowns(
         (tracked) =>
           formatCurrency(
             tracked
-              ? snapshot.trackedEndingBalance
-              : snapshot.untrackedEndingBalance,
+              ? endingBalance.totalTrackedBalance
+              : endingBalance.totalUntrackedBalance,
           ),
-        ({ endingBalance }) => formatCurrency(endingBalance),
+        ({ endingBalance: value }) => formatCurrency(value),
       ),
     },
     {
       title: "Net Change",
       value: (
         <ChangeValue
-          startingValue={snapshot.totalStartingBalance}
-          endingValue={snapshot.totalEndingBalance}
+          startingValue={startingBalance.totalBalance}
+          endingValue={endingBalance.totalBalance}
         />
       ),
       ...makeBreakdowns(
@@ -141,29 +123,22 @@ const AccountTrendsSummaryCards = function ({
           <ChangeValue
             startingValue={
               tracked
-                ? snapshot.trackedStartingBalance
-                : snapshot.untrackedStartingBalance
+                ? startingBalance.totalTrackedBalance
+                : startingBalance.totalUntrackedBalance
             }
             endingValue={
               tracked
-                ? snapshot.trackedEndingBalance
-                : snapshot.untrackedEndingBalance
+                ? endingBalance.totalTrackedBalance
+                : endingBalance.totalUntrackedBalance
             }
           />
         ),
-        ({ startingBalance, endingBalance }) => (
-          <ChangeValue
-            startingValue={startingBalance}
-            endingValue={endingBalance}
-          />
+        ({ startingBalance: start, endingBalance: end }) => (
+          <ChangeValue startingValue={start} endingValue={end} />
         ),
       ),
     },
   ];
-
-  const toggleExpanded = function (): void {
-    setExpanded((value) => !value);
-  };
   return (
     <SummaryCardGrid>
       {cards.map((card) => (
@@ -171,15 +146,22 @@ const AccountTrendsSummaryCards = function ({
           key={card.title}
           {...card}
           expanded={expanded}
-          onToggle={toggleExpanded}
+          onToggle={() => {
+            setExpanded((value) => !value);
+          }}
           trackedExpanded={trackedTypesExpanded}
-          onTrackedToggle={toggleTracked}
+          onTrackedToggle={() => {
+            setTrackedTypesExpanded((value) => !value);
+          }}
           untrackedExpanded={untrackedTypesExpanded}
-          onUntrackedToggle={toggleUntracked}
+          onUntrackedToggle={() => {
+            setUntrackedTypesExpanded((value) => !value);
+          }}
         />
       ))}
     </SummaryCardGrid>
   );
 };
 
-export default AccountTrendsSummaryCards;
+export type { AccountBalanceSummaryCardsProps };
+export default AccountBalanceSummaryCards;

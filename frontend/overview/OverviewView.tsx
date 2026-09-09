@@ -1,145 +1,216 @@
+import {
+  type AccountTrendsDataMode,
+  getAccountTrendsSnapshot,
+} from "@/accounts/trends/helpers";
+import type {
+  AccountsInAccountingPeriodRange,
+  AccountsInDateRange,
+} from "@/accounts/types";
+import {
+  type FundTrendsDataMode,
+  getFundTrendsSnapshot,
+} from "@/funds/trends/helpers";
+import type {
+  FundsInAccountingPeriodRange,
+  FundsInDateRange,
+} from "@/funds/types";
 import { Stack, Typography } from "@mui/material";
-import { summarizeAccounts, summarizeFunds } from "@/overview/helpers";
-import AccountOverview from "@/overview/AccountOverview";
-import AccountingPeriodOverview from "@/overview/AccountingPeriodOverview";
-import { AccountingPeriodSortModel } from "@/framework/data/api";
+import {
+  type TrendRangeMode,
+  getDefaultTrendAccountingPeriodRange,
+  getDefaultTrendDateRange,
+} from "@/framework/routes/trendRange";
+import AccountBalanceSummaryCards from "@/accounts/AccountBalanceSummaryCards";
+import AccountTrendsChangeChart from "@/accounts/trends/AccountTrendsChangeChart";
+import { AccountingPeriodSort } from "@/accounting-periods/types";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import ContentSurface from "@/framework/view/ContentSurface";
-import FundOverview from "@/overview/FundOverview";
+import FundBalanceSummaryCards from "@/funds/FundBalanceSummaryCards";
+import FundTrendsChangeChart from "@/funds/trends/FundTrendsChangeChart";
 import type { JSX } from "react";
-import type { OverviewData } from "@/overview/types";
 import OverviewPageHeader from "@/overview/OverviewPageHeader";
+import type { OverviewSearchParams } from "@/overview/helpers";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import { buildDateChartPoints } from "@/framework/charts/balanceTrendHelpers";
+import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
-import dayjs from "dayjs";
-import loadAllPages from "@/framework/data/loadAllPages";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
-/**
- * Loads all data required by the overview page.
- */
-const getOverviewData = async function (): Promise<OverviewData> {
+interface OverviewViewProps {
+  readonly searchParams: Promise<OverviewSearchParams>;
+}
+
+/** Displays account and fund balance trends for one shared range. */
+const OverviewView = async function ({
+  searchParams,
+}: OverviewViewProps): Promise<JSX.Element> {
+  const {
+    mode,
+    startAccountingPeriodId,
+    endAccountingPeriodId,
+    startDate,
+    endDate,
+  } = await searchParams;
   const apiClient = await createApiClient();
-  const recentActivityEndDate = dayjs().format("YYYY-MM-DD");
-  const recentActivityStartDate = dayjs()
-    .subtract(60, "day")
-    .format("YYYY-MM-DD");
-  const recentActivityRange = {
-    "Range.Start": recentActivityStartDate,
-    "Range.End": recentActivityEndDate,
-    Limit: 1,
-    Offset: 0,
-  };
-  const accountSummaryPromise = apiClient.GET("/accounts/with-balances");
-  const fundSummaryPromise = apiClient.GET("/funds/with-balances");
-  const accountTrendPromise = apiClient.GET("/accounts/date-range", {
-    params: { query: recentActivityRange },
-  });
-  const fundTrendPromise = apiClient.GET("/funds/date-range", {
-    params: { query: recentActivityRange },
-  });
-  const accountingPeriodsPromise = loadAllPages(async (limit, offset) =>
-    unwrapApiResponse(
-      await apiClient.GET("/accounting-periods", {
-        params: {
-          query: {
-            Sort: AccountingPeriodSortModel.DateDescending,
-            Limit: limit,
-            Offset: offset,
-          },
+  const accountingPeriods = unwrapApiResponse(
+    await apiClient.GET("/accounting-periods", {
+      params: {
+        query: {
+          Sort: AccountingPeriodSort.DateDescending,
+          Limit: 500,
+          Offset: 0,
         },
-      }),
-      "Failed to fetch accounting periods",
-    ),
+      },
+    }),
+    "Failed to fetch accounting periods",
   );
-
-  const [
-    accountSummaryResponse,
-    fundSummaryResponse,
-    accountTrendResponse,
-    fundTrendResponse,
-    accountingPeriods,
-  ] = await Promise.all([
-    accountSummaryPromise,
-    fundSummaryPromise,
-    accountTrendPromise,
-    fundTrendPromise,
-    accountingPeriodsPromise,
+  const defaultDateRange = getDefaultTrendDateRange();
+  const defaultAccountingPeriodRange = getDefaultTrendAccountingPeriodRange(
+    accountingPeriods.items,
+  );
+  const currentMode: TrendRangeMode =
+    mode === "accounting-period" && defaultAccountingPeriodRange !== null
+      ? "accounting-period"
+      : "date";
+  const accountMode: AccountTrendsDataMode =
+    currentMode === "date" ? "Date" : "AccountingPeriod";
+  const fundMode: FundTrendsDataMode = accountMode;
+  const range =
+    currentMode === "date"
+      ? {
+          "Range.Start": startDate ?? defaultDateRange.start,
+          "Range.End": endDate ?? defaultDateRange.end,
+        }
+      : {
+          "Range.Start":
+            startAccountingPeriodId ??
+            defaultAccountingPeriodRange?.start ??
+            "",
+          "Range.End":
+            endAccountingPeriodId ?? defaultAccountingPeriodRange?.end ?? "",
+        };
+  const query = { ...range, Limit: 1, Offset: 0 };
+  const [accountTrends, fundTrends] = await Promise.all([
+    (async function (): Promise<
+      AccountsInDateRange | AccountsInAccountingPeriodRange
+    > {
+      return currentMode === "date"
+        ? unwrapApiResponse(
+            await apiClient.GET("/accounts/date-range", {
+              params: { query },
+            }),
+            "Failed to load account overview",
+          )
+        : unwrapApiResponse(
+            await apiClient.GET("/accounts/accounting-period-range", {
+              params: { query },
+            }),
+            "Failed to load account overview",
+          );
+    })(),
+    (async function (): Promise<
+      FundsInDateRange | FundsInAccountingPeriodRange
+    > {
+      return currentMode === "date"
+        ? unwrapApiResponse(
+            await apiClient.GET("/funds/date-range", {
+              params: { query },
+            }),
+            "Failed to load fund overview",
+          )
+        : unwrapApiResponse(
+            await apiClient.GET("/funds/accounting-period-range", {
+              params: { query },
+            }),
+            "Failed to load fund overview",
+          );
+    })(),
   ]);
-
-  const accounts = unwrapApiResponse(
-    accountSummaryResponse,
-    "Failed to fetch account summary",
+  const accountPeriods =
+    "accountingPeriods" in accountTrends ? accountTrends.accountingPeriods : [];
+  const accountDates = "dates" in accountTrends ? accountTrends.dates : [];
+  const fundPeriods =
+    "accountingPeriods" in fundTrends ? fundTrends.accountingPeriods : [];
+  const fundDates = "dates" in fundTrends ? fundTrends.dates : [];
+  const accountSnapshot = getAccountTrendsSnapshot(
+    accountMode,
+    accountPeriods,
+    accountDates,
   );
-  const funds = unwrapApiResponse(
-    fundSummaryResponse,
-    "Failed to fetch fund summary",
-  );
-  const accountTrend = unwrapApiResponse(
-    accountTrendResponse,
-    "Failed to fetch account balance trend",
-  );
-  const fundTrend = unwrapApiResponse(
-    fundTrendResponse,
-    "Failed to fetch fund balance trend",
-  );
-
-  return {
-    accountSummary: summarizeAccounts(accounts.items),
-    fundSummary: summarizeFunds(funds.items),
-    accountBalanceTrend: buildDateChartPoints(accountTrend.dates),
-    fundBalanceTrend: buildDateChartPoints(fundTrend.dates),
-    latestAccountingPeriod: accountingPeriods[0] ?? null,
-    currentAccountingPeriod:
-      accountingPeriods.find((period) => period.isOpen) ?? null,
-  };
-};
-
-/**
- * Component that displays the Overview view.
- */
-const OverviewView = async function (): Promise<JSX.Element> {
-  const data = await getOverviewData();
-  const displayedAccountingPeriod =
-    data.currentAccountingPeriod ?? data.latestAccountingPeriod;
+  const fundSnapshot = getFundTrendsSnapshot(fundMode, fundPeriods, fundDates);
+  const xAxisLabel = currentMode === "date" ? "Date" : "Accounting Period";
+  const accountChartPoints = buildBalanceTrendChartPoints({
+    mode: accountMode,
+    accountingPeriods: accountPeriods.map((summary) => ({
+      accountingPeriodId: summary.accountingPeriod.id,
+      accountingPeriodName: summary.accountingPeriod.name,
+      year: summary.accountingPeriod.year,
+      month: summary.accountingPeriod.month,
+      totalOpeningBalance: summary.openingBalance.totalBalance,
+      totalClosingBalance: summary.closingBalance.totalBalance,
+    })),
+    dates: accountDates,
+  });
+  const fundChartPoints = buildBalanceTrendChartPoints({
+    mode: fundMode,
+    accountingPeriods: fundPeriods.map((summary) => ({
+      accountingPeriodId: summary.accountingPeriod.id,
+      accountingPeriodName: summary.accountingPeriod.name,
+      year: summary.accountingPeriod.year,
+      month: summary.accountingPeriod.month,
+      totalOpeningBalance: summary.openingBalance.totalBalance,
+      totalClosingBalance: summary.closingBalance.totalBalance,
+    })),
+    dates: fundDates,
+  });
 
   return (
     <PageLayout>
       <ConstrainedContent>
         <ContentSurface>
-          <OverviewPageHeader />
+          <OverviewPageHeader accountingPeriods={accountingPeriods.items} />
         </ContentSurface>
       </ConstrainedContent>
-
       <Stack spacing={2}>
-        <Typography variant="h5">
-          Current Period
-          {displayedAccountingPeriod === null
-            ? ""
-            : ` (${displayedAccountingPeriod.name})`}
-        </Typography>
-        <AccountingPeriodOverview
-          currentAccountingPeriod={data.currentAccountingPeriod}
-          latestAccountingPeriod={data.latestAccountingPeriod}
+        <Typography variant="h5">Accounts</Typography>
+        <AccountBalanceSummaryCards
+          startingLabel={accountSnapshot.startLabel}
+          endingLabel={accountSnapshot.endLabel}
+          startingBalance={accountSnapshot.startingBalance}
+          endingBalance={accountSnapshot.endingBalance}
         />
-        <Typography variant="h5">Recent Activity</Typography>
-        <ResponsiveGrid columns={{ xs: 1, md: 2 }}>
-          <AccountOverview summary={data.accountSummary} />
-          <FundOverview summary={data.fundSummary} />
-        </ResponsiveGrid>
         <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
           <BalanceTrendChart
-            chartPoints={data.accountBalanceTrend}
+            chartPoints={accountChartPoints}
             title="Account Balance Trend"
-            xAxisLabel="Date"
+            xAxisLabel={xAxisLabel}
           />
+          <AccountTrendsChangeChart
+            mode={accountMode}
+            accountingPeriods={accountPeriods}
+            dates={accountDates}
+            title="Account Balance Change"
+          />
+        </ResponsiveGrid>
+        <Typography variant="h5">Funds</Typography>
+        <FundBalanceSummaryCards
+          startingLabel={fundSnapshot.startLabel}
+          endingLabel={fundSnapshot.endLabel}
+          startingBalance={fundSnapshot.startingBalance}
+          endingBalance={fundSnapshot.endingBalance}
+        />
+        <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
           <BalanceTrendChart
-            chartPoints={data.fundBalanceTrend}
+            chartPoints={fundChartPoints}
             title="Fund Balance Trend"
-            xAxisLabel="Date"
+            xAxisLabel={xAxisLabel}
+          />
+          <FundTrendsChangeChart
+            mode={fundMode}
+            accountingPeriods={fundPeriods}
+            dates={fundDates}
+            title="Fund Balance Change"
           />
         </ResponsiveGrid>
       </Stack>

@@ -1,5 +1,6 @@
 import type {
   FundBalanceEventSort,
+  FundBalanceSummary,
   FundBalanceSummaryByDate,
   FundBalanceSummaryByPeriod,
   FundWithBalanceRangeSort,
@@ -41,6 +42,8 @@ interface FundTrendsSnapshot {
   readonly assignedEndingBalance: number;
   readonly unassignedStartingBalance: number;
   readonly unassignedEndingBalance: number;
+  readonly startingBalance: FundBalanceSummary;
+  readonly endingBalance: FundBalanceSummary;
 }
 
 /**
@@ -70,6 +73,8 @@ const getFundTrendsSnapshot = function (
           firstPeriod.openingBalance.totalUnassignedBalance,
         unassignedEndingBalance:
           lastPeriod.closingBalance.totalUnassignedBalance,
+        startingBalance: firstPeriod.openingBalance,
+        endingBalance: lastPeriod.closingBalance,
       };
     }
   }
@@ -89,6 +94,16 @@ const getFundTrendsSnapshot = function (
     assignedEndingBalance: lastDate?.totalAssignedBalance ?? 0,
     unassignedStartingBalance: firstDate?.totalUnassignedBalance ?? 0,
     unassignedEndingBalance: lastDate?.totalUnassignedBalance ?? 0,
+    startingBalance: {
+      totalBalance: firstDate?.totalBalance ?? 0,
+      totalAssignedBalance: firstDate?.totalAssignedBalance ?? 0,
+      totalUnassignedBalance: firstDate?.totalUnassignedBalance ?? 0,
+    },
+    endingBalance: {
+      totalBalance: lastDate?.totalBalance ?? 0,
+      totalAssignedBalance: lastDate?.totalAssignedBalance ?? 0,
+      totalUnassignedBalance: lastDate?.totalUnassignedBalance ?? 0,
+    },
   };
 };
 

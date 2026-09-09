@@ -1,5 +1,6 @@
 import type {
   AccountBalanceEventSort,
+  AccountBalanceSummary,
   AccountBalanceSummaryByDate,
   AccountBalanceSummaryByPeriod,
   AccountType,
@@ -8,7 +9,6 @@ import type {
 } from "@/accounts/types";
 import type { TrendRangeMode } from "@/framework/routes/trendRange";
 import { formatShortDate } from "@/framework/dateHelpers";
-import { getCurrencyDifference } from "@/framework/currencyHelpers";
 
 /**
  * Search parameters supported by the account trends page.
@@ -47,16 +47,8 @@ interface AccountTrendsSnapshot {
   readonly untrackedEndingBalance: number;
   readonly startingBalancesByType: readonly AccountTypeBalance[];
   readonly endingBalancesByType: readonly AccountTypeBalance[];
-}
-
-/**
- * Details of account balances and changes for a specific account type.
- */
-interface AccountTypeBreakdownDetail {
-  readonly accountType: AccountType;
-  readonly startingBalance: number;
-  readonly endingBalance: number;
-  readonly netChange: number;
+  readonly startingBalance: AccountBalanceSummary;
+  readonly endingBalance: AccountBalanceSummary;
 }
 
 /**
@@ -86,6 +78,8 @@ const getAccountTrendsSnapshot = function (
         untrackedEndingBalance: lastPeriod.closingBalance.totalUntrackedBalance,
         startingBalancesByType: firstPeriod.openingBalance.balanceByAccountType,
         endingBalancesByType: lastPeriod.closingBalance.balanceByAccountType,
+        startingBalance: firstPeriod.openingBalance,
+        endingBalance: lastPeriod.closingBalance,
       };
     }
   }
@@ -107,46 +101,19 @@ const getAccountTrendsSnapshot = function (
     untrackedEndingBalance: lastDate?.totalUntrackedBalance ?? 0,
     startingBalancesByType: firstDate?.balanceByAccountType ?? [],
     endingBalancesByType: lastDate?.balanceByAccountType ?? [],
+    startingBalance: {
+      totalBalance: firstDate?.totalBalance ?? 0,
+      totalTrackedBalance: firstDate?.totalTrackedBalance ?? 0,
+      totalUntrackedBalance: firstDate?.totalUntrackedBalance ?? 0,
+      balanceByAccountType: firstDate?.balanceByAccountType ?? [],
+    },
+    endingBalance: {
+      totalBalance: lastDate?.totalBalance ?? 0,
+      totalTrackedBalance: lastDate?.totalTrackedBalance ?? 0,
+      totalUntrackedBalance: lastDate?.totalUntrackedBalance ?? 0,
+      balanceByAccountType: lastDate?.balanceByAccountType ?? [],
+    },
   };
-};
-
-/**
- * Merges starting and ending balances into account-type change details.
- */
-const getAccountTypeBreakdownDetails = function (
-  startingBalancesByType: readonly AccountTypeBalance[],
-  endingBalancesByType: readonly AccountTypeBalance[],
-): AccountTypeBreakdownDetail[] {
-  const starting = new Map(
-    startingBalancesByType.map(({ accountType, totalBalance }) => [
-      accountType,
-      totalBalance,
-    ]),
-  );
-  const ending = new Map(
-    endingBalancesByType.map(({ accountType, totalBalance }) => [
-      accountType,
-      totalBalance,
-    ]),
-  );
-
-  return Array.from(new Set([...starting.keys(), ...ending.keys()]))
-    .map((accountType) => {
-      const startingBalance = starting.get(accountType) ?? 0;
-      const endingBalance = ending.get(accountType) ?? 0;
-      return {
-        accountType,
-        startingBalance,
-        endingBalance,
-        netChange: getCurrencyDifference(endingBalance, startingBalance),
-      };
-    })
-    .sort((left, right) =>
-      getCurrencyDifference(
-        Math.abs(right.endingBalance),
-        Math.abs(left.endingBalance),
-      ),
-    );
 };
 
 /**
@@ -206,12 +173,10 @@ export {
   accountTrendsParamNames,
   clearAccountTrendsFilters,
   getAccountTrendsSnapshot,
-  getAccountTypeBreakdownDetails,
   hasActiveAccountTrendsFilters,
 };
 export type {
   AccountTrendsDataMode,
   AccountTrendsSearchParams,
   AccountTrendsSnapshot,
-  AccountTypeBreakdownDetail,
 };
