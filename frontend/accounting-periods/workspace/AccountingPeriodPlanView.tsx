@@ -115,10 +115,6 @@ const AccountingPeriodPlanView = async function ({
           }
         />
       </ResponsiveGrid>
-      <ExpectedIncomeSourcesFrame
-        accountingPeriod={accountingPeriod}
-        redirectUrl={currentUrl}
-      />
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }} spacing={3}>
         <FundGoalsFrame
           goals={goalsWithProgress}
@@ -133,6 +129,10 @@ const AccountingPeriodPlanView = async function ({
           returnUrl={currentUrl}
         />
       </ResponsiveGrid>
+      <ExpectedIncomeSourcesFrame
+        accountingPeriod={accountingPeriod}
+        redirectUrl={currentUrl}
+      />
     </>
   );
 };

@@ -5,7 +5,9 @@ import { type JSX, useState } from "react";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import CloseAccountingPeriodForm from "@/accounting-periods/workspace/CloseAccountingPeriodForm";
 import DeleteAccountingPeriodForm from "@/accounting-periods/workspace/DeleteAccountingPeriodForm";
+import Link from "next/link";
 import ReopenAccountingPeriodForm from "@/accounting-periods/workspace/ReopenAccountingPeriodForm";
+import type { Route } from "next";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
@@ -13,6 +15,7 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
  */
 interface AccountingPeriodDetailActionsProps {
   readonly accountingPeriod: AccountingPeriodWithBalance;
+  readonly planHref: Route;
   readonly redirectUrl: string;
   readonly deleteRedirectUrl: string;
 }
@@ -22,38 +25,42 @@ interface AccountingPeriodDetailActionsProps {
  */
 const AccountingPeriodDetailActions = function ({
   accountingPeriod,
+  planHref,
   redirectUrl,
   deleteRedirectUrl,
-}: AccountingPeriodDetailActionsProps): JSX.Element | null {
+}: AccountingPeriodDetailActionsProps): JSX.Element {
   const canWrite = useWriteAccess();
   const [dialog, setDialog] = useState<"close" | "reopen" | "delete" | null>(
     null,
   );
 
-  if (!canWrite) {
-    return null;
-  }
-
   return (
     <>
       <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-        <Button
-          variant="contained"
-          onClick={() => {
-            setDialog(accountingPeriod.isOpen ? "close" : "reopen");
-          }}
-        >
-          {accountingPeriod.isOpen ? "Close Period" : "Reopen Period"}
+        <Button component={Link} href={planHref} variant="outlined">
+          {accountingPeriod.isOpen ? "Edit Plan" : "View Plan"}
         </Button>
-        <Button
-          color="error"
-          variant="outlined"
-          onClick={() => {
-            setDialog("delete");
-          }}
-        >
-          Delete Period
-        </Button>
+        {canWrite ? (
+          <>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setDialog(accountingPeriod.isOpen ? "close" : "reopen");
+              }}
+            >
+              {accountingPeriod.isOpen ? "Close Period" : "Reopen Period"}
+            </Button>
+            <Button
+              color="error"
+              variant="outlined"
+              onClick={() => {
+                setDialog("delete");
+              }}
+            >
+              Delete Period
+            </Button>
+          </>
+        ) : null}
       </Stack>
       {dialog === "close" ? (
         <CloseAccountingPeriodForm

@@ -47,18 +47,18 @@ const IncomeComparisonCard = function ({
     <SummaryCard title={title}>
       <ComparisonBarPair
         first={{
-          label: "Expected",
-          amount: expected,
-          color: "info.main",
-          differenceLabel: "Surplus",
-          differenceColor: "success.main",
-        }}
-        second={{
           label: "Actual",
           amount: actual,
           color: "success.main",
           differenceLabel: "Shortfall",
           differenceColor: "error.main",
+        }}
+        second={{
+          label: "Expected",
+          amount: expected,
+          color: "info.main",
+          differenceLabel: "Surplus",
+          differenceColor: "success.main",
         }}
       />
     </SummaryCard>
@@ -83,7 +83,17 @@ const AccountingPeriodProgressFlow = function ({
       aria-label="Income and spending progress"
       sx={{ containerType: "inline-size" }}
     >
-      <Box sx={{ alignSelf: "center", maxWidth: 580, width: "100%" }}>
+      <Box
+        sx={{
+          alignSelf: "flex-start",
+          maxWidth: "none",
+          width: "100%",
+          "@container (min-width: 760px)": {
+            alignSelf: "center",
+            maxWidth: 580,
+          },
+        }}
+      >
         <IncomeComparisonCard
           title="Total Income"
           expected={getAmount(expectedIncome.total)}

@@ -1,7 +1,5 @@
 import { Box, Button, Stack, Typography } from "@mui/material";
 import AccountingPeriodDetailActions from "@/accounting-periods/workspace/AccountingPeriodDetailActions";
-import AccountingPeriodDetailNavigation from "@/accounting-periods/workspace/AccountingPeriodDetailNavigation";
-import AccountingPeriodPlanView from "@/accounting-periods/workspace/AccountingPeriodPlanView";
 import AccountingPeriodProgressView from "@/accounting-periods/workspace/AccountingPeriodProgressView";
 import AccountingPeriodSummaryFrame from "@/accounting-periods/workspace/AccountingPeriodSummaryFrame";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
@@ -31,7 +29,6 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
 }: AccountingPeriodWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { accountingPeriodId } = await params;
   const resolvedSearchParams = await searchParams;
-  const view = resolvedSearchParams.view === "plan" ? "plan" : "progress";
   const apiClient = await createApiClient();
   const workspaceParams = {
     ...(typeof resolvedSearchParams.years !== "undefined"
@@ -62,29 +59,25 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
     periodResponse,
     "Failed to fetch accounting period",
   );
-  const currentUrl = routes.workspaceDetail(period.id, {
+  if (resolvedSearchParams.view === "plan") {
+    redirect(
+      routes.workspacePlan(period.id, {
+        ...workspaceParams,
+        ...(typeof resolvedSearchParams.incomeSourcePage !== "undefined"
+          ? { incomeSourcePage: resolvedSearchParams.incomeSourcePage }
+          : {}),
+        ...(typeof resolvedSearchParams.fundGoalPage !== "undefined"
+          ? { fundGoalPage: resolvedSearchParams.fundGoalPage }
+          : {}),
+        ...(typeof resolvedSearchParams.accountGoalPage !== "undefined"
+          ? { accountGoalPage: resolvedSearchParams.accountGoalPage }
+          : {}),
+      }),
+    );
+  }
+  const currentUrl = routes.workspaceDetail(period.id, workspaceParams);
+  const planHref = routes.workspacePlan(period.id, {
     ...workspaceParams,
-    view,
-    ...(view === "plan" &&
-    typeof resolvedSearchParams.incomeSourcePage !== "undefined"
-      ? { incomeSourcePage: resolvedSearchParams.incomeSourcePage }
-      : {}),
-    ...(view === "plan" &&
-    typeof resolvedSearchParams.fundGoalPage !== "undefined"
-      ? { fundGoalPage: resolvedSearchParams.fundGoalPage }
-      : {}),
-    ...(view === "plan" &&
-    typeof resolvedSearchParams.accountGoalPage !== "undefined"
-      ? { accountGoalPage: resolvedSearchParams.accountGoalPage }
-      : {}),
-  });
-  const progressHref = routes.workspaceDetail(period.id, {
-    ...workspaceParams,
-    view: "progress",
-  });
-  const planHref = routes.workspaceDetail(period.id, {
-    ...workspaceParams,
-    view: "plan",
   });
   return (
     <PageLayout>
@@ -98,24 +91,13 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
               Back to Workspace
             </Button>
           </Link>
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={1.5}
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            justifyContent="space-between"
-          >
-            <Typography variant="h4">{period.name}</Typography>
-            <AccountingPeriodDetailNavigation
-              view={view}
-              progressHref={progressHref}
-              planHref={planHref}
-            />
-          </Stack>
+          <Typography variant="h4">{period.name}</Typography>
           <AccountingPeriodSummaryFrame
             accountingPeriod={period}
             headerContent={
               <AccountingPeriodDetailActions
                 accountingPeriod={period}
+                planHref={planHref}
                 redirectUrl={currentUrl}
                 deleteRedirectUrl={workspaceUrl}
               />
@@ -123,17 +105,7 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
           />
         </Stack>
       </Box>
-      {view === "progress" ? (
-        <AccountingPeriodProgressView accountingPeriod={period} />
-      ) : (
-        <AccountingPeriodPlanView
-          accountingPeriod={period}
-          currentUrl={currentUrl}
-          pageSize={resolvedSearchParams.pageSize}
-          fundGoalPage={resolvedSearchParams.fundGoalPage}
-          accountGoalPage={resolvedSearchParams.accountGoalPage}
-        />
-      )}
+      <AccountingPeriodProgressView accountingPeriod={period} />
     </PageLayout>
   );
 };

@@ -1,6 +1,7 @@
 import AccountBalanceSummaryCards from "@/accounts/AccountBalanceSummaryCards";
 import AccountingPeriodProgressFlow from "@/accounting-periods/workspace/AccountingPeriodProgressFlow";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
+import Divider from "@mui/material/Divider";
 import FundBalanceSummaryCards from "@/funds/FundBalanceSummaryCards";
 import type { JSX } from "react";
 import createApiClient from "@/framework/data/createApiClient";
@@ -71,6 +72,19 @@ const AccountingPeriodProgressView = async function ({
   );
   return (
     <>
+      <AccountingPeriodProgressFlow
+        expectedIncome={accountingPeriod.expectedIncome}
+        actualIncome={transactionSnapshot.totalIncome}
+        totalSpending={transactionSnapshot.totalSpending}
+        expectedFundGoalContributions={
+          accountingPeriod.expectedGoalContributions
+        }
+        actualFundGoalContributions={accountingPeriod.actualGoalContributions}
+        actualExtraFundGoalContributions={
+          accountingPeriod.actualExtraGoalContributions
+        }
+      />
+      <Divider />
       <AccountBalanceSummaryCards
         startingLabel={accountBalanceSnapshot.startLabel}
         endingLabel={accountBalanceSnapshot.endLabel}
@@ -86,18 +100,6 @@ const AccountingPeriodProgressView = async function ({
         endingBalance={fundBalanceSnapshot.endingBalance}
         showLabels={false}
         titlePrefix="Fund"
-      />
-      <AccountingPeriodProgressFlow
-        expectedIncome={accountingPeriod.expectedIncome}
-        actualIncome={transactionSnapshot.totalIncome}
-        totalSpending={transactionSnapshot.totalSpending}
-        expectedFundGoalContributions={
-          accountingPeriod.expectedGoalContributions
-        }
-        actualFundGoalContributions={accountingPeriod.actualGoalContributions}
-        actualExtraFundGoalContributions={
-          accountingPeriod.actualExtraGoalContributions
-        }
       />
     </>
   );
