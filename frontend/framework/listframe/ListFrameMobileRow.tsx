@@ -88,7 +88,10 @@ const ListFrameMobileRow = function <T>({
   item,
   onRowClick,
 }: ListFrameMobileRowProps<T>): JSX.Element {
-  const labeledColumns = columns.filter(
+  const cardColumns = columns.filter(
+    (column) => column.hideInCardLayout !== true,
+  );
+  const labeledColumns = cardColumns.filter(
     (column) =>
       column.headerContent !== null &&
       column.headerContent !== undefined &&
@@ -105,7 +108,7 @@ const ListFrameMobileRow = function <T>({
     primaryColumn === undefined
       ? detailColumns
       : [primaryColumn, ...detailColumns];
-  const utilityColumns = columns.filter(
+  const utilityColumns = cardColumns.filter(
     (column) => !labeledColumns.includes(column),
   );
   const isClickable = typeof onRowClick === "function";

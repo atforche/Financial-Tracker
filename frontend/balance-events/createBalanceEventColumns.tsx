@@ -111,6 +111,7 @@ const createBalanceEventColumns = function <T extends BalanceEventListItem>({
         headerContent: "Balance Before",
         getBodyContent: (event) => formatCurrency(getPreviousBalance(event)),
         alignment: "right",
+        hideInCardLayout: true,
         minWidth: 150,
       },
       {
@@ -118,6 +119,7 @@ const createBalanceEventColumns = function <T extends BalanceEventListItem>({
         headerContent: "Balance After",
         getBodyContent: (event) => formatCurrency(getNewBalance(event)),
         alignment: "right",
+        hideInCardLayout: true,
         minWidth: 150,
       },
     );
