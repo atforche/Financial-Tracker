@@ -5,7 +5,9 @@ import { type JSX, useState } from "react";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import CloseAccountingPeriodForm from "@/accounting-periods/workspace/CloseAccountingPeriodForm";
 import DeleteAccountingPeriodForm from "@/accounting-periods/workspace/DeleteAccountingPeriodForm";
+import Link from "next/link";
 import ReopenAccountingPeriodForm from "@/accounting-periods/workspace/ReopenAccountingPeriodForm";
+import type { Route } from "next";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
@@ -13,6 +15,7 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
  */
 interface AccountingPeriodDetailActionsProps {
   readonly accountingPeriod: AccountingPeriodWithBalance;
+  readonly addTransactionHref: Route;
   readonly redirectUrl: string;
   readonly deleteRedirectUrl: string;
 }
@@ -22,6 +25,7 @@ interface AccountingPeriodDetailActionsProps {
  */
 const AccountingPeriodDetailActions = function ({
   accountingPeriod,
+  addTransactionHref,
   redirectUrl,
   deleteRedirectUrl,
 }: AccountingPeriodDetailActionsProps): JSX.Element | null {
@@ -37,6 +41,9 @@ const AccountingPeriodDetailActions = function ({
   return (
     <>
       <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
+        <Button component={Link} href={addTransactionHref} variant="contained">
+          Add Transaction
+        </Button>
         <Button
           variant="contained"
           onClick={() => {

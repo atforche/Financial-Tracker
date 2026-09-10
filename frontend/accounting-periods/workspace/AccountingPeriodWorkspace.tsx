@@ -30,9 +30,6 @@ interface AccountingPeriodWorkspaceSearchParams {
   sort?: AccountingPeriodWithBalanceSort;
   page?: number | string | null;
   pageSize?: number | string | null;
-  fundGoalPage?: number | string | null;
-  accountGoalPage?: number | string | null;
-  transactionPage?: number | string | null;
   action?: AccountingPeriodWorkspaceAction;
 }
 
