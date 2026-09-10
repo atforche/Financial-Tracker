@@ -37,6 +37,7 @@ interface AccountBalanceSummaryCardsProps {
   readonly startingLabel: string;
   readonly endingLabel: string;
   readonly showLabels?: boolean;
+  readonly titlePrefix?: string;
   readonly startingBalance: AccountBalanceSummary;
   readonly endingBalance: AccountBalanceSummary;
 }
@@ -48,12 +49,20 @@ const AccountBalanceSummaryCards = function ({
   startingLabel,
   endingLabel,
   showLabels = true,
+  titlePrefix,
   startingBalance,
   endingBalance,
 }: AccountBalanceSummaryCardsProps): JSX.Element {
   const [expanded, setExpanded] = useState(false);
   const [trackedTypesExpanded, setTrackedTypesExpanded] = useState(false);
   const [untrackedTypesExpanded, setUntrackedTypesExpanded] = useState(false);
+  const getTitle = function (title: string, label?: string): string {
+    const prefixedTitle =
+      typeof titlePrefix === "undefined" ? title : `${titlePrefix} ${title}`;
+    return showLabels && typeof label !== "undefined"
+      ? `${prefixedTitle} (${label})`
+      : prefixedTitle;
+  };
   const details = getAccountTypeBreakdownDetails(
     startingBalance,
     endingBalance,
@@ -83,9 +92,7 @@ const AccountBalanceSummaryCards = function ({
   };
   const cards: readonly CardDefinition[] = [
     {
-      title: showLabels
-        ? `Starting Balance (${startingLabel})`
-        : "Starting Balance",
+      title: getTitle("Starting Balance", startingLabel),
       value: formatCurrency(startingBalance.totalBalance),
       ...makeBreakdowns(
         (tracked) =>
@@ -98,7 +105,7 @@ const AccountBalanceSummaryCards = function ({
       ),
     },
     {
-      title: showLabels ? `Ending Balance (${endingLabel})` : "Ending Balance",
+      title: getTitle("Ending Balance", endingLabel),
       value: formatCurrency(endingBalance.totalBalance),
       ...makeBreakdowns(
         (tracked) =>
@@ -111,7 +118,7 @@ const AccountBalanceSummaryCards = function ({
       ),
     },
     {
-      title: "Net Change",
+      title: getTitle("Net Change"),
       value: (
         <ChangeValue
           startingValue={startingBalance.totalBalance}

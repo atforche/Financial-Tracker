@@ -173,6 +173,7 @@ public sealed class AccountingPeriodQueryService(
                 PlannedGoalContributions = plannedGoalContributions,
                 ExpectedGoalContributions = expectedGoalContributions,
                 ActualGoalContributions = actualGoalContributions,
+                ActualExtraGoalContributions = incomeTotals.ExtraFundGoalContributions,
             });
         }
         return result;

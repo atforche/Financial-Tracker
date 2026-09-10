@@ -61,10 +61,17 @@ public sealed class TransactionCalculationCoverageTests
             }],
         });
 
+        Models.AccountingPeriods.AccountingPeriodWithBalanceModel pendingPeriod = await test.Api.GetAsync<Models.AccountingPeriods.AccountingPeriodWithBalanceModel>(
+            $"/accounting-periods/{july.Id}");
         await test.Transactions.PostAsync(new TransactionHandle(created.Id), cash, new DateOnly(2026, 7, 10));
         FundGoalProgressModel progress = await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{gifts.Goal.Id}/progress/{july.Id}");
         IncomeTransactionModel transaction = await test.Api.GetAsync<IncomeTransactionModel>($"/transactions/{created.Id}");
+        Models.AccountingPeriods.AccountingPeriodWithBalanceModel postedPeriod = await test.Api.GetAsync<Models.AccountingPeriods.AccountingPeriodWithBalanceModel>(
+            $"/accounting-periods/{july.Id}");
 
+        Assert.Equal(0m, pendingPeriod.ActualExtraGoalContributions);
+        Assert.Equal(50m, postedPeriod.ActualExtraGoalContributions);
+        Assert.Equal(0m, postedPeriod.ActualGoalContributions);
         Assert.True(Assert.Single(Assert.Single(transaction.Destinations).FundAssignments).IsExtraContribution);
         Assert.NotNull(progress.Contribution);
         Assert.Equal(0m, progress.Contribution.AssignedAmount);

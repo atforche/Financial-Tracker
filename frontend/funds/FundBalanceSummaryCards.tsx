@@ -13,6 +13,7 @@ interface FundBalanceSummaryCardsProps {
   readonly startingBalance: FundBalanceSummary;
   readonly endingBalance: FundBalanceSummary;
   readonly showLabels?: boolean;
+  readonly titlePrefix?: string;
 }
 
 interface CardDefinition {
@@ -29,25 +30,31 @@ const FundBalanceSummaryCards = function ({
   startingBalance,
   endingBalance,
   showLabels = true,
+  titlePrefix,
 }: FundBalanceSummaryCardsProps): JSX.Element {
   const [expanded, setExpanded] = useState(false);
+  const getTitle = function (title: string, label?: string): string {
+    const prefixedTitle =
+      typeof titlePrefix === "undefined" ? title : `${titlePrefix} ${title}`;
+    return showLabels && typeof label !== "undefined"
+      ? `${prefixedTitle} (${label})`
+      : prefixedTitle;
+  };
   const cards: readonly CardDefinition[] = [
     {
-      title: showLabels
-        ? `Starting Balance (${startingLabel})`
-        : "Starting Balance",
+      title: getTitle("Starting Balance", startingLabel),
       value: formatCurrency(startingBalance.totalBalance),
       assignedValue: formatCurrency(startingBalance.totalAssignedBalance),
       unassignedValue: formatCurrency(startingBalance.totalUnassignedBalance),
     },
     {
-      title: showLabels ? `Ending Balance (${endingLabel})` : "Ending Balance",
+      title: getTitle("Ending Balance", endingLabel),
       value: formatCurrency(endingBalance.totalBalance),
       assignedValue: formatCurrency(endingBalance.totalAssignedBalance),
       unassignedValue: formatCurrency(endingBalance.totalUnassignedBalance),
     },
     {
-      title: "Net Change",
+      title: getTitle("Net Change"),
       value: (
         <ChangeValue
           startingValue={startingBalance.totalBalance}

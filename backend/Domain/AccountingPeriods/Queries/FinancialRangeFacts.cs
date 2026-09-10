@@ -8,7 +8,8 @@ namespace Domain.AccountingPeriods.Queries;
 public sealed record FinancialRangeIncomeFact(
     decimal Amount,
     AccountType AccountType,
-    DateOnly? PostedDate);
+    DateOnly? PostedDate,
+    decimal ExtraFundGoalContributions = 0);
 
 /// <summary>
 /// Persisted spending facts for a financial range.

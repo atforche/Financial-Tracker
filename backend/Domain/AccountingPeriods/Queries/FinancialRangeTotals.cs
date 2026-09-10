@@ -5,7 +5,11 @@ namespace Domain.AccountingPeriods.Queries;
 /// <summary>
 /// Represents interpreted income and spending totals for a financial range.
 /// </summary>
-public sealed record FinancialRangeTotals(decimal TotalIncome, decimal TrackedIncome, decimal TotalSpending)
+public sealed record FinancialRangeTotals(
+    decimal TotalIncome,
+    decimal TrackedIncome,
+    decimal TotalSpending,
+    decimal ExtraFundGoalContributions)
 {
     /// <summary>
     /// Calculates financial totals from persisted income and spending facts.
@@ -20,6 +24,7 @@ public sealed record FinancialRangeTotals(decimal TotalIncome, decimal TrackedIn
         return new FinancialRangeTotals(
             recognizedIncome.Sum(fact => fact.Amount),
             recognizedIncome.Where(fact => fact.AccountType.IsTracked()).Sum(fact => fact.Amount),
-            spendingFacts.Where(fact => fact.PostedDate != null).Sum(fact => fact.Amount));
+            spendingFacts.Where(fact => fact.PostedDate != null).Sum(fact => fact.Amount),
+            recognizedIncome.Sum(fact => fact.ExtraFundGoalContributions));
     }
 }
