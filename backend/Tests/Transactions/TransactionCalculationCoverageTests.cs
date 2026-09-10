@@ -204,8 +204,8 @@ public sealed class TransactionCalculationCoverageTests
         {
             PlannedMonthlyContribution = 105m,
         });
-        CollectionModel<FundModel> funds = await test.Api.GetAsync<CollectionModel<FundModel>>("/funds");
-        FundModel unassignedModel = Assert.Single(funds.Items, fund => fund.Name == "Unassigned");
+        CollectionModel<FundWithBalanceModel> funds = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
+        FundWithBalanceModel unassignedModel = Assert.Single(funds.Items, fund => fund.Name == "Unassigned");
         FundGoalModel unassignedGoal = await test.Api.GetAsync<FundGoalModel>(
             $"/fund-goals/fund/{unassignedModel.Id}?accountingPeriodId={july.Id}");
         var unassigned = new FundHandle(unassignedModel.Id, unassignedModel.Name, new FundGoalHandle(unassignedGoal.Id, unassignedModel.Id));

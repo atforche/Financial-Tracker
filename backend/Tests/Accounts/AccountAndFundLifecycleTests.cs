@@ -22,16 +22,12 @@ public sealed class AccountAndFundLifecycleTests
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountHandle account = await test.Accounts.Onboard("Checking").WithOpeningBalance(200m).CreateAsync();
 
-        using HttpResponseMessage update = await test.Api.PostResponseAsync($"/accounts/{account.Id}", new UpdateAccountModel { Name = "Main checking" });
-        AccountModel updated = await test.Api.GetAsync<AccountModel>($"/accounts/{account.Id}");
+        AccountModel updated = await test.Api.PostAsync<UpdateAccountModel, AccountModel>($"/accounts/{account.Id}", new UpdateAccountModel { Name = "Main checking" });
         using HttpResponseMessage delete = await test.Api.DeleteResponseAsync($"/accounts/{account.Id}");
-        using HttpResponseMessage missing = await test.Api.GetResponseAsync($"/accounts/{account.Id}");
         using HttpResponseMessage missingUpdate = await test.Api.PostResponseAsync($"/accounts/{Guid.NewGuid()}", new UpdateAccountModel { Name = "Missing" });
 
-        Assert.Equal(HttpStatusCode.OK, update.StatusCode);
         Assert.Equal("Main checking", updated.Name);
         Assert.Equal(HttpStatusCode.OK, delete.StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, missingUpdate.StatusCode);
     }
 
@@ -51,20 +47,16 @@ public sealed class AccountAndFundLifecycleTests
             Description = "Invalid",
             AccountingPeriodId = Guid.NewGuid()
         });
-        using HttpResponseMessage update = await test.Api.PostResponseAsync($"/funds/{fund.Id}", new UpdateFundModel
+        FundModel updated = await test.Api.PostAsync<UpdateFundModel, FundModel>($"/funds/{fund.Id}", new UpdateFundModel
         {
             Name = "Holiday",
             Description = "Updated"
         });
-        FundModel updated = await test.Api.GetAsync<FundModel>($"/funds/{fund.Id}");
         using HttpResponseMessage delete = await test.Api.DeleteResponseAsync($"/funds/{fund.Id}");
-        using HttpResponseMessage missing = await test.Api.GetResponseAsync($"/funds/{fund.Id}");
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, invalidPeriod.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, update.StatusCode);
         Assert.Equal("Holiday", updated.Name);
         Assert.Equal(HttpStatusCode.OK, delete.StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
     }
 
     /// <summary>

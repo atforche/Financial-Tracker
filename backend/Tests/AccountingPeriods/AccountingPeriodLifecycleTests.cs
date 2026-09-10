@@ -51,8 +51,8 @@ public sealed class AccountingPeriodLifecycleTests
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
 
-        CollectionModel<FundModel> funds = await test.Api.GetAsync<CollectionModel<FundModel>>("/funds");
-        FundModel unassigned = Assert.Single(funds.Items, fund => fund.Name == "Unassigned");
+        CollectionModel<FundWithBalanceModel> funds = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
+        FundWithBalanceModel unassigned = Assert.Single(funds.Items, fund => fund.Name == "Unassigned");
         FundGoalModel goal = await test.Api.GetAsync<FundGoalModel>($"/fund-goals/fund/{unassigned.Id}?accountingPeriodId={july.Id}");
         IReadOnlyCollection<FundGoalProgressResultModel> progresses = await test.Api.GetAsync<IReadOnlyCollection<FundGoalProgressResultModel>>(
             $"/fund-goals/progress/{july.Id}");
@@ -186,10 +186,10 @@ public sealed class AccountingPeriodLifecycleTests
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
 
-        CollectionModel<FundModel> before = await test.Api.GetAsync<CollectionModel<FundModel>>("/funds");
+        CollectionModel<FundWithBalanceModel> before = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
         using HttpResponseMessage deleted = await test.Api.DeleteResponseAsync($"/accounting-periods/{july.Id}");
         using HttpResponseMessage missing = await test.Api.GetResponseAsync($"/accounting-periods/{july.Id}");
-        CollectionModel<FundModel> after = await test.Api.GetAsync<CollectionModel<FundModel>>("/funds");
+        CollectionModel<FundWithBalanceModel> after = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
 
         Assert.Contains(before.Items, fund => fund.Name == "Unassigned");
         Assert.Equal(HttpStatusCode.OK, deleted.StatusCode);

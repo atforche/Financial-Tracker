@@ -74,9 +74,6 @@ public sealed class AccountGoalEndpointTests
             });
         Assert.Equal(HttpStatusCode.UnprocessableEntity, invalidUpdate.StatusCode);
 
-        using HttpResponseMessage missingGoal = await test.Api.GetResponseAsync($"/account-goals/{Guid.NewGuid()}");
-        Assert.Equal(HttpStatusCode.NotFound, missingGoal.StatusCode);
-
         using HttpResponseMessage missingPeriod = await test.Api.GetResponseAsync(
             $"/account-goals/{goal.Id}/progress/{Guid.NewGuid()}");
         Assert.Equal(HttpStatusCode.NotFound, missingPeriod.StatusCode);

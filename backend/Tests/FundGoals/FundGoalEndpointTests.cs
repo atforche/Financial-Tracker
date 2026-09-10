@@ -21,7 +21,7 @@ public sealed class FundGoalEndpointTests
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle fund = await test.Funds.Create("Reserve").In(july).CreateAsync();
-        FundGoalModel created = await test.Api.GetAsync<FundGoalModel>($"/fund-goals/{fund.Goal.Id}");
+        FundGoalModel created = await test.Api.GetAsync<FundGoalModel>($"/fund-goals/fund/{fund.Id}?accountingPeriodId={july.Id}");
         Assert.Equal(0m, created.MinimumEndingBalance);
 
         _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{fund.Goal.Id}", new UpdateFundGoalModel

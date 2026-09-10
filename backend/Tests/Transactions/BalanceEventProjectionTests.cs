@@ -29,8 +29,8 @@ public sealed class BalanceEventProjectionTests
         AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
-        CollectionModel<FundModel> funds = await test.Api.GetAsync<CollectionModel<FundModel>>("/funds");
-        FundModel unassigned = Assert.Single(funds.Items, fund => fund.Name == "Unassigned");
+        CollectionModel<FundWithBalanceModel> funds = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
+        FundWithBalanceModel unassigned = Assert.Single(funds.Items, fund => fund.Name == "Unassigned");
         FundGoalModel unassignedGoal = await test.Api.GetAsync<FundGoalModel>(
             $"/fund-goals/fund/{unassigned.Id}?accountingPeriodId={july.Id}");
 
@@ -96,7 +96,7 @@ public sealed class BalanceEventProjectionTests
         CollectionModel<FundBalanceEventModel> fundEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
             "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31");
         CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.Api.GetAsync<CollectionModel<FundGoalBalanceEventModel>>(
-            "/fund-goals/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31");
+            $"/fund-goals/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}");
 
         AccountBalanceEventModel account = Assert.Single(accountEvents.Items, item => item.TransactionId == transaction.Id);
         FundBalanceEventModel fund = Assert.Single(fundEvents.Items, item => item.TransactionId == transaction.Id);
@@ -178,7 +178,7 @@ public sealed class BalanceEventProjectionTests
         CollectionModel<FundBalanceEventModel> fundEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
             "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31");
         CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.Api.GetAsync<CollectionModel<FundGoalBalanceEventModel>>(
-            "/fund-goals/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31");
+            $"/fund-goals/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}");
 
         FundBalanceEventModel fund = Assert.Single(fundEvents.Items, item => item.TransactionId == transaction.Id && item.Fund.Id == groceries.Id);
         FundGoalBalanceEventModel goal = Assert.Single(goalEvents.Items, item => item.TransactionId == transaction.Id && item.Fund.Id == groceries.Id);
@@ -207,7 +207,7 @@ public sealed class BalanceEventProjectionTests
         CollectionModel<AccountBalanceEventModel> accountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
             $"/accounts/{cash.Id}/balance-events?range.start=2026-07-01&range.end=2026-07-31&sort=Date");
         CollectionModel<FundBalanceEventModel> fundEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
-            $"/funds/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}&sort=Date");
+            "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31&sort=Date");
         CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.Api.GetAsync<CollectionModel<FundGoalBalanceEventModel>>(
             $"/fund-goals/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}&sort=Date");
 

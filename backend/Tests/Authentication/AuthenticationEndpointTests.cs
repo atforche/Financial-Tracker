@@ -17,7 +17,7 @@ public sealed class AuthenticationEndpointTests
         using FinancialTrackerApplicationFactory factory = new();
         using HttpClient client = factory.CreateClient();
 
-        using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts", UriKind.Relative));
+        using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts/with-balances", UriKind.Relative));
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
