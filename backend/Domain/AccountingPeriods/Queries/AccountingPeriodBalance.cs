@@ -11,4 +11,5 @@ public sealed record AccountingPeriodBalance(
     decimal ActualTrackedIncome,
     decimal PlannedGoalContributions,
     decimal ExpectedGoalContributions,
-    decimal ActualGoalContributions);
+    decimal ActualGoalContributions,
+    decimal ActualExtraGoalContributions);

@@ -23,11 +23,6 @@ interface FundGoalWithProgress extends FundGoal {
 }
 
 /**
- * Type representing current Fund availability.
- */
-type FundAvailability = components["schemas"]["FundAvailabilityModel"];
-
-/**
  * Type representing a request to update a Fund Goal.
  */
 type UpdateFundGoalRequest = components["schemas"]["UpdateFundGoalModel"];
@@ -50,7 +45,6 @@ type FundGoalBalanceEventDraft = Partial<FundGoalBalanceEvent>;
 
 export {
   FundGoalEndingBalanceStatusModel as FundGoalEndingBalanceStatus,
-  type FundAvailability,
   type FundGoal,
   type FundGoalBalanceEvent,
   type FundGoalBalanceSummaryByDate,

@@ -1,6 +1,7 @@
-import type {
-  FundTrendsDataMode,
-  FundTrendsSearchParams,
+import {
+  type FundTrendsDataMode,
+  type FundTrendsSearchParams,
+  getFundTrendsSnapshot,
 } from "@/funds/trends/helpers";
 import type {
   FundsInAccountingPeriodRange,
@@ -22,10 +23,10 @@ import {
 import { AccountingPeriodSort } from "@/accounting-periods/types";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
+import FundBalanceSummaryCards from "@/funds/FundBalanceSummaryCards";
 import FundTrendsChangeChart from "@/funds/trends/FundTrendsChangeChart";
 import FundTrendsFilter from "@/funds/trends/FundTrendsFilter";
 import FundTrendsListFrame from "@/funds/trends/FundTrendsListFrame";
-import FundTrendsSummaryCards from "@/funds/trends/FundTrendsSummaryCards";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
@@ -176,6 +177,11 @@ const FundTrends = async function ({
   const periodSummaries =
     "accountingPeriods" in trends ? trends.accountingPeriods : [];
   const dateSummaries = "dates" in trends ? trends.dates : [];
+  const snapshot = getFundTrendsSnapshot(
+    modeValue,
+    periodSummaries,
+    dateSummaries,
+  );
   const chartPeriods = periodSummaries.map((summary) => ({
     accountingPeriodId: summary.accountingPeriod.id,
     accountingPeriodName: summary.accountingPeriod.name,
@@ -263,10 +269,11 @@ const FundTrends = async function ({
           availableFundNames={trends.availableFundNames}
         />
       </ConstrainedContent>
-      <FundTrendsSummaryCards
-        mode={modeValue}
-        accountingPeriods={periodSummaries}
-        dates={dateSummaries}
+      <FundBalanceSummaryCards
+        startingLabel={snapshot.startLabel}
+        endingLabel={snapshot.endLabel}
+        startingBalance={snapshot.startingBalance}
+        endingBalance={snapshot.endingBalance}
       />
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
         <BalanceTrendChart

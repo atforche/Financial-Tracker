@@ -20,6 +20,7 @@ interface FundTrendsChangeChartProps {
   readonly mode: FundTrendsDataMode;
   readonly accountingPeriods: readonly FundBalanceSummaryByPeriod[];
   readonly dates: readonly FundBalanceSummaryByDate[];
+  readonly title?: string;
 }
 
 /**
@@ -29,10 +30,11 @@ const FundTrendsChangeChart = function ({
   mode,
   accountingPeriods,
   dates,
+  title = "Balance Change",
 }: FundTrendsChangeChartProps): JSX.Element {
   return (
     <BarMetricChart
-      title="Balance Change"
+      title={title}
       emptyMessage="No balance changes are available for the selected trends range."
       chartPoints={buildBalanceChangeChartPoints({
         mode,

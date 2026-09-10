@@ -30,11 +30,14 @@ interface AccountingPeriodWorkspaceSearchParams {
   sort?: AccountingPeriodWithBalanceSort;
   page?: number | string | null;
   pageSize?: number | string | null;
+  view?: AccountingPeriodDetailView;
+  incomeSourcePage?: number | string | null;
   fundGoalPage?: number | string | null;
   accountGoalPage?: number | string | null;
-  transactionPage?: number | string | null;
   action?: AccountingPeriodWorkspaceAction;
 }
+
+type AccountingPeriodDetailView = "progress" | "plan";
 
 /**
  * Props for the AccountingPeriodWorkspace component.
@@ -140,5 +143,8 @@ const AccountingPeriodWorkspace = async function ({
   );
 };
 
-export type { AccountingPeriodWorkspaceSearchParams };
+export type {
+  AccountingPeriodDetailView,
+  AccountingPeriodWorkspaceSearchParams,
+};
 export default AccountingPeriodWorkspace;

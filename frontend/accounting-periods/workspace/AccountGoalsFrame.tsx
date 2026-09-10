@@ -11,9 +11,6 @@ import accountGoalRoutes from "@/account-goals/routes";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { useRouter } from "next/navigation";
 
-/**
- * Props for the AccountGoalsFrame component.
- */
 interface AccountGoalsFrameProps {
   readonly goals: readonly AccountGoalWithProgress[];
   readonly totalCount: number;
@@ -21,9 +18,7 @@ interface AccountGoalsFrameProps {
   readonly returnUrl: string;
 }
 
-/**
- * Displays account goals for the accounting period.
- */
+/** Displays account goals for the accounting period. */
 const AccountGoalsFrame = function ({
   goals,
   totalCount,

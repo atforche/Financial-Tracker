@@ -19,7 +19,7 @@ public sealed class JwtBearerAuthenticationTests
         using HttpClient client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new("Bearer", factory.CreateToken(JwtBearerAuthenticationApplicationFactory.ProvisionedSubject));
 
-        using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts", UriKind.Relative));
+        using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts/with-balances", UriKind.Relative));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -35,7 +35,7 @@ public sealed class JwtBearerAuthenticationTests
         using HttpClient client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new("Bearer", factory.CreateToken("unapproved-test-subject"));
 
-        using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts", UriKind.Relative));
+        using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts/with-balances", UriKind.Relative));
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -53,7 +53,7 @@ public sealed class JwtBearerAuthenticationTests
             JwtBearerAuthenticationApplicationFactory.ProvisionedSubject,
             expires: DateTime.UtcNow.AddMinutes(-6)));
 
-        using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts", UriKind.Relative));
+        using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts/with-balances", UriKind.Relative));
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -71,7 +71,7 @@ public sealed class JwtBearerAuthenticationTests
             JwtBearerAuthenticationApplicationFactory.ProvisionedSubject,
             audience: "other-client"));
 
-        using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts", UriKind.Relative));
+        using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts/with-balances", UriKind.Relative));
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -89,7 +89,7 @@ public sealed class JwtBearerAuthenticationTests
             JwtBearerAuthenticationApplicationFactory.ProvisionedSubject,
             issuer: "https://other-issuer.test"));
 
-        using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts", UriKind.Relative));
+        using HttpResponseMessage response = await client.GetAsync(new Uri("/accounts/with-balances", UriKind.Relative));
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }

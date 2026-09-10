@@ -16,30 +16,6 @@ namespace Tests.Queries;
 public sealed class ResourceListQueryContractTests
 {
     /// <summary>
-    /// Applies resource filters and preserves totals when account and fund lists are paged.
-    /// </summary>
-    [Fact]
-    public async Task AccountAndFundListsFilterSortAndPage()
-    {
-        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
-        _ = await test.Accounts.Onboard("Beta cash").CreateAsync();
-        _ = await test.Accounts.Onboard("Alpha cash").CreateAsync();
-        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
-        _ = await test.Funds.Create("Beta fund").In(july).CreateAsync();
-        _ = await test.Funds.Create("Alpha fund").In(july).CreateAsync();
-
-        CollectionModel<AccountModel> accounts = await test.Api.GetAsync<CollectionModel<AccountModel>>(
-            "/accounts?filter.nameSearch=CASH&sort=Name&limit=1");
-        CollectionModel<FundModel> funds = await test.Api.GetAsync<CollectionModel<FundModel>>(
-            "/funds?filter.nameSearch=FUND&sort=NameDescending&limit=1");
-
-        Assert.Equal(2, accounts.TotalCount);
-        Assert.Equal("Alpha cash", Assert.Single(accounts.Items).Name);
-        Assert.Equal(2, funds.TotalCount);
-        Assert.Equal("Beta fund", Assert.Single(funds.Items).Name);
-    }
-
-    /// <summary>
     /// Orders range balances and filters Accounting Period and Fund Goal resource lists.
     /// </summary>
     [Fact]

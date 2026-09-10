@@ -1,6 +1,7 @@
-import type {
-  AccountTrendsDataMode,
-  AccountTrendsSearchParams,
+import {
+  type AccountTrendsDataMode,
+  type AccountTrendsSearchParams,
+  getAccountTrendsSnapshot,
 } from "@/accounts/trends/helpers";
 import type {
   AccountsInAccountingPeriodRange,
@@ -24,10 +25,10 @@ import {
   normalizeRequestedAccountNames,
   shouldPersistAccountNames,
 } from "@/accounts/accountNameFilterHelpers";
+import AccountBalanceSummaryCards from "@/accounts/AccountBalanceSummaryCards";
 import AccountTrendsChangeChart from "@/accounts/trends/AccountTrendsChangeChart";
 import AccountTrendsFilter from "@/accounts/trends/AccountTrendsFilter";
 import AccountTrendsListFrame from "@/accounts/trends/AccountTrendsListFrame";
-import AccountTrendsSummaryCards from "@/accounts/trends/AccountTrendsSummaryCards";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
@@ -257,6 +258,11 @@ const AccountTrends = async function ({
       ...currentRange,
     }),
   });
+  const snapshot = getAccountTrendsSnapshot(
+    modeValue,
+    periodSummaries,
+    dateSummaries,
+  );
 
   return (
     <PageLayout>
@@ -267,10 +273,11 @@ const AccountTrends = async function ({
           availableAccountNames={trends.availableAccountNames}
         />
       </ConstrainedContent>
-      <AccountTrendsSummaryCards
-        mode={modeValue}
-        accountingPeriods={periodSummaries}
-        dates={dateSummaries}
+      <AccountBalanceSummaryCards
+        startingLabel={snapshot.startLabel}
+        endingLabel={snapshot.endLabel}
+        startingBalance={snapshot.startingBalance}
+        endingBalance={snapshot.endingBalance}
       />
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
         <BalanceTrendChart

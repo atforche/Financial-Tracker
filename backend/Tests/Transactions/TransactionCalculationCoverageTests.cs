@@ -61,10 +61,17 @@ public sealed class TransactionCalculationCoverageTests
             }],
         });
 
+        Models.AccountingPeriods.AccountingPeriodWithBalanceModel pendingPeriod = await test.Api.GetAsync<Models.AccountingPeriods.AccountingPeriodWithBalanceModel>(
+            $"/accounting-periods/{july.Id}");
         await test.Transactions.PostAsync(new TransactionHandle(created.Id), cash, new DateOnly(2026, 7, 10));
         FundGoalProgressModel progress = await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{gifts.Goal.Id}/progress/{july.Id}");
         IncomeTransactionModel transaction = await test.Api.GetAsync<IncomeTransactionModel>($"/transactions/{created.Id}");
+        Models.AccountingPeriods.AccountingPeriodWithBalanceModel postedPeriod = await test.Api.GetAsync<Models.AccountingPeriods.AccountingPeriodWithBalanceModel>(
+            $"/accounting-periods/{july.Id}");
 
+        Assert.Equal(0m, pendingPeriod.ActualExtraGoalContributions);
+        Assert.Equal(50m, postedPeriod.ActualExtraGoalContributions);
+        Assert.Equal(0m, postedPeriod.ActualGoalContributions);
         Assert.True(Assert.Single(Assert.Single(transaction.Destinations).FundAssignments).IsExtraContribution);
         Assert.NotNull(progress.Contribution);
         Assert.Equal(0m, progress.Contribution.AssignedAmount);
@@ -197,11 +204,11 @@ public sealed class TransactionCalculationCoverageTests
         {
             PlannedMonthlyContribution = 105m,
         });
-        CollectionModel<FundModel> funds = await test.Api.GetAsync<CollectionModel<FundModel>>("/funds");
-        FundModel unassignedModel = Assert.Single(funds.Items, fund => fund.Name == "Unassigned");
+        CollectionModel<FundWithBalanceModel> funds = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
+        FundWithBalanceModel unassignedModel = Assert.Single(funds.Items, fund => fund.Name == "Unassigned");
         FundGoalModel unassignedGoal = await test.Api.GetAsync<FundGoalModel>(
             $"/fund-goals/fund/{unassignedModel.Id}?accountingPeriodId={july.Id}");
-        var unassigned = new FundHandle(unassignedModel.Id, unassignedModel.Name, new FundGoalHandle(unassignedGoal.Id));
+        var unassigned = new FundHandle(unassignedModel.Id, unassignedModel.Name, new FundGoalHandle(unassignedGoal.Id, unassignedModel.Id));
         CreateTransactionResultModel income = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", new CreateIncomeTransactionModel
         {
             AccountingPeriodId = july.Id,

@@ -10,9 +10,6 @@ import { formatCurrency } from "@/framework/currencyHelpers";
 import fundGoalRoutes from "@/fund-goals/routes";
 import { useRouter } from "next/navigation";
 
-/**
- * Props for the FundGoalsFrame component.
- */
 interface FundGoalsFrameProps {
   readonly goals: readonly FundGoalWithProgress[];
   readonly totalCount: number;
@@ -20,9 +17,7 @@ interface FundGoalsFrameProps {
   readonly returnUrl: string;
 }
 
-/**
- * Displays fund goals for the accounting period.
- */
+/** Displays fund goals for the accounting period. */
 const FundGoalsFrame = function ({
   goals,
   totalCount,
@@ -78,6 +73,7 @@ const FundGoalsFrame = function ({
       maxWidth: 52,
     },
   ];
+
   return (
     <ListFrame
       title="Fund Goals"

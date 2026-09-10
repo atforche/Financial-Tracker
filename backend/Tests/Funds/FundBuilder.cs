@@ -34,6 +34,6 @@ internal sealed class FundBuilder(TestApiClient apiClient, string name)
             AccountingPeriodId = period.Id
         });
         FundGoalModel fundGoal = await apiClient.GetAsync<FundGoalModel>($"/fund-goals/fund/{model.Id}?accountingPeriodId={period.Id}");
-        return new FundHandle(model.Id, model.Name, new FundGoalHandle(fundGoal.Id));
+        return new FundHandle(model.Id, model.Name, new FundGoalHandle(fundGoal.Id, model.Id));
     }
 }

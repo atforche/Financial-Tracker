@@ -209,9 +209,9 @@ public sealed class UserResolutionAuthorizationTests
         using HttpClient standardClient = CreateClient(factory, factory.CreateToken("standard-reader"));
         using HttpClient readOnlyClient = CreateClient(factory, factory.CreateToken("readonly-reader"));
 
-        using HttpResponseMessage adminResponse = await adminClient.GetAsync(new Uri("/accounts", UriKind.Relative));
-        using HttpResponseMessage standardResponse = await standardClient.GetAsync(new Uri("/accounts", UriKind.Relative));
-        using HttpResponseMessage readOnlyResponse = await readOnlyClient.GetAsync(new Uri("/accounts", UriKind.Relative));
+        using HttpResponseMessage adminResponse = await adminClient.GetAsync(new Uri("/accounts/with-balances", UriKind.Relative));
+        using HttpResponseMessage standardResponse = await standardClient.GetAsync(new Uri("/accounts/with-balances", UriKind.Relative));
+        using HttpResponseMessage readOnlyResponse = await readOnlyClient.GetAsync(new Uri("/accounts/with-balances", UriKind.Relative));
 
         Assert.Equal(HttpStatusCode.OK, adminResponse.StatusCode);
         Assert.Equal(HttpStatusCode.OK, standardResponse.StatusCode);
@@ -284,7 +284,7 @@ public sealed class UserResolutionAuthorizationTests
         await factory.SeedUserAsync("mutable-user", "mutable@example.test", UserRole.Standard);
         using HttpClient client = CreateClient(factory, factory.CreateToken("mutable-user"));
 
-        using HttpResponseMessage initialRead = await client.GetAsync(new Uri("/accounts", UriKind.Relative));
+        using HttpResponseMessage initialRead = await client.GetAsync(new Uri("/accounts/with-balances", UriKind.Relative));
         Assert.Equal(HttpStatusCode.OK, initialRead.StatusCode);
 
         await factory.ChangeUserRoleAsync("test-user", "mutable-user", UserRole.ReadOnly);
@@ -298,7 +298,7 @@ public sealed class UserResolutionAuthorizationTests
 
         await factory.ChangeUserRoleAsync("test-user", "mutable-user", UserRole.Standard);
         await factory.DisableUserAsync("test-user", "mutable-user");
-        using HttpResponseMessage disabledRead = await client.GetAsync(new Uri("/accounts", UriKind.Relative));
+        using HttpResponseMessage disabledRead = await client.GetAsync(new Uri("/accounts/with-balances", UriKind.Relative));
         Assert.Equal(HttpStatusCode.Forbidden, disabledRead.StatusCode);
     }
 

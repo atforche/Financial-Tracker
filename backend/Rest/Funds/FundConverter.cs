@@ -12,22 +12,6 @@ namespace Rest.Funds;
 public sealed class FundConverter
 {
     /// <summary>
-    /// Converts the provided Fund query model to a Domain query.
-    /// </summary>
-    public FundQuery ToDomain(FundQueryParameterModel model) => new(
-        ToDomain(model.Filter),
-        model.Sort switch
-        {
-            FundSortModel.Name => FundSort.Name,
-            FundSortModel.NameDescending => FundSort.NameDescending,
-            FundSortModel.Description => FundSort.Description,
-            FundSortModel.DescriptionDescending => FundSort.DescriptionDescending,
-            _ => FundSort.Name,
-        },
-        model.Offset ?? 0,
-        model.Limit);
-
-    /// <summary>
     /// Converts the provided Fund Balance query model to a Domain query.
     /// </summary>
     public FundBalanceQuery ToDomain(FundWithBalanceQueryParameterModel model) => new(

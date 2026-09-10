@@ -2,7 +2,6 @@
 
 import type { JSX, ReactNode } from "react";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
-import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import Frame from "@/framework/view/Frame";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import StringEntryField from "@/framework/forms/StringEntryField";
@@ -37,16 +36,6 @@ const AccountingPeriodSummaryFrame = function ({
         <StringEntryField
           label="Status"
           value={accountingPeriod.isOpen ? "Open" : "Closed"}
-          setValue={null}
-        />
-        <CurrencyEntryField
-          label="Opening Balance"
-          value={accountingPeriod.openingBalance}
-          setValue={null}
-        />
-        <CurrencyEntryField
-          label="Closing Balance"
-          value={accountingPeriod.closingBalance}
           setValue={null}
         />
       </ResponsiveGrid>

@@ -1,4 +1,5 @@
-using Models.FundGoals;
+using Models;
+using Models.Funds;
 using Tests.Funds;
 using Tests.Infrastructure;
 
@@ -14,7 +15,8 @@ internal sealed class FundGoalQueries(TestApiClient apiClient)
     /// </summary>
     public async Task<FundGoalAvailabilitySnapshot> GetAvailabilityAsync(FundGoalHandle fundGoal)
     {
-        FundAvailabilityModel model = await apiClient.GetAsync<FundAvailabilityModel>($"/fund-goals/{fundGoal.Id}/availability");
-        return new FundGoalAvailabilitySnapshot(model.AvailableBalance, model.AvailableBalanceIncludingPending);
+        CollectionModel<FundWithBalanceModel> response = await apiClient.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
+        FundBalanceModel balance = response.Items.Single(fund => fund.Id == fundGoal.FundId).CurrentBalance;
+        return new FundGoalAvailabilitySnapshot(balance.PostedBalance, balance.BalanceIncludingPending);
     }
 }

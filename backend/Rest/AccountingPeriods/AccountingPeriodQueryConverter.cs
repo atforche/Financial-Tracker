@@ -115,6 +115,7 @@ public sealed class AccountingPeriodQueryConverter(
         PlannedGoalContributions = balance.PlannedGoalContributions,
         ExpectedGoalContributions = balance.ExpectedGoalContributions,
         ActualGoalContributions = balance.ActualGoalContributions,
+        ActualExtraGoalContributions = balance.ActualExtraGoalContributions,
     };
 
     /// <summary>
@@ -170,6 +171,7 @@ public sealed class AccountingPeriodQueryConverter(
         PlannedGoalContributions = result.Balance.PlannedGoalContributions,
         ExpectedGoalContributions = result.Balance.ExpectedGoalContributions,
         ActualGoalContributions = result.Balance.ActualGoalContributions,
+        ActualExtraGoalContributions = result.Balance.ActualExtraGoalContributions,
         Transactions = transactionConverter.ToModel(result.Transactions),
         TotalIncome = new IncomeAmountModel
         {

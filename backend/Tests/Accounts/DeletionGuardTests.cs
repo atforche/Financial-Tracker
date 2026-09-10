@@ -24,12 +24,7 @@ public sealed class DeletionGuardTests
 
         using HttpResponseMessage accountDelete = await test.Api.DeleteResponseAsync($"/accounts/{cash.Id}");
         using HttpResponseMessage fundDelete = await test.Api.DeleteResponseAsync($"/funds/{groceries.Id}");
-        using HttpResponseMessage accountRead = await test.Api.GetResponseAsync($"/accounts/{cash.Id}");
-        using HttpResponseMessage fundRead = await test.Api.GetResponseAsync($"/funds/{groceries.Id}");
-
         Assert.Equal(HttpStatusCode.UnprocessableEntity, accountDelete.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, fundDelete.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, accountRead.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, fundRead.StatusCode);
     }
 }

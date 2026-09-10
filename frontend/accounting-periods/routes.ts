@@ -41,6 +41,14 @@ const routes = {
       `/accounting-periods/workspace/${accountingPeriodId}`,
       accountingPeriodWorkspaceSearchParamsToSearchParams(searchParams),
     ),
+  workspacePlan: (
+    accountingPeriodId: string,
+    searchParams: AccountingPeriodWorkspaceSearchParams,
+  ): Route =>
+    buildUrl(
+      `/accounting-periods/workspace/${accountingPeriodId}/plan`,
+      accountingPeriodWorkspaceSearchParamsToSearchParams(searchParams),
+    ),
   expectedIncomeSourceCreate: (
     accountingPeriodId: string,
     returnUrl?: string,

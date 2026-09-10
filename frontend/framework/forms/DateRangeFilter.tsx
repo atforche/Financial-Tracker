@@ -19,6 +19,13 @@ interface DateRangeFilterProps {
   readonly onChange: (value: DateRange) => void;
 }
 
+const fieldSx = {
+  flex: 1,
+  flexShrink: 0,
+  minWidth: { xs: "100%", sm: 240 },
+  "& .MuiFormControl-root": { width: "100%" },
+};
+
 /**
  * Renders a pair of date fields while maintaining an ordered range.
  */
@@ -47,13 +54,7 @@ const DateRangeFilter = function ({
 
   return (
     <>
-      <Box
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          "& .MuiFormControl-root": { width: "100%", minWidth: 0 },
-        }}
-      >
+      <Box sx={fieldSx}>
         <DateEntryField
           label="Start date"
           value={startValue}
@@ -68,13 +69,7 @@ const DateRangeFilter = function ({
           }}
         />
       </Box>
-      <Box
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          "& .MuiFormControl-root": { width: "100%", minWidth: 0 },
-        }}
-      >
+      <Box sx={fieldSx}>
         <DateEntryField
           label="End date"
           value={endValue}

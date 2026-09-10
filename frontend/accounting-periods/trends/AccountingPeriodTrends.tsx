@@ -7,11 +7,12 @@ import {
   getRowsPerPage,
   normalizePageValue,
 } from "@/framework/listframe/page";
+import type { AccountBalanceSummaryByPeriod } from "@/accounts/types";
+import AccountBalanceSummaryCards from "@/accounts/AccountBalanceSummaryCards";
 import AccountingPeriodTrendChart from "@/accounting-periods/trends/AccountingPeriodTrendChart";
 import AccountingPeriodTrendsChangeChart from "@/accounting-periods/trends/AccountingPeriodTrendsChangeChart";
 import AccountingPeriodTrendsFilter from "@/accounting-periods/trends/AccountingPeriodTrendsFilter";
 import AccountingPeriodTrendsListFrame from "@/accounting-periods/trends/AccountingPeriodTrendsListFrame";
-import AccountingPeriodTrendsSummaryCards from "@/accounting-periods/trends/AccountingPeriodTrendsSummaryCards";
 import ActualIncomeCard from "@/transactions/ActualIncomeCard";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import ExpectedFundGoalContributionsActualCard from "@/accounting-periods/workspace/ExpectedFundGoalContributionsActualCard";
@@ -24,6 +25,7 @@ import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import { compareAccountingPeriods } from "@/accounting-periods/helpers";
 import createApiClient from "@/framework/data/createApiClient";
 import { createEmptyTrends } from "@/accounting-periods/trends/helpers";
+import { emptyAccountBalanceSummary } from "@/accounts/balanceSummaryHelpers";
 import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import routes from "@/accounting-periods/routes";
@@ -110,6 +112,7 @@ const AccountingPeriodTrends = async function ({
           .map((period) => period.id);
   })();
   let trends = createEmptyTrends();
+  let accountBalancePeriods: AccountBalanceSummaryByPeriod[] = [];
   if (latestAccountingPeriod !== null) {
     const range = {
       "Range.Start":
@@ -130,6 +133,14 @@ const AccountingPeriodTrends = async function ({
       trendsResponse,
       "Failed to fetch accounting period trends",
     );
+    const accountTrendsResponse = await apiClient.GET(
+      "/accounts/accounting-period-range",
+      { params: { query: { ...range, Limit: 1, Offset: 0 } } },
+    );
+    accountBalancePeriods = unwrapApiResponse(
+      accountTrendsResponse,
+      "Failed to fetch account balance trends",
+    ).accountingPeriods;
   }
   const rangeExpectations = trends.accountingPeriods.items.reduce<{
     expectedGoalContributions: number;
@@ -182,8 +193,21 @@ const AccountingPeriodTrends = async function ({
           disabled={latestAccountingPeriod === null}
         />
       </ConstrainedContent>
-      <AccountingPeriodTrendsSummaryCards
-        accountingPeriods={chronologicalAccountingPeriods}
+      <AccountBalanceSummaryCards
+        startingLabel={
+          accountBalancePeriods.at(0)?.accountingPeriod.name ?? "Start"
+        }
+        endingLabel={
+          accountBalancePeriods.at(-1)?.accountingPeriod.name ?? "End"
+        }
+        startingBalance={
+          accountBalancePeriods.at(0)?.openingBalance ??
+          emptyAccountBalanceSummary
+        }
+        endingBalance={
+          accountBalancePeriods.at(-1)?.closingBalance ??
+          emptyAccountBalanceSummary
+        }
       />
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }} spacing={2}>
         <ActualIncomeCard totalIncome={trends.totalIncome} />
