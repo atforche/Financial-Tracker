@@ -137,6 +137,26 @@ def test_container_smoke_database_provisions_users(monkeypatch, tmp_path: Path):
     assert calls[2][2]["DEVELOPMENT_AUTH_ROLE"] == "Standard"
 
 
+def test_container_smoke_reads_created_account_from_current_list_endpoint(monkeypatch):
+    requests: list[Request] = []
+
+    def fake_urlopen(request, timeout: int):
+        assert timeout == 30
+        requests.append(request)
+        if request.get_method() == "POST":
+            return io.BytesIO(b'{"id":"account-id","name":"Smoke account abc"}')
+        return io.BytesIO(
+            b'{"items":[{"id":"account-id","name":"Smoke account abc"}],"totalCount":1}'
+        )
+
+    monkeypatch.setattr("orchestrator.operations.container_smoke.urlopen", fake_urlopen)
+
+    container_smoke.ContainerSmokeTest.create_and_read_account(49152, "abc")
+
+    assert [request.get_method() for request in requests] == ["POST", "GET"]
+    assert requests[1].full_url.endswith("/accounts/with-balances")
+
+
 def test_release_manifest_rejects_mutable_images(tmp_path: Path):
     manifest_path = tmp_path / "release-manifest.json"
     digest = "a" * 64
@@ -223,9 +243,10 @@ def test_backup_restoration_uses_hardened_runtime_and_persists_data(
             if request.get_method() == "POST":
                 body = json.loads(request.data)
                 return io.BytesIO(json.dumps({"id": "account-id", **body}).encode())
-            if request.full_url.endswith("/accounts"):
+            if request.full_url.endswith("/accounts/with-balances"):
                 return io.BytesIO(
-                    b'[{"id":"account-id","name":"Restored backup smoke account"}]'
+                    b'{"items":[{"id":"account-id","name":"Restored backup smoke account"}],'
+                    b'"totalCount":1}'
                 )
             return io.BytesIO(
                 b'{"id":"account-id","name":"Restored backup smoke account"}'

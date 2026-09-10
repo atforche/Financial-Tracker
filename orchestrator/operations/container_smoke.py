@@ -235,12 +235,18 @@ class ContainerSmokeTest:
             account = json.load(response)
         with urlopen(
             Request(
-                f"http://127.0.0.1:{backend_port}/accounts/{account['id']}",
+                f"http://127.0.0.1:{backend_port}/accounts/with-balances",
                 headers=headers,
             ),
             timeout=30,
         ) as response:
-            persisted_account = json.load(response)
+            persisted_accounts = json.load(response)["items"]
+        persisted_account = next(
+            (item for item in persisted_accounts if item["id"] == account["id"]),
+            None,
+        )
+        if persisted_account is None:
+            raise RuntimeError("The backend did not return the account it persisted.")
         if persisted_account["name"] != account["name"]:
             raise RuntimeError("The backend did not return the account it persisted.")
 

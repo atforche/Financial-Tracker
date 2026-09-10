@@ -184,12 +184,11 @@ class BackupOperations:
                     "Restored backend did not resolve the seeded application user"
                 )
             with urlopen(
-                Request(f"{base_url}/accounts", headers=headers), timeout=30
+                Request(f"{base_url}/accounts/with-balances", headers=headers),
+                timeout=30,
             ) as response:
                 accounts = load_json(response)
-            if isinstance(accounts, list):
-                account_items = accounts
-            elif isinstance(accounts, dict) and "items" in accounts:
+            if isinstance(accounts, dict) and "items" in accounts:
                 account_items = accounts["items"]
             else:
                 raise RuntimeError(
