@@ -28,36 +28,6 @@ public sealed class AccountBalanceEventConverter
             model.Limit);
 
     /// <summary>
-    /// Converts the provided API query to a Domain query.
-    /// </summary>
-    public AccountBalanceEventQuery ToDomain(AccountBalanceEventsInDateRangeQueryParameterModel model) => new(
-        model.Range.Start,
-        model.Range.End,
-        ToDomain(model.Filter),
-        ToDomain(model.Sort),
-        model.Offset ?? 0,
-        model.Limit);
-
-    /// <summary>
-    /// Converts the provided Accounting Period range API query to a Domain query.
-    /// </summary>
-    public AccountBalanceEventAccountingPeriodRangeQuery ToDomain(AccountBalanceEventsInAccountingPeriodRangeQueryParameterModel model) => new(
-        model.Range.Start,
-        model.Range.End,
-        ToDomain(model.Filter),
-        ToDomain(model.Sort),
-        model.Offset ?? 0,
-        model.Limit);
-
-    /// <summary>
-    /// Converts the provided API Account filter to a Domain filter.
-    /// </summary>
-    private static AccountFilter ToDomain(AccountFilterModel? filter) => new(
-        filter?.NameSearch,
-        filter?.Names ?? [],
-        filter?.Types?.Select(type => (AccountType)type).ToList() ?? []);
-
-    /// <summary>
     /// Converts the provided API sort to a Domain sort.
     /// </summary>
     private static AccountBalanceEventSort ToDomain(AccountBalanceEventSortModel? sort) => sort switch

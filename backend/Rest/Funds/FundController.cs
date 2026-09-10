@@ -38,47 +38,6 @@ public sealed class FundController(
             cancellationToken)));
 
     /// <summary>
-    /// Retrieves Fund Balance Events in an Accounting Period range.
-    /// </summary>
-    [HttpGet("balance-events/accounting-period-range")]
-    [ProducesResponseType(typeof(CollectionModel<FundBalanceEventModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<CollectionModel<FundBalanceEventModel>>> GetBalanceEventsAsync(
-        [FromQuery] FundBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
-        CancellationToken cancellationToken)
-    {
-        FundBalanceEventAccountingPeriodRangeQueryResult result = await fundBalanceEventQueryService.GetAsync(
-            fundBalanceEventConverter.ToDomain(query),
-            cancellationToken);
-        return result.Page == null
-            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Fund balance events."))
-            : Ok(fundBalanceEventConverter.ToModel(result.Page));
-    }
-
-    /// <summary>
-    /// Retrieves the Fund that matches the provided ID
-    /// </summary>
-    [HttpGet("{fundId}")]
-    [ProducesResponseType(typeof(FundModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<FundModel>> GetAsync(Guid fundId, CancellationToken cancellationToken)
-    {
-        Fund? fund = await fundQueryService.GetByIdAsync(fundId, cancellationToken);
-        return fund == null ? NotFound() : Ok(fundConverter.ToModel(fund));
-    }
-
-    /// <summary>
-    /// Retrieves the Funds that match the specified criteria
-    /// </summary>
-    [HttpGet("")]
-    [ProducesResponseType(typeof(CollectionModel<FundModel>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<CollectionModel<FundModel>>> GetManyAsync(
-        [FromQuery] FundQueryParameterModel queryParameters,
-        CancellationToken cancellationToken) =>
-        Ok(fundConverter.ToModel(await fundQueryService.GetAsync(
-            fundConverter.ToDomain(queryParameters), cancellationToken)));
-
-    /// <summary>
     /// Retrieves Funds with current balances.
     /// </summary>
     [HttpGet("with-balances")]

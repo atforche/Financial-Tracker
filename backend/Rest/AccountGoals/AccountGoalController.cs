@@ -65,16 +65,6 @@ public sealed class AccountGoalController(
     }
 
     /// <summary>
-    /// Retrieves an Account Goal by ID.
-    /// </summary>
-    [HttpGet("{accountGoalId:guid}")]
-    public async Task<ActionResult<AccountGoalModel>> GetAsync(Guid accountGoalId, CancellationToken cancellationToken)
-    {
-        AccountGoal? accountGoal = await accountGoalQueryService.GetByIdAsync(accountGoalId, cancellationToken);
-        return accountGoal == null ? NotFound() : Ok(accountGoalConverter.ToModel(accountGoal));
-    }
-
-    /// <summary>
     /// Retrieves the Account Goal associated with an Account and Accounting Period, or its onboarding goal when the period ID is null.
     /// </summary>
     [HttpGet("account/{accountId:guid}")]

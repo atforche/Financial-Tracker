@@ -16,17 +16,6 @@ namespace Rest.FundGoals;
 public sealed class FundGoalBalanceEventConverter
 {
     /// <summary>
-    /// Converts an API date-range query to a Domain query.
-    /// </summary>
-    public FundGoalBalanceEventQuery ToDomain(FundGoalBalanceEventsInDateRangeQueryParameterModel model) => new(
-        model.Range.Start,
-        model.Range.End,
-        ToDomain(model.Filter),
-        ToDomain(model.Sort),
-        model.Offset ?? 0,
-        model.Limit);
-
-    /// <summary>
     /// Converts an API Accounting Period range query to a Domain query.
     /// </summary>
     public FundGoalBalanceEventAccountingPeriodRangeQuery ToDomain(FundGoalBalanceEventsInAccountingPeriodRangeQueryParameterModel model) => new(

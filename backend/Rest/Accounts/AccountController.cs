@@ -46,36 +46,6 @@ public sealed class AccountController(
     }
 
     /// <summary>
-    /// Retrieves Account Balance Events in a date range.
-    /// </summary>
-    [HttpGet("balance-events/date-range")]
-    [ProducesResponseType(typeof(CollectionModel<AccountBalanceEventModel>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<CollectionModel<AccountBalanceEventModel>>> GetBalanceEventsAsync(
-        [FromQuery] AccountBalanceEventsInDateRangeQueryParameterModel query,
-        CancellationToken cancellationToken) =>
-        Ok(accountBalanceEventConverter.ToModel(await accountBalanceEventQueryService.GetAsync(
-            accountBalanceEventConverter.ToDomain(query),
-            cancellationToken)));
-
-    /// <summary>
-    /// Retrieves Account Balance Events in an Accounting Period range.
-    /// </summary>
-    [HttpGet("balance-events/accounting-period-range")]
-    [ProducesResponseType(typeof(CollectionModel<AccountBalanceEventModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<CollectionModel<AccountBalanceEventModel>>> GetBalanceEventsAsync(
-        [FromQuery] AccountBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
-        CancellationToken cancellationToken)
-    {
-        AccountBalanceEventAccountingPeriodRangeQueryResult result = await accountBalanceEventQueryService.GetAsync(
-            accountBalanceEventConverter.ToDomain(query),
-            cancellationToken);
-        return result.Page == null
-            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Account balance events."))
-            : Ok(accountBalanceEventConverter.ToModel(result.Page));
-    }
-
-    /// <summary>
     /// Retrieves all financial institutions currently assigned to Accounts.
     /// </summary>
     [HttpGet("financial-institutions")]
@@ -83,29 +53,6 @@ public sealed class AccountController(
     public async Task<ActionResult<CollectionModel<string>>> GetFinancialInstitutionsAsync(
         CancellationToken cancellationToken) => Ok(accountConverter.ToModel(
             await accountQueryService.GetAllFinancialInstitutionsAsync(cancellationToken)));
-
-    /// <summary>
-    /// Retrieves the Account that matches the provided ID
-    /// </summary>
-    [HttpGet("{accountId}")]
-    [ProducesResponseType(typeof(AccountModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<AccountModel>> GetAsync(Guid accountId, CancellationToken cancellationToken)
-    {
-        Account? account = await accountQueryService.GetByIdAsync(accountId, cancellationToken);
-        return account == null ? NotFound() : Ok(accountConverter.ToModel(account));
-    }
-
-    /// <summary>
-    /// Gets the Accounts that match the specified criteria
-    /// </summary>
-    [HttpGet("")]
-    [ProducesResponseType(typeof(CollectionModel<AccountModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<CollectionModel<AccountModel>>> GetManyAsync(
-        [FromQuery] AccountQueryParameterModel queryParameters,
-        CancellationToken cancellationToken) => Ok(accountConverter.ToModel(
-            await accountQueryService.GetAsync(accountConverter.ToDomain(queryParameters), cancellationToken)));
 
     /// <summary>
     /// Retrieves Accounts with current balances.

@@ -3,7 +3,6 @@ using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
 using Domain.FundGoals;
 using Domain.FundGoals.Queries;
-using Domain.Funds;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
@@ -23,22 +22,10 @@ public sealed class FundGoalController(
     IFundGoalRepository fundGoalRepository,
     FundGoalQueryService fundGoalQueryService,
     FundGoalConverter fundGoalConverter,
-    FundBalanceService fundBalanceService,
     FundGoalService fundGoalService,
     FundGoalBalanceEventQueryService fundGoalBalanceEventQueryService,
     FundGoalBalanceEventConverter fundGoalBalanceEventConverter) : ControllerBase
 {
-    /// <summary>
-    /// Retrieves Fund Goal balance events in a date range.
-    /// </summary>
-    [HttpGet("balance-events/date-range")]
-    public async Task<ActionResult<CollectionModel<FundGoalBalanceEventModel>>> GetBalanceEventsAsync(
-        [FromQuery] FundGoalBalanceEventsInDateRangeQueryParameterModel query,
-        CancellationToken cancellationToken) =>
-        Ok(fundGoalBalanceEventConverter.ToModel(await fundGoalBalanceEventQueryService.GetAsync(
-            fundGoalBalanceEventConverter.ToDomain(query),
-            cancellationToken)));
-
     /// <summary>
     /// Retrieves Fund Goal balance events in an Accounting Period range.
     /// </summary>
@@ -96,16 +83,6 @@ public sealed class FundGoalController(
     }
 
     /// <summary>
-    /// Retrieves a Fund Goal by ID.
-    /// </summary>
-    [HttpGet("{fundGoalId:guid}")]
-    public async Task<ActionResult<FundGoalModel>> GetAsync(Guid fundGoalId, CancellationToken cancellationToken)
-    {
-        FundGoal? fundGoal = await fundGoalQueryService.GetByIdAsync(fundGoalId, cancellationToken);
-        return fundGoal == null ? NotFound() : Ok(fundGoalConverter.ToModel(fundGoal));
-    }
-
-    /// <summary>
     /// Retrieves the Fund Goal associated with a Fund and Accounting Period, or its onboarded Fund Goal when the Accounting Period ID is null.
     /// </summary>
     [HttpGet("fund/{fundId:guid}")]
@@ -155,28 +132,6 @@ public sealed class FundGoalController(
         return fundGoalService.TryGetProgress(fundGoal, accountingPeriod, out FundGoalProgress? progress, out IEnumerable<ValidationError> errors)
             ? Ok(ToModel(progress))
             : ValidationProblem("Unable to calculate Fund Goal progress.", errors);
-    }
-
-    /// <summary>
-    /// Retrieves current Fund availability.
-    /// </summary>
-    [HttpGet("{fundGoalId:guid}/availability")]
-    public async Task<ActionResult<FundAvailabilityModel>> GetAvailability(Guid fundGoalId, CancellationToken cancellationToken)
-    {
-        FundGoal? fundGoal = await fundGoalQueryService.GetByIdAsync(fundGoalId, cancellationToken);
-        if (fundGoal == null)
-        {
-            return NotFound();
-        }
-        FundBalance balance = fundBalanceService.GetCurrentBalance(fundGoal.Fund.Id);
-        var availability = new FundAvailability(balance);
-        return Ok(new FundAvailabilityModel
-        {
-            AvailableBalance = availability.AvailableBalance,
-            AvailableBalanceIncludingPending = availability.AvailableBalanceIncludingPending,
-            IsOverspent = availability.IsOverspent,
-            IsOverspentIncludingPending = availability.IsOverspentIncludingPending,
-        });
     }
 
     /// <summary>

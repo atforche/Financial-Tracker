@@ -26,17 +26,6 @@ public sealed class FundBalanceEventConverter
         model.Limit);
 
     /// <summary>
-    /// Converts an API Accounting Period range query to a Domain query.
-    /// </summary>
-    public FundBalanceEventAccountingPeriodRangeQuery ToDomain(FundBalanceEventsInAccountingPeriodRangeQueryParameterModel model) => new(
-        model.Range.Start,
-        model.Range.End,
-        ToDomain(model.Filter),
-        ToDomain(model.Sort),
-        model.Offset ?? 0,
-        model.Limit);
-
-    /// <summary>
     /// Converts an API Fund filter to a Domain filter.
     /// </summary>
     private static FundFilter ToDomain(FundFilterModel? filter) => new(filter?.NameSearch, filter?.Names ?? []);

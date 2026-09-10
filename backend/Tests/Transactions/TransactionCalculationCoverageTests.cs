@@ -208,7 +208,7 @@ public sealed class TransactionCalculationCoverageTests
         FundModel unassignedModel = Assert.Single(funds.Items, fund => fund.Name == "Unassigned");
         FundGoalModel unassignedGoal = await test.Api.GetAsync<FundGoalModel>(
             $"/fund-goals/fund/{unassignedModel.Id}?accountingPeriodId={july.Id}");
-        var unassigned = new FundHandle(unassignedModel.Id, unassignedModel.Name, new FundGoalHandle(unassignedGoal.Id));
+        var unassigned = new FundHandle(unassignedModel.Id, unassignedModel.Name, new FundGoalHandle(unassignedGoal.Id, unassignedModel.Id));
         CreateTransactionResultModel income = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", new CreateIncomeTransactionModel
         {
             AccountingPeriodId = july.Id,

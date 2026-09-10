@@ -12,22 +12,6 @@ namespace Rest.Accounts;
 public sealed class AccountConverter
 {
     /// <summary>
-    /// Converts the provided Account query model to a Domain query.
-    /// </summary>
-    public AccountQuery ToDomain(AccountQueryParameterModel model) => new(
-        ToDomain(model.Filter),
-        model.Sort switch
-        {
-            AccountSortModel.Name => AccountSort.Name,
-            AccountSortModel.NameDescending => AccountSort.NameDescending,
-            AccountSortModel.Type => AccountSort.Type,
-            AccountSortModel.TypeDescending => AccountSort.TypeDescending,
-            _ => AccountSort.Name,
-        },
-        model.Offset ?? 0,
-        model.Limit);
-
-    /// <summary>
     /// Converts the provided Account Balance query model to a Domain query.
     /// </summary>
     public AccountBalanceQuery ToDomain(AccountWithBalanceQueryParameterModel model) => new(

@@ -31,36 +31,6 @@ public sealed class LocationController(
         Ok(locationConverter.ToModel(await locationQueryService.GetAsync(locationConverter.ToDomain(query), cancellationToken)));
 
     /// <summary>
-    /// Gets a Location by ID.
-    /// </summary>
-    [HttpGet("{locationId:guid}")]
-    [ProducesResponseType(typeof(LocationModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<LocationModel> Get(Guid locationId) =>
-        locationRepository.TryGetById(locationId, out Location? location)
-            ? Ok(locationConverter.ToModel(location))
-            : NotFound();
-
-    /// <summary>
-    /// Creates a Location.
-    /// </summary>
-    [HttpPost("")]
-    [ProducesResponseType(typeof(LocationModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> CreateAsync(CreateLocationModel model)
-    {
-        if (!locationService.TryCreate(
-            new CreateLocationRequest { Name = model.Name },
-            out Location? location,
-            out IEnumerable<ValidationError> validationErrors))
-        {
-            return ValidationProblem("Unable to create Location.", validationErrors);
-        }
-        await unitOfWork.SaveChangesAsync();
-        return Ok(locationConverter.ToModel(location));
-    }
-
-    /// <summary>
     /// Renames a Location.
     /// </summary>
     [HttpPost("{locationId:guid}")]
