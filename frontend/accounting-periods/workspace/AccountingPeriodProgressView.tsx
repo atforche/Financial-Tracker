@@ -72,19 +72,6 @@ const AccountingPeriodProgressView = async function ({
   );
   return (
     <>
-      <AccountingPeriodProgressFlow
-        expectedIncome={accountingPeriod.expectedIncome}
-        actualIncome={transactionSnapshot.totalIncome}
-        totalSpending={transactionSnapshot.totalSpending}
-        expectedFundGoalContributions={
-          accountingPeriod.expectedGoalContributions
-        }
-        actualFundGoalContributions={accountingPeriod.actualGoalContributions}
-        actualExtraFundGoalContributions={
-          accountingPeriod.actualExtraGoalContributions
-        }
-      />
-      <Divider />
       <AccountBalanceSummaryCards
         startingLabel={accountBalanceSnapshot.startLabel}
         endingLabel={accountBalanceSnapshot.endLabel}
@@ -100,6 +87,19 @@ const AccountingPeriodProgressView = async function ({
         endingBalance={fundBalanceSnapshot.endingBalance}
         showLabels={false}
         titlePrefix="Fund"
+      />
+      <Divider />
+      <AccountingPeriodProgressFlow
+        expectedIncome={accountingPeriod.expectedIncome}
+        actualIncome={transactionSnapshot.totalIncome}
+        totalSpending={transactionSnapshot.totalSpending}
+        expectedFundGoalContributions={
+          accountingPeriod.expectedGoalContributions
+        }
+        actualFundGoalContributions={accountingPeriod.actualGoalContributions}
+        actualExtraFundGoalContributions={
+          accountingPeriod.actualExtraGoalContributions
+        }
       />
     </>
   );
