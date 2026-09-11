@@ -48,6 +48,8 @@ const AccountingPeriodWorkspaceListFrame = function ({
   const monthParamName =
     propertyName<AccountingPeriodWorkspaceSearchParams>("months");
   const updateParams = useSearchParamUpdater([]);
+  const hasActiveFilters =
+    searchParams.has(yearParamName) || searchParams.has(monthParamName);
 
   const setSort = function (
     sort: AccountingPeriodWithBalanceSort | null,
@@ -163,6 +165,7 @@ const AccountingPeriodWorkspaceListFrame = function ({
       data={data ?? null}
       totalCount={totalCount ?? null}
       pageParamName={pageParamName}
+      hasActiveFilters={hasActiveFilters}
       onRowClick={(accountingPeriod) => {
         openAccountingPeriod(accountingPeriod);
       }}
