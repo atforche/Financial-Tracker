@@ -10,7 +10,6 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import type { JSX } from "react";
 import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
-import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import ViewAccountForm from "@/accounts/workspace/ViewAccountForm";
 import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
@@ -139,7 +138,6 @@ const AccountWorkspaceDetailPage = async function ({
 
   return (
     <PageLayout>
-      <ResponsivePageSize desktopBreakpoint="xl" />
       <Stack spacing={2.5}>
         <Link
           href={workspaceUrl}

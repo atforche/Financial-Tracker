@@ -8,7 +8,6 @@ import FundWorkspacePageHeader from "@/funds/workspace/FundWorkspacePageHeader";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import ViewFundForm from "@/funds/workspace/ViewFundForm";
 import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
@@ -127,7 +126,6 @@ const FundWorkspaceDetailPage = async function ({
 
   return (
     <PageLayout>
-      <ResponsivePageSize desktopBreakpoint="xl" />
       <FundWorkspacePageHeader backHref={workspaceUrl} title="Fund Details" />
       <ViewFundForm
         fund={fund}

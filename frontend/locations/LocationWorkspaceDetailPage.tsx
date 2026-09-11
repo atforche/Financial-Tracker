@@ -13,7 +13,6 @@ import type { LocationWorkspaceSearchParams } from "@/locations/LocationWorkspac
 import PageLayout from "@/framework/view/PageLayout";
 import RecentLocationTransactionsFrame from "@/locations/RecentLocationTransactionsFrame";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import SummaryCard from "@/framework/view/SummaryCard";
 import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
@@ -108,7 +107,6 @@ const LocationWorkspaceDetailPage = async function ({
 
   return (
     <PageLayout>
-      <ResponsivePageSize desktopBreakpoint="lg" />
       <Box sx={{ maxWidth: 1200, width: "100%" }}>
         <Stack spacing={2.5}>
           <Link

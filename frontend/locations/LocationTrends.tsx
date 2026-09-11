@@ -14,7 +14,6 @@ import LocationCashFlowChart from "@/locations/LocationCashFlowChart";
 import LocationTrendsFilter from "@/locations/LocationTrendsFilter";
 import LocationTrendsTransactionListFrame from "@/locations/LocationTrendsTransactionListFrame";
 import PageLayout from "@/framework/view/PageLayout";
-import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import SummaryCard from "@/framework/view/SummaryCard";
 import SummaryCardGrid from "@/framework/view/SummaryCardGrid";
 import createApiClient from "@/framework/data/createApiClient";
@@ -180,7 +179,6 @@ const LocationTrends = async function ({
   });
   return (
     <PageLayout>
-      <ResponsivePageSize desktopBreakpoint="lg" />
       <ConstrainedContent>
         <LocationTrendsFilter
           accountingPeriods={accountingPeriods.items}

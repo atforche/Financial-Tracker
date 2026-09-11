@@ -341,7 +341,7 @@ const TransactionWorkspaceFilter = function ({
   };
 
   return (
-    <PageFilterFrame title="Transactions" mobileSticky={false}>
+    <PageFilterFrame title="Transactions">
       <TransactionFilterControl>
         <DateRangeFilter
           value={{ start: currentStartDate, end: currentEndDate }}

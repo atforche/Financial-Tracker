@@ -12,7 +12,6 @@ import FundGoalWorkspacePageHeader from "@/fund-goals/workspace/FundGoalWorkspac
 import type { FundGoalWorkspaceSearchParams } from "@/fund-goals/workspace/FundGoalWorkspace";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import ViewFundGoalForm from "@/fund-goals/workspace/ViewFundGoalForm";
 import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
@@ -167,7 +166,6 @@ const FundGoalWorkspaceDetailPage = async function ({
   });
   return (
     <PageLayout>
-      <ResponsivePageSize desktopBreakpoint="lg" />
       <FundGoalWorkspacePageHeader backHref={returnUrl ?? workspaceUrl} />
       <ViewFundGoalForm
         fundGoal={fundGoal}

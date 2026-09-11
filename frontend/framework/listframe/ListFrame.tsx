@@ -18,6 +18,7 @@ import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import ColumnHeader from "@/framework/listframe/ColumnHeader";
 import ListFrameEmptyState from "@/framework/listframe/ListFrameEmptyState";
 import ListFrameMobile from "@/framework/listframe/ListFrameMobile";
+import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -127,6 +128,7 @@ const ListFrame = function <T>({
       headerContentInline={headerContentInline}
       color={color}
     >
+      <ResponsivePageSize desktopBreakpoint={desktopBreakpoint} />
       <Paper
         sx={{
           width: "100%",

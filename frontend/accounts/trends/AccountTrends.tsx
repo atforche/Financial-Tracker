@@ -35,7 +35,6 @@ import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
@@ -266,7 +265,6 @@ const AccountTrends = async function ({
 
   return (
     <PageLayout>
-      <ResponsivePageSize desktopBreakpoint="xl" />
       <ConstrainedContent>
         <AccountTrendsFilter
           accountingPeriods={accountingPeriods.items}

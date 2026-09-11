@@ -12,7 +12,6 @@ import type { FundGoalWithProgress } from "@/fund-goals/types";
 import FundGoalsFrame from "@/accounting-periods/workspace/FundGoalsFrame";
 import type { JSX } from "react";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import type { Route } from "next";
 import createApiClient from "@/framework/data/createApiClient";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -103,7 +102,6 @@ const AccountingPeriodPlanView = async function ({
 
   return (
     <>
-      <ResponsivePageSize desktopBreakpoint="lg" />
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }} spacing={3}>
         <ExpectedIncomeFundGoalContributionsCard
           expectedIncome={accountingPeriod.expectedIncome}

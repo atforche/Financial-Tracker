@@ -48,17 +48,19 @@ const AccountingPeriodDetailActions = function ({
                 setDialog(accountingPeriod.isOpen ? "close" : "reopen");
               }}
             >
-              {accountingPeriod.isOpen ? "Close Period" : "Reopen Period"}
+              {accountingPeriod.isOpen ? "Close" : "Reopen"}
             </Button>
-            <Button
-              color="error"
-              variant="outlined"
-              onClick={() => {
-                setDialog("delete");
-              }}
-            >
-              Delete Period
-            </Button>
+            {accountingPeriod.isOpen ? (
+              <Button
+                color="error"
+                variant="outlined"
+                onClick={() => {
+                  setDialog("delete");
+                }}
+              >
+                Delete
+              </Button>
+            ) : null}
           </>
         ) : null}
       </Stack>
