@@ -5,6 +5,7 @@ import type {
   FundGoalBalanceSummaryByDate,
   FundGoalProgress,
 } from "@/fund-goals/types";
+import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import Frame from "@/framework/view/Frame";
 import FundGoalBalanceEventsFrame from "@/fund-goals/workspace/FundGoalBalanceEventsFrame";
@@ -20,6 +21,7 @@ import type { Route } from "next";
  */
 interface ViewFundGoalFormProps {
   readonly fundGoal: FundGoal;
+  readonly accountingPeriod: AccountingPeriodWithBalance;
   readonly progress: FundGoalProgress;
   readonly redirectUrl: string;
   readonly recentBalanceEvents: FundGoalBalanceEvent[];
@@ -41,6 +43,7 @@ const ViewFundGoalForm = function (props: ViewFundGoalFormProps): JSX.Element {
       <PageLayout>
         <FundGoalContextFrame
           fundGoal={props.fundGoal}
+          accountingPeriod={props.accountingPeriod}
           redirectUrl={props.redirectUrl}
         />
         <Frame title="Progress">

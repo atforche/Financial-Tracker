@@ -87,11 +87,15 @@ const FundGoalWorkspaceDetailPage = async function ({
     .endOf("month")
     .format("YYYY-MM-DD");
   const [
+    accountingPeriodResponse,
     progressResponse,
     eventsResponse,
     recentActivityResponse,
     recentActivityBalancesResponse,
   ] = await Promise.all([
+    apiClient.GET("/accounting-periods/{accountingPeriodId}", {
+      params: { path: { accountingPeriodId: periodId } },
+    }),
     apiClient.GET("/fund-goals/{fundGoalId}/progress/{accountingPeriodId}", {
       params: {
         path: { fundGoalId: fundGoal.id, accountingPeriodId: periodId },
@@ -144,6 +148,10 @@ const FundGoalWorkspaceDetailPage = async function ({
     progressResponse,
     "Failed to fetch Fund Goal progress",
   );
+  const accountingPeriod = unwrapApiResponse(
+    accountingPeriodResponse,
+    "Failed to fetch accounting period",
+  );
   const events = unwrapApiResponse(
     eventsResponse,
     "Failed to fetch Fund Goal balance events",
@@ -169,6 +177,7 @@ const FundGoalWorkspaceDetailPage = async function ({
       <FundGoalWorkspacePageHeader backHref={returnUrl ?? workspaceUrl} />
       <ViewFundGoalForm
         fundGoal={fundGoal}
+        accountingPeriod={accountingPeriod}
         progress={progress}
         redirectUrl={currentUrl}
         recentBalanceEvents={events.items}

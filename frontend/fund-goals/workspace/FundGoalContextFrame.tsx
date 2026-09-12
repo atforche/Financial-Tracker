@@ -1,3 +1,4 @@
+import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import Frame from "@/framework/view/Frame";
 import type { FundGoal } from "@/fund-goals/types";
 import type { JSX } from "react";
@@ -12,6 +13,7 @@ import { isNullOrUndefined } from "@/framework/nullHelpers";
  */
 interface FundGoalContextFrameProps {
   readonly fundGoal: FundGoal;
+  readonly accountingPeriod: AccountingPeriodWithBalance;
   readonly redirectUrl: string;
 }
 
@@ -20,13 +22,18 @@ interface FundGoalContextFrameProps {
  */
 const FundGoalContextFrame = function ({
   fundGoal,
+  accountingPeriod,
   redirectUrl,
 }: FundGoalContextFrameProps): JSX.Element {
   return (
     <Frame
       title="Details"
       headerContent={
-        <UpdateFundGoalForm fundGoal={fundGoal} redirectUrl={redirectUrl} />
+        <UpdateFundGoalForm
+          fundGoal={fundGoal}
+          accountingPeriod={accountingPeriod}
+          redirectUrl={redirectUrl}
+        />
       }
     >
       <ResponsiveGrid columns={{ xs: 1 }} spacing={2}>

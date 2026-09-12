@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FundGoalSetupSection from "@/funds/workspace/FundGoalSetupSection";
@@ -22,6 +23,7 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
  */
 interface UpdateFundGoalFormProps {
   readonly fundGoal: FundGoal;
+  readonly accountingPeriod: AccountingPeriodWithBalance;
   readonly redirectUrl: string;
 }
 
@@ -30,6 +32,7 @@ interface UpdateFundGoalFormProps {
  */
 const UpdateFundGoalForm = function ({
   fundGoal,
+  accountingPeriod,
   redirectUrl,
 }: UpdateFundGoalFormProps): JSX.Element | null {
   const canWrite = useWriteAccess();
@@ -133,6 +136,10 @@ const UpdateFundGoalForm = function ({
         <Stack ref={formRef} spacing={3}>
           <FundGoalSetupSection
             showFrame={false}
+            accountingPeriod={accountingPeriod}
+            originalPlannedMonthlyContribution={
+              fundGoal.plannedMonthlyContribution ?? null
+            }
             plannedMonthlyContribution={plannedMonthlyContribution}
             setPlannedMonthlyContribution={setPlannedMonthlyContribution}
             minimumEndingBalance={minimumEndingBalance}

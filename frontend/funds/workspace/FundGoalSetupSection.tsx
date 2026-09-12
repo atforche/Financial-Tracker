@@ -1,6 +1,13 @@
-import { Checkbox, FormControlLabel, Stack } from "@mui/material";
+import { Checkbox, Chip, FormControlLabel, Stack } from "@mui/material";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
 import { type JSX, useEffect } from "react";
+import {
+  compareCurrencyAmounts,
+  formatCurrency,
+  getCurrencyDifference,
+  getCurrencyTotal,
+} from "@/framework/currencyHelpers";
+import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import GoalAmountOption from "@/framework/forms/GoalAmountOption";
 
@@ -10,6 +17,8 @@ import GoalAmountOption from "@/framework/forms/GoalAmountOption";
 interface FundGoalSetupSectionProps {
   readonly color?: FrameColor;
   readonly showFrame?: boolean;
+  readonly accountingPeriod: AccountingPeriodWithBalance | null;
+  readonly originalPlannedMonthlyContribution?: number | null;
   readonly plannedMonthlyContribution: number | null;
   readonly setPlannedMonthlyContribution:
     ((value: number | null) => void) | null;
@@ -28,6 +37,8 @@ interface FundGoalSetupSectionProps {
 const FundGoalSetupSection = function ({
   color = "primary",
   showFrame = true,
+  accountingPeriod,
+  originalPlannedMonthlyContribution = 0,
   plannedMonthlyContribution,
   setPlannedMonthlyContribution,
   minimumEndingBalance,
@@ -37,6 +48,16 @@ const FundGoalSetupSection = function ({
   allowExpectedContributionAboveMaximum,
   setAllowExpectedContributionAboveMaximum,
 }: FundGoalSetupSectionProps): JSX.Element {
+  const expectedIncome = accountingPeriod?.expectedIncome.tracked ?? 0;
+  const totalPlannedContributions = getCurrencyTotal([
+    accountingPeriod?.plannedGoalContributions ?? 0,
+    -(originalPlannedMonthlyContribution ?? 0),
+    plannedMonthlyContribution ?? 0,
+  ]);
+  const remaining = getCurrencyDifference(
+    expectedIncome,
+    totalPlannedContributions,
+  );
   useEffect(() => {
     if (
       maximumEndingBalance === null &&
@@ -70,6 +91,10 @@ const FundGoalSetupSection = function ({
         errorMessage={null}
         additionalControl={
           <FormControlLabel
+            sx={{
+              ml: { xs: 0, sm: -1.375 },
+              alignSelf: { xs: "flex-start", sm: "center" },
+            }}
             control={
               <Checkbox
                 checked={allowExpectedContributionAboveMaximum}
@@ -91,6 +116,25 @@ const FundGoalSetupSection = function ({
         setValue={setPlannedMonthlyContribution}
         errorMessage={null}
       />
+      {accountingPeriod !== null && plannedMonthlyContribution !== null ? (
+        <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.75}>
+          <Chip
+            variant="outlined"
+            label={`Expected tracked income: ${formatCurrency(expectedIncome)}`}
+          />
+          <Chip
+            variant="outlined"
+            label={`Total planned contributions: ${formatCurrency(totalPlannedContributions)}`}
+          />
+          <Chip
+            variant="outlined"
+            label={`Remaining: ${formatCurrency(remaining)}`}
+            color={
+              compareCurrencyAmounts(remaining, 0) < 0 ? "error" : "success"
+            }
+          />
+        </Stack>
+      ) : null}
     </Stack>
   );
   return showFrame ? (
