@@ -163,6 +163,7 @@ const AccountWorkspaceDetailPage = async function ({
           accountName: [account.name],
           startDate: recentActivityStartDate,
           endDate: recentActivityEndDate,
+          returnUrl: currentUrl,
         })}
         addTransactionHref={addTransactionHref}
       />

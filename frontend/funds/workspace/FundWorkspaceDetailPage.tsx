@@ -140,6 +140,7 @@ const FundWorkspaceDetailPage = async function ({
           fundName: [fund.name],
           startDate: recentActivityStartDate,
           endDate: recentActivityEndDate,
+          returnUrl: currentUrl,
         })}
         addTransactionHref={addTransactionHref}
       />

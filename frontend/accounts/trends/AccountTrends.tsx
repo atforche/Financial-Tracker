@@ -35,6 +35,7 @@ import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import TrendsBackLink from "@/framework/view/TrendsBackLink";
 import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
@@ -57,6 +58,7 @@ const AccountTrends = async function ({
   searchParams,
 }: AccountTrendsProps): Promise<JSX.Element> {
   const {
+    returnUrl,
     sort,
     page,
     pageSize,
@@ -119,6 +121,7 @@ const AccountTrends = async function ({
     redirect(
       routes.trends({
         mode: "date",
+        returnUrl,
         ...persistedFilters,
         startDate: defaultDateRange.start,
         endDate: defaultDateRange.end,
@@ -135,6 +138,7 @@ const AccountTrends = async function ({
     redirect(
       routes.trends({
         mode: "accounting-period",
+        returnUrl,
         ...persistedFilters,
         startAccountingPeriodId:
           defaultAccountingPeriodRange?.start ?? latestAccountingPeriod.id,
@@ -252,6 +256,7 @@ const AccountTrends = async function ({
       ? { accountNames: currentAccountNames }
       : {}),
     returnUrl: routes.trends({
+      returnUrl,
       mode: currentMode,
       ...persistedFilters,
       ...currentRange,
@@ -265,6 +270,11 @@ const AccountTrends = async function ({
 
   return (
     <PageLayout>
+      <TrendsBackLink
+        returnUrl={returnUrl}
+        workspace="accounts"
+        label="Back to Account Details"
+      />
       <ConstrainedContent>
         <AccountTrendsFilter
           accountingPeriods={accountingPeriods.items}

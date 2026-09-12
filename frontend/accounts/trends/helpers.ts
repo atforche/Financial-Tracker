@@ -26,6 +26,7 @@ interface AccountTrendsSearchParams {
   endAccountingPeriodId?: string;
   startDate?: string;
   endDate?: string;
+  returnUrl?: string | undefined;
 }
 
 /**
@@ -132,6 +133,7 @@ const accountTrendsParamNames = {
   endAccountingPeriodId: "endAccountingPeriodId",
   startDate: "startDate",
   endDate: "endDate",
+  returnUrl: "returnUrl",
 } as const satisfies Record<keyof AccountTrendsSearchParams, string>;
 
 /**

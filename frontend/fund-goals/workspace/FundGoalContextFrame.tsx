@@ -30,7 +30,7 @@ const FundGoalContextFrame = function ({
       }
     >
       <ResponsiveGrid columns={{ xs: 1 }} spacing={2}>
-        <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
+        <ResponsiveGrid columns={{ xs: 1, sm: 2, md: 3 }} spacing={2}>
           <ReadOnlyField label="Fund" value={fundGoal.fund.name} />
           <ReadOnlyField
             label="Accounting Period"

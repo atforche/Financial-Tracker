@@ -30,6 +30,7 @@ import FundTrendsListFrame from "@/funds/trends/FundTrendsListFrame";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import TrendsBackLink from "@/framework/view/TrendsBackLink";
 import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
@@ -52,6 +53,7 @@ const FundTrends = async function ({
   searchParams,
 }: FundTrendsProps): Promise<JSX.Element> {
   const {
+    returnUrl,
     sort,
     page,
     pageSize,
@@ -107,6 +109,7 @@ const FundTrends = async function ({
     redirect(
       routes.trends({
         mode: "date",
+        returnUrl,
         ...persistedFilters,
         startDate: defaultDateRange.start,
         endDate: defaultDateRange.end,
@@ -123,6 +126,7 @@ const FundTrends = async function ({
     redirect(
       routes.trends({
         mode: "accounting-period",
+        returnUrl,
         ...persistedFilters,
         startAccountingPeriodId:
           defaultAccountingPeriodRange?.start ?? latestAccountingPeriod.id,
@@ -253,6 +257,7 @@ const FundTrends = async function ({
       ? { fundNames: currentFundNames }
       : {}),
     returnUrl: routes.trends({
+      returnUrl,
       mode: currentMode,
       ...persistedFilters,
       ...currentRange,
@@ -261,6 +266,11 @@ const FundTrends = async function ({
 
   return (
     <PageLayout>
+      <TrendsBackLink
+        returnUrl={returnUrl}
+        workspace="funds"
+        label="Back to Fund Details"
+      />
       <ConstrainedContent>
         <FundTrendsFilter
           accountingPeriods={accountingPeriods.items}

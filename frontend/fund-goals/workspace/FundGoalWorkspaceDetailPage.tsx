@@ -179,6 +179,7 @@ const FundGoalWorkspaceDetailPage = async function ({
           fundName: [fundGoal.fund.name],
           startAccountingPeriodId: periodId,
           endAccountingPeriodId: periodId,
+          returnUrl: currentUrl,
         })}
         addTransactionHref={transactionRoutes.workspaceCreate({
           accountingPeriodIds: [periodId],
