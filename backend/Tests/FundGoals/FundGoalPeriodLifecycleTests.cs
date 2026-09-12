@@ -82,7 +82,7 @@ public sealed class FundGoalPeriodLifecycleTests
         Assert.Equal(50m, period.PlannedGoalContributions);
         Assert.Equal(60m, period.ActualGoalContributions);
         Assert.NotNull(progress.EndingBalance);
-        Assert.Equal(40m, progress.EndingBalance.CurrentBalance);
+        Assert.Equal(40m, progress.EndingBalance.EndingBalance);
         Assert.Equal(FundGoalEndingBalanceStatusModel.WithinRange, progress.EndingBalance.Status);
     }
 }

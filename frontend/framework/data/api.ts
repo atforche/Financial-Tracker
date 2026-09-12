@@ -4414,9 +4414,9 @@ export interface components {
         FundGoalEndingBalanceProgressModel: {
             /**
              * Format: double
-             * @description Gets the current balance.
+             * @description Gets the ending balance.
              */
-            currentBalance: number;
+            endingBalance: number;
             /**
              * Format: double
              * @description Gets the configured minimum ending balance.

@@ -155,11 +155,11 @@ public sealed class FundGoalBalanceEventQueryService(
 
             AccountingPeriodBalanceHistory history = accountingPeriodBalanceHistoryRepository
                 .GetForAccountingPeriod(balanceEvent.AccountingPeriod.Id);
-            decimal currentBalance = history.FundBalances
+            decimal currentEndingBalance = history.FundBalances
                 .SingleOrDefault(balance => balance.Fund.Id == balanceEvent.Fund.Id)
                 ?.ClosingBalance ?? 0;
             expectedAmount = FundGoalProgressService.CalculateExpectedContribution(
-                currentBalance,
+                currentEndingBalance,
                 history.FundGoalTotals
                     .SingleOrDefault(totals => totals.Fund.Id == balanceEvent.Fund.Id)
                     ?.GetTotals().AmountAssignedToExpectedContribution ?? 0,

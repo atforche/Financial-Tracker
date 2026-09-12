@@ -17,7 +17,7 @@ import { type JSX, useState } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-import FundGoalAvailableBalance from "@/fund-goals/workspace/FundGoalAvailableBalance";
+import FundGoalEndingBalance from "@/fund-goals/workspace/FundGoalEndingBalance";
 import FundGoalProgressBars from "@/fund-goals/workspace/FundGoalProgressBars";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
@@ -94,15 +94,15 @@ const FundGoalWorkspaceCard = function ({
         <Typography variant="body2" color="text.secondary">
           {accountingPeriod?.name ?? "No accounting period"}
         </Typography>
-        <FundGoalAvailableBalance
-          availableBalance={endingBalance.currentBalance}
+        <FundGoalEndingBalance
+          endingBalance={endingBalance.endingBalance}
         />
         <Box>
           <Collapse in={expanded} unmountOnExit>
             <FundGoalProgressBars
               fundGoal={fundGoal}
               progress={fundGoal.progress}
-              showAvailableBalance={false}
+              showEndingBalance={false}
             />
           </Collapse>
           <Stack

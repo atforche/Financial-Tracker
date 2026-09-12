@@ -21,7 +21,7 @@ public sealed class FundGoalProgressServiceTests
     }
 
     /// <summary>
-    /// Does not recommend a contribution when the current balance exceeds the maximum ending balance.
+    /// Does not recommend a contribution when the ending balance exceeds the maximum ending balance.
     /// </summary>
     [Fact]
     public void CalculateExpectedContributionReturnsZeroAboveMaximumEndingBalance() =>
@@ -62,7 +62,7 @@ public sealed class FundGoalProgressServiceTests
         Assert.Equal(200m, progress.Contribution.PlannedAmount);
         Assert.Equal(150m, progress.Contribution.AmountReducedByMaximumEndingBalance);
         Assert.NotNull(progress.EndingBalance);
-        Assert.Equal(250m, progress.EndingBalance.CurrentBalance);
+        Assert.Equal(250m, progress.EndingBalance.EndingBalance);
         Assert.Equal(FundGoalEndingBalanceStatus.WithinRange, progress.EndingBalance.Status);
     }
 
@@ -115,7 +115,7 @@ public sealed class FundGoalProgressServiceTests
     }
 
     /// <summary>
-    /// Reports the full planned contribution as reduced when the current balance exceeds the maximum.
+    /// Reports the full planned contribution as reduced when the ending balance exceeds the maximum.
     /// </summary>
     [Fact]
     public void CalculateReportsContributionReducedAboveMaximumEndingBalance()

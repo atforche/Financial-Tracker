@@ -161,7 +161,7 @@ public sealed class FundGoalController(
         },
         EndingBalance = new FundGoalEndingBalanceProgressModel
         {
-            CurrentBalance = progress.EndingBalance.CurrentBalance,
+            EndingBalance = progress.EndingBalance.EndingBalance,
             MinimumBalance = progress.EndingBalance.MinimumBalance,
             MaximumBalance = progress.EndingBalance.MaximumBalance,
             AmountBelowMinimum = progress.EndingBalance.AmountBelowMinimum,

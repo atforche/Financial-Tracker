@@ -3,8 +3,8 @@ import {
   FundGoalEndingBalanceStatus,
   type FundGoalProgress as FundGoalProgressModel,
 } from "@/fund-goals/types";
-import FundGoalAvailableBalance from "@/fund-goals/workspace/FundGoalAvailableBalance";
 import FundGoalContributionAdjustment from "@/fund-goals/workspace/FundGoalContributionAdjustment";
+import FundGoalEndingBalance from "@/fund-goals/workspace/FundGoalEndingBalance";
 import FundGoalProgress from "@/fund-goals/workspace/FundGoalProgress";
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
@@ -18,7 +18,7 @@ import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 interface FundGoalProgressBarsProps {
   readonly fundGoal: FundGoal;
   readonly progress: FundGoalProgressModel;
-  readonly showAvailableBalance?: boolean;
+  readonly showEndingBalance?: boolean;
   readonly showUnconfigured?: boolean;
 }
 
@@ -33,14 +33,14 @@ const displayAmount = (value: number | null | undefined): string =>
 const FundGoalProgressBars = function ({
   fundGoal,
   progress,
-  showAvailableBalance = true,
+  showEndingBalance = true,
   showUnconfigured = false,
 }: FundGoalProgressBarsProps): JSX.Element {
   return (
     <Stack spacing={2}>
-      {showAvailableBalance ? (
-        <FundGoalAvailableBalance
-          availableBalance={progress.endingBalance.currentBalance}
+      {showEndingBalance ? (
+        <FundGoalEndingBalance
+          endingBalance={progress.endingBalance.endingBalance}
         />
       ) : null}
       {isNotNullOrUndefined(fundGoal.plannedMonthlyContribution) &&
@@ -68,7 +68,7 @@ const FundGoalProgressBars = function ({
       ) : null}
       <FundGoalProgress
         label="Minimum Ending Balance"
-        current={progress.endingBalance.currentBalance}
+        current={progress.endingBalance.endingBalance}
         target={progress.endingBalance.minimumBalance}
         satisfied={
           progress.endingBalance.status !==
@@ -79,7 +79,7 @@ const FundGoalProgressBars = function ({
       progress.endingBalance.maximumBalance !== undefined ? (
         <FundGoalProgress
           label="Maximum Ending Balance"
-          current={progress.endingBalance.currentBalance}
+          current={progress.endingBalance.endingBalance}
           target={progress.endingBalance.maximumBalance}
           satisfied={
             progress.endingBalance.status !==

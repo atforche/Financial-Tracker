@@ -77,7 +77,7 @@ public sealed class TransactionCalculationCoverageTests
         Assert.Equal(0m, progress.Contribution.AssignedAmount);
         Assert.Equal(200m, progress.Contribution.RemainingAmount);
         Assert.NotNull(progress.EndingBalance);
-        Assert.Equal(50m, progress.EndingBalance.CurrentBalance);
+        Assert.Equal(50m, progress.EndingBalance.EndingBalance);
         Assert.Equal(FundGoalEndingBalanceStatusModel.WithinRange, progress.EndingBalance.Status);
     }
 

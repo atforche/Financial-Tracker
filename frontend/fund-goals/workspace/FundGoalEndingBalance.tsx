@@ -3,28 +3,28 @@ import type { JSX } from "react";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
- * Props for the FundGoalAvailableBalance component.
+ * Props for the FundGoalEndingBalance component.
  */
-interface FundGoalAvailableBalanceProps {
-  readonly availableBalance: number;
+interface FundGoalEndingBalanceProps {
+  readonly endingBalance: number;
 }
 
 /**
- * Displays the available balance for a Fund Goal.
+ * Displays the ending balance for a Fund Goal.
  */
-const FundGoalAvailableBalance = function ({
-  availableBalance,
-}: FundGoalAvailableBalanceProps): JSX.Element {
+const FundGoalEndingBalance = function ({
+  endingBalance,
+}: FundGoalEndingBalanceProps): JSX.Element {
   return (
     <Stack direction="row" justifyContent="space-between" gap={2}>
       <Typography variant="body2" fontWeight={700}>
-        Available Balance
+        Ending Balance
       </Typography>
       <Typography variant="body2" fontWeight={700}>
-        {formatCurrency(availableBalance)}
+        {formatCurrency(endingBalance)}
       </Typography>
     </Stack>
   );
 };
 
-export default FundGoalAvailableBalance;
+export default FundGoalEndingBalance;
