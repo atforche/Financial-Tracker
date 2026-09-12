@@ -23,9 +23,16 @@ public sealed class AccountGoalConverter(
             model.Filter?.AccountIds ?? [],
             model.Filter?.AccountingPeriodIds ?? [],
             model.Filter?.IncludeOnboarded),
-        model.Sort == AccountGoalSortModel.AccountDescending
-            ? AccountGoalSort.AccountDescending
-            : AccountGoalSort.Account,
+        model.Sort switch
+        {
+            AccountGoalSortModel.Account => AccountGoalSort.Account,
+            AccountGoalSortModel.AccountDescending => AccountGoalSort.AccountDescending,
+            AccountGoalSortModel.MinimumEndingBalance => AccountGoalSort.MinimumEndingBalance,
+            AccountGoalSortModel.MinimumEndingBalanceDescending => AccountGoalSort.MinimumEndingBalanceDescending,
+            AccountGoalSortModel.MaximumEndingBalance => AccountGoalSort.MaximumEndingBalance,
+            AccountGoalSortModel.MaximumEndingBalanceDescending => AccountGoalSort.MaximumEndingBalanceDescending,
+            _ => AccountGoalSort.Account,
+        },
         model.Offset ?? 0,
         model.Limit);
 

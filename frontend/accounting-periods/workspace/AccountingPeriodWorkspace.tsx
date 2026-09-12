@@ -12,6 +12,7 @@ import {
   getRowsPerPage,
   normalizePageValue,
 } from "@/framework/listframe/page";
+import type { AccountGoalSort } from "@/account-goals/types";
 import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/workspace/helpers";
 import AccountingPeriodWorkspaceActions from "@/accounting-periods/workspace/AccountingPeriodWorkspaceActions";
 import AccountingPeriodWorkspaceFilter from "@/accounting-periods/workspace/AccountingPeriodWorkspaceFilter";
@@ -36,6 +37,7 @@ interface AccountingPeriodWorkspaceSearchParams {
   fundGoalPage?: number | string | null;
   fundGoalSort?: FundGoalSort;
   accountGoalPage?: number | string | null;
+  accountGoalSort?: AccountGoalSort;
   action?: AccountingPeriodWorkspaceAction;
 }
 

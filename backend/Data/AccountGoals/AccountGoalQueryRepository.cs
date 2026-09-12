@@ -24,6 +24,10 @@ public sealed class AccountGoalQueryRepository(DatabaseContext databaseContext) 
         {
             AccountGoalSort.Account => accountGoals.OrderBy(accountGoal => accountGoal.Account.Name).ThenBy(accountGoal => accountGoal.Id),
             AccountGoalSort.AccountDescending => accountGoals.OrderByDescending(accountGoal => accountGoal.Account.Name).ThenBy(accountGoal => accountGoal.Id),
+            AccountGoalSort.MinimumEndingBalance => accountGoals.OrderBy(accountGoal => accountGoal.MinimumEndingBalance).ThenBy(accountGoal => accountGoal.Id),
+            AccountGoalSort.MinimumEndingBalanceDescending => accountGoals.OrderByDescending(accountGoal => accountGoal.MinimumEndingBalance).ThenBy(accountGoal => accountGoal.Id),
+            AccountGoalSort.MaximumEndingBalance => accountGoals.OrderBy(accountGoal => accountGoal.MaximumEndingBalance).ThenBy(accountGoal => accountGoal.Id),
+            AccountGoalSort.MaximumEndingBalanceDescending => accountGoals.OrderByDescending(accountGoal => accountGoal.MaximumEndingBalance).ThenBy(accountGoal => accountGoal.Id),
             _ => accountGoals.OrderBy(accountGoal => accountGoal.Account.Name).ThenBy(accountGoal => accountGoal.Id),
         };
         int totalCount = await accountGoals.CountAsync(cancellationToken);

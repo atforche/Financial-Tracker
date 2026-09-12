@@ -13,6 +13,52 @@ namespace Tests.AccountGoals;
 public sealed class AccountGoalEndpointTests
 {
     /// <summary>
+    /// Sorts Account Goals by each configurable planning field.
+    /// </summary>
+    [Fact]
+    public async Task ListSortsByConfigurableFields()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle alpha = await test.Accounts.Onboard("Alpha").CreateAsync();
+        AccountHandle beta = await test.Accounts.Onboard("Beta").CreateAsync();
+        AccountHandle gamma = await test.Accounts.Onboard("Gamma").CreateAsync();
+        AccountingPeriodHandle period = await test.Periods.Create(2026, 8).CreateAsync();
+
+        async Task<AccountGoalModel> GetGoalAsync(AccountHandle account) =>
+            await test.Api.GetAsync<AccountGoalModel>(
+                $"/account-goals/account/{account.Id}?accountingPeriodId={period.Id}");
+
+        AccountGoalModel alphaGoal = await GetGoalAsync(alpha);
+        AccountGoalModel betaGoal = await GetGoalAsync(beta);
+        AccountGoalModel gammaGoal = await GetGoalAsync(gamma);
+        _ = await test.Api.PostAsync<UpdateAccountGoalModel, AccountGoalModel>($"/account-goals/{alphaGoal.Id}", new UpdateAccountGoalModel
+        {
+            MinimumEndingBalance = 300m,
+            MaximumEndingBalance = 500m,
+        });
+        _ = await test.Api.PostAsync<UpdateAccountGoalModel, AccountGoalModel>($"/account-goals/{betaGoal.Id}", new UpdateAccountGoalModel
+        {
+            MinimumEndingBalance = 100m,
+            MaximumEndingBalance = 400m,
+        });
+        _ = await test.Api.PostAsync<UpdateAccountGoalModel, AccountGoalModel>($"/account-goals/{gammaGoal.Id}", new UpdateAccountGoalModel
+        {
+            MinimumEndingBalance = 200m,
+            MaximumEndingBalance = 600m,
+        });
+
+        async Task<IReadOnlyList<string>> GetNamesAsync(AccountGoalSortModel sort)
+        {
+            CollectionModel<AccountGoalModel> goals = await test.Api.GetAsync<CollectionModel<AccountGoalModel>>(
+                $"/account-goals?filter.accountingPeriodIds={period.Id}&filter.accountIds={alpha.Id}&filter.accountIds={beta.Id}&filter.accountIds={gamma.Id}&sort={sort}");
+            return goals.Items.Select(goal => goal.Account.Name).ToList();
+        }
+
+        Assert.Equal(["Alpha", "Gamma", "Beta"], await GetNamesAsync(AccountGoalSortModel.MinimumEndingBalanceDescending));
+        Assert.Equal(["Gamma", "Alpha", "Beta"], await GetNamesAsync(AccountGoalSortModel.MaximumEndingBalanceDescending));
+    }
+
+    /// <summary>
     /// Exposes Account Goal configuration, filtering, and progress through the REST API.
     /// </summary>
     [Fact]

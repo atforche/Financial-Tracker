@@ -1,10 +1,13 @@
+import type {
+  AccountGoalSort,
+  AccountGoalWithProgress,
+} from "@/account-goals/types";
 import type { FundGoalSort, FundGoalWithProgress } from "@/fund-goals/types";
 import {
   getPageOffset,
   getRowsPerPage,
   normalizePageValue,
 } from "@/framework/listframe/page";
-import type { AccountGoalWithProgress } from "@/account-goals/types";
 import AccountGoalsFrame from "@/accounting-periods/workspace/AccountGoalsFrame";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import ExpectedIncomeFundGoalContributionsCard from "@/accounting-periods/workspace/ExpectedIncomeFundGoalContributionsCard";
@@ -23,6 +26,7 @@ interface AccountingPeriodPlanViewProps {
   readonly fundGoalPage?: number | string | null | undefined;
   readonly fundGoalSort?: FundGoalSort | undefined;
   readonly accountGoalPage?: number | string | null | undefined;
+  readonly accountGoalSort?: AccountGoalSort | undefined;
 }
 
 /** Displays the inputs used to establish an accounting period's plan. */
@@ -33,6 +37,7 @@ const AccountingPeriodPlanView = async function ({
   fundGoalPage,
   fundGoalSort,
   accountGoalPage,
+  accountGoalSort,
 }: AccountingPeriodPlanViewProps): Promise<JSX.Element> {
   const apiClient = await createApiClient();
   const rowsPerPage = getRowsPerPage(pageSize);
@@ -62,6 +67,9 @@ const AccountingPeriodPlanView = async function ({
       params: {
         query: {
           "Filter.AccountingPeriodIds": [accountingPeriodId],
+          ...(typeof accountGoalSort === "undefined"
+            ? {}
+            : { Sort: accountGoalSort }),
           Limit: rowsPerPage,
           Offset: getPageOffset(
             normalizePageValue(accountGoalPage),

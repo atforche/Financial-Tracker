@@ -5591,7 +5591,11 @@ export enum AccountGoalEndingBalanceStatusModel {
 }
 export enum AccountGoalSortModel {
     Account = "Account",
-    AccountDescending = "AccountDescending"
+    AccountDescending = "AccountDescending",
+    MinimumEndingBalance = "MinimumEndingBalance",
+    MinimumEndingBalanceDescending = "MinimumEndingBalanceDescending",
+    MaximumEndingBalance = "MaximumEndingBalance",
+    MaximumEndingBalanceDescending = "MaximumEndingBalanceDescending"
 }
 export enum AccountingPeriodSortModel {
     Date = "Date",
