@@ -6,7 +6,6 @@ import ExpectedIncomeAmountEditor from "@/accounting-periods/workspace/ExpectedI
 import ExpectedIncomeDatesEditor from "@/accounting-periods/workspace/ExpectedIncomeDatesEditor";
 import type { ExpectedIncomeSourceRequest } from "@/accounting-periods/types";
 import Frame from "@/framework/view/Frame";
-import StringEntryField from "@/framework/forms/StringEntryField";
 
 interface ExpectedIncomeSourcesEditorProps {
   readonly source: ExpectedIncomeSourceRequest;
@@ -32,24 +31,8 @@ const ExpectedIncomeSourcesEditor = function ({
   };
 
   return (
-    <Frame
-      title={source.name || "Expected Income Source"}
-      color="info"
-      headerContent={headerContent}
-    >
+    <Frame title="Details" color="info" headerContent={headerContent}>
       <Stack spacing={1.5}>
-        <StringEntryField
-          label="Source Name"
-          value={source.name}
-          setValue={
-            editable
-              ? (name): void => {
-                  updateSource({ ...source, name });
-                }
-              : null
-          }
-        />
-        <Divider />
         <ExpectedIncomeAmountEditor
           title="Income Lines"
           description="Add the gross income amounts that make up each expected payment."

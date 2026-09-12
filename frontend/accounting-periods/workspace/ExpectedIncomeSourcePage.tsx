@@ -56,6 +56,7 @@ const ExpectedIncomeSourcePage = async function ({
       <ExpectedIncomeSourceDetailsDialog
         source={source}
         accountingPeriodId={accountingPeriodId}
+        accountingPeriodName={accountingPeriod.name}
         year={accountingPeriod.year}
         month={accountingPeriod.month}
         canManage={accountingPeriod.isOpen}
