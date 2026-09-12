@@ -44,6 +44,16 @@ type CreateAccountingPeriodRequest =
 /** Type representing a configured expected-income source. */
 type ExpectedIncomeSource = components["schemas"]["ExpectedIncomeSourceModel"];
 
+/** Supported Expected Income Source sort orders on the planning page. */
+enum ExpectedIncomeSourceSort {
+  Source = "Source",
+  SourceDescending = "SourceDescending",
+  ExpectedTrackedIncome = "ExpectedTrackedIncome",
+  ExpectedTrackedIncomeDescending = "ExpectedTrackedIncomeDescending",
+  ExpectedUntrackedIncome = "ExpectedUntrackedIncome",
+  ExpectedUntrackedIncomeDescending = "ExpectedUntrackedIncomeDescending",
+}
+
 /** Type representing an expected-income source request. */
 type ExpectedIncomeSourceRequest =
   components["schemas"]["ExpectedIncomeSourceRequestModel"];
@@ -58,5 +68,6 @@ export {
   type AccountingPeriodsInRange,
   type CreateAccountingPeriodRequest,
   type ExpectedIncomeSource,
+  ExpectedIncomeSourceSort,
   type ExpectedIncomeSourceRequest,
 };

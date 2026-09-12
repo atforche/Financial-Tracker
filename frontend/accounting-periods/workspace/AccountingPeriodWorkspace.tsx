@@ -1,6 +1,7 @@
 import {
   AccountingPeriodSort,
   AccountingPeriodWithBalanceSort,
+  type ExpectedIncomeSourceSort,
 } from "@/accounting-periods/types";
 import {
   compactSearchParams,
@@ -34,6 +35,7 @@ interface AccountingPeriodWorkspaceSearchParams {
   pageSize?: number | string | null;
   view?: AccountingPeriodDetailView;
   incomeSourcePage?: number | string | null;
+  incomeSourceSort?: ExpectedIncomeSourceSort;
   fundGoalPage?: number | string | null;
   fundGoalSort?: FundGoalSort;
   accountGoalPage?: number | string | null;

@@ -58,6 +58,9 @@ const AccountingPeriodWorkspacePlanPage = async function ({
     ...(typeof resolvedSearchParams.incomeSourcePage !== "undefined"
       ? { incomeSourcePage: resolvedSearchParams.incomeSourcePage }
       : {}),
+    ...(typeof resolvedSearchParams.incomeSourceSort !== "undefined"
+      ? { incomeSourceSort: resolvedSearchParams.incomeSourceSort }
+      : {}),
     ...(typeof resolvedSearchParams.fundGoalPage !== "undefined"
       ? { fundGoalPage: resolvedSearchParams.fundGoalPage }
       : {}),
