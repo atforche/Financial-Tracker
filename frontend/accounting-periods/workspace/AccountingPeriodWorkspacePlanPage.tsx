@@ -61,6 +61,9 @@ const AccountingPeriodWorkspacePlanPage = async function ({
     ...(typeof resolvedSearchParams.fundGoalPage !== "undefined"
       ? { fundGoalPage: resolvedSearchParams.fundGoalPage }
       : {}),
+    ...(typeof resolvedSearchParams.fundGoalSort !== "undefined"
+      ? { fundGoalSort: resolvedSearchParams.fundGoalSort }
+      : {}),
     ...(typeof resolvedSearchParams.accountGoalPage !== "undefined"
       ? { accountGoalPage: resolvedSearchParams.accountGoalPage }
       : {}),
@@ -84,6 +87,7 @@ const AccountingPeriodWorkspacePlanPage = async function ({
         currentUrl={currentUrl}
         pageSize={resolvedSearchParams.pageSize}
         fundGoalPage={resolvedSearchParams.fundGoalPage}
+        fundGoalSort={resolvedSearchParams.fundGoalSort}
         accountGoalPage={resolvedSearchParams.accountGoalPage}
       />
     </PageLayout>

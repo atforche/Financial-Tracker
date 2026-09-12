@@ -5693,7 +5693,13 @@ export enum FundGoalEndingBalanceStatusModel {
 }
 export enum FundGoalSortModel {
     Fund = "Fund",
-    FundDescending = "FundDescending"
+    FundDescending = "FundDescending",
+    PlannedMonthlyContribution = "PlannedMonthlyContribution",
+    PlannedMonthlyContributionDescending = "PlannedMonthlyContributionDescending",
+    MinimumEndingBalance = "MinimumEndingBalance",
+    MinimumEndingBalanceDescending = "MinimumEndingBalanceDescending",
+    MaximumEndingBalance = "MaximumEndingBalance",
+    MaximumEndingBalanceDescending = "MaximumEndingBalanceDescending"
 }
 export enum FundWithBalanceRangeSortModel {
     Name = "Name",

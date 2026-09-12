@@ -16,6 +16,7 @@ import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/works
 import AccountingPeriodWorkspaceActions from "@/accounting-periods/workspace/AccountingPeriodWorkspaceActions";
 import AccountingPeriodWorkspaceFilter from "@/accounting-periods/workspace/AccountingPeriodWorkspaceFilter";
 import AccountingPeriodWorkspaceListFrame from "@/accounting-periods/workspace/AccountingPeriodWorkspaceListFrame";
+import type { FundGoalSort } from "@/fund-goals/types";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import createApiClient from "@/framework/data/createApiClient";
@@ -33,6 +34,7 @@ interface AccountingPeriodWorkspaceSearchParams {
   view?: AccountingPeriodDetailView;
   incomeSourcePage?: number | string | null;
   fundGoalPage?: number | string | null;
+  fundGoalSort?: FundGoalSort;
   accountGoalPage?: number | string | null;
   action?: AccountingPeriodWorkspaceAction;
 }
