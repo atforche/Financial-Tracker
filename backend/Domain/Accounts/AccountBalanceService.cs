@@ -103,18 +103,27 @@ public class AccountBalanceService(
         int sequence = GetNextSequence(accountId, date);
         Account account = accountRepository.GetById(accountId);
         AccountBalance existingBalance = GetExistingAccountBalanceAsOf(account, date, sequence);
+        decimal change = transaction.ApplyToAccountBalance(new AccountBalance(account, 0), date).PostedBalance;
+        decimal previousPeriodChange = accountBalanceHistoryRepository.GetLatestPeriodHistoryEarlierThan(
+            accountId, transaction.AccountingPeriodId, date, sequence)?.AccountingPeriodBalanceChange ?? 0;
         var newBalanceHistory = new AccountBalanceHistory(
             account,
             transaction.Id,
+            transaction.AccountingPeriodId,
             date,
             sequence,
-            transaction.ApplyToAccountBalance(existingBalance, date));
+            transaction.ApplyToAccountBalance(existingBalance, date),
+            previousPeriodChange + change);
 
         foreach (AccountBalanceHistory history in accountBalanceHistoryRepository
             .GetAllHistoriesLaterThan(newBalanceHistory.Account.Id, newBalanceHistory.Date, newBalanceHistory.Sequence))
         {
             AccountBalance updatedBalance = transaction.ApplyToAccountBalance(history.ToAccountBalance(), date);
             history.Update(updatedBalance);
+            if (history.AccountingPeriodId == transaction.AccountingPeriodId)
+            {
+                history.AdjustAccountingPeriodBalanceChange(change);
+            }
         }
         accountBalanceHistoryRepository.Add(newBalanceHistory);
     }
@@ -124,11 +133,16 @@ public class AccountBalanceService(
     /// </summary>
     private void DeleteExistingBalanceHistory(Transaction transaction, AccountBalanceHistory deletedBalanceHistory)
     {
+        decimal change = transaction.ApplyToAccountBalance(new AccountBalance(deletedBalanceHistory.Account, 0), deletedBalanceHistory.Date).PostedBalance;
         foreach (AccountBalanceHistory history in accountBalanceHistoryRepository
             .GetAllHistoriesLaterThan(deletedBalanceHistory.Account.Id, deletedBalanceHistory.Date, deletedBalanceHistory.Sequence))
         {
             AccountBalance updatedBalance = transaction.ApplyToAccountBalance(history.ToAccountBalance(), deletedBalanceHistory.Date, reverse: true);
             history.Update(updatedBalance);
+            if (history.AccountingPeriodId == deletedBalanceHistory.AccountingPeriodId)
+            {
+                history.AdjustAccountingPeriodBalanceChange(-change);
+            }
         }
     }
 

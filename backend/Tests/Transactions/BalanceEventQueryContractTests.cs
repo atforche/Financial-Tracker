@@ -16,6 +16,29 @@ namespace Tests.Transactions;
 public sealed class BalanceEventQueryContractTests
 {
     /// <summary>
+    /// Keeps pending events from other periods out of an Account Goal's event list.
+    /// </summary>
+    [Fact]
+    public async Task AccountBalanceEventsCanBeRestrictedToAnAccountingPeriod()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        FundHandle julyFund = await test.Funds.Create("July Fund").In(july).CreateAsync();
+        FundHandle augustFund = await test.Funds.Create("August Fund").In(august).CreateAsync();
+        TransactionHandle julyTransaction = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 8, 15)).For(10m).From(cash).To("July", julyFund).CreateAsync();
+        TransactionHandle augustTransaction = await test.Transactions.Spending().In(august).On(new DateOnly(2026, 7, 15)).For(20m).From(cash).To("August", augustFund).CreateAsync();
+
+        CollectionModel<AccountBalanceEventModel> events = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
+            $"/accounts/{cash.Id}/balance-events?range.start=2026-07-01&range.end=2026-07-31&accountingPeriodId={july.Id}");
+
+        Assert.Equal(1, events.TotalCount);
+        Assert.Equal(julyTransaction.Id, Assert.Single(events.Items).TransactionId);
+        Assert.DoesNotContain(events.Items, item => item.TransactionId == augustTransaction.Id);
+    }
+
+    /// <summary>
     /// Applies descending ordering and limits consistently across each balance-event surface.
     /// </summary>
     [Fact]

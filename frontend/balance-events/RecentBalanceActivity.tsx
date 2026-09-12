@@ -36,6 +36,7 @@ interface RecentBalanceActivityProps<T extends RecentBalanceActivityEvent> {
   readonly getPreviousBalance: (event: T) => number;
   readonly getNewBalance: (event: T) => number;
   readonly dailyBalances?: readonly BalanceTrendDateSummary[];
+  readonly periodOpeningBalance?: number;
   readonly title?: string;
   readonly balanceLabel?: string;
   readonly trendsHref?: Route;
@@ -49,6 +50,7 @@ const RecentBalanceActivity = function <T extends RecentBalanceActivityEvent>({
   getPreviousBalance,
   getNewBalance,
   dailyBalances,
+  periodOpeningBalance,
   title = "Recent Activity",
   balanceLabel = "Posted Balance",
   trendsHref,
@@ -71,10 +73,11 @@ const RecentBalanceActivity = function <T extends RecentBalanceActivityEvent>({
   }));
   const dailyChanges = (dailyBalances ?? []).flatMap(
     (summary, index, balances) => {
-      const previous = balances[index - 1];
+      const previous =
+        balances[index - 1]?.totalBalance ?? periodOpeningBalance;
       return previous === undefined
         ? []
-        : [{ amount: summary.totalBalance - previous.totalBalance }];
+        : [{ amount: summary.totalBalance - previous }];
     },
   );
   const changes =
@@ -88,11 +91,12 @@ const RecentBalanceActivity = function <T extends RecentBalanceActivityEvent>({
     0,
   );
   const firstBalance =
-    typeof dailyBalances === "undefined"
+    periodOpeningBalance ??
+    (typeof dailyBalances === "undefined"
       ? firstEvent === undefined
         ? undefined
         : getPreviousBalance(firstEvent)
-      : dailyBalances[0]?.totalBalance;
+      : dailyBalances[0]?.totalBalance);
   const lastBalance =
     typeof dailyBalances === "undefined"
       ? lastEvent === undefined
@@ -145,7 +149,7 @@ const RecentBalanceActivity = function <T extends RecentBalanceActivityEvent>({
             </Button>
           )
         }
-        emptyMessage="No posted balance activity is available in this recent window."
+        emptyMessage="No posted balance movement is available in this range."
         chartPoints={chartPoints}
         xAxisLabel="Date"
         yAxisLabel={balanceLabel}

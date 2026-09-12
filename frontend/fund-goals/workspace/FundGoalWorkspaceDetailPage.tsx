@@ -7,14 +7,12 @@ import {
   isNotNullOrUndefined,
   isNullOrUndefined,
 } from "@/framework/nullHelpers";
-import { FundGoalBalanceEventSort } from "@/fund-goals/types";
 import FundGoalWorkspacePageHeader from "@/fund-goals/workspace/FundGoalWorkspacePageHeader";
 import type { FundGoalWorkspaceSearchParams } from "@/fund-goals/workspace/FundGoalWorkspace";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ViewFundGoalForm from "@/fund-goals/workspace/ViewFundGoalForm";
 import createApiClient from "@/framework/data/createApiClient";
-import dayjs from "dayjs";
 import { redirect } from "next/navigation";
 import routes from "@/fund-goals/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
@@ -78,20 +76,11 @@ const FundGoalWorkspaceDetailPage = async function ({
   if (isNullOrUndefined(fundGoal.accountingPeriod)) {
     redirect(workspaceUrl);
   }
-  const recentActivityStartDate = dayjs()
-    .year(fundGoal.accountingPeriod.year)
-    .month(fundGoal.accountingPeriod.month - 1)
-    .startOf("month")
-    .format("YYYY-MM-DD");
-  const recentActivityEndDate = dayjs(recentActivityStartDate)
-    .endOf("month")
-    .format("YYYY-MM-DD");
   const [
     accountingPeriodResponse,
     progressResponse,
     eventsResponse,
-    recentActivityResponse,
-    recentActivityBalancesResponse,
+    balanceDatesResponse,
   ] = await Promise.all([
     apiClient.GET("/accounting-periods/{accountingPeriodId}", {
       params: { path: { accountingPeriodId: periodId } },
@@ -119,30 +108,12 @@ const FundGoalWorkspaceDetailPage = async function ({
         },
       },
     }),
-    apiClient.GET("/fund-goals/balance-events/accounting-period-range", {
-      params: {
-        query: {
-          "Range.Start": periodId,
-          "Range.End": periodId,
-          "Filter.FundIds": [fundId],
-          "Filter.AccountingPeriodIds": [periodId],
-          Sort: FundGoalBalanceEventSort.Date,
-          Limit: 500,
-          Offset: 0,
-        },
+    apiClient.GET(
+      "/funds/{fundId}/accounting-periods/{accountingPeriodId}/balance-dates",
+      {
+        params: { path: { fundId, accountingPeriodId: periodId } },
       },
-    }),
-    apiClient.GET("/funds/date-range", {
-      params: {
-        query: {
-          "Range.Start": recentActivityStartDate,
-          "Range.End": recentActivityEndDate,
-          "Filter.Names": [fundGoal.fund.name],
-          Limit: 1,
-          Offset: 0,
-        },
-      },
-    }),
+    ),
   ]);
   const progress = unwrapApiResponse(
     progressResponse,
@@ -156,13 +127,9 @@ const FundGoalWorkspaceDetailPage = async function ({
     eventsResponse,
     "Failed to fetch Fund Goal balance events",
   );
-  const recentActivity = unwrapApiResponse(
-    recentActivityResponse,
-    "Failed to fetch recent Fund Goal activity",
-  );
-  const recentActivityBalances = unwrapApiResponse(
-    recentActivityBalancesResponse,
-    "Failed to fetch recent Fund Goal balance history",
+  const balanceDates = unwrapApiResponse(
+    balanceDatesResponse,
+    "Failed to fetch Fund Goal daily balances",
   );
   const currentUrl = routes.workspaceDetail(fundId, {
     accountingPeriodId: periodId,
@@ -182,8 +149,8 @@ const FundGoalWorkspaceDetailPage = async function ({
         redirectUrl={currentUrl}
         recentBalanceEvents={events.items}
         recentBalanceEventCount={events.totalCount}
-        recentActivityEvents={recentActivity.items}
-        recentActivityBalances={recentActivityBalances.dates}
+        recentActivityBalances={balanceDates.dates}
+        periodOpeningBalance={balanceDates.openingBalance}
         trendsHref={routes.trends({
           fundName: [fundGoal.fund.name],
           startAccountingPeriodId: periodId,

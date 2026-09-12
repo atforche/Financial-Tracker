@@ -33,7 +33,7 @@ public sealed class AccountBalanceEventQueryService(
         }
         IReadOnlyCollection<AccountId> accountIds = requestedTransactions
             .SelectMany(transaction => transaction.GetAllAffectedAccountIds()).Distinct().ToList();
-        IReadOnlyCollection<Transaction> pendingTransactions = await transactionQueryRepository.GetPendingForAccountsAsync(accountIds, cancellationToken);
+        IReadOnlyCollection<Transaction> pendingTransactions = await transactionQueryRepository.GetPendingForAccountsAsync(accountIds, cancellationToken: cancellationToken);
         IReadOnlyCollection<Transaction> transactions = requestedTransactions.Concat(pendingTransactions)
             .DistinctBy(transaction => transaction.Id).ToList();
         IReadOnlyCollection<AccountingPeriodId> periodIds = transactions.Select(transaction => transaction.AccountingPeriodId).Distinct().ToList();
@@ -66,9 +66,11 @@ public sealed class AccountBalanceEventQueryService(
             accountId,
             query.Start,
             query.End,
+            query.AccountingPeriodId is Guid periodId ? new AccountingPeriodId(periodId) : null,
             cancellationToken);
         IReadOnlyCollection<Transaction> pendingTransactions = await transactionQueryRepository.GetPendingForAccountsAsync(
             [accountId],
+            query.AccountingPeriodId is Guid pendingPeriodId ? new AccountingPeriodId(pendingPeriodId) : null,
             cancellationToken);
         IReadOnlyCollection<Transaction> transactions = recentTransactions.Concat(pendingTransactions).DistinctBy(transaction => transaction.Id).ToList();
         IReadOnlyCollection<AccountingPeriodId> periodIds = transactions.Select(transaction => transaction.AccountingPeriodId).Distinct().ToList();

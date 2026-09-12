@@ -5,6 +5,7 @@ interface AccountGoalTrendsSearchParams {
   accountName?: string | readonly string[];
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;
+  returnUrl?: string;
 }
 
 /**
@@ -14,6 +15,7 @@ const accountGoalTrendsParamNames = {
   accountName: "accountName",
   startAccountingPeriodId: "startAccountingPeriodId",
   endAccountingPeriodId: "endAccountingPeriodId",
+  returnUrl: "returnUrl",
 } as const satisfies Record<keyof AccountGoalTrendsSearchParams, string>;
 
 export { type AccountGoalTrendsSearchParams, accountGoalTrendsParamNames };

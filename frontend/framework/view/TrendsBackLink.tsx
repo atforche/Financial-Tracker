@@ -5,7 +5,7 @@ import Link from "next/link";
 
 interface TrendsBackLinkProps {
   readonly returnUrl?: string | undefined;
-  readonly workspace: "funds" | "accounts" | "fund-goals";
+  readonly workspace: "funds" | "accounts" | "fund-goals" | "account-goals";
   readonly label: string;
 }
 

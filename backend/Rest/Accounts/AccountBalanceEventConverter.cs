@@ -21,8 +21,9 @@ public sealed class AccountBalanceEventConverter
         Guid accountId,
         AccountBalanceEventsQueryParameterModel model) => new(
             accountId,
-            model.Range.Start,
-            model.Range.End,
+            model.AccountingPeriodId == null ? model.Range.Start : null,
+            model.AccountingPeriodId == null ? model.Range.End : null,
+            model.AccountingPeriodId,
             ToDomain(model.Sort),
             model.Offset ?? 0,
             model.Limit);

@@ -16,6 +16,7 @@ public interface ITransactionBalanceEventQueryRepository
         AccountId accountId,
         DateOnly? startDate,
         DateOnly? endDate,
+        AccountingPeriodId? accountingPeriodId,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -38,6 +39,7 @@ public interface ITransactionBalanceEventQueryRepository
     /// </summary>
     Task<IReadOnlyCollection<Transaction>> GetPendingForAccountsAsync(
         IReadOnlyCollection<AccountId> accountIds,
+        AccountingPeriodId? accountingPeriodId = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

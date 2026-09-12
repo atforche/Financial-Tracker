@@ -102,16 +102,25 @@ public sealed class FundBalanceService(
     {
         int sequence = GetNextSequence(fund.Id, date);
         FundBalance existingBalance = GetExistingFundBalanceAsOf(fund, date, sequence);
+        decimal change = transaction.ApplyPostedEffectsToFundBalance(new FundBalance(fund, 0), date).PostedBalance;
+        decimal previousPeriodChange = fundBalanceHistoryRepository.GetLatestPeriodHistoryEarlierThan(
+            fund.Id, transaction.AccountingPeriodId, date, sequence)?.AccountingPeriodBalanceChange ?? 0;
         var history = new FundBalanceHistory(
             fund,
             transaction.Id,
+            transaction.AccountingPeriodId,
             date,
             sequence,
-            transaction.ApplyPostedEffectsToFundBalance(existingBalance, date));
+            transaction.ApplyPostedEffectsToFundBalance(existingBalance, date),
+            previousPeriodChange + change);
         foreach (FundBalanceHistory later in fundBalanceHistoryRepository.GetAllHistoriesLaterThan(fund.Id, date, sequence))
         {
             FundBalance updated = transaction.ApplyPostedEffectsToFundBalance(later.ToFundBalance(), date);
             later.Update(updated);
+            if (later.AccountingPeriodId == transaction.AccountingPeriodId)
+            {
+                later.AdjustAccountingPeriodBalanceChange(change);
+            }
         }
         fundBalanceHistoryRepository.Add(history);
     }
@@ -121,10 +130,15 @@ public sealed class FundBalanceService(
     /// </summary>
     private void DeleteExistingBalanceHistory(Transaction transaction, FundBalanceHistory history)
     {
+        decimal change = transaction.ApplyPostedEffectsToFundBalance(new FundBalance(history.Fund, 0), history.Date).PostedBalance;
         foreach (FundBalanceHistory later in fundBalanceHistoryRepository.GetAllHistoriesLaterThan(history.Fund.Id, history.Date, history.Sequence))
         {
             FundBalance updated = transaction.ApplyPostedEffectsToFundBalance(later.ToFundBalance(), history.Date, reverse: true);
             later.Update(updated);
+            if (later.AccountingPeriodId == history.AccountingPeriodId)
+            {
+                later.AdjustAccountingPeriodBalanceChange(-change);
+            }
         }
     }
 

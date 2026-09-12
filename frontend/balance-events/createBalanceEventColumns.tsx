@@ -24,10 +24,15 @@ interface CreateBalanceEventColumnsOptions<T extends BalanceEventListItem> {
   readonly getPreviousBalance?: (event: T) => number;
   readonly getNewBalance?: (event: T) => number;
   readonly getCounterpartyContent?: (event: T) => string;
-  readonly counterpartySortProps?: {
-    readonly sortType: ColumnSortType | null;
-    readonly onSort: (sortType: ColumnSortType | null) => void;
-  };
+  readonly dateSortProps?: BalanceEventColumnSortProps;
+  readonly typeSortProps?: BalanceEventColumnSortProps;
+  readonly amountSortProps?: BalanceEventColumnSortProps;
+  readonly counterpartySortProps?: BalanceEventColumnSortProps;
+}
+
+interface BalanceEventColumnSortProps {
+  readonly sortType: ColumnSortType | null;
+  readonly onSort: (sortType: ColumnSortType | null) => void;
 }
 
 /**
@@ -37,12 +42,16 @@ const createBalanceEventColumns = function <T extends BalanceEventListItem>({
   getPreviousBalance,
   getNewBalance,
   getCounterpartyContent,
+  dateSortProps,
+  typeSortProps,
+  amountSortProps,
   counterpartySortProps,
 }: CreateBalanceEventColumnsOptions<T>): readonly ColumnDefinition<T>[] {
   const columns: ColumnDefinition<T>[] = [
     {
       name: "date",
       headerContent: "Event Date",
+      ...dateSortProps,
       getBodyContent: (event) =>
         event.isPosted && typeof event.eventDate === "string"
           ? formatLongDate(new Date(`${event.eventDate}T00:00:00`))
@@ -59,6 +68,7 @@ const createBalanceEventColumns = function <T extends BalanceEventListItem>({
     {
       name: "type",
       headerContent: "Type",
+      ...typeSortProps,
       getBodyContent: (event) => (
         <Box
           component="span"
@@ -99,6 +109,7 @@ const createBalanceEventColumns = function <T extends BalanceEventListItem>({
   columns.push({
     name: "amount",
     headerContent: "Amount",
+    ...amountSortProps,
     getBodyContent: (event) => formatCurrency(event.amount),
     alignment: "right",
     minWidth: 120,

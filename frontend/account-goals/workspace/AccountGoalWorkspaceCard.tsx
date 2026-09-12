@@ -1,12 +1,9 @@
 "use client";
 
 import {
-  AccountGoalEndingBalanceStatus,
-  type AccountGoalWithProgress,
-} from "@/account-goals/types";
-import {
   Box,
   Collapse,
+  Divider,
   IconButton,
   Stack,
   Tooltip,
@@ -14,7 +11,8 @@ import {
 } from "@mui/material";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
 import { type JSX, useState } from "react";
-import AccountGoalProgressBars from "@/account-goals/workspace/AccountGoalProgressBars";
+import AccountGoalEndingBalanceRange from "@/account-goals/workspace/AccountGoalEndingBalanceRange";
+import type { AccountGoalWithProgress } from "@/account-goals/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
@@ -74,27 +72,20 @@ const AccountGoalWorkspaceCard = function ({
         </Typography>
         <Stack direction="row" justifyContent="space-between" gap={2}>
           <Typography variant="body2" fontWeight={700}>
-            Current Ending Balance
+            Ending Balance
           </Typography>
-          <Typography
-            variant="body2"
-            fontWeight={700}
-            color={
-              accountGoal.progress.endingBalance.status ===
-              AccountGoalEndingBalanceStatus.WithinRange
-                ? "success.main"
-                : "error.main"
-            }
-          >
+          <Typography variant="body2" fontWeight={700}>
             {formatCurrency(accountGoal.progress.endingBalance.currentBalance)}
           </Typography>
         </Stack>
         <Box>
           <Collapse in={expanded} unmountOnExit>
-            <AccountGoalProgressBars
-              accountGoal={accountGoal}
-              progress={accountGoal.progress}
-            />
+            <Stack spacing={2}>
+              <Divider />
+              <AccountGoalEndingBalanceRange
+                endingBalance={accountGoal.progress.endingBalance}
+              />
+            </Stack>
           </Collapse>
           <Stack
             direction="row"

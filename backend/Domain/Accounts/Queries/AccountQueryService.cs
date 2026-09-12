@@ -9,8 +9,36 @@ namespace Domain.Accounts.Queries;
 public sealed class AccountQueryService(
     IAccountQueryRepository accountQueryRepository,
     AccountingPeriodRangeService accountingPeriodRangeService,
-    PendingAccountBalanceService pendingAccountBalanceService)
+    PendingAccountBalanceService pendingAccountBalanceService,
+    IAccountBalanceEventQueryRepository balanceEventQueryRepository,
+    IAccountingPeriodQueryRepository accountingPeriodQueryRepository,
+    IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository)
 {
+    /// <summary>
+    /// Returns daily posted Account balances using only movements assigned to the selected Accounting Period.
+    /// </summary>
+    public async Task<PeriodBalanceDateRange?> GetPeriodBalanceDatesAsync(
+        Guid accountId, Guid accountingPeriodId, CancellationToken cancellationToken = default)
+    {
+        AccountId id = new(accountId);
+        AccountingPeriodId periodId = new(accountingPeriodId);
+        Account? account = await accountQueryRepository.GetByIdAsync(id, cancellationToken);
+        AccountingPeriod? period = await accountingPeriodQueryRepository.GetByIdAsync(periodId, cancellationToken);
+        if (account == null || period == null)
+        {
+            return null;
+        }
+        AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(periodId);
+        AccountingPeriodAccountBalanceHistory? accountBalance = balanceHistory.AccountBalances.SingleOrDefault(item => item.Account.Id == id);
+        if (accountBalance == null)
+        {
+            return null;
+        }
+        IReadOnlyCollection<AccountBalanceHistory> histories = await balanceEventQueryRepository.GetPeriodHistoriesAsync(id, periodId, cancellationToken);
+        return PeriodBalanceDateSeries.Build(period, accountBalance.OpeningBalance,
+            histories.Select(item => (item.Date, item.Sequence, item.AccountingPeriodBalanceChange)));
+    }
+
     /// <summary>
     /// Retrieves the Account with the specified ID, or null when it does not exist.
     /// </summary>

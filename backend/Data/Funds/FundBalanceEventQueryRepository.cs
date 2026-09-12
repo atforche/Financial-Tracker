@@ -1,3 +1,4 @@
+using Domain.AccountingPeriods;
 using Domain.Funds;
 using Domain.Funds.Queries;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,14 @@ namespace Data.Funds;
 /// </summary>
 public sealed class FundBalanceEventQueryRepository(DatabaseContext databaseContext) : IFundBalanceEventQueryRepository
 {
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<FundBalanceHistory>> GetPeriodHistoriesAsync(
+        FundId fundId, AccountingPeriodId accountingPeriodId, CancellationToken cancellationToken = default) =>
+        await databaseContext.FundBalanceHistories.AsNoTracking()
+            .Where(history => history.Fund.Id == fundId && history.AccountingPeriodId == accountingPeriodId)
+            .OrderBy(history => history.Date).ThenBy(history => history.Sequence)
+            .ToListAsync(cancellationToken);
+
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<Fund>> GetFundsAsync(
         IReadOnlyCollection<FundId> ids,

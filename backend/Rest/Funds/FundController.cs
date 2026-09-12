@@ -5,6 +5,7 @@ using Domain.Funds.Queries;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
+using Models.BalanceEvents;
 using Models.Funds;
 using Rest.AccountingPeriods;
 
@@ -25,6 +26,27 @@ public sealed class FundController(
     FundBalanceEventQueryService fundBalanceEventQueryService,
     FundBalanceEventConverter fundBalanceEventConverter) : ControllerBase
 {
+    /// <summary>
+    /// Retrieves daily posted Fund balances scoped to one Accounting Period.
+    /// </summary>
+    [HttpGet("{fundId}/accounting-periods/{accountingPeriodId}/balance-dates")]
+    [ProducesResponseType(typeof(PeriodBalanceDateRangeModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PeriodBalanceDateRangeModel>> GetPeriodBalanceDatesAsync(
+        Guid fundId, Guid accountingPeriodId, CancellationToken cancellationToken)
+    {
+        PeriodBalanceDateRange? range = await fundQueryService.GetPeriodBalanceDatesAsync(fundId, accountingPeriodId, cancellationToken);
+        return range == null ? NotFound() : Ok(new PeriodBalanceDateRangeModel
+        {
+            OpeningBalance = range.OpeningBalance,
+            Dates = range.Dates.Select(item => new PeriodBalanceDateModel
+            {
+                Date = item.Date,
+                TotalBalance = item.Balance,
+            }).ToList(),
+        });
+    }
+
     /// <summary>
     /// Retrieves Fund Balance Events in a date range.
     /// </summary>

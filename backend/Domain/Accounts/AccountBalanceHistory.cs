@@ -1,3 +1,4 @@
+using Domain.AccountingPeriods;
 using Domain.Transactions;
 
 namespace Domain.Accounts;
@@ -16,6 +17,16 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     /// Transaction ID for this Account Balance History
     /// </summary>
     public TransactionId TransactionId { get; init; }
+
+    /// <summary>
+    /// Accounting Period that owns this posted movement.
+    /// </summary>
+    public AccountingPeriodId AccountingPeriodId { get; init; }
+
+    /// <summary>
+    /// Cumulative posted change within this Accounting Period, excluding its opening balance.
+    /// </summary>
+    public decimal AccountingPeriodBalanceChange { get; private set; }
 
     /// <summary>
     /// Date for this Account Balance History
@@ -45,6 +56,11 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     }
 
     /// <summary>
+    /// Adjusts later within-period balances after an earlier movement changes.
+    /// </summary>
+    internal void AdjustAccountingPeriodBalanceChange(decimal change) => AccountingPeriodBalanceChange += change;
+
+    /// <summary>
     /// Converts this Account Balance History to an Account Balance
     /// </summary>
     public AccountBalance ToAccountBalance() => new(Account, PostedBalance);
@@ -54,13 +70,17 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     /// </summary>
     internal AccountBalanceHistory(Account account,
         TransactionId transactionId,
+        AccountingPeriodId accountingPeriodId,
         DateOnly date,
         int sequence,
-        AccountBalance accountBalance)
+        AccountBalance accountBalance,
+        decimal accountingPeriodBalanceChange)
         : base(new AccountBalanceHistoryId(Guid.NewGuid()))
     {
         Account = account;
         TransactionId = transactionId;
+        AccountingPeriodId = accountingPeriodId;
+        AccountingPeriodBalanceChange = accountingPeriodBalanceChange;
         Date = date;
         Sequence = sequence;
         Update(accountBalance);
@@ -73,6 +93,7 @@ public class AccountBalanceHistory : Entity<AccountBalanceHistoryId>
     {
         Account = null!;
         TransactionId = null!;
+        AccountingPeriodId = null!;
     }
 }
 
