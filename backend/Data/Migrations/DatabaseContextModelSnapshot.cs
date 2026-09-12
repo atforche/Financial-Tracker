@@ -135,6 +135,12 @@ namespace Data.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("AccountingPeriodBalanceChange")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AccountingPeriodId")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateOnly>("Date")
                         .HasColumnType("TEXT");
 
@@ -151,6 +157,8 @@ namespace Data.Migrations
 
                     b.HasIndex("AccountId", "Date", "Sequence")
                         .IsUnique();
+
+                    b.HasIndex("AccountId", "AccountingPeriodId", "Date", "Sequence");
 
                     b.ToTable("AccountBalanceHistories");
                 });
@@ -190,11 +198,11 @@ namespace Data.Migrations
                     b.Property<Guid?>("AccountingPeriodId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("FundId")
-                        .HasColumnType("TEXT");
-
                     b.Property<bool>("AllowExpectedContributionAboveMaximum")
                         .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("FundId")
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal?>("MaximumEndingBalance")
                         .HasColumnType("TEXT");
@@ -321,6 +329,12 @@ namespace Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("AccountingPeriodBalanceChange")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AccountingPeriodId")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateOnly>("Date")
                         .HasColumnType("TEXT");
 
@@ -340,6 +354,8 @@ namespace Data.Migrations
 
                     b.HasIndex("FundId", "Date", "Sequence")
                         .IsUnique();
+
+                    b.HasIndex("FundId", "AccountingPeriodId", "Date", "Sequence");
 
                     b.ToTable("FundBalanceHistories");
                 });

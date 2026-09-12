@@ -4,15 +4,12 @@ import { Button, Stack, Typography } from "@mui/material";
 import { type JSX, useState } from "react";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { ExpectedIncomeSource } from "@/accounting-periods/types";
 import ExpectedIncomeSourceDeleteDialog from "@/accounting-periods/workspace/ExpectedIncomeSourceDeleteDialog";
 import ExpectedIncomeSourcesEditor from "@/accounting-periods/workspace/ExpectedIncomeSourcesEditor";
-import Frame from "@/framework/view/Frame";
+import ExpectedIncomeTotalsFrame from "@/accounting-periods/workspace/ExpectedIncomeTotalsFrame";
 import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
-import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import StringEntryField from "@/framework/forms/StringEntryField";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
@@ -21,6 +18,7 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 interface ExpectedIncomeSourceDetailsDialogProps {
   readonly source: ExpectedIncomeSource;
   readonly accountingPeriodId: string;
+  readonly accountingPeriodName: string;
   readonly year: number;
   readonly month: number;
   readonly canManage: boolean;
@@ -34,6 +32,7 @@ interface ExpectedIncomeSourceDetailsDialogProps {
 const ExpectedIncomeSourceDetailsDialog = function ({
   source,
   accountingPeriodId,
+  accountingPeriodName,
   year,
   month,
   canManage,
@@ -55,15 +54,17 @@ const ExpectedIncomeSourceDetailsDialog = function ({
             Back to Workspace
           </Button>
         </Link>
-        <Typography variant="h4">Expected Income Source</Typography>
+        <Typography variant="h4">{source.name}</Typography>
       </Stack>
       <ConstrainedContent maxWidth={1200}>
         <Stack spacing={3}>
-          <ExpectedIncomeSourcesEditor
-            source={source}
-            year={year}
-            month={month}
-            readOnly
+          <ExpectedIncomeTotalsFrame
+            sourceName={source.name}
+            accountingPeriodName={accountingPeriodName}
+            netPerPayment={source.netAmount.total}
+            trackedPerPayment={source.netAmount.tracked}
+            untrackedPerPayment={source.netAmount.untracked}
+            paymentCount={source.expectedDates.length}
             headerContent={
               canEdit ? (
                 <Stack direction="row" spacing={1}>
@@ -89,38 +90,12 @@ const ExpectedIncomeSourceDetailsDialog = function ({
               ) : null
             }
           />
-          <Frame title="Calculated Totals" color="info">
-            <ResponsiveGrid columns={{ xs: 1, sm: 3 }} spacing={2}>
-              <CurrencyEntryField
-                label="Net per payment"
-                value={source.netAmount.total}
-              />
-              <CurrencyEntryField
-                label="Tracked per payment"
-                value={source.netAmount.tracked}
-              />
-              <CurrencyEntryField
-                label="Untracked per payment"
-                value={source.netAmount.untracked}
-              />
-              <CurrencyEntryField
-                label="Expected total"
-                value={source.expectedAmount.total}
-              />
-              <CurrencyEntryField
-                label="Expected tracked"
-                value={source.expectedAmount.tracked}
-              />
-              <CurrencyEntryField
-                label="Expected untracked"
-                value={source.expectedAmount.untracked}
-              />
-              <StringEntryField
-                label="Expected payments"
-                value={String(source.expectedDates.length)}
-              />
-            </ResponsiveGrid>
-          </Frame>
+          <ExpectedIncomeSourcesEditor
+            source={source}
+            year={year}
+            month={month}
+            readOnly
+          />
         </Stack>
       </ConstrainedContent>
       <ExpectedIncomeSourceDeleteDialog

@@ -1,3 +1,5 @@
+using Domain.AccountingPeriods;
+
 namespace Domain.Funds.Queries;
 
 /// <summary>
@@ -17,5 +19,13 @@ public interface IFundBalanceEventQueryRepository
     /// </summary>
     Task<IReadOnlyCollection<FundBalanceHistory>> GetFundHistoriesAsync(
         IReadOnlyCollection<FundId> ids,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves all posted period-scoped balance checkpoints.
+    /// </summary>
+    Task<IReadOnlyCollection<FundBalanceHistory>> GetPeriodHistoriesAsync(
+        FundId fundId,
+        AccountingPeriodId accountingPeriodId,
         CancellationToken cancellationToken = default);
 }

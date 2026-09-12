@@ -14,4 +14,24 @@ public enum AccountGoalSort
     /// Sorts Account Goals by Account name in descending order.
     /// </summary>
     AccountDescending,
+
+    /// <summary>
+    /// Sorts Account Goals by minimum ending balance in ascending order.
+    /// </summary>
+    MinimumEndingBalance,
+
+    /// <summary>
+    /// Sorts Account Goals by minimum ending balance in descending order.
+    /// </summary>
+    MinimumEndingBalanceDescending,
+
+    /// <summary>
+    /// Sorts Account Goals by maximum ending balance in ascending order.
+    /// </summary>
+    MaximumEndingBalance,
+
+    /// <summary>
+    /// Sorts Account Goals by maximum ending balance in descending order.
+    /// </summary>
+    MaximumEndingBalanceDescending,
 }

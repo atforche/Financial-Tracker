@@ -12,6 +12,7 @@ import FundGoalTrendsSummaryCards from "@/fund-goals/trends/FundGoalTrendsSummar
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import TrendsBackLink from "@/framework/view/TrendsBackLink";
 import createApiClient from "@/framework/data/createApiClient";
 import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
@@ -56,6 +57,7 @@ const FundGoalTrends = async function ({
   ) {
     redirect(
       routes.trends({
+        ...params,
         startAccountingPeriodId: defaultRange?.start ?? latest.id,
         endAccountingPeriodId: defaultRange?.end ?? latest.id,
       }),
@@ -147,6 +149,7 @@ const FundGoalTrends = async function ({
               ? {}
               : { fundNames }),
           returnUrl: routes.trends({
+            returnUrl: params.returnUrl,
             ...(fundNames.length === 0 ? {} : { fundName: fundNames }),
             ...(typeof start === "undefined"
               ? {}
@@ -159,6 +162,11 @@ const FundGoalTrends = async function ({
 
   return (
     <PageLayout>
+      <TrendsBackLink
+        returnUrl={params.returnUrl}
+        workspace="fund-goals"
+        label="Back to Fund Goal Details"
+      />
       <ConstrainedContent>
         <FundGoalTrendsFilter
           accountingPeriods={periods}

@@ -1,3 +1,4 @@
+using Domain.AccountingPeriods;
 using Domain.Transactions;
 
 namespace Domain.Funds;
@@ -7,6 +8,11 @@ namespace Domain.Funds;
 /// </summary>
 public interface IFundBalanceHistoryRepository
 {
+    /// <summary>
+    /// Gets the previous posted history in the same Accounting Period.
+    /// </summary>
+    FundBalanceHistory? GetLatestPeriodHistoryEarlierThan(FundId fundId, AccountingPeriodId accountingPeriodId, DateOnly historyDate, int sequence);
+
     /// <summary>
     /// Gets the latest Fund Balance History entry for the specified Fund ID
     /// </summary>

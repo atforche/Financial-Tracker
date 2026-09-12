@@ -19,7 +19,7 @@ const PageFilterFrame = function ({
   title,
   children,
   actions,
-  mobileSticky = true,
+  mobileSticky = false,
 }: PageFilterFrameProps): JSX.Element {
   return (
     <ContentSurface sticky mobileSticky={mobileSticky}>

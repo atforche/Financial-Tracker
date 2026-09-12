@@ -1,15 +1,22 @@
 "use client";
 
-import type { AccountGoalWithProgress } from "@/account-goals/types";
+import {
+  AccountGoalSort,
+  type AccountGoalWithProgress,
+} from "@/account-goals/types";
+import { useRouter, useSearchParams } from "next/navigation";
+import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
-import Chip from "@mui/material/Chip";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import accountGoalRoutes from "@/account-goals/routes";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
-import { useRouter } from "next/navigation";
+import parseEnumValue from "@/framework/data/parseEnumValue";
+import propertyName from "@/framework/data/propertyName";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 interface AccountGoalsFrameProps {
   readonly goals: readonly AccountGoalWithProgress[];
@@ -26,6 +33,26 @@ const AccountGoalsFrame = function ({
   returnUrl,
 }: AccountGoalsFrameProps): JSX.Element {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const sortParamName =
+    propertyName<AccountingPeriodWorkspaceSearchParams>("accountGoalSort");
+  const pageParamName =
+    propertyName<AccountingPeriodWorkspaceSearchParams>("accountGoalPage");
+  const updateParams = useSearchParamUpdater([pageParamName]);
+  const currentSort = parseEnumValue(
+    AccountGoalSort,
+    searchParams.get(sortParamName) ?? "",
+  );
+  const setSort = function (sort: AccountGoalSort | null): void {
+    updateParams((params) => {
+      if (sort === null) {
+        params.delete(sortParamName);
+      } else {
+        params.set(sortParamName, sort);
+      }
+    });
+  };
+  const getSortProps = createColumnSortProps(currentSort, setSort);
   const openAccountGoal = function (goal: AccountGoalWithProgress): void {
     router.push(
       accountGoalRoutes.workspaceDetail(goal.account.id, {
@@ -40,24 +67,33 @@ const AccountGoalsFrame = function ({
       headerContent: "Account",
       getBodyContent: (goal) => goal.account.name,
       mobilePrimary: true,
+      ...getSortProps(
+        AccountGoalSort.Account,
+        AccountGoalSort.AccountDescending,
+      ),
     },
     {
-      name: "endingBalance",
-      headerContent: "Ending Balance",
-      getBodyContent: (goal) =>
-        formatCurrency(goal.progress.endingBalance.currentBalance),
+      name: "minimumEndingBalance",
+      headerContent: "Minimum Balance",
+      getBodyContent: (goal) => formatCurrency(goal.minimumEndingBalance),
+      ...getSortProps(
+        AccountGoalSort.MinimumEndingBalance,
+        AccountGoalSort.MinimumEndingBalanceDescending,
+      ),
       alignment: "right",
     },
     {
-      name: "status",
-      headerContent: "Status",
-      getBodyContent: (goal) => (
-        <Chip
-          label={goal.progress.isSatisfied ? "Achieved" : "Needs attention"}
-          color={goal.progress.isSatisfied ? "success" : "warning"}
-          size="small"
-        />
+      name: "maximumEndingBalance",
+      headerContent: "Maximum Balance",
+      getBodyContent: (goal) =>
+        typeof goal.maximumEndingBalance === "number"
+          ? formatCurrency(goal.maximumEndingBalance)
+          : "Not set",
+      ...getSortProps(
+        AccountGoalSort.MaximumEndingBalance,
+        AccountGoalSort.MaximumEndingBalanceDescending,
       ),
+      alignment: "right",
     },
     {
       name: "actions",
@@ -86,7 +122,7 @@ const AccountGoalsFrame = function ({
       getId={(goal) => goal.id}
       data={goals}
       totalCount={totalCount}
-      pageParamName="accountGoalPage"
+      pageParamName={pageParamName}
       onRowClick={openAccountGoal}
       initialEmptyState={{
         title: "No Account Goals",

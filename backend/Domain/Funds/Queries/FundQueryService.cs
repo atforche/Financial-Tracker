@@ -9,8 +9,36 @@ namespace Domain.Funds.Queries;
 public sealed class FundQueryService(
     IFundQueryRepository fundQueryRepository,
     PendingFundBalanceService pendingFundBalanceService,
-    AccountingPeriodRangeService accountingPeriodRangeService)
+    AccountingPeriodRangeService accountingPeriodRangeService,
+    IFundBalanceEventQueryRepository balanceEventQueryRepository,
+    IAccountingPeriodQueryRepository accountingPeriodQueryRepository,
+    IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository)
 {
+    /// <summary>
+    /// Returns daily posted Fund balances using only movements assigned to the selected Accounting Period.
+    /// </summary>
+    public async Task<PeriodBalanceDateRange?> GetPeriodBalanceDatesAsync(
+        Guid fundId, Guid accountingPeriodId, CancellationToken cancellationToken = default)
+    {
+        FundId id = new(fundId);
+        AccountingPeriodId periodId = new(accountingPeriodId);
+        Fund? fund = await fundQueryRepository.GetByIdAsync(id, cancellationToken);
+        AccountingPeriod? period = await accountingPeriodQueryRepository.GetByIdAsync(periodId, cancellationToken);
+        if (fund == null || period == null)
+        {
+            return null;
+        }
+        AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(periodId);
+        AccountingPeriodFundBalanceHistory? fundBalance = balanceHistory.FundBalances.SingleOrDefault(item => item.Fund.Id == id);
+        if (fundBalance == null)
+        {
+            return null;
+        }
+        IReadOnlyCollection<FundBalanceHistory> histories = await balanceEventQueryRepository.GetPeriodHistoriesAsync(id, periodId, cancellationToken);
+        return PeriodBalanceDateSeries.Build(period, fundBalance.OpeningBalance,
+            histories.Select(item => (item.Date, item.Sequence, item.AccountingPeriodBalanceChange)));
+    }
+
     /// <summary>
     /// Retrieves the Fund with the specified ID, or null when it does not exist.
     /// </summary>

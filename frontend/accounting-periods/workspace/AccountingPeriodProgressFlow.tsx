@@ -90,7 +90,7 @@ const AccountingPeriodProgressFlow = function ({
           width: "100%",
           "@container (min-width: 760px)": {
             alignSelf: "center",
-            maxWidth: 580,
+            width: "66.666%",
           },
         }}
       >
@@ -162,7 +162,7 @@ const AccountingPeriodProgressFlow = function ({
           },
           "@container (min-width: 760px)": {
             borderLeftWidth: 0,
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gridTemplateColumns: "minmax(0, 2fr) minmax(0, 1fr)",
             ml: 0,
             mt: 0,
             pl: 0,

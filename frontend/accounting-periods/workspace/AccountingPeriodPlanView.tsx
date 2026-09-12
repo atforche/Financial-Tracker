@@ -1,18 +1,20 @@
+import type {
+  AccountGoalSort,
+  AccountGoalWithProgress,
+} from "@/account-goals/types";
+import type { FundGoalSort, FundGoalWithProgress } from "@/fund-goals/types";
 import {
   getPageOffset,
   getRowsPerPage,
   normalizePageValue,
 } from "@/framework/listframe/page";
-import type { AccountGoalWithProgress } from "@/account-goals/types";
 import AccountGoalsFrame from "@/accounting-periods/workspace/AccountGoalsFrame";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import ExpectedIncomeFundGoalContributionsCard from "@/accounting-periods/workspace/ExpectedIncomeFundGoalContributionsCard";
 import ExpectedIncomeSourcesFrame from "@/accounting-periods/workspace/ExpectedIncomeSourcesFrame";
-import type { FundGoalWithProgress } from "@/fund-goals/types";
 import FundGoalsFrame from "@/accounting-periods/workspace/FundGoalsFrame";
 import type { JSX } from "react";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import type { Route } from "next";
 import createApiClient from "@/framework/data/createApiClient";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -22,7 +24,9 @@ interface AccountingPeriodPlanViewProps {
   readonly currentUrl: Route;
   readonly pageSize?: number | string | null | undefined;
   readonly fundGoalPage?: number | string | null | undefined;
+  readonly fundGoalSort?: FundGoalSort | undefined;
   readonly accountGoalPage?: number | string | null | undefined;
+  readonly accountGoalSort?: AccountGoalSort | undefined;
 }
 
 /** Displays the inputs used to establish an accounting period's plan. */
@@ -31,7 +35,9 @@ const AccountingPeriodPlanView = async function ({
   currentUrl,
   pageSize,
   fundGoalPage,
+  fundGoalSort,
   accountGoalPage,
+  accountGoalSort,
 }: AccountingPeriodPlanViewProps): Promise<JSX.Element> {
   const apiClient = await createApiClient();
   const rowsPerPage = getRowsPerPage(pageSize);
@@ -46,6 +52,9 @@ const AccountingPeriodPlanView = async function ({
       params: {
         query: {
           "Filter.AccountingPeriodIds": [accountingPeriodId],
+          ...(typeof fundGoalSort === "undefined"
+            ? {}
+            : { Sort: fundGoalSort }),
           Limit: rowsPerPage,
           Offset: getPageOffset(normalizePageValue(fundGoalPage), rowsPerPage),
         },
@@ -58,6 +67,9 @@ const AccountingPeriodPlanView = async function ({
       params: {
         query: {
           "Filter.AccountingPeriodIds": [accountingPeriodId],
+          ...(typeof accountGoalSort === "undefined"
+            ? {}
+            : { Sort: accountGoalSort }),
           Limit: rowsPerPage,
           Offset: getPageOffset(
             normalizePageValue(accountGoalPage),
@@ -103,36 +115,31 @@ const AccountingPeriodPlanView = async function ({
 
   return (
     <>
-      <ResponsivePageSize desktopBreakpoint="lg" />
+      <ExpectedIncomeFundGoalContributionsCard
+        expectedIncome={accountingPeriod.expectedIncome}
+        plannedFundGoalContributions={accountingPeriod.plannedGoalContributions}
+        expectedFundGoalContributions={
+          accountingPeriod.expectedGoalContributions
+        }
+      />
+      <FundGoalsFrame
+        goals={goalsWithProgress}
+        totalCount={goals.totalCount}
+        accountingPeriodId={accountingPeriodId}
+        returnUrl={currentUrl}
+      />
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }} spacing={3}>
-        <ExpectedIncomeFundGoalContributionsCard
-          expectedIncome={accountingPeriod.expectedIncome}
-          plannedFundGoalContributions={
-            accountingPeriod.plannedGoalContributions
-          }
-          expectedFundGoalContributions={
-            accountingPeriod.expectedGoalContributions
-          }
-        />
-      </ResponsiveGrid>
-      <ResponsiveGrid columns={{ xs: 1, lg: 2 }} spacing={3}>
-        <FundGoalsFrame
-          goals={goalsWithProgress}
-          totalCount={goals.totalCount}
-          accountingPeriodId={accountingPeriodId}
-          returnUrl={currentUrl}
-        />
         <AccountGoalsFrame
           goals={accountGoalsWithProgress}
           totalCount={accountGoals.totalCount}
           accountingPeriodId={accountingPeriodId}
           returnUrl={currentUrl}
         />
+        <ExpectedIncomeSourcesFrame
+          accountingPeriod={accountingPeriod}
+          redirectUrl={currentUrl}
+        />
       </ResponsiveGrid>
-      <ExpectedIncomeSourcesFrame
-        accountingPeriod={accountingPeriod}
-        redirectUrl={currentUrl}
-      />
     </>
   );
 };

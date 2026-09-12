@@ -58,11 +58,20 @@ const AccountingPeriodWorkspacePlanPage = async function ({
     ...(typeof resolvedSearchParams.incomeSourcePage !== "undefined"
       ? { incomeSourcePage: resolvedSearchParams.incomeSourcePage }
       : {}),
+    ...(typeof resolvedSearchParams.incomeSourceSort !== "undefined"
+      ? { incomeSourceSort: resolvedSearchParams.incomeSourceSort }
+      : {}),
     ...(typeof resolvedSearchParams.fundGoalPage !== "undefined"
       ? { fundGoalPage: resolvedSearchParams.fundGoalPage }
       : {}),
+    ...(typeof resolvedSearchParams.fundGoalSort !== "undefined"
+      ? { fundGoalSort: resolvedSearchParams.fundGoalSort }
+      : {}),
     ...(typeof resolvedSearchParams.accountGoalPage !== "undefined"
       ? { accountGoalPage: resolvedSearchParams.accountGoalPage }
+      : {}),
+    ...(typeof resolvedSearchParams.accountGoalSort !== "undefined"
+      ? { accountGoalSort: resolvedSearchParams.accountGoalSort }
       : {}),
   });
 
@@ -84,7 +93,9 @@ const AccountingPeriodWorkspacePlanPage = async function ({
         currentUrl={currentUrl}
         pageSize={resolvedSearchParams.pageSize}
         fundGoalPage={resolvedSearchParams.fundGoalPage}
+        fundGoalSort={resolvedSearchParams.fundGoalSort}
         accountGoalPage={resolvedSearchParams.accountGoalPage}
+        accountGoalSort={resolvedSearchParams.accountGoalSort}
       />
     </PageLayout>
   );

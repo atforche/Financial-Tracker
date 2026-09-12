@@ -1,17 +1,14 @@
-import type {
-  AccountGoal,
-  AccountGoalProgress as AccountGoalProgressModel,
-} from "@/account-goals/types";
-import AccountGoalProgressBars from "@/account-goals/workspace/AccountGoalProgressBars";
+import type { AccountGoal } from "@/account-goals/types";
 import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import UpdateAccountGoalForm from "@/account-goals/workspace/UpdateAccountGoalForm";
+import { formatCurrency } from "@/framework/currencyHelpers";
+import { isNullOrUndefined } from "@/framework/nullHelpers";
 
 interface AccountGoalContextFrameProps {
   readonly accountGoal: AccountGoal;
-  readonly progress: AccountGoalProgressModel;
   readonly redirectUrl: string;
   readonly isReadOnly: boolean;
 }
@@ -21,13 +18,12 @@ interface AccountGoalContextFrameProps {
  */
 const AccountGoalContextFrame = function ({
   accountGoal,
-  progress,
   redirectUrl,
   isReadOnly,
 }: AccountGoalContextFrameProps): JSX.Element {
   return (
     <Frame
-      title="Account Goal"
+      title="Details"
       headerContent={
         isReadOnly ? null : (
           <UpdateAccountGoalForm
@@ -37,23 +33,30 @@ const AccountGoalContextFrame = function ({
         )
       }
     >
-      <ResponsiveGrid columns={{ xs: 1 }} spacing={2}>
-        <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
-          <StringEntryField
-            label="Accounting Period"
-            value={accountGoal.accountingPeriod?.name ?? "Onboarded"}
-            setValue={null}
-          />
-          <StringEntryField
-            label="Account"
-            value={accountGoal.account.name}
-            setValue={null}
-          />
-        </ResponsiveGrid>
-        <AccountGoalProgressBars
-          accountGoal={accountGoal}
-          progress={progress}
-          showUnconfigured
+      <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
+        <StringEntryField
+          label="Accounting Period"
+          value={accountGoal.accountingPeriod?.name ?? "Onboarded"}
+          setValue={null}
+        />
+        <StringEntryField
+          label="Account"
+          value={accountGoal.account.name}
+          setValue={null}
+        />
+        <StringEntryField
+          label="Minimum Ending Balance"
+          value={formatCurrency(accountGoal.minimumEndingBalance)}
+          setValue={null}
+        />
+        <StringEntryField
+          label="Maximum Ending Balance"
+          value={
+            isNullOrUndefined(accountGoal.maximumEndingBalance)
+              ? "Not configured"
+              : formatCurrency(accountGoal.maximumEndingBalance)
+          }
+          setValue={null}
         />
       </ResponsiveGrid>
     </Frame>

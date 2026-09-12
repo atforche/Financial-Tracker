@@ -40,8 +40,10 @@ const ComparisonBar = function ({
     <Stack spacing={0.75}>
       <Stack
         direction="row"
-        sx={{ width: "100%" }}
         justifyContent="space-between"
+        spacing={1}
+        flexWrap="wrap"
+        useFlexGap
       >
         <Typography variant="body2" fontWeight={600} color={amountColor} noWrap>
           {label}: {formatCurrency(amount)}
@@ -51,6 +53,7 @@ const ComparisonBar = function ({
             variant="body2"
             fontWeight={600}
             color={differenceColor ?? "text.secondary"}
+            textAlign="right"
             noWrap
           >
             {differenceCaption}

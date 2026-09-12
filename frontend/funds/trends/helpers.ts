@@ -23,6 +23,7 @@ interface FundTrendsSearchParams {
   endAccountingPeriodId?: string;
   startDate?: string;
   endDate?: string;
+  returnUrl?: string | undefined;
 }
 
 /**
@@ -122,6 +123,7 @@ const fundTrendsParamNames = {
   endAccountingPeriodId: "endAccountingPeriodId",
   startDate: "startDate",
   endDate: "endDate",
+  returnUrl: "returnUrl",
 } as const satisfies Record<keyof FundTrendsSearchParams, string>;
 
 /**

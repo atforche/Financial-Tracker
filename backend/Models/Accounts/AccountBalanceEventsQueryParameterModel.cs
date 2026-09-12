@@ -11,6 +11,11 @@ public sealed class AccountBalanceEventsQueryParameterModel : PaginationModel
     public required DateRangeModel Range { get; init; }
 
     /// <summary>
+    /// Restricts events to transactions assigned to this Accounting Period.
+    /// </summary>
+    public Guid? AccountingPeriodId { get; init; }
+
+    /// <summary>
     /// Sort order to apply to the results.
     /// </summary>
     public AccountBalanceEventSortModel? Sort { get; init; }

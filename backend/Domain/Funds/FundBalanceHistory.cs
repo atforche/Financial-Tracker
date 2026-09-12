@@ -1,3 +1,4 @@
+using Domain.AccountingPeriods;
 using Domain.Transactions;
 
 namespace Domain.Funds;
@@ -16,6 +17,16 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     /// Transaction ID for this Fund Balance History
     /// </summary>
     public TransactionId TransactionId { get; init; }
+
+    /// <summary>
+    /// Accounting Period that owns this posted movement.
+    /// </summary>
+    public AccountingPeriodId AccountingPeriodId { get; init; }
+
+    /// <summary>
+    /// Cumulative posted change within this Accounting Period, excluding its opening balance.
+    /// </summary>
+    public decimal AccountingPeriodBalanceChange { get; private set; }
 
     /// <summary>
     /// Date for this Fund Balance History
@@ -45,6 +56,11 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     }
 
     /// <summary>
+    /// Adjusts later within-period balances after an earlier movement changes.
+    /// </summary>
+    internal void AdjustAccountingPeriodBalanceChange(decimal change) => AccountingPeriodBalanceChange += change;
+
+    /// <summary>
     /// Converts this Fund Balance History to a Fund Balance
     /// </summary>
     public FundBalance ToFundBalance() => new(Fund, PostedBalance);
@@ -54,13 +70,17 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     /// </summary>
     internal FundBalanceHistory(Fund fund,
         TransactionId transactionId,
+        AccountingPeriodId accountingPeriodId,
         DateOnly date,
         int sequence,
-        FundBalance fundBalance)
+        FundBalance fundBalance,
+        decimal accountingPeriodBalanceChange)
         : base(new FundBalanceHistoryId(Guid.NewGuid()))
     {
         Fund = fund;
         TransactionId = transactionId;
+        AccountingPeriodId = accountingPeriodId;
+        AccountingPeriodBalanceChange = accountingPeriodBalanceChange;
         Date = date;
         Sequence = sequence;
         Update(fundBalance);
@@ -73,6 +93,7 @@ public class FundBalanceHistory : Entity<FundBalanceHistoryId>
     {
         Fund = null!;
         TransactionId = null!;
+        AccountingPeriodId = null!;
     }
 }
 

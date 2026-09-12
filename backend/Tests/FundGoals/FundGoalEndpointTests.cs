@@ -13,6 +13,50 @@ namespace Tests.FundGoals;
 public sealed class FundGoalEndpointTests
 {
     /// <summary>
+    /// Sorts Fund Goals by each configurable planning field.
+    /// </summary>
+    [Fact]
+    public async Task ListSortsByConfigurableFields()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle alpha = await test.Funds.Create("Alpha").In(july).CreateAsync();
+        FundHandle beta = await test.Funds.Create("Beta").In(july).CreateAsync();
+        FundHandle gamma = await test.Funds.Create("Gamma").In(july).CreateAsync();
+
+        _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{alpha.Goal.Id}", new UpdateFundGoalModel
+        {
+            PlannedMonthlyContribution = 10m,
+            MinimumEndingBalance = 300m,
+            MaximumEndingBalance = 500m,
+        });
+        _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{beta.Goal.Id}", new UpdateFundGoalModel
+        {
+            PlannedMonthlyContribution = 30m,
+            MinimumEndingBalance = 100m,
+            MaximumEndingBalance = 400m,
+            AllowExpectedContributionAboveMaximum = true,
+        });
+        _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{gamma.Goal.Id}", new UpdateFundGoalModel
+        {
+            PlannedMonthlyContribution = 20m,
+            MinimumEndingBalance = 200m,
+            MaximumEndingBalance = 600m,
+        });
+
+        async Task<IReadOnlyList<string>> GetNamesAsync(FundGoalSortModel sort)
+        {
+            CollectionModel<FundGoalModel> goals = await test.Api.GetAsync<CollectionModel<FundGoalModel>>(
+                $"/fund-goals?filter.accountingPeriodIds={july.Id}&filter.fundIds={alpha.Id}&filter.fundIds={beta.Id}&filter.fundIds={gamma.Id}&sort={sort}");
+            return goals.Items.Select(goal => goal.Fund.Name).ToList();
+        }
+
+        Assert.Equal(["Beta", "Gamma", "Alpha"], await GetNamesAsync(FundGoalSortModel.PlannedMonthlyContributionDescending));
+        Assert.Equal(["Alpha", "Gamma", "Beta"], await GetNamesAsync(FundGoalSortModel.MinimumEndingBalanceDescending));
+        Assert.Equal(["Gamma", "Alpha", "Beta"], await GetNamesAsync(FundGoalSortModel.MaximumEndingBalanceDescending));
+    }
+
+    /// <summary>
     /// Defaults new goals and cleared minimums to zero without enabling contributions.
     /// </summary>
     [Fact]

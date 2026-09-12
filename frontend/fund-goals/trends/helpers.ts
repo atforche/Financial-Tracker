@@ -14,6 +14,7 @@ interface FundGoalTrendsSearchParams {
   fundName?: string | readonly string[];
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;
+  returnUrl?: string | undefined;
 }
 
 /**
@@ -27,6 +28,7 @@ const fundGoalTrendsParamNames = {
   fundName: "fundName",
   startAccountingPeriodId: "startAccountingPeriodId",
   endAccountingPeriodId: "endAccountingPeriodId",
+  returnUrl: "returnUrl",
 } as const satisfies Record<keyof FundGoalTrendsSearchParams, string>;
 
 export { type FundGoalTrendsSearchParams, fundGoalTrendsParamNames };

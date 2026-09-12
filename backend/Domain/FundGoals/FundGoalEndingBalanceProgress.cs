@@ -6,9 +6,9 @@ namespace Domain.FundGoals;
 public sealed class FundGoalEndingBalanceProgress
 {
     /// <summary>
-    /// Current available balance.
+    /// Current ending balance.
     /// </summary>
-    public decimal CurrentBalance { get; }
+    public decimal EndingBalance { get; }
 
     /// <summary>
     /// Configured minimum ending balance.
@@ -23,17 +23,17 @@ public sealed class FundGoalEndingBalanceProgress
     /// <summary>
     /// Nonnegative amount below the configured minimum.
     /// </summary>
-    public decimal AmountBelowMinimum => Math.Max(MinimumBalance - CurrentBalance, 0);
+    public decimal AmountBelowMinimum => Math.Max(MinimumBalance - EndingBalance, 0);
 
     /// <summary>
     /// Nonnegative amount above the configured maximum.
     /// </summary>
     public decimal AmountAboveMaximum => MaximumBalance is decimal maximum
-        ? Math.Max(CurrentBalance - maximum, 0)
+        ? Math.Max(EndingBalance - maximum, 0)
         : 0;
 
     /// <summary>
-    /// Relationship between the current balance and configured bounds.
+    /// Relationship between the ending balance and configured bounds.
     /// </summary>
     public FundGoalEndingBalanceStatus Status => AmountBelowMinimum > 0
         ? FundGoalEndingBalanceStatus.BelowMinimum
@@ -45,33 +45,33 @@ public sealed class FundGoalEndingBalanceProgress
     /// Constructs a new instance of this class.
     /// </summary>
     internal FundGoalEndingBalanceProgress(
-        decimal currentBalance,
+        decimal endingBalance,
         decimal minimumBalance,
         decimal? maximumBalance)
     {
-        CurrentBalance = currentBalance;
+        EndingBalance = endingBalance;
         MinimumBalance = minimumBalance;
         MaximumBalance = maximumBalance;
     }
 }
 
 /// <summary>
-/// Status of a current balance relative to its configured ending-balance bounds.
+/// Status of an ending balance relative to its configured bounds.
 /// </summary>
 public enum FundGoalEndingBalanceStatus
 {
     /// <summary>
-    /// The current balance is below the configured minimum.
+    /// The ending balance is below the configured minimum.
     /// </summary>
     BelowMinimum,
 
     /// <summary>
-    /// The current balance satisfies the configured bounds.
+    /// The ending balance satisfies the configured bounds.
     /// </summary>
     WithinRange,
 
     /// <summary>
-    /// The current balance is above the configured maximum.
+    /// The ending balance is above the configured maximum.
     /// </summary>
     AboveMaximum,
 }

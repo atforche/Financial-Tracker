@@ -6,9 +6,9 @@ namespace Models.FundGoals;
 public sealed class FundGoalEndingBalanceProgressModel
 {
     /// <summary>
-    /// Gets the current balance.
+    /// Gets the ending balance.
     /// </summary>
-    public required decimal CurrentBalance { get; init; }
+    public required decimal EndingBalance { get; init; }
 
     /// <summary>
     /// Gets the configured minimum ending balance.

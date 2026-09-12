@@ -1,3 +1,4 @@
+using Domain.AccountingPeriods;
 using Domain.Transactions;
 
 namespace Domain.Accounts;
@@ -7,6 +8,15 @@ namespace Domain.Accounts;
 /// </summary>
 public interface IAccountBalanceHistoryRepository
 {
+    /// <summary>
+    /// Gets the previous posted history in the same Accounting Period.
+    /// </summary>
+    AccountBalanceHistory? GetLatestPeriodHistoryEarlierThan(
+        AccountId accountId,
+        AccountingPeriodId accountingPeriodId,
+        DateOnly historyDate,
+        int sequence);
+
     /// <summary>
     /// Gets the latest Account Balance History entry for the specified Account ID
     /// </summary>

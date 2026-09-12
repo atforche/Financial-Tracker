@@ -29,9 +29,12 @@ const FundWorkspaceCreatePage = async function ({
   const workspaceUrl = routes.workspace(workspaceSearchParams);
   const apiClient = await createApiClient();
 
-  const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
-    params: { query: { Limit: 500 } },
-  });
+  const accountingPeriodsResponse = await apiClient.GET(
+    "/accounting-periods/with-balances",
+    {
+      params: { query: { Limit: 500 } },
+    },
+  );
 
   const accountingPeriods = unwrapApiResponse(
     accountingPeriodsResponse,

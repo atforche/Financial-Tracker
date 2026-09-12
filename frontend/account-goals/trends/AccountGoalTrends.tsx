@@ -11,6 +11,7 @@ import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import TrendsBackLink from "@/framework/view/TrendsBackLink";
 import createApiClient from "@/framework/data/createApiClient";
 import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
@@ -58,6 +59,7 @@ const AccountGoalTrends = async function ({
   ) {
     redirect(
       routes.trends({
+        ...params,
         startAccountingPeriodId: defaultRange?.start ?? latest.id,
         endAccountingPeriodId: defaultRange?.end ?? latest.id,
       }),
@@ -129,6 +131,11 @@ const AccountGoalTrends = async function ({
 
   return (
     <PageLayout>
+      <TrendsBackLink
+        returnUrl={params.returnUrl}
+        workspace="account-goals"
+        label="Back to Account Goal Details"
+      />
       <ConstrainedContent>
         <AccountGoalTrendsFilter
           accountingPeriods={periods}

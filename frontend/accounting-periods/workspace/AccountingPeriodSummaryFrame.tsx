@@ -22,11 +22,7 @@ const AccountingPeriodSummaryFrame = function ({
   headerContent = null,
 }: AccountingPeriodSummaryFrameProps): JSX.Element {
   return (
-    <Frame
-      title="Accounting Period Summary"
-      color="info"
-      headerContent={headerContent}
-    >
+    <Frame title="Details" color="info" headerContent={headerContent}>
       <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
         <StringEntryField
           label="Period"

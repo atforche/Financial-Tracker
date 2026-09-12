@@ -1,3 +1,4 @@
+using Domain.AccountingPeriods;
 using Domain.Funds;
 using Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
@@ -25,5 +26,8 @@ internal sealed class FundBalanceHistoryConfiguration : IEntityTypeConfiguration
 
         builder.Property(fundBalanceHistory => fundBalanceHistory.TransactionId)
             .HasConversion(transactionId => transactionId.Value, value => new TransactionId(value));
+        builder.Property(history => history.AccountingPeriodId)
+            .HasConversion(id => id.Value, value => new AccountingPeriodId(value));
+        builder.HasIndex("FundId", nameof(FundBalanceHistory.AccountingPeriodId), nameof(FundBalanceHistory.Date), nameof(FundBalanceHistory.Sequence));
     }
 }

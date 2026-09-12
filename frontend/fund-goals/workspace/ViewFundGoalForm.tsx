@@ -2,12 +2,15 @@
 import type {
   FundGoal,
   FundGoalBalanceEvent,
-  FundGoalBalanceSummaryByDate,
   FundGoalProgress,
 } from "@/fund-goals/types";
+import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
+import type { BalanceTrendDateSummary } from "@/framework/charts/balanceTrendHelpers";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
+import Frame from "@/framework/view/Frame";
 import FundGoalBalanceEventsFrame from "@/fund-goals/workspace/FundGoalBalanceEventsFrame";
 import FundGoalContextFrame from "@/fund-goals/workspace/FundGoalContextFrame";
+import FundGoalProgressOverview from "@/fund-goals/workspace/FundGoalProgressOverview";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import RecentBalanceActivity from "@/balance-events/RecentBalanceActivity";
@@ -18,12 +21,13 @@ import type { Route } from "next";
  */
 interface ViewFundGoalFormProps {
   readonly fundGoal: FundGoal;
+  readonly accountingPeriod: AccountingPeriodWithBalance;
   readonly progress: FundGoalProgress;
   readonly redirectUrl: string;
   readonly recentBalanceEvents: FundGoalBalanceEvent[];
   readonly recentBalanceEventCount: number;
-  readonly recentActivityEvents: FundGoalBalanceEvent[];
-  readonly recentActivityBalances: FundGoalBalanceSummaryByDate[];
+  readonly recentActivityBalances: readonly BalanceTrendDateSummary[];
+  readonly periodOpeningBalance: number;
   readonly trendsHref: Route;
   readonly addTransactionHref: string;
   readonly accountingPeriodId: string;
@@ -39,12 +43,19 @@ const ViewFundGoalForm = function (props: ViewFundGoalFormProps): JSX.Element {
       <PageLayout>
         <FundGoalContextFrame
           fundGoal={props.fundGoal}
-          progress={props.progress}
+          accountingPeriod={props.accountingPeriod}
           redirectUrl={props.redirectUrl}
         />
+        <Frame title="Progress">
+          <FundGoalProgressOverview
+            fundGoal={props.fundGoal}
+            progress={props.progress}
+          />
+        </Frame>
         <RecentBalanceActivity
-          data={props.recentActivityEvents}
+          data={[] as FundGoalBalanceEvent[]}
           dailyBalances={props.recentActivityBalances}
+          periodOpeningBalance={props.periodOpeningBalance}
           trendsHref={props.trendsHref}
           getPreviousBalance={(event) =>
             event.previousTotals.amountAssigned -
@@ -53,7 +64,7 @@ const ViewFundGoalForm = function (props: ViewFundGoalFormProps): JSX.Element {
           getNewBalance={(event) =>
             event.newTotals.amountAssigned - event.newTotals.amountSpent
           }
-          title="Recent Activity"
+          title="Accounting Period Activity"
           balanceLabel="Fund Balance"
         />
         <FundGoalBalanceEventsFrame

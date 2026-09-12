@@ -72,6 +72,18 @@ const FundGoalBalanceEventsFrame = function ({
 
   const columns: readonly ColumnDefinition<FundGoalBalanceEvent>[] =
     createBalanceEventColumns<FundGoalBalanceEvent>({
+      dateSortProps: getSortProps(
+        FundGoalBalanceEventSort.Date,
+        FundGoalBalanceEventSort.DateDescending,
+      ),
+      typeSortProps: getSortProps(
+        FundGoalBalanceEventSort.Type,
+        FundGoalBalanceEventSort.TypeDescending,
+      ),
+      amountSortProps: getSortProps(
+        FundGoalBalanceEventSort.Amount,
+        FundGoalBalanceEventSort.AmountDescending,
+      ),
       getCounterpartyContent: formatBalanceEventCounterparty,
       counterpartySortProps: getSortProps(
         FundGoalBalanceEventSort.Counterparty,

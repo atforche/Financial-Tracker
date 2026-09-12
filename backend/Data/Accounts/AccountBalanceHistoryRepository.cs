@@ -1,3 +1,4 @@
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Transactions;
 
@@ -8,6 +9,16 @@ namespace Data.Accounts;
 /// </summary>
 public class AccountBalanceHistoryRepository(DatabaseContext databaseContext) : IAccountBalanceHistoryRepository
 {
+    /// <inheritdoc/>
+    public AccountBalanceHistory? GetLatestPeriodHistoryEarlierThan(AccountId accountId, AccountingPeriodId accountingPeriodId, DateOnly historyDate, int sequence) =>
+        MergeWithTracked(
+            databaseContext.AccountBalanceHistories.Where(history => history.Account.Id == accountId
+                && history.AccountingPeriodId == accountingPeriodId
+                && (history.Date < historyDate || (history.Date == historyDate && history.Sequence < sequence))),
+            history => history.Account.Id == accountId && history.AccountingPeriodId == accountingPeriodId
+                && (history.Date < historyDate || (history.Date == historyDate && history.Sequence < sequence)))
+            .OrderByDescending(history => history.Date).ThenByDescending(history => history.Sequence).FirstOrDefault();
+
     /// <inheritdoc/>
     public AccountBalanceHistory? GetLatestForAccount(AccountId accountId) =>
         MergeWithTracked(

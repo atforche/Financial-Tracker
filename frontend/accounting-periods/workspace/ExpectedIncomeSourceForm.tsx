@@ -14,12 +14,10 @@ import {
   useState,
 } from "react";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import ExpectedIncomeSourcesEditor from "@/accounting-periods/workspace/ExpectedIncomeSourcesEditor";
-import Frame from "@/framework/view/Frame";
+import ExpectedIncomeTotalsFrame from "@/accounting-periods/workspace/ExpectedIncomeTotalsFrame";
 import PageLayout from "@/framework/view/PageLayout";
-import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import TransactionWorkspacePageHeader from "@/transactions/workspace/TransactionWorkspacePageHeader";
 import saveExpectedIncomeSource from "@/accounting-periods/workspace/saveExpectedIncomeSource";
 import { useRouter } from "next/navigation";
@@ -107,9 +105,6 @@ const ExpectedIncomeSourceForm = function ({
     0,
   );
   const trackedAmount = netAmount - untrackedAmount;
-  const expectedAmount = netAmount * draft.expectedDates.length;
-  const expectedTrackedAmount = trackedAmount * draft.expectedDates.length;
-  const expectedUntrackedAmount = untrackedAmount * draft.expectedDates.length;
   return (
     <PageLayout>
       <TransactionWorkspacePageHeader
@@ -125,40 +120,23 @@ const ExpectedIncomeSourceForm = function ({
             </Typography>
           ) : (
             <>
+              <ExpectedIncomeTotalsFrame
+                sourceName={draft.name}
+                accountingPeriodName={accountingPeriod.name}
+                setSourceName={(name): void => {
+                  setDraft({ ...draft, name });
+                }}
+                netPerPayment={netAmount}
+                trackedPerPayment={trackedAmount}
+                untrackedPerPayment={untrackedAmount}
+                paymentCount={draft.expectedDates.length}
+              />
               <ExpectedIncomeSourcesEditor
                 source={draft}
                 setSource={setDraft}
                 year={accountingPeriod.year}
                 month={accountingPeriod.month}
               />
-              <Frame title="Calculated Totals" color="info">
-                <ResponsiveGrid columns={{ xs: 1, sm: 3 }} spacing={2}>
-                  <CurrencyEntryField
-                    label="Net per payment"
-                    value={netAmount}
-                  />
-                  <CurrencyEntryField
-                    label="Tracked per payment"
-                    value={trackedAmount}
-                  />
-                  <CurrencyEntryField
-                    label="Untracked per payment"
-                    value={untrackedAmount}
-                  />
-                  <CurrencyEntryField
-                    label="Expected total"
-                    value={expectedAmount}
-                  />
-                  <CurrencyEntryField
-                    label="Expected tracked"
-                    value={expectedTrackedAmount}
-                  />
-                  <CurrencyEntryField
-                    label="Expected untracked"
-                    value={expectedUntrackedAmount}
-                  />
-                </ResponsiveGrid>
-              </Frame>
             </>
           )}
           <ErrorAlert

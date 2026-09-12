@@ -10,14 +10,14 @@ public static class FundGoalProgressService
     /// </summary>
     public static FundGoalProgress Calculate(
         decimal amountAssignedToExpectedContribution,
-        decimal currentAvailableBalance,
+        decimal currentEndingBalance,
         decimal? plannedMonthlyContribution,
         decimal? minimumEndingBalance,
         decimal? maximumEndingBalance,
         bool allowExpectedContributionAboveMaximum = false)
     {
         decimal expectedContribution = CalculateExpectedContribution(
-            currentAvailableBalance,
+            currentEndingBalance,
             amountAssignedToExpectedContribution,
             plannedMonthlyContribution,
             maximumEndingBalance,
@@ -29,7 +29,7 @@ public static class FundGoalProgressService
                 amountAssignedToExpectedContribution)
             : null;
         FundGoalEndingBalanceProgress endingBalance = new(
-            currentAvailableBalance,
+            currentEndingBalance,
             minimumEndingBalance ?? 0m,
             maximumEndingBalance);
 
@@ -42,7 +42,7 @@ public static class FundGoalProgressService
     /// Calculates the expected contribution after applying the maximum ending-balance constraint.
     /// </summary>
     public static decimal CalculateExpectedContribution(
-        decimal currentAvailableBalance,
+        decimal currentEndingBalance,
         decimal currentContributions,
         decimal? plannedMonthlyContribution,
         decimal? maximumEndingBalance,
@@ -52,9 +52,9 @@ public static class FundGoalProgressService
         if (maximumEndingBalance is decimal maximum && !allowExpectedContributionAboveMaximum)
         {
             decimal contributions = Math.Max(currentContributions, 0);
-            decimal availableBalance = maximum - currentAvailableBalance;
+            decimal remainingCapacity = maximum - currentEndingBalance;
             expectedContribution = Math.Max(
-                Math.Min(expectedContribution, contributions + availableBalance),
+                Math.Min(expectedContribution, contributions + remainingCapacity),
                 0);
         }
         return expectedContribution;

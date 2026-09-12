@@ -1,14 +1,19 @@
 "use client";
 
+import { FundGoalSort, type FundGoalWithProgress } from "@/fund-goals/types";
+import { useRouter, useSearchParams } from "next/navigation";
+import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
+import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import fundGoalRoutes from "@/fund-goals/routes";
-import { useRouter } from "next/navigation";
+import parseEnumValue from "@/framework/data/parseEnumValue";
+import propertyName from "@/framework/data/propertyName";
+import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 interface FundGoalsFrameProps {
   readonly goals: readonly FundGoalWithProgress[];
@@ -25,6 +30,26 @@ const FundGoalsFrame = function ({
   returnUrl,
 }: FundGoalsFrameProps): JSX.Element {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const sortParamName =
+    propertyName<AccountingPeriodWorkspaceSearchParams>("fundGoalSort");
+  const pageParamName =
+    propertyName<AccountingPeriodWorkspaceSearchParams>("fundGoalPage");
+  const updateParams = useSearchParamUpdater([pageParamName]);
+  const currentSort = parseEnumValue(
+    FundGoalSort,
+    searchParams.get(sortParamName) ?? "",
+  );
+  const setSort = function (sort: FundGoalSort | null): void {
+    updateParams((params) => {
+      if (sort === null) {
+        params.delete(sortParamName);
+      } else {
+        params.set(sortParamName, sort);
+      }
+    });
+  };
+  const getSortProps = createColumnSortProps(currentSort, setSort);
   const openFundGoal = function (goal: FundGoalWithProgress): void {
     router.push(
       fundGoalRoutes.workspaceDetail(goal.fund.id, {
@@ -39,19 +64,44 @@ const FundGoalsFrame = function ({
       headerContent: "Fund",
       getBodyContent: (goal) => goal.fund.name,
       mobilePrimary: true,
+      ...getSortProps(FundGoalSort.Fund, FundGoalSort.FundDescending),
     },
     {
-      name: "expectedContributions",
-      headerContent: "Expected Contributions",
+      name: "plannedMonthlyContribution",
+      headerContent: "Monthly Contribution",
       getBodyContent: (goal) =>
-        formatCurrency(goal.progress.contribution?.expectedAmount ?? 0),
+        typeof goal.plannedMonthlyContribution === "number"
+          ? formatCurrency(goal.plannedMonthlyContribution)
+          : "Not set",
+      ...getSortProps(
+        FundGoalSort.PlannedMonthlyContribution,
+        FundGoalSort.PlannedMonthlyContributionDescending,
+      ),
+      alignment: "right",
+      minWidth: 200,
+      maxWidth: 200,
+    },
+    {
+      name: "minimumEndingBalance",
+      headerContent: "Minimum Balance",
+      getBodyContent: (goal) => formatCurrency(goal.minimumEndingBalance),
+      ...getSortProps(
+        FundGoalSort.MinimumEndingBalance,
+        FundGoalSort.MinimumEndingBalanceDescending,
+      ),
       alignment: "right",
     },
     {
-      name: "actualContribution",
-      headerContent: "Actual Contribution",
+      name: "maximumEndingBalance",
+      headerContent: "Maximum Balance",
       getBodyContent: (goal) =>
-        formatCurrency(goal.progress.contribution?.assignedAmount ?? 0),
+        typeof goal.maximumEndingBalance === "number"
+          ? formatCurrency(goal.maximumEndingBalance)
+          : "Not set",
+      ...getSortProps(
+        FundGoalSort.MaximumEndingBalance,
+        FundGoalSort.MaximumEndingBalanceDescending,
+      ),
       alignment: "right",
     },
     {
@@ -81,7 +131,7 @@ const FundGoalsFrame = function ({
       getId={(goal) => goal.id}
       data={goals}
       totalCount={totalCount}
-      pageParamName="fundGoalPage"
+      pageParamName={pageParamName}
       onRowClick={openFundGoal}
       initialEmptyState={{
         title: "No Fund Goals",

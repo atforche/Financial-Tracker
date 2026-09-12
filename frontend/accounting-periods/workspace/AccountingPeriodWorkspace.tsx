@@ -1,6 +1,7 @@
 import {
   AccountingPeriodSort,
   AccountingPeriodWithBalanceSort,
+  type ExpectedIncomeSourceSort,
 } from "@/accounting-periods/types";
 import {
   compactSearchParams,
@@ -12,10 +13,12 @@ import {
   getRowsPerPage,
   normalizePageValue,
 } from "@/framework/listframe/page";
+import type { AccountGoalSort } from "@/account-goals/types";
 import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/workspace/helpers";
 import AccountingPeriodWorkspaceActions from "@/accounting-periods/workspace/AccountingPeriodWorkspaceActions";
 import AccountingPeriodWorkspaceFilter from "@/accounting-periods/workspace/AccountingPeriodWorkspaceFilter";
 import AccountingPeriodWorkspaceListFrame from "@/accounting-periods/workspace/AccountingPeriodWorkspaceListFrame";
+import type { FundGoalSort } from "@/fund-goals/types";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import createApiClient from "@/framework/data/createApiClient";
@@ -32,8 +35,11 @@ interface AccountingPeriodWorkspaceSearchParams {
   pageSize?: number | string | null;
   view?: AccountingPeriodDetailView;
   incomeSourcePage?: number | string | null;
+  incomeSourceSort?: ExpectedIncomeSourceSort;
   fundGoalPage?: number | string | null;
+  fundGoalSort?: FundGoalSort;
   accountGoalPage?: number | string | null;
+  accountGoalSort?: AccountGoalSort;
   action?: AccountingPeriodWorkspaceAction;
 }
 

@@ -145,6 +145,7 @@ const OnboardFundForm = function ({
 
         <FundGoalSetupSection
           color="success"
+          accountingPeriod={null}
           plannedMonthlyContribution={plannedMonthlyContribution}
           setPlannedMonthlyContribution={setPlannedMonthlyContribution}
           minimumEndingBalance={minimumEndingBalance}

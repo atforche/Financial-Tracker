@@ -1,5 +1,9 @@
 "use client";
 
+import type {
+  AccountingPeriod,
+  AccountingPeriodWithBalance,
+} from "@/accounting-periods/types";
 import { Button, Stack } from "@mui/material";
 import {
   type JSX,
@@ -13,7 +17,6 @@ import {
   buildCreateFundRequest,
   validateCreateFundSetup,
 } from "@/funds/workspace/helpers";
-import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
@@ -30,7 +33,7 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
  * Props for the CreateFundForm component.
  */
 interface CreateFundFormProps {
-  readonly accountingPeriods: AccountingPeriod[];
+  readonly accountingPeriods: AccountingPeriodWithBalance[];
   readonly redirectUrl: string;
 }
 
@@ -61,6 +64,9 @@ const CreateFundForm = function ({
   const formRef = useRef<HTMLDivElement | null>(null);
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(null);
+  const accountingPeriodWithBalance =
+    accountingPeriods.find((period) => period.id === accountingPeriod?.id) ??
+    null;
 
   const [state, action, pending] = useActionState(createFund, {});
 
@@ -125,6 +131,7 @@ const CreateFundForm = function ({
 
         <FundGoalSetupSection
           color="info"
+          accountingPeriod={accountingPeriodWithBalance}
           plannedMonthlyContribution={plannedMonthlyContribution}
           setPlannedMonthlyContribution={setPlannedMonthlyContribution}
           minimumEndingBalance={minimumEndingBalance}
