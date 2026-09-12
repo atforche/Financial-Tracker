@@ -6,8 +6,10 @@ import type {
   FundGoalProgress,
 } from "@/fund-goals/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
+import Frame from "@/framework/view/Frame";
 import FundGoalBalanceEventsFrame from "@/fund-goals/workspace/FundGoalBalanceEventsFrame";
 import FundGoalContextFrame from "@/fund-goals/workspace/FundGoalContextFrame";
+import FundGoalProgressOverview from "@/fund-goals/workspace/FundGoalProgressOverview";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import RecentBalanceActivity from "@/balance-events/RecentBalanceActivity";
@@ -39,9 +41,14 @@ const ViewFundGoalForm = function (props: ViewFundGoalFormProps): JSX.Element {
       <PageLayout>
         <FundGoalContextFrame
           fundGoal={props.fundGoal}
-          progress={props.progress}
           redirectUrl={props.redirectUrl}
         />
+        <Frame title="Progress">
+          <FundGoalProgressOverview
+            fundGoal={props.fundGoal}
+            progress={props.progress}
+          />
+        </Frame>
         <RecentBalanceActivity
           data={props.recentActivityEvents}
           dailyBalances={props.recentActivityBalances}

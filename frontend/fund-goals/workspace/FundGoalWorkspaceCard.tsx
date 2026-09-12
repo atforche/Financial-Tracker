@@ -3,6 +3,7 @@
 import {
   Box,
   Collapse,
+  Divider,
   IconButton,
   Stack,
   Tooltip,
@@ -18,7 +19,7 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import FundGoalEndingBalance from "@/fund-goals/workspace/FundGoalEndingBalance";
-import FundGoalProgressBars from "@/fund-goals/workspace/FundGoalProgressBars";
+import FundGoalProgressOverview from "@/fund-goals/workspace/FundGoalProgressOverview";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 
@@ -94,16 +95,16 @@ const FundGoalWorkspaceCard = function ({
         <Typography variant="body2" color="text.secondary">
           {accountingPeriod?.name ?? "No accounting period"}
         </Typography>
-        <FundGoalEndingBalance
-          endingBalance={endingBalance.endingBalance}
-        />
+        <FundGoalEndingBalance endingBalance={endingBalance.endingBalance} />
         <Box>
           <Collapse in={expanded} unmountOnExit>
-            <FundGoalProgressBars
-              fundGoal={fundGoal}
-              progress={fundGoal.progress}
-              showEndingBalance={false}
-            />
+            <Stack spacing={2}>
+              <Divider />
+              <FundGoalProgressOverview
+                fundGoal={fundGoal}
+                progress={fundGoal.progress}
+              />
+            </Stack>
           </Collapse>
           <Stack
             direction="row"

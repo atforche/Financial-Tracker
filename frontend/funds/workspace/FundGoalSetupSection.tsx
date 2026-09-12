@@ -64,12 +64,6 @@ const FundGoalSetupSection = function ({
         }
       />
       <GoalAmountOption
-        label="Planned Monthly Contribution"
-        value={plannedMonthlyContribution}
-        setValue={setPlannedMonthlyContribution}
-        errorMessage={null}
-      />
-      <GoalAmountOption
         label="Maximum Ending Balance"
         value={maximumEndingBalance}
         setValue={setMaximumEndingBalance}
@@ -90,6 +84,12 @@ const FundGoalSetupSection = function ({
             label="Allow expected contribution to exceed maximum"
           />
         }
+      />
+      <GoalAmountOption
+        label="Planned Monthly Contribution"
+        value={plannedMonthlyContribution}
+        setValue={setPlannedMonthlyContribution}
+        errorMessage={null}
       />
     </Stack>
   );
