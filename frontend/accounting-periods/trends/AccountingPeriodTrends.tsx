@@ -198,9 +198,9 @@ const AccountingPeriodTrends = async function ({
       rangeExpectations,
     );
   }
-  const chronologicalAccountingPeriods = [
-    ...fullRangeAccountingPeriods,
-  ].sort(compareAccountingPeriods);
+  const chronologicalAccountingPeriods = [...fullRangeAccountingPeriods].sort(
+    compareAccountingPeriods,
+  );
   const transactionWorkspaceHref =
     selectedAccountingPeriodIds.length === 0
       ? null
