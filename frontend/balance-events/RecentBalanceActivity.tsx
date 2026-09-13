@@ -40,6 +40,7 @@ interface RecentBalanceActivityProps<T extends RecentBalanceActivityEvent> {
   readonly title?: string;
   readonly balanceLabel?: string;
   readonly trendsHref?: Route;
+  readonly summaryFirst?: boolean;
 }
 
 /**
@@ -54,6 +55,7 @@ const RecentBalanceActivity = function <T extends RecentBalanceActivityEvent>({
   title = "Recent Activity",
   balanceLabel = "Posted Balance",
   trendsHref,
+  summaryFirst = false,
 }: RecentBalanceActivityProps<T>): JSX.Element {
   const postedEvents = data
     .filter((event) => event.isPosted && typeof event.eventDate === "string")
@@ -133,8 +135,29 @@ const RecentBalanceActivity = function <T extends RecentBalanceActivityEvent>({
       ? eventChartPoints
       : buildDateChartPoints(dailyBalances);
 
+  const summaryCards = (
+    <SummaryCardGrid>
+      <SummaryCard title="Total Inflow" value={formatCurrency(totalInflow)} />
+      <SummaryCard title="Total Outflow" value={formatCurrency(totalOutflow)} />
+      <SummaryCard
+        title="Net Change"
+        value={
+          firstBalance === undefined || lastBalance === undefined ? (
+            "—"
+          ) : (
+            <ChangeValue
+              startingValue={firstBalance}
+              endingValue={lastBalance}
+            />
+          )
+        }
+      />
+    </SummaryCardGrid>
+  );
+
   return (
     <PageLayout>
+      {summaryFirst ? summaryCards : null}
       <BalanceTrendChart
         title={title}
         headerContent={
@@ -154,26 +177,7 @@ const RecentBalanceActivity = function <T extends RecentBalanceActivityEvent>({
         xAxisLabel="Date"
         yAxisLabel={balanceLabel}
       />
-      <SummaryCardGrid>
-        <SummaryCard title="Total Inflow" value={formatCurrency(totalInflow)} />
-        <SummaryCard
-          title="Total Outflow"
-          value={formatCurrency(totalOutflow)}
-        />
-        <SummaryCard
-          title="Net Change"
-          value={
-            firstBalance === undefined || lastBalance === undefined ? (
-              "—"
-            ) : (
-              <ChangeValue
-                startingValue={firstBalance}
-                endingValue={lastBalance}
-              />
-            )
-          }
-        />
-      </SummaryCardGrid>
+      {summaryFirst ? null : summaryCards}
     </PageLayout>
   );
 };
