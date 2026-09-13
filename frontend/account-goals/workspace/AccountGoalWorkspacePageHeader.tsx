@@ -21,7 +21,7 @@ const AccountGoalWorkspacePageHeader = function ({
   nextPeriod,
 }: AccountGoalWorkspacePageHeaderProps): JSX.Element {
   return (
-    <Stack spacing={2.5}>
+    <Stack spacing={2.5} sx={{ maxWidth: 1200, width: "100%" }}>
       <Link
         href={backHref}
         style={{ alignSelf: "flex-start", textDecoration: "none" }}
