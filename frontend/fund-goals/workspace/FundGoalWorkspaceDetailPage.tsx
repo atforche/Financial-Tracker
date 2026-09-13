@@ -11,8 +11,10 @@ import FundGoalWorkspacePageHeader from "@/fund-goals/workspace/FundGoalWorkspac
 import type { FundGoalWorkspaceSearchParams } from "@/fund-goals/workspace/FundGoalWorkspace";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
+import type { Route } from "next";
 import ViewFundGoalForm from "@/fund-goals/workspace/ViewFundGoalForm";
 import createApiClient from "@/framework/data/createApiClient";
+import loadAllPages from "@/framework/data/loadAllPages";
 import { redirect } from "next/navigation";
 import routes from "@/fund-goals/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
@@ -77,6 +79,47 @@ const FundGoalWorkspaceDetailPage = async function ({
   if (isNullOrUndefined(fundGoal.accountingPeriod)) {
     redirect(workspaceUrl);
   }
+  const fundGoals = await loadAllPages(async (limit, offset) =>
+    unwrapApiResponse(
+      await apiClient.GET("/fund-goals", {
+        params: {
+          query: {
+            "Filter.FundIds": [fundId],
+            "Filter.IncludeOnboarded": false,
+            Limit: limit,
+            Offset: offset,
+          },
+        },
+      }),
+      "Failed to fetch Fund Goal period navigation",
+    ),
+  );
+  const orderedPeriods = fundGoals
+    .flatMap((goal) =>
+      goal.accountingPeriod === null || goal.accountingPeriod === undefined
+        ? []
+        : [goal.accountingPeriod],
+    )
+    .sort((left, right) =>
+      left.year === right.year
+        ? left.month - right.month
+        : left.year - right.year,
+    );
+  const currentPeriodIndex = orderedPeriods.findIndex(
+    (period) => period.id === periodId,
+  );
+  const periodNavigationHref = (nextPeriodId: string): Route =>
+    routes.workspaceDetail(fundId, {
+      accountingPeriodId: nextPeriodId,
+      ...(selectedFundIds.length ? { fundIds: selectedFundIds } : {}),
+      ...(isNotNullOrUndefined(search) ? { search } : {}),
+      ...(isNotNullOrUndefined(balanceEventSort) ? { balanceEventSort } : {}),
+      ...(isNotNullOrUndefined(tab) ? { tab } : {}),
+      ...(isNotNullOrUndefined(pageSize) ? { pageSize } : {}),
+      ...(isNotNullOrUndefined(returnUrl) ? { returnUrl } : {}),
+    });
+  const previousPeriod = orderedPeriods[currentPeriodIndex - 1];
+  const nextPeriod = orderedPeriods[currentPeriodIndex + 1];
   const [
     accountingPeriodResponse,
     progressResponse,
@@ -143,7 +186,25 @@ const FundGoalWorkspaceDetailPage = async function ({
   });
   return (
     <PageLayout>
-      <FundGoalWorkspacePageHeader backHref={returnUrl ?? workspaceUrl} />
+      <FundGoalWorkspacePageHeader
+        backHref={returnUrl ?? workspaceUrl}
+        previousPeriod={
+          previousPeriod === undefined
+            ? null
+            : {
+                name: previousPeriod.name,
+                href: periodNavigationHref(previousPeriod.id),
+              }
+        }
+        nextPeriod={
+          nextPeriod === undefined
+            ? null
+            : {
+                name: nextPeriod.name,
+                href: periodNavigationHref(nextPeriod.id),
+              }
+        }
+      />
       <ViewFundGoalForm
         fundGoal={fundGoal}
         accountingPeriod={accountingPeriod}

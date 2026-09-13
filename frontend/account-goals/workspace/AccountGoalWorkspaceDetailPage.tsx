@@ -11,9 +11,11 @@ import AccountGoalWorkspacePageHeader from "@/account-goals/workspace/AccountGoa
 import type { AccountGoalWorkspaceSearchParams } from "@/account-goals/workspace/types";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
+import type { Route } from "next";
 import ViewAccountGoalForm from "@/account-goals/workspace/ViewAccountGoalForm";
 import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
+import loadAllPages from "@/framework/data/loadAllPages";
 import { redirect } from "next/navigation";
 import routes from "@/account-goals/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
@@ -75,6 +77,46 @@ const AccountGoalWorkspaceDetailPage = async function ({
   if (isNullOrUndefined(accountGoal.accountingPeriod)) {
     redirect(workspaceUrl);
   }
+  const accountGoals = await loadAllPages(async (limit, offset) =>
+    unwrapApiResponse(
+      await apiClient.GET("/account-goals", {
+        params: {
+          query: {
+            "Filter.AccountIds": [accountId],
+            "Filter.IncludeOnboarded": false,
+            Limit: limit,
+            Offset: offset,
+          },
+        },
+      }),
+      "Failed to fetch Account Goal period navigation",
+    ),
+  );
+  const orderedPeriods = accountGoals
+    .flatMap((goal) =>
+      goal.accountingPeriod === null || goal.accountingPeriod === undefined
+        ? []
+        : [goal.accountingPeriod],
+    )
+    .sort((left, right) =>
+      left.year === right.year
+        ? left.month - right.month
+        : left.year - right.year,
+    );
+  const currentPeriodIndex = orderedPeriods.findIndex(
+    (period) => period.id === periodId,
+  );
+  const periodNavigationHref = (nextPeriodId: string): Route =>
+    routes.workspaceDetail(accountId, {
+      accountingPeriodId: nextPeriodId,
+      ...(selectedAccountIds.length ? { accountIds: selectedAccountIds } : {}),
+      ...(isNotNullOrUndefined(balanceEventSort) ? { balanceEventSort } : {}),
+      ...(isNotNullOrUndefined(tab) ? { tab } : {}),
+      ...(isNotNullOrUndefined(pageSize) ? { pageSize } : {}),
+      ...(isNotNullOrUndefined(returnUrl) ? { returnUrl } : {}),
+    });
+  const previousPeriod = orderedPeriods[currentPeriodIndex - 1];
+  const nextPeriod = orderedPeriods[currentPeriodIndex + 1];
   const periodStartDate = dayjs()
     .year(accountGoal.accountingPeriod.year)
     .month(accountGoal.accountingPeriod.month - 1)
@@ -145,7 +187,25 @@ const AccountGoalWorkspaceDetailPage = async function ({
   });
   return (
     <PageLayout>
-      <AccountGoalWorkspacePageHeader backHref={returnUrl ?? workspaceUrl} />
+      <AccountGoalWorkspacePageHeader
+        backHref={returnUrl ?? workspaceUrl}
+        previousPeriod={
+          previousPeriod === undefined
+            ? null
+            : {
+                name: previousPeriod.name,
+                href: periodNavigationHref(previousPeriod.id),
+              }
+        }
+        nextPeriod={
+          nextPeriod === undefined
+            ? null
+            : {
+                name: nextPeriod.name,
+                href: periodNavigationHref(nextPeriod.id),
+              }
+        }
+      />
       <ViewAccountGoalForm
         accountGoal={accountGoal}
         progress={progress}

@@ -7,7 +7,9 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import type { JSX } from "react";
 import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
+import PeriodNavigation from "@/framework/view/PeriodNavigation";
 import createApiClient from "@/framework/data/createApiClient";
+import getAdjacentAccountingPeriods from "@/accounting-periods/workspace/periodNavigation";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -75,6 +77,9 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
       }),
     );
   }
+  const { previousPeriod, nextPeriod } = await getAdjacentAccountingPeriods(
+    period.id,
+  );
   const currentUrl = routes.workspaceDetail(period.id, workspaceParams);
   const planHref = routes.workspacePlan(period.id, {
     ...workspaceParams,
@@ -91,7 +96,38 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
               Back to Workspace
             </Button>
           </Link>
-          <Typography variant="h4">{period.name}</Typography>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            alignItems={{ xs: "flex-start", sm: "center" }}
+            justifyContent="space-between"
+            gap={2}
+          >
+            <Typography variant="h4">{period.name}</Typography>
+            <PeriodNavigation
+              previousPeriod={
+                previousPeriod === null
+                  ? null
+                  : {
+                      name: previousPeriod.name,
+                      href: routes.workspaceDetail(
+                        previousPeriod.id,
+                        workspaceParams,
+                      ),
+                    }
+              }
+              nextPeriod={
+                nextPeriod === null
+                  ? null
+                  : {
+                      name: nextPeriod.name,
+                      href: routes.workspaceDetail(
+                        nextPeriod.id,
+                        workspaceParams,
+                      ),
+                    }
+              }
+            />
+          </Stack>
           <AccountingPeriodSummaryFrame
             accountingPeriod={period}
             headerContent={
