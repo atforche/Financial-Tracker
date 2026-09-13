@@ -37,7 +37,7 @@ const ExpectedIncomeSourceDeleteDialog = function ({
   useEffect(() => {
     if (state.success === true) {
       onClose();
-      router.replace(redirectUrl, { scroll: false });
+      router.replace(redirectUrl);
     }
   }, [onClose, redirectUrl, router, state.success]);
 

@@ -48,9 +48,7 @@ const FundWorkspaceCards = function ({
     const search = searchParams.get(searchParamName);
     const detailSearchParams: FundWorkspaceSearchParams =
       search === null ? {} : { search };
-    router.push(routes.workspaceDetail(fundId, detailSearchParams), {
-      scroll: false,
-    });
+    router.push(routes.workspaceDetail(fundId, detailSearchParams));
   };
 
   if (funds.length === 0) {

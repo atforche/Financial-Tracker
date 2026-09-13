@@ -75,7 +75,7 @@ const OnboardFundForm = function ({
   useEffect(() => {
     if (state.success === true) {
       reset();
-      router.replace(redirectUrl, { scroll: false });
+      router.replace(redirectUrl);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [redirectUrl, router, state.success]);

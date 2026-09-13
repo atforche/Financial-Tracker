@@ -121,7 +121,6 @@ const FundGoalBalanceEventsFrame = function ({
               fundIds: [fundId],
               returnUrl,
             }),
-            { scroll: false },
           );
         }}
         hasActiveFilters={false}

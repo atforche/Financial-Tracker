@@ -99,7 +99,6 @@ const FundBalanceEventsFrame = function ({
       onRowClick={(balanceEvent) => {
         router.push(
           routes.workspaceDetail(balanceEvent.transactionId, { returnUrl }),
-          { scroll: false },
         );
       }}
       hasActiveFilters={false}

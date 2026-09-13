@@ -19,6 +19,7 @@ interface AccountingPeriodConfirmationFormProps {
   readonly actionLabel: string;
   readonly actionVerb: string;
   readonly color?: ButtonProps["color"];
+  readonly preserveScroll?: boolean;
 }
 
 /**
@@ -32,6 +33,7 @@ const AccountingPeriodConfirmationForm = function ({
   actionLabel,
   actionVerb,
   color = "primary",
+  preserveScroll = true,
 }: AccountingPeriodConfirmationFormProps): JSX.Element {
   const [state, action, pending] = useActionState(serverAction, {});
   const router = useRouter();
@@ -39,9 +41,9 @@ const AccountingPeriodConfirmationForm = function ({
   useEffect(() => {
     if (state.success === true) {
       onClose();
-      router.replace(redirectUrl, { scroll: false });
+      router.replace(redirectUrl, { scroll: !preserveScroll });
     }
-  }, [onClose, redirectUrl, router, state.success]);
+  }, [onClose, preserveScroll, redirectUrl, router, state.success]);
 
   return (
     <Dialog

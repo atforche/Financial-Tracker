@@ -79,7 +79,7 @@ const ExpectedIncomeSourceForm = function ({
   const [state, action, pending] = useActionState(saveExpectedIncomeSource, {});
   useEffect(() => {
     if (state.success === true) {
-      router.replace(redirectUrl, { scroll: false });
+      router.replace(redirectUrl);
     }
   }, [redirectUrl, router, state.success]);
   const save = (): void => {

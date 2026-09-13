@@ -105,7 +105,6 @@ const TransactionWorkspaceListFrame = function ({
         ...(pageSize === null ? {} : { pageSize }),
         ...(returnUrl === null ? {} : { returnUrl }),
       } satisfies TransactionWorkspaceSearchParams),
-      { scroll: false },
     );
   };
 

@@ -51,7 +51,6 @@ const useCreateTransactionEditor = function ({
     if (state.success === true && state.transactionId !== null) {
       router.replace(
         redirectWithSelectedTransaction(redirectUrl, state.transactionId ?? ""),
-        { scroll: false },
       );
     }
   }, [redirectUrl, router, state]);
@@ -90,7 +89,7 @@ const useUpdateTransactionEditor = function ({
 
   useEffect(() => {
     if (state.success === true) {
-      router.replace(redirectUrl, { scroll: false });
+      router.replace(redirectUrl);
     }
   }, [redirectUrl, router, state.success]);
 
