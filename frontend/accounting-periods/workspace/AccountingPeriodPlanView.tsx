@@ -14,8 +14,8 @@ import ExpectedIncomeFundGoalContributionsCard from "@/accounting-periods/worksp
 import ExpectedIncomeSourcesFrame from "@/accounting-periods/workspace/ExpectedIncomeSourcesFrame";
 import FundGoalsFrame from "@/accounting-periods/workspace/FundGoalsFrame";
 import type { JSX } from "react";
-import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import type { Route } from "next";
+import UrlTabs from "@/framework/view/UrlTabs";
 import createApiClient from "@/framework/data/createApiClient";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
@@ -122,24 +122,46 @@ const AccountingPeriodPlanView = async function ({
           accountingPeriod.expectedGoalContributions
         }
       />
-      <FundGoalsFrame
-        goals={goalsWithProgress}
-        totalCount={goals.totalCount}
-        accountingPeriodId={accountingPeriodId}
-        returnUrl={currentUrl}
+      <UrlTabs
+        label="Accounting period plan views"
+        paramName="planTab"
+        tabs={[
+          {
+            value: "fund-goals",
+            label: "Fund Goals",
+            content: (
+              <FundGoalsFrame
+                goals={goalsWithProgress}
+                totalCount={goals.totalCount}
+                accountingPeriodId={accountingPeriodId}
+                returnUrl={currentUrl}
+              />
+            ),
+          },
+          {
+            value: "account-goals",
+            label: "Account Goals",
+            content: (
+              <AccountGoalsFrame
+                goals={accountGoalsWithProgress}
+                totalCount={accountGoals.totalCount}
+                accountingPeriodId={accountingPeriodId}
+                returnUrl={currentUrl}
+              />
+            ),
+          },
+          {
+            value: "income-sources",
+            label: "Expected Income Sources",
+            content: (
+              <ExpectedIncomeSourcesFrame
+                accountingPeriod={accountingPeriod}
+                redirectUrl={currentUrl}
+              />
+            ),
+          },
+        ]}
       />
-      <ResponsiveGrid columns={{ xs: 1, lg: 2 }} spacing={3}>
-        <AccountGoalsFrame
-          goals={accountGoalsWithProgress}
-          totalCount={accountGoals.totalCount}
-          accountingPeriodId={accountingPeriodId}
-          returnUrl={currentUrl}
-        />
-        <ExpectedIncomeSourcesFrame
-          accountingPeriod={accountingPeriod}
-          redirectUrl={currentUrl}
-        />
-      </ResponsiveGrid>
     </>
   );
 };

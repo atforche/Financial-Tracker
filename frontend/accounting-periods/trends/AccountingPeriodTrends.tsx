@@ -1,5 +1,6 @@
 import {
   AccountingPeriodSort,
+  type AccountingPeriodWithBalance,
   type AccountingPeriodWithBalanceSort,
 } from "@/accounting-periods/types";
 import {
@@ -18,6 +19,7 @@ import FundBalanceSummaryCards from "@/funds/FundBalanceSummaryCards";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import UrlTabs from "@/framework/view/UrlTabs";
 import { compareAccountingPeriods } from "@/accounting-periods/helpers";
 import createApiClient from "@/framework/data/createApiClient";
 import { createEmptyTrends } from "@/accounting-periods/trends/helpers";
@@ -38,6 +40,7 @@ interface AccountingPeriodTrendsSearchParams {
   pageSize?: number | string | null;
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;
+  tab?: "cash-flow" | "balances" | "accounting-periods";
 }
 
 /**
@@ -59,6 +62,7 @@ const AccountingPeriodTrends = async function ({
     pageSize,
     startAccountingPeriodId,
     endAccountingPeriodId,
+    tab,
   } = await searchParams;
 
   const apiClient = await createApiClient();
@@ -109,6 +113,7 @@ const AccountingPeriodTrends = async function ({
           .map((period) => period.id);
   })();
   let trends = createEmptyTrends();
+  let fullRangeAccountingPeriods: AccountingPeriodWithBalance[] = [];
   let accountBalanceSnapshot = getAccountTrendsSnapshot(
     "AccountingPeriod",
     [],
@@ -174,10 +179,11 @@ const AccountingPeriodTrends = async function ({
       ).accountingPeriods,
       [],
     );
-    rangeExpectations = unwrapApiResponse(
+    fullRangeAccountingPeriods = unwrapApiResponse(
       rangePeriodsResponse,
-      "Failed to fetch accounting period range totals",
-    ).accountingPeriods.items.reduce(
+      "Failed to fetch accounting period range",
+    ).accountingPeriods.items;
+    rangeExpectations = fullRangeAccountingPeriods.reduce(
       (totals, accountingPeriod) => ({
         expectedGoalContributions:
           totals.expectedGoalContributions +
@@ -193,7 +199,7 @@ const AccountingPeriodTrends = async function ({
     );
   }
   const chronologicalAccountingPeriods = [
-    ...trends.accountingPeriods.items,
+    ...fullRangeAccountingPeriods,
   ].sort(compareAccountingPeriods);
   const transactionWorkspaceHref =
     selectedAccountingPeriodIds.length === 0
@@ -201,6 +207,7 @@ const AccountingPeriodTrends = async function ({
       : transactionRoutes.workspace({
           accountingPeriodIds: selectedAccountingPeriodIds,
           returnUrl: routes.trends({
+            ...(typeof tab === "undefined" ? {} : { tab }),
             ...(typeof sort === "undefined" ? {} : { sort }),
             ...(typeof page === "undefined" ? {} : { page }),
             ...(typeof pageSize === "undefined" ? {} : { pageSize }),
@@ -225,47 +232,75 @@ const AccountingPeriodTrends = async function ({
           disabled={latestAccountingPeriod === null}
         />
       </ConstrainedContent>
-      <AccountBalanceSummaryCards
-        startingLabel={accountBalanceSnapshot.startLabel}
-        endingLabel={accountBalanceSnapshot.endLabel}
-        startingBalance={accountBalanceSnapshot.startingBalance}
-        endingBalance={accountBalanceSnapshot.endingBalance}
-        titlePrefix="Account"
+      <UrlTabs
+        label="Accounting period trends views"
+        paramName="tab"
+        tabs={[
+          {
+            value: "balances",
+            label: "Balances",
+            content: (
+              <PageLayout>
+                <AccountBalanceSummaryCards
+                  startingLabel={accountBalanceSnapshot.startLabel}
+                  endingLabel={accountBalanceSnapshot.endLabel}
+                  startingBalance={accountBalanceSnapshot.startingBalance}
+                  endingBalance={accountBalanceSnapshot.endingBalance}
+                  titlePrefix="Account"
+                />
+                <FundBalanceSummaryCards
+                  startingLabel={fundBalanceSnapshot.startLabel}
+                  endingLabel={fundBalanceSnapshot.endLabel}
+                  startingBalance={fundBalanceSnapshot.startingBalance}
+                  endingBalance={fundBalanceSnapshot.endingBalance}
+                  titlePrefix="Fund"
+                />
+                <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
+                  <AccountingPeriodTrendChart
+                    accountingPeriods={chronologicalAccountingPeriods}
+                  />
+                  <AccountingPeriodTrendsChangeChart
+                    accountingPeriods={chronologicalAccountingPeriods}
+                  />
+                </ResponsiveGrid>
+              </PageLayout>
+            ),
+          },
+          {
+            value: "cash-flow",
+            label: "Cash Flow",
+            content: (
+              <AccountingPeriodProgressFlow
+                expectedIncome={trends.totalExpectedIncome}
+                actualIncome={trends.totalIncome}
+                totalSpending={trends.totalSpending}
+                expectedFundGoalContributions={
+                  rangeExpectations.expectedGoalContributions
+                }
+                actualFundGoalContributions={
+                  rangeExpectations.actualGoalContributions
+                }
+                actualExtraFundGoalContributions={
+                  rangeExpectations.actualExtraGoalContributions
+                }
+              />
+            ),
+          },
+          {
+            value: "accounting-periods",
+            label: "Accounting Periods",
+            content: (
+              <ResponsiveGrid minimumColumnWidth={800}>
+                <AccountingPeriodTrendsListFrame
+                  data={trends.accountingPeriods.items}
+                  totalCount={trends.accountingPeriods.totalCount}
+                  transactionWorkspaceHref={transactionWorkspaceHref}
+                />
+              </ResponsiveGrid>
+            ),
+          },
+        ]}
       />
-      <FundBalanceSummaryCards
-        startingLabel={fundBalanceSnapshot.startLabel}
-        endingLabel={fundBalanceSnapshot.endLabel}
-        startingBalance={fundBalanceSnapshot.startingBalance}
-        endingBalance={fundBalanceSnapshot.endingBalance}
-        titlePrefix="Fund"
-      />
-      <AccountingPeriodProgressFlow
-        expectedIncome={trends.totalExpectedIncome}
-        actualIncome={trends.totalIncome}
-        totalSpending={trends.totalSpending}
-        expectedFundGoalContributions={
-          rangeExpectations.expectedGoalContributions
-        }
-        actualFundGoalContributions={rangeExpectations.actualGoalContributions}
-        actualExtraFundGoalContributions={
-          rangeExpectations.actualExtraGoalContributions
-        }
-      />
-      <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
-        <AccountingPeriodTrendChart
-          accountingPeriods={chronologicalAccountingPeriods}
-        />
-        <AccountingPeriodTrendsChangeChart
-          accountingPeriods={chronologicalAccountingPeriods}
-        />
-      </ResponsiveGrid>
-      <ResponsiveGrid minimumColumnWidth={800}>
-        <AccountingPeriodTrendsListFrame
-          data={trends.accountingPeriods.items}
-          totalCount={trends.accountingPeriods.totalCount}
-          transactionWorkspaceHref={transactionWorkspaceHref}
-        />
-      </ResponsiveGrid>
     </PageLayout>
   );
 };

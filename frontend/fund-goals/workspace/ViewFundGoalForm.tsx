@@ -15,6 +15,7 @@ import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import RecentBalanceActivity from "@/balance-events/RecentBalanceActivity";
 import type { Route } from "next";
+import UrlTabs from "@/framework/view/UrlTabs";
 
 /**
  * Props for the ViewFundGoalForm component.
@@ -52,27 +53,46 @@ const ViewFundGoalForm = function (props: ViewFundGoalFormProps): JSX.Element {
             progress={props.progress}
           />
         </Frame>
-        <RecentBalanceActivity
-          data={[] as FundGoalBalanceEvent[]}
-          dailyBalances={props.recentActivityBalances}
-          periodOpeningBalance={props.periodOpeningBalance}
-          trendsHref={props.trendsHref}
-          getPreviousBalance={(event) =>
-            event.previousTotals.amountAssigned -
-            event.previousTotals.amountSpent
-          }
-          getNewBalance={(event) =>
-            event.newTotals.amountAssigned - event.newTotals.amountSpent
-          }
-          title="Accounting Period Activity"
-          balanceLabel="Fund Balance"
-        />
-        <FundGoalBalanceEventsFrame
-          data={props.recentBalanceEvents}
-          totalCount={props.recentBalanceEventCount}
-          addTransactionHref={props.addTransactionHref}
-          accountingPeriodId={props.accountingPeriodId}
-          fundId={props.fundId}
+        <UrlTabs
+          label="Fund Goal workspace views"
+          paramName="tab"
+          tabs={[
+            {
+              value: "transactions",
+              label: "Transactions",
+              content: (
+                <FundGoalBalanceEventsFrame
+                  data={props.recentBalanceEvents}
+                  totalCount={props.recentBalanceEventCount}
+                  addTransactionHref={props.addTransactionHref}
+                  accountingPeriodId={props.accountingPeriodId}
+                  fundId={props.fundId}
+                />
+              ),
+            },
+            {
+              value: "activity",
+              label: "Activity",
+              content: (
+                <RecentBalanceActivity
+                  summaryFirst
+                  data={[] as FundGoalBalanceEvent[]}
+                  dailyBalances={props.recentActivityBalances}
+                  periodOpeningBalance={props.periodOpeningBalance}
+                  trendsHref={props.trendsHref}
+                  getPreviousBalance={(event) =>
+                    event.previousTotals.amountAssigned -
+                    event.previousTotals.amountSpent
+                  }
+                  getNewBalance={(event) =>
+                    event.newTotals.amountAssigned - event.newTotals.amountSpent
+                  }
+                  title="Accounting Period Activity"
+                  balanceLabel="Fund Balance"
+                />
+              ),
+            },
+          ]}
         />
       </PageLayout>
     </ConstrainedContent>
