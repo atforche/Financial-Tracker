@@ -147,7 +147,7 @@ const AccountWorkspaceDetailPage = async function ({
             Back to Workspace
           </Button>
         </Link>
-        <Typography variant="h4">Account Details</Typography>
+        <Typography variant="h4">{account.name}</Typography>
       </Stack>
       <ViewAccountForm
         account={account}

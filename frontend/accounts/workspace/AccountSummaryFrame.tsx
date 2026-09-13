@@ -24,7 +24,7 @@ const AccountSummaryFrame = function ({
   headerContent = null,
 }: AccountSummaryFrameProps): JSX.Element {
   return (
-    <Frame title="Account Summary" color="info" headerContent={headerContent}>
+    <Frame title="Details" color="info" headerContent={headerContent}>
       <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
         <StringEntryField
           label="Name"
