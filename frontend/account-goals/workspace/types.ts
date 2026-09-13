@@ -9,6 +9,7 @@ interface AccountGoalWorkspaceSearchParams {
   returnUrl?: string;
   balanceEventPage?: string;
   balanceEventSort?: AccountBalanceEventSort;
+  tab?: "transactions" | "activity";
   pageSize?: string;
 }
 

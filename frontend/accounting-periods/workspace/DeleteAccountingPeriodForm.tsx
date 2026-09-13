@@ -31,6 +31,7 @@ const DeleteAccountingPeriodForm = function ({
       actionLabel="Delete"
       actionVerb="delete"
       color="error"
+      preserveScroll={false}
     />
   );
 };

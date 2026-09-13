@@ -112,9 +112,6 @@ const AccountGoalBalanceEventsFrame = function ({
             accountIds: [accountId],
             returnUrl,
           }),
-          {
-            scroll: false,
-          },
         );
       }}
       hasActiveFilters={false}

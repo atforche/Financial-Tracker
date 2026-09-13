@@ -29,6 +29,7 @@ const CardResponsiveGrid = function ({
         flexWrap: wrap ? "wrap" : undefined,
         gap: spacing,
         width: contentSized ? { xs: "100%", sm: "max-content" } : undefined,
+        maxWidth: contentSized && wrap ? "100%" : undefined,
         justifyContent: "start",
         justifyItems: "stretch",
         alignItems: "start",

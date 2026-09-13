@@ -77,9 +77,7 @@ const AccountWorkspaceCards = function ({
     if (shouldPersistAccountTypes(accountTypes)) {
       detailSearchParams.accountType = accountTypes;
     }
-    router.push(routes.workspaceDetail(accountId, detailSearchParams), {
-      scroll: false,
-    });
+    router.push(routes.workspaceDetail(accountId, detailSearchParams));
   };
 
   const groupedAccounts = new Map<string | null, AccountWithBalance[]>();

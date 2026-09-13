@@ -12,6 +12,7 @@ import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import RecentBalanceActivity from "@/balance-events/RecentBalanceActivity";
 import type { Route } from "next";
+import UrlTabs from "@/framework/view/UrlTabs";
 
 interface ViewAccountGoalFormProps {
   readonly accountGoal: AccountGoal;
@@ -45,22 +46,43 @@ const ViewAccountGoalForm = function (
             endingBalance={props.progress.endingBalance}
           />
         </Frame>
-        <RecentBalanceActivity
-          data={[] as AccountBalanceEvent[]}
-          dailyBalances={props.recentActivityBalances}
-          periodOpeningBalance={props.periodOpeningBalance}
-          trendsHref={props.trendsHref}
-          getPreviousBalance={(event) => event.previousBalance.postedBalance}
-          getNewBalance={(event) => event.newBalance.postedBalance}
-          title="Accounting Period Activity"
-          balanceLabel="Account Balance"
-        />
-        <AccountGoalBalanceEventsFrame
-          data={props.recentBalanceEvents}
-          totalCount={props.recentBalanceEventCount}
-          addTransactionHref={props.addTransactionHref}
-          accountingPeriodId={props.accountingPeriodId}
-          accountId={props.accountId}
+        <UrlTabs
+          label="Account Goal workspace views"
+          paramName="tab"
+          tabs={[
+            {
+              value: "transactions",
+              label: "Transactions",
+              content: (
+                <AccountGoalBalanceEventsFrame
+                  data={props.recentBalanceEvents}
+                  totalCount={props.recentBalanceEventCount}
+                  addTransactionHref={props.addTransactionHref}
+                  accountingPeriodId={props.accountingPeriodId}
+                  accountId={props.accountId}
+                />
+              ),
+            },
+            {
+              value: "activity",
+              label: "Activity",
+              content: (
+                <RecentBalanceActivity
+                  summaryFirst
+                  data={[] as AccountBalanceEvent[]}
+                  dailyBalances={props.recentActivityBalances}
+                  periodOpeningBalance={props.periodOpeningBalance}
+                  trendsHref={props.trendsHref}
+                  getPreviousBalance={(event) =>
+                    event.previousBalance.postedBalance
+                  }
+                  getNewBalance={(event) => event.newBalance.postedBalance}
+                  title="Accounting Period Activity"
+                  balanceLabel="Account Balance"
+                />
+              ),
+            },
+          ]}
         />
       </PageLayout>
     </ConstrainedContent>

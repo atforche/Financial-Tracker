@@ -34,6 +34,7 @@ interface AccountingPeriodWorkspaceSearchParams {
   page?: number | string | null;
   pageSize?: number | string | null;
   view?: AccountingPeriodDetailView;
+  planTab?: "fund-goals" | "account-goals" | "income-sources";
   incomeSourcePage?: number | string | null;
   incomeSourceSort?: ExpectedIncomeSourceSort;
   fundGoalPage?: number | string | null;

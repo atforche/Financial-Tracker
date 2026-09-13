@@ -39,6 +39,7 @@ const AccountGoalWorkspaceDetailPage = async function ({
     returnUrl,
     balanceEventPage,
     balanceEventSort,
+    tab,
     pageSize,
   } = await searchParams;
   const selectedAccountIds = toRepeatedSearchParams(accountIds);
@@ -138,6 +139,7 @@ const AccountGoalWorkspaceDetailPage = async function ({
     ...(selectedAccountIds.length ? { accountIds: selectedAccountIds } : {}),
     ...(isNotNullOrUndefined(balanceEventPage) ? { balanceEventPage } : {}),
     ...(isNotNullOrUndefined(balanceEventSort) ? { balanceEventSort } : {}),
+    ...(isNotNullOrUndefined(tab) ? { tab } : {}),
     ...(isNotNullOrUndefined(pageSize) ? { pageSize } : {}),
     ...(isNotNullOrUndefined(returnUrl) ? { returnUrl } : {}),
   });

@@ -3,7 +3,6 @@
 import type { JSX, ReactNode } from "react";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
 import type { AccountWithBalance } from "@/accounts/types";
-import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import Frame from "@/framework/view/Frame";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import StringEntryField from "@/framework/forms/StringEntryField";
@@ -24,7 +23,7 @@ const AccountSummaryFrame = function ({
   headerContent = null,
 }: AccountSummaryFrameProps): JSX.Element {
   return (
-    <Frame title="Account Summary" color="info" headerContent={headerContent}>
+    <Frame title="Details" color="info" headerContent={headerContent}>
       <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
         <StringEntryField
           label="Name"
@@ -40,18 +39,6 @@ const AccountSummaryFrame = function ({
         />
         <AccountTypeEntryField
           value={account.type}
-          setValue={null}
-          errorMessage={null}
-        />
-        <CurrencyEntryField
-          label="Current Balance"
-          value={account.currentBalance.postedBalance}
-          setValue={null}
-          errorMessage={null}
-        />
-        <CurrencyEntryField
-          label="Balance Including Pending"
-          value={account.currentBalance.balanceIncludingPending}
           setValue={null}
           errorMessage={null}
         />

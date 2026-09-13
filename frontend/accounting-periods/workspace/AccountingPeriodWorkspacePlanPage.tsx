@@ -73,6 +73,9 @@ const AccountingPeriodWorkspacePlanPage = async function ({
     ...(typeof resolvedSearchParams.accountGoalSort !== "undefined"
       ? { accountGoalSort: resolvedSearchParams.accountGoalSort }
       : {}),
+    ...(typeof resolvedSearchParams.planTab !== "undefined"
+      ? { planTab: resolvedSearchParams.planTab }
+      : {}),
   });
 
   return (

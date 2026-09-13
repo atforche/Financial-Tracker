@@ -42,6 +42,7 @@ const FundGoalWorkspaceDetailPage = async function ({
     balanceEventPage,
     pageSize,
     balanceEventSort,
+    tab,
     returnUrl,
   } = await searchParams;
   const rowsPerPage = getRowsPerPage(pageSize);
@@ -137,6 +138,7 @@ const FundGoalWorkspaceDetailPage = async function ({
     ...(isNotNullOrUndefined(search) ? { search } : {}),
     ...(isNotNullOrUndefined(balanceEventPage) ? { balanceEventPage } : {}),
     ...(isNotNullOrUndefined(balanceEventSort) ? { balanceEventSort } : {}),
+    ...(isNotNullOrUndefined(tab) ? { tab } : {}),
     ...(isNotNullOrUndefined(returnUrl) ? { returnUrl } : {}),
   });
   return (

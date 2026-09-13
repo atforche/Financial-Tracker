@@ -84,7 +84,6 @@ const AccountBalanceEventsFrame = function ({
       routes.workspaceDetail(balanceEvent.transactionId, {
         returnUrl,
       }),
-      { scroll: false },
     );
   };
 

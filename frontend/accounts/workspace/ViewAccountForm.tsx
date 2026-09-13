@@ -5,11 +5,12 @@ import type {
   AccountBalanceSummaryByDate,
   AccountWithBalance,
 } from "@/accounts/types";
-import { Button, Stack } from "@mui/material";
+import { Box, Button, Stack, Tab, Tabs } from "@mui/material";
 import { type JSX, useState } from "react";
 import AccountBalanceEventsFrame from "@/accounts/workspace/AccountBalanceEventsFrame";
 import AccountSummaryFrame from "@/accounts/workspace/AccountSummaryFrame";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
+import CurrentBalanceFrame from "@/accounts/workspace/CurrentBalanceFrame";
 import DeleteAccountForm from "@/accounts/workspace/DeleteAccountForm";
 import PageLayout from "@/framework/view/PageLayout";
 import RecentBalanceActivity from "@/balance-events/RecentBalanceActivity";
@@ -50,6 +51,9 @@ const ViewAccountForm = function ({
 }: ViewAccountFormProps): JSX.Element {
   const canWrite = useWriteAccess();
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [activeView, setActiveView] = useState<"transactions" | "activity">(
+    "transactions",
+  );
 
   return (
     <ConstrainedContent maxWidth={1200}>
@@ -75,18 +79,64 @@ const ViewAccountForm = function ({
             )
           }
         />
-        <RecentBalanceActivity
-          data={recentActivityEvents}
-          dailyBalances={recentActivityBalances}
-          trendsHref={trendsHref}
-          getPreviousBalance={(event) => event.previousBalance.postedBalance}
-          getNewBalance={(event) => event.newBalance.postedBalance}
-        />
-        <AccountBalanceEventsFrame
-          data={recentBalanceEvents}
-          totalCount={recentBalanceEventCount}
-          addTransactionHref={addTransactionHref}
-        />
+        <CurrentBalanceFrame account={account} />
+        <Box>
+          <Tabs
+            value={activeView}
+            onChange={(_, value: "transactions" | "activity") => {
+              setActiveView(value);
+            }}
+            aria-label="Account workspace views"
+            sx={{ mb: 2 }}
+          >
+            <Tab
+              value="transactions"
+              label="Transactions"
+              id="account-transactions-tab"
+              aria-controls="account-transactions-panel"
+            />
+            <Tab
+              value="activity"
+              label="Recent Activity"
+              id="account-activity-tab"
+              aria-controls="account-activity-panel"
+            />
+          </Tabs>
+          <Box
+            role="tabpanel"
+            id="account-transactions-panel"
+            aria-labelledby="account-transactions-tab"
+            hidden={activeView !== "transactions"}
+          >
+            {activeView === "transactions" ? (
+              <AccountBalanceEventsFrame
+                data={recentBalanceEvents}
+                totalCount={recentBalanceEventCount}
+                addTransactionHref={addTransactionHref}
+              />
+            ) : null}
+          </Box>
+          <Box
+            role="tabpanel"
+            id="account-activity-panel"
+            aria-labelledby="account-activity-tab"
+            hidden={activeView !== "activity"}
+          >
+            {activeView === "activity" ? (
+              <RecentBalanceActivity
+                summaryFirst
+                title="Balance Activity"
+                data={recentActivityEvents}
+                dailyBalances={recentActivityBalances}
+                trendsHref={trendsHref}
+                getPreviousBalance={(event) =>
+                  event.previousBalance.postedBalance
+                }
+                getNewBalance={(event) => event.newBalance.postedBalance}
+              />
+            ) : null}
+          </Box>
+        </Box>
         {canWrite && updateDialogOpen ? (
           <UpdateAccountForm
             account={account}
