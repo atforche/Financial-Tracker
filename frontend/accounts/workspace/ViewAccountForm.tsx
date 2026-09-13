@@ -10,6 +10,7 @@ import { type JSX, useState } from "react";
 import AccountBalanceEventsFrame from "@/accounts/workspace/AccountBalanceEventsFrame";
 import AccountSummaryFrame from "@/accounts/workspace/AccountSummaryFrame";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
+import CurrentBalanceFrame from "@/accounts/workspace/CurrentBalanceFrame";
 import DeleteAccountForm from "@/accounts/workspace/DeleteAccountForm";
 import PageLayout from "@/framework/view/PageLayout";
 import RecentBalanceActivity from "@/balance-events/RecentBalanceActivity";
@@ -75,6 +76,7 @@ const ViewAccountForm = function ({
             )
           }
         />
+        <CurrentBalanceFrame account={account} />
         <RecentBalanceActivity
           data={recentActivityEvents}
           dailyBalances={recentActivityBalances}
