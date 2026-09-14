@@ -5,7 +5,9 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import type { JSX } from "react";
 import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
+import PeriodNavigation from "@/framework/view/PeriodNavigation";
 import createApiClient from "@/framework/data/createApiClient";
+import getAdjacentAccountingPeriods from "@/accounting-periods/workspace/periodNavigation";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -52,7 +54,25 @@ const AccountingPeriodWorkspacePlanPage = async function ({
     periodResponse,
     "Failed to fetch accounting period",
   );
+  const { previousPeriod, nextPeriod } = await getAdjacentAccountingPeriods(
+    period.id,
+  );
   const cashFlowHref = routes.workspaceDetail(period.id, workspaceParams);
+  const adjacentPlanParams = {
+    ...workspaceParams,
+    ...(typeof resolvedSearchParams.planTab !== "undefined"
+      ? { planTab: resolvedSearchParams.planTab }
+      : {}),
+    ...(typeof resolvedSearchParams.incomeSourceSort !== "undefined"
+      ? { incomeSourceSort: resolvedSearchParams.incomeSourceSort }
+      : {}),
+    ...(typeof resolvedSearchParams.fundGoalSort !== "undefined"
+      ? { fundGoalSort: resolvedSearchParams.fundGoalSort }
+      : {}),
+    ...(typeof resolvedSearchParams.accountGoalSort !== "undefined"
+      ? { accountGoalSort: resolvedSearchParams.accountGoalSort }
+      : {}),
+  } satisfies AccountingPeriodWorkspaceSearchParams;
   const currentUrl = routes.workspacePlan(period.id, {
     ...workspaceParams,
     ...(typeof resolvedSearchParams.incomeSourcePage !== "undefined"
@@ -89,7 +109,38 @@ const AccountingPeriodWorkspacePlanPage = async function ({
             Back to Cash Flow
           </Button>
         </Link>
-        <Typography variant="h4">Plan for {period.name}</Typography>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          alignItems={{ xs: "flex-start", sm: "center" }}
+          justifyContent="space-between"
+          gap={2}
+        >
+          <Typography variant="h4">Plan for {period.name}</Typography>
+          <PeriodNavigation
+            previousPeriod={
+              previousPeriod === null
+                ? null
+                : {
+                    name: previousPeriod.name,
+                    href: routes.workspacePlan(
+                      previousPeriod.id,
+                      adjacentPlanParams,
+                    ),
+                  }
+            }
+            nextPeriod={
+              nextPeriod === null
+                ? null
+                : {
+                    name: nextPeriod.name,
+                    href: routes.workspacePlan(
+                      nextPeriod.id,
+                      adjacentPlanParams,
+                    ),
+                  }
+            }
+          />
+        </Stack>
       </Stack>
       <AccountingPeriodPlanView
         accountingPeriod={period}

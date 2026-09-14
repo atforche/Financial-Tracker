@@ -32,7 +32,9 @@ const AccountGoalAchievementTrendChart = function ({
         );
         return match === undefined
           ? ""
-          : `${match.satisfiedGoalCount} of ${match.configuredGoalCount} Account Goals achieved.`;
+          : match.configuredGoalCount === 0
+            ? "No Account Goals in this period."
+            : `${match.satisfiedGoalCount} of ${match.configuredGoalCount} Account Goals ${match.isOpen ? "currently meeting their goals (period open)" : "achieved"}.`;
       }}
       yAxisDomain={[0, 100]}
     />

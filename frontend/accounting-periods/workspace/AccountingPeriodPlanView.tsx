@@ -10,6 +10,7 @@ import {
 } from "@/framework/listframe/page";
 import AccountGoalsFrame from "@/accounting-periods/workspace/AccountGoalsFrame";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
+import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import ExpectedIncomeFundGoalContributionsCard from "@/accounting-periods/workspace/ExpectedIncomeFundGoalContributionsCard";
 import ExpectedIncomeSourcesFrame from "@/accounting-periods/workspace/ExpectedIncomeSourcesFrame";
 import FundGoalsFrame from "@/accounting-periods/workspace/FundGoalsFrame";
@@ -115,13 +116,17 @@ const AccountingPeriodPlanView = async function ({
 
   return (
     <>
-      <ExpectedIncomeFundGoalContributionsCard
-        expectedIncome={accountingPeriod.expectedIncome}
-        plannedFundGoalContributions={accountingPeriod.plannedGoalContributions}
-        expectedFundGoalContributions={
-          accountingPeriod.expectedGoalContributions
-        }
-      />
+      <ConstrainedContent maxWidth={1200}>
+        <ExpectedIncomeFundGoalContributionsCard
+          expectedIncome={accountingPeriod.expectedIncome}
+          plannedFundGoalContributions={
+            accountingPeriod.plannedGoalContributions
+          }
+          expectedFundGoalContributions={
+            accountingPeriod.expectedGoalContributions
+          }
+        />
+      </ConstrainedContent>
       <UrlTabs
         label="Accounting period plan views"
         paramName="planTab"
