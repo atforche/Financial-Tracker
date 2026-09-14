@@ -2,15 +2,14 @@ import {
   type AccountGoalPeriodProgress,
   buildAccountGoalTrendPoints,
 } from "@/account-goals/trends/accountGoalProgressTrends";
-import AccountGoalAchievementTrendChart from "@/account-goals/trends/AccountGoalAchievementTrendChart";
-import AccountGoalStatusTrendChart from "@/account-goals/trends/AccountGoalStatusTrendChart";
+import AccountGoalHistory from "@/account-goals/trends/AccountGoalHistory";
+import AccountGoalOverview from "@/account-goals/trends/AccountGoalOverview";
 import AccountGoalTrendsFilter from "@/account-goals/trends/AccountGoalTrendsFilter";
 import type { AccountGoalTrendsSearchParams } from "@/account-goals/trends/helpers";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import TrendsBackLink from "@/framework/view/TrendsBackLink";
 import createApiClient from "@/framework/data/createApiClient";
 import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
@@ -18,7 +17,6 @@ import { isNullOrUndefined } from "@/framework/nullHelpers";
 import loadAllPages from "@/framework/data/loadAllPages";
 import { redirect } from "next/navigation";
 import routes from "@/account-goals/routes";
-import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -92,11 +90,44 @@ const AccountGoalTrends = async function ({
       "Failed to load Account Goals",
     ),
   );
-  const accountNames = toRepeatedSearchParams(params.accountName);
-  const filteredAccountGoals = accountGoals.filter(
-    (goal) =>
-      accountNames.length === 0 || accountNames.includes(goal.account.name),
+  const accountsInRange = [
+    ...new Map(
+      accountGoals.map((goal) => [
+        goal.account.id,
+        { id: goal.account.id, name: goal.account.name },
+      ]),
+    ).values(),
+  ].sort((a, b) => a.name.localeCompare(b.name));
+  const selectedAccountInRange = accountsInRange.find(
+    (account) => account.id === params.accountId,
   );
+  const selectedAccountId = params.accountId;
+  const accountGoalsOutsideRange =
+    selectedAccountInRange === undefined && selectedAccountId !== undefined
+      ? await loadAllPages(async (limit, offset) =>
+          unwrapApiResponse(
+            await apiClient.GET("/account-goals", {
+              params: {
+                query: {
+                  "Filter.AccountIds": [selectedAccountId],
+                  Limit: limit,
+                  Offset: offset,
+                },
+              },
+            }),
+            "Failed to load Account Goals",
+          ),
+        )
+      : [];
+  const selectedAccount =
+    selectedAccountInRange ?? accountGoalsOutsideRange[0]?.account;
+  const accounts =
+    selectedAccount !== undefined &&
+    !accountsInRange.some((account) => account.id === selectedAccount.id)
+      ? [...accountsInRange, selectedAccount].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        )
+      : accountsInRange;
   const progressById = new Map(
     (
       await Promise.all(
@@ -115,10 +146,14 @@ const AccountGoalTrends = async function ({
       .map((result) => [result.accountGoalId, result.progress]),
   );
   const progressByPeriod = new Map<string, AccountGoalPeriodProgress[]>();
-  filteredAccountGoals.forEach((accountGoal) => {
+  const historyEntries: AccountGoalPeriodProgress[] = [];
+  accountGoals.forEach((accountGoal) => {
     const progress = progressById.get(accountGoal.id);
     const periodId = accountGoal.accountingPeriod?.id;
     if (progress !== undefined && periodId !== undefined) {
+      if (accountGoal.account.id === selectedAccount?.id) {
+        historyEntries.push({ accountGoal, progress });
+      }
       const entries = progressByPeriod.get(periodId) ?? [];
       entries.push({ accountGoal, progress });
       progressByPeriod.set(periodId, entries);
@@ -139,15 +174,24 @@ const AccountGoalTrends = async function ({
       <ConstrainedContent>
         <AccountGoalTrendsFilter
           accountingPeriods={periods}
-          availableAccountNames={[
-            ...new Set(accountGoals.map((goal) => goal.account.name)),
-          ]}
+          accounts={accounts}
         />
       </ConstrainedContent>
-      <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
-        <AccountGoalAchievementTrendChart chartPoints={chartPoints} />
-        <AccountGoalStatusTrendChart chartPoints={chartPoints} />
-      </ResponsiveGrid>
+      {selectedAccount === undefined ? (
+        <AccountGoalOverview
+          points={chartPoints}
+          periods={selectedPeriods}
+          progressByPeriod={progressByPeriod}
+          accounts={accounts}
+          searchParams={params}
+        />
+      ) : (
+        <AccountGoalHistory
+          periods={[...selectedPeriods].reverse()}
+          entries={historyEntries}
+          accountName={selectedAccount.name}
+        />
+      )}
     </PageLayout>
   );
 };

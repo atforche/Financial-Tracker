@@ -68,13 +68,11 @@ const AccountGoalStatusTrendChart = function ({
               const point =
                 isObject(payload) &&
                 typeof payload["accountingPeriodName"] === "string" &&
-                typeof payload["belowZeroCount"] === "number" &&
                 typeof payload["belowMinimumCount"] === "number" &&
                 typeof payload["withinRangeCount"] === "number" &&
                 typeof payload["aboveMaximumCount"] === "number"
                   ? {
                       accountingPeriodName: payload["accountingPeriodName"],
-                      belowZeroCount: payload["belowZeroCount"],
                       belowMinimumCount: payload["belowMinimumCount"],
                       withinRangeCount: payload["withinRangeCount"],
                       aboveMaximumCount: payload["aboveMaximumCount"],
@@ -83,18 +81,12 @@ const AccountGoalStatusTrendChart = function ({
               return !props.active || point === null ? null : (
                 <ChartTooltip
                   label={point.accountingPeriodName}
-                  value={`Below zero: ${point.belowZeroCount}`}
-                  description={`Below minimum: ${point.belowMinimumCount}; Within range: ${point.withinRangeCount}; Above maximum: ${point.aboveMaximumCount}`}
+                  value={`Below minimum: ${point.belowMinimumCount}`}
+                  description={`Within range: ${point.withinRangeCount}; Above maximum: ${point.aboveMaximumCount}`}
                 />
               );
             }}
             cursor={{ fill: alpha(theme.palette.primary.main, 0.08) }}
-          />
-          <Bar
-            dataKey="belowZeroCount"
-            stackId="status"
-            fill={theme.palette.error.dark}
-            name="Below zero"
           />
           <Bar
             dataKey="belowMinimumCount"

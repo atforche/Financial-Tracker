@@ -119,7 +119,9 @@ const AccountingPeriodPlanView = async function ({
       <ConstrainedContent maxWidth={1200}>
         <ExpectedIncomeFundGoalContributionsCard
           expectedIncome={accountingPeriod.expectedIncome}
-          plannedFundGoalContributions={accountingPeriod.plannedGoalContributions}
+          plannedFundGoalContributions={
+            accountingPeriod.plannedGoalContributions
+          }
           expectedFundGoalContributions={
             accountingPeriod.expectedGoalContributions
           }

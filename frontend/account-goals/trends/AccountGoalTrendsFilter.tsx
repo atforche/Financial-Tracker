@@ -4,13 +4,8 @@ import type {
   AccountingPeriod,
   AccountingPeriodRange,
 } from "@/accounting-periods/types";
-import {
-  normalizeAccountNames,
-  shouldPersistAccountNames,
-} from "@/accounts/accountNameFilterHelpers";
-import AccountNameFilter from "@/accounts/AccountNameFilter";
+import { Button, MenuItem, TextField } from "@mui/material";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
-import { Button } from "@mui/material";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import { accountGoalTrendsParamNames } from "@/account-goals/trends/helpers";
@@ -20,7 +15,7 @@ import { useSearchParams } from "next/navigation";
 
 interface AccountGoalTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
-  readonly availableAccountNames: readonly string[];
+  readonly accounts: readonly { readonly id: string; readonly name: string }[];
 }
 
 /**
@@ -28,18 +23,19 @@ interface AccountGoalTrendsFilterProps {
  */
 const AccountGoalTrendsFilter = function ({
   accountingPeriods,
-  availableAccountNames,
+  accounts,
 }: AccountGoalTrendsFilterProps): JSX.Element {
   const defaultRange = getDefaultTrendAccountingPeriodRange(accountingPeriods);
   const defaultStartAccountingPeriodId = defaultRange?.start ?? null;
   const defaultEndAccountingPeriodId = defaultRange?.end ?? null;
   const searchParams = useSearchParams();
-  const { accountName, startAccountingPeriodId, endAccountingPeriodId } =
+  const { accountId, startAccountingPeriodId, endAccountingPeriodId } =
     accountGoalTrendsParamNames;
-  const currentAccountNames = normalizeAccountNames(
-    searchParams.getAll(accountName),
-    availableAccountNames,
-  );
+  const selectedAccountId = accounts.some(
+    (account) => account.id === searchParams.get(accountId),
+  )
+    ? (searchParams.get(accountId) ?? "")
+    : "all";
   const start =
     searchParams.get(startAccountingPeriodId) ??
     defaultStartAccountingPeriodId ??
@@ -50,7 +46,7 @@ const AccountGoalTrendsFilter = function ({
     "";
   const updateParams = useSearchParamUpdater([]);
   const hasActiveView =
-    shouldPersistAccountNames(currentAccountNames) ||
+    selectedAccountId !== "all" ||
     start !== (defaultStartAccountingPeriodId ?? "") ||
     end !== (defaultEndAccountingPeriodId ?? "");
 
@@ -67,25 +63,36 @@ const AccountGoalTrendsFilter = function ({
           });
         }}
       />
-      <AccountNameFilter
-        availableAccountNames={availableAccountNames}
-        value={currentAccountNames}
-        onChange={(names) => {
+      <TextField
+        select
+        label="View"
+        size="small"
+        value={selectedAccountId}
+        onChange={(event) => {
           updateParams((params) => {
-            params.delete(accountName);
-            if (shouldPersistAccountNames(names)) {
-              names.forEach((name) => {
-                params.append(accountName, name);
-              });
+            params.delete(accountGoalTrendsParamNames.accountName);
+            if (event.target.value === "all") {
+              params.delete(accountId);
+            } else {
+              params.set(accountId, event.target.value);
             }
           });
         }}
-      />
+        sx={{ minWidth: 220 }}
+      >
+        <MenuItem value="all">All Accounts</MenuItem>
+        {accounts.map((account) => (
+          <MenuItem key={account.id} value={account.id}>
+            {account.name}
+          </MenuItem>
+        ))}
+      </TextField>
       <Button
         variant="outlined"
         onClick={() => {
           updateParams((params) => {
-            params.delete(accountName);
+            params.delete(accountId);
+            params.delete(accountGoalTrendsParamNames.accountName);
             params.set(
               startAccountingPeriodId,
               defaultStartAccountingPeriodId ?? "",

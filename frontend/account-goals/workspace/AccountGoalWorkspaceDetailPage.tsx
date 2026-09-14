@@ -15,6 +15,7 @@ import type { Route } from "next";
 import ViewAccountGoalForm from "@/account-goals/workspace/ViewAccountGoalForm";
 import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
+import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import loadAllPages from "@/framework/data/loadAllPages";
 import { redirect } from "next/navigation";
 import routes from "@/account-goals/routes";
@@ -105,6 +106,9 @@ const AccountGoalWorkspaceDetailPage = async function ({
     );
   const currentPeriodIndex = orderedPeriods.findIndex(
     (period) => period.id === periodId,
+  );
+  const trendsRange = getDefaultTrendAccountingPeriodRange(
+    orderedPeriods.slice(0, currentPeriodIndex + 1).reverse(),
   );
   const periodNavigationHref = (nextPeriodId: string): Route =>
     routes.workspaceDetail(accountId, {
@@ -218,8 +222,8 @@ const AccountGoalWorkspaceDetailPage = async function ({
         accountingPeriodId={periodId}
         accountId={accountId}
         trendsHref={routes.trends({
-          accountName: [accountGoal.account.name],
-          startAccountingPeriodId: periodId,
+          accountId,
+          startAccountingPeriodId: trendsRange?.start ?? periodId,
           endAccountingPeriodId: periodId,
           returnUrl: currentUrl,
         })}

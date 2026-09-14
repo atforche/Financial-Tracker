@@ -12,25 +12,25 @@ interface AccountGoalPeriodProgress {
 interface AccountGoalTrendPoint {
   readonly accountingPeriodId: string;
   readonly accountingPeriodName: string;
+  readonly isOpen: boolean;
   readonly configuredGoalCount: number;
   readonly satisfiedGoalCount: number;
   readonly satisfiedPercentage: number;
-  readonly belowZeroCount: number;
   readonly belowMinimumCount: number;
   readonly withinRangeCount: number;
   readonly aboveMaximumCount: number;
 }
 
 const getAccountGoalTrendPoint = function (
-  accountingPeriod: { readonly id: string; readonly name: string },
+  accountingPeriod: {
+    readonly id: string;
+    readonly name: string;
+    readonly isOpen: boolean;
+  },
   progress: readonly AccountGoalPeriodProgress[],
 ): AccountGoalTrendPoint {
-  const belowZeroCount = progress.filter(
-    ({ progress: item }) => item.endingBalance.currentBalance < 0,
-  ).length;
   const belowMinimumCount = progress.filter(
     ({ progress: item }) =>
-      item.endingBalance.currentBalance >= 0 &&
       item.endingBalance.status === AccountGoalEndingBalanceStatus.BelowMinimum,
   ).length;
   const aboveMaximumCount = progress.filter(
@@ -49,13 +49,13 @@ const getAccountGoalTrendPoint = function (
   return {
     accountingPeriodId: accountingPeriod.id,
     accountingPeriodName: accountingPeriod.name,
+    isOpen: accountingPeriod.isOpen,
     configuredGoalCount,
     satisfiedGoalCount,
     satisfiedPercentage:
       configuredGoalCount === 0
         ? 0
         : (satisfiedGoalCount / configuredGoalCount) * 100,
-    belowZeroCount,
     belowMinimumCount,
     withinRangeCount,
     aboveMaximumCount,
@@ -66,7 +66,11 @@ const getAccountGoalTrendPoint = function (
  * Aggregates Account Goal progress into trend points.
  */
 const buildAccountGoalTrendPoints = function (
-  accountingPeriods: readonly { readonly id: string; readonly name: string }[],
+  accountingPeriods: readonly {
+    readonly id: string;
+    readonly name: string;
+    readonly isOpen: boolean;
+  }[],
   progressByAccountingPeriodId: ReadonlyMap<
     string,
     readonly AccountGoalPeriodProgress[]
