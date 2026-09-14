@@ -6,4 +6,5 @@ namespace Domain.FundGoals.Queries;
 public sealed record FundGoalFilter(
     IReadOnlyCollection<Guid> FundIds,
     IReadOnlyCollection<Guid> AccountingPeriodIds,
-    bool? IncludeOnboarded);
+    bool? IncludeOnboarded,
+    string? NameSearch);

@@ -6,6 +6,11 @@ namespace Models.FundGoals;
 public sealed class FundGoalFilterModel
 {
     /// <summary>
+    /// Gets the text to match against Fund names.
+    /// </summary>
+    public string? NameSearch { get; init; }
+
+    /// <summary>
     /// Gets the Fund IDs to include.
     /// </summary>
     public IReadOnlyCollection<Guid>? FundIds { get; init; }

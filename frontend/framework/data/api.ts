@@ -1628,6 +1628,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    "Filter.NameSearch"?: string;
                     "Filter.FundIds"?: string[];
                     "Filter.AccountingPeriodIds"?: string[];
                     "Filter.IncludeOnboarded"?: boolean;

@@ -20,7 +20,8 @@ public sealed class FundGoalConverter
         new FundGoalFilter(
             model.Filter?.FundIds ?? [],
             model.Filter?.AccountingPeriodIds ?? [],
-            model.Filter?.IncludeOnboarded),
+            model.Filter?.IncludeOnboarded,
+            model.Filter?.NameSearch),
         model.Sort switch
         {
             FundGoalSortModel.Fund => FundGoalSort.Fund,

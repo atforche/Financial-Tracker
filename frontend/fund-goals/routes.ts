@@ -10,16 +10,8 @@ import type { Route } from "next";
 /**
  * Converts the provided Fund Goal Workspace Search Params into URL search params.
  */
-const fundGoalWorkspaceSearchParamsToSearchParams = function (
-  searchParams: FundGoalWorkspaceSearchParams,
-): URLSearchParams {
-  const { fundIds, ...remainingSearchParams } = searchParams;
-  const params = objectToSearchParams(remainingSearchParams);
-
-  appendRepeatedSearchParam(params, "fundIds", fundIds);
-
-  return params;
-};
+const fundGoalWorkspaceSearchParamsToSearchParams =
+  objectToSearchParams<FundGoalWorkspaceSearchParams>;
 
 /**
  * Converts the provided Fund Goal Trends Search Params into URL search params.

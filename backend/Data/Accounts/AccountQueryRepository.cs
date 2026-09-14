@@ -234,9 +234,10 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
     {
         if (!string.IsNullOrWhiteSpace(filter.NameSearch))
         {
-            query = query.Where(account => EF.Functions.Like(account.Name, $"%{filter.NameSearch}%")
+            string pattern = LikeSearchPattern.Contains(filter.NameSearch);
+            query = query.Where(account => EF.Functions.Like(account.Name, pattern, LikeSearchPattern.EscapeCharacter)
                 || (account.FinancialInstitution != null
-                    && EF.Functions.Like(account.FinancialInstitution, $"%{filter.NameSearch}%")));
+                    && EF.Functions.Like(account.FinancialInstitution, pattern, LikeSearchPattern.EscapeCharacter)));
         }
         if (filter.Names.Count > 0)
         {

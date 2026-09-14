@@ -29,11 +29,13 @@ const FundGoalContextFrame = function ({
     <Frame
       title="Details"
       headerContent={
-        <UpdateFundGoalForm
-          fundGoal={fundGoal}
-          accountingPeriod={accountingPeriod}
-          redirectUrl={redirectUrl}
-        />
+        fundGoal.accountingPeriod?.isOpen === true ? (
+          <UpdateFundGoalForm
+            fundGoal={fundGoal}
+            accountingPeriod={accountingPeriod}
+            redirectUrl={redirectUrl}
+          />
+        ) : null
       }
     >
       <ResponsiveGrid columns={{ xs: 1 }} spacing={2}>

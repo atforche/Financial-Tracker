@@ -14,10 +14,10 @@ import PageLayout from "@/framework/view/PageLayout";
 import type { Route } from "next";
 import ViewFundGoalForm from "@/fund-goals/workspace/ViewFundGoalForm";
 import createApiClient from "@/framework/data/createApiClient";
+import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import loadAllPages from "@/framework/data/loadAllPages";
 import { redirect } from "next/navigation";
 import routes from "@/fund-goals/routes";
-import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
@@ -39,7 +39,6 @@ const FundGoalWorkspaceDetailPage = async function ({
   const { fundId } = await params;
   const {
     accountingPeriodId,
-    fundIds,
     search,
     balanceEventPage,
     pageSize,
@@ -48,7 +47,6 @@ const FundGoalWorkspaceDetailPage = async function ({
     returnUrl,
   } = await searchParams;
   const rowsPerPage = getRowsPerPage(pageSize);
-  const selectedFundIds = toRepeatedSearchParams(fundIds);
   const apiClient = await createApiClient();
   const periods = unwrapApiResponse(
     await apiClient.GET("/accounting-periods", {
@@ -59,7 +57,6 @@ const FundGoalWorkspaceDetailPage = async function ({
   const periodId = accountingPeriodId ?? periods.items[0]?.id;
   const workspaceUrl = routes.workspace({
     ...(isNotNullOrUndefined(periodId) ? { accountingPeriodId: periodId } : {}),
-    ...(selectedFundIds.length ? { fundIds: selectedFundIds } : {}),
     ...(isNotNullOrUndefined(search) ? { search } : {}),
     ...(isNotNullOrUndefined(returnUrl) ? { returnUrl } : {}),
   });
@@ -108,10 +105,12 @@ const FundGoalWorkspaceDetailPage = async function ({
   const currentPeriodIndex = orderedPeriods.findIndex(
     (period) => period.id === periodId,
   );
+  const trendsRange = getDefaultTrendAccountingPeriodRange(
+    orderedPeriods.slice(0, currentPeriodIndex + 1).reverse(),
+  );
   const periodNavigationHref = (nextPeriodId: string): Route =>
     routes.workspaceDetail(fundId, {
       accountingPeriodId: nextPeriodId,
-      ...(selectedFundIds.length ? { fundIds: selectedFundIds } : {}),
       ...(isNotNullOrUndefined(search) ? { search } : {}),
       ...(isNotNullOrUndefined(balanceEventSort) ? { balanceEventSort } : {}),
       ...(isNotNullOrUndefined(tab) ? { tab } : {}),
@@ -177,11 +176,11 @@ const FundGoalWorkspaceDetailPage = async function ({
   );
   const currentUrl = routes.workspaceDetail(fundId, {
     accountingPeriodId: periodId,
-    ...(selectedFundIds.length ? { fundIds: selectedFundIds } : {}),
     ...(isNotNullOrUndefined(search) ? { search } : {}),
     ...(isNotNullOrUndefined(balanceEventPage) ? { balanceEventPage } : {}),
     ...(isNotNullOrUndefined(balanceEventSort) ? { balanceEventSort } : {}),
     ...(isNotNullOrUndefined(tab) ? { tab } : {}),
+    ...(isNotNullOrUndefined(pageSize) ? { pageSize } : {}),
     ...(isNotNullOrUndefined(returnUrl) ? { returnUrl } : {}),
   });
   return (
@@ -216,7 +215,7 @@ const FundGoalWorkspaceDetailPage = async function ({
         periodOpeningBalance={balanceDates.openingBalance}
         trendsHref={routes.trends({
           fundName: [fundGoal.fund.name],
-          startAccountingPeriodId: periodId,
+          startAccountingPeriodId: trendsRange?.start ?? periodId,
           endAccountingPeriodId: periodId,
           returnUrl: currentUrl,
         })}

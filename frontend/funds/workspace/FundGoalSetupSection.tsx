@@ -29,6 +29,9 @@ interface FundGoalSetupSectionProps {
   readonly allowExpectedContributionAboveMaximum: boolean;
   readonly setAllowExpectedContributionAboveMaximum:
     ((value: boolean) => void) | null;
+  readonly plannedMonthlyContributionErrors?: string | null;
+  readonly minimumEndingBalanceErrors?: string | null;
+  readonly maximumEndingBalanceErrors?: string | null;
 }
 
 /**
@@ -47,6 +50,9 @@ const FundGoalSetupSection = function ({
   setMaximumEndingBalance,
   allowExpectedContributionAboveMaximum,
   setAllowExpectedContributionAboveMaximum,
+  plannedMonthlyContributionErrors = null,
+  minimumEndingBalanceErrors = null,
+  maximumEndingBalanceErrors = null,
 }: FundGoalSetupSectionProps): JSX.Element {
   const expectedIncome = accountingPeriod?.expectedIncome.tracked ?? 0;
   const totalPlannedContributions = getCurrencyTotal([
@@ -75,6 +81,7 @@ const FundGoalSetupSection = function ({
     <Stack spacing={2}>
       <CurrencyEntryField
         label="Minimum Ending Balance"
+        errorMessage={minimumEndingBalanceErrors}
         value={minimumEndingBalance}
         setValue={
           setMinimumEndingBalance === null
@@ -88,7 +95,7 @@ const FundGoalSetupSection = function ({
         label="Maximum Ending Balance"
         value={maximumEndingBalance}
         setValue={setMaximumEndingBalance}
-        errorMessage={null}
+        errorMessage={maximumEndingBalanceErrors}
         additionalControl={
           <FormControlLabel
             sx={{
@@ -114,7 +121,7 @@ const FundGoalSetupSection = function ({
         label="Planned Monthly Contribution"
         value={plannedMonthlyContribution}
         setValue={setPlannedMonthlyContribution}
-        errorMessage={null}
+        errorMessage={plannedMonthlyContributionErrors}
       />
       {accountingPeriod !== null && plannedMonthlyContribution !== null ? (
         <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.75}>

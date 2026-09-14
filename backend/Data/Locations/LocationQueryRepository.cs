@@ -16,7 +16,8 @@ public sealed class LocationQueryRepository(DatabaseContext databaseContext) : I
         IQueryable<Location> locations = databaseContext.Locations.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(query.Filter.NameSearch))
         {
-            locations = locations.Where(location => EF.Functions.Like(location.Name, $"%{query.Filter.NameSearch}%"));
+            string pattern = LikeSearchPattern.Contains(query.Filter.NameSearch);
+            locations = locations.Where(location => EF.Functions.Like(location.Name, pattern, LikeSearchPattern.EscapeCharacter));
         }
         if (query.Filter.Ids.Count > 0)
         {
