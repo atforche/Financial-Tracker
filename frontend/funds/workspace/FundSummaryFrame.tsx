@@ -1,7 +1,6 @@
 "use client";
 
 import type { JSX, ReactNode } from "react";
-import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import Frame from "@/framework/view/Frame";
 import type { FundWithBalance } from "@/funds/types";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
@@ -23,7 +22,7 @@ const FundSummaryFrame = function ({
   headerContent,
 }: FundSummaryFrameProps): JSX.Element {
   return (
-    <Frame title="Fund Summary" color="info" headerContent={headerContent}>
+    <Frame title="Details" color="info" headerContent={headerContent}>
       <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
         <StringEntryField
           label="Name"
@@ -34,18 +33,6 @@ const FundSummaryFrame = function ({
         <StringEntryField
           label="Description"
           value={fund.description}
-          setValue={null}
-          errorMessage={null}
-        />
-        <CurrencyEntryField
-          label="Current Balance"
-          value={fund.currentBalance.postedBalance}
-          setValue={null}
-          errorMessage={null}
-        />
-        <CurrencyEntryField
-          label="Balance Including Pending"
-          value={fund.currentBalance.balanceIncludingPending}
           setValue={null}
           errorMessage={null}
         />
