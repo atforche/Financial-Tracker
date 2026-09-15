@@ -4,28 +4,21 @@ import type {
   AccountingPeriod,
   AccountingPeriodRange,
 } from "@/accounting-periods/types";
-import {
-  normalizeFundNames,
-  shouldPersistFundNames,
-} from "@/funds/trends/fundNameFilter";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Button, MenuItem, TextField } from "@mui/material";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
-import { Button } from "@mui/material";
-import FundTrendsFundNameFilter from "@/funds/trends/FundTrendsFundNameFilter";
 import type { JSX } from "react";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
-import type { Route } from "next";
 import { fundGoalTrendsParamNames } from "@/fund-goals/trends/helpers";
 import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useSearchParams } from "next/navigation";
 
 /**
  * Props for the FundGoalTrendsFilter component.
  */
 interface FundGoalTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
-  readonly availableFundNames: readonly string[];
-  readonly transactionWorkspaceHref: Route | null;
+  readonly funds: readonly { id: string; name: string }[];
 }
 
 /**
@@ -33,27 +26,29 @@ interface FundGoalTrendsFilterProps {
  */
 const FundGoalTrendsFilter = function ({
   accountingPeriods,
-  availableFundNames,
-  transactionWorkspaceHref,
+  funds,
 }: FundGoalTrendsFilterProps): JSX.Element {
   const defaultRange = getDefaultTrendAccountingPeriodRange(accountingPeriods);
   const defaultStartAccountingPeriodId = defaultRange?.start ?? null;
   const defaultEndAccountingPeriodId = defaultRange?.end ?? null;
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const pageParamName = fundGoalTrendsParamNames.page;
   const balanceEventPageParamName = fundGoalTrendsParamNames.balanceEventPage;
-  const fundNameParamName = fundGoalTrendsParamNames.fundName;
+  const fundIdParamName = fundGoalTrendsParamNames.fundId;
   const startAccountingPeriodIdParamName =
     fundGoalTrendsParamNames.startAccountingPeriodId;
   const endAccountingPeriodIdParamName =
     fundGoalTrendsParamNames.endAccountingPeriodId;
 
-  const currentFundNames = normalizeFundNames(
-    searchParams.getAll(fundNameParamName),
-    availableFundNames,
-  );
+  const selectedFundId = funds.some(
+    (fund) => fund.id === searchParams.get(fundIdParamName),
+  )
+    ? (searchParams.get(fundIdParamName) ?? "all")
+    : (funds.find(
+        (fund) =>
+          fund.name === searchParams.get(fundGoalTrendsParamNames.fundName),
+      )?.id ?? "all");
   const currentStartAccountingPeriodId =
     searchParams.get(startAccountingPeriodIdParamName) ??
     defaultStartAccountingPeriodId;
@@ -67,22 +62,10 @@ const FundGoalTrendsFilter = function ({
   ]);
 
   const hasActiveView =
-    shouldPersistFundNames(currentFundNames) ||
+    selectedFundId !== "all" ||
+    searchParams.has(fundGoalTrendsParamNames.fundName) ||
     currentStartAccountingPeriodId !== defaultStartAccountingPeriodId ||
     currentEndAccountingPeriodId !== defaultEndAccountingPeriodId;
-
-  const handleFundNameChange = function (
-    nextFundNames: readonly string[],
-  ): void {
-    updateParams((params) => {
-      params.delete(fundNameParamName);
-      if (shouldPersistFundNames(nextFundNames)) {
-        nextFundNames.forEach((fundName) => {
-          params.append(fundNameParamName, fundName);
-        });
-      }
-    });
-  };
 
   const handleAccountingPeriodRangeChange = function (
     range: AccountingPeriodRange,
@@ -95,7 +78,8 @@ const FundGoalTrendsFilter = function ({
 
   const clearView = function (): void {
     updateParams((params) => {
-      params.delete(fundNameParamName);
+      params.delete(fundIdParamName);
+      params.delete(fundGoalTrendsParamNames.fundName);
       params.set(
         startAccountingPeriodIdParamName,
         defaultStartAccountingPeriodId ?? "",
@@ -108,32 +92,37 @@ const FundGoalTrendsFilter = function ({
   };
 
   return (
-    <PageFilterFrame
-      title="Fund Goal Trends"
-      actions={
-        transactionWorkspaceHref === null ? undefined : (
-          <Button
-            variant="outlined"
-            onClick={() => {
-              router.push(transactionWorkspaceHref);
-            }}
-          >
-            View transactions
-          </Button>
-        )
-      }
-    >
+    <PageFilterFrame title="Fund Goal Trends">
       <AccountingPeriodRangeFilter
         accountingPeriods={accountingPeriods}
         startValue={currentStartAccountingPeriodId ?? ""}
         endValue={currentEndAccountingPeriodId ?? ""}
         onChange={handleAccountingPeriodRangeChange}
       />
-      <FundTrendsFundNameFilter
-        availableFundNames={availableFundNames}
-        value={currentFundNames}
-        onChange={handleFundNameChange}
-      />
+      <TextField
+        select
+        label="View"
+        size="small"
+        value={selectedFundId}
+        onChange={(event) => {
+          updateParams((params) => {
+            params.delete(fundGoalTrendsParamNames.fundName);
+            if (event.target.value === "all") {
+              params.delete(fundIdParamName);
+            } else {
+              params.set(fundIdParamName, event.target.value);
+            }
+          });
+        }}
+        sx={{ minWidth: 220 }}
+      >
+        <MenuItem value="all">All Funds</MenuItem>
+        {funds.map((fund) => (
+          <MenuItem key={fund.id} value={fund.id}>
+            {fund.name}
+          </MenuItem>
+        ))}
+      </TextField>
       <Button
         variant="outlined"
         onClick={clearView}

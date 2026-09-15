@@ -13,6 +13,50 @@ namespace Tests.FundGoals;
 public sealed class FundGoalEndpointTests
 {
     /// <summary>
+    /// Treats SQL pattern characters in fund-name searches as literal text.
+    /// </summary>
+    [Theory]
+    [InlineData("%", "Budget%Plan")]
+    [InlineData("_", "Budget_Plan")]
+    [InlineData("\\", "Budget\\Plan")]
+    public async Task ListTreatsNameSearchAsLiteralText(string search, string expectedName)
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle period = await test.Periods.Create(2026, 7).CreateAsync();
+        foreach (string name in new[] { "Budget%Plan", "Budget_Plan", "Budget\\Plan", "BudgetXPlan" })
+        {
+            _ = await test.Funds.Create(name).In(period).CreateAsync();
+        }
+
+        CollectionModel<FundGoalModel> goals = await test.Api.GetAsync<CollectionModel<FundGoalModel>>(
+            $"/fund-goals?filter.accountingPeriodIds={period.Id}&filter.nameSearch={Uri.EscapeDataString(search)}");
+
+        Assert.Equal(expectedName, Assert.Single(goals.Items).Fund.Name);
+        Assert.Equal(1, goals.TotalCount);
+    }
+
+    /// <summary>
+    /// Filters Fund Goals by a partial fund name before paging the results.
+    /// </summary>
+    [Fact]
+    public async Task ListFiltersByFundNameWithinAccountingPeriod()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        FundHandle julyReserve = await test.Funds.Create("Holiday Reserve").In(july).CreateAsync();
+        _ = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        _ = await test.Funds.Create("Other Reserve").In(august).CreateAsync();
+
+        CollectionModel<FundGoalModel> goals = await test.Api.GetAsync<CollectionModel<FundGoalModel>>(
+            $"/fund-goals?filter.accountingPeriodIds={july.Id}&filter.nameSearch=reserve&limit=1");
+
+        FundGoalModel matchedGoal = Assert.Single(goals.Items);
+        Assert.Equal(julyReserve.Id, matchedGoal.Fund.Id);
+        Assert.Equal(1, goals.TotalCount);
+    }
+
+    /// <summary>
     /// Sorts Fund Goals by each configurable planning field.
     /// </summary>
     [Fact]

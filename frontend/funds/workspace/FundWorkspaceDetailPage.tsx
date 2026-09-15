@@ -126,7 +126,7 @@ const FundWorkspaceDetailPage = async function ({
 
   return (
     <PageLayout>
-      <FundWorkspacePageHeader backHref={workspaceUrl} title="Fund Details" />
+      <FundWorkspacePageHeader backHref={workspaceUrl} title={fund.name} />
       <ViewFundForm
         fund={fund}
         redirectUrl={currentUrl}

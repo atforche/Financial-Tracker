@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Stack } from "@mui/material";
+import { Box, Button, Stack, Tab, Tabs } from "@mui/material";
 import type {
   FundBalanceEvent,
   FundBalanceSummaryByDate,
@@ -8,6 +8,7 @@ import type {
 } from "@/funds/types";
 import { type JSX, useState } from "react";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
+import CurrentFundBalanceFrame from "@/funds/workspace/CurrentFundBalanceFrame";
 import DeleteFundForm from "@/funds/workspace/DeleteFundForm";
 import FundBalanceEventsFrame from "@/funds/workspace/FundBalanceEventsFrame";
 import FundSummaryFrame from "@/funds/workspace/FundSummaryFrame";
@@ -48,6 +49,9 @@ const ViewFundForm = function ({
 }: ViewFundFormProps): JSX.Element {
   const canWrite = useWriteAccess();
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [activeView, setActiveView] = useState<"transactions" | "activity">(
+    "transactions",
+  );
 
   return (
     <ConstrainedContent maxWidth={1200}>
@@ -70,18 +74,64 @@ const ViewFundForm = function ({
             )
           }
         />
-        <RecentBalanceActivity
-          data={recentActivityEvents}
-          dailyBalances={recentActivityBalances}
-          trendsHref={trendsHref}
-          getPreviousBalance={(event) => event.previousBalance.postedBalance}
-          getNewBalance={(event) => event.newBalance.postedBalance}
-        />
-        <FundBalanceEventsFrame
-          data={recentBalanceEvents}
-          totalCount={recentBalanceEventCount}
-          addTransactionHref={addTransactionHref}
-        />
+        <CurrentFundBalanceFrame fund={fund} />
+        <Box>
+          <Tabs
+            value={activeView}
+            onChange={(_, value: "transactions" | "activity") => {
+              setActiveView(value);
+            }}
+            aria-label="Fund workspace views"
+            sx={{ mb: 2 }}
+          >
+            <Tab
+              value="transactions"
+              label="Transactions"
+              id="fund-transactions-tab"
+              aria-controls="fund-transactions-panel"
+            />
+            <Tab
+              value="activity"
+              label="Recent Activity"
+              id="fund-activity-tab"
+              aria-controls="fund-activity-panel"
+            />
+          </Tabs>
+          <Box
+            role="tabpanel"
+            id="fund-transactions-panel"
+            aria-labelledby="fund-transactions-tab"
+            hidden={activeView !== "transactions"}
+          >
+            {activeView === "transactions" ? (
+              <FundBalanceEventsFrame
+                data={recentBalanceEvents}
+                totalCount={recentBalanceEventCount}
+                addTransactionHref={addTransactionHref}
+              />
+            ) : null}
+          </Box>
+          <Box
+            role="tabpanel"
+            id="fund-activity-panel"
+            aria-labelledby="fund-activity-tab"
+            hidden={activeView !== "activity"}
+          >
+            {activeView === "activity" ? (
+              <RecentBalanceActivity
+                summaryFirst
+                title="Balance Activity"
+                data={recentActivityEvents}
+                dailyBalances={recentActivityBalances}
+                trendsHref={trendsHref}
+                getPreviousBalance={(event) =>
+                  event.previousBalance.postedBalance
+                }
+                getNewBalance={(event) => event.newBalance.postedBalance}
+              />
+            ) : null}
+          </Box>
+        </Box>
         {canWrite && updateDialogOpen ? (
           <UpdateFundForm
             fund={fund}

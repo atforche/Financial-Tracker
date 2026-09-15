@@ -27,16 +27,10 @@ const FundGoalWorkspaceCards = function ({
   fundGoals,
 }: FundGoalWorkspaceCardsProps): JSX.Element {
   const searchParams = useSearchParams();
-  const search = (
-    searchParams.get(propertyName<FundGoalWorkspaceSearchParams>("search")) ??
-    ""
-  )
-    .trim()
-    .toLowerCase();
-  const filtered = fundGoals.filter((fundGoal) =>
-    fundGoal.fund.name.toLowerCase().includes(search),
-  );
-  if (!filtered.length) {
+  const search = searchParams
+    .get(propertyName<FundGoalWorkspaceSearchParams>("search"))
+    ?.trim();
+  if (!fundGoals.length) {
     return (
       <Typography color="text.secondary">
         No Fund Goals match the selected accounting period and search filters.
@@ -45,19 +39,13 @@ const FundGoalWorkspaceCards = function ({
   }
   return (
     <CardResponsiveGrid minimumColumnWidth={340} spacing={2}>
-      {filtered.map((fundGoal) => {
+      {fundGoals.map((fundGoal) => {
         const detailSearchParams: FundGoalWorkspaceSearchParams = {
           ...(accountingPeriod
             ? { accountingPeriodId: accountingPeriod.id }
             : {}),
-          ...(search ? { search } : {}),
+          ...(search !== undefined && search !== "" ? { search } : {}),
         };
-        const ids = searchParams.getAll(
-          propertyName<FundGoalWorkspaceSearchParams>("fundIds"),
-        );
-        if (ids.length) {
-          detailSearchParams.fundIds = ids;
-        }
         return (
           <FundGoalWorkspaceCard
             key={fundGoal.id}

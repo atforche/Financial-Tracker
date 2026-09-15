@@ -5,7 +5,6 @@ import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import createApiClient from "@/framework/data/createApiClient";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
-import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -13,7 +12,6 @@ import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
  */
 interface FundGoalWorkspaceSearchParams {
   accountingPeriodId?: string;
-  fundIds?: string | string[];
   search?: string;
   balanceEventPage?: string;
   pageSize?: number | string | null;
@@ -35,7 +33,7 @@ interface FundGoalWorkspaceProps {
 const FundGoalWorkspace = async function ({
   searchParams,
 }: FundGoalWorkspaceProps): Promise<JSX.Element> {
-  const { accountingPeriodId, fundIds } = await searchParams;
+  const { accountingPeriodId, search } = await searchParams;
   const apiClient = await createApiClient();
   const periods = unwrapApiResponse(
     await apiClient.GET("/accounting-periods", {
@@ -44,7 +42,7 @@ const FundGoalWorkspace = async function ({
     "Failed to fetch Fund Goal workspace filters",
   );
   const selectedAccountingPeriodId = accountingPeriodId ?? periods.items[0]?.id;
-  const selectedFundIds = toRepeatedSearchParams(fundIds);
+  const nameSearch = search?.trim();
   const fundGoals = unwrapApiResponse(
     await apiClient.GET("/fund-goals", {
       params: {
@@ -52,8 +50,8 @@ const FundGoalWorkspace = async function ({
           ...(isNotNullOrUndefined(selectedAccountingPeriodId)
             ? { "Filter.AccountingPeriodIds": [selectedAccountingPeriodId] }
             : {}),
-          ...(selectedFundIds.length
-            ? { "Filter.FundIds": selectedFundIds }
+          ...(nameSearch !== undefined && nameSearch !== ""
+            ? { "Filter.NameSearch": nameSearch }
             : {}),
           Limit: 500,
         },

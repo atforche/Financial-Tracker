@@ -60,7 +60,7 @@ const AccountGoalCompletionGauge = function ({
             stroke={theme.palette.success.main}
             strokeWidth="14"
             strokeDasharray={`${clamped} 100`}
-            transform="rotate(-90 88 88)"
+            transform="translate(176 0) scale(-1 1) rotate(-90 88 88)"
           />
         )}
       </svg>

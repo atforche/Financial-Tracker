@@ -52,6 +52,11 @@ public sealed class FundGoalQueryRepository(DatabaseContext databaseContext) : I
     /// </summary>
     private static IQueryable<FundGoal> ApplyFilter(IQueryable<FundGoal> query, FundGoalFilter filter)
     {
+        if (!string.IsNullOrWhiteSpace(filter.NameSearch))
+        {
+            string pattern = LikeSearchPattern.Contains(filter.NameSearch);
+            query = query.Where(fundGoal => EF.Functions.Like(fundGoal.Fund.Name, pattern, LikeSearchPattern.EscapeCharacter));
+        }
         if (filter.FundIds.Count > 0)
         {
             var fundIds = filter.FundIds.Select(id => new FundId(id)).ToList();

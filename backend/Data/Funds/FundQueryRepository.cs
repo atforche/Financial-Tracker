@@ -226,7 +226,8 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
     {
         if (!string.IsNullOrWhiteSpace(filter.NameSearch))
         {
-            query = query.Where(fund => EF.Functions.Like(fund.Name, $"%{filter.NameSearch}%"));
+            string pattern = LikeSearchPattern.Contains(filter.NameSearch);
+            query = query.Where(fund => EF.Functions.Like(fund.Name, pattern, LikeSearchPattern.EscapeCharacter));
         }
         if (filter.Names.Count > 0)
         {

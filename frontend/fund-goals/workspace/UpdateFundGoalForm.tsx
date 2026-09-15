@@ -152,8 +152,20 @@ const UpdateFundGoalForm = function ({
             setAllowExpectedContributionAboveMaximum={
               setAllowExpectedContributionAboveMaximum
             }
+            plannedMonthlyContributionErrors={
+              state.plannedMonthlyContributionErrors ?? null
+            }
+            minimumEndingBalanceErrors={
+              state.minimumEndingBalanceErrors ?? null
+            }
+            maximumEndingBalanceErrors={
+              state.maximumEndingBalanceErrors ?? null
+            }
           />
-          <ErrorAlert errorMessage={null} unmappedErrors={null} />
+          <ErrorAlert
+            errorMessage={state.errorTitle ?? null}
+            unmappedErrors={state.unmappedErrors ?? null}
+          />
         </Stack>
       </Dialog>
     </>

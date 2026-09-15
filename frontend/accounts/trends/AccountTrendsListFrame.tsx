@@ -30,6 +30,7 @@ import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import routes from "@/accounts/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Props for the AccountTrendsListFrame component.
@@ -50,6 +51,7 @@ const AccountTrendsListFrame = function ({
   isInOnboardingMode,
   transactionWorkspaceHref,
 }: AccountTrendsListFrameProps): JSX.Element {
+  const canWrite = useWriteAccess();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -226,7 +228,7 @@ const AccountTrendsListFrame = function ({
         description: isInOnboardingMode
           ? "Onboard a new account to start tracking balances."
           : "Create a new account to start tracking balances.",
-        action: (
+        action: !canWrite ? null : (
           <Button
             variant="contained"
             onClick={() => {

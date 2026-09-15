@@ -28,19 +28,33 @@ const AccountGoalWorkspace = async function ({
   );
   const selectedAccountingPeriodId = accountingPeriodId ?? periods.items[0]?.id;
   const selectedAccountIds = toRepeatedSearchParams(accountIds);
+  const goalQuery = {
+    ...(isNotNullOrUndefined(selectedAccountingPeriodId)
+      ? { "Filter.AccountingPeriodIds": [selectedAccountingPeriodId] }
+      : {}),
+    Limit: 500,
+  };
   const accountGoals = unwrapApiResponse(
     await apiClient.GET("/account-goals", {
       params: {
         query: {
-          ...(isNotNullOrUndefined(selectedAccountingPeriodId)
-            ? { "Filter.AccountingPeriodIds": [selectedAccountingPeriodId] }
+          ...goalQuery,
+          ...(selectedAccountIds.length
+            ? { "Filter.AccountIds": selectedAccountIds }
             : {}),
-          Limit: 500,
         },
       },
     }),
     "Failed to fetch Account Goals",
   );
+  const filterGoals = selectedAccountIds.length
+    ? unwrapApiResponse(
+        await apiClient.GET("/account-goals", {
+          params: { query: goalQuery },
+        }),
+        "Failed to fetch Account Goal workspace accounts",
+      ).items
+    : accountGoals.items;
   const progressResults =
     typeof selectedAccountingPeriodId === "string"
       ? unwrapApiResponse(
@@ -57,9 +71,7 @@ const AccountGoalWorkspace = async function ({
   );
   const goalsWithProgress = accountGoals.items.flatMap((accountGoal) => {
     const progress = progressByAccountGoalId.get(accountGoal.id);
-    return (selectedAccountIds.length === 0 ||
-      selectedAccountIds.includes(accountGoal.account.id)) &&
-      typeof progress !== "undefined"
+    return typeof progress !== "undefined"
       ? [{ ...accountGoal, progress }]
       : [];
   });
@@ -67,7 +79,7 @@ const AccountGoalWorkspace = async function ({
     <PageLayout>
       <AccountGoalWorkspaceFilter
         accountingPeriods={periods.items}
-        accounts={accountGoals.items.map((goal) => goal.account)}
+        accounts={filterGoals.map((goal) => goal.account)}
         selectedAccountingPeriodId={selectedAccountingPeriodId ?? null}
       />
       <AccountGoalWorkspaceCards

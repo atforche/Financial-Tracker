@@ -19,6 +19,7 @@ interface FundGoalPeriodProgress {
 interface FundGoalTrendPoint {
   readonly accountingPeriodId: string;
   readonly accountingPeriodName: string;
+  readonly isOpen: boolean;
   readonly configuredGoalCount: number;
   readonly satisfiedGoalCount: number;
   readonly satisfiedPercentage: number;
@@ -81,7 +82,7 @@ const getFundGoalHealthSummary = function (
  * Aggregates Fund Goal health and contributions for every Accounting Period in the range.
  */
 const buildFundGoalTrendPoints = function (
-  accountingPeriods: readonly { id: string; name: string }[],
+  accountingPeriods: readonly { id: string; name: string; isOpen: boolean }[],
   progressByAccountingPeriodId: ReadonlyMap<
     string,
     readonly FundGoalPeriodProgress[]
@@ -94,6 +95,7 @@ const buildFundGoalTrendPoints = function (
     return {
       accountingPeriodId: accountingPeriod.id,
       accountingPeriodName: accountingPeriod.name,
+      isOpen: accountingPeriod.isOpen,
       configuredGoalCount: summary.configuredGoalCount,
       satisfiedGoalCount: summary.satisfiedGoalCount,
       satisfiedPercentage:
@@ -109,6 +111,7 @@ const buildFundGoalTrendPoints = function (
 export {
   buildFundGoalTrendPoints,
   getFundGoalHealthSummary,
+  isFundGoalSatisfied,
   type FundGoalPeriodProgress,
   type FundGoalHealthSummary,
   type FundGoalTrendPoint,
