@@ -4,14 +4,12 @@ import {
 } from "@/fund-goals/trends/fundGoalProgressTrends";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import FundGoalAchievementTrendChart from "@/fund-goals/trends/FundGoalAchievementTrendChart";
-import FundGoalContributionTrendChart from "@/fund-goals/trends/FundGoalContributionTrendChart";
+import FundGoalHistory from "@/fund-goals/trends/FundGoalHistory";
+import FundGoalOverview from "@/fund-goals/trends/FundGoalOverview";
 import FundGoalTrendsFilter from "@/fund-goals/trends/FundGoalTrendsFilter";
 import type { FundGoalTrendsSearchParams } from "@/fund-goals/trends/helpers";
-import FundGoalTrendsSummaryCards from "@/fund-goals/trends/FundGoalTrendsSummaryCards";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import TrendsBackLink from "@/framework/view/TrendsBackLink";
 import createApiClient from "@/framework/data/createApiClient";
 import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
@@ -20,7 +18,6 @@ import loadAllPages from "@/framework/data/loadAllPages";
 import { redirect } from "next/navigation";
 import routes from "@/fund-goals/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
-import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -91,15 +88,42 @@ const FundGoalTrends = async function ({
       "Failed to load Fund Goals",
     ),
   );
-  const filteredFundGoals = fundGoals.filter(
-    (fundGoal) =>
-      fundNames.length === 0 || fundNames.includes(fundGoal.fund.name),
-  );
-  const selectedFundIds = [
-    ...new Set(filteredFundGoals.map((fundGoal) => fundGoal.fund.id)),
-  ];
-  const hasResolvedSelectedFundIds =
-    selectedFundIds.length === fundNames.length;
+  const fundsInRange = [
+    ...new Map(
+      fundGoals.map((goal) => [
+        goal.fund.id,
+        { id: goal.fund.id, name: goal.fund.name },
+      ]),
+    ).values(),
+  ].sort((a, b) => a.name.localeCompare(b.name));
+  const selectedFundInRange =
+    fundsInRange.find((fund) => fund.id === params.fundId) ??
+    (fundNames.length === 1
+      ? fundsInRange.find((fund) => fund.name === fundNames[0])
+      : undefined);
+  const selectedFundId = params.fundId;
+  const outsideGoals =
+    selectedFundInRange === undefined && selectedFundId !== undefined
+      ? await loadAllPages(async (limit, offset) =>
+          unwrapApiResponse(
+            await apiClient.GET("/fund-goals", {
+              params: {
+                query: { "Filter.FundIds": [selectedFundId], limit, offset },
+              },
+            }),
+            "Failed to load Fund Goals",
+          ),
+        )
+      : [];
+  const selectedFund = selectedFundInRange ?? outsideGoals[0]?.fund;
+  const funds =
+    selectedFund !== undefined &&
+    !fundsInRange.some((fund) => fund.id === selectedFund.id)
+      ? [
+          ...fundsInRange,
+          { id: selectedFund.id, name: selectedFund.name },
+        ].sort((a, b) => a.name.localeCompare(b.name))
+      : fundsInRange;
   const progressResultsByFundGoalId = new Map(
     (
       await Promise.all(
@@ -116,7 +140,7 @@ const FundGoalTrends = async function ({
       .flatMap((results) => results)
       .map((result) => [result.fundGoalId, result.progress]),
   );
-  const progressWithAccountingPeriod = filteredFundGoals.flatMap((fundGoal) => {
+  const progressWithAccountingPeriod = fundGoals.flatMap((fundGoal) => {
     const progress = progressResultsByFundGoalId.get(fundGoal.id);
     return typeof progress === "undefined" ? [] : [{ fundGoal, progress }];
   });
@@ -138,27 +162,6 @@ const FundGoalTrends = async function ({
     chartPeriods,
     progressByAccountingPeriodId,
   );
-  const transactionWorkspaceHref =
-    selectedPeriods.length === 0
-      ? null
-      : transactionRoutes.workspace({
-          accountingPeriodIds: selectedPeriods.map((period) => period.id),
-          ...(hasResolvedSelectedFundIds && selectedFundIds.length > 0
-            ? { fundIds: selectedFundIds }
-            : fundNames.length === 0
-              ? {}
-              : { fundNames }),
-          returnUrl: routes.trends({
-            returnUrl: params.returnUrl,
-            ...(fundNames.length === 0 ? {} : { fundName: fundNames }),
-            ...(typeof start === "undefined"
-              ? {}
-              : { startAccountingPeriodId: start }),
-            ...(typeof end === "undefined"
-              ? {}
-              : { endAccountingPeriodId: end }),
-          }),
-        });
 
   return (
     <PageLayout>
@@ -170,21 +173,26 @@ const FundGoalTrends = async function ({
       <ConstrainedContent>
         <FundGoalTrendsFilter
           accountingPeriods={periods}
-          availableFundNames={[
-            ...new Set(fundGoals.map((fundGoal) => fundGoal.fund.name)),
-          ]}
-          transactionWorkspaceHref={transactionWorkspaceHref}
+          funds={funds}
         />
       </ConstrainedContent>
-      <FundGoalTrendsSummaryCards
-        progress={selectedPeriods.flatMap(
-          (period) => progressByAccountingPeriodId.get(period.id) ?? [],
-        )}
-      />
-      <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
-        <FundGoalAchievementTrendChart chartPoints={chartPoints} />
-        <FundGoalContributionTrendChart chartPoints={chartPoints} />
-      </ResponsiveGrid>
+      {selectedFund === undefined ? (
+        <FundGoalOverview
+          points={chartPoints}
+          periods={selectedPeriods}
+          progressByPeriod={progressByAccountingPeriodId}
+          funds={funds}
+          searchParams={params}
+        />
+      ) : (
+        <FundGoalHistory
+          periods={chartPeriods}
+          entries={progressWithAccountingPeriod.filter(
+            (entry) => entry.fundGoal.fund.id === selectedFund.id,
+          )}
+          fundName={selectedFund.name}
+        />
+      )}
     </PageLayout>
   );
 };

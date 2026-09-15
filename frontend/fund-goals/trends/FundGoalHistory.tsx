@@ -1,8 +1,5 @@
 "use client";
 
-import AccountGoalHistoryListFrame, {
-  type HistoryPoint,
-} from "@/account-goals/trends/AccountGoalHistoryListFrame";
 import {
   Area,
   CartesianGrid,
@@ -15,31 +12,37 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import FundGoalHistoryListFrame, {
+  type HistoryPoint,
+} from "@/fund-goals/trends/FundGoalHistoryListFrame";
+import {
+  type FundGoalPeriodProgress,
+  isFundGoalSatisfied,
+} from "@/fund-goals/trends/fundGoalProgressTrends";
 import { Paper, Stack, Typography } from "@mui/material";
 import {
   compareCurrencyAmounts,
   formatCompactCurrency,
   formatCurrency,
 } from "@/framework/currencyHelpers";
-import type { AccountGoalPeriodProgress } from "@/account-goals/trends/accountGoalProgressTrends";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import ChartFrame from "@/framework/charts/ChartFrame";
 import type { JSX } from "react";
 import { useTheme } from "@mui/material/styles";
 
-/** Shows how one account's bounds and balance changed across periods. */
-const AccountGoalHistory = function ({
+/** Shows how one fund's bounds, balance, and contributions changed across periods. */
+const FundGoalHistory = function ({
   periods,
   entries,
-  accountName,
+  fundName,
 }: {
   readonly periods: readonly AccountingPeriod[];
-  readonly entries: readonly AccountGoalPeriodProgress[];
-  readonly accountName: string;
+  readonly entries: readonly FundGoalPeriodProgress[];
+  readonly fundName: string;
 }): JSX.Element {
   const theme = useTheme();
   const byPeriod = new Map(
-    entries.map((entry) => [entry.accountGoal.accountingPeriod?.id, entry]),
+    entries.map((entry) => [entry.fundGoal.accountingPeriod?.id, entry]),
   );
   const points: HistoryPoint[] = periods.map((period) => {
     const entry = byPeriod.get(period.id);
@@ -50,11 +53,13 @@ const AccountGoalHistory = function ({
       period: period.name,
       periodOrder: period.year * 12 + period.month,
       isOpen: period.isOpen,
+      expected: entry?.progress.contribution?.expectedAmount ?? null,
+      assigned: entry?.progress.contribution?.assignedAmount ?? null,
       minimum,
       maximum,
       span: minimum === null || maximum === null ? null : maximum - minimum,
-      balance: entry?.progress.endingBalance.currentBalance ?? null,
-      satisfied: entry?.progress.isSatisfied ?? null,
+      balance: entry?.progress.endingBalance.endingBalance ?? null,
+      satisfied: entry === undefined ? null : isFundGoalSatisfied(entry),
     };
   });
   const amounts = points.flatMap((point) =>
@@ -94,10 +99,10 @@ const AccountGoalHistory = function ({
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h5">{accountName}</Typography>
+      <Typography variant="h5">{fundName}</Typography>
       <ChartFrame
         title="Goal Progress"
-        emptyMessage="No goal history for this account in the selected periods."
+        emptyMessage="No goal history for this fund in the selected periods."
         hasData={entries.length > 0}
         xAxisLabel="Accounting period"
         yAxisLabel="Balance"
@@ -192,6 +197,14 @@ const AccountGoalHistory = function ({
                           ...(matchLabel === null
                             ? []
                             : ([["Balance position", matchLabel]] as const)),
+                          ...(point.expected === null
+                            ? []
+                            : ([
+                                [
+                                  "Contribution",
+                                  `${formatCurrency(point.assigned ?? 0)} / ${formatCurrency(point.expected)}`,
+                                ],
+                              ] as const)),
                         ] as const
                       ).map(([label, value]) => (
                         <Stack
@@ -289,9 +302,9 @@ const AccountGoalHistory = function ({
           </ComposedChart>
         </ResponsiveContainer>
       </ChartFrame>
-      <AccountGoalHistoryListFrame points={points} />
+      <FundGoalHistoryListFrame points={points} />
     </Stack>
   );
 };
 
-export default AccountGoalHistory;
+export default FundGoalHistory;

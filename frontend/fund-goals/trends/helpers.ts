@@ -12,6 +12,9 @@ interface FundGoalTrendsSearchParams {
   balanceEventSort?: FundGoalBalanceEventSort;
   balanceEventPage?: number | string | null;
   fundName?: string | readonly string[];
+  fundId?: string;
+  goalHistorySort?: string;
+  goalHistoryPage?: string;
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;
   returnUrl?: string | undefined;
@@ -26,6 +29,9 @@ const fundGoalTrendsParamNames = {
   balanceEventSort: "balanceEventSort",
   balanceEventPage: "balanceEventPage",
   fundName: "fundName",
+  fundId: "fundId",
+  goalHistorySort: "goalHistorySort",
+  goalHistoryPage: "goalHistoryPage",
   startAccountingPeriodId: "startAccountingPeriodId",
   endAccountingPeriodId: "endAccountingPeriodId",
   returnUrl: "returnUrl",

@@ -117,12 +117,6 @@ const AccountGoalOverview = function ({
                         <>
                           <Box
                             sx={{
-                              width: `${(point.belowMinimumCount / total) * 100}%`,
-                              bgcolor: "warning.main",
-                            }}
-                          />
-                          <Box
-                            sx={{
                               width: `${(point.withinRangeCount / total) * 100}%`,
                               bgcolor: "success.main",
                             }}
@@ -131,6 +125,12 @@ const AccountGoalOverview = function ({
                             sx={{
                               width: `${(point.aboveMaximumCount / total) * 100}%`,
                               bgcolor: "info.main",
+                            }}
+                          />
+                          <Box
+                            sx={{
+                              width: `${(point.belowMinimumCount / total) * 100}%`,
+                              bgcolor: "warning.main",
                             }}
                           />
                         </>
@@ -150,14 +150,14 @@ const AccountGoalOverview = function ({
               })}
             </Stack>
             <Stack direction="row" gap={2} flexWrap="wrap" sx={{ mt: 2.5 }}>
-              <Typography variant="caption" color="warning.main">
-                ■ Below minimum
-              </Typography>
               <Typography variant="caption" color="success.main">
                 ■ Within range
               </Typography>
               <Typography variant="caption" color="info.main">
                 ■ Above maximum
+              </Typography>
+              <Typography variant="caption" color="warning.main">
+                ■ Below minimum
               </Typography>
             </Stack>
           </Box>
