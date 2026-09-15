@@ -171,10 +171,7 @@ const FundGoalTrends = async function ({
         label="Back to Fund Goal Details"
       />
       <ConstrainedContent>
-        <FundGoalTrendsFilter
-          accountingPeriods={periods}
-          funds={funds}
-        />
+        <FundGoalTrendsFilter accountingPeriods={periods} funds={funds} />
       </ConstrainedContent>
       {selectedFund === undefined ? (
         <FundGoalOverview

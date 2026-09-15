@@ -1582,6 +1582,7 @@ export interface paths {
                 query?: {
                     "Range.Start"?: string;
                     "Range.End"?: string;
+                    "Filter.NameSearch"?: string;
                     "Filter.FundIds"?: string[];
                     "Filter.AccountingPeriodIds"?: string[];
                     "Filter.IncludeOnboarded"?: boolean;

@@ -193,11 +193,7 @@ const FundGoalOverview = function ({
                 {orderedPeriods.map((period) => {
                   const entry = byPeriodAndFund.get(`${period.id}:${fund.id}`);
                   const met = entry ? isFundGoalSatisfied(entry) : false;
-                  const label = !entry
-                    ? "No goal"
-                    : met
-                      ? "Met"
-                      : "Not met";
+                  const label = !entry ? "No goal" : met ? "Met" : "Not met";
                   const color = !entry
                     ? "action.disabledBackground"
                     : met
