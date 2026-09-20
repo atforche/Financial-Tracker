@@ -55,10 +55,11 @@ public sealed class FundBalanceEventQueryService(
         FundBalanceEventQuery query,
         CancellationToken cancellationToken = default)
     {
-        IReadOnlyCollection<Transaction> transactions = await transactionQueryRepository.GetAsync(query.Start, query.End, cancellationToken);
+        IReadOnlyCollection<Transaction> transactions = await transactionQueryRepository.GetForFundPostingsAsync(query.Start, query.End, cancellationToken);
         IReadOnlyCollection<AccountingPeriodId> periodIds = transactions.Select(transaction => transaction.AccountingPeriodId).Distinct().ToList();
         IReadOnlyCollection<AccountingPeriod> periods = await accountingPeriodRepository.GetByIdsAsync(periodIds, cancellationToken);
-        return await GetAsync(transactions, periods, query.Filter, query.Sort, query.Offset, query.Limit, cancellationToken);
+        return await GetAsync(transactions, periods, query.Filter, query.Sort, query.Offset, query.Limit, cancellationToken,
+            query.Start, query.End, true);
     }
 
     /// <summary>
@@ -101,7 +102,10 @@ public sealed class FundBalanceEventQueryService(
         FundBalanceEventSort sort,
         int offset,
         int? limit,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        DateOnly? postingStart = null,
+        DateOnly? postingEnd = null,
+        bool filterByPostingDate = false)
     {
         var periods = accountingPeriods.ToDictionary(period => period.Id);
         IReadOnlyCollection<FundId> fundIds = transactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null)).Distinct().ToList();
@@ -114,7 +118,9 @@ public sealed class FundBalanceEventQueryService(
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFund))
             .Where(balanceEvent => Matches(balanceEvent.Fund, filter)).ToList();
         events = ProjectPendingEvents(events, transactions, historiesByFund);
-        var allItems = Sort(events, sort).ToList();
+        var allItems = Sort(events.Where(item => (!filterByPostingDate || item.EventDate.HasValue)
+            && (postingStart == null || item.EventDate >= postingStart)
+            && (postingEnd == null || item.EventDate <= postingEnd)), sort).ToList();
         return new QueryPage<FundBalanceEvent>(
             allItems.Skip(offset).Take(limit ?? int.MaxValue).ToList(),
             allItems.Count);
@@ -129,25 +135,25 @@ public sealed class FundBalanceEventQueryService(
         Dictionary<FundId, Fund> funds,
         IReadOnlyDictionary<FundId, List<FundBalanceHistory>> histories) => transaction switch
         {
-            SpendingTransaction spending => spending.Destinations.SelectMany(destination => destination.FundAssignments)
+            SpendingTransaction spending => spending.Destinations.SelectMany(destination => destination.FundAssignments
                 .Select(amount => Create(
                     transaction,
                     period,
                     funds[amount.FundId],
-                    GetPostedDate(spending, amount.FundId),
+                    destination.Account == null ? spending.Source.PostedDate : destination.PostedDate,
                     amount.Amount,
                     BalanceEventType.Debit,
                     ToParty(spending.Source.Account, null, null),
                     spending.Destinations
                         .Select(item => ToParty(item.Account, item.Location?.Name, item.Amount))
                         .ToList(),
-                    histories)),
+                    histories))),
             IncomeTransaction income => income.Destinations.SelectMany(destination => destination.FundAssignments
                 .Select(amount => Create(
                     transaction,
                     period,
                     funds[amount.FundId],
-                    GetPostedDate(income, amount.FundId),
+                    destination.PostedDate,
                     amount.Amount,
                     BalanceEventType.Credit,
                     ToParty(destination.Account, null, destination.Amount),
@@ -265,13 +271,6 @@ public sealed class FundBalanceEventQueryService(
         }
         return projected;
     }
-
-    /// <summary>
-    /// Gets the Fund's posting date from the Account side that affects it.
-    /// </summary>
-    private static DateOnly? GetPostedDate(Transaction transaction, FundId fundId) => transaction.GetAllAffectedAccountIds()
-        .Where(accountId => transaction.GetAllAffectedFundIds(accountId).Contains(fundId))
-        .Select(transaction.GetPostedDateForAccount).FirstOrDefault(date => date != null);
 
     /// <summary>
     /// Determines whether a Fund matches the provided filter.

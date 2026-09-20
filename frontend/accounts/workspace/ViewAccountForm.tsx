@@ -1,14 +1,12 @@
 "use client";
 
-import type {
-  AccountBalanceEvent,
-  AccountBalanceSummaryByDate,
-  AccountWithBalance,
-} from "@/accounts/types";
+import type { AccountBalanceEvent, AccountWithBalance } from "@/accounts/types";
 import { Box, Button, Stack, Tab, Tabs } from "@mui/material";
 import { type JSX, useState } from "react";
 import AccountBalanceEventsFrame from "@/accounts/workspace/AccountBalanceEventsFrame";
 import AccountSummaryFrame from "@/accounts/workspace/AccountSummaryFrame";
+import type { BalanceEventTotals } from "@/balance-events/types";
+import type { BalanceTrendDateSummary } from "@/framework/charts/balanceTrendHelpers";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import CurrentBalanceFrame from "@/accounts/workspace/CurrentBalanceFrame";
 import DeleteAccountForm from "@/accounts/workspace/DeleteAccountForm";
@@ -28,8 +26,8 @@ interface ViewAccountFormProps {
   readonly deleteRedirectUrl: string;
   readonly recentBalanceEvents: AccountBalanceEvent[];
   readonly recentBalanceEventCount: number;
-  readonly recentActivityEvents: AccountBalanceEvent[];
-  readonly recentActivityBalances: readonly AccountBalanceSummaryByDate[];
+  readonly activityTotals: BalanceEventTotals;
+  readonly recentActivityBalances: readonly BalanceTrendDateSummary[];
   readonly trendsHref: Route;
   readonly addTransactionHref: string;
 }
@@ -44,7 +42,7 @@ const ViewAccountForm = function ({
   deleteRedirectUrl,
   recentBalanceEvents,
   recentBalanceEventCount,
-  recentActivityEvents,
+  activityTotals,
   recentActivityBalances,
   trendsHref,
   addTransactionHref,
@@ -126,13 +124,13 @@ const ViewAccountForm = function ({
               <RecentBalanceActivity
                 summaryFirst
                 title="Balance Activity"
-                data={recentActivityEvents}
+                totals={activityTotals}
                 dailyBalances={recentActivityBalances}
+                {...(activityTotals.openingBalance === null ||
+                activityTotals.openingBalance === undefined
+                  ? {}
+                  : { periodOpeningBalance: activityTotals.openingBalance })}
                 trendsHref={trendsHref}
-                getPreviousBalance={(event) =>
-                  event.previousBalance.postedBalance
-                }
-                getNewBalance={(event) => event.newBalance.postedBalance}
               />
             ) : null}
           </Box>

@@ -29,6 +29,8 @@ public sealed class MultipleCollectionQueryWarningTests
         FundHandle travel = await test.Funds.Create("Travel").In(july).CreateAsync();
         TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(40m).From("Employer").To(cash, groceries).CreateAsync();
         TransactionHandle spending = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(20m).From(savings).To("Airline", travel).CreateAsync();
+        await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
+        await test.Transactions.PostAsync(spending, savings, new DateOnly(2026, 7, 15));
 
         CollectionModel<TransactionModel> transactions = await test.Api.GetAsync<CollectionModel<TransactionModel>>("/transactions?limit=10");
         IncomeTransactionModel incomeDetails = await test.Api.GetAsync<IncomeTransactionModel>($"/transactions/{income.Id}");

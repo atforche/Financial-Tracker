@@ -5,6 +5,7 @@ import type {
   FundGoalProgress,
 } from "@/fund-goals/types";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
+import type { BalanceEventTotals } from "@/balance-events/types";
 import type { BalanceTrendDateSummary } from "@/framework/charts/balanceTrendHelpers";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import Frame from "@/framework/view/Frame";
@@ -26,6 +27,7 @@ interface ViewFundGoalFormProps {
   readonly progress: FundGoalProgress;
   readonly redirectUrl: string;
   readonly recentBalanceEvents: FundGoalBalanceEvent[];
+  readonly activityTotals: BalanceEventTotals;
   readonly recentBalanceEventCount: number;
   readonly recentActivityBalances: readonly BalanceTrendDateSummary[];
   readonly periodOpeningBalance: number;
@@ -76,17 +78,10 @@ const ViewFundGoalForm = function (props: ViewFundGoalFormProps): JSX.Element {
               content: (
                 <RecentBalanceActivity
                   summaryFirst
-                  data={[] as FundGoalBalanceEvent[]}
+                  totals={props.activityTotals}
                   dailyBalances={props.recentActivityBalances}
                   periodOpeningBalance={props.periodOpeningBalance}
                   trendsHref={props.trendsHref}
-                  getPreviousBalance={(event) =>
-                    event.previousTotals.amountAssigned -
-                    event.previousTotals.amountSpent
-                  }
-                  getNewBalance={(event) =>
-                    event.newTotals.amountAssigned - event.newTotals.amountSpent
-                  }
                   title="Accounting Period Activity"
                   balanceLabel="Fund Balance"
                 />

@@ -4,7 +4,6 @@ import {
   getRowsPerPage,
   normalizePageValue,
 } from "@/framework/listframe/page";
-import { AccountBalanceEventSort } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import type { JSX } from "react";
@@ -54,7 +53,7 @@ const AccountWorkspaceDetailPage = async function ({
     accountsResponse,
     balanceEventsResponse,
     financialInstitutionsResponse,
-    recentActivityResponse,
+    activityTotalsResponse,
   ] = await Promise.all([
     apiClient.GET("/accounts/with-balances"),
     apiClient.GET("/accounts/{accountId}/balance-events", {
@@ -70,15 +69,12 @@ const AccountWorkspaceDetailPage = async function ({
       },
     }),
     apiClient.GET("/accounts/financial-institutions"),
-    apiClient.GET("/accounts/{accountId}/balance-events", {
+    apiClient.GET("/accounts/{accountId}/balance-events/totals", {
       params: {
         path: { accountId },
         query: {
           "Range.Start": recentActivityStartDate,
           "Range.End": recentActivityEndDate,
-          Sort: AccountBalanceEventSort.Date,
-          Limit: 500,
-          Offset: 0,
         },
       },
     }),
@@ -95,9 +91,9 @@ const AccountWorkspaceDetailPage = async function ({
     financialInstitutionsResponse,
     "Failed to fetch financial institutions",
   );
-  const recentActivity = unwrapApiResponse(
-    recentActivityResponse,
-    "Failed to fetch recent account activity",
+  const activityTotals = unwrapApiResponse(
+    activityTotalsResponse,
+    "Failed to fetch account activity totals",
   );
   const account = accounts.items.find((item) => item.id === accountId);
 
@@ -115,21 +111,6 @@ const AccountWorkspaceDetailPage = async function ({
   if (typeof account === "undefined") {
     redirect(workspaceUrl);
   }
-  const recentActivityBalances = unwrapApiResponse(
-    await apiClient.GET("/accounts/date-range", {
-      params: {
-        query: {
-          "Range.Start": recentActivityStartDate,
-          "Range.End": recentActivityEndDate,
-          "Filter.Names": [account.name],
-          Limit: 1,
-          Offset: 0,
-        },
-      },
-    }),
-    "Failed to fetch recent account balance history",
-  );
-
   const currentUrl = routes.workspaceDetail(account.id, detailSearchParams);
   const addTransactionHref = transactionRoutes.workspaceCreate({
     accountIds: [account.id],
@@ -156,8 +137,8 @@ const AccountWorkspaceDetailPage = async function ({
         deleteRedirectUrl={workspaceUrl}
         recentBalanceEvents={balanceEvents.items}
         recentBalanceEventCount={balanceEvents.totalCount}
-        recentActivityEvents={recentActivity.items}
-        recentActivityBalances={recentActivityBalances.dates}
+        activityTotals={activityTotals}
+        recentActivityBalances={activityTotals.dates ?? []}
         trendsHref={routes.trends({
           mode: "date",
           accountName: [account.name],

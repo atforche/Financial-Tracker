@@ -6,9 +6,9 @@ namespace Models.Accounts;
 public sealed class AccountBalanceEventsQueryParameterModel : PaginationModel
 {
     /// <summary>
-    /// Date range for the posted balance-event history.
+    /// Posting date range, used when AccountingPeriodId is absent.
     /// </summary>
-    public required DateRangeModel Range { get; init; }
+    public DateRangeModel? Range { get; init; }
 
     /// <summary>
     /// Restricts events to transactions assigned to this Accounting Period.

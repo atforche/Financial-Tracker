@@ -48,7 +48,7 @@ public sealed class TransactionReadAndValidationTests
     /// Returns consistent event facts for account, fund, and Fund Goal projections.
     /// </summary>
     [Fact]
-    public async Task BalanceEventQueriesReturnPendingSpendingAcrossAllSurfaces()
+    public async Task DateRangeBalanceEventQueriesExcludePendingSpending()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(1000m).CreateAsync();
@@ -64,13 +64,16 @@ public sealed class TransactionReadAndValidationTests
 
         CollectionModel<AccountBalanceEventModel> accountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
             $"/accounts/{cash.Id}/balance-events?range.start=2026-07-01&range.end=2026-07-31");
+        CollectionModel<AccountBalanceEventModel> periodAccountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
+            $"/accounts/{cash.Id}/balance-events?accountingPeriodId={july.Id}");
         CollectionModel<FundBalanceEventModel> fundEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
             "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31");
         CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.Api.GetAsync<CollectionModel<FundGoalBalanceEventModel>>(
             $"/fund-goals/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}");
 
-        Assert.Contains(accountEvents.Items, item => item.TransactionId == transaction.Id && !item.IsPosted && item.Amount == 80m);
-        Assert.Contains(fundEvents.Items, item => item.TransactionId == transaction.Id && !item.IsPosted && item.Amount == 80m);
+        Assert.Empty(accountEvents.Items);
+        Assert.Empty(fundEvents.Items);
+        Assert.Contains(periodAccountEvents.Items, item => item.TransactionId == transaction.Id && !item.IsPosted && item.Amount == 80m);
         Assert.Contains(goalEvents.Items, item => item.TransactionId == transaction.Id && !item.IsPosted && item.NewTotals.AmountSpentIncludingPending == 80m);
     }
 

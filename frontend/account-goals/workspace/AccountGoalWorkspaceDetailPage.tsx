@@ -14,7 +14,6 @@ import PageLayout from "@/framework/view/PageLayout";
 import type { Route } from "next";
 import ViewAccountGoalForm from "@/account-goals/workspace/ViewAccountGoalForm";
 import createApiClient from "@/framework/data/createApiClient";
-import dayjs from "dayjs";
 import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import loadAllPages from "@/framework/data/loadAllPages";
 import { redirect } from "next/navigation";
@@ -121,53 +120,55 @@ const AccountGoalWorkspaceDetailPage = async function ({
     });
   const previousPeriod = orderedPeriods[currentPeriodIndex - 1];
   const nextPeriod = orderedPeriods[currentPeriodIndex + 1];
-  const periodStartDate = dayjs()
-    .year(accountGoal.accountingPeriod.year)
-    .month(accountGoal.accountingPeriod.month - 1)
-    .startOf("month")
-    .format("YYYY-MM-DD");
-  const periodEndDate = dayjs(periodStartDate)
-    .endOf("month")
-    .format("YYYY-MM-DD");
   const rowsPerPage = getRowsPerPage(pageSize);
-  const [progressResponse, eventsResponse, balanceDatesResponse] =
-    await Promise.all([
-      apiClient.GET(
-        "/account-goals/{accountGoalId}/progress/{accountingPeriodId}",
-        {
-          params: {
-            path: {
-              accountGoalId: accountGoal.id,
-              accountingPeriodId: periodId,
-            },
-          },
-        },
-      ),
-      apiClient.GET("/accounts/{accountId}/balance-events", {
+  const [
+    progressResponse,
+    eventsResponse,
+    balanceDatesResponse,
+    activityTotalsResponse,
+  ] = await Promise.all([
+    apiClient.GET(
+      "/account-goals/{accountGoalId}/progress/{accountingPeriodId}",
+      {
         params: {
-          path: { accountId },
-          query: {
-            "Range.Start": periodStartDate,
-            "Range.End": periodEndDate,
-            AccountingPeriodId: periodId,
-            Limit: rowsPerPage,
-            Offset: getPageOffset(
-              normalizePageValue(balanceEventPage),
-              rowsPerPage,
-            ),
-            ...(isNotNullOrUndefined(balanceEventSort)
-              ? { Sort: balanceEventSort }
-              : {}),
+          path: {
+            accountGoalId: accountGoal.id,
+            accountingPeriodId: periodId,
           },
         },
-      }),
-      apiClient.GET(
-        "/accounts/{accountId}/accounting-periods/{accountingPeriodId}/balance-dates",
-        {
-          params: { path: { accountId, accountingPeriodId: periodId } },
+      },
+    ),
+    apiClient.GET("/accounts/{accountId}/balance-events", {
+      params: {
+        path: { accountId },
+        query: {
+          AccountingPeriodId: periodId,
+          Limit: rowsPerPage,
+          Offset: getPageOffset(
+            normalizePageValue(balanceEventPage),
+            rowsPerPage,
+          ),
+          ...(isNotNullOrUndefined(balanceEventSort)
+            ? { Sort: balanceEventSort }
+            : {}),
         },
-      ),
-    ]);
+      },
+    }),
+    apiClient.GET(
+      "/accounts/{accountId}/accounting-periods/{accountingPeriodId}/balance-dates",
+      {
+        params: { path: { accountId, accountingPeriodId: periodId } },
+      },
+    ),
+    apiClient.GET("/accounts/{accountId}/balance-events/totals", {
+      params: {
+        path: { accountId },
+        query: {
+          AccountingPeriodId: periodId,
+        },
+      },
+    }),
+  ]);
   const progress = unwrapApiResponse(
     progressResponse,
     "Failed to fetch Account Goal progress",
@@ -179,6 +180,10 @@ const AccountGoalWorkspaceDetailPage = async function ({
   const balanceDates = unwrapApiResponse(
     balanceDatesResponse,
     "Failed to fetch Account Goal daily balances",
+  );
+  const activityTotals = unwrapApiResponse(
+    activityTotalsResponse,
+    "Failed to fetch Account Goal activity totals",
   );
   const currentUrl = routes.workspaceDetail(accountId, {
     accountingPeriodId: periodId,
@@ -216,6 +221,7 @@ const AccountGoalWorkspaceDetailPage = async function ({
         redirectUrl={currentUrl}
         isReadOnly={!accountGoal.accountingPeriod.isOpen}
         recentBalanceEvents={events.items}
+        activityTotals={activityTotals}
         recentBalanceEventCount={events.totalCount}
         recentActivityBalances={balanceDates.dates}
         periodOpeningBalance={balanceDates.openingBalance}

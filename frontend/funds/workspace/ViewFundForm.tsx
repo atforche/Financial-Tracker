@@ -1,12 +1,10 @@
 "use client";
 
 import { Box, Button, Stack, Tab, Tabs } from "@mui/material";
-import type {
-  FundBalanceEvent,
-  FundBalanceSummaryByDate,
-  FundWithBalance,
-} from "@/funds/types";
+import type { FundBalanceEvent, FundWithBalance } from "@/funds/types";
 import { type JSX, useState } from "react";
+import type { BalanceEventTotals } from "@/balance-events/types";
+import type { BalanceTrendDateSummary } from "@/framework/charts/balanceTrendHelpers";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import CurrentFundBalanceFrame from "@/funds/workspace/CurrentFundBalanceFrame";
 import DeleteFundForm from "@/funds/workspace/DeleteFundForm";
@@ -27,8 +25,8 @@ interface ViewFundFormProps {
   readonly deleteRedirectUrl: string;
   readonly recentBalanceEvents: FundBalanceEvent[];
   readonly recentBalanceEventCount: number;
-  readonly recentActivityEvents: FundBalanceEvent[];
-  readonly recentActivityBalances: readonly FundBalanceSummaryByDate[];
+  readonly activityTotals: BalanceEventTotals;
+  readonly recentActivityBalances: readonly BalanceTrendDateSummary[];
   readonly trendsHref: Route;
   readonly addTransactionHref: string;
 }
@@ -42,7 +40,7 @@ const ViewFundForm = function ({
   deleteRedirectUrl,
   recentBalanceEvents,
   recentBalanceEventCount,
-  recentActivityEvents,
+  activityTotals,
   recentActivityBalances,
   trendsHref,
   addTransactionHref,
@@ -121,13 +119,13 @@ const ViewFundForm = function ({
               <RecentBalanceActivity
                 summaryFirst
                 title="Balance Activity"
-                data={recentActivityEvents}
+                totals={activityTotals}
                 dailyBalances={recentActivityBalances}
+                {...(activityTotals.openingBalance === null ||
+                activityTotals.openingBalance === undefined
+                  ? {}
+                  : { periodOpeningBalance: activityTotals.openingBalance })}
                 trendsHref={trendsHref}
-                getPreviousBalance={(event) =>
-                  event.previousBalance.postedBalance
-                }
-                getNewBalance={(event) => event.newBalance.postedBalance}
               />
             ) : null}
           </Box>
