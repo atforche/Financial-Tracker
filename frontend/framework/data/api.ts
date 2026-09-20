@@ -1228,6 +1228,53 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/funds/balance-events/date-range/totals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves posted credit and debit totals for all matching Fund events. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    "Filter.NameSearch"?: string;
+                    "Filter.Names"?: string[];
+                    /** @description Sort order to apply to the results. */
+                    Sort?: components["schemas"]["FundBalanceEventSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["BalanceEventTotalsModel"];
+                        "application/json": components["schemas"]["BalanceEventTotalsModel"];
+                        "text/json": components["schemas"]["BalanceEventTotalsModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/funds/with-balances": {
         parameters: {
             query?: never;
@@ -1618,6 +1665,55 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/fund-goals/balance-events/accounting-period-range/totals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves posted credit and debit totals for all matching Fund Goal events. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    "Filter.NameSearch"?: string;
+                    "Filter.FundIds"?: string[];
+                    "Filter.AccountingPeriodIds"?: string[];
+                    "Filter.IncludeOnboarded"?: boolean;
+                    /** @description Optional event ordering. */
+                    Sort?: components["schemas"]["FundGoalBalanceEventSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["BalanceEventTotalsModel"];
+                        "application/json": components["schemas"]["BalanceEventTotalsModel"];
+                        "text/json": components["schemas"]["BalanceEventTotalsModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/fund-goals": {
         parameters: {
             query?: never;
@@ -1964,6 +2060,66 @@ export interface paths {
                         "text/plain": components["schemas"]["CollectionModelOfAccountBalanceEventModel"];
                         "application/json": components["schemas"]["CollectionModelOfAccountBalanceEventModel"];
                         "text/json": components["schemas"]["CollectionModelOfAccountBalanceEventModel"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/{accountId}/balance-events/totals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves posted credit and debit totals for all matching Account events. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    /** @description Restricts events to transactions assigned to this Accounting Period. */
+                    AccountingPeriodId?: string;
+                    /** @description Sort order to apply to the results. */
+                    Sort?: components["schemas"]["AccountBalanceEventSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path: {
+                    accountId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["BalanceEventTotalsModel"];
+                        "application/json": components["schemas"]["BalanceEventTotalsModel"];
+                        "text/json": components["schemas"]["BalanceEventTotalsModel"];
                     };
                 };
                 /** @description Not Found */
@@ -3672,6 +3828,39 @@ export interface components {
         AccountWithBalanceRangeSortModel: AccountWithBalanceRangeSortModel | null;
         /** @enum {unknown} */
         AccountWithBalanceSortModel: AccountWithBalanceSortModel | null;
+        /** @description A posted balance checkpoint for one event date. */
+        BalanceEventDateBalanceModel: {
+            /**
+             * Format: date
+             * @description Posting date.
+             */
+            date: string;
+            /**
+             * Format: double
+             * @description Posted balance after the last matching event on this date.
+             */
+            totalBalance: number;
+        };
+        /** @description Totals of posted balance events in the requested range. */
+        BalanceEventTotalsModel: {
+            /**
+             * Format: double
+             * @description Sum of posted credits.
+             */
+            totalInflow: number;
+            /**
+             * Format: double
+             * @description Sum of posted debits.
+             */
+            totalOutflow: number;
+            /**
+             * Format: double
+             * @description Posted balance before the first matching posted event.
+             */
+            openingBalance?: null | number;
+            /** @description Last matching posted balance on each event date. */
+            dates?: null | components["schemas"]["BalanceEventDateBalanceModel"][];
+        };
         /**
          * @description Model representing the type of a balance event.
          * @enum {unknown}

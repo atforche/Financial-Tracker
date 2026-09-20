@@ -1,4 +1,5 @@
 using System.Net;
+using Models.BalanceEvents;
 using Models.FundGoals;
 using Tests.AccountingPeriods;
 using Tests.Funds;
@@ -26,5 +27,10 @@ public sealed class FundGoalReadContractTests
 
         Assert.Equal(HttpStatusCode.NotFound, missingUpdate.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, missingFund.StatusCode);
+
+        BalanceEventTotalsModel totals = await test.Api.GetAsync<BalanceEventTotalsModel>(
+            $"/fund-goals/balance-events/accounting-period-range/totals?Range.Start={july.Id}&Range.End={july.Id}&Filter.FundIds={groceries.Id}");
+        Assert.Equal(0m, totals.TotalInflow);
+        Assert.Equal(0m, totals.TotalOutflow);
     }
 }

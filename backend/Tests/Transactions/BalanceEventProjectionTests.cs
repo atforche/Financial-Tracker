@@ -92,14 +92,13 @@ public sealed class BalanceEventProjectionTests
         TransactionHandle transaction = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(25m).From(cash).To("Market", groceries).CreateAsync();
 
         CollectionModel<AccountBalanceEventModel> accountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?range.start=2026-07-01&range.end=2026-07-31");
+            $"/accounts/{cash.Id}/balance-events?accountingPeriodId={july.Id}");
         CollectionModel<FundBalanceEventModel> fundEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
             "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31");
         CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.Api.GetAsync<CollectionModel<FundGoalBalanceEventModel>>(
             $"/fund-goals/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}");
 
         AccountBalanceEventModel account = Assert.Single(accountEvents.Items, item => item.TransactionId == transaction.Id);
-        FundBalanceEventModel fund = Assert.Single(fundEvents.Items, item => item.TransactionId == transaction.Id);
         FundGoalBalanceEventModel goal = Assert.Single(goalEvents.Items, item => item.TransactionId == transaction.Id);
 
         Assert.Equal(BalanceEventTypeModel.Debit, account.Type);
@@ -109,10 +108,7 @@ public sealed class BalanceEventProjectionTests
         Assert.Equal(100m, account.PreviousBalance.PostedBalance);
         Assert.Equal(75m, account.NewBalance.BalanceIncludingPending);
 
-        Assert.Equal(BalanceEventTypeModel.Debit, fund.Type);
-        Assert.Equal("Cash", fund.Source.DisplayName);
-        Assert.Equal("Market", Assert.Single(fund.Destinations).DisplayName);
-        Assert.Equal(-25m, fund.NewBalance.BalanceIncludingPending);
+        Assert.Empty(fundEvents.Items);
         Assert.Equal("Cash", goal.Source.DisplayName);
         Assert.Equal("Market", Assert.Single(goal.Destinations).DisplayName);
         Assert.Equal(25m, goal.NewTotals.AmountSpentIncludingPending);

@@ -5,6 +5,7 @@ import type { AccountBalanceEvent } from "@/accounts/types";
 import AccountGoalBalanceEventsFrame from "@/account-goals/workspace/AccountGoalBalanceEventsFrame";
 import AccountGoalContextFrame from "@/account-goals/workspace/AccountGoalContextFrame";
 import AccountGoalEndingBalanceRange from "@/account-goals/workspace/AccountGoalEndingBalanceRange";
+import type { BalanceEventTotals } from "@/balance-events/types";
 import type { BalanceTrendDateSummary } from "@/framework/charts/balanceTrendHelpers";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import Frame from "@/framework/view/Frame";
@@ -20,6 +21,7 @@ interface ViewAccountGoalFormProps {
   readonly redirectUrl: string;
   readonly isReadOnly: boolean;
   readonly recentBalanceEvents: AccountBalanceEvent[];
+  readonly activityTotals: BalanceEventTotals;
   readonly recentBalanceEventCount: number;
   readonly recentActivityBalances: readonly BalanceTrendDateSummary[];
   readonly periodOpeningBalance: number;
@@ -69,14 +71,10 @@ const ViewAccountGoalForm = function (
               content: (
                 <RecentBalanceActivity
                   summaryFirst
-                  data={[] as AccountBalanceEvent[]}
+                  totals={props.activityTotals}
                   dailyBalances={props.recentActivityBalances}
                   periodOpeningBalance={props.periodOpeningBalance}
                   trendsHref={props.trendsHref}
-                  getPreviousBalance={(event) =>
-                    event.previousBalance.postedBalance
-                  }
-                  getNewBalance={(event) => event.newBalance.postedBalance}
                   title="Accounting Period Activity"
                   balanceLabel="Account Balance"
                 />

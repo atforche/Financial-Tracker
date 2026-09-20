@@ -1,5 +1,7 @@
 using Data;
+using Domain;
 using Domain.AccountingPeriods;
+using Domain.BalanceEvents;
 using Domain.Funds;
 using Domain.Funds.Queries;
 using Domain.Validation;
@@ -58,6 +60,43 @@ public sealed class FundController(
         Ok(fundBalanceEventConverter.ToModel(await fundBalanceEventQueryService.GetAsync(
             fundBalanceEventConverter.ToDomain(query),
             cancellationToken)));
+
+    /// <summary>
+    /// Retrieves posted credit and debit totals for all matching Fund events.
+    /// </summary>
+    [HttpGet("balance-events/date-range/totals")]
+    [ProducesResponseType(typeof(BalanceEventTotalsModel), StatusCodes.Status200OK)]
+    public async Task<ActionResult<BalanceEventTotalsModel>> GetBalanceEventTotalsAsync(
+        [FromQuery] FundBalanceEventsInDateRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        QueryPage<FundBalanceEvent> events = await fundBalanceEventQueryService.GetAsync(
+            fundBalanceEventConverter.ToDomain(query) with { Offset = 0, Limit = null }, cancellationToken);
+        var totals = BalanceEventTotals.Calculate(events.Items,
+            item => item.IsPosted, item => item.Type, item => item.Amount);
+        (decimal? openingBalance, IReadOnlyCollection<(DateOnly Date, decimal Balance)> dates) = BalanceEventTotals.BuildDateBalances(events.Items,
+            item => item.EventDate, item => item.EventDateSequence,
+            item => item.PreviousBalance.PostedBalance, item => item.NewBalance.PostedBalance);
+        if (query.Range.Start is DateOnly start && query.Range.End is DateOnly end)
+        {
+            FundBalanceEventQuery eventQuery = fundBalanceEventConverter.ToDomain(query);
+            FundDateRange range = await fundQueryService.GetDateRangeAsync(new FundDateRangeQuery(
+                start, end, eventQuery.Filter, FundRangeSort.Name, 0, null), cancellationToken);
+            openingBalance = range.Funds.Items.Sum(item => item.StartingBalance);
+            dates = range.Dates.Select(item => (item.Date, item.Balance.TotalBalance)).ToList();
+        }
+        return Ok(new BalanceEventTotalsModel
+        {
+            TotalInflow = totals.TotalInflow,
+            TotalOutflow = totals.TotalOutflow,
+            OpeningBalance = openingBalance,
+            Dates = dates.Select(item => new BalanceEventDateBalanceModel
+            {
+                Date = item.Date,
+                TotalBalance = item.Balance,
+            }).ToList(),
+        });
+    }
 
     /// <summary>
     /// Retrieves Funds with current balances.

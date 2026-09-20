@@ -1,7 +1,9 @@
 using Data;
+using Domain;
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
+using Domain.BalanceEvents;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
@@ -65,6 +67,51 @@ public sealed class AccountController(
         return Ok(accountBalanceEventConverter.ToModel(await accountBalanceEventQueryService.GetAsync(
             accountBalanceEventConverter.ToDomain(accountId, query),
             cancellationToken)));
+    }
+
+    /// <summary>
+    /// Retrieves posted credit and debit totals for all matching Account events.
+    /// </summary>
+    [HttpGet("{accountId}/balance-events/totals")]
+    [ProducesResponseType(typeof(BalanceEventTotalsModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<BalanceEventTotalsModel>> GetBalanceEventTotalsAsync(
+        Guid accountId,
+        [FromQuery] AccountBalanceEventsQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        Account? account = await accountQueryService.GetByIdAsync(accountId, cancellationToken);
+        if (account == null)
+        {
+            return NotFound();
+        }
+        QueryPage<AccountBalanceEvent> events = await accountBalanceEventQueryService.GetAsync(
+            accountBalanceEventConverter.ToDomain(accountId, query) with { Offset = 0, Limit = null }, cancellationToken);
+        var totals = BalanceEventTotals.Calculate(events.Items,
+            item => item.IsPosted, item => item.Type, item => item.Amount);
+        (decimal? openingBalance, IReadOnlyCollection<(DateOnly Date, decimal Balance)> dates) = BalanceEventTotals.BuildDateBalances(events.Items,
+            item => item.EventDate, item => item.EventDateSequence,
+            item => item.PreviousBalance.PostedBalance, item => item.NewBalance.PostedBalance);
+        if (query.AccountingPeriodId == null && query.Range?.Start is DateOnly start && query.Range.End is DateOnly end)
+        {
+            AccountDateRange range = await accountQueryService.GetDateRangeAsync(new AccountDateRangeQuery(
+                start, end, new AccountFilter(null, [account.Name], []), AccountRangeSort.Name, 0, null), cancellationToken);
+            openingBalance = account.DateOpened is DateOnly opened && opened > start
+                ? 0
+                : (account.Type.IsDebt() ? -1 : 1) * range.Accounts.Items.Single().StartingBalance;
+            dates = range.Dates.Select(item => (item.Date, item.Balance.TotalBalance)).ToList();
+        }
+        return Ok(new BalanceEventTotalsModel
+        {
+            TotalInflow = totals.TotalInflow,
+            TotalOutflow = totals.TotalOutflow,
+            OpeningBalance = openingBalance,
+            Dates = dates.Select(item => new BalanceEventDateBalanceModel
+            {
+                Date = item.Date,
+                TotalBalance = item.Balance,
+            }).ToList(),
+        });
     }
 
     /// <summary>

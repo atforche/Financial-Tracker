@@ -6,7 +6,7 @@ namespace Models.Funds;
 public class FundBalanceEventsInDateRangeQueryParameterModel : PaginationModel
 {
     /// <summary>
-    /// Date range to apply to the results.
+    /// Posting date range to apply to the results.
     /// </summary>
     public required DateRangeModel Range { get; init; }
 

@@ -124,6 +124,7 @@ const FundGoalWorkspaceDetailPage = async function ({
     progressResponse,
     eventsResponse,
     balanceDatesResponse,
+    activityTotalsResponse,
   ] = await Promise.all([
     apiClient.GET("/accounting-periods/{accountingPeriodId}", {
       params: { path: { accountingPeriodId: periodId } },
@@ -139,7 +140,6 @@ const FundGoalWorkspaceDetailPage = async function ({
           "Range.Start": periodId,
           "Range.End": periodId,
           "Filter.FundIds": [fundId],
-          "Filter.AccountingPeriodIds": [periodId],
           Limit: rowsPerPage,
           Offset: getPageOffset(
             normalizePageValue(balanceEventPage),
@@ -157,6 +157,15 @@ const FundGoalWorkspaceDetailPage = async function ({
         params: { path: { fundId, accountingPeriodId: periodId } },
       },
     ),
+    apiClient.GET("/fund-goals/balance-events/accounting-period-range/totals", {
+      params: {
+        query: {
+          "Range.Start": periodId,
+          "Range.End": periodId,
+          "Filter.FundIds": [fundId],
+        },
+      },
+    }),
   ]);
   const progress = unwrapApiResponse(
     progressResponse,
@@ -173,6 +182,10 @@ const FundGoalWorkspaceDetailPage = async function ({
   const balanceDates = unwrapApiResponse(
     balanceDatesResponse,
     "Failed to fetch Fund Goal daily balances",
+  );
+  const activityTotals = unwrapApiResponse(
+    activityTotalsResponse,
+    "Failed to fetch Fund Goal activity totals",
   );
   const currentUrl = routes.workspaceDetail(fundId, {
     accountingPeriodId: periodId,
@@ -210,6 +223,7 @@ const FundGoalWorkspaceDetailPage = async function ({
         progress={progress}
         redirectUrl={currentUrl}
         recentBalanceEvents={events.items}
+        activityTotals={activityTotals}
         recentBalanceEventCount={events.totalCount}
         recentActivityBalances={balanceDates.dates}
         periodOpeningBalance={balanceDates.openingBalance}

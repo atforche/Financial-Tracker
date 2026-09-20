@@ -68,6 +68,35 @@ public sealed class TransactionBalanceEventQueryRepository(DatabaseContext datab
             .ToListAsync(cancellationToken);
 
     /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<Transaction>> GetForAccountPostingsAsync(
+        AccountId accountId, DateOnly? startDate, DateOnly? endDate,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<TransactionId> ids = databaseContext.AccountBalanceHistories
+            .Where(history => history.Account.Id == accountId
+                && (startDate == null || history.Date >= startDate)
+                && (endDate == null || history.Date <= endDate))
+            .Select(history => history.TransactionId).Distinct();
+        return await databaseContext.Transactions.AsNoTracking().AsSplitQuery()
+            .Where(transaction => ids.Contains(transaction.Id))
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<Transaction>> GetForFundPostingsAsync(
+        DateOnly? startDate, DateOnly? endDate,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<TransactionId> ids = databaseContext.FundBalanceHistories
+            .Where(history => (startDate == null || history.Date >= startDate)
+                && (endDate == null || history.Date <= endDate))
+            .Select(history => history.TransactionId).Distinct();
+        return await databaseContext.Transactions.AsNoTracking().AsSplitQuery()
+            .Where(transaction => ids.Contains(transaction.Id))
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<IReadOnlyCollection<Transaction>> GetAsync(
         IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds,
         CancellationToken cancellationToken = default) =>
