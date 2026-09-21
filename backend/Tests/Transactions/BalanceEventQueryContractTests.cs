@@ -113,6 +113,52 @@ public sealed class BalanceEventQueryContractTests
         Assert.Equal(-10m, fundTotals.Dates!.Single(day => day.Date == new DateOnly(2026, 8, 2)).TotalBalance);
     }
 
+    /// <summary>Pending events are opt-in and remain outside posted totals and chart points.</summary>
+    [Fact]
+    public async Task DateRangeListsCanIncludePendingEventsWithoutChangingPostedSummaries()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        TransactionHandle transaction = await test.Transactions.Spending().In(july)
+            .On(new DateOnly(2026, 7, 15)).For(10m).From(cash).To("Store", groceries).CreateAsync();
+
+        CollectionModel<AccountBalanceEventModel> defaultAccountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
+            $"/accounts/{cash.Id}/balance-events?range.start=2026-07-01&range.end=2026-07-31");
+        CollectionModel<AccountBalanceEventModel> accountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
+            $"/accounts/{cash.Id}/balance-events?range.start=2026-07-01&range.end=2026-07-31&includePending=true");
+        CollectionModel<AccountBalanceEventModel> periodAccountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
+            $"/accounts/{cash.Id}/balance-events?accountingPeriodId={july.Id}&includePending=true");
+        CollectionModel<AccountBalanceEventModel> defaultPeriodAccountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
+            $"/accounts/{cash.Id}/balance-events?accountingPeriodId={july.Id}");
+        CollectionModel<FundBalanceEventModel> defaultFundEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
+            "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries");
+        CollectionModel<FundBalanceEventModel> fundEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
+            "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries&includePending=true");
+        BalanceEventTotalsModel accountTotals = await test.Api.GetAsync<BalanceEventTotalsModel>(
+            $"/accounts/{cash.Id}/balance-events/totals?range.start=2026-07-01&range.end=2026-07-31&includePending=true");
+        BalanceEventTotalsModel fundTotals = await test.Api.GetAsync<BalanceEventTotalsModel>(
+            "/funds/balance-events/date-range/totals?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries&includePending=true");
+
+        Assert.Empty(defaultAccountEvents.Items);
+        Assert.Empty(defaultPeriodAccountEvents.Items);
+        Assert.Empty(defaultFundEvents.Items);
+        AccountBalanceEventModel accountEvent = Assert.Single(accountEvents.Items);
+        Assert.Equal(transaction.Id, accountEvent.TransactionId);
+        Assert.False(accountEvent.IsPosted);
+        Assert.Null(accountEvent.EventDate);
+        Assert.Equal(transaction.Id, Assert.Single(periodAccountEvents.Items).TransactionId);
+        FundBalanceEventModel fundEvent = Assert.Single(fundEvents.Items);
+        Assert.Equal(transaction.Id, fundEvent.TransactionId);
+        Assert.False(fundEvent.IsPosted);
+        Assert.Null(fundEvent.EventDate);
+        Assert.Equal(0m, accountTotals.TotalOutflow);
+        Assert.Equal(0m, fundTotals.TotalOutflow);
+        Assert.All(accountTotals.Dates!, day => Assert.Equal(100m, day.TotalBalance));
+        Assert.All(fundTotals.Dates!, day => Assert.Equal(0m, day.TotalBalance));
+    }
+
     /// <summary>Fund chart checkpoints sum every selected fund, including funds without a posting that day.</summary>
     [Fact]
     public async Task FundTotalsChartCombinesSelectedFunds()
@@ -153,7 +199,7 @@ public sealed class BalanceEventQueryContractTests
         TransactionHandle augustTransaction = await test.Transactions.Spending().In(august).On(new DateOnly(2026, 7, 15)).For(20m).From(cash).To("August", augustFund).CreateAsync();
 
         CollectionModel<AccountBalanceEventModel> events = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?accountingPeriodId={july.Id}");
+            $"/accounts/{cash.Id}/balance-events?accountingPeriodId={july.Id}&includePending=true");
 
         Assert.Equal(1, events.TotalCount);
         Assert.Equal(julyTransaction.Id, Assert.Single(events.Items).TransactionId);

@@ -65,7 +65,7 @@ public sealed class TransactionReadAndValidationTests
         CollectionModel<AccountBalanceEventModel> accountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
             $"/accounts/{cash.Id}/balance-events?range.start=2026-07-01&range.end=2026-07-31");
         CollectionModel<AccountBalanceEventModel> periodAccountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?accountingPeriodId={july.Id}");
+            $"/accounts/{cash.Id}/balance-events?accountingPeriodId={july.Id}&includePending=true");
         CollectionModel<FundBalanceEventModel> fundEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
             "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31");
         CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.Api.GetAsync<CollectionModel<FundGoalBalanceEventModel>>(

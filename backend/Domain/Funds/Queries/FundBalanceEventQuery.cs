@@ -7,6 +7,7 @@ public sealed record FundBalanceEventQuery(
     DateOnly? Start,
     DateOnly? End,
     FundFilter Filter,
+    bool IncludePending,
     FundBalanceEventSort Sort,
     int Offset,
     int? Limit);

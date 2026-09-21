@@ -143,6 +143,7 @@ const AccountGoalWorkspaceDetailPage = async function ({
         path: { accountId },
         query: {
           AccountingPeriodId: periodId,
+          IncludePending: true,
           Limit: rowsPerPage,
           Offset: getPageOffset(
             normalizePageValue(balanceEventPage),

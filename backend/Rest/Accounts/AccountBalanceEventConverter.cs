@@ -24,6 +24,7 @@ public sealed class AccountBalanceEventConverter
             model.AccountingPeriodId == null ? model.Range?.Start : null,
             model.AccountingPeriodId == null ? model.Range?.End : null,
             model.AccountingPeriodId,
+            model.IncludePending,
             ToDomain(model.Sort),
             model.Offset ?? 0,
             model.Limit);
