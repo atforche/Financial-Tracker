@@ -21,6 +21,7 @@ public sealed class FundBalanceEventConverter
         model.Range.Start,
         model.Range.End,
         ToDomain(model.Filter),
+        model.IncludePending,
         ToDomain(model.Sort),
         model.Offset ?? 0,
         model.Limit);

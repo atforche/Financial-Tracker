@@ -55,11 +55,16 @@ public sealed class FundBalanceEventQueryService(
         FundBalanceEventQuery query,
         CancellationToken cancellationToken = default)
     {
-        IReadOnlyCollection<Transaction> transactions = await transactionQueryRepository.GetForFundPostingsAsync(query.Start, query.End, cancellationToken);
+        IReadOnlyCollection<Transaction> postedTransactions = await transactionQueryRepository.GetForFundPostingsAsync(query.Start, query.End, cancellationToken);
+        IReadOnlyCollection<Transaction> pendingTransactions = query.IncludePending
+            ? await transactionQueryRepository.GetPendingForFundsAsync(null, cancellationToken)
+            : [];
+        IReadOnlyCollection<Transaction> transactions = postedTransactions.Concat(pendingTransactions)
+            .DistinctBy(transaction => transaction.Id).ToList();
         IReadOnlyCollection<AccountingPeriodId> periodIds = transactions.Select(transaction => transaction.AccountingPeriodId).Distinct().ToList();
         IReadOnlyCollection<AccountingPeriod> periods = await accountingPeriodRepository.GetByIdsAsync(periodIds, cancellationToken);
         return await GetAsync(transactions, periods, query.Filter, query.Sort, query.Offset, query.Limit, cancellationToken,
-            query.Start, query.End, true);
+            query.Start, query.End, true, query.IncludePending);
     }
 
     /// <summary>
@@ -105,7 +110,8 @@ public sealed class FundBalanceEventQueryService(
         CancellationToken cancellationToken,
         DateOnly? postingStart = null,
         DateOnly? postingEnd = null,
-        bool filterByPostingDate = false)
+        bool filterByPostingDate = false,
+        bool includePending = false)
     {
         var periods = accountingPeriods.ToDictionary(period => period.Id);
         IReadOnlyCollection<FundId> fundIds = transactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null)).Distinct().ToList();
@@ -118,9 +124,11 @@ public sealed class FundBalanceEventQueryService(
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFund))
             .Where(balanceEvent => Matches(balanceEvent.Fund, filter)).ToList();
         events = ProjectPendingEvents(events, transactions, historiesByFund);
-        var allItems = Sort(events.Where(item => (!filterByPostingDate || item.EventDate.HasValue)
-            && (postingStart == null || item.EventDate >= postingStart)
-            && (postingEnd == null || item.EventDate <= postingEnd)), sort).ToList();
+        var allItems = Sort(events.Where(item => (includePending && !item.IsPosted)
+            || (item.IsPosted
+                && (!filterByPostingDate || item.EventDate.HasValue)
+                && (postingStart == null || item.EventDate >= postingStart)
+                && (postingEnd == null || item.EventDate <= postingEnd))), sort).ToList();
         return new QueryPage<FundBalanceEvent>(
             allItems.Skip(offset).Take(limit ?? int.MaxValue).ToList(),
             allItems.Count);

@@ -71,6 +71,7 @@ const FundWorkspaceDetailPage = async function ({
           "Range.Start": recentActivityStartDate,
           "Range.End": recentActivityEndDate,
           "Filter.Names": [fund.name],
+          IncludePending: true,
           Sort: balanceEventSort ?? FundBalanceEventSort.DateDescending,
           Limit: rowsPerPage,
           Offset: balanceEventOffset,

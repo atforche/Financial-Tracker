@@ -62,6 +62,7 @@ const AccountWorkspaceDetailPage = async function ({
         query: {
           "Range.Start": recentActivityStartDate,
           "Range.End": recentActivityEndDate,
+          IncludePending: true,
           Limit: rowsPerPage,
           Offset: balanceEventOffset,
           ...(balanceEventSort === undefined ? {} : { Sort: balanceEventSort }),

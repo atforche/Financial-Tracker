@@ -60,6 +60,6 @@ public interface ITransactionBalanceEventQueryRepository
     /// Retrieves Transactions with unposted Fund assignments affecting any of the provided Funds.
     /// </summary>
     Task<IReadOnlyCollection<Transaction>> GetPendingForFundsAsync(
-        IReadOnlyCollection<FundId> fundIds,
+        IReadOnlyCollection<FundId>? fundIds,
         CancellationToken cancellationToken = default);
 }

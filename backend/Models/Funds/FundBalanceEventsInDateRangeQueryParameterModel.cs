@@ -11,6 +11,11 @@ public class FundBalanceEventsInDateRangeQueryParameterModel : PaginationModel
     public required DateRangeModel Range { get; init; }
 
     /// <summary>
+    /// Whether to include current pending events in addition to matching posted events.
+    /// </summary>
+    public bool IncludePending { get; init; }
+
+    /// <summary>
     /// Filters to apply to the results.
     /// </summary>
     public FundFilterModel? Filter { get; init; }

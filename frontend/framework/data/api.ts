@@ -1194,6 +1194,8 @@ export interface paths {
                 query?: {
                     "Range.Start"?: string;
                     "Range.End"?: string;
+                    /** @description Whether to include current pending events in addition to matching posted events. */
+                    IncludePending?: boolean;
                     "Filter.NameSearch"?: string;
                     "Filter.Names"?: string[];
                     /** @description Sort order to apply to the results. */
@@ -1241,6 +1243,8 @@ export interface paths {
                 query?: {
                     "Range.Start"?: string;
                     "Range.End"?: string;
+                    /** @description Whether to include current pending events in addition to matching posted events. */
+                    IncludePending?: boolean;
                     "Filter.NameSearch"?: string;
                     "Filter.Names"?: string[];
                     /** @description Sort order to apply to the results. */
@@ -2038,6 +2042,8 @@ export interface paths {
                     "Range.End"?: string;
                     /** @description Restricts events to transactions assigned to this Accounting Period. */
                     AccountingPeriodId?: string;
+                    /** @description Whether to include current pending events in addition to matching posted events. */
+                    IncludePending?: boolean;
                     /** @description Sort order to apply to the results. */
                     Sort?: components["schemas"]["AccountBalanceEventSortModel"];
                     Limit?: number;
@@ -2098,6 +2104,8 @@ export interface paths {
                     "Range.End"?: string;
                     /** @description Restricts events to transactions assigned to this Accounting Period. */
                     AccountingPeriodId?: string;
+                    /** @description Whether to include current pending events in addition to matching posted events. */
+                    IncludePending?: boolean;
                     /** @description Sort order to apply to the results. */
                     Sort?: components["schemas"]["AccountBalanceEventSortModel"];
                     Limit?: number;
