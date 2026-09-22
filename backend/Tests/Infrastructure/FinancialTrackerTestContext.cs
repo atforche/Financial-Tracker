@@ -12,11 +12,12 @@ namespace Tests.Infrastructure;
 /// </summary>
 internal sealed class FinancialTrackerTestContext : IAsyncDisposable
 {
-    private readonly FinancialTrackerApplicationFactory _factory = new();
+    private readonly FinancialTrackerApplicationFactory _factory;
     private TestApiClient ApiClient { get; }
 
-    private FinancialTrackerTestContext()
+    private FinancialTrackerTestContext(ReadQueryCounter? queryCounter)
     {
+        _factory = new FinancialTrackerApplicationFactory(queryCounter);
         ApiClient = new TestApiClient(_factory.CreateClient());
     }
 
@@ -73,9 +74,9 @@ internal sealed class FinancialTrackerTestContext : IAsyncDisposable
     /// <summary>
     /// Creates an empty test context backed by the full application stack.
     /// </summary>
-    public static async Task<FinancialTrackerTestContext> CreateAsync()
+    public static async Task<FinancialTrackerTestContext> CreateAsync(ReadQueryCounter? queryCounter = null)
     {
-        FinancialTrackerTestContext context = new();
+        FinancialTrackerTestContext context = new(queryCounter);
         try
         {
             await context.InitializeAsync();

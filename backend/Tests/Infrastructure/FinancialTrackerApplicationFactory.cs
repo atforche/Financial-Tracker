@@ -16,12 +16,14 @@ namespace Tests.Infrastructure;
 internal class FinancialTrackerApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly string _databasePath = Path.Combine(Path.GetTempPath(), $"financial-tracker-tests-{Guid.NewGuid():N}.db");
+    private readonly DbCommandInterceptor? _commandInterceptor;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public FinancialTrackerApplicationFactory()
+    public FinancialTrackerApplicationFactory(DbCommandInterceptor? commandInterceptor = null)
     {
+        _commandInterceptor = commandInterceptor;
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
     }
 
@@ -38,6 +40,10 @@ internal class FinancialTrackerApplicationFactory : WebApplicationFactory<Progra
             {
                 _ = options.UseSqlite($"Data Source={_databasePath}");
                 _ = options.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
+                if (_commandInterceptor != null)
+                {
+                    _ = options.AddInterceptors(_commandInterceptor);
+                }
             });
         });
     }
