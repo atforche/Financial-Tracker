@@ -72,21 +72,21 @@ runs:
         cache-dependency-path: ${{ inputs.python-cache-dependency-path }}
 
     - if: ${{ inputs.setup-node == 'true' }}
-      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: ${{ steps.toolchain.outputs.node }}
         cache: ${{ inputs.node-cache }}
         cache-dependency-path: ${{ inputs.node-cache-dependency-path }}
 
     - if: ${{ inputs.setup-dotnet == 'true' }}
-      uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         dotnet-version: ${{ steps.toolchain.outputs.dotnet }}
         cache: ${{ inputs.dotnet-cache }}
         cache-dependency-path: ${{ inputs.dotnet-cache-dependency-path }}
 
     - if: ${{ inputs.cache-playwright == 'true' }}
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/.cache/ms-playwright
         key: playwright-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
@@ -99,7 +99,7 @@ runs:
     # Trivy downloads a fresh database whenever the restored copy is stale, so a
     # cached database never hides newly published vulnerabilities.
     - if: ${{ inputs.cache-trivy == 'true' }}
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/.cache/trivy
         key: trivy-db-${{ runner.os }}-${{ steps.trivy-date.outputs.date }}
