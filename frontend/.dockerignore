@@ -4,3 +4,6 @@
 node_modules
 tsconfig.tsbuildinfo
 npm-debug.log*
+e2e
+playwright-report
+test-results

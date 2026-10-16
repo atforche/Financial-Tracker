@@ -71,10 +71,6 @@ class RepoPaths:
         return self.backend / "Dockerfile"
 
     @property
-    def migrator_dockerfile(self) -> Path:
-        return self.backend / "Migrator.Dockerfile"
-
-    @property
     def frontend_dockerfile(self) -> Path:
         return self.frontend / "Dockerfile"
 

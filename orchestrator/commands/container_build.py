@@ -19,27 +19,36 @@ def run(context: Context, _args: Namespace) -> int:
         "DOTNET_RUNTIME_IMAGE": toolchain.require_base_image("dotnet_runtime"),
     }
     node_build_args = {"NODE_IMAGE": toolchain.require_base_image("node")}
+    # The backend and migrator targets share one build stage, so each reads the
+    # other's cache scope to reuse that stage.
+    backend_scopes = ("financial-tracker-backend", "financial-tracker-migrator")
     images = (
         (
             context.paths.backend,
             "backend",
             context.paths.backend_dockerfile,
+            "backend",
             dotnet_build_args,
+            backend_scopes,
         ),
         (
             context.paths.frontend,
             "frontend",
             context.paths.frontend_dockerfile,
+            None,
             node_build_args,
+            ("financial-tracker-frontend",),
         ),
         (
             context.paths.backend,
             "migrator",
-            context.paths.migrator_dockerfile,
+            context.paths.backend_dockerfile,
+            "migrator",
             dotnet_build_args,
+            backend_scopes,
         ),
     )
-    for build_context, image_name, dockerfile, build_args in images:
+    for build_context, image_name, dockerfile, target, build_args, scopes in images:
         tag = toolchain.require_image(image_name)
         scope = f"financial-tracker-{image_name}"
         command = (
@@ -50,17 +59,15 @@ def run(context: Context, _args: Namespace) -> int:
         command.extend(["--tag", tag])
         for name, value in build_args.items():
             command.extend(["--build-arg", f"{name}={value}"])
-        if dockerfile is not None:
-            command.extend(["--file", str(dockerfile)])
+        command.extend(["--file", str(dockerfile)])
+        if target is not None:
+            command.extend(["--target", target])
         if cache_backend == "gha":
+            command.append("--load")
+            for cache_scope in scopes:
+                command.extend(["--cache-from", f"type=gha,scope={cache_scope}"])
             command.extend(
-                [
-                    "--load",
-                    "--cache-from",
-                    f"type=gha,scope={scope}",
-                    "--cache-to",
-                    f"type=gha,mode=max,ignore-error=true,scope={scope}",
-                ]
+                ["--cache-to", f"type=gha,mode=max,ignore-error=true,scope={scope}"]
             )
         command.append(str(build_context))
         context.runner.run(command, cwd=context.root)

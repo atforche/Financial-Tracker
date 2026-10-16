@@ -11,7 +11,7 @@ services:
   migrator:
     build:
       context: ./backend
-      dockerfile: Migrator.Dockerfile
+      target: migrator
       args:
         DOTNET_SDK_IMAGE: "${DOTNET_SDK_IMAGE:?DOTNET_SDK_IMAGE must be configured}"
         DOTNET_RUNTIME_IMAGE: "${DOTNET_RUNTIME_IMAGE:?DOTNET_RUNTIME_IMAGE must be configured}"
@@ -30,6 +30,7 @@ services:
   backend:
     build:
       context: ./backend
+      target: backend
       args:
         DOTNET_SDK_IMAGE: "${DOTNET_SDK_IMAGE:?DOTNET_SDK_IMAGE must be configured}"
         DOTNET_RUNTIME_IMAGE: "${DOTNET_RUNTIME_IMAGE:?DOTNET_RUNTIME_IMAGE must be configured}"
