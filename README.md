@@ -193,7 +193,7 @@ All repository operations are available through the `ft` command. Run
 | `ft env validate --profile debug --file debug/.env` | Validate local configuration |
 
 When an API contract changes, the backend-generated OpenAPI document and the
-frontend models are checked together by the API-contract verification step.
+frontend models are checked together by the backend verification job.
 
 ## Configuration and authentication
 
@@ -221,15 +221,19 @@ store.
 
 ## Testing and CI
 
-The repository uses separate workflows for quality checks, verification, release,
-deployment, and backups:
+The repository uses separate workflows for verification, security scanning,
+release, deployment, and backups:
 
-- [`Code Quality`](.github/workflows/code-quality.yml) checks Python, backend,
-  and frontend formatting and linting.
-- [`Verification`](.github/workflows/verification.yml) builds and tests the
-  backend and frontend, verifies the generated API contract, scans dependencies,
-  and smoke-tests the container images.
-- [`Release`](.github/workflows/release.yml) builds, scans, tests, and publishes
+- [`Verification`](.github/workflows/verification.yml) runs on pull requests.
+  Each job runs only when the paths it covers change: Python checks, backend
+  formatting, build, tests, and API contract, frontend formatting, linting, and
+  types, dependency scanning, and container smoke tests. Images are scanned only
+  when their Dockerfiles or dependencies change. Branch protection should require
+  the `Verification Passed` check, which also passes when jobs are skipped.
+- [`Security Scan`](.github/workflows/security-scan.yml) scans dependencies and
+  container images nightly, so newly published vulnerabilities surface without
+  blocking unrelated pull requests.
+- [`Release`](.github/workflows/release.yml) builds, scans, and publishes
   immutable container images when `main` changes.
 - [`Backup Production`](.github/workflows/backup-production.yml) creates and
   verifies scheduled encrypted backups.
@@ -244,11 +248,13 @@ The most useful targeted checks are:
 
 ```sh
 ft ci python
-ft ci backend-test
-ft ci frontend-build
-# Run after ft ci backend-test when validating the generated API contract.
+ft ci backend
+ft ci frontend
+# Run after ft ci backend when validating the generated API contract.
 ft ci api-contract
 ft ci container-images
+# Run after ft ci container-images to scan the built images.
+ft ci container-scan
 ```
 
 ## Production deployment

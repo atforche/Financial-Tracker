@@ -7,6 +7,7 @@ from . import (
     frontend_lint,
     frontend_models,
     frontend_playwright_install,
+    frontend_typecheck,
 )
 from .common import add_command
 
@@ -20,6 +21,9 @@ def register(commands: object) -> None:
         commands, "format-fix", "Apply frontend formatting", frontend_format.fix
     )
     add_command(commands, "lint", "Run frontend lint checks", frontend_lint.run)
+    add_command(
+        commands, "typecheck", "Type-check frontend source", frontend_typecheck.run
+    )
     add_command(
         commands,
         "install-browser",

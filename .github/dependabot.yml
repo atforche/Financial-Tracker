@@ -1,0 +1,29 @@
+version: 2
+
+updates:
+  # Keeps the SHA-pinned workflow actions current, including the composite
+  # setup action. Updates arrive weekly as one grouped pull request.
+  - package-ecosystem: github-actions
+    directories:
+      - "/"
+      - "/.github/actions/*"
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # The application dependencies only receive security updates; a limit of zero
+  # turns off routine version-bump pull requests for these ecosystems.
+  - package-ecosystem: npm
+    directory: "/frontend"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: nuget
+    directory: "/backend"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
