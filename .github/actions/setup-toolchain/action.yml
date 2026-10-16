@@ -37,6 +37,12 @@ inputs:
   dotnet-cache-dependency-path:
     description: .NET dependency files passed to setup-dotnet
     default: ""
+  cache-playwright:
+    description: Whether to cache the Playwright browsers
+    default: "false"
+  cache-trivy:
+    description: Whether to cache the Trivy vulnerability database for the day
+    default: "false"
 
 runs:
   using: composite
@@ -59,22 +65,42 @@ runs:
           echo "migrator_image=$(image_value migrator)"
         } >> "$GITHUB_OUTPUT"
 
-    - uses: actions/setup-python@v7
+    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
         python-version: ${{ steps.toolchain.outputs.python }}
         cache: ${{ inputs.python-cache }}
         cache-dependency-path: ${{ inputs.python-cache-dependency-path }}
 
     - if: ${{ inputs.setup-node == 'true' }}
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
       with:
         node-version: ${{ steps.toolchain.outputs.node }}
         cache: ${{ inputs.node-cache }}
         cache-dependency-path: ${{ inputs.node-cache-dependency-path }}
 
     - if: ${{ inputs.setup-dotnet == 'true' }}
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
       with:
         dotnet-version: ${{ steps.toolchain.outputs.dotnet }}
         cache: ${{ inputs.dotnet-cache }}
         cache-dependency-path: ${{ inputs.dotnet-cache-dependency-path }}
+
+    - if: ${{ inputs.cache-playwright == 'true' }}
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+
+    - if: ${{ inputs.cache-trivy == 'true' }}
+      id: trivy-date
+      shell: bash
+      run: echo "date=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+
+    # Trivy downloads a fresh database whenever the restored copy is stale, so a
+    # cached database never hides newly published vulnerabilities.
+    - if: ${{ inputs.cache-trivy == 'true' }}
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: ~/.cache/trivy
+        key: trivy-db-${{ runner.os }}-${{ steps.trivy-date.outputs.date }}
+        restore-keys: trivy-db-${{ runner.os }}-

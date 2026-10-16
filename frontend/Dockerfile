@@ -1,3 +1,6 @@
+# check=skip=InvalidDefaultArgInFrom
+
+# Base images are pinned in config/toolchain.toml and always passed as build args.
 ARG NODE_IMAGE
 FROM ${NODE_IMAGE} AS dependencies
 WORKDIR /app

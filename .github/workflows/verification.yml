@@ -3,7 +3,6 @@ name: Verification
 on:
   pull_request:
     branches: [main]
-  workflow_call:
 
 permissions:
   contents: read
@@ -13,59 +12,94 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      python: ${{ steps.filter.outputs.python }}
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      dependencies: ${{ steps.filter.outputs.dependencies }}
+      containers: ${{ steps.filter.outputs.containers }}
+      images: ${{ steps.filter.outputs.images }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Filter Changed Paths
+        id: filter
+        uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3.0.4
+        with:
+          filters: |
+            shared: &shared
+              - ".github/**"
+              - "orchestrator/**"
+              - "pyproject.toml"
+              - "config/toolchain.toml"
+            python:
+              - *shared
+              - "config/**"
+            backend:
+              - *shared
+              - "backend/**"
+              - "global.json"
+              - ".config/dotnet-tools.json"
+              - "frontend/framework/data/api.ts"
+            frontend:
+              - *shared
+              - "frontend/**"
+            dependencies:
+              - *shared
+              - "frontend/package.json"
+              - "frontend/package-lock.json"
+              - "backend/**/*.csproj"
+              - "backend/Directory.Packages.props"
+            containers:
+              - *shared
+              - "backend/**"
+              - "frontend/**"
+            images:
+              - *shared
+              - "backend/Dockerfile"
+              - "backend/.dockerignore"
+              - "backend/**/*.csproj"
+              - "backend/Directory.Packages.props"
+              - "frontend/Dockerfile"
+              - "frontend/.dockerignore"
+              - "frontend/package.json"
+              - "frontend/package-lock.json"
+
+  python-quality:
+    name: Python Formatting, Linting, Types, and Tests
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Repository Toolchain
+        uses: ./.github/actions/setup-toolchain
+        with:
+          python-cache: pip
+          python-cache-dependency-path: pyproject.toml
+
+      - name: Run Python Checks
+        run: python -m orchestrator ci python
+
   backend-verification:
-    name: Backend Build and Tests
+    name: Backend Formatting, Build, Tests, and API Contract
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Repository Toolchain
-        uses: ./.github/actions/setup-toolchain
-        with:
-          setup-dotnet: "true"
-          dotnet-cache: "true"
-          dotnet-cache-dependency-path: |
-            backend/**/*.csproj
-            backend/Directory.Build.props
-            backend/Directory.Packages.props
-            .config/dotnet-tools.json
-
-      - name: Build and Test Backend
-        run: python -m orchestrator ci backend-test
-
-      - name: Upload OpenAPI Contract
-        uses: actions/upload-artifact@v4
-        with:
-          name: openapi-contract
-          path: backend/.artifacts/obj/Rest/Financial-Tracker-API.json
-          if-no-files-found: error
-          include-hidden-files: true
-          retention-days: 1
-
-  frontend-verification:
-    name: Frontend Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Repository Toolchain
-        uses: ./.github/actions/setup-toolchain
-        with:
-          setup-node: "true"
-          node-cache: npm
-          node-cache-dependency-path: frontend/package-lock.json
-
-      - name: Build Frontend
-        run: python -m orchestrator ci frontend-build
-
-  dependency-verification:
-    name: Dependency Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup Repository Toolchain
         uses: ./.github/actions/setup-toolchain
@@ -81,39 +115,20 @@ jobs:
           node-cache: npm
           node-cache-dependency-path: frontend/package-lock.json
 
-      - name: Scan Dependencies
-        run: python -m orchestrator ci dependencies
-
-  api-contract-verification:
-    name: Generated API Contract
-    needs: backend-verification
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Repository Toolchain
-        uses: ./.github/actions/setup-toolchain
-        with:
-          setup-node: "true"
-          node-cache: npm
-          node-cache-dependency-path: frontend/package-lock.json
-
-      - name: Download OpenAPI Contract
-        uses: actions/download-artifact@v4
-        with:
-          name: openapi-contract
-          path: backend/.artifacts/obj/Rest
+      - name: Format, Build, and Test Backend
+        run: python -m orchestrator ci backend
 
       - name: Verify Frontend Models
         run: python -m orchestrator ci api-contract
 
-  container-verification:
-    name: Container Security and Smoke Tests
+  frontend-quality:
+    name: Frontend Formatting, Linting, and Types
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup Repository Toolchain
         uses: ./.github/actions/setup-toolchain
@@ -122,20 +137,69 @@ jobs:
           node-cache: npm
           node-cache-dependency-path: frontend/package-lock.json
 
+      - name: Format, Lint, and Type-Check Frontend
+        run: python -m orchestrator ci frontend
+
+  dependency-verification:
+    name: Dependency Security Scan
+    needs: changes
+    if: needs.changes.outputs.dependencies == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Repository Toolchain
+        uses: ./.github/actions/setup-toolchain
+        with:
+          setup-dotnet: "true"
+          dotnet-cache: "true"
+          dotnet-cache-dependency-path: |
+            backend/**/*.csproj
+            backend/Directory.Build.props
+            backend/Directory.Packages.props
+            .config/dotnet-tools.json
+          setup-node: "true"
+
+      - name: Scan Dependencies
+        run: python -m orchestrator ci dependencies
+
+  container-verification:
+    name: Container Smoke Tests and Security Scan
+    needs: changes
+    if: needs.changes.outputs.containers == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Repository Toolchain
+        uses: ./.github/actions/setup-toolchain
+        with:
+          setup-node: "true"
+          node-cache: npm
+          node-cache-dependency-path: frontend/package-lock.json
+          cache-playwright: "true"
+          cache-trivy: ${{ needs.changes.outputs.images }}
+
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: Expose GitHub Actions Runtime
-        uses: crazy-max/ghaction-github-runtime@v3
+        uses: crazy-max/ghaction-github-runtime@3cb05d89e1f492524af3d41a1c98c83bc3025124 # v3.1.0
 
-      - name: Build, Scan, and Smoke Test Container Images
+      - name: Build and Smoke Test Container Images
         env:
           DOCKER_BUILD_CACHE: gha
         run: python -m orchestrator ci container-images
 
+      - name: Scan Container Images
+        if: needs.changes.outputs.images == 'true'
+        run: python -m orchestrator ci container-scan
+
       - name: Upload Playwright Failure Artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: playwright-artifacts
           path: |
@@ -143,3 +207,26 @@ jobs:
             frontend/test-results
           if-no-files-found: ignore
           retention-days: 7
+
+  verification-passed:
+    name: Verification Passed
+    if: always()
+    needs:
+      - changes
+      - python-quality
+      - backend-verification
+      - frontend-quality
+      - dependency-verification
+      - container-verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Job Results
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          for result in ${RESULTS}; do
+            if [[ "${result}" != "success" && "${result}" != "skipped" ]]; then
+              echo "A verification job finished with result: ${result}" >&2
+              exit 1
+            fi
+          done

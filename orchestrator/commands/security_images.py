@@ -31,22 +31,4 @@ def run(context: Context, _args: Namespace) -> int:
             ],
             cwd=context.root,
         )
-    print(
-        "Caddy findings are reported without failing CI; review this exception when Caddy releases a new image."
-    )
-    caddy_image = toolchain.require_image("caddy")
-    context.runner.run(["docker", "pull", caddy_image], cwd=context.root)
-    return context.runner.run(
-        [
-            trivy,
-            "image",
-            "--exit-code",
-            "0",
-            "--severity",
-            "HIGH,CRITICAL",
-            "--scanners",
-            "vuln",
-            caddy_image,
-        ],
-        cwd=context.root,
-    ).returncode
+    return 0

@@ -9,7 +9,7 @@ import tempfile
 import time
 from http.cookiejar import CookieJar
 from pathlib import Path
-from urllib.error import HTTPError, URLError
+from urllib.error import HTTPError
 from urllib.parse import urlencode, urljoin
 from urllib.request import (
     HTTPCookieProcessor,
@@ -46,6 +46,7 @@ def prepare_smoke_test_database(
         RepoPaths.discover().toolchain
     ).require_image("migrator")
     run_migrator(image, data_directory, environment, runner=runner)
+    # A second run against the migrated database proves the migrator is idempotent.
     run_migrator(image, data_directory, environment, runner=runner)
     run_migrator(
         image,
@@ -119,6 +120,8 @@ class ContainerSmokeTest:
                         "ALL",
                         "--security-opt",
                         "no-new-privileges:true",
+                        "--health-start-interval",
+                        "1s",
                         "--volume",
                         f"{directory}:/data",
                         "--volume",
@@ -145,7 +148,6 @@ class ContainerSmokeTest:
                     ]
                 )
                 backend_port = self.get_published_port(backend, 8080)
-                self.wait_for_url(f"http://127.0.0.1:{backend_port}/health/ready")
                 self.wait_for_container_health(backend)
                 self.create_and_read_account(backend_port, identifier)
 
@@ -168,6 +170,8 @@ class ContainerSmokeTest:
                         "ALL",
                         "--security-opt",
                         "no-new-privileges:true",
+                        "--health-start-interval",
+                        "1s",
                         "--env",
                         "API_URL=http://backend:8080",
                         "--env",
@@ -191,7 +195,6 @@ class ContainerSmokeTest:
                         self.frontend_image,
                     ]
                 )
-                self.wait_for_url(f"{frontend_origin}/login")
                 self.wait_for_container_health(frontend)
                 self.verify_frontend_session_and_api_flow(frontend_port)
                 self.verify_frontend_sign_in_outage(frontend_port, backend)
@@ -346,8 +349,6 @@ class ContainerSmokeTest:
                 raise RuntimeError("A resolver outage unexpectedly created a session.")
         finally:
             self.run_docker(["start", backend])
-            restarted_backend_port = self.get_published_port(backend, 8080)
-            self.wait_for_url(f"http://127.0.0.1:{restarted_backend_port}/health/ready")
             self.wait_for_container_health(backend)
 
     def run_playwright_e2e(self, frontend_port: int, auth_secret: str) -> None:
@@ -375,18 +376,6 @@ class ContainerSmokeTest:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
             listener.bind(("127.0.0.1", 0))
             return int(listener.getsockname()[1])
-
-    @staticmethod
-    def wait_for_url(url: str) -> None:
-        deadline = time.monotonic() + 60
-        while time.monotonic() < deadline:
-            try:
-                with urlopen(url, timeout=3) as response:
-                    if 200 <= response.status < 300:
-                        return
-            except OSError, URLError:
-                time.sleep(1)
-        raise RuntimeError(f"Container endpoint did not become ready: {url}")
 
     def wait_for_container_health(self, container: str) -> None:
         deadline = time.monotonic() + 60
