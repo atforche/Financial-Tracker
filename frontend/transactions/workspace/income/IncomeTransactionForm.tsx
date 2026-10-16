@@ -20,6 +20,10 @@ import {
   validateFundAssignments,
   validateSource,
 } from "@/transactions/workspace/income/helpers";
+import {
+  compareCurrencyAmounts,
+  getCurrencyTotal,
+} from "@/framework/currencyHelpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CollectionEditor from "@/framework/view/CollectionEditor";
 import type { Dayjs } from "dayjs";
@@ -28,7 +32,6 @@ import type { FundWithBalance } from "@/funds/types";
 import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFrame";
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
-import { getCurrencyTotal } from "@/framework/currencyHelpers";
 import { isTrackedAccountType } from "@/accounts/helpers";
 
 /**
@@ -156,6 +159,31 @@ const IncomeTransactionForm = function <RequestPayload>({
     }));
   };
 
+  const syncSingleDestinationAmount = function (
+    currentDestinations: IncomeDestinationDraft[],
+    netAmount: number,
+  ): IncomeDestinationDraft[] {
+    if (currentDestinations.length !== 1) {
+      return currentDestinations;
+    }
+    return currentDestinations.map((currentDestination) =>
+      setDestinationAmount(
+        currentDestination,
+        compareCurrencyAmounts(netAmount, 0) > 0 ? netAmount : null,
+      ),
+    );
+  };
+
+  const setSourceIncome = function (nextSource: IncomeSourceDraft): void {
+    setSource(nextSource);
+    setDestinations((currentDestinations) =>
+      syncSingleDestinationAmount(
+        currentDestinations,
+        getNetIncomeAmount(nextSource),
+      ),
+    );
+  };
+
   const sourceIsValid = validateSource(source);
 
   return (
@@ -185,17 +213,11 @@ const IncomeTransactionForm = function <RequestPayload>({
           }}
           incomeLines={source.incomeLines}
           setIncomeLines={(incomeLines): void => {
-            setSource((currentSource) => ({
-              ...currentSource,
-              incomeLines,
-            }));
+            setSourceIncome({ ...source, incomeLines });
           }}
           incomeDeductions={source.incomeDeductions}
           setIncomeDeductions={(incomeDeductions): void => {
-            setSource((currentSource) => ({
-              ...currentSource,
-              incomeDeductions,
-            }));
+            setSourceIncome({ ...source, incomeDeductions });
           }}
           accountFilter={buildSourceAccountFilter(accounts, destinations)}
         />
@@ -204,7 +226,11 @@ const IncomeTransactionForm = function <RequestPayload>({
         <CollectionEditor
           items={destinations}
           label="Destinations"
-          setItems={setDestinations}
+          setItems={(nextDestinations): void => {
+            setDestinations(
+              syncSingleDestinationAmount(nextDestinations, sourceNetAmount),
+            );
+          }}
           createItem={createEmptyDestination}
           addLabel="Add another destination"
           canDeleteItem={(_, __, items) => items.length > 1}
@@ -232,11 +258,15 @@ const IncomeTransactionForm = function <RequestPayload>({
                 }));
               }}
               amount={destination.amount}
-              setAmount={(nextAmount): void => {
-                updateDestination(index, (currentDestination) =>
-                  setDestinationAmount(currentDestination, nextAmount),
-                );
-              }}
+              setAmount={
+                destinations.length === 1
+                  ? null
+                  : (nextAmount): void => {
+                      updateDestination(index, (currentDestination) =>
+                        setDestinationAmount(currentDestination, nextAmount),
+                      );
+                    }
+              }
               fundAssignments={destination.fundAssignments}
               setFundAssignments={(fundAssignments): void => {
                 updateDestination(index, (currentDestination) => ({
