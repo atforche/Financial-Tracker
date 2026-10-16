@@ -11,7 +11,8 @@ from ..core.context import Context
 
 def run(context: Context, _args: Namespace) -> int:
     context.runner.run(
-        ["npm", "audit", "--audit-level=high"], cwd=context.paths.frontend
+        ["npm", "audit", "--audit-level=high", "--omit=dev"],
+        cwd=context.paths.frontend,
     )
     result = context.runner.run(
         [

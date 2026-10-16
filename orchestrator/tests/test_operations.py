@@ -52,7 +52,7 @@ def test_configuration_writes_expected_environment_values(tmp_path: Path):
         'BACKEND_IMAGE="backend-image"\n'
         'FRONTEND_IMAGE="frontend-image"\n'
         'MIGRATOR_IMAGE="migrator-image"\n'
-        'CADDY_IMAGE="caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648"\n'
+        'CADDY_IMAGE="caddy:2.11.7-alpine@sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f"\n'
         'GOOGLE_CLIENT_ID="client-id"\n'
         'GOOGLE_CLIENT_SECRET="client-secret"\n'
         'AUTH_SECRET="auth-secret"\n'
