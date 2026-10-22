@@ -11,10 +11,6 @@ import type {
   UpdateTransactionRequest,
 } from "@/transactions/types";
 import {
-  type FundAssignmentDraft,
-  getSpendingGoalRemainingAmount,
-} from "@/funds/assignmentPlanner/helpers";
-import {
   type LocationDraft,
   toLocationDraft,
   toLocationInput,
@@ -34,8 +30,8 @@ import {
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
+import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 import type { FundBalanceEvent } from "@/funds/types";
-import type { FundGoalWithProgress } from "@/fund-goals/types";
 import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/accountBalanceEventDraft";
 import { isTrackedAccountType } from "@/accounts/helpers";
 
@@ -47,7 +43,6 @@ interface RefundSourceDraft {
   readonly location: LocationDraft | null;
   readonly amount: number | null;
   readonly fundAssignments: FundAssignmentDraft[];
-  readonly baselineFundAssignments: FundAssignmentDraft[];
 }
 
 /**
@@ -73,7 +68,6 @@ const createEmptySource = (): RefundSourceDraft => ({
   location: null,
   amount: null,
   fundAssignments: [],
-  baselineFundAssignments: [],
 });
 
 /**
@@ -246,49 +240,26 @@ const buildDestinationAccountFilter =
 /**
  * Gets a fund assignment draft from the provided transaction fund.
  */
-const toFundDraft = (
-  assignment: FundBalanceEvent,
-  goals: FundGoalWithProgress[],
-): FundAssignmentDraft => {
-  const previousFundBalance = assignment.previousBalance.postedBalance;
-  const newFundBalance = assignment.newBalance.postedBalance;
-  return {
-    fundId: assignment.fund.id,
-    fundName: assignment.fund.name,
-    amount: assignment.amount,
-    isExtraContribution: false,
-    previousFundBalance,
-    newFundBalance,
-    previousGoalAmount: getSpendingGoalRemainingAmount(
-      assignment.fund.id,
-      goals,
-      previousFundBalance,
-    ),
-    newGoalAmount: getSpendingGoalRemainingAmount(
-      assignment.fund.id,
-      goals,
-      newFundBalance,
-    ),
-  };
-};
+const toFundDraft = (assignment: FundBalanceEvent): FundAssignmentDraft => ({
+  fundId: assignment.fund.id,
+  fundName: assignment.fund.name,
+  amount: assignment.amount,
+  isExtraContribution: false,
+});
 
 /**
  * Gets the sources from the provided refund transaction.
  */
 const getSourcesFromTransaction = (
   transaction: RefundTransaction,
-  goals: FundGoalWithProgress[],
 ): RefundSourceDraft[] =>
   transaction.sources.map((source: RefundTransactionSource) => {
-    const assignments = source.fundAssignments.map((item) =>
-      toFundDraft(item, goals),
-    );
+    const assignments = source.fundAssignments.map(toFundDraft);
     return {
       account: getTransactionAccountDraftFromTransactionAccount(source.account),
       location: toLocationDraft(source.location ?? null),
       amount: source.amount,
       fundAssignments: assignments,
-      baselineFundAssignments: assignments,
     };
   });
 

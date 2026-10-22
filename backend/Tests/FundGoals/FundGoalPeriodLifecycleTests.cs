@@ -75,7 +75,7 @@ public sealed class FundGoalPeriodLifecycleTests
         FundGoalAvailabilitySnapshot availability = await test.FundGoalQueries.GetAvailabilityAsync(groceries.Goal);
 
         Assert.Equal(40m, availability.Posted);
-        Assert.Equal(20m, availability.IncludingPending);
+        Assert.Equal(20m, availability.PostedWithPending);
         Assert.NotNull(progress.Contribution);
         Assert.Equal(50m, progress.Contribution.ExpectedAmount);
         Assert.Equal(40m, progress.Contribution.AssignedAmount);

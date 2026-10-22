@@ -53,15 +53,15 @@ public sealed class SpendingTransactionChronologyTests
             new DateOnly(2026, 7, 31));
 
         Assert.Equal(780m, account.Posted);
-        Assert.Equal(780m, account.IncludingPending);
+        Assert.Equal(780m, account.PostedWithPending);
         Assert.Equal(-220m, fund.Posted);
-        Assert.Equal(-220m, fund.IncludingPending);
+        Assert.Equal(-220m, fund.PostedWithPending);
         Assert.Equal(1000m, period.Opening);
         Assert.Equal(780m, period.Closing);
         Assert.Equal(-220m, goal.Posted);
-        Assert.Equal(-220m, goal.IncludingPending);
+        Assert.Equal(-220m, goal.PostedWithPending);
         Assert.True(laterEvent.IsPosted);
-        Assert.Equal(900m, laterEvent.Previous.Posted);
-        Assert.Equal(780m, laterEvent.New.Posted);
+        Assert.Equal(900m, laterEvent.Previous);
+        Assert.Equal(780m, laterEvent.New);
     }
 }

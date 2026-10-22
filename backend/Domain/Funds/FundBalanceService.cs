@@ -7,18 +7,16 @@ namespace Domain.Funds;
 /// </summary>
 public sealed class FundBalanceService(
     IFundBalanceHistoryRepository fundBalanceHistoryRepository,
-    IFundRepository fundRepository,
-    PendingFundBalanceService pendingFundBalanceService)
+    IFundRepository fundRepository)
 {
     /// <summary>
-    /// Gets the current balance for the provided Fund.
+    /// Gets the current posted balance for the provided Fund.
     /// </summary>
     public FundBalance GetCurrentBalance(FundId fundId)
     {
         Fund fund = fundRepository.GetById(fundId);
-        FundBalance postedBalance = fundBalanceHistoryRepository.GetLatestForFund(fundId)?.ToFundBalance()
+        return fundBalanceHistoryRepository.GetLatestForFund(fundId)?.ToFundBalance()
             ?? new FundBalance(fund, fund.OnboardedBalance ?? 0);
-        return pendingFundBalanceService.ApplyPendingEffects(postedBalance);
     }
 
     /// <summary>

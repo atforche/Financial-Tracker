@@ -16,6 +16,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import AccountTransactionForm from "@/transactions/workspace/account/AccountTransactionForm";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import useTransactionPreview from "@/transactions/workspace/useTransactionPreview";
 import { useUpdateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
 /**
@@ -68,6 +69,9 @@ const UpdateAccountTransactionForm = function ({
     source,
     destinations,
   );
+  const preview = useTransactionPreview(
+    request === null ? null : { transactionId: transaction.id, request },
+  );
 
   return (
     <AccountTransactionForm<UpdateTransactionRequest>
@@ -89,6 +93,7 @@ const UpdateAccountTransactionForm = function ({
       state={state}
       pending={pending}
       request={request}
+      preview={preview}
       onReset={reset}
       onSubmit={submit}
     />

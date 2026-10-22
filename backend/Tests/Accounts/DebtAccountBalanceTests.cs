@@ -35,8 +35,8 @@ public sealed class DebtAccountBalanceTests
         AccountBalanceSnapshot posted = await test.AccountQueries.GetBalanceAsync(cardHandle);
 
         Assert.Equal(0m, pending.Posted);
-        Assert.Equal(25m, pending.IncludingPending);
+        Assert.Equal(25m, pending.PostedWithPending);
         Assert.Equal(25m, posted.Posted);
-        Assert.Equal(25m, posted.IncludingPending);
+        Assert.Equal(25m, posted.PostedWithPending);
     }
 }

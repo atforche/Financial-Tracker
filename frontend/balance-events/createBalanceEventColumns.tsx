@@ -21,8 +21,8 @@ interface BalanceEventListItem {
  * Options for creating balance event columns.
  */
 interface CreateBalanceEventColumnsOptions<T extends BalanceEventListItem> {
-  readonly getPreviousBalance?: (event: T) => number;
-  readonly getNewBalance?: (event: T) => number;
+  readonly getPreviousBalance?: (event: T) => number | null;
+  readonly getNewBalance?: (event: T) => number | null;
   readonly getCounterpartyContent?: (event: T) => string;
   readonly dateSortProps?: BalanceEventColumnSortProps;
   readonly typeSortProps?: BalanceEventColumnSortProps;
@@ -34,6 +34,12 @@ interface BalanceEventColumnSortProps {
   readonly sortType: ColumnSortType | null;
   readonly onSort: (sortType: ColumnSortType | null) => void;
 }
+
+/**
+ * Formats a balance for a balance-event list cell, leaving it blank when the event has not posted.
+ */
+const formatEventBalance = (balance: number | null): string =>
+  balance === null ? "" : formatCurrency(balance);
 
 /**
  * Creates the common columns used by workspace balance-event lists.
@@ -120,7 +126,8 @@ const createBalanceEventColumns = function <T extends BalanceEventListItem>({
       {
         name: "before",
         headerContent: "Balance Before",
-        getBodyContent: (event) => formatCurrency(getPreviousBalance(event)),
+        getBodyContent: (event) =>
+          formatEventBalance(getPreviousBalance(event)),
         alignment: "right",
         hideInCardLayout: true,
         minWidth: 150,
@@ -128,7 +135,7 @@ const createBalanceEventColumns = function <T extends BalanceEventListItem>({
       {
         name: "after",
         headerContent: "Balance After",
-        getBodyContent: (event) => formatCurrency(getNewBalance(event)),
+        getBodyContent: (event) => formatEventBalance(getNewBalance(event)),
         alignment: "right",
         hideInCardLayout: true,
         minWidth: 150,

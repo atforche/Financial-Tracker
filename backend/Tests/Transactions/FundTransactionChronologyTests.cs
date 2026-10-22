@@ -47,16 +47,16 @@ public sealed class FundTransactionChronologyTests
         FundGoalAvailabilitySnapshot destinationGoal = await test.FundGoalQueries.GetAvailabilityAsync(dining.Goal);
 
         Assert.Equal(1000m, account.Posted);
-        Assert.Equal(1000m, account.IncludingPending);
+        Assert.Equal(1000m, account.PostedWithPending);
         Assert.Equal(1000m, period.Opening);
         Assert.Equal(1000m, period.Closing);
         Assert.Equal(-220m, source.Posted);
-        Assert.Equal(-220m, source.IncludingPending);
+        Assert.Equal(-220m, source.PostedWithPending);
         Assert.Equal(220m, destination.Posted);
-        Assert.Equal(220m, destination.IncludingPending);
+        Assert.Equal(220m, destination.PostedWithPending);
         Assert.Equal(-220m, sourceGoal.Posted);
-        Assert.Equal(-220m, sourceGoal.IncludingPending);
+        Assert.Equal(-220m, sourceGoal.PostedWithPending);
         Assert.Equal(220m, destinationGoal.Posted);
-        Assert.Equal(220m, destinationGoal.IncludingPending);
+        Assert.Equal(220m, destinationGoal.PostedWithPending);
     }
 }

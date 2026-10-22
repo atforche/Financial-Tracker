@@ -17,7 +17,7 @@ internal sealed class AccountQueries(TestApiClient apiClient)
     {
         CollectionModel<AccountWithBalanceModel> response = await apiClient.GetAsync<CollectionModel<AccountWithBalanceModel>>("/accounts/with-balances");
         AccountWithBalanceModel model = response.Items.Single(item => item.Id == account.Id);
-        return new AccountBalanceSnapshot(model.CurrentBalance.PostedBalance, model.CurrentBalance.BalanceIncludingPending);
+        return new AccountBalanceSnapshot(model.CurrentBalance.PostedBalance, model.PendingAmount);
     }
 
     /// <summary>
@@ -33,8 +33,8 @@ internal sealed class AccountQueries(TestApiClient apiClient)
             $"/accounts/{account.Id}/balance-events?range.start={start:yyyy-MM-dd}&range.end={end:yyyy-MM-dd}");
         AccountBalanceEventModel model = response.Items.Single(item => item.TransactionId == transaction.Id);
         return new AccountBalanceEventSnapshot(
-            new AccountBalanceSnapshot(model.PreviousBalance.PostedBalance, model.PreviousBalance.BalanceIncludingPending),
-            new AccountBalanceSnapshot(model.NewBalance.PostedBalance, model.NewBalance.BalanceIncludingPending),
+            model.PreviousBalance?.PostedBalance,
+            model.NewBalance?.PostedBalance,
             model.IsPosted);
     }
 }

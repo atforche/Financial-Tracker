@@ -11,10 +11,6 @@ import type {
   UpdateTransactionRequest,
 } from "@/transactions/types";
 import {
-  type FundAssignmentDraft,
-  getSpendingGoalRemainingAmount,
-} from "@/funds/assignmentPlanner/helpers";
-import {
   type LocationDraft,
   toLocationDraft,
   toLocationInput,
@@ -34,8 +30,8 @@ import {
 } from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
+import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 import type { FundBalanceEvent } from "@/funds/types";
-import type { FundGoalWithProgress } from "@/fund-goals/types";
 import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/accountBalanceEventDraft";
 import { isTrackedAccountType } from "@/accounts/helpers";
 
@@ -55,7 +51,6 @@ interface SpendingDestinationDraft {
   readonly location: LocationDraft | null;
   readonly amount: number | null;
   readonly fundAssignments: FundAssignmentDraft[];
-  readonly baselineFundAssignments: FundAssignmentDraft[];
 }
 
 /**
@@ -85,7 +80,6 @@ const createEmptyDestination = function (): SpendingDestinationDraft {
     location: null,
     amount: null,
     fundAssignments: [],
-    baselineFundAssignments: [],
   };
 };
 
@@ -351,37 +345,18 @@ const getSourceFromTransaction = function (
  */
 const getFundAssignmentFromTransactionFund = (
   assignment: FundBalanceEvent,
-  fundGoals: FundGoalWithProgress[],
-): FundAssignmentDraft => {
-  const previousFundBalance = assignment.previousBalance.postedBalance;
-  const newFundBalance = assignment.newBalance.postedBalance;
-
-  return {
-    fundId: assignment.fund.id,
-    fundName: assignment.fund.name,
-    amount: assignment.amount,
-    isExtraContribution: false,
-    previousFundBalance,
-    newFundBalance,
-    previousGoalAmount: getSpendingGoalRemainingAmount(
-      assignment.fund.id,
-      fundGoals,
-      previousFundBalance,
-    ),
-    newGoalAmount: getSpendingGoalRemainingAmount(
-      assignment.fund.id,
-      fundGoals,
-      newFundBalance,
-    ),
-  };
-};
+): FundAssignmentDraft => ({
+  fundId: assignment.fund.id,
+  fundName: assignment.fund.name,
+  amount: assignment.amount,
+  isExtraContribution: false,
+});
 
 /**
  * Gets the collection of destinations from the provided spending transaction.
  */
 const getDestinationsFromTransaction = function (
   transaction: SpendingTransaction,
-  fundGoals: FundGoalWithProgress[],
 ): SpendingDestinationDraft[] {
   return transaction.destinations.map(
     (destination: SpendingTransactionDestination) => ({
@@ -391,10 +366,7 @@ const getDestinationsFromTransaction = function (
       location: toLocationDraft(destination.location ?? null),
       amount: destination.amount,
       fundAssignments: destination.fundAssignments.map((assignment) =>
-        getFundAssignmentFromTransactionFund(assignment, fundGoals),
-      ),
-      baselineFundAssignments: destination.fundAssignments.map((assignment) =>
-        getFundAssignmentFromTransactionFund(assignment, fundGoals),
+        getFundAssignmentFromTransactionFund(assignment),
       ),
     }),
   );

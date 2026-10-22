@@ -10,21 +10,16 @@ public sealed class PendingFundBalanceService(
     IFundPendingBalanceEffectRepository repository)
 {
     /// <summary>
-    /// Applies pending effects to one posted Fund Balance.
+    /// Adds the net amount of current unposted Transactions to the provided posted Fund Balances.
     /// </summary>
-    public FundBalance ApplyPendingEffects(FundBalance postedBalance) => ApplyPendingEffects([postedBalance]).Single();
-
-    /// <summary>
-    /// Applies pending effects to posted Fund Balances.
-    /// </summary>
-    public IReadOnlyCollection<FundBalance> ApplyPendingEffects(IReadOnlyCollection<FundBalance> postedBalances)
+    public IReadOnlyCollection<FundBalance> IncludePendingAmounts(IReadOnlyCollection<FundBalance> postedBalances)
     {
-        var balances = postedBalances.ToDictionary(balance => balance.Fund.Id, balance => balance.BalanceIncludingPending);
-        foreach (PendingFundBalanceEffect effect in repository.GetAllByFundIds(balances.Keys.ToList()))
+        var pendingAmounts = postedBalances.ToDictionary(balance => balance.Fund.Id, _ => 0m);
+        foreach (PendingFundBalanceEffect effect in repository.GetAllByFundIds(pendingAmounts.Keys.ToList()))
         {
-            balances[effect.Fund.Id] += effect.PendingCreditAmount - effect.PendingDebitAmount;
+            pendingAmounts[effect.Fund.Id] += effect.PendingCreditAmount - effect.PendingDebitAmount;
         }
-        return postedBalances.Select(balance => new FundBalance(balance.Fund, balance.PostedBalance, balances[balance.Fund.Id])).ToList();
+        return postedBalances.Select(balance => new FundBalance(balance.Fund, balance.PostedBalance, pendingAmounts[balance.Fund.Id])).ToList();
     }
 
     /// <summary>

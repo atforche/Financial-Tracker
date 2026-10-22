@@ -1,5 +1,6 @@
 import type {
   Fund,
+  FundBalanceEvent,
   FundBalanceEventDraft,
   FundWithBalance,
 } from "@/funds/types";
@@ -20,6 +21,7 @@ interface FundTransactionSourceFrameProps {
   readonly amount: number | null;
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly color?: FrameColor;
+  readonly fundBalanceEvent?: FundBalanceEvent | null;
   readonly readOnly?: boolean;
 }
 
@@ -34,6 +36,7 @@ const FundTransactionSourceFrame = function ({
   amount,
   setAmount,
   color = "info",
+  fundBalanceEvent = null,
   readOnly = false,
 }: FundTransactionSourceFrameProps): JSX.Element {
   return (
@@ -44,7 +47,7 @@ const FundTransactionSourceFrame = function ({
         setFund={readOnly ? null : setFund}
         fundFilter={filter}
         label="Source Fund"
-        balanceChange={amount === null ? null : -amount}
+        balanceEvent={fundBalanceEvent}
       />
       <CurrencyEntryField
         label="Amount"

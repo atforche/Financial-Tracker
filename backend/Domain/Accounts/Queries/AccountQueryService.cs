@@ -66,7 +66,7 @@ public sealed class AccountQueryService(
     {
         QueryPage<AccountBalance> page = await accountQueryRepository.GetBalancesAsync(query, cancellationToken);
         return new QueryPage<AccountBalance>(
-            pendingAccountBalanceService.ApplyPendingEffects(page.Items),
+            pendingAccountBalanceService.IncludePendingAmounts(page.Items),
             page.TotalCount);
     }
 

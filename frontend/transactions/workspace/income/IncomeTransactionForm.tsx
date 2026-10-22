@@ -24,6 +24,7 @@ import {
   validateFundAssignments,
   validateSource,
 } from "@/transactions/workspace/income/helpers";
+import { type Transaction, asIncomeTransaction } from "@/transactions/types";
 import {
   compareCurrencyAmounts,
   getCurrencyTotal,
@@ -74,6 +75,7 @@ interface IncomeTransactionFormProps<RequestPayload> {
   readonly state: TransactionFormState;
   readonly pending: boolean;
   readonly request: RequestPayload | null;
+  readonly preview?: Transaction | null;
   readonly onReset: () => void;
   readonly onSubmit: (request: RequestPayload) => void;
 }
@@ -148,9 +150,12 @@ const IncomeTransactionForm = function <RequestPayload>({
   state,
   pending,
   request,
+  preview = null,
   onReset,
   onSubmit,
 }: IncomeTransactionFormProps<RequestPayload>): JSX.Element {
+  const transactionPreview =
+    preview === null ? null : asIncomeTransaction(preview);
   const unassignedFund = getUnassignedFund(funds);
   const currentFundGoals = fundGoals.filter(
     (fundGoal) => fundGoal.accountingPeriod?.id === accountingPeriod?.id,
@@ -209,6 +214,7 @@ const IncomeTransactionForm = function <RequestPayload>({
       setDescription={setDescription}
       sourceContent={
         <IncomeTransactionSourceFrame
+          accountBalanceEvent={transactionPreview?.source.account ?? null}
           color={sourceIsValid ? "info" : "error"}
           accounts={accounts}
           transaction={null}
@@ -249,6 +255,15 @@ const IncomeTransactionForm = function <RequestPayload>({
               color={validateDestination(destination) ? "info" : "error"}
               fundAssignmentsValid={validateFundAssignments(destination)}
               index={index}
+              accountBalanceEvent={
+                transactionPreview?.destinations[index]?.account ?? null
+              }
+              fundBalanceEvents={
+                transactionPreview?.destinations[index]?.fundAssignments
+              }
+              fundGoalBalanceEvents={
+                transactionPreview?.destinations[index]?.fundGoals
+              }
               accounts={accounts}
               funds={funds}
               fundGoals={currentFundGoals}

@@ -91,7 +91,7 @@ public sealed class AccountController(
             item => item.IsPosted, item => item.Type, item => item.Amount);
         (decimal? openingBalance, IReadOnlyCollection<(DateOnly Date, decimal Balance)> dates) = BalanceEventTotals.BuildDateBalances(events.Items,
             item => item.EventDate, item => item.EventDateSequence,
-            item => item.PreviousBalance.PostedBalance, item => item.NewBalance.PostedBalance);
+            item => item.PreviousBalance?.PostedBalance, item => item.NewBalance?.PostedBalance);
         if (query.AccountingPeriodId == null && query.Range?.Start is DateOnly start && query.Range.End is DateOnly end)
         {
             AccountDateRange range = await accountQueryService.GetDateRangeAsync(new AccountDateRangeQuery(

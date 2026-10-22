@@ -13,6 +13,9 @@ namespace Domain.Transactions.Queries;
 public sealed class TransactionQueryService(
     ITransactionQueryRepository transactionQueryRepository,
     AccountingPeriodRangeService accountingPeriodRangeService,
+    AccountBalanceEventQueryService accountBalanceEventQueryService,
+    FundBalanceEventQueryService fundBalanceEventQueryService,
+    FundGoalBalanceEventQueryService fundGoalBalanceEventQueryService,
     IServiceScopeFactory serviceScopeFactory)
 {
     /// <summary>
@@ -97,6 +100,20 @@ public sealed class TransactionQueryService(
     }
 
     /// <summary>
+    /// Retrieves interpreted Transaction details by ID using this scope's database context, so changes saved
+    /// within an open database transaction are reflected, or null when no Transaction exists.
+    /// </summary>
+    public async Task<TransactionDetails?> GetDetailsByIdInCurrentContextAsync(
+        Guid transactionId,
+        CancellationToken cancellationToken = default)
+    {
+        TransactionDetailsFacts? facts = await transactionQueryRepository.GetDetailsByIdAsync(
+            new TransactionId(transactionId),
+            cancellationToken);
+        return facts == null ? null : await ToDetailsAsync(facts, cancellationToken, useCurrentContext: true);
+    }
+
+    /// <summary>
     /// Interprets a factual Transaction page.
     /// </summary>
     private async Task<QueryPage<TransactionDetails>> ToPageAsync(
@@ -132,16 +149,27 @@ public sealed class TransactionQueryService(
     /// </summary>
     private async Task<TransactionDetails> ToDetailsAsync(
         TransactionDetailsFacts facts,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool useCurrentContext = false)
     {
+        IReadOnlyCollection<Transaction> transactions = [facts.Transaction];
+        if (useCurrentContext)
+        {
+            // A database context cannot run queries concurrently, so these run one at a time.
+            return new TransactionDetails(
+                facts,
+                await accountBalanceEventQueryService.GetForTransactionsAsync(transactions, cancellationToken),
+                await fundBalanceEventQueryService.GetForTransactionsAsync(transactions, cancellationToken),
+                await fundGoalBalanceEventQueryService.GetForTransactionsAsync(transactions, cancellationToken));
+        }
         Task<IReadOnlyCollection<AccountBalanceEvent>> accountEventsTask = GetAccountEventsAsync(
-            [facts.Transaction],
+            transactions,
             cancellationToken);
         Task<IReadOnlyCollection<FundBalanceEvent>> fundEventsTask = GetFundEventsAsync(
-            [facts.Transaction],
+            transactions,
             cancellationToken);
         Task<IReadOnlyCollection<FundGoalBalanceEvent>> fundGoalEventsTask = GetFundGoalEventsAsync(
-            [facts.Transaction],
+            transactions,
             cancellationToken);
         await Task.WhenAll(accountEventsTask, fundEventsTask, fundGoalEventsTask);
         return new TransactionDetails(

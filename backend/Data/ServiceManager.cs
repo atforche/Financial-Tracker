@@ -65,7 +65,6 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<IFundGoalRepository, FundGoalRepository>();
         _ = serviceCollection.AddScoped<IFundGoalQueryRepository, FundGoalQueryRepository>();
         _ = serviceCollection.AddScoped<IFundGoalTotalsHistoryRepository, FundGoalTotalsHistoryRepository>();
-        _ = serviceCollection.AddScoped<IFundGoalPendingTotalsEffectRepository, PendingFundGoalTotalsEffectRepository>();
 
         _ = serviceCollection.AddScoped<ITransactionRepository, TransactionRepository>();
         _ = serviceCollection.AddScoped<ITransactionBalanceEventQueryRepository, TransactionBalanceEventQueryRepository>();

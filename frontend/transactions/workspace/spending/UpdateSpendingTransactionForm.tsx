@@ -18,6 +18,7 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import SpendingTransactionForm from "@/transactions/workspace/spending/SpendingTransactionForm";
+import useTransactionPreview from "@/transactions/workspace/useTransactionPreview";
 import { useUpdateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
 /**
@@ -43,10 +44,6 @@ const UpdateSpendingTransactionForm = function ({
   fundGoals,
   redirectUrl,
 }: UpdateSpendingTransactionFormProps): JSX.Element {
-  const currentFundGoals = fundGoals.filter(
-    (fundGoal) =>
-      fundGoal.accountingPeriod?.id === transactionAccountingPeriod.id,
-  );
   const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
   const [description, setDescription] = useState<string>(
     transaction.description,
@@ -55,7 +52,7 @@ const UpdateSpendingTransactionForm = function ({
     getSourceFromTransaction(transaction),
   );
   const [destinations, setDestinations] = useState<SpendingDestinationDraft[]>(
-    getDestinationsFromTransaction(transaction, currentFundGoals),
+    getDestinationsFromTransaction(transaction),
   );
 
   const { formRef, state, pending, reset, submit } = useUpdateTransactionEditor(
@@ -66,9 +63,7 @@ const UpdateSpendingTransactionForm = function ({
         setDate(dayjs(transaction.date));
         setDescription(transaction.description);
         setSource(getSourceFromTransaction(transaction));
-        setDestinations(
-          getDestinationsFromTransaction(transaction, currentFundGoals),
-        );
+        setDestinations(getDestinationsFromTransaction(transaction));
       },
     },
   );
@@ -79,6 +74,9 @@ const UpdateSpendingTransactionForm = function ({
     description,
     source,
     destinations,
+  );
+  const preview = useTransactionPreview(
+    request === null ? null : { transactionId: transaction.id, request },
   );
 
   return (
@@ -103,6 +101,7 @@ const UpdateSpendingTransactionForm = function ({
       state={state}
       pending={pending}
       request={request}
+      preview={preview}
       onReset={reset}
       onSubmit={submit}
     />

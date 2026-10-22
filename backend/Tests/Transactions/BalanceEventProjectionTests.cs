@@ -70,20 +70,20 @@ public sealed class BalanceEventProjectionTests
             item => item.TransactionId == created.Id && item.Fund.Id == unassigned.Id);
         IncomeTransactionModel postedDetail = await test.Api.GetAsync<IncomeTransactionModel>($"/transactions/{created.Id}");
 
-        Assert.Equal(60m, pending.NewTotals.AmountAssignedIncludingPending);
+        Assert.Null(pending.NewTotals);
         Assert.False(pending.IsPosted);
         Assert.Contains(pendingDetail.Destinations.Single().FundGoals, goal => goal.Fund.Id == unassigned.Id);
-        Assert.Equal(60m, posted.NewTotals.AmountAssigned);
+        Assert.Equal(60m, posted.NewTotals?.AmountAssigned);
         Assert.True(posted.IsPosted);
         Assert.Contains(postedDetail.Destinations.Single().FundGoals, goal => goal.Fund.Id == unassigned.Id);
         Assert.Equal(unassignedGoal.Fund.Id, postedDetail.Destinations.Single().FundGoals.Single(goal => goal.Fund.Id == unassigned.Id).Fund.Id);
     }
 
     /// <summary>
-    /// Projects a spending transaction with the account and location counterparties expected by each surface.
+    /// Projects a pending spending transaction with the expected counterparties and no balances.
     /// </summary>
     [Fact]
-    public async Task SpendingEventsExposeDirectionCounterpartiesAndPendingBalances()
+    public async Task SpendingEventsExposeDirectionCounterpartiesWithoutPendingBalances()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
@@ -105,13 +105,13 @@ public sealed class BalanceEventProjectionTests
         Assert.Equal("Cash", account.Source.DisplayName);
         Assert.Equal("Market", Assert.Single(account.Destinations).DisplayName);
         Assert.False(account.IsPosted);
-        Assert.Equal(100m, account.PreviousBalance.PostedBalance);
-        Assert.Equal(75m, account.NewBalance.BalanceIncludingPending);
+        Assert.Null(account.PreviousBalance);
+        Assert.Null(account.NewBalance);
 
         Assert.Empty(fundEvents.Items);
         Assert.Equal("Cash", goal.Source.DisplayName);
         Assert.Equal("Market", Assert.Single(goal.Destinations).DisplayName);
-        Assert.Equal(25m, goal.NewTotals.AmountSpentIncludingPending);
+        Assert.Null(goal.NewTotals);
     }
 
     /// <summary>
@@ -154,8 +154,8 @@ public sealed class BalanceEventProjectionTests
             $"/fund-goals/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}");
 
         FundGoalBalanceEventModel laterEvent = Assert.Single(goalEvents.Items, item => item.TransactionId == later.Id);
-        Assert.Equal(25m, laterEvent.PreviousTotals.AmountSpent);
-        Assert.Equal(40m, laterEvent.NewTotals.AmountSpent);
+        Assert.Equal(25m, laterEvent.PreviousTotals?.AmountSpent);
+        Assert.Equal(40m, laterEvent.NewTotals?.AmountSpent);
     }
 
     /// <summary>

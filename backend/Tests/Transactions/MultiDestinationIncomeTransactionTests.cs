@@ -48,14 +48,14 @@ public sealed class MultiDestinationIncomeTransactionTests
         AccountBalanceSnapshot firstBalance = await test.AccountQueries.GetBalanceAsync(first);
         AccountBalanceSnapshot secondBalance = await test.AccountQueries.GetBalanceAsync(second);
         Assert.Equal(40m, firstBalance.Posted);
-        Assert.Equal(40m, firstBalance.IncludingPending);
+        Assert.Equal(40m, firstBalance.PostedWithPending);
         Assert.Equal(0m, secondBalance.Posted);
-        Assert.Equal(60m, secondBalance.IncludingPending);
+        Assert.Equal(60m, secondBalance.PostedWithPending);
 
         await test.Transactions.PostAsync(transaction, second, new DateOnly(2026, 7, 17));
         secondBalance = await test.AccountQueries.GetBalanceAsync(second);
         Assert.Equal(60m, secondBalance.Posted);
-        Assert.Equal(60m, secondBalance.IncludingPending);
+        Assert.Equal(60m, secondBalance.PostedWithPending);
     }
 
     /// <summary>

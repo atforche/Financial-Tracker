@@ -1,5 +1,6 @@
 import type {
   Account,
+  AccountBalanceEvent,
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
@@ -9,11 +10,11 @@ import {
   getAssignedFundAmount,
   getRemainingFundAmount,
 } from "@/funds/assignmentPlanner/helpers";
+import type { FundBalanceEvent, FundWithBalance } from "@/funds/types";
 import type { Location, LocationDraft } from "@/locations/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
-import type { FundWithBalance } from "@/funds/types";
 import type { JSX } from "react";
 import SpendingFundAssignmentPlanner from "@/funds/assignmentPlanner/SpendingFundAssignmentPlanner";
 import type { Transaction } from "@/transactions/types";
@@ -41,21 +42,21 @@ interface SpendingTransactionDestinationFrameProps {
   readonly fundAssignments: FundAssignmentDraft[];
   readonly setFundAssignments:
     ((fundAssignments: FundAssignmentDraft[]) => void) | null;
-  readonly baselineFundAssignments?: FundAssignmentDraft[];
   readonly filter?: ((account: Account) => boolean) | null;
   readonly title?: string;
   readonly accountCaption?: string;
   readonly locationCaption?: string;
   readonly entryCaption?: string;
-  readonly assignmentEffect?: "refund" | "spend";
   readonly onRemove?: (() => void) | null;
   readonly color?: FrameColor;
   readonly fundAssignmentsValid?: boolean;
+  readonly accountBalanceEvent?: AccountBalanceEvent | null;
+  readonly fundBalanceEvents?: FundBalanceEvent[] | undefined;
   readonly readOnly?: boolean;
   readonly autoFocus?: boolean;
 }
 
-const emptyFundAssignments: FundAssignmentDraft[] = [];
+const emptyFundBalanceEvents: FundBalanceEvent[] = [];
 
 /**
  * Displays a destination frame for one spending destination.
@@ -75,16 +76,16 @@ const SpendingTransactionDestinationFrame = function ({
   setAmount,
   fundAssignments,
   setFundAssignments,
-  baselineFundAssignments = emptyFundAssignments,
   filter = null,
   title = "Destination",
   accountCaption = "Destination Account",
   locationCaption = "Destination Location",
   entryCaption = "Destination",
-  assignmentEffect = "spend",
   onRemove = null,
   color = "info",
   fundAssignmentsValid = true,
+  accountBalanceEvent = null,
+  fundBalanceEvents = emptyFundBalanceEvents,
   readOnly = false,
   autoFocus = false,
 }: SpendingTransactionDestinationFrameProps): JSX.Element {
@@ -124,7 +125,7 @@ const SpendingTransactionDestinationFrame = function ({
             location={location}
             setLocation={readOnly ? null : setLocation}
             accountFilter={filter}
-            balanceChange={amount}
+            balanceEvent={accountBalanceEvent}
             readOnly={readOnly}
             autoFocus={autoFocus}
           />
@@ -139,11 +140,10 @@ const SpendingTransactionDestinationFrame = function ({
       <SpendingFundAssignmentPlanner
         funds={funds}
         fundGoals={fundGoals}
-        assignmentEffect={assignmentEffect}
+        fundBalanceEvents={fundBalanceEvents}
         totalAmountToAssign={amount}
         fundAssignments={fundAssignments}
         setFundAssignments={readOnly ? null : setFundAssignments}
-        baselineFundAssignments={baselineFundAssignments}
         readOnly={readOnly}
       />
     </TransactionSourceOrDestinationFrame>

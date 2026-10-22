@@ -2,6 +2,7 @@
 
 import type {
   Account,
+  AccountBalanceEvent,
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
@@ -16,18 +17,16 @@ import {
 import type { PostTransactionRequest, Transaction } from "@/transactions/types";
 import type { SxProps, Theme } from "@mui/material/styles";
 import dayjs, { type Dayjs } from "dayjs";
-import {
-  getSelectedTransactionAccountDraft,
-  setTransactionAccountDraftBalanceChange,
-} from "@/transactions/workspace/accountBalanceEventDraft";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AccountEntryField from "@/accounts/AccountEntryField";
 import BalanceChangeChip from "@/framework/view/BalanceChangeChip";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import { buildUrl } from "@/framework/routes/helpers";
+import { getSelectedTransactionAccountDraft } from "@/transactions/workspace/accountBalanceEventDraft";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import postTransaction from "@/transactions/workspace/postTransaction";
+import { usePostingDateReporter } from "@/transactions/workspace/useTransactionPostingPreviews";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
@@ -41,7 +40,7 @@ interface AccountBalanceEventFrameProps {
     ((account: AccountBalanceEventDraft | null) => void) | null;
   readonly accountFilter?: ((account: Account) => boolean) | null;
   readonly label?: string;
-  readonly balanceChange?: number | null;
+  readonly balanceEvent?: AccountBalanceEvent | null;
   readonly showAccountEntry?: boolean;
   readonly autoFocus?: boolean;
   readonly sx?: SxProps<Theme>;
@@ -50,7 +49,8 @@ interface AccountBalanceEventFrameProps {
 const emptyAccounts: AccountWithBalance[] = [];
 
 /**
- * Displays a transaction account and, when applicable, its posting controls.
+ * Displays a transaction account and, when applicable, its posting controls. Shows the balance change
+ * from the provided balance event once it has posted.
  */
 const AccountBalanceEventFrame = function ({
   accounts = emptyAccounts,
@@ -59,7 +59,7 @@ const AccountBalanceEventFrame = function ({
   setAccount = null,
   accountFilter = null,
   label = "Account",
-  balanceChange = null,
+  balanceEvent = null,
   showAccountEntry = true,
   autoFocus = false,
   sx,
@@ -93,14 +93,28 @@ const AccountBalanceEventFrame = function ({
         };
 
   const postedDate = account?.postedDate ?? null;
+  const previousBalance = balanceEvent?.previousBalance ?? null;
+  const newBalance = balanceEvent?.newBalance ?? null;
+  const reportPostingDate = usePostingDateReporter();
+  const postingAccountId =
+    postedDate === null && canWrite && setAccount === null
+      ? (account?.accountId ?? null)
+      : null;
+  const postingDate = request?.date ?? null;
 
-  const displayedAccount =
-    postedDate === null
-      ? setTransactionAccountDraftBalanceChange(account, balanceChange)
-      : account;
-  const displayedAccountId = displayedAccount?.accountId;
-  const displayedAccountName = displayedAccount?.accountName;
-  const displayedAccountType = displayedAccount?.accountType;
+  useEffect(() => {
+    if (reportPostingDate === null || postingAccountId === null) {
+      return undefined;
+    }
+    reportPostingDate(postingAccountId, postingDate);
+    return (): void => {
+      reportPostingDate(postingAccountId, null);
+    };
+  }, [reportPostingDate, postingAccountId, postingDate]);
+
+  const displayedAccountId = account?.accountId;
+  const displayedAccountName = account?.accountName;
+  const displayedAccountType = account?.accountType;
   const selectedAccount =
     accounts.find(({ id }) => id === displayedAccountId) ?? null;
   const readOnlyAccount =
@@ -184,12 +198,7 @@ const AccountBalanceEventFrame = function ({
           ? null
           : (nextValue: Account | null): void => {
               setAccount(
-                getSelectedTransactionAccountDraft(
-                  accounts,
-                  nextValue,
-                  account,
-                  balanceChange,
-                ),
+                getSelectedTransactionAccountDraft(accounts, nextValue),
               );
             }
       }
@@ -221,11 +230,13 @@ const AccountBalanceEventFrame = function ({
             spacing={0.75}
             alignItems="center"
           >
-            <BalanceChangeChip
-              label="Balance"
-              previousValue={displayedAccount?.previousAccountBalance ?? 0}
-              newValue={displayedAccount?.newAccountBalance ?? 0}
-            />
+            {previousBalance === null || newBalance === null ? null : (
+              <BalanceChangeChip
+                label="Balance"
+                previousValue={previousBalance.postedBalance}
+                newValue={newBalance.postedBalance}
+              />
+            )}
             {postedDate !== null ? helperContent : null}
           </Stack>
           {postedDate === null ? helperContent : null}

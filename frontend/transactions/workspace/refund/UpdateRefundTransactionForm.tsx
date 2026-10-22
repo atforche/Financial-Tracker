@@ -18,6 +18,7 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import RefundTransactionForm from "@/transactions/workspace/refund/RefundTransactionForm";
+import useTransactionPreview from "@/transactions/workspace/useTransactionPreview";
 import { useUpdateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
 /**
@@ -43,16 +44,12 @@ const UpdateRefundTransactionForm = function ({
   fundGoals,
   redirectUrl,
 }: UpdateRefundTransactionFormProps): JSX.Element {
-  const currentFundGoals = fundGoals.filter(
-    (fundGoal) =>
-      fundGoal.accountingPeriod?.id === transactionAccountingPeriod.id,
-  );
   const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
   const [description, setDescription] = useState<string>(
     transaction.description,
   );
   const [sources, setSources] = useState<RefundSourceDraft[]>(
-    getSourcesFromTransaction(transaction, currentFundGoals),
+    getSourcesFromTransaction(transaction),
   );
   const [destination, setDestination] = useState<RefundDestinationDraft>(
     getDestinationFromTransaction(transaction),
@@ -65,7 +62,7 @@ const UpdateRefundTransactionForm = function ({
       resetDraft: (): void => {
         setDate(dayjs(transaction.date));
         setDescription(transaction.description);
-        setSources(getSourcesFromTransaction(transaction, currentFundGoals));
+        setSources(getSourcesFromTransaction(transaction));
         setDestination(getDestinationFromTransaction(transaction));
       },
     },
@@ -77,6 +74,9 @@ const UpdateRefundTransactionForm = function ({
     description,
     sources,
     destination,
+  );
+  const preview = useTransactionPreview(
+    request === null ? null : { transactionId: transaction.id, request },
   );
 
   return (
@@ -101,6 +101,7 @@ const UpdateRefundTransactionForm = function ({
       state={state}
       pending={pending}
       request={request}
+      preview={preview}
       onReset={reset}
       onSubmit={submit}
     />

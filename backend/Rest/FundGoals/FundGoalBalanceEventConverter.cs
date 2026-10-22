@@ -92,8 +92,8 @@ public sealed class FundGoalBalanceEventConverter
         },
         Source = ToModel(balanceEvent.Source),
         Destinations = balanceEvent.Destinations.Select(ToModel).ToList(),
-        PreviousTotals = ToModel(balanceEvent.PreviousTotals),
-        NewTotals = ToModel(balanceEvent.NewTotals),
+        PreviousTotals = balanceEvent.PreviousTotals == null ? null : ToModel(balanceEvent.PreviousTotals),
+        NewTotals = balanceEvent.NewTotals == null ? null : ToModel(balanceEvent.NewTotals),
     };
 
     /// <summary>
@@ -112,11 +112,7 @@ public sealed class FundGoalBalanceEventConverter
     {
         AmountAssigned = totals.AmountAssigned,
         AmountAssignedToExpectedContribution = totals.AmountAssignedToExpectedContribution,
-        AmountAssignedIncludingPending = totals.AmountAssignedIncludingPending,
-        AmountAssignedToExpectedContributionIncludingPending = totals.AmountAssignedToExpectedContributionIncludingPending,
         RemainingAmountToAssignToExpectedContribution = totals.RemainingAmountToAssignToExpectedContribution,
-        RemainingAmountToAssignToExpectedContributionIncludingPending = totals.RemainingAmountToAssignToExpectedContributionIncludingPending,
         AmountSpent = totals.AmountSpent,
-        AmountSpentIncludingPending = totals.AmountSpentIncludingPending,
     };
 }

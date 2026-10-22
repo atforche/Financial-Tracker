@@ -14,6 +14,7 @@ import {
   validateSource,
 } from "@/transactions/workspace/account/helpers";
 import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
+import { type Transaction, asAccountTransaction } from "@/transactions/types";
 import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFrame";
 import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFrame";
 import type { AccountingPeriod } from "@/accounting-periods/types";
@@ -56,6 +57,7 @@ interface AccountTransactionFormProps<RequestPayload> {
   readonly state: TransactionFormState;
   readonly pending: boolean;
   readonly request: RequestPayload | null;
+  readonly preview?: Transaction | null;
   readonly onReset: () => void;
   readonly onSubmit: (request: RequestPayload) => void;
 }
@@ -82,9 +84,12 @@ const AccountTransactionForm = function <RequestPayload>({
   state,
   pending,
   request,
+  preview = null,
   onReset,
   onSubmit,
 }: AccountTransactionFormProps<RequestPayload>): JSX.Element {
+  const transactionPreview =
+    preview === null ? null : asAccountTransaction(preview);
   const updateDestination = function (
     index: number,
     recipe: (current: AccountDestinationDraft) => AccountDestinationDraft,
@@ -138,6 +143,7 @@ const AccountTransactionForm = function <RequestPayload>({
       setDescription={setDescription}
       sourceContent={
         <AccountTransactionSourceFrame
+          accountBalanceEvent={transactionPreview?.source.account ?? null}
           color={sourceIsValid ? "info" : "error"}
           accounts={accounts}
           transaction={null}
@@ -172,6 +178,9 @@ const AccountTransactionForm = function <RequestPayload>({
                   : "error"
               }
               index={index}
+              accountBalanceEvent={
+                transactionPreview?.destinations[index]?.account ?? null
+              }
               accounts={accounts}
               transaction={null}
               account={destination.account}

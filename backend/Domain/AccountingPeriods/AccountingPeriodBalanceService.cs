@@ -37,7 +37,6 @@ public class AccountingPeriodBalanceService(
         foreach (Fund fund in fundRepository.GetAll())
         {
             FundBalance currentBalance = fundBalanceService.GetCurrentBalance(fund.Id);
-            currentBalance = new FundBalance(fund, currentBalance.PostedBalance);
             fundBalanceHistories = fundBalanceHistories.Append(new AccountingPeriodFundBalanceHistory(
                 fund,
                 newAccountingPeriod,

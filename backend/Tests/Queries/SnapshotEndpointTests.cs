@@ -34,9 +34,9 @@ public sealed class SnapshotEndpointTests
         AccountWithBalanceModel account = Assert.Single(accounts.Items, item => item.Id == cash.Id);
         FundWithBalanceModel fund = Assert.Single(funds.Items, item => item.Id == groceries.Id);
         Assert.Equal(100m, account.CurrentBalance.PostedBalance);
-        Assert.Equal(80m, account.CurrentBalance.BalanceIncludingPending);
+        Assert.Equal(-20m, account.PendingAmount);
         Assert.Equal(0m, fund.CurrentBalance.PostedBalance);
-        Assert.Equal(-20m, fund.CurrentBalance.BalanceIncludingPending);
+        Assert.Equal(-20m, fund.PendingAmount);
         Assert.Contains(period.Transactions.Items, item => item.Id == transaction.Id);
     }
 }

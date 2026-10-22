@@ -16,6 +16,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import FundTransactionForm from "@/transactions/workspace/fund/FundTransactionForm";
 import type { FundWithBalance } from "@/funds/types";
+import useTransactionPreview from "@/transactions/workspace/useTransactionPreview";
 import { useUpdateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
 /**
@@ -68,6 +69,10 @@ const UpdateFundTransactionForm = function ({
     source,
     destinations,
   );
+  const preview = useTransactionPreview(
+    request === null ? null : { transactionId: transaction.id, request },
+    transaction,
+  );
 
   return (
     <FundTransactionForm<UpdateTransactionRequest>
@@ -89,6 +94,7 @@ const UpdateFundTransactionForm = function ({
       state={state}
       pending={pending}
       request={request}
+      preview={preview}
       onReset={reset}
       onSubmit={submit}
     />

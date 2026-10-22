@@ -9,4 +9,9 @@ public class FundWithBalanceModel : FundModel
     /// Current balance for the Fund along with its details.
     /// </summary>
     public required FundBalanceModel CurrentBalance { get; init; }
+
+    /// <summary>
+    /// Net change from unposted Transactions, which is not included in the current balance.
+    /// </summary>
+    public required decimal PendingAmount { get; init; }
 }

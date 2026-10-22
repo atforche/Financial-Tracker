@@ -44,11 +44,11 @@ public sealed class MultiDestinationAccountTransactionTests
         AccountBalanceSnapshot secondBalance = await test.AccountQueries.GetBalanceAsync(secondDestination);
 
         Assert.Equal(900m, sourceBalance.Posted);
-        Assert.Equal(900m, sourceBalance.IncludingPending);
+        Assert.Equal(900m, sourceBalance.PostedWithPending);
         Assert.Equal(0m, firstBalance.Posted);
-        Assert.Equal(40m, firstBalance.IncludingPending);
+        Assert.Equal(40m, firstBalance.PostedWithPending);
         Assert.Equal(0m, secondBalance.Posted);
-        Assert.Equal(60m, secondBalance.IncludingPending);
+        Assert.Equal(60m, secondBalance.PostedWithPending);
 
         await test.Transactions.PostAsync(transaction, firstDestination, new DateOnly(2026, 7, 21));
         await test.Transactions.PostAsync(transaction, secondDestination, new DateOnly(2026, 7, 22));
@@ -56,25 +56,25 @@ public sealed class MultiDestinationAccountTransactionTests
         firstBalance = await test.AccountQueries.GetBalanceAsync(firstDestination);
         secondBalance = await test.AccountQueries.GetBalanceAsync(secondDestination);
         Assert.Equal(40m, firstBalance.Posted);
-        Assert.Equal(40m, firstBalance.IncludingPending);
+        Assert.Equal(40m, firstBalance.PostedWithPending);
         Assert.Equal(60m, secondBalance.Posted);
-        Assert.Equal(60m, secondBalance.IncludingPending);
+        Assert.Equal(60m, secondBalance.PostedWithPending);
 
         await test.Transactions.UnpostAsync(transaction);
         sourceBalance = await test.AccountQueries.GetBalanceAsync(source);
         firstBalance = await test.AccountQueries.GetBalanceAsync(firstDestination);
         secondBalance = await test.AccountQueries.GetBalanceAsync(secondDestination);
         Assert.Equal(1000m, sourceBalance.Posted);
-        Assert.Equal(900m, sourceBalance.IncludingPending);
+        Assert.Equal(900m, sourceBalance.PostedWithPending);
         Assert.Equal(0m, firstBalance.Posted);
-        Assert.Equal(40m, firstBalance.IncludingPending);
+        Assert.Equal(40m, firstBalance.PostedWithPending);
         Assert.Equal(0m, secondBalance.Posted);
-        Assert.Equal(60m, secondBalance.IncludingPending);
+        Assert.Equal(60m, secondBalance.PostedWithPending);
 
         await test.Transactions.DeleteAsync(transaction);
-        Assert.Equal(1000m, (await test.AccountQueries.GetBalanceAsync(source)).IncludingPending);
-        Assert.Equal(0m, (await test.AccountQueries.GetBalanceAsync(firstDestination)).IncludingPending);
-        Assert.Equal(0m, (await test.AccountQueries.GetBalanceAsync(secondDestination)).IncludingPending);
+        Assert.Equal(1000m, (await test.AccountQueries.GetBalanceAsync(source)).PostedWithPending);
+        Assert.Equal(0m, (await test.AccountQueries.GetBalanceAsync(firstDestination)).PostedWithPending);
+        Assert.Equal(0m, (await test.AccountQueries.GetBalanceAsync(secondDestination)).PostedWithPending);
     }
 
     /// <summary>

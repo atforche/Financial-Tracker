@@ -47,8 +47,6 @@ type FundBalanceEvent = components["schemas"]["FundBalanceEventModel"];
 interface FundBalanceEventDraft {
   readonly fundId: string | null;
   readonly fundName: string | null;
-  readonly previousFundBalance: number | null;
-  readonly newFundBalance: number | null;
 }
 
 /**

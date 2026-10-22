@@ -4,7 +4,6 @@ import { Box, Stack, Typography } from "@mui/material";
 import {
   formatCurrency,
   formatSignedCurrency,
-  getCurrencyDifference,
 } from "@/framework/currencyHelpers";
 import type { AccountWithBalance } from "@/accounts/types";
 import Frame from "@/framework/view/Frame";
@@ -19,16 +18,12 @@ interface CurrentBalanceFrameProps {
 }
 
 /**
- * Shows the posted balance alongside the effect of pending activity.
+ * Shows the posted balance alongside the net amount of pending activity.
  */
 const CurrentBalanceFrame = function ({
   account,
 }: CurrentBalanceFrameProps): JSX.Element {
-  const { postedBalance, balanceIncludingPending } = account.currentBalance;
-  const pendingChange = getCurrencyDifference(
-    balanceIncludingPending,
-    postedBalance,
-  );
+  const { postedBalance } = account.currentBalance;
 
   return (
     <Frame title="Current Balance" color="info">
@@ -48,26 +43,14 @@ const CurrentBalanceFrame = function ({
           </Stack>
           <Stack spacing={0.75} justifyContent="center">
             <Typography variant="body2" color="text.secondary">
-              Balance Including Pending
+              Pending
             </Typography>
             <Typography
               component="p"
               variant="h5"
               sx={{ overflowWrap: "anywhere" }}
             >
-              {formatCurrency(balanceIncludingPending)}
-            </Typography>
-          </Stack>
-          <Stack spacing={0.75} justifyContent="center">
-            <Typography variant="body2" color="text.secondary">
-              Pending Change
-            </Typography>
-            <Typography
-              component="p"
-              variant="h5"
-              sx={{ overflowWrap: "anywhere" }}
-            >
-              {formatSignedCurrency(pendingChange)}
+              {formatSignedCurrency(account.pendingAmount)}
             </Typography>
           </Stack>
         </ResponsiveGrid>

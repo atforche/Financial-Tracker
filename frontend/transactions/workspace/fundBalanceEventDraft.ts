@@ -4,56 +4,17 @@ import type {
   FundBalanceEventDraft,
   FundWithBalance,
 } from "@/funds/types";
-import {
-  getCurrencyDifference,
-  getCurrencyTotal,
-} from "@/framework/currencyHelpers";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
 
 /**
- * Gets the balance change captured in the provided transaction fund draft.
- */
-const getTransactionFundDraftBalanceChange = function (
-  fund: FundBalanceEventDraft | null,
-): number {
-  return getCurrencyDifference(
-    fund?.newFundBalance ?? 0,
-    fund?.previousFundBalance ?? 0,
-  );
-};
-
-/**
- * Applies a balance change to an existing transaction fund draft.
- */
-const setTransactionFundDraftBalanceChange = function (
-  fund: FundBalanceEventDraft | null,
-  balanceChange: number | null | undefined,
-): FundBalanceEventDraft | null {
-  if (fund === null) {
-    return null;
-  }
-  return {
-    ...fund,
-    newFundBalance: getCurrencyTotal([
-      fund.previousFundBalance ?? 0,
-      balanceChange ?? 0,
-    ]),
-  };
-};
-
-/**
- * Creates a transaction fund draft from a fund and balance delta.
+ * Creates a transaction fund draft from a fund.
  */
 const createTransactionFundDraftFromFund = function (
   fund: FundWithBalance,
-  balanceChange = 0,
 ): FundBalanceEventDraft {
-  const previousPostedBalance = fund.currentBalance.postedBalance;
   return {
     fundId: fund.id,
     fundName: fund.name,
-    previousFundBalance: previousPostedBalance,
-    newFundBalance: getCurrencyTotal([previousPostedBalance, balanceChange]),
   };
 };
 
@@ -69,8 +30,6 @@ const getTransactionFundDraftFromTransactionFund = function (
   return {
     fundId: fund.fund.id,
     fundName: fund.fund.name,
-    previousFundBalance: fund.previousBalance.postedBalance,
-    newFundBalance: fund.newBalance.postedBalance,
   };
 };
 
@@ -80,8 +39,6 @@ const getTransactionFundDraftFromTransactionFund = function (
 const getSelectedTransactionFundDraft = function (
   funds: FundWithBalance[],
   nextValue: Fund | null,
-  currentFund: FundBalanceEventDraft | null,
-  balanceChange?: number | null,
 ): FundBalanceEventDraft | null {
   if (nextValue === null) {
     return null;
@@ -91,16 +48,11 @@ const getSelectedTransactionFundDraft = function (
   if (selectedFund === null) {
     return null;
   }
-  return createTransactionFundDraftFromFund(
-    selectedFund,
-    balanceChange ?? getTransactionFundDraftBalanceChange(currentFund),
-  );
+  return createTransactionFundDraftFromFund(selectedFund);
 };
 
 export {
   createTransactionFundDraftFromFund,
   getSelectedTransactionFundDraft,
-  getTransactionFundDraftBalanceChange,
   getTransactionFundDraftFromTransactionFund,
-  setTransactionFundDraftBalanceChange,
 };

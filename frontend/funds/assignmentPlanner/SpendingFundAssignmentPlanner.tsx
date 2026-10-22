@@ -1,4 +1,4 @@
-import type { Fund, FundWithBalance } from "@/funds/types";
+import type { Fund, FundBalanceEvent, FundWithBalance } from "@/funds/types";
 import {
   type FundAssignmentDraft,
   addFundAssignment as appendFundAssignment,
@@ -12,14 +12,11 @@ import {
   updateFundAssignment,
 } from "@/funds/assignmentPlanner/helpers";
 import { type JSX, useEffect } from "react";
-import {
-  compareCurrencyAmounts,
-  getCurrencyTotal,
-} from "@/framework/currencyHelpers";
 import BalanceChangeChip from "@/framework/view/BalanceChangeChip";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import { Stack } from "@mui/material";
+import { compareCurrencyAmounts } from "@/framework/currencyHelpers";
 import { getUnassignedFund } from "@/funds/helpers";
 
 /**
@@ -28,30 +25,30 @@ import { getUnassignedFund } from "@/funds/helpers";
 interface SpendingFundAssignmentPlannerProps {
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
-  readonly assignmentEffect?: "spend" | "refund";
+  readonly fundBalanceEvents?: FundBalanceEvent[];
   readonly totalAmountToAssign: number | null;
   readonly fundAssignments: FundAssignmentDraft[];
   readonly setFundAssignments:
     ((fundAssignments: FundAssignmentDraft[]) => void) | null;
-  readonly baselineFundAssignments: FundAssignmentDraft[];
   readonly readOnly?: boolean;
 }
 
+const emptyFundBalanceEvents: FundBalanceEvent[] = [];
+
 /**
- * Displays the fund assignment planner for spending transactions.
+ * Displays the fund assignment planner for spending transactions. Shows each fund's goal change from its
+ * balance event once it has posted.
  */
 const SpendingFundAssignmentPlanner = function ({
   funds,
   fundGoals,
-  assignmentEffect = "spend",
+  fundBalanceEvents = emptyFundBalanceEvents,
   totalAmountToAssign,
   fundAssignments,
   setFundAssignments,
-  baselineFundAssignments,
   readOnly = false,
 }: SpendingFundAssignmentPlannerProps): JSX.Element {
   const unassignedFund = getUnassignedFund(funds);
-  const assignmentDirection = assignmentEffect === "refund" ? 1 : -1;
 
   const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
   useEffect(() => {
@@ -96,8 +93,7 @@ const SpendingFundAssignmentPlanner = function ({
       return getEndingBalanceVariance(
         fundId,
         fundGoals,
-        baselineFundAssignments,
-        fund?.currentBalance.balanceIncludingPending ?? 0,
+        fund?.currentBalance.postedBalance ?? 0,
       );
     });
   };
@@ -135,29 +131,11 @@ const SpendingFundAssignmentPlanner = function ({
           if (newFund === null) {
             return createFundAssignmentDraft(assignment.amount);
           }
-          const fund = funds.find((f) => f.id === newFund.id);
-          const previousFundBalance =
-            fund?.currentBalance.balanceIncludingPending ?? 0;
-          const previousGoalAmount = getSpendingGoalRemainingAmount(
-            newFund.id,
-            fundGoals,
-            previousFundBalance,
-          );
           return {
             fundId: newFund.id,
             fundName: newFund.name,
             amount: assignment.amount,
             isExtraContribution: false,
-            previousFundBalance,
-            newFundBalance: getCurrencyTotal([
-              previousFundBalance,
-              assignmentDirection * assignment.amount,
-            ]),
-            previousGoalAmount,
-            newGoalAmount: getCurrencyTotal([
-              previousGoalAmount,
-              assignmentDirection * assignment.amount,
-            ]),
           };
         },
       ),
@@ -174,25 +152,7 @@ const SpendingFundAssignmentPlanner = function ({
         totalAmountToAssign,
         plannerFundAssignments,
         index,
-        (assignment) => {
-          const previousGoalAmount = getSpendingGoalRemainingAmount(
-            assignment.fundId,
-            fundGoals,
-            assignment.previousFundBalance,
-          );
-          return {
-            ...assignment,
-            amount: newAmount ?? 0,
-            newFundBalance: getCurrencyTotal([
-              assignment.previousFundBalance,
-              assignmentDirection * (newAmount ?? 0),
-            ]),
-            newGoalAmount: getCurrencyTotal([
-              previousGoalAmount,
-              assignmentDirection * (newAmount ?? 0),
-            ]),
-          };
-        },
+        (assignment) => ({ ...assignment, amount: newAmount ?? 0 }),
       ),
     );
   };
@@ -203,16 +163,31 @@ const SpendingFundAssignmentPlanner = function ({
     if (assignment.fundId === "") {
       return null;
     }
+    const balanceEvent = fundBalanceEvents.find(
+      (candidate) => candidate.fund.id === assignment.fundId,
+    );
+    const previousBalance = balanceEvent?.previousBalance ?? null;
+    const newBalance = balanceEvent?.newBalance ?? null;
+    if (previousBalance === null || newBalance === null) {
+      return null;
+    }
+    const newGoalAmount = getSpendingGoalRemainingAmount(
+      assignment.fundId,
+      fundGoals,
+      newBalance.postedBalance,
+    );
     return (
       <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap>
         <BalanceChangeChip
           label="Remaining to Spend"
-          previousValue={assignment.previousGoalAmount}
-          newValue={assignment.newGoalAmount}
+          previousValue={getSpendingGoalRemainingAmount(
+            assignment.fundId,
+            fundGoals,
+            previousBalance.postedBalance,
+          )}
+          newValue={newGoalAmount}
           color={
-            compareCurrencyAmounts(assignment.newGoalAmount, 0) >= 0
-              ? "success"
-              : "error"
+            compareCurrencyAmounts(newGoalAmount, 0) >= 0 ? "success" : "error"
           }
         />
       </Stack>
@@ -240,8 +215,7 @@ const SpendingFundAssignmentPlanner = function ({
           getEndingBalanceVariance(
             fund.id,
             fundGoals,
-            baselineFundAssignments,
-            fundWithBalance?.currentBalance.balanceIncludingPending ?? 0,
+            fundWithBalance?.currentBalance.postedBalance ?? 0,
           ),
         );
       }}

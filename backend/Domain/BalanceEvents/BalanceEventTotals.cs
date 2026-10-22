@@ -6,24 +6,27 @@ namespace Domain.BalanceEvents;
 public sealed record BalanceEventTotals(decimal TotalInflow, decimal TotalOutflow)
 {
     /// <summary>
-    /// Builds dated posted balance checkpoints for the selected events.
+    /// Builds dated posted balance checkpoints for the selected events. Only posted events, which have a date
+    /// and balances, are used.
     /// </summary>
     public static (decimal? OpeningBalance, IReadOnlyCollection<(DateOnly Date, decimal Balance)> Dates) BuildDateBalances<T>(
         IEnumerable<T> events,
         Func<T, DateOnly?> getDate,
         Func<T, int?> getSequence,
-        Func<T, decimal> getPreviousBalance,
-        Func<T, decimal> getNewBalance)
+        Func<T, decimal?> getPreviousBalance,
+        Func<T, decimal?> getNewBalance)
     {
-        var ordered = events.Where(item => getDate(item).HasValue)
-            .OrderBy(item => getDate(item)).ThenBy(item => getSequence(item)).ToList();
+        var ordered = events
+            .Select(item => (Date: getDate(item), Sequence: getSequence(item), Previous: getPreviousBalance(item), New: getNewBalance(item)))
+            .Where(item => item.Date.HasValue && item.Previous.HasValue && item.New.HasValue)
+            .OrderBy(item => item.Date).ThenBy(item => item.Sequence).ToList();
         if (ordered.Count == 0)
         {
             return (null, []);
         }
-        var dates = ordered.GroupBy(item => getDate(item)!.Value)
-            .Select(group => (group.Key, getNewBalance(group.Last()))).ToList();
-        return (getPreviousBalance(ordered[0]), dates);
+        var dates = ordered.GroupBy(item => item.Date!.Value)
+            .Select(group => (group.Key, group.Last().New!.Value)).ToList();
+        return (ordered[0].Previous!.Value, dates);
     }
 
     /// <summary>

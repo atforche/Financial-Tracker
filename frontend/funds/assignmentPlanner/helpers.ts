@@ -19,14 +19,10 @@ interface FundAssignmentDraft {
   readonly fundName: string;
   readonly amount: number;
   readonly isExtraContribution: boolean;
-  readonly previousFundBalance: number;
-  readonly newFundBalance: number;
-  readonly previousGoalAmount: number;
-  readonly newGoalAmount: number;
 }
 
 /**
- * Creates an incomplete assignment draft with empty balance projections.
+ * Creates an incomplete assignment draft.
  */
 const createFundAssignmentDraft = function (amount = 0): FundAssignmentDraft {
   return {
@@ -34,10 +30,6 @@ const createFundAssignmentDraft = function (amount = 0): FundAssignmentDraft {
     fundName: "",
     amount,
     isExtraContribution: false,
-    previousFundBalance: 0,
-    newFundBalance: 0,
-    previousGoalAmount: 0,
-    newGoalAmount: 0,
   };
 };
 
@@ -121,10 +113,6 @@ const updateUnassignedFundAmount = function (
       fundName: unassignedFund.name,
       amount: unassignedAmount,
       isExtraContribution: false,
-      previousFundBalance: 0,
-      newFundBalance: 0,
-      previousGoalAmount: 0,
-      newGoalAmount: 0,
     },
     ...explicitFundAssignments,
   ];
@@ -239,23 +227,16 @@ const getSpendingGoalRemainingAmount = function (
 };
 
 /**
- * Gets the remaining ending-balance variance for a Fund Goal.
+ * Gets the remaining ending-balance variance for a Fund Goal, or null when the fund has no goal.
  */
 const getEndingBalanceVariance = function (
   fundId: string,
   fundGoals: FundGoalWithProgress[],
-  baselineFundAssignments: readonly FundAssignmentDraft[],
   fundBalance: number,
 ): number | null {
-  const fundGoal = fundGoals.find((goal) => goal.fund.id === fundId);
-  if (fundGoal === undefined) {
-    return null;
-  }
-  return getRemainingAmount(
-    getSpendingGoalRemainingAmount(fundId, fundGoals, fundBalance),
-    baselineFundAssignments,
-    fundId,
-  );
+  return fundGoals.some((goal) => goal.fund.id === fundId)
+    ? getSpendingGoalRemainingAmount(fundId, fundGoals, fundBalance)
+    : null;
 };
 
 /**
@@ -424,16 +405,13 @@ const autoAssignIncomeFundAssignments = function (
       break;
     }
 
-    const previousFundBalance = fund.currentBalance.postedBalance;
-    const previousGoalAmount =
+    const amount = getMinimumCurrencyAmount(
+      remainingAmount,
       getContributionRemainingAmount(
         fund.id,
         fundGoals,
         baselineFundAssignments,
-      ) ?? 0;
-    const amount = getMinimumCurrencyAmount(
-      remainingAmount,
-      previousGoalAmount,
+      ) ?? 0,
     );
 
     assignments.push({
@@ -441,13 +419,6 @@ const autoAssignIncomeFundAssignments = function (
       fundName: fund.name,
       amount,
       isExtraContribution: false,
-      previousFundBalance,
-      newFundBalance: getCurrencyTotal([previousFundBalance, amount]),
-      previousGoalAmount,
-      newGoalAmount: getMaximumCurrencyAmount(
-        getCurrencyTotal([previousGoalAmount, -amount]),
-        0,
-      ),
     });
     remainingAmount = getCurrencyTotal([remainingAmount, -amount]);
   }

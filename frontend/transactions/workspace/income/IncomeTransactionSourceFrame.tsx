@@ -1,5 +1,6 @@
 import type {
   Account,
+  AccountBalanceEvent,
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
@@ -39,6 +40,7 @@ interface IncomeTransactionSourceFrameProps {
     ((incomeDeductions: IncomeDeductionDraft[]) => void) | null;
   readonly accountFilter?: ((account: Account) => boolean) | null;
   readonly color?: FrameColor;
+  readonly accountBalanceEvent?: AccountBalanceEvent | null;
   readonly readOnly?: boolean;
 }
 
@@ -59,6 +61,7 @@ const IncomeTransactionSourceFrame = function ({
   setIncomeDeductions,
   accountFilter = null,
   color = "info",
+  accountBalanceEvent = null,
   readOnly = false,
 }: IncomeTransactionSourceFrameProps): JSX.Element {
   const netIncomeAmount = getNetIncomeAmount({
@@ -67,7 +70,6 @@ const IncomeTransactionSourceFrame = function ({
     incomeLines,
     incomeDeductions,
   });
-  const balanceChange = -netIncomeAmount;
 
   return (
     <TransactionSourceOrDestinationFrame
@@ -89,7 +91,7 @@ const IncomeTransactionSourceFrame = function ({
         location={location}
         setLocation={readOnly ? null : setLocation}
         accountFilter={accountFilter}
-        balanceChange={balanceChange}
+        balanceEvent={accountBalanceEvent}
         readOnly={readOnly}
       />
       <IncomeTransactionItemSection

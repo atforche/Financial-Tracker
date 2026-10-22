@@ -7,19 +7,15 @@ namespace Domain.Accounts;
 /// </summary>
 public class AccountBalanceService(
     IAccountRepository accountRepository,
-    IAccountBalanceHistoryRepository accountBalanceHistoryRepository,
-    PendingAccountBalanceService pendingAccountBalanceService)
+    IAccountBalanceHistoryRepository accountBalanceHistoryRepository)
 {
     /// <summary>
-    /// Gets the current balance for the provided Account
+    /// Gets the current posted balance for the provided Account
     /// </summary>
     public AccountBalance GetCurrentBalance(Account account)
     {
         AccountBalanceHistory? latestHistory = accountBalanceHistoryRepository.GetLatestForAccount(account.Id);
-        var postedBalance = new AccountBalance(
-            account,
-            latestHistory?.PostedBalance ?? account.OnboardedBalance ?? 0);
-        return pendingAccountBalanceService.ApplyPendingEffects(postedBalance);
+        return new AccountBalance(account, latestHistory?.PostedBalance ?? account.OnboardedBalance ?? 0);
     }
 
     /// <summary>

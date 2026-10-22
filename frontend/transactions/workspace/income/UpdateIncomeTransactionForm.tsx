@@ -18,6 +18,7 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import IncomeTransactionForm from "@/transactions/workspace/income/IncomeTransactionForm";
+import useTransactionPreview from "@/transactions/workspace/useTransactionPreview";
 import { useUpdateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
 /**
@@ -75,6 +76,9 @@ const UpdateIncomeTransactionForm = function ({
     source,
     destinations,
   );
+  const preview = useTransactionPreview(
+    request === null ? null : { transactionId: transaction.id, request },
+  );
 
   return (
     <IncomeTransactionForm<UpdateTransactionRequest>
@@ -98,6 +102,7 @@ const UpdateIncomeTransactionForm = function ({
       state={state}
       pending={pending}
       request={request}
+      preview={preview}
       onReset={reset}
       onSubmit={submit}
     />

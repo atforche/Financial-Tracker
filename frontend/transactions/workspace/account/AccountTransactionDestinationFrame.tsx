@@ -1,5 +1,6 @@
 import type {
   Account,
+  AccountBalanceEvent,
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
@@ -30,6 +31,7 @@ interface AccountTransactionDestinationFrameProps {
   readonly accountFilter?: ((account: Account) => boolean) | null;
   readonly onRemove?: (() => void) | null;
   readonly color?: FrameColor;
+  readonly accountBalanceEvent?: AccountBalanceEvent | null;
   readonly readOnly?: boolean;
   readonly autoFocus?: boolean;
 }
@@ -51,6 +53,7 @@ const AccountTransactionDestinationFrame = function ({
   accountFilter = null,
   onRemove = null,
   color = "info",
+  accountBalanceEvent = null,
   readOnly = false,
   autoFocus = false,
 }: AccountTransactionDestinationFrameProps): JSX.Element {
@@ -78,7 +81,7 @@ const AccountTransactionDestinationFrame = function ({
             location={location}
             setLocation={readOnly ? null : setLocation}
             accountFilter={accountFilter}
-            balanceChange={amount}
+            balanceEvent={accountBalanceEvent}
             readOnly={readOnly}
             autoFocus={autoFocus}
           />

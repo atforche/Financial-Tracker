@@ -10,26 +10,20 @@ public sealed class PendingAccountBalanceService(
     IAccountPendingBalanceEffectRepository pendingAccountBalanceEffectRepository)
 {
     /// <summary>
-    /// Applies the current unposted Transaction effects to the provided posted Account Balance.
+    /// Adds the net amount of current unposted Transactions to the provided posted Account Balances.
     /// </summary>
-    public AccountBalance ApplyPendingEffects(AccountBalance postedBalance) =>
-        ApplyPendingEffects([postedBalance]).Single();
-
-    /// <summary>
-    /// Applies the current unposted Transaction effects to the provided posted Account Balances.
-    /// </summary>
-    public IReadOnlyCollection<AccountBalance> ApplyPendingEffects(
+    public IReadOnlyCollection<AccountBalance> IncludePendingAmounts(
         IReadOnlyCollection<AccountBalance> postedBalances)
     {
-        var balances = postedBalances.ToDictionary(balance => balance.Account.Id, balance => balance.BalanceIncludingPending);
+        var pendingAmounts = postedBalances.ToDictionary(balance => balance.Account.Id, _ => 0m);
         foreach (PendingAccountBalanceEffect effect in pendingAccountBalanceEffectRepository
-            .GetAllByAccountIds(balances.Keys.ToList()))
+            .GetAllByAccountIds(pendingAmounts.Keys.ToList()))
         {
-            balances[effect.Account.Id] += effect.Account.Type.IsDebt()
+            pendingAmounts[effect.Account.Id] += effect.Account.Type.IsDebt()
                 ? effect.PendingDebitAmount - effect.PendingCreditAmount
                 : effect.PendingCreditAmount - effect.PendingDebitAmount;
         }
-        return postedBalances.Select(balance => new AccountBalance(balance.Account, balance.PostedBalance, balances[balance.Account.Id])).ToList();
+        return postedBalances.Select(balance => new AccountBalance(balance.Account, balance.PostedBalance, pendingAmounts[balance.Account.Id])).ToList();
     }
 
     /// <summary>

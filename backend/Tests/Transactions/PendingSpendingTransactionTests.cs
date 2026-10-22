@@ -36,12 +36,12 @@ public sealed class PendingSpendingTransactionTests
         FundGoalAvailabilitySnapshot goal = await test.FundGoalQueries.GetAvailabilityAsync(groceries.Goal);
 
         Assert.Equal(1000m, account.Posted);
-        Assert.Equal(920m, account.IncludingPending);
+        Assert.Equal(920m, account.PostedWithPending);
         Assert.Equal(0m, fund.Posted);
-        Assert.Equal(-80m, fund.IncludingPending);
+        Assert.Equal(-80m, fund.PostedWithPending);
         Assert.Equal(1000m, period.Opening);
         Assert.Equal(1000m, period.Closing);
         Assert.Equal(0m, goal.Posted);
-        Assert.Equal(-80m, goal.IncludingPending);
+        Assert.Equal(-80m, goal.PostedWithPending);
     }
 }

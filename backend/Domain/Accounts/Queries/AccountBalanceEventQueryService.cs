@@ -44,7 +44,6 @@ public sealed class AccountBalanceEventQueryService(
         IReadOnlyCollection<AccountBalanceEvent> events = transactions
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], historiesByAccount))
             .Where(balanceEvent => accountIds.Contains(balanceEvent.Account.Id)).ToList();
-        events = ProjectPendingEvents(events, transactions, historiesByAccount);
         var requestedIds = requestedTransactions.Select(transaction => transaction.Id).ToHashSet();
         return events.Where(balanceEvent => requestedIds.Contains(balanceEvent.TransactionId)).ToList();
     }
@@ -114,7 +113,7 @@ public sealed class AccountBalanceEventQueryService(
         IReadOnlyCollection<AccountBalanceEvent> events = transactions
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], historiesByAccount))
             .Where(balanceEvent => balanceEvent.Account.Id == accountId).ToList();
-        var allItems = Sort(ProjectPendingEvents(events, transactions, historiesByAccount)
+        var allItems = Sort(events
             .Where(item => (includePending && !item.IsPosted)
                 || (item.IsPosted
                     && (!filterByPostingDate || item.EventDate.HasValue)
@@ -365,8 +364,8 @@ public sealed class AccountBalanceEventQueryService(
             account,
             source,
             destinations,
-            ToBalance(account, previous, account.OnboardedBalance ?? 0),
-            ToBalance(account, current));
+            postedDate == null ? null : ToBalance(account, previous, account.OnboardedBalance ?? 0),
+            postedDate == null ? null : ToBalance(account, current));
     }
 
     /// <summary>
@@ -382,36 +381,6 @@ public sealed class AccountBalanceEventQueryService(
     private static AccountBalance ToBalance(Account account, AccountBalanceHistory? history, decimal fallback = 0) => new(
         account,
         history?.PostedBalance ?? fallback);
-
-    /// <summary>
-    /// Projects pending events from the final posted Account balance in transaction order.
-    /// </summary>
-    private static List<AccountBalanceEvent> ProjectPendingEvents(
-        IReadOnlyCollection<AccountBalanceEvent> events,
-        IReadOnlyCollection<Transaction> transactions,
-        IReadOnlyDictionary<AccountId, List<AccountBalanceHistory>> historiesByAccount)
-    {
-        var transactionsById = transactions.ToDictionary(transaction => transaction.Id);
-        var projected = events.ToList();
-        foreach (IGrouping<AccountId, AccountBalanceEvent> accountEvents in events.Where(item => !item.IsPosted).GroupBy(item => item.Account.Id))
-        {
-            Account account = accountEvents.First().Account;
-            AccountBalance balance = new(account, historiesByAccount.GetValueOrDefault(account.Id)?.LastOrDefault()?.PostedBalance ?? account.OnboardedBalance ?? 0);
-            foreach (IGrouping<TransactionId, AccountBalanceEvent> transactionEvents in accountEvents
-                .GroupBy(item => item.TransactionId)
-                .OrderBy(group => transactionsById[group.Key].Date).ThenBy(group => transactionsById[group.Key].Sequence))
-            {
-                AccountBalance previous = balance;
-                balance = transactionsById[transactionEvents.Key].ApplyAsPostedToAccountBalance(balance);
-                foreach (AccountBalanceEvent balanceEvent in transactionEvents)
-                {
-                    int index = projected.IndexOf(balanceEvent);
-                    projected[index] = balanceEvent with { PreviousBalance = previous, NewBalance = balance };
-                }
-            }
-        }
-        return projected;
-    }
 
     /// <summary>
     /// Determines whether an Account matches the provided query criteria.

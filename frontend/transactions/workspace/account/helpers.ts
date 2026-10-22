@@ -35,8 +35,6 @@ interface AccountSourceDraft {
   readonly location: LocationDraft | null;
   readonly amount: number | null;
   readonly postedDate: string | null;
-  readonly previousAccountBalance: number | null;
-  readonly newAccountBalance: number | null;
 }
 
 /**
@@ -47,8 +45,6 @@ interface AccountDestinationDraft {
   readonly location: LocationDraft | null;
   readonly amount: number | null;
   readonly postedDate: string | null;
-  readonly previousAccountBalance: number | null;
-  readonly newAccountBalance: number | null;
 }
 
 /**
@@ -60,8 +56,6 @@ const createEmptySource = function (): AccountSourceDraft {
     location: null,
     amount: null,
     postedDate: null,
-    previousAccountBalance: null,
-    newAccountBalance: null,
   };
 };
 
@@ -74,8 +68,6 @@ const createEmptyDestination = function (): AccountDestinationDraft {
     location: null,
     amount: null,
     postedDate: null,
-    previousAccountBalance: null,
-    newAccountBalance: null,
   };
 };
 
@@ -335,10 +327,6 @@ const getSourceFromTransaction = function (
     location: toLocationDraft(transaction.source.location ?? null),
     amount: transaction.amount,
     postedDate: transaction.source.account?.eventDate ?? null,
-    previousAccountBalance:
-      transaction.source.account?.previousBalance.postedBalance ?? null,
-    newAccountBalance:
-      transaction.source.account?.newBalance.postedBalance ?? null,
   };
 };
 
@@ -356,9 +344,6 @@ const getDestinationsFromTransaction = function (
       location: toLocationDraft(destination.location ?? null),
       amount: destination.amount,
       postedDate: destination.account?.eventDate ?? null,
-      previousAccountBalance:
-        destination.account?.previousBalance.postedBalance ?? null,
-      newAccountBalance: destination.account?.newBalance.postedBalance ?? null,
     }),
   );
 };
