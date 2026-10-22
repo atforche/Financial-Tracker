@@ -83,6 +83,22 @@ const getRemainingFundAmount = function (
 };
 
 /**
+ * Calculates the amount assigned to the unassigned fund, which is never negative.
+ */
+const getUnassignedFundAmount = function (
+  totalAmountToAssign: number | null,
+  fundAssignments: readonly FundAssignmentDraft[],
+): number | null {
+  const remainingAmount = getRemainingFundAmount(
+    totalAmountToAssign,
+    fundAssignments,
+  );
+  return remainingAmount === null
+    ? null
+    : getMaximumCurrencyAmount(remainingAmount, 0);
+};
+
+/**
  * Rebuilds the assignments so the unassigned fund always reflects the remaining amount.
  */
 const updateUnassignedFundAmount = function (
@@ -91,22 +107,19 @@ const updateUnassignedFundAmount = function (
   fundAssignments: readonly FundAssignmentDraft[],
 ): FundAssignmentDraft[] {
   const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
-  if (totalAmountToAssign === null || unassignedFund === null) {
+  const unassignedAmount = getUnassignedFundAmount(
+    totalAmountToAssign,
+    explicitFundAssignments,
+  );
+  if (unassignedAmount === null || unassignedFund === null) {
     return explicitFundAssignments;
   }
-
-  const assignedAmount = getCurrencyTotal(
-    explicitFundAssignments.map((fundAssignment) => fundAssignment.amount),
-  );
 
   return [
     {
       fundId: unassignedFund.id,
       fundName: unassignedFund.name,
-      amount: getMaximumCurrencyAmount(
-        getCurrencyTotal([totalAmountToAssign, -assignedAmount]),
-        0,
-      ),
+      amount: unassignedAmount,
       isExtraContribution: false,
       previousFundBalance: 0,
       newFundBalance: 0,
@@ -459,6 +472,7 @@ export {
   getContributionRemainingAmount,
   getEndingBalanceVariance,
   getRemainingFundAmount,
+  getUnassignedFundAmount,
   getSpendingGoalRemainingAmount,
   getSuggestedAmount,
   sortFundsByRemainingAmount,

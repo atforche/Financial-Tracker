@@ -8,8 +8,8 @@ import {
   getContributionRemainingAmount,
   getExplicitFundAssignments,
   getFundOptionSecondaryLabel,
-  getRemainingFundAmount,
   getSuggestedAmount,
+  getUnassignedFundAmount,
   deleteFundAssignment as removeFundAssignment,
   sortFundsByRemainingAmount,
   updateFundAssignment,
@@ -70,7 +70,7 @@ const IncomeFundAssignmentPlanner = function ({
           fundId: unassignedFund.id,
           fundName: unassignedFund.name,
           amount:
-            getRemainingFundAmount(totalAmountToAssign, fundAssignments) ?? 0,
+            getUnassignedFundAmount(totalAmountToAssign, fundAssignments) ?? 0,
         });
   const plannerFundAssignments = readOnly
     ? fundAssignments
@@ -267,34 +267,52 @@ const IncomeFundAssignmentPlanner = function ({
     if (assignment.fundId === "") {
       return null;
     }
-    const isSyntheticUnassignedAssignment =
-      assignment.fundId === unassignedFund?.id &&
-      !fundAssignments.includes(assignment);
-    const previousFundBalance = isSyntheticUnassignedAssignment
-      ? (unassignedFundWithBalance?.currentBalance.postedBalance ?? 0)
+    // Project the unassigned remainder here since it is rebuilt without projections on every edit.
+    const isEditableUnassignedAssignment =
+      !readOnly && assignment.fundId === unassignedFund?.id;
+    const baselineUnassignedAssignment = isEditableUnassignedAssignment
+      ? baselineFundAssignments.find(
+          (baseline) => baseline.fundId === assignment.fundId,
+        )
+      : undefined;
+    const previousFundBalance = isEditableUnassignedAssignment
+      ? (baselineUnassignedAssignment?.previousFundBalance ??
+        unassignedFundWithBalance?.currentBalance.postedBalance ??
+        0)
       : assignment.previousFundBalance;
-    const newFundBalance = isSyntheticUnassignedAssignment
+    const newFundBalance = isEditableUnassignedAssignment
       ? getCurrencyTotal([previousFundBalance, assignment.amount])
       : assignment.newFundBalance;
-    const previousGoalAmount = isSyntheticUnassignedAssignment
-      ? 0
+    const previousGoalAmount = isEditableUnassignedAssignment
+      ? (baselineUnassignedAssignment?.previousGoalAmount ??
+        getContributionRemainingAmount(
+          assignment.fundId,
+          fundGoals,
+          baselineFundAssignments,
+        ) ??
+        0)
       : assignment.previousGoalAmount;
-    const newGoalAmount = isSyntheticUnassignedAssignment
-      ? assignment.amount
+    const newGoalAmount = isEditableUnassignedAssignment
+      ? getMaximumCurrencyAmount(
+          getCurrencyTotal([previousGoalAmount, -assignment.amount]),
+          0,
+        )
       : assignment.newGoalAmount;
 
     return (
       <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap>
-        <BalanceChangeChip
-          label="Remaining to Assign"
-          previousValue={previousGoalAmount}
-          newValue={newGoalAmount}
-          color={
-            compareCurrencyAmounts(newGoalAmount, 0) <= 0
-              ? "success"
-              : "default"
-          }
-        />
+        {hasPlannedMonthlyContribution(assignment.fundId) ? (
+          <BalanceChangeChip
+            label="Remaining to Assign"
+            previousValue={previousGoalAmount}
+            newValue={newGoalAmount}
+            color={
+              compareCurrencyAmounts(newGoalAmount, 0) <= 0
+                ? "success"
+                : "default"
+            }
+          />
+        ) : null}
         <BalanceChangeChip
           label="Balance"
           previousValue={previousFundBalance}
@@ -313,6 +331,7 @@ const IncomeFundAssignmentPlanner = function ({
   ): JSX.Element | null {
     if (
       assignment.fundId === "" ||
+      assignment.fundId === unassignedFund?.id ||
       (!hasPlannedMonthlyContribution(assignment.fundId) &&
         !assignment.isExtraContribution)
     ) {

@@ -4,11 +4,14 @@ import type {
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
-import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
 import {
-  type FundAssignmentDraft,
-  updateUnassignedFundAmount,
-} from "@/funds/assignmentPlanner/helpers";
+  type Dispatch,
+  type JSX,
+  type RefObject,
+  type SetStateAction,
+  useLayoutEffect,
+} from "react";
+import type { Fund, FundWithBalance } from "@/funds/types";
 import {
   type IncomeDestinationDraft,
   type IncomeSourceDraft,
@@ -16,6 +19,7 @@ import {
   buildSourceAccountFilter,
   createEmptyDestination,
   getNetIncomeAmount,
+  isTrackedAccount,
   validateDestination,
   validateFundAssignments,
   validateSource,
@@ -28,11 +32,11 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import CollectionEditor from "@/framework/view/CollectionEditor";
 import type { Dayjs } from "dayjs";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
-import type { FundWithBalance } from "@/funds/types";
 import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFrame";
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
-import { isTrackedAccountType } from "@/accounts/helpers";
+import { getUnassignedFund } from "@/funds/helpers";
+import { updateUnassignedFundAmount } from "@/funds/assignmentPlanner/helpers";
 
 /**
  * Represents the state of the income transaction form.
@@ -75,6 +79,52 @@ interface IncomeTransactionFormProps<RequestPayload> {
 }
 
 /**
+ * Updates the destination amount and keeps its unassigned remainder in sync.
+ */
+const setDestinationAmount = function (
+  destination: IncomeDestinationDraft,
+  amount: number | null,
+  unassignedFund: Fund | null,
+): IncomeDestinationDraft {
+  return {
+    ...destination,
+    amount,
+    fundAssignments:
+      isTrackedAccount(destination.account) === false
+        ? []
+        : updateUnassignedFundAmount(
+            unassignedFund,
+            amount,
+            destination.fundAssignments,
+          ),
+  };
+};
+
+/**
+ * Sets the amount of a single destination to the net income amount.
+ */
+const syncSingleDestinationAmount = function (
+  destinations: IncomeDestinationDraft[],
+  netAmount: number,
+  unassignedFund: Fund | null,
+): IncomeDestinationDraft[] {
+  const [destination] = destinations;
+  if (destinations.length !== 1 || destination === undefined) {
+    return destinations;
+  }
+  const amount = compareCurrencyAmounts(netAmount, 0) > 0 ? netAmount : null;
+  if (
+    amount === destination.amount ||
+    (amount !== null &&
+      destination.amount !== null &&
+      compareCurrencyAmounts(amount, destination.amount) === 0)
+  ) {
+    return destinations;
+  }
+  return [setDestinationAmount(destination, amount, unassignedFund)];
+};
+
+/**
  * Displays the shared income transaction form layout used by create and update flows.
  */
 const IncomeTransactionForm = function <RequestPayload>({
@@ -101,8 +151,7 @@ const IncomeTransactionForm = function <RequestPayload>({
   onReset,
   onSubmit,
 }: IncomeTransactionFormProps<RequestPayload>): JSX.Element {
-  const unassignedFund =
-    funds.find((fund) => fund.name === "Unassigned") ?? null;
+  const unassignedFund = getUnassignedFund(funds);
   const currentFundGoals = fundGoals.filter(
     (fundGoal) => fundGoal.accountingPeriod?.id === accountingPeriod?.id,
   );
@@ -124,31 +173,6 @@ const IncomeTransactionForm = function <RequestPayload>({
     );
   };
 
-  const syncDestinationFundAssignments = function (
-    destinationAmount: number | null,
-    fundAssignments: FundAssignmentDraft[],
-  ): FundAssignmentDraft[] {
-    return updateUnassignedFundAmount(
-      unassignedFund,
-      destinationAmount,
-      fundAssignments,
-    );
-  };
-
-  const setDestinationAmount = function (
-    destination: IncomeDestinationDraft,
-    amount: number | null,
-  ): IncomeDestinationDraft {
-    return {
-      ...destination,
-      amount,
-      fundAssignments: syncDestinationFundAssignments(
-        amount,
-        destination.fundAssignments,
-      ),
-    };
-  };
-
   const setSourceAccount = function (
     account: AccountBalanceEventDraft | null,
   ): void {
@@ -159,30 +183,16 @@ const IncomeTransactionForm = function <RequestPayload>({
     }));
   };
 
-  const syncSingleDestinationAmount = function (
-    currentDestinations: IncomeDestinationDraft[],
-    netAmount: number,
-  ): IncomeDestinationDraft[] {
-    if (currentDestinations.length !== 1) {
-      return currentDestinations;
-    }
-    return currentDestinations.map((currentDestination) =>
-      setDestinationAmount(
-        currentDestination,
-        compareCurrencyAmounts(netAmount, 0) > 0 ? netAmount : null,
-      ),
-    );
-  };
-
-  const setSourceIncome = function (nextSource: IncomeSourceDraft): void {
-    setSource(nextSource);
+  // Sync after render so the single destination amount always uses the latest source.
+  useLayoutEffect(() => {
     setDestinations((currentDestinations) =>
       syncSingleDestinationAmount(
         currentDestinations,
-        getNetIncomeAmount(nextSource),
+        sourceNetAmount,
+        unassignedFund,
       ),
     );
-  };
+  }, [sourceNetAmount, destinations.length, unassignedFund, setDestinations]);
 
   const sourceIsValid = validateSource(source);
 
@@ -213,11 +223,14 @@ const IncomeTransactionForm = function <RequestPayload>({
           }}
           incomeLines={source.incomeLines}
           setIncomeLines={(incomeLines): void => {
-            setSourceIncome({ ...source, incomeLines });
+            setSource((currentSource) => ({ ...currentSource, incomeLines }));
           }}
           incomeDeductions={source.incomeDeductions}
           setIncomeDeductions={(incomeDeductions): void => {
-            setSourceIncome({ ...source, incomeDeductions });
+            setSource((currentSource) => ({
+              ...currentSource,
+              incomeDeductions,
+            }));
           }}
           accountFilter={buildSourceAccountFilter(accounts, destinations)}
         />
@@ -226,11 +239,7 @@ const IncomeTransactionForm = function <RequestPayload>({
         <CollectionEditor
           items={destinations}
           label="Destinations"
-          setItems={(nextDestinations): void => {
-            setDestinations(
-              syncSingleDestinationAmount(nextDestinations, sourceNetAmount),
-            );
-          }}
+          setItems={setDestinations}
           createItem={createEmptyDestination}
           addLabel="Add another destination"
           canDeleteItem={(_, __, items) => items.length > 1}
@@ -250,9 +259,7 @@ const IncomeTransactionForm = function <RequestPayload>({
                   ...currentDestination,
                   account,
                   fundAssignments:
-                    account?.accountType !== null &&
-                    account?.accountType !== undefined &&
-                    isTrackedAccountType(account.accountType)
+                    isTrackedAccount(account) === true
                       ? currentDestination.fundAssignments
                       : [],
                 }));
@@ -263,7 +270,11 @@ const IncomeTransactionForm = function <RequestPayload>({
                   ? null
                   : (nextAmount): void => {
                       updateDestination(index, (currentDestination) =>
-                        setDestinationAmount(currentDestination, nextAmount),
+                        setDestinationAmount(
+                          currentDestination,
+                          nextAmount,
+                          unassignedFund,
+                        ),
                       );
                     }
               }

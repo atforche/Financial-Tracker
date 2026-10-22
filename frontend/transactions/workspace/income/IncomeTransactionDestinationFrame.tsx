@@ -19,7 +19,7 @@ import type { JSX } from "react";
 import type { Transaction } from "@/transactions/types";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 import { formatCurrency } from "@/framework/currencyHelpers";
-import { isTrackedAccountType } from "@/accounts/helpers";
+import { isTrackedAccount } from "@/transactions/workspace/income/helpers";
 
 const emptyFundAmounts: FundAssignmentDraft[] = [];
 
@@ -72,10 +72,7 @@ const IncomeTransactionDestinationFrame = function ({
   readOnly = false,
   autoFocus = false,
 }: IncomeTransactionDestinationFrameProps): JSX.Element {
-  const supportsFundAssignments =
-    account?.accountType !== null &&
-    account?.accountType !== undefined &&
-    isTrackedAccountType(account.accountType);
+  const supportsFundAssignments = isTrackedAccount(account) === true;
   const assignedAmount = getAssignedFundAmount(fundAssignments);
   const remainingAmount = getRemainingFundAmount(amount, fundAssignments);
 
