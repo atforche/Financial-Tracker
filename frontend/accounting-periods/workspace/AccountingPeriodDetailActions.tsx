@@ -5,9 +5,7 @@ import { type JSX, useState } from "react";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import CloseAccountingPeriodForm from "@/accounting-periods/workspace/CloseAccountingPeriodForm";
 import DeleteAccountingPeriodForm from "@/accounting-periods/workspace/DeleteAccountingPeriodForm";
-import Link from "next/link";
 import ReopenAccountingPeriodForm from "@/accounting-periods/workspace/ReopenAccountingPeriodForm";
-import type { Route } from "next";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
@@ -15,17 +13,15 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
  */
 interface AccountingPeriodDetailActionsProps {
   readonly accountingPeriod: AccountingPeriodWithBalance;
-  readonly planHref: Route;
   readonly redirectUrl: string;
   readonly deleteRedirectUrl: string;
 }
 
 /**
- * Provides period-specific lifecycle and income setup actions.
+ * Provides period-specific lifecycle actions.
  */
 const AccountingPeriodDetailActions = function ({
   accountingPeriod,
-  planHref,
   redirectUrl,
   deleteRedirectUrl,
 }: AccountingPeriodDetailActionsProps): JSX.Element {
@@ -37,9 +33,6 @@ const AccountingPeriodDetailActions = function ({
   return (
     <>
       <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-        <Button component={Link} href={planHref} variant="outlined">
-          {accountingPeriod.isOpen ? "Edit Plan" : "View Plan"}
-        </Button>
         {canWrite ? (
           <>
             <Button
