@@ -70,6 +70,7 @@ services:
       DEVELOPMENT_AUTH_READ_ONLY_SUBJECTS: local-read-only
       PUBLIC_ORIGIN: "http://localhost:${DEBUG_FRONTEND_PORT:?DEBUG_FRONTEND_PORT must be configured}"
       AUTH_URL: "http://localhost:${DEBUG_FRONTEND_PORT:?DEBUG_FRONTEND_PORT must be configured}"
+      TZ: "${TZ:-America/New_York}"
     depends_on:
       backend:
         condition: service_healthy

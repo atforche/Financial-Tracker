@@ -89,6 +89,11 @@ secret = true
 required_in = ["debug", "production"]
 defaults = { debug = "", production = "" }
 
+[variables.TZ]
+description = "IANA timezone the frontend server uses to determine the current date. Compose defaults it to America/New_York."
+render_in = ["debug"]
+defaults = { debug = "America/New_York" }
+
 [variables.AUTH_URL]
 description = "Auth.js callback origin."
 required_in = ["debug"]
