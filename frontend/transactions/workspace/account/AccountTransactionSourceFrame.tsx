@@ -4,6 +4,7 @@ import type {
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
+import { Box, Stack } from "@mui/material";
 import type { Location, LocationDraft } from "@/locations/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
@@ -52,26 +53,35 @@ const AccountTransactionSourceFrame = function ({
 }: AccountTransactionSourceFrameProps): JSX.Element {
   return (
     <TransactionSourceOrDestinationFrame title="Source" color={color}>
-      <TransactionAccountOrLocationFrame
-        accounts={accounts}
-        transaction={transaction}
-        account={account}
-        setAccount={readOnly ? null : setAccount}
-        accountCaption="Source Account"
-        locationCaption="Source Location"
-        entryCaption="Source"
-        locations={locations}
-        location={location}
-        setLocation={readOnly ? null : setLocation}
-        accountFilter={accountFilter}
-        balanceEvent={accountBalanceEvent}
-        readOnly={readOnly}
-      />
-      <CurrencyEntryField
-        label="Amount"
-        value={amount}
-        setValue={readOnly ? null : setAmount}
-      />
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        alignItems={{ xs: "stretch", sm: "flex-start" }}
+      >
+        <Box sx={{ flex: { sm: "1 1 auto" }, minWidth: 0 }}>
+          <TransactionAccountOrLocationFrame
+            accounts={accounts}
+            transaction={transaction}
+            account={account}
+            setAccount={readOnly ? null : setAccount}
+            accountCaption="Source Account"
+            locationCaption="Source Location"
+            entryCaption="Source"
+            locations={locations}
+            location={location}
+            setLocation={readOnly ? null : setLocation}
+            accountFilter={accountFilter}
+            balanceEvent={accountBalanceEvent}
+            readOnly={readOnly}
+          />
+        </Box>
+        <CurrencyEntryField
+          label="Amount"
+          value={amount}
+          setValue={readOnly ? null : setAmount}
+          sx={{ width: { xs: "100%", sm: 220 } }}
+        />
+      </Stack>
     </TransactionSourceOrDestinationFrame>
   );
 };
