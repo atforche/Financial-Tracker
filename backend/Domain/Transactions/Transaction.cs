@@ -57,6 +57,16 @@ public abstract class Transaction : Entity<TransactionId>
     public abstract DateOnly? GetPostedDateForAccount(AccountId accountId);
 
     /// <summary>
+    /// Sets the posted date for the provided account ID
+    /// </summary>
+    internal abstract void SetPostedDate(AccountId accountId, DateOnly? postedDate);
+
+    /// <summary>
+    /// Clears the posted dates for all affected accounts
+    /// </summary>
+    internal abstract void ClearPostedDates();
+
+    /// <summary>
     /// Applies this Transaction to the provided existing Account Balance
     /// </summary>
     public AccountBalance ApplyToAccountBalance(

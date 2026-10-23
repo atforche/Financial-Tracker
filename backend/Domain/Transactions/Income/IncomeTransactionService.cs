@@ -75,51 +75,6 @@ public class IncomeTransactionService(
     }
 
     /// <summary>
-    /// Attempts to post an existing Income Transaction to a specific Account
-    /// </summary>
-    public bool TryPost(
-        IncomeTransaction transaction,
-        PostTransactionRequest request,
-        out IEnumerable<ValidationError> exceptions)
-    {
-        if (!ValidatePosting(transaction, request, out exceptions))
-        {
-            return false;
-        }
-        transaction.SetPostedDate(request.AccountId, request.PostedDate);
-        PostTransaction(transaction, request.AccountId);
-        return true;
-    }
-
-    /// <summary>
-    /// Attempts to unpost an existing Income Transaction
-    /// </summary>
-    public bool TryUnpost(IncomeTransaction transaction, out IEnumerable<ValidationError> exceptions)
-    {
-        if (!ValidateUnposting(transaction, out exceptions))
-        {
-            return false;
-        }
-        UnpostTransaction(transaction);
-        transaction.ClearPostedDates();
-        SynchronizePendingAccountBalanceEffects(transaction);
-        return true;
-    }
-
-    /// <summary>
-    /// Attempts to delete an existing Income Transaction
-    /// </summary>
-    public bool TryDelete(IncomeTransaction transaction, out IEnumerable<ValidationError> exceptions)
-    {
-        if (!ValidateDelete(transaction, out exceptions))
-        {
-            return false;
-        }
-        DeleteTransaction(transaction);
-        return true;
-    }
-
-    /// <summary>
     /// Validates a request to create a new Income Transaction
     /// </summary>
     protected bool ValidateCreate(CreateIncomeTransactionRequest request, out IEnumerable<ValidationError> exceptions)

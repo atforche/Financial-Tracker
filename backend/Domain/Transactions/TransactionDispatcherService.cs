@@ -98,43 +98,43 @@ public sealed class TransactionDispatcherService(
     /// Attempts to post the provided transaction to the provided account.
     /// </summary>
     public bool TryPost(Transaction transaction, PostTransactionRequest request, out IEnumerable<ValidationError> exceptions) =>
-        transaction switch
-        {
-            SpendingTransaction spendingTransaction => spendingTransactionService.TryPost(spendingTransaction, request, out exceptions),
-            IncomeTransaction incomeTransaction => incomeTransactionService.TryPost(incomeTransaction, request, out exceptions),
-            AccountTransaction accountTransaction => accountTransactionService.TryPost(accountTransaction, request, out exceptions),
-            RefundTransaction refundTransaction => refundTransactionService.TryPost(refundTransaction, request, out exceptions),
-            FundTransaction => Fail(out exceptions, "Fund transactions cannot be posted to an account."),
-            _ => Fail(out exceptions, $"Unrecognized transaction type: {transaction.GetType().Name}")
-        };
+        transaction is FundTransaction
+            ? Fail(out exceptions, "Fund transactions cannot be posted to an account.")
+            : GetService(transaction)?.TryPost(transaction, request, out exceptions) ?? FailUnrecognized(transaction, out exceptions);
 
     /// <summary>
     /// Attempts to unpost the provided transaction.
     /// </summary>
     public bool TryUnpost(Transaction transaction, out IEnumerable<ValidationError> exceptions) =>
-        transaction switch
-        {
-            SpendingTransaction spendingTransaction => spendingTransactionService.TryUnpost(spendingTransaction, out exceptions),
-            IncomeTransaction incomeTransaction => incomeTransactionService.TryUnpost(incomeTransaction, out exceptions),
-            AccountTransaction accountTransaction => accountTransactionService.TryUnpost(accountTransaction, out exceptions),
-            RefundTransaction refundTransaction => refundTransactionService.TryUnpost(refundTransaction, out exceptions),
-            FundTransaction => Fail(out exceptions, "Fund transactions cannot be unposted."),
-            _ => Fail(out exceptions, $"Unrecognized transaction type: {transaction.GetType().Name}")
-        };
+        transaction is FundTransaction
+            ? Fail(out exceptions, "Fund transactions cannot be unposted.")
+            : GetService(transaction)?.TryUnpost(transaction, out exceptions) ?? FailUnrecognized(transaction, out exceptions);
 
     /// <summary>
     /// Attempts to delete the provided transaction.
     /// </summary>
     public bool TryDelete(Transaction transaction, out IEnumerable<ValidationError> exceptions) =>
+        GetService(transaction)?.TryDelete(transaction, out exceptions) ?? FailUnrecognized(transaction, out exceptions);
+
+    /// <summary>
+    /// Gets the concrete transaction service for the provided transaction.
+    /// </summary>
+    private TransactionService? GetService(Transaction transaction) =>
         transaction switch
         {
-            SpendingTransaction spendingTransaction => spendingTransactionService.TryDelete(spendingTransaction, out exceptions),
-            IncomeTransaction incomeTransaction => incomeTransactionService.TryDelete(incomeTransaction, out exceptions),
-            AccountTransaction accountTransaction => accountTransactionService.TryDelete(accountTransaction, out exceptions),
-            FundTransaction fundTransaction => fundTransactionService.TryDelete(fundTransaction, out exceptions),
-            RefundTransaction refundTransaction => refundTransactionService.TryDelete(refundTransaction, out exceptions),
-            _ => Fail(out exceptions, $"Unrecognized transaction type: {transaction.GetType().Name}")
+            SpendingTransaction => spendingTransactionService,
+            IncomeTransaction => incomeTransactionService,
+            AccountTransaction => accountTransactionService,
+            FundTransaction => fundTransactionService,
+            RefundTransaction => refundTransactionService,
+            _ => null
         };
+
+    /// <summary>
+    /// Helper method to fail for an unrecognized transaction type.
+    /// </summary>
+    private static bool FailUnrecognized(Transaction transaction, out IEnumerable<ValidationError> exceptions) =>
+        Fail(out exceptions, $"Unrecognized transaction type: {transaction.GetType().Name}");
 
     /// <summary>
     /// Helper method to fail with a single exception message.

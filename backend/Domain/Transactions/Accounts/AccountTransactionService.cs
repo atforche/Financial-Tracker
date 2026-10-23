@@ -73,51 +73,6 @@ public class AccountTransactionService(
     }
 
     /// <summary>
-    /// Attempts to post an existing Account Transaction to a specific Account
-    /// </summary>
-    public bool TryPost(
-        AccountTransaction transaction,
-        PostTransactionRequest request,
-        out IEnumerable<ValidationError> exceptions)
-    {
-        if (!ValidatePosting(transaction, request, out exceptions))
-        {
-            return false;
-        }
-        transaction.SetPostedDate(request.AccountId, request.PostedDate);
-        PostTransaction(transaction, request.AccountId);
-        return true;
-    }
-
-    /// <summary>
-    /// Attempts to unpost an existing Account Transaction
-    /// </summary>
-    public bool TryUnpost(AccountTransaction transaction, out IEnumerable<ValidationError> exceptions)
-    {
-        if (!ValidateUnposting(transaction, out exceptions))
-        {
-            return false;
-        }
-        UnpostTransaction(transaction);
-        transaction.ClearPostedDates();
-        SynchronizePendingAccountBalanceEffects(transaction);
-        return true;
-    }
-
-    /// <summary>
-    /// Attempts to delete an existing Account Transaction
-    /// </summary>
-    public bool TryDelete(AccountTransaction transaction, out IEnumerable<ValidationError> exceptions)
-    {
-        if (!ValidateDelete(transaction, out exceptions))
-        {
-            return false;
-        }
-        DeleteTransaction(transaction);
-        return true;
-    }
-
-    /// <summary>
     /// Validates a request to create a new Account Transaction
     /// </summary>
     private bool ValidateCreate(CreateAccountTransactionRequest request, out IEnumerable<ValidationError> exceptions)

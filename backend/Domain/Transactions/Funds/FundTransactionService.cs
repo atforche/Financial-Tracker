@@ -73,19 +73,6 @@ public class FundTransactionService(
     }
 
     /// <summary>
-    /// Attempts to delete an existing Fund Transaction
-    /// </summary>
-    public bool TryDelete(FundTransaction transaction, out IEnumerable<ValidationError> exceptions)
-    {
-        if (!ValidateDelete(transaction, out exceptions))
-        {
-            return false;
-        }
-        DeleteTransaction(transaction);
-        return true;
-    }
-
-    /// <summary>
     /// Validates a request to create a new Fund Transaction
     /// </summary>
     private bool ValidateCreate(CreateFundTransactionRequest request, out IEnumerable<ValidationError> exceptions)
