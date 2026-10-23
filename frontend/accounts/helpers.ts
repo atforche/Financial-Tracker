@@ -1,4 +1,4 @@
-import { AccountType } from "@/accounts/types";
+import { type AccountBalanceEventDraft, AccountType } from "@/accounts/types";
 import { compareCurrencyAmounts } from "@/framework/currencyHelpers";
 
 /**
@@ -17,6 +17,18 @@ const isTrackedAccountType = function (accountType: AccountType): boolean {
     default:
       return false;
   }
+};
+
+/**
+ * Determines whether the account is tracked, or null when its account type is not known yet.
+ */
+const isTrackedAccount = function (
+  account: AccountBalanceEventDraft | null,
+): boolean | null {
+  const accountType = account?.accountType;
+  return accountType === null || accountType === undefined
+    ? null
+    : isTrackedAccountType(accountType);
 };
 
 /**
@@ -64,6 +76,7 @@ const formatAccountType = function (accountType: AccountType): string {
 };
 
 export {
+  isTrackedAccount,
   isTrackedAccountType,
   isDebtAccountType,
   isPositiveChangeInBalance,

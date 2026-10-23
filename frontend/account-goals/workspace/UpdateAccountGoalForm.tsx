@@ -10,6 +10,7 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
 } from "react";
@@ -48,12 +49,14 @@ const UpdateAccountGoalForm = function ({
     setMaximumEndingBalance(accountGoal.maximumEndingBalance ?? null);
     focusFirstEntryControl(formRef.current);
   };
+  const handleSuccess = useEffectEvent((): void => {
+    setOpen(false);
+    reset();
+  });
   useEffect(() => {
     if (state.success === true) {
-      setOpen(false);
-      reset();
+      handleSuccess();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.success]);
   const request: UpdateAccountGoalRequest = {
     minimumEndingBalance,

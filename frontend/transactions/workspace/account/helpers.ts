@@ -18,6 +18,7 @@ import {
   compareCurrencyAmounts,
   getCurrencyTotal,
 } from "@/framework/currencyHelpers";
+import { isTrackedAccount, isTrackedAccountType } from "@/accounts/helpers";
 import {
   validateDetails,
   validateSummary,
@@ -25,7 +26,6 @@ import {
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/accountBalanceEventDraft";
-import { isTrackedAccountType } from "@/accounts/helpers";
 
 /**
  * Interface representing a potentially unfinished account transaction source.
@@ -94,11 +94,7 @@ const validateDestination = function (
   const normalizedLocation = destination.location?.name.trim() ?? "";
   const hasAccount = destination.account !== null;
   const hasLocation = normalizedLocation !== "";
-  const destinationIsTracked =
-    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-    destination.account !== null &&
-    destination.account.accountType !== null &&
-    isTrackedAccountType(destination.account.accountType);
+  const destinationIsTracked = isTrackedAccount(destination.account) === true;
 
   if (
     destination.amount === null ||
@@ -112,12 +108,7 @@ const validateDestination = function (
   if (destination.account?.accountId === sourceAccount?.accountId) {
     return false;
   }
-  if (
-    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-    sourceAccount !== null &&
-    sourceAccount.accountType !== null &&
-    isTrackedAccountType(sourceAccount.accountType)
-  ) {
+  if (isTrackedAccount(sourceAccount) === true) {
     return hasAccount && destinationIsTracked;
   }
   if (sourceAccount === null) {
@@ -302,12 +293,7 @@ const buildDestinationAccountFilter = function (
     if (account.id === sourceAccount?.accountId) {
       return false;
     }
-    if (
-      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-      sourceAccount !== null &&
-      sourceAccount.accountType !== null &&
-      isTrackedAccountType(sourceAccount.accountType)
-    ) {
+    if (isTrackedAccount(sourceAccount) === true) {
       return isTrackedAccountType(selectedAccount.type);
     }
     return !isTrackedAccountType(selectedAccount.type);

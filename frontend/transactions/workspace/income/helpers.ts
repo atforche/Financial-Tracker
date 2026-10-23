@@ -183,18 +183,6 @@ const validateSource = function (source: IncomeSourceDraft): boolean {
 };
 
 /**
- * Determines whether the account is tracked, or null when its account type is not known yet.
- */
-const isTrackedAccount = function (
-  account: AccountBalanceEventDraft | null,
-): boolean | null {
-  const accountType = account?.accountType;
-  return accountType === null || accountType === undefined
-    ? null
-    : isTrackedAccountType(accountType);
-};
-
-/**
  * Validates the fund assignments for an income destination.
  */
 const validateFundAssignments = function (
@@ -476,7 +464,6 @@ export {
   getFundAssignmentFromTransactionFund,
   getNetIncomeAmount,
   getSourceFromTransaction,
-  isTrackedAccount,
   validateFundAssignments,
   validateDestination,
   validateSource,

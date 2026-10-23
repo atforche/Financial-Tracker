@@ -1,4 +1,3 @@
-/* eslint-disable sort-imports, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-condition */
 "use client";
 
 import {
@@ -17,11 +16,31 @@ import {
   xAxisTick,
   yAxisTick,
 } from "@/framework/charts/chartStyles";
+import {
+  findTooltipPayload,
+  isObject,
+} from "@/framework/charts/tooltipHelpers";
+import type { AccountGoalTrendPoint } from "@/account-goals/trends/accountGoalProgressTrends";
 import ChartFrame from "@/framework/charts/ChartFrame";
 import ChartTooltip from "@/framework/charts/ChartTooltip";
-import { isObject } from "@/framework/charts/tooltipHelpers";
-import type { AccountGoalTrendPoint } from "@/account-goals/trends/accountGoalProgressTrends";
 import type { JSX } from "react";
+
+/**
+ * Retrieves an Account Goal status point from a chart tooltip payload.
+ */
+const getTooltipPoint = function (
+  tooltipProps: TooltipContentProps,
+): AccountGoalTrendPoint | null {
+  return findTooltipPayload(
+    tooltipProps,
+    (value): value is AccountGoalTrendPoint =>
+      isObject(value) &&
+      typeof value["accountingPeriodName"] === "string" &&
+      typeof value["belowMinimumCount"] === "number" &&
+      typeof value["withinRangeCount"] === "number" &&
+      typeof value["aboveMaximumCount"] === "number",
+  );
+};
 
 /**
  * Renders Account Goal balance-status counts by Accounting Period.
@@ -64,20 +83,7 @@ const AccountGoalStatusTrendChart = function ({
           />
           <Tooltip
             content={(props: TooltipContentProps) => {
-              const payload = props.payload?.[0]?.payload;
-              const point =
-                isObject(payload) &&
-                typeof payload["accountingPeriodName"] === "string" &&
-                typeof payload["belowMinimumCount"] === "number" &&
-                typeof payload["withinRangeCount"] === "number" &&
-                typeof payload["aboveMaximumCount"] === "number"
-                  ? {
-                      accountingPeriodName: payload["accountingPeriodName"],
-                      belowMinimumCount: payload["belowMinimumCount"],
-                      withinRangeCount: payload["withinRangeCount"],
-                      aboveMaximumCount: payload["aboveMaximumCount"],
-                    }
-                  : null;
+              const point = getTooltipPoint(props);
               return !props.active || point === null ? null : (
                 <ChartTooltip
                   label={point.accountingPeriodName}
