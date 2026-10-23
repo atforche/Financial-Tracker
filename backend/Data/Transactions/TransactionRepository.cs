@@ -42,20 +42,6 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
         databaseContext.Transactions.Where(transaction => transaction.AccountingPeriodId == accountingPeriodId).AsSplitQuery().ToList();
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> GetAllIncomeTransactionsByDateRange(DateOnly startDate, DateOnly endDate) =>
-        databaseContext.Transactions.OfType<IncomeTransaction>()
-            .Where(t => t.Destinations.Any(d => d.PostedDate != null && d.PostedDate >= startDate && d.PostedDate <= endDate))
-            .AsSplitQuery()
-            .ToList();
-
-    /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> GetAllSpendingTransactionsByDateRange(DateOnly startDate, DateOnly endDate) =>
-        databaseContext.Transactions.OfType<SpendingTransaction>()
-            .Where(t => t.Source.PostedDate != null && t.Source.PostedDate >= startDate && t.Source.PostedDate <= endDate)
-            .AsSplitQuery()
-            .ToList();
-
-    /// <inheritdoc/>
     public bool DoAnyTransactionsExistForFund(FundId fundId) =>
         databaseContext.Transactions.OfType<SpendingTransaction>()
             .Any(t => t.Destinations.Any(d => d.FundAssignments.Any(f => f.FundId == fundId))) ||
