@@ -26,53 +26,22 @@ public sealed class TransactionDispatcherService(
         [NotNullWhen(true)] out Transaction? transaction,
         out IEnumerable<ValidationError> exceptions)
     {
-        switch (request)
+        bool succeeded;
+        (succeeded, transaction) = request switch
         {
-            case CreateSpendingTransactionRequest spendingRequest:
-                if (spendingTransactionService.TryCreate(spendingRequest, out SpendingTransaction? spendingTransaction, out exceptions))
-                {
-                    transaction = spendingTransaction;
-                    return true;
-                }
-                transaction = null;
-                return false;
-            case CreateIncomeTransactionRequest incomeRequest:
-                if (incomeTransactionService.TryCreate(incomeRequest, out IncomeTransaction? incomeTransaction, out exceptions))
-                {
-                    transaction = incomeTransaction;
-                    return true;
-                }
-                transaction = null;
-                return false;
-            case CreateAccountTransactionRequest accountRequest:
-                if (accountTransactionService.TryCreate(accountRequest, out AccountTransaction? accountTransaction, out exceptions))
-                {
-                    transaction = accountTransaction;
-                    return true;
-                }
-                transaction = null;
-                return false;
-            case CreateFundTransactionRequest fundRequest:
-                if (fundTransactionService.TryCreate(fundRequest, out FundTransaction? fundTransaction, out exceptions))
-                {
-                    transaction = fundTransaction;
-                    return true;
-                }
-                transaction = null;
-                return false;
-            case CreateRefundTransactionRequest refundRequest:
-                if (refundTransactionService.TryCreate(refundRequest, out RefundTransaction? refundTransaction, out exceptions))
-                {
-                    transaction = refundTransaction;
-                    return true;
-                }
-                transaction = null;
-                return false;
-            default:
-                exceptions = [new ValidationError(ValidationErrorPath.Empty, $"Unrecognized create request type: {request.GetType().Name}")];
-                transaction = null;
-                return false;
-        }
+            CreateSpendingTransactionRequest spendingRequest =>
+                (spendingTransactionService.TryCreate(spendingRequest, out SpendingTransaction? spendingTransaction, out exceptions), (Transaction?)spendingTransaction),
+            CreateIncomeTransactionRequest incomeRequest =>
+                (incomeTransactionService.TryCreate(incomeRequest, out IncomeTransaction? incomeTransaction, out exceptions), incomeTransaction),
+            CreateAccountTransactionRequest accountRequest =>
+                (accountTransactionService.TryCreate(accountRequest, out AccountTransaction? accountTransaction, out exceptions), accountTransaction),
+            CreateFundTransactionRequest fundRequest =>
+                (fundTransactionService.TryCreate(fundRequest, out FundTransaction? fundTransaction, out exceptions), fundTransaction),
+            CreateRefundTransactionRequest refundRequest =>
+                (refundTransactionService.TryCreate(refundRequest, out RefundTransaction? refundTransaction, out exceptions), refundTransaction),
+            _ => (Fail(out exceptions, $"Unrecognized create request type: {request.GetType().Name}"), null)
+        };
+        return succeeded;
     }
 
     /// <summary>

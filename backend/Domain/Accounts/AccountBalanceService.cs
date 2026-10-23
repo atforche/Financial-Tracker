@@ -19,28 +19,6 @@ public class AccountBalanceService(
     }
 
     /// <summary>
-    /// Gets the Account Balance prior to the provided Transaction
-    /// </summary>
-    public AccountBalance GetPreviousBalanceForTransaction(Transaction transaction, AccountId account)
-    {
-        var balanceHistories = accountBalanceHistoryRepository.GetAllByTransactionIdAndAccountId(transaction.Id, account).ToList();
-        DateOnly? postedDate = transaction.GetPostedDateForAccount(account);
-        if (postedDate != null)
-        {
-            AccountBalanceHistory postedHistory = balanceHistories.First(bh => bh.Date == postedDate);
-            return GetExistingAccountBalanceAsOf(
-                accountRepository.GetById(account),
-                postedHistory.Date,
-                postedHistory.Sequence);
-        }
-        AccountBalanceHistory earliestHistory = balanceHistories.OrderBy(bh => bh.Date).ThenBy(bh => bh.Sequence).First();
-        return GetExistingAccountBalanceAsOf(
-            accountRepository.GetById(account),
-            earliestHistory.Date,
-            earliestHistory.Sequence);
-    }
-
-    /// <summary>
     /// Gets the Account Balance after the provided Transaction
     /// </summary>
     public AccountBalance GetNewBalanceForTransaction(Transaction transaction, AccountId account)
