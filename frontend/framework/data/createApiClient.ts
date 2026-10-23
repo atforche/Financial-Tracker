@@ -1,11 +1,45 @@
 import "server-only";
 
-import createClient, { type Client } from "openapi-fetch";
+import createClient, { type Client, type Middleware } from "openapi-fetch";
 import getGoogleIdToken from "@/framework/data/getGoogleIdToken";
+import { headers } from "next/headers";
 import type { paths } from "@/framework/data/api";
+import { redirect } from "next/navigation";
 
 /**
- * Creates an API client for the current authenticated user.
+ * Sends the user to end their session and sign in again, returning them to the page they were on
+ * afterwards. Server actions and server components both turn this into a browser navigation. The
+ * referring page is the best available record of where the user was; any external callback is discarded.
+ */
+const redirectToLogin = async function (): Promise<never> {
+  const referer = (await headers()).get("referer");
+  let callbackUrl = "/";
+  if (referer !== null) {
+    try {
+      const url = new URL(referer);
+      callbackUrl = `${url.pathname}${url.search}`;
+    } catch {
+      // An unparseable referer falls back to the home page.
+    }
+  }
+  redirect(`/session-expired?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+};
+
+/**
+ * Sends the user to log in again when the backend rejects their token.
+ */
+const redirectOnUnauthorized: Middleware = {
+  async onResponse({ response }) {
+    if (response.status === 401) {
+      await redirectToLogin();
+    }
+    return undefined;
+  },
+};
+
+/**
+ * Creates an API client for the current authenticated user. Redirects to the login page when the session
+ * no longer has a usable token.
  */
 const createApiClient = async function (): Promise<Client<paths>> {
   const apiUrl = process.env["API_URL"];
@@ -15,15 +49,15 @@ const createApiClient = async function (): Promise<Client<paths>> {
 
   const idToken = await getGoogleIdToken();
   if (idToken === null || idToken === "") {
-    throw new Error(
-      "An authenticated session is required before using the API client.",
-    );
+    return redirectToLogin();
   }
 
-  return createClient<paths>({
+  const client = createClient<paths>({
     baseUrl: apiUrl,
     headers: { Authorization: `Bearer ${idToken}` },
   });
+  client.use(redirectOnUnauthorized);
+  return client;
 };
 
 export default createApiClient;
