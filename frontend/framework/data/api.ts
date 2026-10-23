@@ -841,8 +841,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Previews the Transaction that would be created with the provided properties, including its
-         *     balance events, without saving it
+         * Previews the Transaction that would be created with the provided properties, without saving it.
+         *     Its balance events are reported as if every Account were posted on the Transaction's date.
          */
         post: {
             parameters: {
@@ -899,8 +899,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Previews the provided Transaction as it would be after the update, including its balance events,
-         *     without saving it
+         * Previews the provided Transaction as it would be after the update, without saving it. Its balance
+         *     events are reported as if every Account were posted on the Transaction's date.
          */
         post: {
             parameters: {
