@@ -88,10 +88,10 @@ internal sealed class IncomeTransactionBuilder(TestApiClient apiClient)
             Date = _date,
             Description = GetLocation(),
             Amount = _amount,
-            Source = new UpdateIncomeTransactionSourceModel
+            Source = new CreateIncomeTransactionSourceModel
             {
                 Location = GetLocation() is { } location ? new Models.Locations.LocationInputModel { NewLocationName = location } : null,
-                IncomeLines = [new UpdateIncomeLineModel
+                IncomeLines = [new CreateIncomeLineModel
                 {
                     Description = GetLocation(),
                     Amount = _amount
@@ -137,10 +137,10 @@ internal sealed class IncomeTransactionBuilder(TestApiClient apiClient)
         };
     }
 
-    private UpdateIncomeTransactionDestinationModel CreateUpdateDestination()
+    private CreateIncomeTransactionDestinationModel CreateUpdateDestination()
     {
         (AccountHandle account, FundHandle fund) = GetDestination();
-        return new UpdateIncomeTransactionDestinationModel
+        return new CreateIncomeTransactionDestinationModel
         {
             AccountId = account.Id,
             Amount = _amount,

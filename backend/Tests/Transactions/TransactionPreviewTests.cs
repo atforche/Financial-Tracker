@@ -306,8 +306,8 @@ public sealed class TransactionPreviewTests
             Date = date,
             Description = "Transfer",
             Amount = amount,
-            Source = new UpdateFundTransactionSourceModel { FundId = sourceFundId },
-            Destinations = [new UpdateFundTransactionDestinationModel { FundId = destinationFundId, Amount = amount }]
+            Source = new CreateFundTransactionSourceModel { FundId = sourceFundId },
+            Destinations = [new CreateFundTransactionDestinationModel { FundId = destinationFundId, Amount = amount }]
         };
 
     /// <summary>
@@ -345,8 +345,8 @@ public sealed class TransactionPreviewTests
             Date = date,
             Description = "Store",
             Amount = amount,
-            Source = new UpdateSpendingTransactionSourceModel { AccountId = source.Id },
-            Destinations = [new UpdateSpendingTransactionDestinationModel
+            Source = new CreateSpendingTransactionSourceModel { AccountId = source.Id },
+            Destinations = [new CreateSpendingTransactionDestinationModel
             {
                 Location = new Models.Locations.LocationInputModel { NewLocationName = "Store" },
                 Amount = amount,

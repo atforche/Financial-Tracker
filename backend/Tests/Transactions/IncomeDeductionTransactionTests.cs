@@ -56,16 +56,16 @@ public sealed class IncomeDeductionTransactionTests
             Date = new DateOnly(2026, 7, 16),
             Description = "Updated paycheck",
             Amount = 150m,
-            Source = new UpdateIncomeTransactionSourceModel
+            Source = new CreateIncomeTransactionSourceModel
             {
                 Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" },
-                IncomeLines = [new UpdateIncomeLineModel { Description = "Salary", Amount = 200m }],
+                IncomeLines = [new CreateIncomeLineModel { Description = "Salary", Amount = 200m }],
                 IncomeDeductions = [
-                    new UpdateIncomeDeductionModel { Description = "Tax", Amount = 40m },
-                    new UpdateIncomeDeductionModel { Description = "Benefits", Amount = 10m }
+                    new CreateIncomeDeductionModel { Description = "Tax", Amount = 40m },
+                    new CreateIncomeDeductionModel { Description = "Benefits", Amount = 10m }
                 ]
             },
-            Destinations = [new UpdateIncomeTransactionDestinationModel
+            Destinations = [new CreateIncomeTransactionDestinationModel
             {
                 AccountId = cash.Id,
                 Amount = 150m,

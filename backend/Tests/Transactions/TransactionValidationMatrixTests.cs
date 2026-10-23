@@ -269,8 +269,8 @@ public sealed class TransactionValidationMatrixTests
             Date = new DateOnly(2026, 7, 15),
             Description = "Market",
             Amount = 10m,
-            Source = new UpdateSpendingTransactionSourceModel { AccountId = cash.Id },
-            Destinations = [new UpdateSpendingTransactionDestinationModel
+            Source = new CreateSpendingTransactionSourceModel { AccountId = cash.Id },
+            Destinations = [new CreateSpendingTransactionDestinationModel
             {
                 Location = new Models.Locations.LocationInputModel { NewLocationName = "Market" },
                 Amount = 10m,
@@ -307,8 +307,8 @@ public sealed class TransactionValidationMatrixTests
             Date = new DateOnly(2026, 7, 15),
             Description = "Not spending",
             Amount = 10m,
-            Source = new UpdateFundTransactionSourceModel { FundId = groceries.Id },
-            Destinations = [new UpdateFundTransactionDestinationModel { FundId = groceries.Id, Amount = 10m }]
+            Source = new CreateFundTransactionSourceModel { FundId = groceries.Id },
+            Destinations = [new CreateFundTransactionDestinationModel { FundId = groceries.Id, Amount = 10m }]
         });
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, unknownFund.StatusCode);

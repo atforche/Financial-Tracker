@@ -83,8 +83,8 @@ public sealed class TransactionCalculationGapTests
             Date = new DateOnly(2026, 7, 16),
             Description = "Market",
             Amount = 25m,
-            Source = new UpdateSpendingTransactionSourceModel { AccountId = cash.Id },
-            Destinations = [new UpdateSpendingTransactionDestinationModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Market" }, Amount = 25m, FundAssignments = [new CreateFundAmountModel { FundId = newFund.Id, Amount = 25m }] }]
+            Source = new CreateSpendingTransactionSourceModel { AccountId = cash.Id },
+            Destinations = [new CreateSpendingTransactionDestinationModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Market" }, Amount = 25m, FundAssignments = [new CreateFundAmountModel { FundId = newFund.Id, Amount = 25m }] }]
         };
         await test.Api.PostAsync($"/transactions/{transaction.Id}", update);
         Assert.Equal(0m, (await test.FundQueries.GetBalanceAsync(oldFund)).PostedWithPending);
@@ -228,7 +228,7 @@ public sealed class TransactionCalculationGapTests
         return new TransactionHandle(created.Id);
     }
 
-    private static UpdateIncomeTransactionModel CreateIncomeUpdate(AccountHandle account, FundHandle fund, decimal amount, DateOnly date) => new() { Date = date, Description = "Income", Amount = amount, Source = new UpdateIncomeTransactionSourceModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" }, IncomeLines = [new UpdateIncomeLineModel { Description = "Pay", Amount = amount }], IncomeDeductions = [] }, Destinations = [new UpdateIncomeTransactionDestinationModel { AccountId = account.Id, Amount = amount, FundAssignments = [new CreateIncomeFundAmountModel { FundId = fund.Id, Amount = amount }] }] };
+    private static UpdateIncomeTransactionModel CreateIncomeUpdate(AccountHandle account, FundHandle fund, decimal amount, DateOnly date) => new() { Date = date, Description = "Income", Amount = amount, Source = new CreateIncomeTransactionSourceModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" }, IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = amount }], IncomeDeductions = [] }, Destinations = [new CreateIncomeTransactionDestinationModel { AccountId = account.Id, Amount = amount, FundAssignments = [new CreateIncomeFundAmountModel { FundId = fund.Id, Amount = amount }] }] };
 
     private static async Task AssertGoalAsync(FinancialTrackerTestContext test, FundHandle fund, decimal posted, decimal includingPending)
     {

@@ -256,7 +256,7 @@ public sealed class TransactionController(
             return TransactionChangeResult.Failure(title, errors);
         }
         Dictionary<string, string[]> mappingErrors = [];
-        CreateTransactionRequest? createRequest = await transactionRequestConverter.ToCreateRequestAsync(accountingPeriod, createTransactionModel, mappingErrors);
+        CreateTransactionRequest? createRequest = transactionRequestConverter.ToCreateRequest(accountingPeriod, createTransactionModel, mappingErrors);
         if (createRequest == null)
         {
             MergeErrors(errors, mappingErrors);
@@ -285,7 +285,7 @@ public sealed class TransactionController(
             return TransactionChangeResult.Failure(title, errors);
         }
         Dictionary<string, string[]> mappingErrors = [];
-        UpdateTransactionRequest? updateRequest = await transactionRequestConverter.ToUpdateRequestAsync(transaction, updateTransactionModel, mappingErrors);
+        UpdateTransactionRequest? updateRequest = transactionRequestConverter.ToUpdateRequest(transaction, updateTransactionModel, mappingErrors);
         if (updateRequest == null)
         {
             MergeErrors(errors, mappingErrors);

@@ -114,11 +114,11 @@ internal sealed class SpendingTransactionBuilder(TestApiClient apiClient)
             Date = _date,
             Description = location,
             Amount = _amount,
-            Source = new UpdateSpendingTransactionSourceModel
+            Source = new CreateSpendingTransactionSourceModel
             {
                 AccountId = source.Id
             },
-            Destinations = [new UpdateSpendingTransactionDestinationModel
+            Destinations = [new CreateSpendingTransactionDestinationModel
             {
                 Location = new Models.Locations.LocationInputModel { NewLocationName = location },
                 Amount = _amount,

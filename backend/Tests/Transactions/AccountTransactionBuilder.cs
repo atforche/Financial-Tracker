@@ -99,11 +99,11 @@ internal sealed class AccountTransactionBuilder(TestApiClient apiClient)
             Date = _date,
             Description = "Transfer",
             Amount = _amount,
-            Source = new UpdateAccountTransactionSourceModel
+            Source = new CreateAccountTransactionSourceModel
             {
                 AccountId = GetSource().Id
             },
-            Destinations = [new UpdateAccountTransactionDestinationModel
+            Destinations = [new CreateAccountTransactionDestinationModel
             {
                 AccountId = GetDestination().Id,
                 Amount = _amount

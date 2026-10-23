@@ -5651,29 +5651,6 @@ export interface components {
             /** @description Financial institution for the Account, when specified. */
             financialInstitution?: null | string;
         };
-        /** @description Model representing a destination of an account transaction update request. */
-        UpdateAccountTransactionDestinationModel: {
-            /**
-             * Format: uuid
-             * @description Optional account ID for the destination account.
-             */
-            accountId?: null | string;
-            location?: null | components["schemas"]["LocationInputModel"];
-            /**
-             * Format: double
-             * @description Amount directed to this destination.
-             */
-            amount: number;
-        };
-        /** @description Model representing the source of an account transaction update request. */
-        UpdateAccountTransactionSourceModel: {
-            /**
-             * Format: uuid
-             * @description Optional account ID for the source account.
-             */
-            accountId?: null | string;
-            location?: null | components["schemas"]["LocationInputModel"];
-        };
         /** @description Model representing Fund Goal configuration updates. */
         UpdateFundGoalModel: {
             /**
@@ -5701,127 +5678,10 @@ export interface components {
             /** @description Description for the Fund */
             description: string;
         };
-        /** @description Model representing a destination of a fund transaction update request. */
-        UpdateFundTransactionDestinationModel: {
-            /**
-             * Format: uuid
-             * @description Fund ID for the destination fund.
-             */
-            fundId: string;
-            /**
-             * Format: double
-             * @description Amount directed to this destination fund.
-             */
-            amount: number;
-        };
-        /** @description Model representing the source of a fund transaction update request. */
-        UpdateFundTransactionSourceModel: {
-            /**
-             * Format: uuid
-             * @description Fund ID for the source fund.
-             */
-            fundId: string;
-        };
-        /** @description Model representing an income deduction in an update income transaction request. */
-        UpdateIncomeDeductionModel: {
-            /** @description Description for the income deduction. */
-            description: string;
-            /**
-             * Format: double
-             * @description Amount for the income deduction.
-             */
-            amount: number;
-        };
-        /** @description Model representing an income line in an update income transaction request. */
-        UpdateIncomeLineModel: {
-            /** @description Description for the income line. */
-            description: string;
-            /**
-             * Format: double
-             * @description Amount for the income line.
-             */
-            amount: number;
-        };
-        /** @description Model representing a destination of an income transaction update request. */
-        UpdateIncomeTransactionDestinationModel: {
-            /**
-             * Format: uuid
-             * @description Account ID for the destination account.
-             */
-            accountId: string;
-            /**
-             * Format: double
-             * @description Amount directed to this destination.
-             */
-            amount: number;
-            /** @description Fund assignments for this destination. */
-            fundAssignments: components["schemas"]["CreateIncomeFundAmountModel"][];
-        };
-        /** @description Model representing the source of an income transaction update request. */
-        UpdateIncomeTransactionSourceModel: {
-            /**
-             * Format: uuid
-             * @description Optional account ID for the income source.
-             */
-            accountId?: null | string;
-            location?: null | components["schemas"]["LocationInputModel"];
-            /** @description Income lines for the source. */
-            incomeLines: components["schemas"]["UpdateIncomeLineModel"][];
-            /** @description Income deductions for the source. */
-            incomeDeductions: components["schemas"]["UpdateIncomeDeductionModel"][];
-        };
         /** @description API request to rename a Location. */
         UpdateLocationModel: {
             /** @description New canonical Location name. */
             name: string;
-        };
-        /** @description Model representing the destination of a refund transaction update request. */
-        UpdateRefundTransactionDestinationModel: {
-            /**
-             * Format: uuid
-             * @description Account ID for the destination account.
-             */
-            accountId: string;
-        };
-        /** @description Model representing a source of a refund transaction update request. */
-        UpdateRefundTransactionSourceModel: {
-            /**
-             * Format: uuid
-             * @description Optional account ID for the source account.
-             */
-            accountId?: null | string;
-            location?: null | components["schemas"]["LocationInputModel"];
-            /**
-             * Format: double
-             * @description Amount received from this source.
-             */
-            amount: number;
-            /** @description Fund assignments for this source. */
-            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
-        };
-        /** @description Model representing a destination of a spending transaction update request. */
-        UpdateSpendingTransactionDestinationModel: {
-            /**
-             * Format: uuid
-             * @description Optional account ID for the destination account.
-             */
-            accountId?: null | string;
-            location?: null | components["schemas"]["LocationInputModel"];
-            /**
-             * Format: double
-             * @description Amount directed to this destination.
-             */
-            amount: number;
-            /** @description Fund assignments for this destination. */
-            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
-        };
-        /** @description Model representing the source of a spending transaction update request. */
-        UpdateSpendingTransactionSourceModel: {
-            /**
-             * Format: uuid
-             * @description Account ID for the source account.
-             */
-            accountId: string;
         };
         /** @description Model representing a request to update a Transaction. */
         UpdateTransactionModel: components["schemas"]["UpdateTransactionModelUpdateSpendingTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateIncomeTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateAccountTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateFundTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateRefundTransactionModel"];
@@ -5830,9 +5690,9 @@ export interface components {
             /** @enum {string} */
             type?: UpdateTransactionModelUpdateAccountTransactionModelType;
             /** @description Source for the account transaction. */
-            source: components["schemas"]["UpdateAccountTransactionSourceModel"];
+            source: components["schemas"]["CreateAccountTransactionSourceModel"];
             /** @description Destinations for the account transaction. */
-            destinations: components["schemas"]["UpdateAccountTransactionDestinationModel"][];
+            destinations: components["schemas"]["CreateAccountTransactionDestinationModel"][];
             /**
              * Format: date
              * @description Date for the Transaction.
@@ -5851,9 +5711,9 @@ export interface components {
             /** @enum {string} */
             type?: UpdateTransactionModelUpdateFundTransactionModelType;
             /** @description Source for the fund transaction. */
-            source: components["schemas"]["UpdateFundTransactionSourceModel"];
+            source: components["schemas"]["CreateFundTransactionSourceModel"];
             /** @description Destinations for the fund transaction. */
-            destinations: components["schemas"]["UpdateFundTransactionDestinationModel"][];
+            destinations: components["schemas"]["CreateFundTransactionDestinationModel"][];
             /**
              * Format: date
              * @description Date for the Transaction.
@@ -5872,9 +5732,9 @@ export interface components {
             /** @enum {string} */
             type?: UpdateTransactionModelUpdateIncomeTransactionModelType;
             /** @description Source for the income transaction. */
-            source: components["schemas"]["UpdateIncomeTransactionSourceModel"];
+            source: components["schemas"]["CreateIncomeTransactionSourceModel"];
             /** @description Destinations for the income transaction. */
-            destinations: components["schemas"]["UpdateIncomeTransactionDestinationModel"][];
+            destinations: components["schemas"]["CreateIncomeTransactionDestinationModel"][];
             /**
              * Format: date
              * @description Date for the Transaction.
@@ -5893,9 +5753,9 @@ export interface components {
             /** @enum {string} */
             type?: UpdateTransactionModelUpdateRefundTransactionModelType;
             /** @description Sources for the refund transaction. */
-            sources: components["schemas"]["UpdateRefundTransactionSourceModel"][];
+            sources: components["schemas"]["CreateRefundTransactionSourceModel"][];
             /** @description Destination for the refund transaction. */
-            destination: components["schemas"]["UpdateRefundTransactionDestinationModel"];
+            destination: components["schemas"]["CreateRefundTransactionDestinationModel"];
             /**
              * Format: date
              * @description Date for the Transaction.
@@ -5914,9 +5774,9 @@ export interface components {
             /** @enum {string} */
             type?: UpdateTransactionModelUpdateSpendingTransactionModelType;
             /** @description Source for the spending transaction. */
-            source: components["schemas"]["UpdateSpendingTransactionSourceModel"];
+            source: components["schemas"]["CreateSpendingTransactionSourceModel"];
             /** @description Destinations for the spending transaction. */
-            destinations: components["schemas"]["UpdateSpendingTransactionDestinationModel"][];
+            destinations: components["schemas"]["CreateSpendingTransactionDestinationModel"][];
             /**
              * Format: date
              * @description Date for the Transaction.

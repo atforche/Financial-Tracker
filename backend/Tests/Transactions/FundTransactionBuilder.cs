@@ -99,11 +99,11 @@ internal sealed class FundTransactionBuilder(TestApiClient apiClient)
             Date = _date,
             Description = "Fund transfer",
             Amount = _amount,
-            Source = new UpdateFundTransactionSourceModel
+            Source = new CreateFundTransactionSourceModel
             {
                 FundId = GetSource().Id
             },
-            Destinations = [new UpdateFundTransactionDestinationModel
+            Destinations = [new CreateFundTransactionDestinationModel
             {
                 FundId = GetDestination().Id,
                 Amount = _amount

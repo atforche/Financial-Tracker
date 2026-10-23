@@ -1,3 +1,5 @@
+using Models.Transactions.Create;
+
 namespace Models.Transactions.Update;
 
 /// <summary>
@@ -8,10 +10,10 @@ public sealed class UpdateFundTransactionModel : UpdateTransactionModel
     /// <summary>
     /// Source for the fund transaction.
     /// </summary>
-    public required UpdateFundTransactionSourceModel Source { get; init; }
+    public required CreateFundTransactionSourceModel Source { get; init; }
 
     /// <summary>
     /// Destinations for the fund transaction.
     /// </summary>
-    public required IReadOnlyCollection<UpdateFundTransactionDestinationModel> Destinations { get; init; }
+    public required IReadOnlyCollection<CreateFundTransactionDestinationModel> Destinations { get; init; }
 }

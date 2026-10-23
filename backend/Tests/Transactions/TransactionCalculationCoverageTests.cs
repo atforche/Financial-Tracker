@@ -147,8 +147,8 @@ public sealed class TransactionCalculationCoverageTests
             Date = new DateOnly(2026, 7, 10),
             Description = "Income",
             Amount = 25m,
-            Source = new UpdateIncomeTransactionSourceModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" }, IncomeLines = [new UpdateIncomeLineModel { Description = "Pay", Amount = 25m }], IncomeDeductions = [] },
-            Destinations = [new UpdateIncomeTransactionDestinationModel { AccountId = second.Id, Amount = 25m, FundAssignments = [new CreateIncomeFundAmountModel { FundId = newFund.Id, Amount = 25m }] }]
+            Source = new CreateIncomeTransactionSourceModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Employer" }, IncomeLines = [new CreateIncomeLineModel { Description = "Pay", Amount = 25m }], IncomeDeductions = [] },
+            Destinations = [new CreateIncomeTransactionDestinationModel { AccountId = second.Id, Amount = 25m, FundAssignments = [new CreateIncomeFundAmountModel { FundId = newFund.Id, Amount = 25m }] }]
         };
         await test.Api.PostAsync($"/transactions/{income.Id}", incomeUpdate);
         Assert.Equal(0m, (await test.AccountQueries.GetBalanceAsync(first)).PostedWithPending);
@@ -162,8 +162,8 @@ public sealed class TransactionCalculationCoverageTests
             Date = new DateOnly(2026, 7, 11),
             Description = "Transfer",
             Amount = 20m,
-            Source = new UpdateAccountTransactionSourceModel { AccountId = third.Id },
-            Destinations = [new UpdateAccountTransactionDestinationModel { AccountId = fourth.Id, Amount = 20m }]
+            Source = new CreateAccountTransactionSourceModel { AccountId = third.Id },
+            Destinations = [new CreateAccountTransactionDestinationModel { AccountId = fourth.Id, Amount = 20m }]
         };
         await test.Api.PostAsync($"/transactions/{accountTransfer.Id}", accountTransferUpdate);
         Assert.Equal(0m, (await test.AccountQueries.GetBalanceAsync(first)).PostedWithPending);
@@ -177,8 +177,8 @@ public sealed class TransactionCalculationCoverageTests
             Date = new DateOnly(2026, 7, 12),
             Description = "Fund transfer",
             Amount = 10m,
-            Source = new UpdateFundTransactionSourceModel { FundId = transferSource.Id },
-            Destinations = [new UpdateFundTransactionDestinationModel { FundId = transferDestination.Id, Amount = 10m }]
+            Source = new CreateFundTransactionSourceModel { FundId = transferSource.Id },
+            Destinations = [new CreateFundTransactionDestinationModel { FundId = transferDestination.Id, Amount = 10m }]
         };
         await test.Api.PostAsync($"/transactions/{fundTransfer.Id}", fundTransferUpdate);
         await AssertFundAndGoalAsync(test, oldFund, 0m);
