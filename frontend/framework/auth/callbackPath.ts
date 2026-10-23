@@ -1,6 +1,11 @@
 import "server-only";
 
 /**
+ * Request header that carries the path and query of the page being requested.
+ */
+const currentPathHeader = "x-current-path";
+
+/**
  * Origin used to resolve relative callbacks when the public origin is not configured. Only the path of the
  * resolved URL is ever returned, so this origin is never redirected to.
  */
@@ -36,4 +41,5 @@ const getCallbackPath = function (
   }
 };
 
+export { currentPathHeader };
 export default getCallbackPath;

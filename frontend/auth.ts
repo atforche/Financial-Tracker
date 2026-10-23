@@ -5,6 +5,8 @@ import {
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import NextAuth from "next-auth";
+import { NextResponse } from "next/server";
+import { currentPathHeader } from "@/framework/auth/callbackPath";
 import resolveApplicationUser from "@/framework/auth/resolveApplicationUser";
 
 declare module "@auth/core/jwt" {
@@ -272,11 +274,23 @@ const { auth, handlers, signIn, signOut } = nextAuth({
        * than a navigation, so server actions are let through. They cannot reach the backend without a
        * usable token, and the API client redirects them to the login page itself.
        */
-      return (
+      const isAllowed =
         request.nextUrl.pathname === "/login" ||
         session !== null ||
-        (request.method === "POST" && request.headers.has("next-action"))
+        (request.method === "POST" && request.headers.has("next-action"));
+      if (!isAllowed) {
+        return false;
+      }
+      /*
+       * Pages cannot read their own URL, so it is passed along for the API client to return the user to
+       * after an expired session. Any value sent by the browser is overwritten.
+       */
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set(
+        currentPathHeader,
+        `${request.nextUrl.pathname}${request.nextUrl.search}`,
       );
+      return NextResponse.next({ request: { headers: requestHeaders } });
     },
     async jwt({ token, account, user }) {
       if (typeof account?.id_token === "string") {

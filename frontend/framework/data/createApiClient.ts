@@ -1,6 +1,9 @@
 import "server-only";
 
 import createClient, { type Client, type Middleware } from "openapi-fetch";
+import getCallbackPath, {
+  currentPathHeader,
+} from "@/framework/auth/callbackPath";
 import getGoogleIdToken from "@/framework/data/getGoogleIdToken";
 import { headers } from "next/headers";
 import type { paths } from "@/framework/data/api";
@@ -8,20 +11,12 @@ import { redirect } from "next/navigation";
 
 /**
  * Sends the user to end their session and sign in again, returning them to the page they were on
- * afterwards. Server actions and server components both turn this into a browser navigation. The
- * referring page is the best available record of where the user was; any external callback is discarded.
+ * afterwards. Server actions and server components both turn this into a browser navigation. The proxy
+ * records the requested page, which for a server action is the page it was called from; any external
+ * callback is discarded.
  */
 const redirectToLogin = async function (): Promise<never> {
-  const referer = (await headers()).get("referer");
-  let callbackUrl = "/";
-  if (referer !== null) {
-    try {
-      const url = new URL(referer);
-      callbackUrl = `${url.pathname}${url.search}`;
-    } catch {
-      // An unparseable referer falls back to the home page.
-    }
-  }
+  const callbackUrl = getCallbackPath((await headers()).get(currentPathHeader));
   redirect(`/session-expired?callbackUrl=${encodeURIComponent(callbackUrl)}`);
 };
 
