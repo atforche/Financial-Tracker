@@ -63,6 +63,7 @@ services:
       AUTH_URL: "${PUBLIC_ORIGIN}"
       AUTH_TRUST_HOST: "true"
       AUTH_SECRET: "${AUTH_SECRET:?AUTH_SECRET must be configured}"
+      TZ: "${TZ:-America/New_York}"
     cap_drop:
       - ALL
     security_opt:

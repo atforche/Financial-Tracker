@@ -1,11 +1,8 @@
-import { Button, Stack, Typography } from "@mui/material";
 import AccountingPeriodPlanView from "@/accounting-periods/workspace/AccountingPeriodPlanView";
+import AccountingPeriodWorkspaceHeader from "@/accounting-periods/workspace/AccountingPeriodWorkspaceHeader";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
-import ArrowBack from "@mui/icons-material/ArrowBack";
 import type { JSX } from "react";
-import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
-import PeriodNavigation from "@/framework/view/PeriodNavigation";
 import createApiClient from "@/framework/data/createApiClient";
 import getAdjacentAccountingPeriods from "@/accounting-periods/workspace/periodNavigation";
 import { redirect } from "next/navigation";
@@ -100,48 +97,33 @@ const AccountingPeriodWorkspacePlanPage = async function ({
 
   return (
     <PageLayout>
-      <Stack spacing={2.5} sx={{ maxWidth: 1200, width: "100%" }}>
-        <Link
-          href={cashFlowHref}
-          style={{ alignSelf: "flex-start", textDecoration: "none" }}
-        >
-          <Button component="span" startIcon={<ArrowBack />}>
-            Back to Cash Flow
-          </Button>
-        </Link>
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          alignItems={{ xs: "flex-start", sm: "center" }}
-          justifyContent="space-between"
-          gap={2}
-        >
-          <Typography variant="h4">Plan for {period.name}</Typography>
-          <PeriodNavigation
-            previousPeriod={
-              previousPeriod === null
-                ? null
-                : {
-                    name: previousPeriod.name,
-                    href: routes.workspacePlan(
-                      previousPeriod.id,
-                      adjacentPlanParams,
-                    ),
-                  }
-            }
-            nextPeriod={
-              nextPeriod === null
-                ? null
-                : {
-                    name: nextPeriod.name,
-                    href: routes.workspacePlan(
-                      nextPeriod.id,
-                      adjacentPlanParams,
-                    ),
-                  }
-            }
-          />
-        </Stack>
-      </Stack>
+      <AccountingPeriodWorkspaceHeader
+        accountingPeriod={period}
+        workspaceUrl={workspaceUrl}
+        previousPeriod={
+          previousPeriod === null
+            ? null
+            : {
+                name: previousPeriod.name,
+                href: routes.workspacePlan(
+                  previousPeriod.id,
+                  adjacentPlanParams,
+                ),
+              }
+        }
+        nextPeriod={
+          nextPeriod === null
+            ? null
+            : {
+                name: nextPeriod.name,
+                href: routes.workspacePlan(nextPeriod.id, adjacentPlanParams),
+              }
+        }
+        activeView="plan"
+        cashFlowHref={cashFlowHref}
+        planHref={currentUrl}
+        redirectUrl={currentUrl}
+      />
       <AccountingPeriodPlanView
         accountingPeriod={period}
         currentUrl={currentUrl}
