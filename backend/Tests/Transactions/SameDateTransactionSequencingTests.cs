@@ -41,9 +41,9 @@ public sealed class SameDateTransactionSequencingTests
             .ToArray();
 
         Assert.Equal(65m, balance.Posted);
-        Assert.Equal(65m, balance.IncludingPending);
+        Assert.Equal(65m, balance.PostedWithPending);
         Assert.Equal([laterHandle.Id, earlierHandle.Id], matchingEvents.Select(item => item.TransactionId));
-        Assert.Equal(80m, matchingEvents[0].NewBalance.PostedBalance);
-        Assert.Equal(65m, matchingEvents[1].NewBalance.PostedBalance);
+        Assert.Equal(80m, matchingEvents[0].NewBalance?.PostedBalance);
+        Assert.Equal(65m, matchingEvents[1].NewBalance?.PostedBalance);
     }
 }

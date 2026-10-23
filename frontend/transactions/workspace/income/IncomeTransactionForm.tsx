@@ -4,11 +4,14 @@ import type {
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
-import type { Dispatch, JSX, RefObject, SetStateAction } from "react";
 import {
-  type FundAssignmentDraft,
-  updateUnassignedFundAmount,
-} from "@/funds/assignmentPlanner/helpers";
+  type Dispatch,
+  type JSX,
+  type RefObject,
+  type SetStateAction,
+  useLayoutEffect,
+} from "react";
+import type { Fund, FundWithBalance } from "@/funds/types";
 import {
   type IncomeDestinationDraft,
   type IncomeSourceDraft,
@@ -16,20 +19,25 @@ import {
   buildSourceAccountFilter,
   createEmptyDestination,
   getNetIncomeAmount,
+  isTrackedAccount,
   validateDestination,
   validateFundAssignments,
   validateSource,
 } from "@/transactions/workspace/income/helpers";
+import { type Transaction, asIncomeTransaction } from "@/transactions/types";
+import {
+  compareCurrencyAmounts,
+  getCurrencyTotal,
+} from "@/framework/currencyHelpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CollectionEditor from "@/framework/view/CollectionEditor";
 import type { Dayjs } from "dayjs";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
-import type { FundWithBalance } from "@/funds/types";
 import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFrame";
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
-import { getCurrencyTotal } from "@/framework/currencyHelpers";
-import { isTrackedAccountType } from "@/accounts/helpers";
+import { getUnassignedFund } from "@/funds/helpers";
+import { updateUnassignedFundAmount } from "@/funds/assignmentPlanner/helpers";
 
 /**
  * Represents the state of the income transaction form.
@@ -67,9 +75,56 @@ interface IncomeTransactionFormProps<RequestPayload> {
   readonly state: TransactionFormState;
   readonly pending: boolean;
   readonly request: RequestPayload | null;
+  readonly preview?: Transaction | null;
   readonly onReset: () => void;
   readonly onSubmit: (request: RequestPayload) => void;
 }
+
+/**
+ * Updates the destination amount and keeps its unassigned remainder in sync.
+ */
+const setDestinationAmount = function (
+  destination: IncomeDestinationDraft,
+  amount: number | null,
+  unassignedFund: Fund | null,
+): IncomeDestinationDraft {
+  return {
+    ...destination,
+    amount,
+    fundAssignments:
+      isTrackedAccount(destination.account) === false
+        ? []
+        : updateUnassignedFundAmount(
+            unassignedFund,
+            amount,
+            destination.fundAssignments,
+          ),
+  };
+};
+
+/**
+ * Sets the amount of a single destination to the net income amount.
+ */
+const syncSingleDestinationAmount = function (
+  destinations: IncomeDestinationDraft[],
+  netAmount: number,
+  unassignedFund: Fund | null,
+): IncomeDestinationDraft[] {
+  const [destination] = destinations;
+  if (destinations.length !== 1 || destination === undefined) {
+    return destinations;
+  }
+  const amount = compareCurrencyAmounts(netAmount, 0) > 0 ? netAmount : null;
+  if (
+    amount === destination.amount ||
+    (amount !== null &&
+      destination.amount !== null &&
+      compareCurrencyAmounts(amount, destination.amount) === 0)
+  ) {
+    return destinations;
+  }
+  return [setDestinationAmount(destination, amount, unassignedFund)];
+};
 
 /**
  * Displays the shared income transaction form layout used by create and update flows.
@@ -95,11 +150,13 @@ const IncomeTransactionForm = function <RequestPayload>({
   state,
   pending,
   request,
+  preview = null,
   onReset,
   onSubmit,
 }: IncomeTransactionFormProps<RequestPayload>): JSX.Element {
-  const unassignedFund =
-    funds.find((fund) => fund.name === "Unassigned") ?? null;
+  const transactionPreview =
+    preview === null ? null : asIncomeTransaction(preview);
+  const unassignedFund = getUnassignedFund(funds);
   const currentFundGoals = fundGoals.filter(
     (fundGoal) => fundGoal.accountingPeriod?.id === accountingPeriod?.id,
   );
@@ -121,31 +178,6 @@ const IncomeTransactionForm = function <RequestPayload>({
     );
   };
 
-  const syncDestinationFundAssignments = function (
-    destinationAmount: number | null,
-    fundAssignments: FundAssignmentDraft[],
-  ): FundAssignmentDraft[] {
-    return updateUnassignedFundAmount(
-      unassignedFund,
-      destinationAmount,
-      fundAssignments,
-    );
-  };
-
-  const setDestinationAmount = function (
-    destination: IncomeDestinationDraft,
-    amount: number | null,
-  ): IncomeDestinationDraft {
-    return {
-      ...destination,
-      amount,
-      fundAssignments: syncDestinationFundAssignments(
-        amount,
-        destination.fundAssignments,
-      ),
-    };
-  };
-
   const setSourceAccount = function (
     account: AccountBalanceEventDraft | null,
   ): void {
@@ -155,6 +187,17 @@ const IncomeTransactionForm = function <RequestPayload>({
       location: account === null ? currentSource.location : null,
     }));
   };
+
+  // Sync after render so the single destination amount always uses the latest source.
+  useLayoutEffect(() => {
+    setDestinations((currentDestinations) =>
+      syncSingleDestinationAmount(
+        currentDestinations,
+        sourceNetAmount,
+        unassignedFund,
+      ),
+    );
+  }, [sourceNetAmount, destinations.length, unassignedFund, setDestinations]);
 
   const sourceIsValid = validateSource(source);
 
@@ -171,6 +214,7 @@ const IncomeTransactionForm = function <RequestPayload>({
       setDescription={setDescription}
       sourceContent={
         <IncomeTransactionSourceFrame
+          accountBalanceEvent={transactionPreview?.source.account ?? null}
           color={sourceIsValid ? "info" : "error"}
           accounts={accounts}
           transaction={null}
@@ -185,10 +229,7 @@ const IncomeTransactionForm = function <RequestPayload>({
           }}
           incomeLines={source.incomeLines}
           setIncomeLines={(incomeLines): void => {
-            setSource((currentSource) => ({
-              ...currentSource,
-              incomeLines,
-            }));
+            setSource((currentSource) => ({ ...currentSource, incomeLines }));
           }}
           incomeDeductions={source.incomeDeductions}
           setIncomeDeductions={(incomeDeductions): void => {
@@ -214,6 +255,15 @@ const IncomeTransactionForm = function <RequestPayload>({
               color={validateDestination(destination) ? "info" : "error"}
               fundAssignmentsValid={validateFundAssignments(destination)}
               index={index}
+              accountBalanceEvent={
+                transactionPreview?.destinations[index]?.account ?? null
+              }
+              fundBalanceEvents={
+                transactionPreview?.destinations[index]?.fundAssignments
+              }
+              fundGoalBalanceEvents={
+                transactionPreview?.destinations[index]?.fundGoals
+              }
               accounts={accounts}
               funds={funds}
               fundGoals={currentFundGoals}
@@ -224,19 +274,25 @@ const IncomeTransactionForm = function <RequestPayload>({
                   ...currentDestination,
                   account,
                   fundAssignments:
-                    account?.accountType !== null &&
-                    account?.accountType !== undefined &&
-                    isTrackedAccountType(account.accountType)
+                    isTrackedAccount(account) === true
                       ? currentDestination.fundAssignments
                       : [],
                 }));
               }}
               amount={destination.amount}
-              setAmount={(nextAmount): void => {
-                updateDestination(index, (currentDestination) =>
-                  setDestinationAmount(currentDestination, nextAmount),
-                );
-              }}
+              setAmount={
+                destinations.length === 1
+                  ? null
+                  : (nextAmount): void => {
+                      updateDestination(index, (currentDestination) =>
+                        setDestinationAmount(
+                          currentDestination,
+                          nextAmount,
+                          unassignedFund,
+                        ),
+                      );
+                    }
+              }
               fundAssignments={destination.fundAssignments}
               setFundAssignments={(fundAssignments): void => {
                 updateDestination(index, (currentDestination) => ({

@@ -53,7 +53,6 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<FundGoalService>();
         _ = serviceCollection.AddScoped<FundGoalTotalsHistoryService>();
-        _ = serviceCollection.AddScoped<PendingFundGoalTotalsService>();
         _ = serviceCollection.AddScoped<FundGoalBalanceEventQueryService>();
         _ = serviceCollection.AddScoped<FundGoalQueryService>();
 

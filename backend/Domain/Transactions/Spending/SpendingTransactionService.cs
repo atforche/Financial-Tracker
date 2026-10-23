@@ -17,7 +17,6 @@ public class SpendingTransactionService(
     FundBalanceService fundBalanceService,
     PendingFundBalanceService pendingFundBalanceService,
     FundGoalTotalsHistoryService fundGoalTotalsHistoryService,
-    PendingFundGoalTotalsService pendingFundGoalTotalsService,
     IAccountingPeriodRepository accountingPeriodRepository,
     IFundRepository fundRepository,
     ITransactionRepository transactionRepository) :
@@ -28,7 +27,6 @@ public class SpendingTransactionService(
         fundBalanceService,
         pendingFundBalanceService,
         fundGoalTotalsHistoryService,
-        pendingFundGoalTotalsService,
         accountingPeriodRepository,
         transactionRepository)
 {

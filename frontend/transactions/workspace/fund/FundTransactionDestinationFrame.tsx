@@ -1,6 +1,7 @@
 import { Box, Stack } from "@mui/material";
 import type {
   Fund,
+  FundBalanceEvent,
   FundBalanceEventDraft,
   FundWithBalance,
 } from "@/funds/types";
@@ -23,6 +24,7 @@ interface FundTransactionDestinationFrameProps {
   readonly filter?: ((fund: Fund) => boolean) | null;
   readonly onRemove?: (() => void) | null;
   readonly color?: FrameColor;
+  readonly fundBalanceEvent?: FundBalanceEvent | null;
   readonly readOnly?: boolean;
   readonly autoFocus?: boolean;
 }
@@ -40,6 +42,7 @@ const FundTransactionDestinationFrame = function ({
   filter = null,
   onRemove = null,
   color = "info",
+  fundBalanceEvent = null,
   readOnly = false,
   autoFocus = false,
 }: FundTransactionDestinationFrameProps): JSX.Element {
@@ -61,7 +64,7 @@ const FundTransactionDestinationFrame = function ({
             setFund={readOnly ? null : setFund}
             fundFilter={filter}
             label="Destination Fund"
-            balanceChange={amount}
+            balanceEvent={fundBalanceEvent}
             autoFocus={autoFocus}
           />
         </Box>

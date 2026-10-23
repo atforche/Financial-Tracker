@@ -23,9 +23,9 @@ public sealed class RefundTransactionLifecycleTests
         AccountBalanceSnapshot pendingAccount = await test.AccountQueries.GetBalanceAsync(cash);
         FundBalanceSnapshot pendingFund = await test.FundQueries.GetBalanceAsync(groceries);
         FundGoalAvailabilitySnapshot pendingGoal = await test.FundGoalQueries.GetAvailabilityAsync(groceries.Goal);
-        Assert.Equal(125m, pendingAccount.IncludingPending);
-        Assert.Equal(25m, pendingFund.IncludingPending);
-        Assert.Equal(25m, pendingGoal.IncludingPending);
+        Assert.Equal(125m, pendingAccount.PostedWithPending);
+        Assert.Equal(25m, pendingFund.PostedWithPending);
+        Assert.Equal(25m, pendingGoal.PostedWithPending);
 
         await test.Transactions.PostAsync(refund, cash, new DateOnly(2026, 7, 16));
         Assert.Equal(125m, (await test.AccountQueries.GetBalanceAsync(cash)).Posted);
@@ -44,7 +44,7 @@ public sealed class RefundTransactionLifecycleTests
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
         TransactionHandle refund = await test.Transactions.Refund().In(july).On(new DateOnly(2026, 7, 15)).For(25m).From(source).To(cash, groceries).CreateAsync();
 
-        Assert.Equal(25m, (await test.AccountQueries.GetBalanceAsync(source)).IncludingPending);
+        Assert.Equal(25m, (await test.AccountQueries.GetBalanceAsync(source)).PostedWithPending);
         await test.Transactions.PostAsync(refund, source, new DateOnly(2026, 7, 16));
         Assert.Equal(25m, (await test.AccountQueries.GetBalanceAsync(source)).Posted);
         Assert.Equal(100m, (await test.AccountQueries.GetBalanceAsync(cash)).Posted);
@@ -65,9 +65,9 @@ public sealed class RefundTransactionLifecycleTests
         TransactionHandle refund = await test.Transactions.Refund().In(july).On(new DateOnly(2026, 7, 15)).For(25m)
             .From(merchantCredit, 10m).From("Market", 15m).To(cash, groceries).CreateAsync();
 
-        Assert.Equal(30m, (await test.AccountQueries.GetBalanceAsync(merchantCredit)).IncludingPending);
-        Assert.Equal(125m, (await test.AccountQueries.GetBalanceAsync(cash)).IncludingPending);
-        Assert.Equal(25m, (await test.FundQueries.GetBalanceAsync(groceries)).IncludingPending);
+        Assert.Equal(30m, (await test.AccountQueries.GetBalanceAsync(merchantCredit)).PostedWithPending);
+        Assert.Equal(125m, (await test.AccountQueries.GetBalanceAsync(cash)).PostedWithPending);
+        Assert.Equal(25m, (await test.FundQueries.GetBalanceAsync(groceries)).PostedWithPending);
 
         await test.Transactions.PostAsync(refund, merchantCredit, new DateOnly(2026, 7, 16));
         Assert.Equal(30m, (await test.AccountQueries.GetBalanceAsync(merchantCredit)).Posted);

@@ -43,7 +43,6 @@ public sealed class FundBalanceEventQueryService(
         IReadOnlyCollection<FundBalanceEvent> events = transactions
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFund))
             .Where(balanceEvent => requestedFundIds.Contains(balanceEvent.Fund.Id)).ToList();
-        events = ProjectPendingEvents(events, transactions, historiesByFund);
         var requestedIds = requestedTransactions.Select(transaction => transaction.Id).ToHashSet();
         return events.Where(balanceEvent => requestedIds.Contains(balanceEvent.TransactionId)).ToList();
     }
@@ -123,7 +122,6 @@ public sealed class FundBalanceEventQueryService(
         IReadOnlyCollection<FundBalanceEvent> events = transactions
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFund))
             .Where(balanceEvent => Matches(balanceEvent.Fund, filter)).ToList();
-        events = ProjectPendingEvents(events, transactions, historiesByFund);
         var allItems = Sort(events.Where(item => (includePending && !item.IsPosted)
             || (item.IsPosted
                 && (!filterByPostingDate || item.EventDate.HasValue)
@@ -232,8 +230,8 @@ public sealed class FundBalanceEventQueryService(
             fund,
             source,
             destinations,
-            ToBalance(fund, previous, fund.OnboardedBalance ?? 0),
-            ToBalance(fund, current));
+            postedDate == null ? null : ToBalance(fund, previous, fund.OnboardedBalance ?? 0),
+            postedDate == null ? null : ToBalance(fund, current));
     }
 
     /// <summary>
@@ -249,36 +247,6 @@ public sealed class FundBalanceEventQueryService(
     private static FundBalance ToBalance(Fund fund, FundBalanceHistory? history, decimal fallback = 0) => new(
         fund,
         history?.PostedBalance ?? fallback);
-
-    /// <summary>
-    /// Projects pending events from the final posted Fund balance in transaction order.
-    /// </summary>
-    private static List<FundBalanceEvent> ProjectPendingEvents(
-        IReadOnlyCollection<FundBalanceEvent> events,
-        IReadOnlyCollection<Transaction> transactions,
-        IReadOnlyDictionary<FundId, List<FundBalanceHistory>> historiesByFund)
-    {
-        var transactionsById = transactions.ToDictionary(transaction => transaction.Id);
-        var projected = events.ToList();
-        foreach (IGrouping<FundId, FundBalanceEvent> fundEvents in events.Where(item => !item.IsPosted).GroupBy(item => item.Fund.Id))
-        {
-            Fund fund = fundEvents.First().Fund;
-            FundBalance balance = new(fund, historiesByFund.GetValueOrDefault(fund.Id)?.LastOrDefault()?.PostedBalance ?? fund.OnboardedBalance ?? 0);
-            foreach (IGrouping<TransactionId, FundBalanceEvent> transactionEvents in fundEvents
-                .GroupBy(item => item.TransactionId)
-                .OrderBy(group => transactionsById[group.Key].Date).ThenBy(group => transactionsById[group.Key].Sequence))
-            {
-                FundBalance previous = balance;
-                balance = transactionsById[transactionEvents.Key].ApplyAsPostedToFundBalance(balance);
-                foreach (FundBalanceEvent balanceEvent in transactionEvents)
-                {
-                    int index = projected.IndexOf(balanceEvent);
-                    projected[index] = balanceEvent with { PreviousBalance = previous, NewBalance = balance };
-                }
-            }
-        }
-        return projected;
-    }
 
     /// <summary>
     /// Determines whether a Fund matches the provided filter.

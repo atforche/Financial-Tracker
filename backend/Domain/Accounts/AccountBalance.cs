@@ -16,9 +16,9 @@ public class AccountBalance
     public decimal PostedBalance { get; }
 
     /// <summary>
-    /// Balance after current unposted Transaction effects are applied.
+    /// Net change from unposted Transactions, which is not included in the Posted Balance.
     /// </summary>
-    public decimal BalanceIncludingPending { get; }
+    public decimal PendingAmount { get; }
 
     /// <summary>
     /// Debits the specified amount from this Account Balance.
@@ -33,10 +33,10 @@ public class AccountBalance
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    internal AccountBalance(Account account, decimal postedBalance, decimal? balanceIncludingPending = null)
+    internal AccountBalance(Account account, decimal postedBalance, decimal pendingAmount = 0)
     {
         Account = account;
         PostedBalance = postedBalance;
-        BalanceIncludingPending = balanceIncludingPending ?? postedBalance;
+        PendingAmount = pendingAmount;
     }
 }

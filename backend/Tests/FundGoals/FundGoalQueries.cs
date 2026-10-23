@@ -16,7 +16,7 @@ internal sealed class FundGoalQueries(TestApiClient apiClient)
     public async Task<FundGoalAvailabilitySnapshot> GetAvailabilityAsync(FundGoalHandle fundGoal)
     {
         CollectionModel<FundWithBalanceModel> response = await apiClient.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
-        FundBalanceModel balance = response.Items.Single(fund => fund.Id == fundGoal.FundId).CurrentBalance;
-        return new FundGoalAvailabilitySnapshot(balance.PostedBalance, balance.BalanceIncludingPending);
+        FundWithBalanceModel fund = response.Items.Single(item => item.Id == fundGoal.FundId);
+        return new FundGoalAvailabilitySnapshot(fund.CurrentBalance.PostedBalance, fund.PendingAmount);
     }
 }

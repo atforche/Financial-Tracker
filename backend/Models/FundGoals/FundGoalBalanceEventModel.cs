@@ -25,11 +25,13 @@ public sealed class FundGoalBalanceEventModel : BalanceEventModel
 
     /// <summary>
     /// Totals immediately before the Transaction.
+    /// Null until the event posts.
     /// </summary>
-    public required FundGoalTotalsModel PreviousTotals { get; init; }
+    public required FundGoalTotalsModel? PreviousTotals { get; init; }
 
     /// <summary>
     /// Totals immediately after the Transaction.
+    /// Null until the event posts.
     /// </summary>
-    public required FundGoalTotalsModel NewTotals { get; init; }
+    public required FundGoalTotalsModel? NewTotals { get; init; }
 }

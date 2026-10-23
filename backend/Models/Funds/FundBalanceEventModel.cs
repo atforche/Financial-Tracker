@@ -30,11 +30,13 @@ public class FundBalanceEventModel : BalanceEventModel
 
     /// <summary>
     /// Fund balance prior to the balance event.
+    /// Null until the event posts.
     /// </summary>
-    public required FundBalanceModel PreviousBalance { get; init; }
+    public required FundBalanceModel? PreviousBalance { get; init; }
 
     /// <summary>
     /// Fund balance after the balance event.
+    /// Null until the event posts.
     /// </summary>
-    public required FundBalanceModel NewBalance { get; init; }
+    public required FundBalanceModel? NewBalance { get; init; }
 }

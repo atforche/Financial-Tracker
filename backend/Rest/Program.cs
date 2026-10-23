@@ -101,7 +101,9 @@ _ = builder.Services.AddRateLimiter(options =>
         bool isReadRequest = HttpMethods.IsGet(context.Request.Method)
             || HttpMethods.IsHead(context.Request.Method)
             || HttpMethods.IsOptions(context.Request.Method);
-        int permitLimit = isReadRequest ? 120 : 30;
+        // Previews never persist anything, so they get their own budget rather than consuming the one that
+        // real saves need. They briefly write and roll back, so that budget is lower than the read budget.
+        int permitLimit = isReadRequest ? 120 : IsTransactionPreviewRequest(context.Request) ? 60 : 30;
         string subject = context.User.FindFirst("sub")?.Value
             ?? context.Connection.RemoteIpAddress?.ToString()
             ?? "unknown";
@@ -234,4 +236,22 @@ if (shouldLaunchAPI)
 else if (isTesting)
 {
     app.Run();
+}
+
+// Determines whether the request previews a Transaction change: POST /transactions/preview,
+// /transactions/{id}/preview, or /transactions/{id}/post/preview.
+static bool IsTransactionPreviewRequest(HttpRequest request)
+{
+    if (!HttpMethods.IsPost(request.Method))
+    {
+        return false;
+    }
+    string[] segments = (request.Path.Value ?? "").Split('/', StringSplitOptions.RemoveEmptyEntries);
+    return segments switch
+    {
+        ["transactions", "preview"] => true,
+        ["transactions", var id, "preview"] => Guid.TryParse(id, out _),
+        ["transactions", var id, "post", "preview"] => Guid.TryParse(id, out _),
+        _ => false,
+    };
 }

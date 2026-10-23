@@ -16,33 +16,12 @@ public sealed class FundGoalTotalsModel
     public required decimal AmountAssignedToExpectedContribution { get; init; }
 
     /// <summary>
-    /// Amount assigned including unposted Transaction effects.
-    /// </summary>
-    public required decimal AmountAssignedIncludingPending { get; init; }
-
-    /// <summary>
-    /// Amount to assign toward the expected monthly contribution including
-    /// unposted Transaction effects.
-    /// </summary>
-    public required decimal AmountAssignedToExpectedContributionIncludingPending { get; init; }
-
-    /// <summary>
     /// Amount remaining to assign toward the expected monthly contribution.
     /// </summary>
     public required decimal RemainingAmountToAssignToExpectedContribution { get; init; }
 
     /// <summary>
-    /// Amount remaining to assign toward the expected monthly contribution including pending effects.
-    /// </summary>
-    public required decimal RemainingAmountToAssignToExpectedContributionIncludingPending { get; init; }
-
-    /// <summary>
     /// Posted amount spent.
     /// </summary>
     public required decimal AmountSpent { get; init; }
-
-    /// <summary>
-    /// Amount spent including unposted Transaction effects.
-    /// </summary>
-    public required decimal AmountSpentIncludingPending { get; init; }
 }

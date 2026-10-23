@@ -15,6 +15,7 @@ import {
   validateFundAssignments,
   validateSource,
 } from "@/transactions/workspace/spending/helpers";
+import { type Transaction, asSpendingTransaction } from "@/transactions/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CollectionEditor from "@/framework/view/CollectionEditor";
 import type { Dayjs } from "dayjs";
@@ -64,6 +65,7 @@ interface SpendingTransactionFormProps<RequestPayload> {
   readonly state: TransactionFormState;
   readonly pending: boolean;
   readonly request: RequestPayload | null;
+  readonly preview?: Transaction | null;
   readonly onReset: () => void;
   readonly onSubmit: (request: RequestPayload) => void;
 }
@@ -92,9 +94,12 @@ const SpendingTransactionForm = function <RequestPayload>({
   state,
   pending,
   request,
+  preview = null,
   onReset,
   onSubmit,
 }: SpendingTransactionFormProps<RequestPayload>): JSX.Element {
+  const transactionPreview =
+    preview === null ? null : asSpendingTransaction(preview);
   const unassignedFund =
     funds.find((fund) => fund.name === "Unassigned") ?? null;
   const currentFundGoals = fundGoals.filter(
@@ -144,6 +149,7 @@ const SpendingTransactionForm = function <RequestPayload>({
       setDescription={setDescription}
       sourceContent={
         <SpendingTransactionSourceFrame
+          accountBalanceEvent={transactionPreview?.source.account ?? null}
           color={sourceIsValid ? "info" : "error"}
           accounts={accounts}
           transaction={null}
@@ -177,6 +183,12 @@ const SpendingTransactionForm = function <RequestPayload>({
               }
               fundAssignmentsValid={validateFundAssignments(destination)}
               index={index}
+              accountBalanceEvent={
+                transactionPreview?.destinations[index]?.account ?? null
+              }
+              fundBalanceEvents={
+                transactionPreview?.destinations[index]?.fundAssignments
+              }
               accounts={accounts}
               funds={funds}
               fundGoals={currentFundGoals}
@@ -211,7 +223,6 @@ const SpendingTransactionForm = function <RequestPayload>({
                   fundAssignments,
                 }));
               }}
-              baselineFundAssignments={destination.baselineFundAssignments}
               filter={buildDestinationAccountFilter(
                 accounts,
                 destinations,

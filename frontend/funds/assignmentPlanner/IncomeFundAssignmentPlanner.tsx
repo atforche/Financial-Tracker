@@ -1,5 +1,5 @@
 import { Checkbox, FormControlLabel, Stack } from "@mui/material";
-import type { Fund, FundWithBalance } from "@/funds/types";
+import type { Fund, FundBalanceEvent, FundWithBalance } from "@/funds/types";
 import {
   type FundAssignmentDraft,
   addFundAssignment as appendFundAssignment,
@@ -8,22 +8,21 @@ import {
   getContributionRemainingAmount,
   getExplicitFundAssignments,
   getFundOptionSecondaryLabel,
-  getRemainingFundAmount,
   getSuggestedAmount,
+  getUnassignedFundAmount,
   deleteFundAssignment as removeFundAssignment,
   sortFundsByRemainingAmount,
   updateFundAssignment,
 } from "@/funds/assignmentPlanner/helpers";
+import type {
+  FundGoalBalanceEvent,
+  FundGoalWithProgress,
+} from "@/fund-goals/types";
 import { type JSX, useState } from "react";
-import {
-  compareCurrencyAmounts,
-  getCurrencyTotal,
-  getMaximumCurrencyAmount,
-} from "@/framework/currencyHelpers";
 import BalanceChangeChip from "@/framework/view/BalanceChangeChip";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
-import type { FundGoalWithProgress } from "@/fund-goals/types";
 import Toast from "@/framework/alerts/Toast";
+import { compareCurrencyAmounts } from "@/framework/currencyHelpers";
 import { getUnassignedFund } from "@/funds/helpers";
 
 /**
@@ -32,6 +31,8 @@ import { getUnassignedFund } from "@/funds/helpers";
 interface IncomeFundAssignmentPlannerProps {
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
+  readonly fundBalanceEvents?: FundBalanceEvent[];
+  readonly fundGoalBalanceEvents?: FundGoalBalanceEvent[];
   readonly totalAmountToAssign: number | null;
   readonly fundAssignments: FundAssignmentDraft[];
   readonly setFundAssignments:
@@ -40,12 +41,18 @@ interface IncomeFundAssignmentPlannerProps {
   readonly readOnly?: boolean;
 }
 
+const emptyFundBalanceEvents: FundBalanceEvent[] = [];
+const emptyFundGoalBalanceEvents: FundGoalBalanceEvent[] = [];
+
 /**
- * Displays the fund assignment planner for income transactions.
+ * Displays the fund assignment planner for income transactions. Shows each fund's balance and goal
+ * changes from its balance events once they have posted.
  */
 const IncomeFundAssignmentPlanner = function ({
   funds,
   fundGoals,
+  fundBalanceEvents = emptyFundBalanceEvents,
+  fundGoalBalanceEvents = emptyFundGoalBalanceEvents,
   totalAmountToAssign,
   fundAssignments,
   setFundAssignments,
@@ -56,9 +63,6 @@ const IncomeFundAssignmentPlanner = function ({
     null,
   );
   const unassignedFund = getUnassignedFund(funds);
-  const unassignedFundWithBalance = funds.find(
-    (fund) => fund.id === unassignedFund?.id,
-  );
   const storedUnassignedAssignment = fundAssignments.find(
     (assignment) => assignment.fundId === unassignedFund?.id,
   );
@@ -70,7 +74,7 @@ const IncomeFundAssignmentPlanner = function ({
           fundId: unassignedFund.id,
           fundName: unassignedFund.name,
           amount:
-            getRemainingFundAmount(totalAmountToAssign, fundAssignments) ?? 0,
+            getUnassignedFundAmount(totalAmountToAssign, fundAssignments) ?? 0,
         });
   const plannerFundAssignments = readOnly
     ? fundAssignments
@@ -166,41 +170,23 @@ const IncomeFundAssignmentPlanner = function ({
           if (newFund === null) {
             return createFundAssignmentDraft(assignment.amount);
           }
-          const fund = funds.find((f) => f.id === newFund.id);
-          const previousFundBalance = fund?.currentBalance.postedBalance ?? 0;
-          const previousGoalAmount =
-            getContributionRemainingAmount(
-              newFund.id,
-              fundGoals,
-              baselineFundAssignments,
-            ) ?? 0;
           const recommendedAmount = getSuggestedAmount(
             totalAmountToAssign,
             fundAssignments,
             getExplicitAssignmentIndex(index),
-            previousGoalAmount,
+            getContributionRemainingAmount(
+              newFund.id,
+              fundGoals,
+              baselineFundAssignments,
+            ) ?? 0,
           );
-          const isExtraContribution =
-            hasPlannedMonthlyContribution(newFund.id) &&
-            assignment.isExtraContribution;
           return {
             fundId: newFund.id,
             fundName: newFund.name,
             amount: recommendedAmount,
-            isExtraContribution,
-            previousFundBalance,
-            newFundBalance: getCurrencyTotal([
-              previousFundBalance,
-              recommendedAmount,
-            ]),
-            previousGoalAmount,
-            newGoalAmount: getMaximumCurrencyAmount(
-              getCurrencyTotal([
-                previousGoalAmount,
-                isExtraContribution ? 0 : -recommendedAmount,
-              ]),
-              0,
-            ),
+            isExtraContribution:
+              hasPlannedMonthlyContribution(newFund.id) &&
+              assignment.isExtraContribution,
           };
         },
       ),
@@ -217,21 +203,7 @@ const IncomeFundAssignmentPlanner = function ({
         totalAmountToAssign,
         fundAssignments,
         getExplicitAssignmentIndex(index),
-        (assignment) => ({
-          ...assignment,
-          amount: newAmount ?? 0,
-          newFundBalance: getCurrencyTotal([
-            assignment.previousFundBalance,
-            newAmount ?? 0,
-          ]),
-          newGoalAmount: getMaximumCurrencyAmount(
-            getCurrencyTotal([
-              assignment.previousGoalAmount,
-              assignment.isExtraContribution ? 0 : -(newAmount ?? 0),
-            ]),
-            0,
-          ),
-        }),
+        (assignment) => ({ ...assignment, amount: newAmount ?? 0 }),
       ),
     );
   };
@@ -246,17 +218,7 @@ const IncomeFundAssignmentPlanner = function ({
         totalAmountToAssign,
         fundAssignments,
         getExplicitAssignmentIndex(index),
-        (assignment) => ({
-          ...assignment,
-          isExtraContribution,
-          newGoalAmount: getMaximumCurrencyAmount(
-            getCurrencyTotal([
-              assignment.previousGoalAmount,
-              isExtraContribution ? 0 : -assignment.amount,
-            ]),
-            0,
-          ),
-        }),
+        (assignment) => ({ ...assignment, isExtraContribution }),
       ),
     );
   };
@@ -267,42 +229,56 @@ const IncomeFundAssignmentPlanner = function ({
     if (assignment.fundId === "") {
       return null;
     }
-    const isSyntheticUnassignedAssignment =
-      assignment.fundId === unassignedFund?.id &&
-      !fundAssignments.includes(assignment);
-    const previousFundBalance = isSyntheticUnassignedAssignment
-      ? (unassignedFundWithBalance?.currentBalance.postedBalance ?? 0)
-      : assignment.previousFundBalance;
-    const newFundBalance = isSyntheticUnassignedAssignment
-      ? getCurrencyTotal([previousFundBalance, assignment.amount])
-      : assignment.newFundBalance;
-    const previousGoalAmount = isSyntheticUnassignedAssignment
-      ? 0
-      : assignment.previousGoalAmount;
-    const newGoalAmount = isSyntheticUnassignedAssignment
-      ? assignment.amount
-      : assignment.newGoalAmount;
+    const balanceEvent = fundBalanceEvents.find(
+      (candidate) => candidate.fund.id === assignment.fundId,
+    );
+    const goalEvent = fundGoalBalanceEvents.find(
+      (candidate) => candidate.fund.id === assignment.fundId,
+    );
+    const previousBalance = balanceEvent?.previousBalance ?? null;
+    const newBalance = balanceEvent?.newBalance ?? null;
+    const previousTotals = goalEvent?.previousTotals ?? null;
+    const newTotals = goalEvent?.newTotals ?? null;
+    const showGoal =
+      previousTotals !== null &&
+      newTotals !== null &&
+      hasPlannedMonthlyContribution(assignment.fundId);
+    const showBalance = previousBalance !== null && newBalance !== null;
+    if (!showGoal && !showBalance) {
+      return null;
+    }
 
     return (
       <Stack direction={{ xs: "column", sm: "row" }} spacing={1} useFlexGap>
-        <BalanceChangeChip
-          label="Remaining to Assign"
-          previousValue={previousGoalAmount}
-          newValue={newGoalAmount}
-          color={
-            compareCurrencyAmounts(newGoalAmount, 0) <= 0
-              ? "success"
-              : "default"
-          }
-        />
-        <BalanceChangeChip
-          label="Balance"
-          previousValue={previousFundBalance}
-          newValue={newFundBalance}
-          color={
-            compareCurrencyAmounts(newFundBalance, 0) >= 0 ? "success" : "error"
-          }
-        />
+        {showGoal ? (
+          <BalanceChangeChip
+            label="Remaining to Assign"
+            previousValue={
+              previousTotals.remainingAmountToAssignToExpectedContribution
+            }
+            newValue={newTotals.remainingAmountToAssignToExpectedContribution}
+            color={
+              compareCurrencyAmounts(
+                newTotals.remainingAmountToAssignToExpectedContribution,
+                0,
+              ) <= 0
+                ? "success"
+                : "default"
+            }
+          />
+        ) : null}
+        {showBalance ? (
+          <BalanceChangeChip
+            label="Balance"
+            previousValue={previousBalance.postedBalance}
+            newValue={newBalance.postedBalance}
+            color={
+              compareCurrencyAmounts(newBalance.postedBalance, 0) >= 0
+                ? "success"
+                : "error"
+            }
+          />
+        ) : null}
       </Stack>
     );
   };
@@ -313,6 +289,7 @@ const IncomeFundAssignmentPlanner = function ({
   ): JSX.Element | null {
     if (
       assignment.fundId === "" ||
+      assignment.fundId === unassignedFund?.id ||
       (!hasPlannedMonthlyContribution(assignment.fundId) &&
         !assignment.isExtraContribution)
     ) {

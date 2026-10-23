@@ -87,10 +87,10 @@ public sealed class TransactionCalculationGapTests
             Destinations = [new UpdateSpendingTransactionDestinationModel { Location = new Models.Locations.LocationInputModel { NewLocationName = "Market" }, Amount = 25m, FundAssignments = [new CreateFundAmountModel { FundId = newFund.Id, Amount = 25m }] }]
         };
         await test.Api.PostAsync($"/transactions/{transaction.Id}", update);
-        Assert.Equal(0m, (await test.FundQueries.GetBalanceAsync(oldFund)).IncludingPending);
-        Assert.Equal(-25m, (await test.FundQueries.GetBalanceAsync(newFund)).IncludingPending);
-        Assert.Equal(0m, (await test.FundGoalQueries.GetAvailabilityAsync(oldFund.Goal)).IncludingPending);
-        Assert.Equal(-25m, (await test.FundGoalQueries.GetAvailabilityAsync(newFund.Goal)).IncludingPending);
+        Assert.Equal(0m, (await test.FundQueries.GetBalanceAsync(oldFund)).PostedWithPending);
+        Assert.Equal(-25m, (await test.FundQueries.GetBalanceAsync(newFund)).PostedWithPending);
+        Assert.Equal(0m, (await test.FundGoalQueries.GetAvailabilityAsync(oldFund.Goal)).PostedWithPending);
+        Assert.Equal(-25m, (await test.FundGoalQueries.GetAvailabilityAsync(newFund.Goal)).PostedWithPending);
 
         await test.Transactions.PostAsync(transaction, cash, new DateOnly(2026, 7, 16));
         Assert.Equal(0m, (await test.FundQueries.GetBalanceAsync(oldFund)).Posted);
@@ -191,7 +191,7 @@ public sealed class TransactionCalculationGapTests
         await test.Transactions.DeleteAsync(spend);
 
         Assert.Equal(160m, (await test.AccountQueries.GetBalanceAsync(cash)).Posted);
-        Assert.Equal(160m, (await test.AccountQueries.GetBalanceAsync(cash)).IncludingPending);
+        Assert.Equal(160m, (await test.AccountQueries.GetBalanceAsync(cash)).PostedWithPending);
         await AssertFundAndGoalAsync(test, income, 60m);
         await AssertFundAndGoalAsync(test, groceries, 0m);
         AccountingPeriodBalanceSnapshot period = await test.AccountingPeriodQueries.GetBalanceAsync(july);
@@ -234,14 +234,14 @@ public sealed class TransactionCalculationGapTests
     {
         FundGoalAvailabilitySnapshot goal = await test.FundGoalQueries.GetAvailabilityAsync(fund.Goal);
         Assert.Equal(posted, goal.Posted);
-        Assert.Equal(includingPending, goal.IncludingPending);
+        Assert.Equal(includingPending, goal.PostedWithPending);
     }
 
     private static async Task AssertFundAndGoalAsync(FinancialTrackerTestContext test, FundHandle fund, decimal expected)
     {
         FundBalanceSnapshot balance = await test.FundQueries.GetBalanceAsync(fund);
         Assert.Equal(expected, balance.Posted);
-        Assert.Equal(expected, balance.IncludingPending);
+        Assert.Equal(expected, balance.PostedWithPending);
         await AssertGoalAsync(test, fund, expected, expected);
     }
 
@@ -250,11 +250,11 @@ public sealed class TransactionCalculationGapTests
         AccountBalanceSnapshot cashBalance = await test.AccountQueries.GetBalanceAsync(cash);
         AccountBalanceSnapshot cardBalance = await test.AccountQueries.GetBalanceAsync(card);
         Assert.Equal(cashPosted, cashBalance.Posted);
-        Assert.Equal(cashPending, cashBalance.IncludingPending);
+        Assert.Equal(cashPending, cashBalance.PostedWithPending);
         Assert.Equal(cardPosted, cardBalance.Posted);
-        Assert.Equal(cardPending, cardBalance.IncludingPending);
+        Assert.Equal(cardPending, cardBalance.PostedWithPending);
         Assert.Equal(groceriesPosted, (await test.FundQueries.GetBalanceAsync(groceries)).Posted);
-        Assert.Equal(groceriesPending, (await test.FundQueries.GetBalanceAsync(groceries)).IncludingPending);
+        Assert.Equal(groceriesPending, (await test.FundQueries.GetBalanceAsync(groceries)).PostedWithPending);
         await AssertGoalAsync(test, groceries, groceriesPosted, groceriesPending);
         await AssertGoalAsync(test, dining, diningPosted, diningPending);
     }

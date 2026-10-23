@@ -92,8 +92,8 @@ public sealed class FundConverter
         CurrentBalance = new FundBalanceModel
         {
             PostedBalance = balance.PostedBalance,
-            BalanceIncludingPending = balance.BalanceIncludingPending,
         },
+        PendingAmount = balance.PendingAmount,
     };
 
     /// <summary>

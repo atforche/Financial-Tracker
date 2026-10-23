@@ -1,5 +1,6 @@
 import type {
   Account,
+  AccountBalanceEvent,
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
@@ -32,7 +33,7 @@ interface TransactionAccountOrLocationFrameProps {
   readonly location: LocationDraft | null;
   readonly setLocation: ((location: LocationDraft | null) => void) | null;
   readonly accountFilter?: ((account: Account) => boolean) | null;
-  readonly balanceChange?: number | null;
+  readonly balanceEvent?: AccountBalanceEvent | null;
   readonly readOnly?: boolean;
   readonly autoFocus?: boolean;
 }
@@ -52,7 +53,7 @@ const TransactionAccountOrLocationFrame = function ({
   location,
   setLocation,
   accountFilter = null,
-  balanceChange = null,
+  balanceEvent = null,
   readOnly = false,
   autoFocus = false,
 }: TransactionAccountOrLocationFrameProps): JSX.Element {
@@ -70,7 +71,7 @@ const TransactionAccountOrLocationFrame = function ({
         setAccount={null}
         accountFilter={accountFilter}
         label={accountCaption}
-        balanceChange={balanceChange}
+        balanceEvent={balanceEvent}
       />
     );
   }
@@ -145,12 +146,7 @@ const TransactionAccountOrLocationFrame = function ({
   const setDestination = (option: DestinationOption | null): void => {
     if (option?.kind === "account") {
       setAccount?.(
-        getSelectedTransactionAccountDraft(
-          accounts,
-          option.account,
-          account,
-          balanceChange,
-        ),
+        getSelectedTransactionAccountDraft(accounts, option.account),
       );
       setLocation?.(null);
     } else if (option?.kind === "location") {
@@ -213,7 +209,7 @@ const TransactionAccountOrLocationFrame = function ({
           setAccount={setAccount}
           accountFilter={accountFilter}
           label={accountCaption}
-          balanceChange={balanceChange}
+          balanceEvent={balanceEvent}
           showAccountEntry={false}
         />
       ) : null}

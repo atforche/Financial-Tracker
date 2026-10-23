@@ -10,6 +10,7 @@ import {
   validateDestination,
   validateSource,
 } from "@/transactions/workspace/refund/helpers";
+import { type Transaction, asRefundTransaction } from "@/transactions/types";
 import type { AccountWithBalance } from "@/accounts/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CollectionEditor from "@/framework/view/CollectionEditor";
@@ -58,6 +59,7 @@ interface Props<RequestPayload> {
   readonly state: FormState;
   readonly pending: boolean;
   readonly request: RequestPayload | null;
+  readonly preview?: Transaction | null;
   readonly onReset: () => void;
   readonly onSubmit: (request: RequestPayload) => void;
 }
@@ -86,9 +88,12 @@ const RefundTransactionForm = function <RequestPayload>({
   state,
   pending,
   request,
+  preview = null,
   onReset,
   onSubmit,
 }: Props<RequestPayload>): JSX.Element {
+  const transactionPreview =
+    preview === null ? null : asRefundTransaction(preview);
   const currentGoals = fundGoals.filter(
     (goal) => goal.accountingPeriod?.id === accountingPeriod?.id,
   );
@@ -126,6 +131,12 @@ const RefundTransactionForm = function <RequestPayload>({
             <SpendingTransactionDestinationFrame
               key={`refund-source-${index}`}
               index={index}
+              accountBalanceEvent={
+                transactionPreview?.sources[index]?.account ?? null
+              }
+              fundBalanceEvents={
+                transactionPreview?.sources[index]?.fundAssignments
+              }
               accounts={accounts}
               funds={funds}
               fundGoals={currentGoals}
@@ -161,7 +172,6 @@ const RefundTransactionForm = function <RequestPayload>({
               setFundAssignments={(fundAssignments) => {
                 updateSource(index, (item) => ({ ...item, fundAssignments }));
               }}
-              baselineFundAssignments={source.baselineFundAssignments}
               filter={buildSourceAccountFilter(
                 accounts,
                 sources,
@@ -172,7 +182,6 @@ const RefundTransactionForm = function <RequestPayload>({
               accountCaption="Source Account"
               locationCaption="Source Location"
               entryCaption="Source"
-              assignmentEffect="refund"
               color={validateSource(source) ? "info" : "error"}
               autoFocus={controls.autoFocus}
               onRemove={sources.length > 1 ? controls.onRemove : null}
@@ -182,6 +191,7 @@ const RefundTransactionForm = function <RequestPayload>({
       }
       destinationContent={
         <SpendingTransactionSourceFrame
+          accountBalanceEvent={transactionPreview?.destination.account ?? null}
           accounts={accounts}
           account={destination.account}
           setAccount={(account) => {
@@ -192,7 +202,6 @@ const RefundTransactionForm = function <RequestPayload>({
           accountFilter={buildDestinationAccountFilter(accounts, sources)}
           title="Destination"
           accountLabel="Destination Account"
-          balanceChange={total}
           color={validateDestination(destination, sources) ? "info" : "error"}
         />
       }

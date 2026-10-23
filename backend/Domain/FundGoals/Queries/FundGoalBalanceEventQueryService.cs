@@ -49,7 +49,6 @@ public sealed class FundGoalBalanceEventQueryService(
         IReadOnlyCollection<FundGoalBalanceEvent> events = transactions
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFundAndPeriod))
             .Where(balanceEvent => requestedFundIds.Contains(balanceEvent.Fund.Id)).ToList();
-        events = ProjectPendingEvents(events, transactions, historiesByFundAndPeriod);
         events = AddRemainingAmountToAssignToExpectedContribution(events);
         var requestedIds = requestedTransactions.Select(transaction => transaction.Id).ToHashSet();
         return events.Where(balanceEvent => requestedIds.Contains(balanceEvent.TransactionId)).ToList();
@@ -121,7 +120,6 @@ public sealed class FundGoalBalanceEventQueryService(
         IReadOnlyCollection<FundGoalBalanceEvent> events = transactions
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFundAndPeriod))
             .Where(balanceEvent => filter.FundIds.Count == 0 || filter.FundIds.Contains(balanceEvent.Fund.Id.Value)).ToList();
-        events = ProjectPendingEvents(events, transactions, historiesByFundAndPeriod);
         events = AddRemainingAmountToAssignToExpectedContribution(events);
         var allItems = Sort(events, sort).ToList();
         return new QueryPage<FundGoalBalanceEvent>(
@@ -184,11 +182,10 @@ public sealed class FundGoalBalanceEventQueryService(
     /// <summary>
     /// Calculates remaining expected monthly contribution amounts for a totals snapshot.
     /// </summary>
-    private static FundGoalTotals AddRemainingAmount(
-        FundGoalTotals totals,
-        decimal expectedAmount) => totals.WithRemainingAmountToAssignToExpectedContribution(
-            Math.Max(expectedAmount - totals.AmountAssignedToExpectedContribution, 0),
-            Math.Max(expectedAmount - totals.AmountAssignedToExpectedContributionIncludingPending, 0));
+    private static FundGoalTotals? AddRemainingAmount(
+        FundGoalTotals? totals,
+        decimal expectedAmount) => totals?.WithRemainingAmountToAssignToExpectedContribution(
+            Math.Max(expectedAmount - totals.AmountAssignedToExpectedContribution, 0));
 
     /// <summary>
     /// Retrieves interpreted Fund Goal balance events for a Transaction.
@@ -276,9 +273,9 @@ public sealed class FundGoalBalanceEventQueryService(
         FundGoalTotalsHistory? current = histories.SingleOrDefault(history => history.TransactionId == transaction.Id);
         int index = current == null ? -1 : histories.IndexOf(current);
         FundGoalTotalsHistory? previous = index > 0 ? histories[index - 1] : null;
-        FundGoalTotals previousTotals = ToTotals(fund.Id, previous);
-        FundGoalTotals newTotals = postedDate == null
-            ? ToTotals(fund.Id, current)
+        FundGoalTotals? previousTotals = postedDate == null ? null : ToTotals(fund.Id, previous);
+        FundGoalTotals? newTotals = previousTotals == null
+            ? null
             : transaction.ApplyAllPostedEffectsToFundGoalTotals(previousTotals);
         return new FundGoalBalanceEvent(
             period,
@@ -311,39 +308,7 @@ public sealed class FundGoalBalanceEventQueryService(
         fundId,
         history?.AmountAssigned ?? 0,
         history?.AmountSpent ?? 0,
-        history?.AmountAssignedToExpectedContribution ?? 0,
-        history?.AmountAssigned ?? 0,
-        history?.AmountAssignedToExpectedContribution ?? 0,
-        history?.AmountSpent ?? 0);
-
-    /// <summary>
-    /// Projects pending events from final posted Fund Goal totals in transaction order.
-    /// </summary>
-    private static List<FundGoalBalanceEvent> ProjectPendingEvents(
-        IReadOnlyCollection<FundGoalBalanceEvent> events,
-        IReadOnlyCollection<Transaction> transactions,
-        IReadOnlyDictionary<(FundId FundId, AccountingPeriodId PeriodId), List<FundGoalTotalsHistory>> histories)
-    {
-        var transactionsById = transactions.ToDictionary(transaction => transaction.Id);
-        var projected = events.ToList();
-        foreach (IGrouping<(FundId FundId, AccountingPeriodId PeriodId), FundGoalBalanceEvent> goalEvents in events.Where(item => !item.IsPosted)
-            .GroupBy(item => (item.Fund.Id, item.AccountingPeriod.Id)))
-        {
-            FundGoalTotals totals = ToTotals(goalEvents.Key.FundId, histories.GetValueOrDefault(goalEvents.Key)?.LastOrDefault());
-            foreach (IGrouping<TransactionId, FundGoalBalanceEvent> transactionEvents in goalEvents.GroupBy(item => item.TransactionId)
-                .OrderBy(group => transactionsById[group.Key].Date).ThenBy(group => transactionsById[group.Key].Sequence))
-            {
-                FundGoalTotals previous = totals;
-                totals = transactionsById[transactionEvents.Key].ApplyAsPostedToFundGoalTotals(totals);
-                foreach (FundGoalBalanceEvent balanceEvent in transactionEvents)
-                {
-                    int index = projected.IndexOf(balanceEvent);
-                    projected[index] = balanceEvent with { PreviousTotals = previous, NewTotals = totals };
-                }
-            }
-        }
-        return projected;
-    }
+        history?.AmountAssignedToExpectedContribution ?? 0);
 
     /// <summary>
     /// Sorts Fund Goal balance events by the provided sort order.

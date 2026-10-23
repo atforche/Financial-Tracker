@@ -62,12 +62,12 @@ public sealed class SpendingTransactionLifecycleTests
         FundGoalAvailabilitySnapshot goalAvailability = await test.FundGoalQueries.GetAvailabilityAsync(fund.Goal);
 
         Assert.Equal(expectedAccountPosted, accountBalance.Posted);
-        Assert.Equal(expectedAccountIncludingPending, accountBalance.IncludingPending);
+        Assert.Equal(expectedAccountIncludingPending, accountBalance.PostedWithPending);
         Assert.Equal(expectedFundPosted, fundBalance.Posted);
-        Assert.Equal(expectedFundIncludingPending, fundBalance.IncludingPending);
+        Assert.Equal(expectedFundIncludingPending, fundBalance.PostedWithPending);
         Assert.Equal(expectedPeriodOpening, periodBalance.Opening);
         Assert.Equal(expectedPeriodClosing, periodBalance.Closing);
         Assert.Equal(expectedGoalPosted, goalAvailability.Posted);
-        Assert.Equal(expectedGoalIncludingPending, goalAvailability.IncludingPending);
+        Assert.Equal(expectedGoalIncludingPending, goalAvailability.PostedWithPending);
     }
 }

@@ -105,8 +105,8 @@ public sealed class AccountConverter
         CurrentBalance = new AccountBalanceModel
         {
             PostedBalance = balance.PostedBalance,
-            BalanceIncludingPending = balance.BalanceIncludingPending,
         },
+        PendingAmount = balance.PendingAmount,
     };
 
     /// <summary>

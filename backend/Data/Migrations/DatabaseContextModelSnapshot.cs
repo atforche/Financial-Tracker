@@ -264,39 +264,6 @@ namespace Data.Migrations
                     b.ToTable("FundGoalTotalsHistories");
                 });
 
-            modelBuilder.Entity("Domain.FundGoals.PendingFundGoalTotalsEffect", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("AccountingPeriodId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("FundId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("PendingAmountAssigned")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("PendingAmountAssignedToExpectedContribution")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("PendingAmountSpent")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("TransactionId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FundId", "AccountingPeriodId");
-
-                    b.HasIndex("TransactionId", "FundId", "AccountingPeriodId")
-                        .IsUnique();
-
-                    b.ToTable("PendingFundGoalTotalsEffects");
-                });
-
             modelBuilder.Entity("Domain.Funds.Fund", b =>
                 {
                     b.Property<Guid>("Id")

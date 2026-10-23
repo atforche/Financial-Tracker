@@ -10,6 +10,7 @@ import {
   validateDestination,
   validateSource,
 } from "@/transactions/workspace/fund/helpers";
+import { type Transaction, asFundTransaction } from "@/transactions/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import CollectionEditor from "@/framework/view/CollectionEditor";
 import type { Dayjs } from "dayjs";
@@ -53,6 +54,7 @@ interface FundTransactionFormProps<RequestPayload> {
   readonly state: TransactionFormState;
   readonly pending: boolean;
   readonly request: RequestPayload | null;
+  readonly preview?: Transaction | null;
   readonly onReset: () => void;
   readonly onSubmit: (request: RequestPayload) => void;
 }
@@ -79,9 +81,12 @@ const FundTransactionForm = function <RequestPayload>({
   state,
   pending,
   request,
+  preview = null,
   onReset,
   onSubmit,
 }: FundTransactionFormProps<RequestPayload>): JSX.Element {
+  const transactionPreview =
+    preview === null ? null : asFundTransaction(preview);
   const updateDestination = function (
     index: number,
     recipe: (current: FundDestinationDraft) => FundDestinationDraft,
@@ -114,6 +119,7 @@ const FundTransactionForm = function <RequestPayload>({
       setDescription={setDescription}
       sourceContent={
         <FundTransactionSourceFrame
+          fundBalanceEvent={transactionPreview?.source.fund ?? null}
           color={sourceIsValid ? "info" : "error"}
           funds={funds}
           fund={source.fund}
@@ -143,6 +149,9 @@ const FundTransactionForm = function <RequestPayload>({
                 validateDestination(destination, source.fund) ? "info" : "error"
               }
               index={index}
+              fundBalanceEvent={
+                transactionPreview?.destinations[index]?.fund ?? null
+              }
               funds={funds}
               fund={destination.fund}
               setFund={(fund): void => {

@@ -74,7 +74,7 @@ public sealed class TransactionReadAndValidationTests
         Assert.Empty(accountEvents.Items);
         Assert.Empty(fundEvents.Items);
         Assert.Contains(periodAccountEvents.Items, item => item.TransactionId == transaction.Id && !item.IsPosted && item.Amount == 80m);
-        Assert.Contains(goalEvents.Items, item => item.TransactionId == transaction.Id && !item.IsPosted && item.NewTotals.AmountSpentIncludingPending == 80m);
+        Assert.Contains(goalEvents.Items, item => item.TransactionId == transaction.Id && !item.IsPosted && item.NewTotals == null);
     }
 
     /// <summary>

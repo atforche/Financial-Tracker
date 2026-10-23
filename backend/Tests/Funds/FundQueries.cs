@@ -16,6 +16,6 @@ internal sealed class FundQueries(TestApiClient apiClient)
     {
         CollectionModel<FundWithBalanceModel> response = await apiClient.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
         FundWithBalanceModel model = response.Items.Single(item => item.Id == fund.Id);
-        return new FundBalanceSnapshot(model.CurrentBalance.PostedBalance, model.CurrentBalance.BalanceIncludingPending);
+        return new FundBalanceSnapshot(model.CurrentBalance.PostedBalance, model.PendingAmount);
     }
 }

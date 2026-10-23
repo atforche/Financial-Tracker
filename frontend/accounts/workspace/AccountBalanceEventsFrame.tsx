@@ -67,8 +67,9 @@ const AccountBalanceEventsFrame = function ({
 
   const columns: readonly ColumnDefinition<AccountBalanceEvent>[] =
     createBalanceEventColumns<AccountBalanceEvent>({
-      getPreviousBalance: (event) => event.previousBalance.postedBalance,
-      getNewBalance: (event) => event.newBalance.postedBalance,
+      getPreviousBalance: (event) =>
+        event.previousBalance?.postedBalance ?? null,
+      getNewBalance: (event) => event.newBalance?.postedBalance ?? null,
       getCounterpartyContent: formatBalanceEventCounterparty,
       counterpartySortProps: getSortProps(
         AccountBalanceEventSort.Counterparty,

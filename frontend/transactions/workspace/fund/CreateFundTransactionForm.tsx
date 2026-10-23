@@ -15,6 +15,7 @@ import type { FundWithBalance } from "@/funds/types";
 import type { TransactionDetails } from "@/transactions/workspace/TransactionForm";
 import { getDefaultDate } from "@/transactions/workspace/helpers";
 import { useCreateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
+import useTransactionPreview from "@/transactions/workspace/useTransactionPreview";
 
 /**
  * Props for the CreateFundTransactionForm component.
@@ -68,6 +69,9 @@ const CreateFundTransactionForm = function ({
     source,
     destinations,
   );
+  const preview = useTransactionPreview(
+    request === null ? null : { transactionId: null, request },
+  );
 
   return (
     <FundTransactionForm<CreateTransactionRequest>
@@ -89,6 +93,7 @@ const CreateFundTransactionForm = function ({
       state={state}
       pending={pending}
       request={request}
+      preview={preview}
       onReset={reset}
       onSubmit={submit}
     />

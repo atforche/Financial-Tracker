@@ -831,6 +831,124 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/transactions/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Previews the Transaction that would be created with the provided properties, without saving it.
+         *     Its balance events are reported as if every Account were posted on the Transaction's date.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateTransactionModel"];
+                    "text/json": components["schemas"]["CreateTransactionModel"];
+                    "application/*+json": components["schemas"]["CreateTransactionModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionModel"];
+                        "application/json": components["schemas"]["TransactionModel"];
+                        "text/json": components["schemas"]["TransactionModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/transactions/{transactionId}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Previews the provided Transaction as it would be after the update, without saving it. Its balance
+         *     events are reported as if every Account were posted on the Transaction's date.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    transactionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateTransactionModel"];
+                    "text/json": components["schemas"]["UpdateTransactionModel"];
+                    "application/*+json": components["schemas"]["UpdateTransactionModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionModel"];
+                        "application/json": components["schemas"]["TransactionModel"];
+                        "text/json": components["schemas"]["TransactionModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/transactions/{transactionId}/post": {
         parameters: {
             query?: never;
@@ -841,6 +959,66 @@ export interface paths {
         get?: never;
         put?: never;
         /** Posts the provided Transaction */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    transactionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PostTransactionModel"];
+                    "text/json": components["schemas"]["PostTransactionModel"];
+                    "application/*+json": components["schemas"]["PostTransactionModel"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TransactionModel"];
+                        "application/json": components["schemas"]["TransactionModel"];
+                        "text/json": components["schemas"]["TransactionModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/transactions/{transactionId}/post/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Previews the provided Transaction as it would be immediately after posting it, including its
+         *     balance events, without saving the posting
+         */
         post: {
             parameters: {
                 query?: never;
@@ -3349,10 +3527,8 @@ export interface components {
             source: components["schemas"]["AccountBalanceEventPartyModel"];
             /** @description Destinations of the transaction associated with the balance event. */
             destinations: components["schemas"]["AccountBalanceEventPartyModel"][];
-            /** @description Account balance prior to the balance event. */
-            previousBalance: components["schemas"]["AccountBalanceModel"];
-            /** @description Account balance after the balance event. */
-            newBalance: components["schemas"]["AccountBalanceModel"];
+            previousBalance: null | components["schemas"]["AccountBalanceModel"];
+            newBalance: null | components["schemas"]["AccountBalanceModel"];
             /** @description Accounting Period for the balance event. */
             accountingPeriod: components["schemas"]["AccountingPeriodModel"];
             /**
@@ -3411,11 +3587,6 @@ export interface components {
              * @description Posted Balance for the Account Balance
              */
             postedBalance: number;
-            /**
-             * Format: double
-             * @description Balance including pending debit and credit amounts for the Account Balance
-             */
-            balanceIncludingPending: number;
         };
         /** @description Model representing a summary of account balances for a specific date. */
         AccountBalanceSummaryByDateModel: {
@@ -3796,6 +3967,11 @@ export interface components {
         AccountWithBalanceModel: {
             /** @description Current Balance for the Account along with its details. */
             currentBalance: components["schemas"]["AccountBalanceModel"];
+            /**
+             * Format: double
+             * @description Net change from unposted Transactions, which is not included in the current balance.
+             */
+            pendingAmount: number;
             /**
              * Format: uuid
              * @description ID for the Account
@@ -4534,10 +4710,8 @@ export interface components {
             source: components["schemas"]["FundBalanceEventPartyModel"];
             /** @description Destinations associated with the balance event's Transaction. */
             destinations: components["schemas"]["FundBalanceEventPartyModel"][];
-            /** @description Fund balance prior to the balance event. */
-            previousBalance: components["schemas"]["FundBalanceModel"];
-            /** @description Fund balance after the balance event. */
-            newBalance: components["schemas"]["FundBalanceModel"];
+            previousBalance: null | components["schemas"]["FundBalanceModel"];
+            newBalance: null | components["schemas"]["FundBalanceModel"];
             /** @description Accounting Period for the balance event. */
             accountingPeriod: components["schemas"]["AccountingPeriodModel"];
             /**
@@ -4596,11 +4770,6 @@ export interface components {
              * @description Posted Balance for the Fund Balance
              */
             postedBalance: number;
-            /**
-             * Format: double
-             * @description Balance including pending Transaction effects.
-             */
-            balanceIncludingPending: number;
         };
         /** @description Model representing a summary of fund balances for a specific date. */
         FundBalanceSummaryByDateModel: {
@@ -4660,10 +4829,8 @@ export interface components {
             source: components["schemas"]["FundGoalBalanceEventPartyModel"];
             /** @description Destinations associated with the balance event's Transaction. */
             destinations: components["schemas"]["FundGoalBalanceEventPartyModel"][];
-            /** @description Totals immediately before the Transaction. */
-            previousTotals: components["schemas"]["FundGoalTotalsModel"];
-            /** @description Totals immediately after the Transaction. */
-            newTotals: components["schemas"]["FundGoalTotalsModel"];
+            previousTotals: null | components["schemas"]["FundGoalTotalsModel"];
+            newTotals: null | components["schemas"]["FundGoalTotalsModel"];
             /** @description Accounting Period for the balance event. */
             accountingPeriod: components["schemas"]["AccountingPeriodModel"];
             /**
@@ -4810,35 +4977,14 @@ export interface components {
             amountAssignedToExpectedContribution: number;
             /**
              * Format: double
-             * @description Amount assigned including unposted Transaction effects.
-             */
-            amountAssignedIncludingPending: number;
-            /**
-             * Format: double
-             * @description Amount to assign toward the expected monthly contribution including
-             *     unposted Transaction effects.
-             */
-            amountAssignedToExpectedContributionIncludingPending: number;
-            /**
-             * Format: double
              * @description Amount remaining to assign toward the expected monthly contribution.
              */
             remainingAmountToAssignToExpectedContribution: number;
             /**
              * Format: double
-             * @description Amount remaining to assign toward the expected monthly contribution including pending effects.
-             */
-            remainingAmountToAssignToExpectedContributionIncludingPending: number;
-            /**
-             * Format: double
              * @description Posted amount spent.
              */
             amountSpent: number;
-            /**
-             * Format: double
-             * @description Amount spent including unposted Transaction effects.
-             */
-            amountSpentIncludingPending: number;
         };
         /** @description Model representing a Fund */
         FundModel: {
@@ -4900,6 +5046,11 @@ export interface components {
         FundWithBalanceModel: {
             /** @description Current balance for the Fund along with its details. */
             currentBalance: components["schemas"]["FundBalanceModel"];
+            /**
+             * Format: double
+             * @description Net change from unposted Transactions, which is not included in the current balance.
+             */
+            pendingAmount: number;
             /**
              * Format: uuid
              * @description ID for the Fund

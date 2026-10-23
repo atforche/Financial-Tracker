@@ -28,7 +28,6 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
 import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 import type { FundBalanceEvent } from "@/funds/types";
-import type { FundGoalBalanceEvent } from "@/fund-goals/types";
 import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/accountBalanceEventDraft";
 import { hasIncompleteFundAssignments } from "@/funds/helpers";
 import { isTrackedAccountType } from "@/accounts/helpers";
@@ -181,6 +180,18 @@ const validateSource = function (source: IncomeSourceDraft): boolean {
     hasValidIncomeDeductions &&
     compareCurrencyAmounts(getNetIncomeAmount(source), 0) >= 0
   );
+};
+
+/**
+ * Determines whether the account is tracked, or null when its account type is not known yet.
+ */
+const isTrackedAccount = function (
+  account: AccountBalanceEventDraft | null,
+): boolean | null {
+  const accountType = account?.accountType;
+  return accountType === null || accountType === undefined
+    ? null
+    : isTrackedAccountType(accountType);
 };
 
 /**
@@ -415,26 +426,12 @@ const getSourceFromTransaction = function (
  */
 const getFundAssignmentFromTransactionFund = (
   assignment: FundBalanceEvent,
-  fundGoalEvent: FundGoalBalanceEvent | undefined,
-): FundAssignmentDraft => {
-  const isExtraContribution = assignment.isExtraContribution === true;
-  const previousGoalAmount =
-    fundGoalEvent?.previousTotals
-      .remainingAmountToAssignToExpectedContribution ?? 0;
-
-  return {
-    fundId: assignment.fund.id,
-    fundName: assignment.fund.name,
-    amount: assignment.amount,
-    isExtraContribution,
-    previousFundBalance: assignment.previousBalance.postedBalance,
-    newFundBalance: assignment.newBalance.postedBalance,
-    previousGoalAmount,
-    newGoalAmount:
-      fundGoalEvent?.newTotals.remainingAmountToAssignToExpectedContribution ??
-      0,
-  };
-};
+): FundAssignmentDraft => ({
+  fundId: assignment.fund.id,
+  fundName: assignment.fund.name,
+  amount: assignment.amount,
+  isExtraContribution: assignment.isExtraContribution === true,
+});
 
 /**
  * Gets the collection of destinations from the provided income transaction.
@@ -443,32 +440,18 @@ const getDestinationsFromTransaction = function (
   transaction: IncomeTransaction,
 ): IncomeDestinationDraft[] {
   return transaction.destinations.map(
-    (destination: IncomeTransactionDestination) => {
-      const fundGoalEventsByFundId = new Map(
-        destination.fundGoals.map((fundGoalEvent) => [
-          fundGoalEvent.fund.id,
-          fundGoalEvent,
-        ]),
-      );
-      return {
-        account: getTransactionAccountDraftFromTransactionAccount(
-          destination.account,
-        ),
-        amount: destination.amount,
-        fundAssignments: destination.fundAssignments.map((assignment) =>
-          getFundAssignmentFromTransactionFund(
-            assignment,
-            fundGoalEventsByFundId.get(assignment.fund.id),
-          ),
-        ),
-        baselineFundAssignments: destination.fundAssignments.map((assignment) =>
-          getFundAssignmentFromTransactionFund(
-            assignment,
-            fundGoalEventsByFundId.get(assignment.fund.id),
-          ),
-        ),
-      };
-    },
+    (destination: IncomeTransactionDestination) => ({
+      account: getTransactionAccountDraftFromTransactionAccount(
+        destination.account,
+      ),
+      amount: destination.amount,
+      fundAssignments: destination.fundAssignments.map(
+        getFundAssignmentFromTransactionFund,
+      ),
+      baselineFundAssignments: destination.fundAssignments.map(
+        getFundAssignmentFromTransactionFund,
+      ),
+    }),
   );
 };
 
@@ -493,6 +476,7 @@ export {
   getFundAssignmentFromTransactionFund,
   getNetIncomeAmount,
   getSourceFromTransaction,
+  isTrackedAccount,
   validateFundAssignments,
   validateDestination,
   validateSource,

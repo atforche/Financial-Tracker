@@ -94,9 +94,5 @@ public sealed class FundGoalContributionMigrationTests
             "SELECT \"AmountAssignedToExpectedContribution\" FROM \"FundGoalTotalsHistories\" WHERE \"FundId\" = {0} AND \"Date\" = '2026-07-12'", sourceFundId));
         Assert.Equal(105m, await database.ScalarDecimalAsync(
             "SELECT \"AmountAssignedToExpectedContribution\" FROM \"FundGoalTotalsHistories\" WHERE \"FundId\" = {0} AND \"Date\" = '2026-07-12'", destinationFundId));
-        Assert.Equal(-5m, await database.ScalarDecimalAsync(
-            "SELECT \"PendingAmountAssignedToExpectedContribution\" FROM \"PendingFundGoalTotalsEffects\" WHERE \"FundId\" = {0}", sourceFundId));
-        Assert.Equal(5m, await database.ScalarDecimalAsync(
-            "SELECT \"PendingAmountAssignedToExpectedContribution\" FROM \"PendingFundGoalTotalsEffects\" WHERE \"FundId\" = {0}", destinationFundId));
     }
 }

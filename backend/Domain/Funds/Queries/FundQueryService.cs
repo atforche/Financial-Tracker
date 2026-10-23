@@ -59,7 +59,7 @@ public sealed class FundQueryService(
         CancellationToken cancellationToken = default)
     {
         QueryPage<FundBalance> page = await fundQueryRepository.GetBalancesAsync(query, cancellationToken);
-        return new QueryPage<FundBalance>(pendingFundBalanceService.ApplyPendingEffects(page.Items), page.TotalCount);
+        return new QueryPage<FundBalance>(pendingFundBalanceService.IncludePendingAmounts(page.Items), page.TotalCount);
     }
 
     /// <summary>

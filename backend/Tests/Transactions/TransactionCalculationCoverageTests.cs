@@ -101,9 +101,9 @@ public sealed class TransactionCalculationCoverageTests
 
         await AssertGoalAssignedAsync(test, july, groceries, -20m);
         FundGoalBalanceEventModel transferEvent = await GetGoalEventAsync(test, july, groceries, transfer: true);
-        Assert.Equal(-20m, transferEvent.NewTotals.AmountAssigned);
-        Assert.Equal(-20m, transferEvent.NewTotals.AmountAssignedToExpectedContribution);
-        Assert.Equal(0m, transferEvent.NewTotals.AmountSpent);
+        Assert.Equal(-20m, transferEvent.NewTotals?.AmountAssigned);
+        Assert.Equal(-20m, transferEvent.NewTotals?.AmountAssignedToExpectedContribution);
+        Assert.Equal(0m, transferEvent.NewTotals?.AmountSpent);
 
         await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
         await AssertGoalAssignedAsync(test, july, groceries, 80m);
@@ -111,7 +111,7 @@ public sealed class TransactionCalculationCoverageTests
         await test.Transactions.PostAsync(spending, cash, new DateOnly(2026, 7, 11));
         await AssertGoalAssignedAsync(test, july, groceries, 80m);
         FundGoalBalanceEventModel spendingEvent = await GetGoalEventAsync(test, july, groceries, transfer: false);
-        Assert.Equal(30m, spendingEvent.NewTotals.AmountSpent);
+        Assert.Equal(30m, spendingEvent.NewTotals?.AmountSpent);
 
         await test.Transactions.UnpostAsync(spending);
         await test.Transactions.UnpostAsync(income);
@@ -151,8 +151,8 @@ public sealed class TransactionCalculationCoverageTests
             Destinations = [new UpdateIncomeTransactionDestinationModel { AccountId = second.Id, Amount = 25m, FundAssignments = [new CreateIncomeFundAmountModel { FundId = newFund.Id, Amount = 25m }] }]
         };
         await test.Api.PostAsync($"/transactions/{income.Id}", incomeUpdate);
-        Assert.Equal(0m, (await test.AccountQueries.GetBalanceAsync(first)).IncludingPending);
-        Assert.Equal(25m, (await test.AccountQueries.GetBalanceAsync(second)).IncludingPending);
+        Assert.Equal(0m, (await test.AccountQueries.GetBalanceAsync(first)).PostedWithPending);
+        Assert.Equal(25m, (await test.AccountQueries.GetBalanceAsync(second)).PostedWithPending);
         await AssertFundAndGoalAsync(test, oldFund, 0m);
         await AssertFundAndGoalAsync(test, newFund, 25m);
 
@@ -166,10 +166,10 @@ public sealed class TransactionCalculationCoverageTests
             Destinations = [new UpdateAccountTransactionDestinationModel { AccountId = fourth.Id, Amount = 20m }]
         };
         await test.Api.PostAsync($"/transactions/{accountTransfer.Id}", accountTransferUpdate);
-        Assert.Equal(0m, (await test.AccountQueries.GetBalanceAsync(first)).IncludingPending);
-        Assert.Equal(25m, (await test.AccountQueries.GetBalanceAsync(second)).IncludingPending);
-        Assert.Equal(-20m, (await test.AccountQueries.GetBalanceAsync(third)).IncludingPending);
-        Assert.Equal(20m, (await test.AccountQueries.GetBalanceAsync(fourth)).IncludingPending);
+        Assert.Equal(0m, (await test.AccountQueries.GetBalanceAsync(first)).PostedWithPending);
+        Assert.Equal(25m, (await test.AccountQueries.GetBalanceAsync(second)).PostedWithPending);
+        Assert.Equal(-20m, (await test.AccountQueries.GetBalanceAsync(third)).PostedWithPending);
+        Assert.Equal(20m, (await test.AccountQueries.GetBalanceAsync(fourth)).PostedWithPending);
 
         TransactionHandle fundTransfer = await test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 12)).For(10m).From(oldFund).To(newFund).CreateAsync();
         UpdateTransactionModel fundTransferUpdate = new UpdateFundTransactionModel
@@ -292,12 +292,12 @@ public sealed class TransactionCalculationCoverageTests
             Destinations = [new CreateAccountTransactionDestinationModel { AccountId = card.Id, Amount = 40m }]
         });
         TransactionHandle oneSided = new(oneSidedCreated.Id);
-        Assert.Equal(-40m, (await test.AccountQueries.GetBalanceAsync(card)).IncludingPending);
+        Assert.Equal(-40m, (await test.AccountQueries.GetBalanceAsync(card)).PostedWithPending);
         await test.Transactions.PostAsync(oneSided, card, new DateOnly(2026, 7, 20));
         await AssertPeriodBalancesAsync(test, july, august, 140m, 140m);
         await test.Transactions.UnpostAsync(oneSided);
         Assert.Equal(0m, (await test.AccountQueries.GetBalanceAsync(card)).Posted);
-        Assert.Equal(-40m, (await test.AccountQueries.GetBalanceAsync(card)).IncludingPending);
+        Assert.Equal(-40m, (await test.AccountQueries.GetBalanceAsync(card)).PostedWithPending);
         await test.Transactions.DeleteAsync(oneSided);
         await AssertPeriodBalancesAsync(test, july, august, 100m, 100m);
     }
@@ -322,7 +322,7 @@ public sealed class TransactionCalculationCoverageTests
             .OrderBy(item => item.TransactionDate)
             .ThenBy(item => item.TransactionSequence)
             .Last();
-        Assert.Equal(expected, latest.NewTotals.AmountAssignedToExpectedContribution);
+        Assert.Equal(expected, latest.NewTotals?.AmountAssignedToExpectedContribution);
     }
 
     private static async Task<FundGoalBalanceEventModel> GetGoalEventAsync(FinancialTrackerTestContext test, AccountingPeriodHandle period, FundHandle fund, bool transfer)
@@ -333,8 +333,8 @@ public sealed class TransactionCalculationCoverageTests
 
     private static async Task AssertFundAndGoalAsync(FinancialTrackerTestContext test, FundHandle fund, decimal expected)
     {
-        Assert.Equal(expected, (await test.FundQueries.GetBalanceAsync(fund)).IncludingPending);
-        Assert.Equal(expected, (await test.FundGoalQueries.GetAvailabilityAsync(fund.Goal)).IncludingPending);
+        Assert.Equal(expected, (await test.FundQueries.GetBalanceAsync(fund)).PostedWithPending);
+        Assert.Equal(expected, (await test.FundGoalQueries.GetAvailabilityAsync(fund.Goal)).PostedWithPending);
     }
 
     private static async Task AssertPeriodBalancesAsync(FinancialTrackerTestContext test, AccountingPeriodHandle july, AccountingPeriodHandle august, decimal julyClosing, decimal augustOpening)

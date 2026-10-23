@@ -6,6 +6,7 @@ namespace Domain.Funds.Queries;
 
 /// <summary>
 /// Represents an interpreted Fund balance event.
+/// The previous and new balances are null until the event posts.
 /// </summary>
 public sealed record FundBalanceEvent(
     AccountingPeriod AccountingPeriod,
@@ -20,8 +21,8 @@ public sealed record FundBalanceEvent(
     Fund Fund,
     FundBalanceEventParty Source,
     IReadOnlyList<FundBalanceEventParty> Destinations,
-    FundBalance PreviousBalance,
-    FundBalance NewBalance)
+    FundBalance? PreviousBalance,
+    FundBalance? NewBalance)
 {
     /// <summary>
     /// Gets whether the event has posted.

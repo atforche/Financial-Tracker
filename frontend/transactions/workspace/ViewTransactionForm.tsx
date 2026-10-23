@@ -1,7 +1,10 @@
 "use client";
 
-import { Button, Stack } from "@mui/material";
 import {
+  type AccountTransaction,
+  type IncomeTransaction,
+  type RefundTransaction,
+  type SpendingTransaction,
   type Transaction,
   TransactionType,
   asAccountTransaction,
@@ -10,6 +13,11 @@ import {
   asRefundTransaction,
   asSpendingTransaction,
 } from "@/transactions/types";
+import { Button, Stack } from "@mui/material";
+import {
+  PostingDateReporterContext,
+  useTransactionPostingPreviews,
+} from "@/transactions/workspace/useTransactionPostingPreviews";
 import {
   getDestinationsFromTransaction as getAccountDestinationsFromTransaction,
   getSourceFromTransaction as getAccountSourceFromTransaction,
@@ -92,6 +100,18 @@ const ViewTransactionForm = function ({
   const accountTransaction = asAccountTransaction(transaction);
   const fundTransaction = asFundTransaction(transaction);
   const postedAccountCount = getPostedTransactionAccounts(transaction).length;
+  const { reportPostingDate, previews } =
+    useTransactionPostingPreviews(transaction);
+
+  /**
+   * Gets the transaction as it would be after posting the provided account on its chosen posting date,
+   * or the saved transaction when that posting is not being previewed.
+   */
+  const getPostingView = function (accountId: string | undefined): Transaction {
+    return (
+      (accountId === undefined ? undefined : previews[accountId]) ?? transaction
+    );
+  };
 
   let sourceContent: JSX.Element | JSX.Element[] | null = null;
   let destinationContent: JSX.Element[] = [];
@@ -103,10 +123,18 @@ const ViewTransactionForm = function ({
     spendingTransaction !== null
   ) {
     const source = getSpendingSourceFromTransaction(spendingTransaction);
-    const destinations = getSpendingDestinationsFromTransaction(
-      spendingTransaction,
-      currentFundGoals,
-    );
+    const sourceAccountId = spendingTransaction.source.account.account.id;
+    const getSpendingView = (
+      accountId: string | undefined,
+    ): SpendingTransaction =>
+      asSpendingTransaction(getPostingView(accountId)) ?? spendingTransaction;
+    const getDestinationView = (index: number): SpendingTransaction =>
+      getSpendingView(
+        spendingTransaction.destinations[index]?.account?.account.id ??
+          sourceAccountId,
+      );
+    const destinations =
+      getSpendingDestinationsFromTransaction(spendingTransaction);
 
     sourceAmount = source.amount;
     destinationAmount = getCurrencyTotal(
@@ -118,6 +146,7 @@ const ViewTransactionForm = function ({
         accounts={[]}
         transaction={spendingTransaction}
         account={source.account}
+        accountBalanceEvent={getSpendingView(sourceAccountId).source.account}
         setAccount={null}
         amount={source.amount}
         setAmount={null}
@@ -133,6 +162,12 @@ const ViewTransactionForm = function ({
         fundGoals={currentFundGoals}
         transaction={spendingTransaction}
         account={destination.account}
+        accountBalanceEvent={
+          getDestinationView(index).destinations[index]?.account ?? null
+        }
+        fundBalanceEvents={
+          getDestinationView(index).destinations[index]?.fundAssignments
+        }
         setAccount={null}
         location={destination.location}
         setLocation={null}
@@ -140,18 +175,23 @@ const ViewTransactionForm = function ({
         setAmount={null}
         fundAssignments={destination.fundAssignments}
         setFundAssignments={null}
-        baselineFundAssignments={destination.baselineFundAssignments}
       />
     ));
   } else if (
     transaction.transactionType === TransactionType.Refund &&
     refundTransaction !== null
   ) {
-    const sources = getRefundSourcesFromTransaction(
-      refundTransaction,
-      currentFundGoals,
-    );
+    const sources = getRefundSourcesFromTransaction(refundTransaction);
     const destination = getRefundDestinationFromTransaction(refundTransaction);
+    const destinationAccountId =
+      refundTransaction.destination.account.account.id;
+    const getRefundView = (accountId: string | undefined): RefundTransaction =>
+      asRefundTransaction(getPostingView(accountId)) ?? refundTransaction;
+    const getSourceView = (index: number): RefundTransaction =>
+      getRefundView(
+        refundTransaction.sources[index]?.account?.account.id ??
+          destinationAccountId,
+      );
     sourceAmount = getCurrencyTotal(sources.map((source) => source.amount));
     destinationAmount = sourceAmount;
     sourceContent = sources.map((source, index) => (
@@ -164,6 +204,10 @@ const ViewTransactionForm = function ({
         fundGoals={currentFundGoals}
         transaction={refundTransaction}
         account={source.account}
+        accountBalanceEvent={
+          getSourceView(index).sources[index]?.account ?? null
+        }
+        fundBalanceEvents={getSourceView(index).sources[index]?.fundAssignments}
         setAccount={null}
         location={source.location}
         setLocation={null}
@@ -171,12 +215,10 @@ const ViewTransactionForm = function ({
         setAmount={null}
         fundAssignments={source.fundAssignments}
         setFundAssignments={null}
-        baselineFundAssignments={source.baselineFundAssignments}
         title="Source"
         accountCaption="Source Account"
         locationCaption="Source Location"
         entryCaption="Source"
-        assignmentEffect="refund"
       />
     ));
     destinationContent = [
@@ -191,7 +233,9 @@ const ViewTransactionForm = function ({
         setAmount={null}
         title="Destination"
         accountLabel="Destination Account"
-        balanceChange={destinationAmount}
+        accountBalanceEvent={
+          getRefundView(destinationAccountId).destination.account
+        }
       />,
     ];
   } else if (
@@ -199,6 +243,10 @@ const ViewTransactionForm = function ({
     incomeTransaction !== null
   ) {
     const source = getIncomeSourceFromTransaction(incomeTransaction);
+    const getIncomeView = (accountId: string | undefined): IncomeTransaction =>
+      asIncomeTransaction(getPostingView(accountId)) ?? incomeTransaction;
+    const getDestinationView = (index: number): IncomeTransaction =>
+      getIncomeView(incomeTransaction.destinations[index]?.account.account.id);
     const destinations =
       getIncomeDestinationsFromTransaction(incomeTransaction);
 
@@ -212,6 +260,10 @@ const ViewTransactionForm = function ({
         accounts={[]}
         transaction={incomeTransaction}
         account={source.account}
+        accountBalanceEvent={
+          getIncomeView(incomeTransaction.source.account?.account.id).source
+            .account ?? null
+        }
         setAccount={null}
         location={source.location}
         setLocation={null}
@@ -231,6 +283,15 @@ const ViewTransactionForm = function ({
         fundGoals={currentFundGoals}
         transaction={incomeTransaction}
         account={destination.account}
+        accountBalanceEvent={
+          getDestinationView(index).destinations[index]?.account ?? null
+        }
+        fundBalanceEvents={
+          getDestinationView(index).destinations[index]?.fundAssignments
+        }
+        fundGoalBalanceEvents={
+          getDestinationView(index).destinations[index]?.fundGoals
+        }
         setAccount={null}
         amount={destination.amount}
         setAmount={null}
@@ -244,6 +305,10 @@ const ViewTransactionForm = function ({
     accountTransaction !== null
   ) {
     const source = getAccountSourceFromTransaction(accountTransaction);
+    const getAccountView = (
+      accountId: string | undefined,
+    ): AccountTransaction =>
+      asAccountTransaction(getPostingView(accountId)) ?? accountTransaction;
     const destinations =
       getAccountDestinationsFromTransaction(accountTransaction);
 
@@ -257,6 +322,10 @@ const ViewTransactionForm = function ({
         accounts={[]}
         transaction={accountTransaction}
         account={source.account}
+        accountBalanceEvent={
+          getAccountView(accountTransaction.source.account?.account.id).source
+            .account ?? null
+        }
         setAccount={null}
         location={source.location}
         setLocation={null}
@@ -272,6 +341,11 @@ const ViewTransactionForm = function ({
         accounts={[]}
         transaction={accountTransaction}
         account={destination.account}
+        accountBalanceEvent={
+          getAccountView(
+            accountTransaction.destinations[index]?.account?.account.id,
+          ).destinations[index]?.account ?? null
+        }
         setAccount={null}
         location={destination.location}
         setLocation={null}
@@ -295,6 +369,7 @@ const ViewTransactionForm = function ({
         readOnly
         funds={funds}
         fund={source.fund}
+        fundBalanceEvent={fundTransaction.source.fund}
         setFund={null}
         amount={source.amount}
         setAmount={null}
@@ -307,6 +382,7 @@ const ViewTransactionForm = function ({
         index={index}
         funds={funds}
         fund={destination.fund}
+        fundBalanceEvent={fundTransaction.destinations[index]?.fund ?? null}
         setFund={null}
         amount={destination.amount}
         setAmount={null}
@@ -315,54 +391,56 @@ const ViewTransactionForm = function ({
   }
 
   return (
-    <TransactionForm
-      readOnly
-      accountingPeriods={[]}
-      accountingPeriod={transactionAccountingPeriod}
-      setAccountingPeriod={null}
-      date={dayjs(transaction.date)}
-      setDate={null}
-      defaultDate={null}
-      description={transaction.description}
-      setDescription={null}
-      headerContent={
-        !canWrite ? undefined : (
-          <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-            <Button component={Link} href={editUrl} variant="contained">
-              Edit
-            </Button>
-            {postedAccountCount > 0 ? (
-              <UnpostTransactionForm
-                transaction={transaction}
-                redirectUrl={currentUrl}
-              />
-            ) : (
-              <DeleteTransactionForm
-                transaction={transaction}
-                redirectUrl={returnUrl ?? workspaceUrl}
-              />
-            )}
-          </Stack>
-        )
-      }
-      sourceContent={
-        sourceContent ?? (
-          <FundTransactionSourceFrame
-            readOnly
-            funds={emptyFunds}
-            fund={null}
-            setFund={null}
-            amount={null}
-            setAmount={null}
-          />
-        )
-      }
-      destinationContent={destinationContent}
-      sourceAmount={sourceAmount}
-      destinationAmount={destinationAmount}
-      destinationCount={destinationContent.length}
-      showSummary={transaction.transactionType === TransactionType.Income}
-    />
+    <PostingDateReporterContext.Provider value={reportPostingDate}>
+      <TransactionForm
+        readOnly
+        accountingPeriods={[]}
+        accountingPeriod={transactionAccountingPeriod}
+        setAccountingPeriod={null}
+        date={dayjs(transaction.date)}
+        setDate={null}
+        defaultDate={null}
+        description={transaction.description}
+        setDescription={null}
+        headerContent={
+          !canWrite ? undefined : (
+            <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
+              <Button component={Link} href={editUrl} variant="contained">
+                Edit
+              </Button>
+              {postedAccountCount > 0 ? (
+                <UnpostTransactionForm
+                  transaction={transaction}
+                  redirectUrl={currentUrl}
+                />
+              ) : (
+                <DeleteTransactionForm
+                  transaction={transaction}
+                  redirectUrl={returnUrl ?? workspaceUrl}
+                />
+              )}
+            </Stack>
+          )
+        }
+        sourceContent={
+          sourceContent ?? (
+            <FundTransactionSourceFrame
+              readOnly
+              funds={emptyFunds}
+              fund={null}
+              setFund={null}
+              amount={null}
+              setAmount={null}
+            />
+          )
+        }
+        destinationContent={destinationContent}
+        sourceAmount={sourceAmount}
+        destinationAmount={destinationAmount}
+        destinationCount={destinationContent.length}
+        showSummary={transaction.transactionType === TransactionType.Income}
+      />
+    </PostingDateReporterContext.Provider>
   );
 };
 

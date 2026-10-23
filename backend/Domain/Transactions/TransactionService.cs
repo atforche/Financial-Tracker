@@ -16,7 +16,6 @@ public abstract class TransactionService(
     FundBalanceService fundBalanceService,
     PendingFundBalanceService pendingFundBalanceService,
     FundGoalTotalsHistoryService fundGoalTotalsHistoryService,
-    PendingFundGoalTotalsService pendingFundGoalTotalsService,
     IAccountingPeriodRepository accountingPeriodRepository,
     ITransactionRepository transactionRepository)
 {
@@ -94,7 +93,6 @@ public abstract class TransactionService(
         AddTransactionToBalanceHistories(transaction);
         pendingAccountBalanceService.SynchronizeTransaction(transaction);
         pendingFundBalanceService.SynchronizeTransaction(transaction);
-        pendingFundGoalTotalsService.SynchronizeTransaction(transaction);
         transactionRepository.Add(transaction);
     }
 
@@ -175,7 +173,6 @@ public abstract class TransactionService(
         AddTransactionToBalanceHistories(transaction);
         pendingAccountBalanceService.SynchronizeTransaction(transaction);
         pendingFundBalanceService.SynchronizeTransaction(transaction);
-        pendingFundGoalTotalsService.SynchronizeTransaction(transaction);
     }
 
     /// <summary>
@@ -224,7 +221,6 @@ public abstract class TransactionService(
         fundGoalTotalsHistoryService.PostTransaction(transaction);
         pendingAccountBalanceService.SynchronizeTransaction(transaction);
         pendingFundBalanceService.SynchronizeTransaction(transaction);
-        pendingFundGoalTotalsService.SynchronizeTransaction(transaction);
     }
 
     /// <summary>
@@ -269,7 +265,6 @@ public abstract class TransactionService(
     {
         pendingAccountBalanceService.SynchronizeTransaction(transaction);
         pendingFundBalanceService.SynchronizeTransaction(transaction);
-        pendingFundGoalTotalsService.SynchronizeTransaction(transaction);
     }
 
     /// <summary>
@@ -298,7 +293,6 @@ public abstract class TransactionService(
         RemoveTransactionFromBalanceHistories(transaction);
         pendingAccountBalanceService.DeleteEffectsForTransaction(transaction.Id);
         pendingFundBalanceService.DeleteEffectsForTransaction(transaction.Id);
-        pendingFundGoalTotalsService.DeleteEffectsForTransaction(transaction.Id);
         TransactionRepository.Delete(transaction);
     }
 

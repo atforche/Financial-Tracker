@@ -1,9 +1,9 @@
 namespace Tests.Accounts;
 
 /// <summary>
-/// Account balances before and after a transaction's balance event.
+/// Posted account balances before and after a transaction's balance event, which are null until it posts.
 /// </summary>
 internal sealed record AccountBalanceEventSnapshot(
-    AccountBalanceSnapshot Previous,
-    AccountBalanceSnapshot New,
+    decimal? Previous,
+    decimal? New,
     bool IsPosted);

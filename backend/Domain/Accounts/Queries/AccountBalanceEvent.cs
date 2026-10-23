@@ -6,6 +6,7 @@ namespace Domain.Accounts.Queries;
 
 /// <summary>
 /// Represents an interpreted Account balance event.
+/// The previous and new balances are null until the event posts.
 /// </summary>
 public sealed record AccountBalanceEvent(
     AccountingPeriod AccountingPeriod,
@@ -20,8 +21,8 @@ public sealed record AccountBalanceEvent(
     Account Account,
     AccountBalanceEventParty Source,
     IReadOnlyList<AccountBalanceEventParty> Destinations,
-    AccountBalance PreviousBalance,
-    AccountBalance NewBalance)
+    AccountBalance? PreviousBalance,
+    AccountBalance? NewBalance)
 {
     /// <summary>
     /// Gets whether the event has posted.

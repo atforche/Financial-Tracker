@@ -91,8 +91,8 @@ public sealed class FundBalanceEventConverter
         },
         Source = ToModel(balanceEvent.Source),
         Destinations = balanceEvent.Destinations.Select(ToModel).ToList(),
-        PreviousBalance = ToModel(balanceEvent.PreviousBalance),
-        NewBalance = ToModel(balanceEvent.NewBalance),
+        PreviousBalance = balanceEvent.PreviousBalance == null ? null : ToModel(balanceEvent.PreviousBalance),
+        NewBalance = balanceEvent.NewBalance == null ? null : ToModel(balanceEvent.NewBalance),
     };
 
     /// <summary>
@@ -110,6 +110,5 @@ public sealed class FundBalanceEventConverter
     private static FundBalanceModel ToModel(FundBalance balance) => new()
     {
         PostedBalance = balance.PostedBalance,
-        BalanceIncludingPending = balance.BalanceIncludingPending,
     };
 }

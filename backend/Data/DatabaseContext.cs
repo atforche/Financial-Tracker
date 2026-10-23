@@ -71,11 +71,6 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     internal DbSet<FundGoalTotalsHistory> FundGoalTotalsHistories { get; set; } = default!;
 
     /// <summary>
-    /// Collection of pending Fund Goal totals effects.
-    /// </summary>
-    internal DbSet<PendingFundGoalTotalsEffect> PendingFundGoalTotalsEffects { get; set; } = default!;
-
-    /// <summary>
     /// Collection of Transactions in the database
     /// </summary>
     internal DbSet<Transaction> Transactions { get; set; } = default!;

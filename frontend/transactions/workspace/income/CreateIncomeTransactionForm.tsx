@@ -17,6 +17,7 @@ import IncomeTransactionForm from "@/transactions/workspace/income/IncomeTransac
 import type { TransactionDetails } from "@/transactions/workspace/TransactionForm";
 import { getDefaultDate } from "@/transactions/workspace/helpers";
 import { useCreateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
+import useTransactionPreview from "@/transactions/workspace/useTransactionPreview";
 
 /**
  * Props for the CreateIncomeTransactionForm component.
@@ -74,6 +75,9 @@ const CreateIncomeTransactionForm = function ({
     source,
     destinations,
   );
+  const preview = useTransactionPreview(
+    request === null ? null : { transactionId: null, request },
+  );
 
   return (
     <IncomeTransactionForm<CreateTransactionRequest>
@@ -97,6 +101,7 @@ const CreateIncomeTransactionForm = function ({
       state={state}
       pending={pending}
       request={request}
+      preview={preview}
       onReset={reset}
       onSubmit={submit}
     />

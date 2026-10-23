@@ -24,11 +24,13 @@ public class AccountBalanceEventModel : BalanceEventModel
 
     /// <summary>
     /// Account balance prior to the balance event.
+    /// Null until the event posts.
     /// </summary>
-    public required AccountBalanceModel PreviousBalance { get; init; }
+    public required AccountBalanceModel? PreviousBalance { get; init; }
 
     /// <summary>
     /// Account balance after the balance event.
+    /// Null until the event posts.
     /// </summary>
-    public required AccountBalanceModel NewBalance { get; init; }
+    public required AccountBalanceModel? NewBalance { get; init; }
 }

@@ -24,35 +24,14 @@ public sealed class FundGoalTotals
     public decimal AmountAssignedToExpectedContribution { get; }
 
     /// <summary>
-    /// Amount assigned after current unposted Transaction effects are applied.
-    /// </summary>
-    public decimal AmountAssignedIncludingPending { get; }
-
-    /// <summary>
-    /// Amount assigned toward the expected monthly contribution after current
-    /// unposted Transaction effects are applied.
-    /// </summary>
-    public decimal AmountAssignedToExpectedContributionIncludingPending { get; }
-
-    /// <summary>
     /// Amount remaining to assign toward the expected monthly contribution.
     /// </summary>
-    public decimal RemainingAmountToAssignToExpectedContribution { get; private set; }
-
-    /// <summary>
-    /// Amount remaining to assign toward the expected monthly contribution including pending effects.
-    /// </summary>
-    public decimal RemainingAmountToAssignToExpectedContributionIncludingPending { get; private set; }
+    public decimal RemainingAmountToAssignToExpectedContribution { get; }
 
     /// <summary>
     /// Posted amount spent during the Accounting Period.
     /// </summary>
     public decimal AmountSpent { get; }
-
-    /// <summary>
-    /// Amount spent after current unposted Transaction effects are applied.
-    /// </summary>
-    public decimal AmountSpentIncludingPending { get; }
 
     /// <summary>
     /// Assigns the specified amount to this Fund Goal Totals.
@@ -80,36 +59,23 @@ public sealed class FundGoalTotals
         decimal amountAssigned,
         decimal amountSpent,
         decimal? amountAssignedToExpectedContribution = null,
-        decimal? amountAssignedIncludingPending = null,
-        decimal? amountAssignedToExpectedContributionIncludingPending = null,
-        decimal? amountSpentIncludingPending = null,
-        decimal? remainingAmountToAssignToExpectedContribution = null,
-        decimal? remainingAmountToAssignToExpectedContributionIncludingPending = null)
+        decimal? remainingAmountToAssignToExpectedContribution = null)
     {
         FundId = fundId;
         AmountAssigned = amountAssigned;
-        AmountAssignedIncludingPending = amountAssignedIncludingPending ?? amountAssigned;
         AmountAssignedToExpectedContribution = amountAssignedToExpectedContribution ?? amountAssigned;
-        AmountAssignedToExpectedContributionIncludingPending = amountAssignedToExpectedContributionIncludingPending ?? AmountAssignedToExpectedContribution;
         AmountSpent = amountSpent;
-        AmountSpentIncludingPending = amountSpentIncludingPending ?? amountSpent;
         RemainingAmountToAssignToExpectedContribution = remainingAmountToAssignToExpectedContribution ?? 0;
-        RemainingAmountToAssignToExpectedContributionIncludingPending = remainingAmountToAssignToExpectedContributionIncludingPending ?? RemainingAmountToAssignToExpectedContribution;
     }
 
     /// <summary>
-    /// Adds the remaining planned monthly contribution amounts calculated for API projection.
+    /// Adds the remaining planned monthly contribution amount calculated for API projection.
     /// </summary>
     internal FundGoalTotals WithRemainingAmountToAssignToExpectedContribution(
-        decimal remainingAmountToAssignToExpectedContribution,
-        decimal remainingAmountToAssignToExpectedContributionIncludingPending) => new(
+        decimal remainingAmountToAssignToExpectedContribution) => new(
             FundId,
             AmountAssigned,
             AmountSpent,
             AmountAssignedToExpectedContribution,
-            AmountAssignedIncludingPending,
-            AmountAssignedToExpectedContributionIncludingPending,
-            AmountSpentIncludingPending,
-            remainingAmountToAssignToExpectedContribution,
-            remainingAmountToAssignToExpectedContributionIncludingPending);
+            remainingAmountToAssignToExpectedContribution);
 }

@@ -1,5 +1,6 @@
 import type {
   Account,
+  AccountBalanceEvent,
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
@@ -27,6 +28,7 @@ interface AccountTransactionSourceFrameProps {
   readonly setAmount: ((amount: number | null) => void) | null;
   readonly accountFilter?: ((account: Account) => boolean) | null;
   readonly color?: FrameColor;
+  readonly accountBalanceEvent?: AccountBalanceEvent | null;
   readonly readOnly?: boolean;
 }
 
@@ -45,6 +47,7 @@ const AccountTransactionSourceFrame = function ({
   amount,
   setAmount,
   color = "info",
+  accountBalanceEvent = null,
   readOnly = false,
 }: AccountTransactionSourceFrameProps): JSX.Element {
   return (
@@ -61,7 +64,7 @@ const AccountTransactionSourceFrame = function ({
         location={location}
         setLocation={readOnly ? null : setLocation}
         accountFilter={accountFilter}
-        balanceChange={amount === null ? null : -amount}
+        balanceEvent={accountBalanceEvent}
         readOnly={readOnly}
       />
       <CurrencyEntryField

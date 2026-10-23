@@ -17,6 +17,7 @@ import SpendingTransactionForm from "@/transactions/workspace/spending/SpendingT
 import type { TransactionDetails } from "@/transactions/workspace/TransactionForm";
 import { getDefaultDate } from "@/transactions/workspace/helpers";
 import { useCreateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
+import useTransactionPreview from "@/transactions/workspace/useTransactionPreview";
 
 /**
  * Props for the CreateSpendingTransactionForm component.
@@ -75,6 +76,9 @@ const CreateSpendingTransactionForm = function ({
     source,
     destinations,
   );
+  const preview = useTransactionPreview(
+    request === null ? null : { transactionId: null, request },
+  );
 
   return (
     <SpendingTransactionForm<CreateTransactionRequest>
@@ -98,6 +102,7 @@ const CreateSpendingTransactionForm = function ({
       state={state}
       pending={pending}
       request={request}
+      preview={preview}
       onReset={reset}
       onSubmit={submit}
     />

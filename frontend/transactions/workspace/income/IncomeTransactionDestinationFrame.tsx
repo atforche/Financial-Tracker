@@ -1,5 +1,6 @@
 import type {
   Account,
+  AccountBalanceEvent,
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
@@ -9,17 +10,20 @@ import {
   getAssignedFundAmount,
   getRemainingFundAmount,
 } from "@/funds/assignmentPlanner/helpers";
+import type { FundBalanceEvent, FundWithBalance } from "@/funds/types";
+import type {
+  FundGoalBalanceEvent,
+  FundGoalWithProgress,
+} from "@/fund-goals/types";
 import AccountBalanceEventFrame from "@/transactions/workspace/AccountBalanceEventFrame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
-import type { FundGoalWithProgress } from "@/fund-goals/types";
-import type { FundWithBalance } from "@/funds/types";
 import IncomeFundAssignmentPlanner from "@/funds/assignmentPlanner/IncomeFundAssignmentPlanner";
 import type { JSX } from "react";
 import type { Transaction } from "@/transactions/types";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 import { formatCurrency } from "@/framework/currencyHelpers";
-import { isTrackedAccountType } from "@/accounts/helpers";
+import { isTrackedAccount } from "@/transactions/workspace/income/helpers";
 
 const emptyFundAmounts: FundAssignmentDraft[] = [];
 
@@ -45,9 +49,15 @@ interface IncomeTransactionDestinationFrameProps {
   readonly onRemove?: (() => void) | null;
   readonly color?: FrameColor;
   readonly fundAssignmentsValid?: boolean;
+  readonly accountBalanceEvent?: AccountBalanceEvent | null;
+  readonly fundBalanceEvents?: FundBalanceEvent[] | undefined;
+  readonly fundGoalBalanceEvents?: FundGoalBalanceEvent[] | undefined;
   readonly readOnly?: boolean;
   readonly autoFocus?: boolean;
 }
+
+const emptyFundBalanceEvents: FundBalanceEvent[] = [];
+const emptyFundGoalBalanceEvents: FundGoalBalanceEvent[] = [];
 
 /**
  * Displays a destination frame for one income destination.
@@ -69,13 +79,13 @@ const IncomeTransactionDestinationFrame = function ({
   onRemove = null,
   color = "info",
   fundAssignmentsValid = true,
+  accountBalanceEvent = null,
+  fundBalanceEvents = emptyFundBalanceEvents,
+  fundGoalBalanceEvents = emptyFundGoalBalanceEvents,
   readOnly = false,
   autoFocus = false,
 }: IncomeTransactionDestinationFrameProps): JSX.Element {
-  const supportsFundAssignments =
-    account?.accountType !== null &&
-    account?.accountType !== undefined &&
-    isTrackedAccountType(account.accountType);
+  const supportsFundAssignments = isTrackedAccount(account) === true;
   const assignedAmount = getAssignedFundAmount(fundAssignments);
   const remainingAmount = getRemainingFundAmount(amount, fundAssignments);
 
@@ -109,7 +119,7 @@ const IncomeTransactionDestinationFrame = function ({
             setAccount={readOnly ? null : setAccount}
             accountFilter={filter}
             label="Deposit Account"
-            balanceChange={amount}
+            balanceEvent={accountBalanceEvent}
             autoFocus={autoFocus}
           />
         </Box>
@@ -124,6 +134,8 @@ const IncomeTransactionDestinationFrame = function ({
         <IncomeFundAssignmentPlanner
           funds={funds}
           fundGoals={fundGoals}
+          fundBalanceEvents={fundBalanceEvents}
+          fundGoalBalanceEvents={fundGoalBalanceEvents}
           totalAmountToAssign={amount}
           fundAssignments={fundAssignments}
           setFundAssignments={readOnly ? null : setFundAssignments}

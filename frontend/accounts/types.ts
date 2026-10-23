@@ -52,8 +52,6 @@ interface AccountBalanceEventDraft {
   readonly accountName: string | null;
   readonly accountType: AccountTypeModel | null;
   readonly postedDate: string | null;
-  readonly previousAccountBalance: number | null;
-  readonly newAccountBalance: number | null;
 }
 
 /**

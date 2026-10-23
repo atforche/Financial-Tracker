@@ -7,6 +7,7 @@ namespace Domain.FundGoals.Queries;
 
 /// <summary>
 /// Represents an interpreted Fund Goal balance event.
+/// The previous and new totals are null until the event posts.
 /// </summary>
 public sealed record FundGoalBalanceEvent(
     AccountingPeriod AccountingPeriod,
@@ -21,8 +22,8 @@ public sealed record FundGoalBalanceEvent(
     Fund Fund,
     FundGoalBalanceEventParty Source,
     IReadOnlyList<FundGoalBalanceEventParty> Destinations,
-    FundGoalTotals PreviousTotals,
-    FundGoalTotals NewTotals)
+    FundGoalTotals? PreviousTotals,
+    FundGoalTotals? NewTotals)
 {
     /// <summary>
     /// Gets whether the event has posted.
