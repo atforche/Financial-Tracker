@@ -21,13 +21,12 @@ import {
   getDefaultTrendDateRange,
 } from "@/framework/routes/trendRange";
 import AccountBalanceSummaryCards from "@/accounts/AccountBalanceSummaryCards";
-import AccountTrendsChangeChart from "@/accounts/trends/AccountTrendsChangeChart";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
+import BalanceTrendsChangeChart from "@/framework/charts/BalanceTrendsChangeChart";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import ContentSurface from "@/framework/view/ContentSurface";
 import FundBalanceSummaryCards from "@/funds/FundBalanceSummaryCards";
-import FundTrendsChangeChart from "@/funds/trends/FundTrendsChangeChart";
 import type { JSX } from "react";
 import OverviewPageHeader from "@/overview/OverviewPageHeader";
 import type { OverviewSearchParams } from "@/overview/helpers";
@@ -186,7 +185,7 @@ const OverviewView = async function ({
             title="Account Balance Trend"
             xAxisLabel={xAxisLabel}
           />
-          <AccountTrendsChangeChart
+          <BalanceTrendsChangeChart
             mode={accountMode}
             accountingPeriods={accountPeriods}
             dates={accountDates}
@@ -206,7 +205,7 @@ const OverviewView = async function ({
             title="Fund Balance Trend"
             xAxisLabel={xAxisLabel}
           />
-          <FundTrendsChangeChart
+          <BalanceTrendsChangeChart
             mode={fundMode}
             accountingPeriods={fundPeriods}
             dates={fundDates}

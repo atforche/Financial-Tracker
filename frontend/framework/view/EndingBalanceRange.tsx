@@ -1,27 +1,30 @@
 import { Box, Stack, Typography, alpha } from "@mui/material";
 import {
-  FundGoalEndingBalanceStatus,
-  type FundGoalProgress,
-} from "@/fund-goals/types";
-import {
   compareCurrencyAmounts,
   formatCurrency,
 } from "@/framework/currencyHelpers";
 import type { JSX } from "react";
 
-interface FundGoalEndingBalanceRangeProps {
-  readonly endingBalance: FundGoalProgress["endingBalance"];
+interface EndingBalanceRangeProps {
+  readonly current: number;
+  readonly range: {
+    readonly minimumBalance: number;
+    readonly maximumBalance?: number | null;
+    readonly status: "BelowMinimum" | "WithinRange" | "AboveMaximum";
+    readonly amountBelowMinimum: number;
+    readonly amountAboveMaximum: number;
+  };
 }
 
 /**
  * Shows the current ending balance against its configured bounds on one scale.
  */
-const FundGoalEndingBalanceRange = function ({
-  endingBalance,
-}: FundGoalEndingBalanceRangeProps): JSX.Element {
-  const current = endingBalance.endingBalance;
-  const minimum = endingBalance.minimumBalance;
-  const maximum = endingBalance.maximumBalance;
+const EndingBalanceRange = function ({
+  current,
+  range,
+}: EndingBalanceRangeProps): JSX.Element {
+  const minimum = range.minimumBalance;
+  const maximum = range.maximumBalance;
   const hasMaximum = maximum !== null && maximum !== undefined;
   const isExactTarget =
     hasMaximum && compareCurrencyAmounts(minimum, maximum) === 0;
@@ -40,19 +43,17 @@ const FundGoalEndingBalanceRange = function ({
   const maximumPosition = hasMaximum ? position(maximum) : 100;
   const currentPosition = position(current);
   const status =
-    endingBalance.status === FundGoalEndingBalanceStatus.BelowMinimum
-      ? `${formatCurrency(endingBalance.amountBelowMinimum)} below ${isExactTarget ? "target" : "minimum"}`
-      : endingBalance.status === FundGoalEndingBalanceStatus.AboveMaximum
-        ? `${formatCurrency(endingBalance.amountAboveMaximum)} above ${isExactTarget ? "target" : "maximum"}`
+    range.status === "BelowMinimum"
+      ? `${formatCurrency(range.amountBelowMinimum)} below ${isExactTarget ? "target" : "minimum"}`
+      : range.status === "AboveMaximum"
+        ? `${formatCurrency(range.amountAboveMaximum)} above ${isExactTarget ? "target" : "maximum"}`
         : isExactTarget
           ? "At target"
           : !hasMaximum
             ? "Minimum met"
             : "Within target range";
   const markerColor =
-    endingBalance.status === FundGoalEndingBalanceStatus.WithinRange
-      ? "success.main"
-      : "error.main";
+    range.status === "WithinRange" ? "success.main" : "error.main";
 
   return (
     <Stack spacing={2}>
@@ -161,4 +162,4 @@ const FundGoalEndingBalanceRange = function ({
   );
 };
 
-export default FundGoalEndingBalanceRange;
+export default EndingBalanceRange;

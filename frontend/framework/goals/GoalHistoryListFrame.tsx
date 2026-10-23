@@ -40,9 +40,6 @@ enum HistorySort {
   ResultDescending = "ResultDescending",
 }
 
-const sortParamName = "fundGoalHistorySort";
-const pageParamName = "fundGoalHistoryPage";
-
 const compareNullable = function (
   first: number | null,
   second: number | null,
@@ -58,11 +55,17 @@ const compareNullable = function (
 };
 
 /** Sortable period history in the application's standard list frame. */
-const FundGoalHistoryListFrame = function ({
+const GoalHistoryListFrame = function ({
   points,
+  paramPrefix,
+  showContribution,
 }: {
   readonly points: readonly HistoryPoint[];
+  readonly paramPrefix: string;
+  readonly showContribution: boolean;
 }): JSX.Element {
+  const sortParamName = `${paramPrefix}Sort`;
+  const pageParamName = `${paramPrefix}Page`;
   const searchParams = useSearchParams();
   const updateParams = useSearchParamUpdater([pageParamName]);
   const currentSort = parseEnumValue(
@@ -118,7 +121,7 @@ const FundGoalHistoryListFrame = function ({
     pageSize,
   );
   const getSortProps = createColumnSortProps(currentSort, setSort);
-  const columns: ColumnDefinition<HistoryPoint>[] = [
+  const allColumns: ColumnDefinition<HistoryPoint>[] = [
     {
       name: "period",
       headerContent: "Period",
@@ -197,6 +200,9 @@ const FundGoalHistoryListFrame = function ({
       ...getSortProps(HistorySort.Result, HistorySort.ResultDescending),
     },
   ];
+  const columns = showContribution
+    ? allColumns
+    : allColumns.filter((column) => column.name !== "contribution");
 
   return (
     <ListFrame<HistoryPoint>
@@ -216,4 +222,4 @@ const FundGoalHistoryListFrame = function ({
 };
 
 export { type HistoryPoint };
-export default FundGoalHistoryListFrame;
+export default GoalHistoryListFrame;

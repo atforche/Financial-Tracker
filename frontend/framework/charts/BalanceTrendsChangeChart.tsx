@@ -1,37 +1,39 @@
 "use client";
 
-import type {
-  FundBalanceSummaryByDate,
-  FundBalanceSummaryByPeriod,
-} from "@/funds/types";
 import {
   formatCompactCurrency,
   formatSignedCurrency,
 } from "@/framework/currencyHelpers";
 import BarMetricChart from "@/framework/charts/BarMetricChart";
-import type { FundTrendsDataMode } from "@/funds/trends/helpers";
 import type { JSX } from "react";
 import { buildBalanceChangeChartPoints } from "@/framework/charts/balanceChangeHelpers";
 
 /**
- * Props for the FundTrendsChangeChart component.
+ * Props for the BalanceTrendsChangeChart component.
  */
-interface FundTrendsChangeChartProps {
-  readonly mode: FundTrendsDataMode;
-  readonly accountingPeriods: readonly FundBalanceSummaryByPeriod[];
-  readonly dates: readonly FundBalanceSummaryByDate[];
+interface BalanceTrendsChangeChartProps {
+  readonly mode: "AccountingPeriod" | "Date";
+  readonly accountingPeriods: readonly {
+    readonly accountingPeriod: { readonly name: string };
+    readonly openingBalance: { readonly totalBalance: number };
+    readonly closingBalance: { readonly totalBalance: number };
+  }[];
+  readonly dates: readonly {
+    readonly date: string;
+    readonly totalBalance: number;
+  }[];
   readonly title?: string;
 }
 
 /**
- * Renders balance changes for the fund trends.
+ * Renders balance changes for account or fund trends.
  */
-const FundTrendsChangeChart = function ({
+const BalanceTrendsChangeChart = function ({
   mode,
   accountingPeriods,
   dates,
   title = "Balance Change",
-}: FundTrendsChangeChartProps): JSX.Element {
+}: BalanceTrendsChangeChartProps): JSX.Element {
   return (
     <BarMetricChart
       title={title}
@@ -65,4 +67,4 @@ const FundTrendsChangeChart = function ({
   );
 };
 
-export default FundTrendsChangeChart;
+export default BalanceTrendsChangeChart;

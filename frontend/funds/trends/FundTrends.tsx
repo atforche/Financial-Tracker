@@ -22,9 +22,9 @@ import {
 } from "@/funds/trends/fundNameFilter";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
+import BalanceTrendsChangeChart from "@/framework/charts/BalanceTrendsChangeChart";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import FundBalanceSummaryCards from "@/funds/FundBalanceSummaryCards";
-import FundTrendsChangeChart from "@/funds/trends/FundTrendsChangeChart";
 import FundTrendsFilter from "@/funds/trends/FundTrendsFilter";
 import FundTrendsListFrame from "@/funds/trends/FundTrendsListFrame";
 import type { JSX } from "react";
@@ -288,7 +288,7 @@ const FundTrends = async function ({
           chartPoints={balanceTrendChartPoints}
           xAxisLabel={modeValue === "Date" ? "Date" : "Accounting Period"}
         />
-        <FundTrendsChangeChart
+        <BalanceTrendsChangeChart
           mode={modeValue}
           accountingPeriods={periodSummaries}
           dates={dateSummaries}

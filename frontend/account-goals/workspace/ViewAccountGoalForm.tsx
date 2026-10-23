@@ -4,10 +4,10 @@ import type { AccountGoal, AccountGoalProgress } from "@/account-goals/types";
 import type { AccountBalanceEvent } from "@/accounts/types";
 import AccountGoalBalanceEventsFrame from "@/account-goals/workspace/AccountGoalBalanceEventsFrame";
 import AccountGoalContextFrame from "@/account-goals/workspace/AccountGoalContextFrame";
-import AccountGoalEndingBalanceRange from "@/account-goals/workspace/AccountGoalEndingBalanceRange";
 import type { BalanceEventTotals } from "@/balance-events/types";
 import type { BalanceTrendDateSummary } from "@/framework/charts/balanceTrendHelpers";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
+import EndingBalanceRange from "@/framework/view/EndingBalanceRange";
 import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
@@ -44,8 +44,9 @@ const ViewAccountGoalForm = function (
           isReadOnly={props.isReadOnly}
         />
         <Frame title="Progress">
-          <AccountGoalEndingBalanceRange
-            endingBalance={props.progress.endingBalance}
+          <EndingBalanceRange
+            current={props.progress.endingBalance.currentBalance}
+            range={props.progress.endingBalance}
           />
         </Frame>
         <UrlTabs
