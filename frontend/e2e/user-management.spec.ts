@@ -7,6 +7,9 @@ import {
   test,
 } from "@playwright/test";
 
+/**
+ * Signs in as the local developer from the user administration page.
+ */
 const signInAsLocalDeveloper = async function (page: Page): Promise<void> {
   await page.goto("/admin/users");
   await expect(page).toHaveURL(/\/login\?callbackUrl=/u);
@@ -14,10 +17,16 @@ const signInAsLocalDeveloper = async function (page: Page): Promise<void> {
   await expect(page).toHaveURL((url) => url.pathname === "/admin/users");
 };
 
+/**
+ * Gets the table row for the user with the provided email.
+ */
 const getRow = function (page: Page, email: string): Locator {
   return page.getByRole("row").filter({ hasText: email });
 };
 
+/**
+ * Creates a browser session signed in as the provided development identity.
+ */
 const createDevelopmentSession = async function (
   browser: Browser,
   subject: string,
@@ -50,6 +59,9 @@ const createDevelopmentSession = async function (
   return { context, page };
 };
 
+/**
+ * Opens a confirmation dialog with the trigger and confirms it.
+ */
 const confirmAction = async function (
   page: Page,
   trigger: Locator,
@@ -63,6 +75,9 @@ const confirmAction = async function (
   await expect(dialog).toBeHidden();
 };
 
+/**
+ * Asserts that the provided route can be read.
+ */
 const expectReadRoute = async function (
   page: Page,
   route: string,

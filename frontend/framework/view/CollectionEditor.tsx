@@ -12,12 +12,18 @@ import CollectionItemDeleteButton from "@/framework/view/CollectionItemDeleteBut
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import InsetFrame from "@/framework/view/InsetFrame";
 
+/**
+ * Controls provided to each item rendered by a collection editor.
+ */
 interface CollectionItemControls {
   readonly autoFocus: boolean;
   readonly onRemove: () => void;
   readonly deleteButton: ReactNode;
 }
 
+/**
+ * Props for the CollectionEditor component.
+ */
 interface CollectionEditorProps<T> {
   readonly items: T[];
   readonly label: string;

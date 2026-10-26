@@ -6,7 +6,9 @@ import GoalHistory from "@/framework/goals/GoalHistory";
 import type { HistoryPoint } from "@/framework/goals/GoalHistoryListFrame";
 import type { JSX } from "react";
 
-/** Shows how one account's bounds and balance changed across periods. */
+/**
+ * Shows how one account's bounds and balance changed across periods.
+ */
 const AccountGoalHistory = function ({
   periods,
   entries,

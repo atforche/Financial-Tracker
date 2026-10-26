@@ -21,7 +21,9 @@ interface LocationDetailActionsProps {
   readonly workspaceUrl: string;
 }
 
-/** Provides Location maintenance actions through focused dialogs. */
+/**
+ * Provides Location maintenance actions through focused dialogs.
+ */
 const LocationDetailActions = function ({
   location,
   locations,

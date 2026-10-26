@@ -36,11 +36,16 @@ import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHel
 import createApiClient from "@/framework/data/createApiClient";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
+/**
+ * Props for the OverviewView component.
+ */
 interface OverviewViewProps {
   readonly searchParams: Promise<OverviewSearchParams>;
 }
 
-/** Displays account and fund balance trends for one shared range. */
+/**
+ * Displays account and fund balance trends for one shared range.
+ */
 const OverviewView = async function ({
   searchParams,
 }: OverviewViewProps): Promise<JSX.Element> {

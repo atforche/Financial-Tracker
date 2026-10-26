@@ -34,7 +34,9 @@ interface ActionPayload {
   readonly request: UpdateTransactionRequest;
 }
 
-/** Validation fields returned for nested transaction request models. */
+/**
+ * Validation fields returned for nested transaction request models.
+ */
 interface TransactionValidationFields {
   readonly location: string;
   readonly sourceLocation: string;

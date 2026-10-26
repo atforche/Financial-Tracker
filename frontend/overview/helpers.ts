@@ -1,5 +1,8 @@
 import type { TrendRangeMode } from "@/framework/routes/trendRange";
 
+/**
+ * Search params for the overview page.
+ */
 interface OverviewSearchParams {
   mode?: TrendRangeMode;
   startAccountingPeriodId?: string;

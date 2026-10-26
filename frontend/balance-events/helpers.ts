@@ -1,9 +1,15 @@
 import { BalanceEventType } from "@/balance-events/types";
 
+/**
+ * A named source or destination of a balance event.
+ */
 interface BalanceEventParty {
   readonly displayName: string;
 }
 
+/**
+ * Balance event fields needed to describe its counterparty.
+ */
 interface BalanceEventPartyEvent {
   readonly destinations: readonly BalanceEventParty[];
   readonly source: BalanceEventParty | readonly BalanceEventParty[];

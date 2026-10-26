@@ -22,6 +22,9 @@ import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
+/**
+ * Props for the AccountGoalWorkspaceDetailPage component.
+ */
 interface AccountGoalWorkspaceDetailPageProps {
   readonly params: Promise<{ accountId: string }>;
   readonly searchParams: Promise<AccountGoalWorkspaceSearchParams>;

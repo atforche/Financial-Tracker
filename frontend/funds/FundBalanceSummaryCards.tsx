@@ -7,6 +7,9 @@ import FundSummaryCard from "@/funds/FundSummaryCard";
 import SummaryCardGrid from "@/framework/view/SummaryCardGrid";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
+/**
+ * Props for the FundBalanceSummaryCards component.
+ */
 interface FundBalanceSummaryCardsProps {
   readonly startingLabel: string;
   readonly endingLabel: string;
@@ -16,6 +19,9 @@ interface FundBalanceSummaryCardsProps {
   readonly titlePrefix?: string;
 }
 
+/**
+ * Content for a single Fund balance summary card.
+ */
 interface CardDefinition {
   readonly title: string;
   readonly value: ReactNode;
@@ -23,7 +29,9 @@ interface CardDefinition {
   readonly unassignedValue: ReactNode;
 }
 
-/** Displays fund balances for a selected range. */
+/**
+ * Displays fund balances for a selected range.
+ */
 const FundBalanceSummaryCards = function ({
   startingLabel,
   endingLabel,

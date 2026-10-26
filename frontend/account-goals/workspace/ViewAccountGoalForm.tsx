@@ -15,6 +15,9 @@ import RecentBalanceActivity from "@/balance-events/RecentBalanceActivity";
 import type { Route } from "next";
 import UrlTabs from "@/framework/view/UrlTabs";
 
+/**
+ * Props for the ViewAccountGoalForm component.
+ */
 interface ViewAccountGoalFormProps {
   readonly accountGoal: AccountGoal;
   readonly progress: AccountGoalProgress;
@@ -31,7 +34,9 @@ interface ViewAccountGoalFormProps {
   readonly accountId: string;
 }
 
-/** Displays account goal details, progress, activity, and balance events. */
+/**
+ * Displays account goal details, progress, activity, and balance events.
+ */
 const ViewAccountGoalForm = function (
   props: ViewAccountGoalFormProps,
 ): JSX.Element {

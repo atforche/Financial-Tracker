@@ -5,6 +5,9 @@ import {
 } from "@/framework/currencyHelpers";
 import type { JSX } from "react";
 
+/**
+ * Props for the EndingBalanceRange component.
+ */
 interface EndingBalanceRangeProps {
   readonly current: number;
   readonly range: {

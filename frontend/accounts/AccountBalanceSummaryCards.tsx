@@ -13,6 +13,9 @@ import ChangeValue from "@/framework/view/ChangeValue";
 import SummaryCardGrid from "@/framework/view/SummaryCardGrid";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
+/**
+ * Content for a single Account balance summary card.
+ */
 interface CardDefinition {
   readonly title: string;
   readonly value: ReactNode;
@@ -22,6 +25,9 @@ interface CardDefinition {
   readonly untrackedDetailRows: readonly BreakdownDetailRow[];
 }
 
+/**
+ * Builds summary card detail rows from Account type breakdown details.
+ */
 const toDetailRows = function (
   details: readonly AccountTypeBreakdownDetail[],
   getValue: (detail: AccountTypeBreakdownDetail) => ReactNode,
@@ -33,6 +39,9 @@ const toDetailRows = function (
   }));
 };
 
+/**
+ * Props for the AccountBalanceSummaryCards component.
+ */
 interface AccountBalanceSummaryCardsProps {
   readonly startingLabel: string;
   readonly endingLabel: string;

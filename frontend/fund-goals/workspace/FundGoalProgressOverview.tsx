@@ -9,6 +9,9 @@ import FundGoalProgress from "@/fund-goals/workspace/FundGoalProgress";
 import type { JSX } from "react";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 
+/**
+ * Props for the FundGoalProgressOverview component.
+ */
 interface FundGoalProgressOverviewProps {
   readonly fundGoal: FundGoal;
   readonly progress: FundGoalProgressModel;

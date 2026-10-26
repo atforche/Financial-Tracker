@@ -1,11 +1,13 @@
 """Registration for release commands."""
 
+from argparse import ArgumentParser
+
 from . import release_validate_artifact, release_validate_run
 from .common import add_command
 
 
 def register(commands: object) -> None:
-    def configure_run(parser):
+    def configure_run(parser: ArgumentParser) -> None:
         parser.add_argument("--commit", required=True)
         parser.add_argument("--run-id", required=True, type=int)
 
@@ -17,7 +19,7 @@ def register(commands: object) -> None:
         configure_run,
     )
 
-    def configure_artifact(parser):
+    def configure_artifact(parser: ArgumentParser) -> None:
         parser.add_argument("--commit", required=True)
         parser.add_argument("--manifest", required=True)
 

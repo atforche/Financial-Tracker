@@ -20,6 +20,9 @@ import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { getAccountGoalDimensionSummary } from "@/account-goals/helpers";
 
+/**
+ * Props for the AccountGoalWorkspaceCard component.
+ */
 interface AccountGoalWorkspaceCardProps {
   readonly accountingPeriod: AccountingPeriod | null;
   readonly accountGoal: AccountGoalWithProgress;

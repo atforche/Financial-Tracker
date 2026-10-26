@@ -13,6 +13,9 @@ import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRa
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
+/**
+ * Props for the AccountGoalTrendsFilter component.
+ */
 interface AccountGoalTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly accounts: readonly { readonly id: string; readonly name: string }[];

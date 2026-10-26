@@ -11,6 +11,9 @@ import propertyName from "@/framework/data/propertyName";
 import routes from "@/account-goals/routes";
 import { useSearchParams } from "next/navigation";
 
+/**
+ * Props for the AccountGoalWorkspaceCards component.
+ */
 interface AccountGoalWorkspaceCardsProps {
   readonly accountingPeriod: AccountingPeriod | null;
   readonly accountGoals: readonly AccountGoalWithProgress[];

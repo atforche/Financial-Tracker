@@ -2,6 +2,9 @@ import type { SxProps, Theme } from "@mui/material/styles";
 import type ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { ReactNode } from "react";
 
+/**
+ * Style overrides for a list column.
+ */
 type ColumnSx = Exclude<SxProps<Theme>, readonly unknown[]>;
 
 /**
@@ -15,9 +18,15 @@ interface ColumnDefinitionBase<T> {
   readonly alignment?: "center" | "left" | "right";
   readonly maxWidth?: number;
   readonly minWidth?: number;
-  /** Whether this column should be omitted from the card layout. */
+
+  /**
+   * Whether this column should be omitted from the card layout.
+   */
   readonly hideInCardLayout?: boolean;
-  /** Whether this column should be emphasized as the primary value on mobile. */
+
+  /**
+   * Whether this column should be emphasized as the primary value on mobile.
+   */
   readonly mobilePrimary?: boolean;
   readonly sx?: ColumnSx | null;
 }

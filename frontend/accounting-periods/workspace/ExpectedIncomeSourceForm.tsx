@@ -41,26 +41,30 @@ interface ExpectedIncomeSourceFormProps {
 /**
  * Converts the provided expected income source into a request.
  */
-const toRequest = (
+const toRequest = function (
   source: ExpectedIncomeSource,
-): ExpectedIncomeSourceRequest => ({
-  name: source.name,
-  incomeLines: source.incomeLines,
-  incomeDeductions: source.incomeDeductions,
-  untrackedTransfers: source.untrackedTransfers,
-  expectedDates: source.expectedDates,
-});
+): ExpectedIncomeSourceRequest {
+  return {
+    name: source.name,
+    incomeLines: source.incomeLines,
+    incomeDeductions: source.incomeDeductions,
+    untrackedTransfers: source.untrackedTransfers,
+    expectedDates: source.expectedDates,
+  };
+};
 
 /**
  * Gets an empty expected income source request.
  */
-const emptySource = (): ExpectedIncomeSourceRequest => ({
-  name: "",
-  incomeLines: [{ description: "Income", amount: 0 }],
-  incomeDeductions: [],
-  untrackedTransfers: [],
-  expectedDates: [],
-});
+const emptySource = function (): ExpectedIncomeSourceRequest {
+  return {
+    name: "",
+    incomeLines: [{ description: "Income", amount: 0 }],
+    incomeDeductions: [],
+    untrackedTransfers: [],
+    expectedDates: [],
+  };
+};
 
 /**
  * Dialog for adding, changing, or removing one expected-income source.

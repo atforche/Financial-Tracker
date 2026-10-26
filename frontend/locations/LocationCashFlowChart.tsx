@@ -16,6 +16,9 @@ import { buildRangeMetricChartPoints } from "@/framework/charts/chartPointHelper
 import dayjs from "dayjs";
 import { getSignedChartColor } from "@/framework/charts/barMetricHelpers";
 
+/**
+ * Props for the LocationCashFlowChart component.
+ */
 interface LocationCashFlowChartProps {
   readonly transactions: readonly Transaction[];
   readonly mode: "Date" | "AccountingPeriod";
@@ -23,7 +26,9 @@ interface LocationCashFlowChartProps {
   readonly endDate?: string;
 }
 
-/** Displays money received from and paid to Locations as signed cash flow. */
+/**
+ * Displays money received from and paid to Locations as signed cash flow.
+ */
 const LocationCashFlowChart = function ({
   transactions,
   mode,

@@ -5,19 +5,27 @@ import { type JSX, type ReactNode, useId } from "react";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
+/**
+ * A tab whose selection is stored in the URL.
+ */
 interface UrlTab {
   readonly value: string;
   readonly label: string;
   readonly content: ReactNode;
 }
 
+/**
+ * Props for the UrlTabs component.
+ */
 interface UrlTabsProps {
   readonly label: string;
   readonly paramName: string;
   readonly tabs: readonly [UrlTab, ...UrlTab[]];
 }
 
-/** Shows one view at a time and keeps the selected view in the URL. */
+/**
+ * Shows one view at a time and keeps the selected view in the URL.
+ */
 const UrlTabs = function ({
   label,
   paramName,

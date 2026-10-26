@@ -11,7 +11,9 @@ import PageLayout from "@/framework/view/PageLayout";
 import createApiClient from "@/framework/data/createApiClient";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
-/** Search parameters supported by the Location workspace. */
+/**
+ * Search parameters supported by the Location workspace.
+ */
 interface LocationWorkspaceSearchParams {
   readonly search?: string;
   readonly sort?: LocationSortModel;
@@ -20,11 +22,16 @@ interface LocationWorkspaceSearchParams {
   readonly transactionPage?: number | string | null;
 }
 
+/**
+ * Props for the LocationWorkspace component.
+ */
 interface LocationWorkspaceProps {
   readonly searchParams: Promise<LocationWorkspaceSearchParams>;
 }
 
-/** Displays the searchable Location workspace. */
+/**
+ * Displays the searchable Location workspace.
+ */
 const LocationWorkspace = async function ({
   searchParams,
 }: LocationWorkspaceProps): Promise<JSX.Element> {

@@ -6,6 +6,7 @@ import getpass
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 from dataclasses import dataclass
@@ -138,7 +139,7 @@ class DebugRestoreOperations:
         *,
         check: bool = True,
         capture_output: bool = False,
-    ):
+    ) -> subprocess.CompletedProcess[str]:
         """Run AWS CLI with the selected profile."""
 
         return self.runner.run(

@@ -1,5 +1,8 @@
 import { type Page, expect, test } from "@playwright/test";
 
+/**
+ * Signs in as the local developer from the Account workspace.
+ */
 const signInAsLocalDeveloper = async function (page: Page): Promise<void> {
   await page.goto("/accounts/workspace");
   await expect(page).toHaveURL(/\/login\?callbackUrl=/u);

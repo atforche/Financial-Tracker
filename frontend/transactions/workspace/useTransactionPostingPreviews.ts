@@ -40,11 +40,13 @@ const usePostingDateReporter = function (): ReportPostingDate | null {
  * including which accounts are already posted and the balances around it, so the whole transaction is part
  * of the key and any change to it is previewed again.
  */
-const getPostingKey = (
+const getPostingKey = function (
   transactionKey: string,
   accountId: string,
   date: string,
-): string => `${transactionKey}|${accountId}:${date}`;
+): string {
+  return `${transactionKey}|${accountId}:${date}`;
+};
 
 /**
  * Previews posting the transaction to each account on its reported posting date. Returns the preview for

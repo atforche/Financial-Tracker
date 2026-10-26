@@ -11,6 +11,9 @@ import parseEnumValue from "@/framework/data/parseEnumValue";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
+/**
+ * A single Accounting Period row in a goal history list.
+ */
 interface HistoryPoint {
   readonly periodId: string;
   readonly period: string;
@@ -25,6 +28,9 @@ interface HistoryPoint {
   readonly satisfied: boolean | null;
 }
 
+/**
+ * Supported goal history sort orders.
+ */
 enum HistorySort {
   Period = "Period",
   PeriodDescending = "PeriodDescending",
@@ -40,6 +46,9 @@ enum HistorySort {
   ResultDescending = "ResultDescending",
 }
 
+/**
+ * Compares two nullable numbers for sorting, ordering nulls last.
+ */
 const compareNullable = function (
   first: number | null,
   second: number | null,
@@ -54,7 +63,9 @@ const compareNullable = function (
   return (first - second) * direction;
 };
 
-/** Sortable period history in the application's standard list frame. */
+/**
+ * Sortable period history in the application's standard list frame.
+ */
 const GoalHistoryListFrame = function ({
   points,
   paramPrefix,

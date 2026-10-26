@@ -21,12 +21,17 @@ import routes from "@/locations/routes";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
+/**
+ * Props for the LocationWorkspaceDetailPage component.
+ */
 interface LocationWorkspaceDetailPageProps {
   readonly params: Promise<{ locationId: string }>;
   readonly searchParams: Promise<LocationWorkspaceSearchParams>;
 }
 
-/** Displays one Location and its recent transaction activity. */
+/**
+ * Displays one Location and its recent transaction activity.
+ */
 const LocationWorkspaceDetailPage = async function ({
   params,
   searchParams,

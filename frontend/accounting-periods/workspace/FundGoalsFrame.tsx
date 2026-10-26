@@ -15,6 +15,9 @@ import parseEnumValue from "@/framework/data/parseEnumValue";
 import propertyName from "@/framework/data/propertyName";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
+/**
+ * Props for the FundGoalsFrame component.
+ */
 interface FundGoalsFrameProps {
   readonly goals: readonly FundGoalWithProgress[];
   readonly totalCount: number;
@@ -22,7 +25,9 @@ interface FundGoalsFrameProps {
   readonly returnUrl: string;
 }
 
-/** Displays fund goals for the accounting period. */
+/**
+ * Displays fund goals for the accounting period.
+ */
 const FundGoalsFrame = function ({
   goals,
   totalCount,

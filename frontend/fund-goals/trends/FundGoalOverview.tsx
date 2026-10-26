@@ -12,7 +12,10 @@ import type { JSX } from "react";
 import Link from "next/link";
 import routes from "@/fund-goals/routes";
 
-interface Props {
+/**
+ * Props for the FundGoalOverview component.
+ */
+interface FundGoalOverviewProps {
   readonly points: readonly FundGoalTrendPoint[];
   readonly periods: readonly AccountingPeriod[];
   readonly progressByPeriod: ReadonlyMap<
@@ -23,14 +26,16 @@ interface Props {
   readonly searchParams: FundGoalTrendsSearchParams;
 }
 
-/** Overview of Fund Goal completion and each fund's period results. */
+/**
+ * Overview of Fund Goal completion and each fund's period results.
+ */
 const FundGoalOverview = function ({
   points,
   periods,
   progressByPeriod,
   funds,
   searchParams,
-}: Props): JSX.Element {
+}: FundGoalOverviewProps): JSX.Element {
   const baseParams = { ...searchParams };
   delete baseParams.fundName;
   const count = points.reduce(

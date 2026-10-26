@@ -3,8 +3,14 @@ import "server-only";
 import type { components } from "@/framework/data/api";
 import createApiClient from "@/framework/data/createApiClient";
 
+/**
+ * The application user for the current session.
+ */
 type CurrentApplicationUser = components["schemas"]["UserModel"];
 
+/**
+ * Result of loading the current application user.
+ */
 interface CurrentApplicationUserResult {
   readonly accessDenied: boolean;
   readonly user: CurrentApplicationUser | null;

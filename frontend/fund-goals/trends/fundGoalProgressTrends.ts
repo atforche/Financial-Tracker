@@ -37,7 +37,12 @@ interface FundGoalHealthSummary {
   readonly expectedContribution: number;
 }
 
-const sum = (values: readonly number[]): number => getCurrencyTotal(values);
+/**
+ * Sums the provided currency values.
+ */
+const sum = function (values: readonly number[]): number {
+  return getCurrencyTotal(values);
+};
 
 /**
  * Returns whether every configured metric for a Fund Goal is satisfied.

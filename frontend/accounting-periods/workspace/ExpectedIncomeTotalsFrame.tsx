@@ -7,6 +7,9 @@ import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
+/**
+ * Props for the ExpectedIncomeTotalsFrame component.
+ */
 interface ExpectedIncomeTotalsFrameProps {
   readonly headerContent?: ReactNode;
   readonly sourceName: string;
@@ -18,7 +21,9 @@ interface ExpectedIncomeTotalsFrameProps {
   readonly paymentCount: number;
 }
 
-/** Shows expected income and its tracked/untracked composition at either scale. */
+/**
+ * Shows expected income and its tracked/untracked composition at either scale.
+ */
 const ExpectedIncomeTotalsFrame = function ({
   headerContent,
   sourceName,

@@ -1,11 +1,13 @@
 """Registration for deployment commands."""
 
+from argparse import ArgumentParser
+
 from . import deploy_deploy, deploy_rollback
 from .common import add_command
 
 
 def register(commands: object) -> None:
-    def configure_deploy(parser):
+    def configure_deploy(parser: ArgumentParser) -> None:
         parser.add_argument("--path", required=True)
         parser.add_argument("--release-manifest", required=True)
         parser.add_argument("--change-configuration", action="store_true")
@@ -18,7 +20,7 @@ def register(commands: object) -> None:
         configure_deploy,
     )
 
-    def configure_rollback(parser):
+    def configure_rollback(parser: ArgumentParser) -> None:
         parser.add_argument("--path", required=True)
 
     add_command(

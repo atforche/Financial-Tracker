@@ -412,14 +412,16 @@ const getSourceFromTransaction = function (
 /**
  * Gets a fund assignment draft from the provided transaction fund.
  */
-const getFundAssignmentFromTransactionFund = (
+const getFundAssignmentFromTransactionFund = function (
   assignment: FundBalanceEvent,
-): FundAssignmentDraft => ({
-  fundId: assignment.fund.id,
-  fundName: assignment.fund.name,
-  amount: assignment.amount,
-  isExtraContribution: assignment.isExtraContribution === true,
-});
+): FundAssignmentDraft {
+  return {
+    fundId: assignment.fund.id,
+    fundName: assignment.fund.name,
+    amount: assignment.amount,
+    isExtraContribution: assignment.isExtraContribution === true,
+  };
+};
 
 /**
  * Gets the collection of destinations from the provided income transaction.

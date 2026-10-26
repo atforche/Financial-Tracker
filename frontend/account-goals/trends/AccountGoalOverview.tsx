@@ -12,7 +12,10 @@ import type { JSX } from "react";
 import Link from "next/link";
 import routes from "@/account-goals/routes";
 
-interface Props {
+/**
+ * Props for the AccountGoalOverview component.
+ */
+interface AccountGoalOverviewProps {
   readonly points: readonly AccountGoalTrendPoint[];
   readonly periods: readonly AccountingPeriod[];
   readonly progressByPeriod: ReadonlyMap<
@@ -23,14 +26,16 @@ interface Props {
   readonly searchParams: AccountGoalTrendsSearchParams;
 }
 
-/** Summarizes completion by period and exposes the account-level results behind it. */
+/**
+ * Summarizes completion by period and exposes the account-level results behind it.
+ */
 const AccountGoalOverview = function ({
   points,
   periods,
   progressByPeriod,
   accounts,
   searchParams,
-}: Props): JSX.Element {
+}: AccountGoalOverviewProps): JSX.Element {
   const goalCount = points.reduce(
     (sum, point) => sum + point.configuredGoalCount,
     0,

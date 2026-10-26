@@ -1,7 +1,11 @@
-/** Number of items per page when a list frame is displayed as a table. */
+/**
+ * Number of items per page when a list frame is displayed as a table.
+ */
 const desktopRowsPerPage = 10;
 
-/** Number of items per page when a list frame is displayed as cards. */
+/**
+ * Number of items per page when a list frame is displayed as cards.
+ */
 const mobileRowsPerPage = 5;
 
 /**

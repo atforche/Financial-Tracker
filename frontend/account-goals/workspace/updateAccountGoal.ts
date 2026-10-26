@@ -10,6 +10,9 @@ import mapApiValidationError from "@/framework/forms/mapApiValidationError";
 import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
+/**
+ * State of the update Account Goal server action.
+ */
 interface ActionState {
   readonly success?: boolean;
   readonly errorTitle?: string | null;
@@ -18,6 +21,9 @@ interface ActionState {
   readonly unmappedErrors?: string | null;
 }
 
+/**
+ * Payload for the update Account Goal server action.
+ */
 interface ActionPayload {
   readonly accountGoal: AccountGoal;
   readonly request: UpdateAccountGoalRequest;

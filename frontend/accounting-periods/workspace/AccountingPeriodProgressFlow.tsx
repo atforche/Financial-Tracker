@@ -28,8 +28,9 @@ interface AccountingPeriodProgressFlowProps {
 /**
  * Returns a finite financial amount, defaulting missing values to zero.
  */
-const getAmount = (amount: number | undefined): number =>
-  typeof amount === "number" && Number.isFinite(amount) ? amount : 0;
+const getAmount = function (amount: number | undefined): number {
+  return typeof amount === "number" && Number.isFinite(amount) ? amount : 0;
+};
 
 /**
  * Displays expected and actual values for one income category.

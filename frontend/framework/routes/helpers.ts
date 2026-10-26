@@ -1,7 +1,18 @@
 import { isNullOrUndefined } from "@/framework/nullHelpers";
 
+/**
+ * A value that can be repeated within a search parameter.
+ */
 type RepeatedSearchParamValue = string | number;
+
+/**
+ * A value that can be compared against a search parameter.
+ */
 type SearchParamComparisonValue = string | number;
+
+/**
+ * A search parameter object with undefined values removed.
+ */
 type CompactSearchParams<T extends Record<string, unknown>> = {
   [
     K in keyof T as undefined extends T[K]

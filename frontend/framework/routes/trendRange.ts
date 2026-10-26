@@ -4,12 +4,17 @@ import propertyName from "@/framework/data/propertyName";
 const defaultTrendDateRangeDays = 90;
 const defaultTrendAccountingPeriodCount = 12;
 
+/**
+ * The start and end of a trend range.
+ */
 interface TrendRange {
   readonly start: string;
   readonly end: string;
 }
 
-/** Returns the default date range used by trends pages. */
+/**
+ * Returns the default date range used by trends pages.
+ */
 const getDefaultTrendDateRange = function (
   endDate: Dayjs = dayjs(),
 ): TrendRange {

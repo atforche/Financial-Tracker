@@ -22,6 +22,9 @@ import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl
 import updateAccountGoal from "@/account-goals/workspace/updateAccountGoal";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
+/**
+ * Props for the UpdateAccountGoalForm component.
+ */
 interface UpdateAccountGoalFormProps {
   readonly accountGoal: AccountGoal;
   readonly redirectUrl: string;

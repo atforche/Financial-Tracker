@@ -183,7 +183,9 @@ const validateRequest = function (
   );
 };
 
-/** Maps a validated spending draft to fields shared by create and update requests. */
+/**
+ * Maps a validated spending draft to fields shared by create and update requests.
+ */
 const buildRequestFields = function (
   date: Dayjs | null,
   defaultDate: Dayjs | null,
@@ -343,14 +345,16 @@ const getSourceFromTransaction = function (
 /**
  * Gets a fund assignment draft from the provided transaction fund.
  */
-const getFundAssignmentFromTransactionFund = (
+const getFundAssignmentFromTransactionFund = function (
   assignment: FundBalanceEvent,
-): FundAssignmentDraft => ({
-  fundId: assignment.fund.id,
-  fundName: assignment.fund.name,
-  amount: assignment.amount,
-  isExtraContribution: false,
-});
+): FundAssignmentDraft {
+  return {
+    fundId: assignment.fund.id,
+    fundName: assignment.fund.name,
+    amount: assignment.amount,
+    isExtraContribution: false,
+  };
+};
 
 /**
  * Gets the collection of destinations from the provided spending transaction.

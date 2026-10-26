@@ -25,7 +25,9 @@ import ChartFrame from "@/framework/charts/ChartFrame";
 import type { JSX } from "react";
 import { useTheme } from "@mui/material/styles";
 
-/** Shows how one goal's bounds, balance, and optional contributions changed across periods. */
+/**
+ * Shows how one goal's bounds, balance, and optional contributions changed across periods.
+ */
 const GoalHistory = function ({
   name,
   subject,

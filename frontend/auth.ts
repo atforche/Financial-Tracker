@@ -19,6 +19,9 @@ declare module "@auth/core/jwt" {
   }
 }
 
+/**
+ * An identity that can be used to sign in during local development.
+ */
 interface DevelopmentAuthenticationIdentity {
   label: string;
   subject: string;

@@ -9,12 +9,17 @@ import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
+/**
+ * Props for the AccountingPeriodWorkspacePlanPage component.
+ */
 interface AccountingPeriodWorkspacePlanPageProps {
   readonly params: Promise<{ accountingPeriodId: string }>;
   readonly searchParams: Promise<AccountingPeriodWorkspaceSearchParams>;
 }
 
-/** Displays the planning workflow for one accounting period. */
+/**
+ * Displays the planning workflow for one accounting period.
+ */
 const AccountingPeriodWorkspacePlanPage = async function ({
   params,
   searchParams,

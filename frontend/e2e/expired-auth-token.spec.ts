@@ -1,9 +1,15 @@
 import { expect, test } from "@playwright/test";
 
+/**
+ * Encodes the provided value as base64url JSON.
+ */
 const encodeBase64Url = function (value: object): string {
   return Buffer.from(JSON.stringify(value)).toString("base64url");
 };
 
+/**
+ * Creates an unsigned ID token that has already expired.
+ */
 const createExpiredIdToken = function (): string {
   const header = encodeBase64Url({ alg: "none", typ: "JWT" });
   const payload = encodeBase64Url({

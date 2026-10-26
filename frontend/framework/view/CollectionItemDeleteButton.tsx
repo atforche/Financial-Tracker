@@ -3,6 +3,9 @@ import DeleteOutline from "@mui/icons-material/DeleteOutline";
 import IconButton from "@mui/material/IconButton";
 import type { JSX } from "react";
 
+/**
+ * Props for the CollectionItemDeleteButton component.
+ */
 interface CollectionItemDeleteButtonProps {
   readonly onClick: () => void;
   readonly disabled?: boolean;

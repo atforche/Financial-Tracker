@@ -9,7 +9,9 @@ import GoalHistory from "@/framework/goals/GoalHistory";
 import type { HistoryPoint } from "@/framework/goals/GoalHistoryListFrame";
 import type { JSX } from "react";
 
-/** Shows how one fund's bounds, balance, and contributions changed across periods. */
+/**
+ * Shows how one fund's bounds, balance, and contributions changed across periods.
+ */
 const FundGoalHistory = function ({
   periods,
   entries,

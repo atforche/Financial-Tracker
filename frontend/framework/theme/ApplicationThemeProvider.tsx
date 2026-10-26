@@ -11,7 +11,9 @@ interface ApplicationThemeProviderProps {
   readonly children: ReactNode;
 }
 
-/** The shared light and dark theme configuration for the application. */
+/**
+ * The shared light and dark theme configuration for the application.
+ */
 const applicationTheme = createTheme({
   colorSchemes: {
     dark: true,

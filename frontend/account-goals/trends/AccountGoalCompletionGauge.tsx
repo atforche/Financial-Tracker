@@ -4,7 +4,9 @@ import { Box, Typography } from "@mui/material";
 import type { JSX } from "react";
 import { useTheme } from "@mui/material/styles";
 
-/** Circular gauge for the share of goal-period results achieved. */
+/**
+ * Circular gauge for the share of goal-period results achieved.
+ */
 const AccountGoalCompletionGauge = function ({
   percentage,
 }: {

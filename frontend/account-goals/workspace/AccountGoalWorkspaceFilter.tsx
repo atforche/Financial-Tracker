@@ -12,6 +12,9 @@ import propertyName from "@/framework/data/propertyName";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
+/**
+ * Props for the AccountGoalWorkspaceFilter component.
+ */
 interface AccountGoalWorkspaceFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly accounts: readonly Account[];

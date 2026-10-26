@@ -91,80 +91,92 @@ type IncomeAmount = components["schemas"]["IncomeAmountModel"];
 /**
  * Determines whether a transaction is an account transaction.
  */
-const isAccountTransaction = (
+const isAccountTransaction = function (
   transaction: Transaction,
-): transaction is AccountTransaction =>
-  transaction.transactionType === TransactionTypeModel.Account;
+): transaction is AccountTransaction {
+  return transaction.transactionType === TransactionTypeModel.Account;
+};
 
 /**
  * Determines whether a transaction is a fund transaction.
  */
-const isFundTransaction = (
+const isFundTransaction = function (
   transaction: Transaction,
-): transaction is FundTransaction =>
-  transaction.transactionType === TransactionTypeModel.Fund;
+): transaction is FundTransaction {
+  return transaction.transactionType === TransactionTypeModel.Fund;
+};
 
 /**
  * Determines whether a transaction is an income transaction.
  */
-const isIncomeTransaction = (
+const isIncomeTransaction = function (
   transaction: Transaction,
-): transaction is IncomeTransaction =>
-  transaction.transactionType === TransactionTypeModel.Income;
+): transaction is IncomeTransaction {
+  return transaction.transactionType === TransactionTypeModel.Income;
+};
 
 /**
  * Determines whether a transaction is a spending transaction.
  */
-const isSpendingTransaction = (
+const isSpendingTransaction = function (
   transaction: Transaction,
-): transaction is SpendingTransaction =>
-  transaction.transactionType === TransactionTypeModel.Spending;
+): transaction is SpendingTransaction {
+  return transaction.transactionType === TransactionTypeModel.Spending;
+};
 
 /**
  * Determines whether a transaction is a refund transaction.
  */
-const isRefundTransaction = (
+const isRefundTransaction = function (
   transaction: Transaction,
-): transaction is RefundTransaction =>
-  transaction.transactionType === TransactionTypeModel.Refund;
+): transaction is RefundTransaction {
+  return transaction.transactionType === TransactionTypeModel.Refund;
+};
 
 /**
  * Narrows an account transaction, returning null for other types.
  */
-const asAccountTransaction = (
+const asAccountTransaction = function (
   transaction: Transaction,
-): AccountTransaction | null =>
-  isAccountTransaction(transaction) ? transaction : null;
+): AccountTransaction | null {
+  return isAccountTransaction(transaction) ? transaction : null;
+};
 
 /**
  * Narrows a fund transaction, returning null for other types.
  */
-const asFundTransaction = (transaction: Transaction): FundTransaction | null =>
-  isFundTransaction(transaction) ? transaction : null;
+const asFundTransaction = function (
+  transaction: Transaction,
+): FundTransaction | null {
+  return isFundTransaction(transaction) ? transaction : null;
+};
 
 /**
  * Narrows an income transaction, returning null for other types.
  */
-const asIncomeTransaction = (
+const asIncomeTransaction = function (
   transaction: Transaction,
-): IncomeTransaction | null =>
-  isIncomeTransaction(transaction) ? transaction : null;
+): IncomeTransaction | null {
+  return isIncomeTransaction(transaction) ? transaction : null;
+};
 
 /**
  * Narrows a spending transaction, returning null for other types.
  */
-const asSpendingTransaction = (
+const asSpendingTransaction = function (
   transaction: Transaction,
-): SpendingTransaction | null =>
-  isSpendingTransaction(transaction) ? transaction : null;
+): SpendingTransaction | null {
+  return isSpendingTransaction(transaction) ? transaction : null;
+};
 
 /**
  * Narrows a refund transaction, returning null for other types.
  */
-const asRefundTransaction = (
+const asRefundTransaction = function (
   transaction: Transaction,
-): RefundTransaction | null =>
-  isRefundTransaction(transaction) ? transaction : null;
+): RefundTransaction | null {
+  return isRefundTransaction(transaction) ? transaction : null;
+};
 
 /**
  * Type representing a request to create a transaction.
