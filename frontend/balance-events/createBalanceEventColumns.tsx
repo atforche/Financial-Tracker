@@ -30,6 +30,9 @@ interface CreateBalanceEventColumnsOptions<T extends BalanceEventListItem> {
   readonly counterpartySortProps?: BalanceEventColumnSortProps;
 }
 
+/**
+ * Props for the BalanceEventColumnSort component.
+ */
 interface BalanceEventColumnSortProps {
   readonly sortType: ColumnSortType | null;
   readonly onSort: (sortType: ColumnSortType | null) => void;
@@ -38,8 +41,9 @@ interface BalanceEventColumnSortProps {
 /**
  * Formats a balance for a balance-event list cell, leaving it blank when the event has not posted.
  */
-const formatEventBalance = (balance: number | null): string =>
-  balance === null ? "" : formatCurrency(balance);
+const formatEventBalance = function (balance: number | null): string {
+  return balance === null ? "" : formatCurrency(balance);
+};
 
 /**
  * Creates the common columns used by workspace balance-event lists.

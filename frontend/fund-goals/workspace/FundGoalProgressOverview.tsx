@@ -3,12 +3,15 @@ import type {
   FundGoal,
   FundGoalProgress as FundGoalProgressModel,
 } from "@/fund-goals/types";
+import EndingBalanceRange from "@/framework/view/EndingBalanceRange";
 import FundGoalContributionAdjustment from "@/fund-goals/workspace/FundGoalContributionAdjustment";
-import FundGoalEndingBalanceRange from "@/fund-goals/workspace/FundGoalEndingBalanceRange";
 import FundGoalProgress from "@/fund-goals/workspace/FundGoalProgress";
 import type { JSX } from "react";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 
+/**
+ * Props for the FundGoalProgressOverview component.
+ */
 interface FundGoalProgressOverviewProps {
   readonly fundGoal: FundGoal;
   readonly progress: FundGoalProgressModel;
@@ -47,7 +50,10 @@ const FundGoalProgressOverview = function ({
         </Typography>
       )}
       <Divider />
-      <FundGoalEndingBalanceRange endingBalance={progress.endingBalance} />
+      <EndingBalanceRange
+        current={progress.endingBalance.endingBalance}
+        range={progress.endingBalance}
+      />
     </Stack>
   );
 };

@@ -177,8 +177,4 @@ export {
   getAccountTrendsSnapshot,
   hasActiveAccountTrendsFilters,
 };
-export type {
-  AccountTrendsDataMode,
-  AccountTrendsSearchParams,
-  AccountTrendsSnapshot,
-};
+export type { AccountTrendsDataMode, AccountTrendsSearchParams };

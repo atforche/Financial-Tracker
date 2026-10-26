@@ -7,6 +7,9 @@ import UpdateAccountGoalForm from "@/account-goals/workspace/UpdateAccountGoalFo
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
 
+/**
+ * Props for the AccountGoalContextFrame component.
+ */
 interface AccountGoalContextFrameProps {
   readonly accountGoal: AccountGoal;
   readonly redirectUrl: string;

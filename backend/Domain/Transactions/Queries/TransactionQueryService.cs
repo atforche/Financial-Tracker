@@ -56,7 +56,7 @@ public sealed class TransactionQueryService(
     /// <summary>
     /// Retrieves interpreted Transactions and metadata for an Accounting Period range.
     /// </summary>
-    public async Task<TransactionAccountingPeriodRangeQueryResult> GetAccountingPeriodRangeAsync(
+    public async Task<AccountingPeriodRangeQueryResult<TransactionAccountingPeriodRange>> GetAccountingPeriodRangeAsync(
         TransactionAccountingPeriodRangeQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -66,7 +66,7 @@ public sealed class TransactionQueryService(
             cancellationToken);
         if (resolution.AccountingPeriods == null)
         {
-            return new TransactionAccountingPeriodRangeQueryResult(null, resolution.Failure);
+            return new AccountingPeriodRangeQueryResult<TransactionAccountingPeriodRange>(null, resolution.Failure);
         }
 
         IReadOnlyCollection<AccountingPeriod> periods = resolution.AccountingPeriods;
@@ -83,7 +83,7 @@ public sealed class TransactionQueryService(
             facts.LocationCashFlow,
             query.Offset,
             query.Limit);
-        return new TransactionAccountingPeriodRangeQueryResult(range, AccountingPeriodRangeQueryFailure.None);
+        return new AccountingPeriodRangeQueryResult<TransactionAccountingPeriodRange>(range, AccountingPeriodRangeQueryFailure.None);
     }
 
     /// <summary>

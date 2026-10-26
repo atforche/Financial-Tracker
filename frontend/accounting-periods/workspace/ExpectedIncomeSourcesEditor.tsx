@@ -7,6 +7,9 @@ import ExpectedIncomeDatesEditor from "@/accounting-periods/workspace/ExpectedIn
 import type { ExpectedIncomeSourceRequest } from "@/accounting-periods/types";
 import Frame from "@/framework/view/Frame";
 
+/**
+ * Props for the ExpectedIncomeSourcesEditor component.
+ */
 interface ExpectedIncomeSourcesEditorProps {
   readonly source: ExpectedIncomeSourceRequest;
   readonly setSource?: ((source: ExpectedIncomeSourceRequest) => void) | null;
@@ -16,7 +19,9 @@ interface ExpectedIncomeSourcesEditorProps {
   readonly headerContent?: ReactNode;
 }
 
-/** Displays the shared editable or read-only fields for one expected-income source. */
+/**
+ * Displays the shared editable or read-only fields for one expected-income source.
+ */
 const ExpectedIncomeSourcesEditor = function ({
   source,
   setSource = null,

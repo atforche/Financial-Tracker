@@ -1,5 +1,4 @@
 using System.Net;
-using Tests.Infrastructure;
 
 namespace Tests.Health;
 

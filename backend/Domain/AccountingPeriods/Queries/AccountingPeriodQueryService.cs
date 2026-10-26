@@ -88,7 +88,7 @@ public sealed class AccountingPeriodQueryService(
     /// <summary>
     /// Retrieves and interprets the requested Accounting Period range.
     /// </summary>
-    public async Task<AccountingPeriodRangeQueryResult> GetRangeAsync(
+    public async Task<AccountingPeriodRangeQueryResult<AccountingPeriodRange>> GetRangeAsync(
         AccountingPeriodRangeQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -98,7 +98,7 @@ public sealed class AccountingPeriodQueryService(
             cancellationToken);
         if (resolution.AccountingPeriods == null)
         {
-            return new AccountingPeriodRangeQueryResult(null, resolution.Failure);
+            return new AccountingPeriodRangeQueryResult<AccountingPeriodRange>(null, resolution.Failure);
         }
 
         AccountingPeriod start = resolution.AccountingPeriods.First();
@@ -109,7 +109,7 @@ public sealed class AccountingPeriodQueryService(
             cancellationToken);
         if (!AccountingPeriodRangeResolver.IsContiguous(periods.Select(period => period.AccountingPeriod), start, end))
         {
-            return new AccountingPeriodRangeQueryResult(null, AccountingPeriodRangeQueryFailure.NotContiguous);
+            return new AccountingPeriodRangeQueryResult<AccountingPeriodRange>(null, AccountingPeriodRangeQueryFailure.NotContiguous);
         }
         periods = await EnrichBalancesAsync(periods, cancellationToken);
 
@@ -132,7 +132,7 @@ public sealed class AccountingPeriodQueryService(
             totals.TotalSpending,
             totalExpectedIncome,
             trackedExpectedIncome);
-        return new AccountingPeriodRangeQueryResult(range, AccountingPeriodRangeQueryFailure.None);
+        return new AccountingPeriodRangeQueryResult<AccountingPeriodRange>(range, AccountingPeriodRangeQueryFailure.None);
     }
 
     /// <summary>

@@ -168,14 +168,8 @@ const buildBalanceTrendChartPoints = function ({
 };
 
 export {
-  buildAccountingPeriodChartPoints,
   buildBalanceTrendChartPoints,
   buildDateChartPoints,
   getBalanceTrendTooltipPoint,
 };
-export type {
-  BalanceTrendChartMode,
-  BalanceTrendChartPoint,
-  BalanceTrendDateSummary,
-  BalanceTrendPeriodSummary,
-};
+export type { BalanceTrendChartPoint, BalanceTrendDateSummary };

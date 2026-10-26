@@ -85,7 +85,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         [FromQuery] AccountingPeriodsInRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        AccountingPeriodRangeQueryResult result = await accountingPeriodQueryService.GetRangeAsync(
+        AccountingPeriodRangeQueryResult<AccountingPeriodRange> result = await accountingPeriodQueryService.GetRangeAsync(
             accountingPeriodQueryConverter.ToDomain(query),
             cancellationToken);
         if (result.Range != null)

@@ -1,3 +1,5 @@
+using Models.Transactions.Create;
+
 namespace Models.Transactions.Update;
 
 /// <summary>
@@ -8,10 +10,10 @@ public sealed class UpdateAccountTransactionModel : UpdateTransactionModel
     /// <summary>
     /// Source for the account transaction.
     /// </summary>
-    public required UpdateAccountTransactionSourceModel Source { get; init; }
+    public required CreateAccountTransactionSourceModel Source { get; init; }
 
     /// <summary>
     /// Destinations for the account transaction.
     /// </summary>
-    public required IReadOnlyCollection<UpdateAccountTransactionDestinationModel> Destinations { get; init; }
+    public required IReadOnlyCollection<CreateAccountTransactionDestinationModel> Destinations { get; init; }
 }

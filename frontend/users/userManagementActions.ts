@@ -40,7 +40,9 @@ const successfulAction = function (): UserManagementActionState {
   return { errorTitle: null, unmappedErrors: null, success: true };
 };
 
-/** Creates a pending invitation with the selected role. */
+/**
+ * Creates a pending invitation with the selected role.
+ */
 const createUserInvitation = async function (
   email: string,
   role: UserRole,

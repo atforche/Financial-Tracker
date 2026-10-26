@@ -63,10 +63,6 @@ class RepoPaths:
         return self.backend / "Backend.sln"
 
     @property
-    def backend_project(self) -> Path:
-        return self.backend / "Rest" / "Rest.csproj"
-
-    @property
     def backend_dockerfile(self) -> Path:
         return self.backend / "Dockerfile"
 

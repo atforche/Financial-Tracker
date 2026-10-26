@@ -67,5 +67,4 @@ const WorkspaceCard = function ({
   );
 };
 
-export type { WorkspaceCardProps };
 export default WorkspaceCard;

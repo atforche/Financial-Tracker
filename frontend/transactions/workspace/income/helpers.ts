@@ -183,18 +183,6 @@ const validateSource = function (source: IncomeSourceDraft): boolean {
 };
 
 /**
- * Determines whether the account is tracked, or null when its account type is not known yet.
- */
-const isTrackedAccount = function (
-  account: AccountBalanceEventDraft | null,
-): boolean | null {
-  const accountType = account?.accountType;
-  return accountType === null || accountType === undefined
-    ? null
-    : isTrackedAccountType(accountType);
-};
-
-/**
  * Validates the fund assignments for an income destination.
  */
 const validateFundAssignments = function (
@@ -424,14 +412,16 @@ const getSourceFromTransaction = function (
 /**
  * Gets a fund assignment draft from the provided transaction fund.
  */
-const getFundAssignmentFromTransactionFund = (
+const getFundAssignmentFromTransactionFund = function (
   assignment: FundBalanceEvent,
-): FundAssignmentDraft => ({
-  fundId: assignment.fund.id,
-  fundName: assignment.fund.name,
-  amount: assignment.amount,
-  isExtraContribution: assignment.isExtraContribution === true,
-});
+): FundAssignmentDraft {
+  return {
+    fundId: assignment.fund.id,
+    fundName: assignment.fund.name,
+    amount: assignment.amount,
+    isExtraContribution: assignment.isExtraContribution === true,
+  };
+};
 
 /**
  * Gets the collection of destinations from the provided income transaction.
@@ -462,8 +452,6 @@ export type {
   IncomeDestinationDraft,
 };
 export {
-  CreateTransactionModelCreateIncomeTransactionModelType as CreateIncomeTransactionType,
-  UpdateTransactionModelUpdateIncomeTransactionModelType as UpdateIncomeTransactionType,
   buildCreateRequest,
   buildDestinationAccountFilter,
   buildSourceAccountFilter,
@@ -473,10 +461,8 @@ export {
   createEmptySource,
   createEmptyDestination,
   getDestinationsFromTransaction,
-  getFundAssignmentFromTransactionFund,
   getNetIncomeAmount,
   getSourceFromTransaction,
-  isTrackedAccount,
   validateFundAssignments,
   validateDestination,
   validateSource,

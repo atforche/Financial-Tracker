@@ -19,7 +19,6 @@ import {
   buildSourceAccountFilter,
   createEmptyDestination,
   getNetIncomeAmount,
-  isTrackedAccount,
   validateDestination,
   validateFundAssignments,
   validateSource,
@@ -37,6 +36,7 @@ import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/I
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
 import { getUnassignedFund } from "@/funds/helpers";
+import { isTrackedAccount } from "@/accounts/helpers";
 import { updateUnassignedFundAmount } from "@/funds/assignmentPlanner/helpers";
 
 /**

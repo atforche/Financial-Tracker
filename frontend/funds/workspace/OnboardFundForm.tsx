@@ -6,6 +6,7 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
 } from "react";
@@ -72,13 +73,15 @@ const OnboardFundForm = function ({
     focusFirstEntryControl(formRef.current);
   };
 
+  const handleSuccess = useEffectEvent((): void => {
+    reset();
+    router.replace(redirectUrl);
+  });
   useEffect(() => {
     if (state.success === true) {
-      reset();
-      router.replace(redirectUrl);
+      handleSuccess();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [redirectUrl, router, state.success]);
+  }, [state.success]);
 
   const remainingUnassignedAmount =
     unassignedBalance === null

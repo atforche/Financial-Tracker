@@ -186,5 +186,5 @@ const TransactionForm = function <RequestPayload>({
   );
 };
 
-export type { TransactionDetails, TransactionFormState };
+export type { TransactionDetails };
 export default TransactionForm;

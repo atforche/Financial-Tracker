@@ -20,17 +20,6 @@ public sealed class FundBalanceService(
     }
 
     /// <summary>
-    /// Gets the posted Fund Balances prior to the provided Transaction.
-    /// </summary>
-    public IEnumerable<FundBalance> GetPreviousBalancesForTransaction(Transaction transaction) =>
-        transaction.GetAllAffectedFundIds(null).Select(fundId =>
-        {
-            FundBalanceHistory history = fundBalanceHistoryRepository.GetAllByTransactionId(transaction.Id)
-                .Where(item => item.Fund.Id == fundId).OrderBy(item => item.Date).ThenBy(item => item.Sequence).First();
-            return GetExistingFundBalanceAsOf(history.Fund, history.Date, history.Sequence);
-        });
-
-    /// <summary>
     /// Gets the posted Fund Balances after the provided Transaction.
     /// </summary>
     public IEnumerable<FundBalance> GetNewBalanceForTransaction(Transaction transaction) =>

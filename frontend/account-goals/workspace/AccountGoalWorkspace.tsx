@@ -8,6 +8,9 @@ import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
+/**
+ * Props for the AccountGoalWorkspace component.
+ */
 interface AccountGoalWorkspaceProps {
   readonly searchParams: Promise<AccountGoalWorkspaceSearchParams>;
 }

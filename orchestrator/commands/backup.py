@@ -1,11 +1,13 @@
 """Registration for backup commands."""
 
+from argparse import ArgumentParser
+
 from . import backup_create, backup_initialize, backup_verify
 from .common import add_command
 
 
 def register(commands: object) -> None:
-    def configure(parser):
+    def configure(parser: ArgumentParser) -> None:
         parser.add_argument(
             "--path", required=True, help="Path to the Financial Tracker instance"
         )

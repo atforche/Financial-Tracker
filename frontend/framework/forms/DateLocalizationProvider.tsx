@@ -11,7 +11,9 @@ interface DateLocalizationProviderProps {
   readonly children: ReactNode;
 }
 
-/** Provides the shared date adapter configuration for all date controls. */
+/**
+ * Provides the shared date adapter configuration for all date controls.
+ */
 const DateLocalizationProvider = function ({
   children,
 }: DateLocalizationProviderProps): JSX.Element {

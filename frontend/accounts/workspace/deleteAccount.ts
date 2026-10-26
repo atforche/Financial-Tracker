@@ -1,9 +1,9 @@
 "use server";
 
 import type {
-  AccountActionPayload,
-  AccountActionState,
-} from "@/accounts/workspace/accountAction";
+  WorkspaceActionPayload,
+  WorkspaceActionState,
+} from "@/framework/forms/workspaceAction";
 import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import mapApiValidationError from "@/framework/forms/mapApiValidationError";
@@ -13,12 +13,12 @@ import { revalidatePath } from "next/cache";
 /**
  * Interface representing the state of deleting an account.
  */
-type ActionState = AccountActionState;
+type ActionState = WorkspaceActionState;
 
 /**
  * Payload for the delete account server action.
  */
-interface ActionPayload extends AccountActionPayload {
+interface ActionPayload extends WorkspaceActionPayload {
   readonly accountId: string;
 }
 

@@ -116,11 +116,6 @@ public sealed class UserInvitation : Entity<UserInvitationId>
         RevokedAt = revokedAt;
         RevokedByUserId = revokedByUserId;
     }
-
-    /// <summary>
-    /// Marks the invitation as expired.
-    /// </summary>
-    internal void Expire() => Status = UserInvitationStatus.Expired;
 }
 
 /// <summary>

@@ -63,38 +63,45 @@ type RefundRequestFields = Omit<
 /**
  * Creates an empty source draft.
  */
-const createEmptySource = (): RefundSourceDraft => ({
-  account: null,
-  location: null,
-  amount: null,
-  fundAssignments: [],
-});
+const createEmptySource = function (): RefundSourceDraft {
+  return {
+    account: null,
+    location: null,
+    amount: null,
+    fundAssignments: [],
+  };
+};
 
 /**
  * Creates an empty destination draft.
  */
-const createEmptyDestination = (): RefundDestinationDraft => ({
-  account: null,
-});
+const createEmptyDestination = function (): RefundDestinationDraft {
+  return {
+    account: null,
+  };
+};
 
 /**
  * Validates the fund assignments for a refund source.
  */
-const validateFundAssignments = (source: RefundSourceDraft): boolean =>
-  !hasIncompleteFundAssignments(source.fundAssignments) &&
-  getCurrencyDifference(
-    getCurrencyTotal(
-      source.fundAssignments
-        .filter((item) => !isUnassignedFund(item.fundName))
-        .map((item) => item.amount),
-    ),
-    source.amount ?? 0,
-  ) === 0;
+const validateFundAssignments = function (source: RefundSourceDraft): boolean {
+  return (
+    !hasIncompleteFundAssignments(source.fundAssignments) &&
+    getCurrencyDifference(
+      getCurrencyTotal(
+        source.fundAssignments
+          .filter((item) => !isUnassignedFund(item.fundName))
+          .map((item) => item.amount),
+      ),
+      source.amount ?? 0,
+    ) === 0
+  );
+};
 
 /**
  * Validates the source of a refund transaction.
  */
-const validateSource = (source: RefundSourceDraft): boolean => {
+const validateSource = function (source: RefundSourceDraft): boolean {
   const hasAccount = source.account !== null;
   const hasLocation = (source.location?.name.trim() ?? "") !== "";
   return (
@@ -111,28 +118,31 @@ const validateSource = (source: RefundSourceDraft): boolean => {
 /**
  * Validates the destination of a refund transaction.
  */
-const validateDestination = (
+const validateDestination = function (
   destination: RefundDestinationDraft,
   sources: RefundSourceDraft[],
-): boolean =>
-  destination.account !== null &&
-  (destination.account.accountType === null ||
-    isTrackedAccountType(destination.account.accountType)) &&
-  !sources.some(
-    (source) => source.account?.accountId === destination.account?.accountId,
+): boolean {
+  return (
+    destination.account !== null &&
+    (destination.account.accountType === null ||
+      isTrackedAccountType(destination.account.accountType)) &&
+    !sources.some(
+      (source) => source.account?.accountId === destination.account?.accountId,
+    )
   );
+};
 
 /**
  * Validates the entire refund transaction request.
  */
-const validateRequest = (
+const validateRequest = function (
   period: AccountingPeriod | null,
   date: Dayjs | null,
   fallback: Dayjs | null,
   description: string,
   sources: RefundSourceDraft[],
   destination: RefundDestinationDraft,
-): boolean => {
+): boolean {
   const total = getCurrencyTotal(sources.map((source) => source.amount));
   return (
     validateDetails(period, date, fallback, description) &&
@@ -145,39 +155,49 @@ const validateRequest = (
 /**
  * Maps a validated refund draft to fields shared by create and update requests.
  */
-const buildRequestFields = (
+const buildRequestFields = function (
   date: Dayjs | null,
   fallback: Dayjs | null,
   description: string,
   sources: RefundSourceDraft[],
   destination: RefundDestinationDraft,
-): RefundRequestFields => ({
-  date: date?.format("YYYY-MM-DD") ?? fallback?.format("YYYY-MM-DD") ?? "",
-  description,
-  amount: getCurrencyTotal(sources.map((source) => source.amount)),
-  sources: sources.map((source) => ({
-    accountId: source.account?.accountId ?? null,
-    location: source.account === null ? toLocationInput(source.location) : null,
-    amount: source.amount ?? 0,
-    fundAssignments: source.fundAssignments
-      .filter((item) => !isUnassignedFund(item.fundName))
-      .map((item) => ({ fundId: item.fundId, amount: item.amount })),
-  })),
-  destination: { accountId: destination.account?.accountId ?? "" },
-});
+): RefundRequestFields {
+  return {
+    date: date?.format("YYYY-MM-DD") ?? fallback?.format("YYYY-MM-DD") ?? "",
+    description,
+    amount: getCurrencyTotal(sources.map((source) => source.amount)),
+    sources: sources.map((source) => ({
+      accountId: source.account?.accountId ?? null,
+      location:
+        source.account === null ? toLocationInput(source.location) : null,
+      amount: source.amount ?? 0,
+      fundAssignments: source.fundAssignments
+        .filter((item) => !isUnassignedFund(item.fundName))
+        .map((item) => ({ fundId: item.fundId, amount: item.amount })),
+    })),
+    destination: { accountId: destination.account?.accountId ?? "" },
+  };
+};
 
 /**
  * Builds the create transaction request object from the provided parameters.
  */
-const buildCreateRequest = (
+const buildCreateRequest = function (
   period: AccountingPeriod | null,
   date: Dayjs | null,
   fallback: Dayjs | null,
   description: string,
   sources: RefundSourceDraft[],
   destination: RefundDestinationDraft,
-): CreateTransactionRequest | null =>
-  validateRequest(period, date, fallback, description, sources, destination)
+): CreateTransactionRequest | null {
+  return validateRequest(
+    period,
+    date,
+    fallback,
+    description,
+    sources,
+    destination,
+  )
     ? {
         type: CreateTransactionModelCreateRefundTransactionModelType.Refund,
         accountingPeriodId: period?.id ?? "",
@@ -190,35 +210,36 @@ const buildCreateRequest = (
         ),
       }
     : null;
+};
 
 /**
  * Builds the update transaction request object from the provided parameters.
  */
-const buildUpdateRequest = (
+const buildUpdateRequest = function (
   period: AccountingPeriod | null,
   date: Dayjs | null,
   description: string,
   sources: RefundSourceDraft[],
   destination: RefundDestinationDraft,
-): UpdateTransactionRequest | null =>
-  validateRequest(period, date, null, description, sources, destination)
+): UpdateTransactionRequest | null {
+  return validateRequest(period, date, null, description, sources, destination)
     ? {
         type: UpdateTransactionModelUpdateRefundTransactionModelType.Refund,
         ...buildRequestFields(date, null, description, sources, destination),
       }
     : null;
+};
 
 /**
  * Builds a filter callback for the source account dropdown.
  */
-const buildSourceAccountFilter =
-  (
-    accounts: Account[],
-    sources: RefundSourceDraft[],
-    index: number,
-    destination: RefundDestinationDraft,
-  ) =>
-  (account: Account): boolean =>
+const buildSourceAccountFilter = function (
+  accounts: Account[],
+  sources: RefundSourceDraft[],
+  index: number,
+  destination: RefundDestinationDraft,
+) {
+  return (account: Account): boolean =>
     !isTrackedAccountType(
       accounts.find((item) => item.id === account.id)?.type ?? account.type,
     ) &&
@@ -226,34 +247,42 @@ const buildSourceAccountFilter =
     !sources.some(
       (source, i) => i !== index && source.account?.accountId === account.id,
     );
+};
 
 /**
  * Builds a filter callback for the destination account dropdown.
  */
-const buildDestinationAccountFilter =
-  (accounts: Account[], sources: RefundSourceDraft[]) =>
-  (account: Account): boolean =>
+const buildDestinationAccountFilter = function (
+  accounts: Account[],
+  sources: RefundSourceDraft[],
+) {
+  return (account: Account): boolean =>
     isTrackedAccountType(
       accounts.find((item) => item.id === account.id)?.type ?? account.type,
     ) && !sources.some((source) => source.account?.accountId === account.id);
+};
 
 /**
  * Gets a fund assignment draft from the provided transaction fund.
  */
-const toFundDraft = (assignment: FundBalanceEvent): FundAssignmentDraft => ({
-  fundId: assignment.fund.id,
-  fundName: assignment.fund.name,
-  amount: assignment.amount,
-  isExtraContribution: false,
-});
+const toFundDraft = function (
+  assignment: FundBalanceEvent,
+): FundAssignmentDraft {
+  return {
+    fundId: assignment.fund.id,
+    fundName: assignment.fund.name,
+    amount: assignment.amount,
+    isExtraContribution: false,
+  };
+};
 
 /**
  * Gets the sources from the provided refund transaction.
  */
-const getSourcesFromTransaction = (
+const getSourcesFromTransaction = function (
   transaction: RefundTransaction,
-): RefundSourceDraft[] =>
-  transaction.sources.map((source: RefundTransactionSource) => {
+): RefundSourceDraft[] {
+  return transaction.sources.map((source: RefundTransactionSource) => {
     const assignments = source.fundAssignments.map(toFundDraft);
     return {
       account: getTransactionAccountDraftFromTransactionAccount(source.account),
@@ -262,17 +291,20 @@ const getSourcesFromTransaction = (
       fundAssignments: assignments,
     };
   });
+};
 
 /**
  * Gets the destination from the provided refund transaction.
  */
-const getDestinationFromTransaction = (
+const getDestinationFromTransaction = function (
   transaction: RefundTransaction,
-): RefundDestinationDraft => ({
-  account: getTransactionAccountDraftFromTransactionAccount(
-    transaction.destination.account,
-  ),
-});
+): RefundDestinationDraft {
+  return {
+    account: getTransactionAccountDraftFromTransactionAccount(
+      transaction.destination.account,
+    ),
+  };
+};
 
 export type { RefundSourceDraft, RefundDestinationDraft };
 export {
@@ -284,7 +316,6 @@ export {
   createEmptyDestination,
   getSourcesFromTransaction,
   getDestinationFromTransaction,
-  validateFundAssignments,
   validateDestination,
   validateSource,
 };

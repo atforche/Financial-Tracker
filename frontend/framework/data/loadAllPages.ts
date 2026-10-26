@@ -1,3 +1,6 @@
+/**
+ * A single page of a paginated collection.
+ */
 interface CollectionPage<T> {
   readonly items: T[];
   readonly totalCount: number;

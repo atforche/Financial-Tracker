@@ -1,3 +1,5 @@
+using Models.Transactions.Create;
+
 namespace Models.Transactions.Update;
 
 /// <summary>
@@ -8,10 +10,10 @@ public sealed class UpdateIncomeTransactionModel : UpdateTransactionModel
     /// <summary>
     /// Source for the income transaction.
     /// </summary>
-    public required UpdateIncomeTransactionSourceModel Source { get; init; }
+    public required CreateIncomeTransactionSourceModel Source { get; init; }
 
     /// <summary>
     /// Destinations for the income transaction.
     /// </summary>
-    public required IReadOnlyCollection<UpdateIncomeTransactionDestinationModel> Destinations { get; init; }
+    public required IReadOnlyCollection<CreateIncomeTransactionDestinationModel> Destinations { get; init; }
 }

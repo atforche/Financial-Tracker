@@ -161,4 +161,4 @@ export {
   getFundTrendsSnapshot,
   hasActiveFundTrendsFilters,
 };
-export type { FundTrendsDataMode, FundTrendsSearchParams, FundTrendsSnapshot };
+export type { FundTrendsDataMode, FundTrendsSearchParams };

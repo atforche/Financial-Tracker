@@ -1,13 +1,6 @@
 import type { AccountBalanceSummary, AccountType } from "@/accounts/types";
 import { getCurrencyDifference } from "@/framework/currencyHelpers";
 
-const emptyAccountBalanceSummary: AccountBalanceSummary = {
-  totalBalance: 0,
-  totalTrackedBalance: 0,
-  totalUntrackedBalance: 0,
-  balanceByAccountType: [],
-};
-
 /**
  * Details of account balances and changes for a specific account type.
  */
@@ -56,5 +49,5 @@ const getAccountTypeBreakdownDetails = function (
     );
 };
 
-export { emptyAccountBalanceSummary, getAccountTypeBreakdownDetails };
+export { getAccountTypeBreakdownDetails };
 export type { AccountTypeBreakdownDetail };

@@ -26,11 +26,11 @@ import {
   shouldPersistAccountNames,
 } from "@/accounts/accountNameFilterHelpers";
 import AccountBalanceSummaryCards from "@/accounts/AccountBalanceSummaryCards";
-import AccountTrendsChangeChart from "@/accounts/trends/AccountTrendsChangeChart";
 import AccountTrendsFilter from "@/accounts/trends/AccountTrendsFilter";
 import AccountTrendsListFrame from "@/accounts/trends/AccountTrendsListFrame";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
+import BalanceTrendsChangeChart from "@/framework/charts/BalanceTrendsChangeChart";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
@@ -292,7 +292,7 @@ const AccountTrends = async function ({
           chartPoints={balanceTrendChartPoints}
           xAxisLabel={modeValue === "Date" ? "Date" : "Accounting Period"}
         />
-        <AccountTrendsChangeChart
+        <BalanceTrendsChangeChart
           mode={modeValue}
           accountingPeriods={periodSummaries}
           dates={dateSummaries}
@@ -308,5 +308,4 @@ const AccountTrends = async function ({
   );
 };
 
-export type { AccountTrendsSearchParams };
 export default AccountTrends;

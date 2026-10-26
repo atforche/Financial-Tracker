@@ -58,4 +58,3 @@ const ResponsiveGrid = function ({
 };
 
 export default ResponsiveGrid;
-export type { ResponsiveGridColumns };

@@ -1,6 +1,7 @@
 using Data;
 using Domain;
 using Domain.AccountingPeriods;
+using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
 using Domain.BalanceEvents;
@@ -155,7 +156,7 @@ public sealed class AccountController(
         [FromQuery] AccountsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        AccountAccountingPeriodRangeQueryResult result = await accountQueryService.GetAccountingPeriodRangeAsync(
+        AccountingPeriodRangeQueryResult<AccountAccountingPeriodRange> result = await accountQueryService.GetAccountingPeriodRangeAsync(
             accountConverter.ToDomain(query),
             cancellationToken);
         return result.Range == null

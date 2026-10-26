@@ -52,5 +52,4 @@ const ToggleButtonSelector = function <TValue extends string>({
   );
 };
 
-export type { ToggleButtonSelectorOption, ToggleButtonSelectorProps };
 export default ToggleButtonSelector;

@@ -15,9 +15,7 @@ import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import IncomeTransactionForm from "@/transactions/workspace/income/IncomeTransactionForm";
 import type { TransactionDetails } from "@/transactions/workspace/TransactionForm";
-import { getDefaultDate } from "@/transactions/workspace/helpers";
 import { useCreateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
-import useTransactionPreview from "@/transactions/workspace/useTransactionPreview";
 
 /**
  * Props for the CreateIncomeTransactionForm component.
@@ -42,68 +40,40 @@ const CreateIncomeTransactionForm = function ({
   redirectUrl,
   details,
 }: CreateIncomeTransactionFormProps): JSX.Element {
-  const {
-    accountingPeriod,
-    setAccountingPeriod,
-    date,
-    setDate,
-    description,
-    setDescription,
-  } = details;
-  const defaultDate = getDefaultDate(accountingPeriod);
   const [source, setSource] = useState<IncomeSourceDraft>(createEmptySource());
   const [destinations, setDestinations] = useState<IncomeDestinationDraft[]>([
     createEmptyDestination(),
   ]);
-
-  const { formRef, state, pending, reset, submit } = useCreateTransactionEditor(
-    {
-      redirectUrl,
-      resetDraft: (): void => {
-        details.reset();
-        setSource(createEmptySource());
-        setDestinations([createEmptyDestination()]);
-      },
+  const formProps = useCreateTransactionEditor({
+    accountingPeriods,
+    details,
+    redirectUrl,
+    resetDraft: (): void => {
+      setSource(createEmptySource());
+      setDestinations([createEmptyDestination()]);
     },
-  );
-
-  const request: CreateTransactionRequest | null = buildCreateRequest(
-    accountingPeriod,
-    date,
-    defaultDate,
-    description,
-    source,
-    destinations,
-  );
-  const preview = useTransactionPreview(
-    request === null ? null : { transactionId: null, request },
-  );
+    buildRequest: (accountingPeriod, date, defaultDate, description) =>
+      buildCreateRequest(
+        accountingPeriod,
+        date,
+        defaultDate,
+        description,
+        source,
+        destinations,
+      ),
+  });
 
   return (
     <IncomeTransactionForm<CreateTransactionRequest>
-      formRef={formRef}
+      {...formProps}
+      submitLabel="Create Income Transaction"
       accounts={accounts}
       funds={funds}
       fundGoals={fundGoals}
-      accountingPeriods={accountingPeriods}
-      accountingPeriod={accountingPeriod}
-      setAccountingPeriod={setAccountingPeriod}
-      date={date}
-      setDate={setDate}
-      defaultDate={defaultDate}
-      description={description}
-      setDescription={setDescription}
       source={source}
       setSource={setSource}
       destinations={destinations}
       setDestinations={setDestinations}
-      submitLabel="Create Income Transaction"
-      state={state}
-      pending={pending}
-      request={request}
-      preview={preview}
-      onReset={reset}
-      onSubmit={submit}
     />
   );
 };

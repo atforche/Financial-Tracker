@@ -23,7 +23,7 @@ import type { JSX } from "react";
 import type { Transaction } from "@/transactions/types";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 import { formatCurrency } from "@/framework/currencyHelpers";
-import { isTrackedAccount } from "@/transactions/workspace/income/helpers";
+import { isTrackedAccount } from "@/accounts/helpers";
 
 const emptyFundAmounts: FundAssignmentDraft[] = [];
 

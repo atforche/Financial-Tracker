@@ -28,5 +28,4 @@ const unwrapApiResponse = function <T>(
   return response.data;
 };
 
-export { ApiRequestError };
 export default unwrapApiResponse;

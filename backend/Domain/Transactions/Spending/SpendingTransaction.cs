@@ -103,7 +103,7 @@ public class SpendingTransaction : Transaction
     /// <summary>
     /// Sets the posted date for a specific account affected by this transaction.
     /// </summary>
-    internal void SetPostedDate(AccountId accountId, DateOnly? postedDate)
+    internal override void SetPostedDate(AccountId accountId, DateOnly? postedDate)
     {
         if (accountId == Source.Account.Id)
         {
@@ -117,7 +117,7 @@ public class SpendingTransaction : Transaction
     /// <summary>
     /// Clears all posted dates for this transaction.
     /// </summary>
-    internal void ClearPostedDates()
+    internal override void ClearPostedDates()
     {
         Source.PostedDate = null;
         foreach (SpendingTransactionDestination destination in _destinations)

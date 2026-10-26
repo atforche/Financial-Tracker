@@ -14,6 +14,9 @@ import { formatCurrency } from "@/framework/currencyHelpers";
 import transactionRoutes from "@/transactions/routes";
 import { useRouter } from "next/navigation";
 
+/**
+ * Props for the RecentLocationTransactionsFrame component.
+ */
 interface RecentLocationTransactionsFrameProps {
   readonly transactions: readonly Transaction[];
   readonly totalCount: number;
@@ -22,7 +25,9 @@ interface RecentLocationTransactionsFrameProps {
   readonly returnUrl: string;
 }
 
-/** Displays recent transactions affecting one Location. */
+/**
+ * Displays recent transactions affecting one Location.
+ */
 const RecentLocationTransactionsFrame = function ({
   transactions,
   totalCount,

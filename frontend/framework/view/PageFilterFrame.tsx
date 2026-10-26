@@ -49,5 +49,4 @@ const PageFilterFrame = function ({
   );
 };
 
-export type { PageFilterFrameProps };
 export default PageFilterFrame;

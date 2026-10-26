@@ -4,11 +4,17 @@ import {
   type AccountGoalProgress,
 } from "@/account-goals/types";
 
+/**
+ * An Account Goal paired with its progress for one Accounting Period.
+ */
 interface AccountGoalPeriodProgress {
   readonly accountGoal: AccountGoal;
   readonly progress: AccountGoalProgress;
 }
 
+/**
+ * A single Accounting Period point on an Account Goal progress trend.
+ */
 interface AccountGoalTrendPoint {
   readonly accountingPeriodId: string;
   readonly accountingPeriodName: string;
@@ -21,6 +27,9 @@ interface AccountGoalTrendPoint {
   readonly aboveMaximumCount: number;
 }
 
+/**
+ * Builds the trend point for an Account Goal in the provided Accounting Period.
+ */
 const getAccountGoalTrendPoint = function (
   accountingPeriod: {
     readonly id: string;

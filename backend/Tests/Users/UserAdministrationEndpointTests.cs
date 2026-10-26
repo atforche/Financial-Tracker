@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Models;
 using Models.UserInvitations;
 using Models.Users;
-using Tests.Infrastructure;
 
 namespace Tests.Users;
 

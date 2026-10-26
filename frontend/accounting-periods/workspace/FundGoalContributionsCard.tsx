@@ -139,5 +139,4 @@ const FundGoalContributionsCard = function ({
   );
 };
 
-export type { FundGoalContributionsCardProps };
 export default FundGoalContributionsCard;

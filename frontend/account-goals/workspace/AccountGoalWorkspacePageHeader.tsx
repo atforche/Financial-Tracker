@@ -6,6 +6,9 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import type { JSX } from "react";
 import Link from "next/link";
 
+/**
+ * Props for the AccountGoalWorkspacePageHeader component.
+ */
 interface AccountGoalWorkspacePageHeaderProps {
   readonly backHref: string;
   readonly previousPeriod: PeriodLink | null;

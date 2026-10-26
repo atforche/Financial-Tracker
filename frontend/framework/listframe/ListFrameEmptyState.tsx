@@ -49,5 +49,4 @@ const ListFrameEmptyState = function ({
   );
 };
 
-export type { EmptyStateDefinition };
 export default ListFrameEmptyState;

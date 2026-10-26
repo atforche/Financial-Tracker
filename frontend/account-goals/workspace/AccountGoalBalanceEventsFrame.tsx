@@ -21,6 +21,9 @@ import transactionRoutes from "@/transactions/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
+/**
+ * Props for the AccountGoalBalanceEventsFrame component.
+ */
 interface AccountGoalBalanceEventsFrameProps {
   readonly data: AccountBalanceEvent[];
   readonly totalCount: number;
@@ -29,7 +32,9 @@ interface AccountGoalBalanceEventsFrameProps {
   readonly accountId: string;
 }
 
-/** Displays the account's balance events for the goal's accounting period. */
+/**
+ * Displays the account's balance events for the goal's accounting period.
+ */
 const AccountGoalBalanceEventsFrame = function ({
   data,
   totalCount,

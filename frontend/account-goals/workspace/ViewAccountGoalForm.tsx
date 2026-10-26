@@ -4,10 +4,10 @@ import type { AccountGoal, AccountGoalProgress } from "@/account-goals/types";
 import type { AccountBalanceEvent } from "@/accounts/types";
 import AccountGoalBalanceEventsFrame from "@/account-goals/workspace/AccountGoalBalanceEventsFrame";
 import AccountGoalContextFrame from "@/account-goals/workspace/AccountGoalContextFrame";
-import AccountGoalEndingBalanceRange from "@/account-goals/workspace/AccountGoalEndingBalanceRange";
 import type { BalanceEventTotals } from "@/balance-events/types";
 import type { BalanceTrendDateSummary } from "@/framework/charts/balanceTrendHelpers";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
+import EndingBalanceRange from "@/framework/view/EndingBalanceRange";
 import Frame from "@/framework/view/Frame";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
@@ -15,6 +15,9 @@ import RecentBalanceActivity from "@/balance-events/RecentBalanceActivity";
 import type { Route } from "next";
 import UrlTabs from "@/framework/view/UrlTabs";
 
+/**
+ * Props for the ViewAccountGoalForm component.
+ */
 interface ViewAccountGoalFormProps {
   readonly accountGoal: AccountGoal;
   readonly progress: AccountGoalProgress;
@@ -31,7 +34,9 @@ interface ViewAccountGoalFormProps {
   readonly accountId: string;
 }
 
-/** Displays account goal details, progress, activity, and balance events. */
+/**
+ * Displays account goal details, progress, activity, and balance events.
+ */
 const ViewAccountGoalForm = function (
   props: ViewAccountGoalFormProps,
 ): JSX.Element {
@@ -44,8 +49,9 @@ const ViewAccountGoalForm = function (
           isReadOnly={props.isReadOnly}
         />
         <Frame title="Progress">
-          <AccountGoalEndingBalanceRange
-            endingBalance={props.progress.endingBalance}
+          <EndingBalanceRange
+            current={props.progress.endingBalance.currentBalance}
+            range={props.progress.endingBalance}
           />
         </Frame>
         <UrlTabs

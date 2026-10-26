@@ -20,6 +20,9 @@ import UrlTabs from "@/framework/view/UrlTabs";
 import createApiClient from "@/framework/data/createApiClient";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
+/**
+ * Props for the AccountingPeriodPlanView component.
+ */
 interface AccountingPeriodPlanViewProps {
   readonly accountingPeriod: AccountingPeriodWithBalance;
   readonly currentUrl: Route;
@@ -30,7 +33,9 @@ interface AccountingPeriodPlanViewProps {
   readonly accountGoalSort?: AccountGoalSort | undefined;
 }
 
-/** Displays the inputs used to establish an accounting period's plan. */
+/**
+ * Displays the inputs used to establish an accounting period's plan.
+ */
 const AccountingPeriodPlanView = async function ({
   accountingPeriod,
   currentUrl,

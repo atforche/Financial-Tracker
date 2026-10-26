@@ -15,12 +15,17 @@ import propertyName from "@/framework/data/propertyName";
 import routes from "@/locations/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
+/**
+ * Props for the LocationWorkspaceListFrame component.
+ */
 interface LocationWorkspaceListFrameProps {
   readonly data: Location[] | null;
   readonly totalCount: number | null;
 }
 
-/** Displays Locations matching the active workspace search. */
+/**
+ * Displays Locations matching the active workspace search.
+ */
 const LocationWorkspaceListFrame = function ({
   data,
   totalCount,

@@ -5,12 +5,18 @@ import { isApiError } from "@/framework/data/apiError";
 import mapApiValidationError from "@/framework/forms/mapApiValidationError";
 import { revalidatePath } from "next/cache";
 
+/**
+ * State of the delete expected income source server action.
+ */
 interface ActionState {
   readonly success?: boolean;
   readonly errorTitle?: string | null;
   readonly unmappedErrors?: string | null;
 }
 
+/**
+ * Payload for the delete expected income source server action.
+ */
 interface ActionPayload {
   readonly accountingPeriodId: string;
   readonly expectedIncomeSourceId: string;

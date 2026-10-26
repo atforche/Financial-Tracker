@@ -1,9 +1,9 @@
 "use server";
 
 import type {
-  FundActionPayload,
-  FundActionState,
-} from "@/funds/workspace/fundAction";
+  WorkspaceActionPayload,
+  WorkspaceActionState,
+} from "@/framework/forms/workspaceAction";
 import type { CreateFundRequest } from "@/funds/types";
 import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
@@ -14,7 +14,7 @@ import { revalidatePath } from "next/cache";
 /**
  * Interface representing the state of creating a fund.
  */
-interface ActionState extends FundActionState {
+interface ActionState extends WorkspaceActionState {
   readonly nameErrors?: string | null;
   readonly descriptionErrors?: string | null;
   readonly accountingPeriodErrors?: string | null;
@@ -26,7 +26,7 @@ interface ActionState extends FundActionState {
 /**
  * Payload for the create fund server action.
  */
-interface ActionPayload extends FundActionPayload {
+interface ActionPayload extends WorkspaceActionPayload {
   readonly request: CreateFundRequest;
 }
 

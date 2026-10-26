@@ -32,23 +32,10 @@ type UpdateFundGoalRequest = components["schemas"]["UpdateFundGoalModel"];
  */
 type FundGoalBalanceEvent = components["schemas"]["FundGoalBalanceEventModel"];
 
-/**
- * Type representing a Fund Goal's Fund balance for a specific date.
- */
-type FundGoalBalanceSummaryByDate =
-  components["schemas"]["FundBalanceSummaryByDateModel"];
-
-/**
- * Type representing a potentially unfinished Fund Goal balance event.
- */
-type FundGoalBalanceEventDraft = Partial<FundGoalBalanceEvent>;
-
 export {
   FundGoalEndingBalanceStatusModel as FundGoalEndingBalanceStatus,
   type FundGoal,
   type FundGoalBalanceEvent,
-  type FundGoalBalanceSummaryByDate,
-  type FundGoalBalanceEventDraft,
   FundGoalBalanceEventSortModel as FundGoalBalanceEventSort,
   type FundGoalProgress,
   type FundGoalWithProgress,

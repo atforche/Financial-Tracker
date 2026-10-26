@@ -21,6 +21,9 @@ interface CreatableValue {
   readonly value: string;
 }
 
+/**
+ * Sorts the provided values and removes duplicates.
+ */
 const sortValues = function (values: readonly string[]): string[] {
   return [...new Set(values)].sort((left, right) =>
     left < right ? -1 : left > right ? 1 : 0,

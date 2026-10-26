@@ -1,20 +1,19 @@
 "use client";
 
-import type { AccountBalanceEvent, AccountWithBalance } from "@/accounts/types";
-import { Box, Button, Stack, Tab, Tabs } from "@mui/material";
-import { type JSX, useState } from "react";
-import AccountBalanceEventsFrame from "@/accounts/workspace/AccountBalanceEventsFrame";
-import AccountSummaryFrame from "@/accounts/workspace/AccountSummaryFrame";
+import {
+  type AccountBalanceEvent,
+  AccountBalanceEventSort,
+  type AccountWithBalance,
+} from "@/accounts/types";
+import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
 import type { BalanceEventTotals } from "@/balance-events/types";
 import type { BalanceTrendDateSummary } from "@/framework/charts/balanceTrendHelpers";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import CurrentBalanceFrame from "@/accounts/workspace/CurrentBalanceFrame";
-import DeleteAccountForm from "@/accounts/workspace/DeleteAccountForm";
-import PageLayout from "@/framework/view/PageLayout";
-import RecentBalanceActivity from "@/balance-events/RecentBalanceActivity";
+import BalanceWorkspaceView from "@/balance-events/BalanceWorkspaceView";
+import type { JSX } from "react";
 import type { Route } from "next";
+import StringEntryField from "@/framework/forms/StringEntryField";
 import UpdateAccountForm from "@/accounts/workspace/UpdateAccountForm";
-import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
+import deleteAccount from "@/accounts/workspace/deleteAccount";
 
 /**
  * Props for the ViewAccountForm component.
@@ -40,113 +39,49 @@ const ViewAccountForm = function ({
   financialInstitutions,
   redirectUrl,
   deleteRedirectUrl,
-  recentBalanceEvents,
-  recentBalanceEventCount,
-  activityTotals,
-  recentActivityBalances,
-  trendsHref,
-  addTransactionHref,
+  ...viewProps
 }: ViewAccountFormProps): JSX.Element {
-  const canWrite = useWriteAccess();
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
-  const [activeView, setActiveView] = useState<"transactions" | "activity">(
-    "transactions",
-  );
-
   return (
-    <ConstrainedContent maxWidth={1200}>
-      <PageLayout>
-        <AccountSummaryFrame
-          account={account}
-          headerContent={
-            !canWrite ? undefined : (
-              <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    setUpdateDialogOpen(true);
-                  }}
-                >
-                  Edit
-                </Button>
-                <DeleteAccountForm
-                  account={account}
-                  redirectUrl={deleteRedirectUrl}
-                />
-              </Stack>
-            )
-          }
-        />
-        <CurrentBalanceFrame account={account} />
-        <Box>
-          <Tabs
-            value={activeView}
-            onChange={(_, value: "transactions" | "activity") => {
-              setActiveView(value);
-            }}
-            aria-label="Account workspace views"
-            sx={{ mb: 2 }}
-          >
-            <Tab
-              value="transactions"
-              label="Transactions"
-              id="account-transactions-tab"
-              aria-controls="account-transactions-panel"
-            />
-            <Tab
-              value="activity"
-              label="Recent Activity"
-              id="account-activity-tab"
-              aria-controls="account-activity-panel"
-            />
-          </Tabs>
-          <Box
-            role="tabpanel"
-            id="account-transactions-panel"
-            aria-labelledby="account-transactions-tab"
-            hidden={activeView !== "transactions"}
-          >
-            {activeView === "transactions" ? (
-              <AccountBalanceEventsFrame
-                data={recentBalanceEvents}
-                totalCount={recentBalanceEventCount}
-                addTransactionHref={addTransactionHref}
-              />
-            ) : null}
-          </Box>
-          <Box
-            role="tabpanel"
-            id="account-activity-panel"
-            aria-labelledby="account-activity-tab"
-            hidden={activeView !== "activity"}
-          >
-            {activeView === "activity" ? (
-              <RecentBalanceActivity
-                summaryFirst
-                title="Balance Activity"
-                totals={activityTotals}
-                dailyBalances={recentActivityBalances}
-                {...(activityTotals.openingBalance === null ||
-                activityTotals.openingBalance === undefined
-                  ? {}
-                  : { periodOpeningBalance: activityTotals.openingBalance })}
-                trendsHref={trendsHref}
-              />
-            ) : null}
-          </Box>
-        </Box>
-        {canWrite && updateDialogOpen ? (
-          <UpdateAccountForm
-            account={account}
-            financialInstitutions={financialInstitutions}
-            redirectUrl={redirectUrl}
-            onClose={() => {
-              setUpdateDialogOpen(false);
-            }}
+    <BalanceWorkspaceView
+      {...viewProps}
+      entityName="account"
+      name={account.name}
+      summaryFields={
+        <>
+          <StringEntryField
+            label="Name"
+            value={account.name}
+            setValue={null}
+            errorMessage={null}
           />
-        ) : null}
-      </PageLayout>
-    </ConstrainedContent>
+          <StringEntryField
+            label="Financial Institution"
+            value={account.financialInstitution}
+            setValue={null}
+            errorMessage={null}
+          />
+          <AccountTypeEntryField
+            value={account.type}
+            setValue={null}
+            errorMessage={null}
+          />
+        </>
+      }
+      postedBalance={account.currentBalance.postedBalance}
+      pendingAmount={account.pendingAmount}
+      deleteAction={deleteAccount}
+      deletePayload={{ accountId: account.id, redirectUrl: deleteRedirectUrl }}
+      renderUpdateForm={(onClose) => (
+        <UpdateAccountForm
+          account={account}
+          financialInstitutions={financialInstitutions}
+          redirectUrl={redirectUrl}
+          onClose={onClose}
+        />
+      )}
+      balanceEventSort={AccountBalanceEventSort}
+      emptyBalanceEventsDescription="Create or post a transaction for this account to start building its balance history."
+    />
   );
 };
 

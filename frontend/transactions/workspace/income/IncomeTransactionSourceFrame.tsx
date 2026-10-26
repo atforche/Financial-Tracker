@@ -114,5 +114,4 @@ const IncomeTransactionSourceFrame = function ({
   );
 };
 
-export type { IncomeLineDraft, IncomeDeductionDraft };
 export default IncomeTransactionSourceFrame;

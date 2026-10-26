@@ -15,7 +15,9 @@ import { useTheme } from "@mui/material/styles";
  * Props for the ResponsivePageSize component.
  */
 interface ResponsivePageSizeProps {
-  /** The viewport width at which this page uses its desktop page size. */
+  /**
+   * The viewport width at which this page uses its desktop page size.
+   */
   readonly desktopBreakpoint: "sm" | "md" | "lg" | "xl";
 }
 

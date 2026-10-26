@@ -41,5 +41,4 @@ const buildPaperSx = function (baseSx?: SxProps<Theme>): readonly ResolvedSx[] {
   return [sharedSx, ...toSxArray(baseSx)];
 };
 
-export type { ResolvedSx };
 export { buildPaperSx, toSxArray };

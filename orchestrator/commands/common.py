@@ -29,10 +29,6 @@ def add_command(
     return parser
 
 
-def add_path_argument(parser: ArgumentParser, name: str, help_text: str) -> None:
-    parser.add_argument(f"--{name}", required=True, help=help_text)
-
-
 def require_tool(name: str) -> str:
     executable = shutil.which(name)
     if executable is None:
@@ -47,14 +43,6 @@ def find_tool(context: Context, name: str) -> str | None:
     if local_tool.is_file() and os.access(local_tool, os.X_OK):
         return str(local_tool)
     return shutil.which(name)
-
-
-def command_environment(overrides: dict[str, str]) -> dict[str, str]:
-    """Return a copy of the current environment with explicit overrides."""
-
-    environment = os.environ.copy()
-    environment.update(overrides)
-    return environment
 
 
 def ensure_directory(path: Path, mode: int = 0o755) -> None:

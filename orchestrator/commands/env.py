@@ -1,5 +1,7 @@
 """Registration for environment commands."""
 
+from argparse import ArgumentParser
+
 from ..config.environment import EnvironmentSchema
 from ..core.paths import RepoPaths
 from . import env_explain, env_render, env_validate
@@ -7,7 +9,7 @@ from .common import add_command
 
 
 def register(commands: object) -> None:
-    def configure_validate(parser):
+    def configure_validate(parser: ArgumentParser) -> None:
         parser.add_argument(
             "--profile",
             required=True,
@@ -28,7 +30,7 @@ def register(commands: object) -> None:
         configure_validate,
     )
 
-    def configure_explain(parser):
+    def configure_explain(parser: ArgumentParser) -> None:
         parser.add_argument("name")
 
     add_command(
@@ -39,7 +41,7 @@ def register(commands: object) -> None:
         configure_explain,
     )
 
-    def configure_render(parser):
+    def configure_render(parser: ArgumentParser) -> None:
         parser.add_argument("--profile", required=True, choices=["debug", "production"])
         parser.add_argument("--output")
         parser.add_argument("--force", action="store_true")

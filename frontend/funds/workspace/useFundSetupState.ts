@@ -67,5 +67,4 @@ const useFundSetupState = function (): FundSetupState {
   };
 };
 
-export type { FundSetupState };
 export default useFundSetupState;

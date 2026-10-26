@@ -17,7 +17,9 @@ interface FundSummaryCardProps {
   readonly onToggle: () => void;
 }
 
-/** Displays an expandable fund summary with assigned and unassigned balances. */
+/**
+ * Displays an expandable fund summary with assigned and unassigned balances.
+ */
 const FundSummaryCard = function ({
   title,
   value,

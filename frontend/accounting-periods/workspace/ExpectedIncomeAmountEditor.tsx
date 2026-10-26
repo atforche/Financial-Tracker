@@ -5,12 +5,18 @@ import InsetFrame from "@/framework/view/InsetFrame";
 import type { JSX } from "react";
 import StringEntryField from "@/framework/forms/StringEntryField";
 
+/**
+ * A described amount entered in the expected income editor.
+ */
 interface AmountItem {
   readonly description: string;
   readonly amount: number;
 }
 
-interface Props {
+/**
+ * Props for the ExpectedIncomeAmountEditor component.
+ */
+interface ExpectedIncomeAmountEditorProps {
   readonly title: string;
   readonly description: string;
   readonly addLabel: string;
@@ -19,7 +25,9 @@ interface Props {
   readonly requireItem?: boolean;
 }
 
-/** Displays an expected-income collection whose items contain a description and amount. */
+/**
+ * Displays an expected-income collection whose items contain a description and amount.
+ */
 const ExpectedIncomeAmountEditor = function ({
   title,
   description,
@@ -27,7 +35,7 @@ const ExpectedIncomeAmountEditor = function ({
   items,
   setItems = null,
   requireItem = false,
-}: Props): JSX.Element {
+}: ExpectedIncomeAmountEditorProps): JSX.Element {
   const readOnly = setItems === null;
   return (
     <Stack spacing={1.5}>

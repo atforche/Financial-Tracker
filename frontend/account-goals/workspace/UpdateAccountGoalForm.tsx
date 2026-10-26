@@ -10,6 +10,7 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
 } from "react";
@@ -21,6 +22,9 @@ import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl
 import updateAccountGoal from "@/account-goals/workspace/updateAccountGoal";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
+/**
+ * Props for the UpdateAccountGoalForm component.
+ */
 interface UpdateAccountGoalFormProps {
   readonly accountGoal: AccountGoal;
   readonly redirectUrl: string;
@@ -48,12 +52,14 @@ const UpdateAccountGoalForm = function ({
     setMaximumEndingBalance(accountGoal.maximumEndingBalance ?? null);
     focusFirstEntryControl(formRef.current);
   };
+  const handleSuccess = useEffectEvent((): void => {
+    setOpen(false);
+    reset();
+  });
   useEffect(() => {
     if (state.success === true) {
-      setOpen(false);
-      reset();
+      handleSuccess();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.success]);
   const request: UpdateAccountGoalRequest = {
     minimumEndingBalance,

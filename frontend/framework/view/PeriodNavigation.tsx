@@ -5,17 +5,25 @@ import type { JSX } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 
+/**
+ * A link to an adjacent period.
+ */
 interface PeriodLink {
   readonly name: string;
   readonly href: Route;
 }
 
+/**
+ * Props for the PeriodNavigation component.
+ */
 interface PeriodNavigationProps {
   readonly previousPeriod: PeriodLink | null;
   readonly nextPeriod: PeriodLink | null;
 }
 
-/** Links to adjacent available accounting periods. */
+/**
+ * Links to adjacent available accounting periods.
+ */
 const PeriodNavigation = function ({
   previousPeriod,
   nextPeriod,

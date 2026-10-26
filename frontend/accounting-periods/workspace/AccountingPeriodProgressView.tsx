@@ -9,11 +9,16 @@ import { getAccountTrendsSnapshot } from "@/accounts/trends/helpers";
 import { getFundTrendsSnapshot } from "@/funds/trends/helpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
+/**
+ * Props for the AccountingPeriodProgressView component.
+ */
 interface AccountingPeriodProgressViewProps {
   readonly accountingPeriod: AccountingPeriodWithBalance;
 }
 
-/** Displays actual progress and balance movement for an accounting period. */
+/**
+ * Displays actual progress and balance movement for an accounting period.
+ */
 const AccountingPeriodProgressView = async function ({
   accountingPeriod,
 }: AccountingPeriodProgressViewProps): Promise<JSX.Element> {

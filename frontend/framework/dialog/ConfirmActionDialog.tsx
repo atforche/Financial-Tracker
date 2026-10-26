@@ -92,5 +92,4 @@ const ConfirmActionDialog = function ({
   );
 };
 
-export type { ConfirmActionDialogProps };
 export default ConfirmActionDialog;

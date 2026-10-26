@@ -62,4 +62,3 @@ const AccountingPeriodWorkspaceActions = function ({
 };
 
 export default AccountingPeriodWorkspaceActions;
-export type { AccountingPeriodWorkspaceActionsProps };

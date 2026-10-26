@@ -46,6 +46,9 @@ const compareOptionValues = function <T>(
   return Object.is(option.value, selectedValue.value);
 };
 
+/**
+ * Renders an option label with the text matching the input highlighted.
+ */
 const renderOptionLabel = function (
   label: string,
   inputValue: string,

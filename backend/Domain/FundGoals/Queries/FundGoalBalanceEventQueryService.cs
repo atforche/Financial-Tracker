@@ -70,7 +70,7 @@ public sealed class FundGoalBalanceEventQueryService(
     /// <summary>
     /// Retrieves Fund Goal balance events in the requested Accounting Period range.
     /// </summary>
-    public async Task<FundGoalBalanceEventAccountingPeriodRangeQueryResult> GetAsync(
+    public async Task<AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>>> GetAsync(
         FundGoalBalanceEventAccountingPeriodRangeQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -80,7 +80,7 @@ public sealed class FundGoalBalanceEventQueryService(
             cancellationToken);
         if (resolution.AccountingPeriods == null)
         {
-            return new FundGoalBalanceEventAccountingPeriodRangeQueryResult(null, resolution.Failure);
+            return new AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>>(null, resolution.Failure);
         }
 
         IReadOnlyCollection<AccountingPeriod> periods = resolution.AccountingPeriods;
@@ -94,7 +94,7 @@ public sealed class FundGoalBalanceEventQueryService(
             query.Offset,
             query.Limit,
             cancellationToken);
-        return new FundGoalBalanceEventAccountingPeriodRangeQueryResult(page, AccountingPeriodRangeQueryFailure.None);
+        return new AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>>(page, AccountingPeriodRangeQueryFailure.None);
     }
 
     /// <summary>

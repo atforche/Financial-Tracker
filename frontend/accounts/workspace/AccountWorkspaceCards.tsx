@@ -32,6 +32,9 @@ interface AccountWorkspaceCardsProps {
 
 const noFinancialInstitutionLabel = "No Financial Institution";
 
+/**
+ * Compares two strings for sorting.
+ */
 const compareStrings = function (left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 };

@@ -76,7 +76,7 @@ public class RefundTransaction : Transaction
     /// <summary>
     /// Sets the posted date for a specific account affected by this transaction.
     /// </summary>
-    internal void SetPostedDate(AccountId accountId, DateOnly? postedDate)
+    internal override void SetPostedDate(AccountId accountId, DateOnly? postedDate)
     {
         if (Destination.Account.Id == accountId)
         {
@@ -90,7 +90,7 @@ public class RefundTransaction : Transaction
     /// <summary>
     /// Clears all posted dates for this transaction.
     /// </summary>
-    internal void ClearPostedDates()
+    internal override void ClearPostedDates()
     {
         Destination.PostedDate = null;
         foreach (RefundTransactionSource source in _sources)

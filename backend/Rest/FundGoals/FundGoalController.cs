@@ -1,4 +1,5 @@
 using Data;
+using Domain;
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
 using Domain.BalanceEvents;
@@ -36,12 +37,12 @@ public sealed class FundGoalController(
         [FromQuery] FundGoalBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        FundGoalBalanceEventAccountingPeriodRangeQueryResult result = await fundGoalBalanceEventQueryService.GetAsync(
+        AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>> result = await fundGoalBalanceEventQueryService.GetAsync(
             fundGoalBalanceEventConverter.ToDomain(query),
             cancellationToken);
-        return result.Page == null
+        return result.Range == null
             ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Fund Goal balance events."))
-            : Ok(fundGoalBalanceEventConverter.ToModel(result.Page));
+            : Ok(fundGoalBalanceEventConverter.ToModel(result.Range));
     }
 
     /// <summary>
@@ -53,14 +54,14 @@ public sealed class FundGoalController(
         [FromQuery] FundGoalBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        FundGoalBalanceEventAccountingPeriodRangeQueryResult result = await fundGoalBalanceEventQueryService.GetAsync(
+        AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>> result = await fundGoalBalanceEventQueryService.GetAsync(
             fundGoalBalanceEventConverter.ToDomain(query) with { Offset = 0, Limit = null }, cancellationToken);
-        if (result.Page == null)
+        if (result.Range == null)
         {
             return UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure,
                 query.Range.Start, query.Range.End, "Unable to retrieve Fund Goal balance event totals."));
         }
-        var totals = BalanceEventTotals.Calculate(result.Page.Items,
+        var totals = BalanceEventTotals.Calculate(result.Range.Items,
             item => item.IsPosted, item => item.Type, item => item.Amount);
         return Ok(new BalanceEventTotalsModel { TotalInflow = totals.TotalInflow, TotalOutflow = totals.TotalOutflow });
     }

@@ -4,20 +4,25 @@ import DateEntryField from "@/framework/forms/DateEntryField";
 import type { JSX } from "react";
 import dayjs from "dayjs";
 
-interface Props {
+/**
+ * Props for the ExpectedIncomeDatesEditor component.
+ */
+interface ExpectedIncomeDatesEditorProps {
   readonly dates: string[];
   readonly setDates?: ((dates: string[]) => void) | null;
   readonly year: number | null;
   readonly month: number | null;
 }
 
-/** Displays expected payment dates in editable or read-only form. */
+/**
+ * Displays expected payment dates in editable or read-only form.
+ */
 const ExpectedIncomeDatesEditor = function ({
   dates,
   setDates = null,
   year,
   month,
-}: Props): JSX.Element {
+}: ExpectedIncomeDatesEditorProps): JSX.Element {
   const readOnly = setDates === null;
   const minDate =
     year === null || month === null

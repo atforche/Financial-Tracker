@@ -4,18 +4,22 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 /**
  * Validates the fund setup section for fund creation.
  */
-const validateCreateFundSetup = (
+const validateCreateFundSetup = function (
   name: string,
   period: AccountingPeriod | null,
-): boolean => name !== "" && period !== null;
+): boolean {
+  return name !== "" && period !== null;
+};
 
 /**
  * Validates the fund setup section for fund onboarding.
  */
-const validateOnboardFundSetup = (
+const validateOnboardFundSetup = function (
   name: string,
   balance: number | null,
-): boolean => name !== "" && balance !== null;
+): boolean {
+  return name !== "" && balance !== null;
+};
 
 /**
  * Fields required to build a Fund Goal.
@@ -48,17 +52,20 @@ interface OnboardFundRequestFields extends FundGoalFields {
 /**
  * Validates that the minimum and maximum ending balances are in a valid range.
  */
-const validRange = (fields: FundGoalFields): boolean =>
-  fields.minimumEndingBalance === null ||
-  fields.maximumEndingBalance === null ||
-  fields.minimumEndingBalance <= fields.maximumEndingBalance;
+const validRange = function (fields: FundGoalFields): boolean {
+  return (
+    fields.minimumEndingBalance === null ||
+    fields.maximumEndingBalance === null ||
+    fields.minimumEndingBalance <= fields.maximumEndingBalance
+  );
+};
 
 /**
  * Builds a request to create a fund.
  */
-const buildCreateFundRequest = (
+const buildCreateFundRequest = function (
   fields: CreateFundRequestFields,
-): CreateFundRequest | null => {
+): CreateFundRequest | null {
   if (
     !validateCreateFundSetup(fields.name, fields.accountingPeriod) ||
     !validRange(fields)
@@ -80,9 +87,9 @@ const buildCreateFundRequest = (
 /**
  * Fields required to build a request to onboard a fund.
  */
-const buildOnboardFundRequest = (
+const buildOnboardFundRequest = function (
   fields: OnboardFundRequestFields,
-): OnboardFundRequest | null => {
+): OnboardFundRequest | null {
   if (
     !validateOnboardFundSetup(fields.name, fields.onboardedBalance) ||
     !validRange(fields)

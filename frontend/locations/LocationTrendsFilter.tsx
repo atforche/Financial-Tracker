@@ -20,12 +20,17 @@ import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
+/**
+ * Props for the LocationTrendsFilter component.
+ */
 interface LocationTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly locations: readonly { id: string; name: string }[];
 }
 
-/** Filters Location trends by range and included external parties. */
+/**
+ * Filters Location trends by range and included external parties.
+ */
 const LocationTrendsFilter = function ({
   accountingPeriods,
   locations,

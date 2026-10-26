@@ -7,8 +7,10 @@ import os
 import socket
 import tempfile
 import time
+from email.message import Message
 from http.cookiejar import CookieJar
 from pathlib import Path
+from typing import IO
 from urllib.error import HTTPError
 from urllib.parse import urlencode, urljoin
 from urllib.request import (
@@ -64,7 +66,15 @@ def prepare_smoke_test_database(
 class DoNotFollowRedirects(HTTPRedirectHandler):
     """Keep Auth.js callback redirects on the ephemeral smoke-test port."""
 
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
+    def redirect_request(
+        self,
+        req: Request,
+        fp: IO[bytes],
+        code: int,
+        msg: str,
+        headers: Message,
+        newurl: str,
+    ) -> Request | None:
         return None
 
 

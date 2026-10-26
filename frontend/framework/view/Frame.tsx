@@ -135,5 +135,5 @@ const Frame = function ({
   );
 };
 
-export type { FrameColor, FrameProps };
+export type { FrameColor };
 export default Frame;

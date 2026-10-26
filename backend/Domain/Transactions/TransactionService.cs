@@ -30,6 +30,48 @@ public abstract class TransactionService(
     protected ITransactionRepository TransactionRepository => transactionRepository;
 
     /// <summary>
+    /// Attempts to post an existing Transaction to an Account
+    /// </summary>
+    public bool TryPost(Transaction transaction, PostTransactionRequest request, out IEnumerable<ValidationError> exceptions)
+    {
+        if (!ValidatePosting(transaction, request, out exceptions))
+        {
+            return false;
+        }
+        transaction.SetPostedDate(request.AccountId, request.PostedDate);
+        PostTransaction(transaction, request.AccountId);
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to unpost an existing Transaction
+    /// </summary>
+    public bool TryUnpost(Transaction transaction, out IEnumerable<ValidationError> exceptions)
+    {
+        if (!ValidateUnposting(transaction, out exceptions))
+        {
+            return false;
+        }
+        UnpostTransaction(transaction);
+        transaction.ClearPostedDates();
+        SynchronizePendingBalanceEffects(transaction);
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to delete an existing Transaction
+    /// </summary>
+    public bool TryDelete(Transaction transaction, out IEnumerable<ValidationError> exceptions)
+    {
+        if (!ValidateDelete(transaction, out exceptions))
+        {
+            return false;
+        }
+        DeleteTransaction(transaction);
+        return true;
+    }
+
+    /// <summary>
     /// Validates a request to create a new Transaction
     /// </summary>
     protected bool ValidateCreate(
@@ -251,12 +293,6 @@ public abstract class TransactionService(
         fundBalanceService.UnpostTransaction(transaction);
         fundGoalTotalsHistoryService.UnpostTransaction(transaction);
     }
-
-    /// <summary>
-    /// Synchronizes pending Account Balance effects after a Transaction's posted dates change.
-    /// </summary>
-    protected void SynchronizePendingAccountBalanceEffects(Transaction transaction) =>
-        SynchronizePendingBalanceEffects(transaction);
 
     /// <summary>
     /// Synchronizes pending balance effects after a Transaction's posted dates change.

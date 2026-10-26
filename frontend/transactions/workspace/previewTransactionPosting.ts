@@ -32,5 +32,4 @@ const previewTransactionPosting = async function ({
   return data ?? null;
 };
 
-export type { TransactionPostingPreviewPayload };
 export default previewTransactionPosting;

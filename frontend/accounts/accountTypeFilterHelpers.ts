@@ -226,9 +226,7 @@ const getAccountTypeFilterGroupFromValue = function (
 };
 
 export {
-  type AccountTypeFilterGroup,
   accountTypeFilterGroups,
-  accountTypeValues,
   formatSelectedAccountTypes,
   getAccountTypeFilterGroupFromValue,
   getAccountTypeGroupSelectionState,

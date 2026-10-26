@@ -32,6 +32,15 @@ public class FundTransaction : Transaction
     public override DateOnly? GetPostedDateForAccount(AccountId accountId) => null;
 
     /// <inheritdoc/>
+    internal override void SetPostedDate(AccountId accountId, DateOnly? postedDate) =>
+        throw new InvalidOperationException("Fund transactions cannot be posted to an account.");
+
+    /// <inheritdoc/>
+    internal override void ClearPostedDates()
+    {
+    }
+
+    /// <inheritdoc/>
     public override IEnumerable<FundId> GetAllAffectedFundIds(AccountId? accountId)
     {
         if (accountId != null)

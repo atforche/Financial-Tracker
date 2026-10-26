@@ -7,7 +7,9 @@ const roles: readonly UserRole[] = [
   UserRoleModel.ReadOnly,
 ];
 
-/** Formats an application role for display. */
+/**
+ * Formats an application role for display.
+ */
 const formatUserRole = function (role: UserRole): string {
   return role === UserRoleModel.ReadOnly ? "Read only" : role;
 };

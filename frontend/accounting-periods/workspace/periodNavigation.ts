@@ -3,7 +3,9 @@ import createApiClient from "@/framework/data/createApiClient";
 import loadAllPages from "@/framework/data/loadAllPages";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
-/** Finds chronological neighbors among all saved accounting periods. */
+/**
+ * Finds chronological neighbors among all saved accounting periods.
+ */
 const getAdjacentAccountingPeriods = async function (
   currentPeriodId: string,
 ): Promise<{

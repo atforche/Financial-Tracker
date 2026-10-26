@@ -3,7 +3,9 @@
 import createApiClient from "@/framework/data/createApiClient";
 import { revalidatePath } from "next/cache";
 
-/** Gets a required string value from submitted form data. */
+/**
+ * Gets a required string value from submitted form data.
+ */
 const getRequiredString = function (formData: FormData, name: string): string {
   const value = formData.get(name);
   if (typeof value !== "string" || value.trim() === "") {
@@ -12,7 +14,9 @@ const getRequiredString = function (formData: FormData, name: string): string {
   return value.trim();
 };
 
-/** Renames an existing Location. */
+/**
+ * Renames an existing Location.
+ */
 const renameLocation = async function (formData: FormData): Promise<void> {
   const id = getRequiredString(formData, "id");
   const name = getRequiredString(formData, "name");
@@ -27,7 +31,9 @@ const renameLocation = async function (formData: FormData): Promise<void> {
   revalidatePath("/locations");
 };
 
-/** Deletes an unused Location. */
+/**
+ * Deletes an unused Location.
+ */
 const deleteLocation = async function (formData: FormData): Promise<void> {
   const id = getRequiredString(formData, "id");
   const client = await createApiClient();
@@ -42,7 +48,9 @@ const deleteLocation = async function (formData: FormData): Promise<void> {
   revalidatePath("/locations");
 };
 
-/** Consolidates a source Location into a target Location. */
+/**
+ * Consolidates a source Location into a target Location.
+ */
 const consolidateLocation = async function (formData: FormData): Promise<void> {
   const sourceId = getRequiredString(formData, "sourceId");
   const targetLocationId = getRequiredString(formData, "targetLocationId");

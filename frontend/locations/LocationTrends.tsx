@@ -23,6 +23,9 @@ import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
+/**
+ * Search params for the Location trends page.
+ */
 interface LocationTrendsSearchParams {
   readonly locationIds?: string | readonly string[];
   readonly mode?: "date" | "accounting-period";
@@ -34,11 +37,16 @@ interface LocationTrendsSearchParams {
   readonly pageSize?: string | number;
 }
 
+/**
+ * Props for the LocationTrends component.
+ */
 interface LocationTrendsProps {
   readonly searchParams: Promise<LocationTrendsSearchParams>;
 }
 
-/** Displays Location activity for a selected date or accounting-period range. */
+/**
+ * Displays Location activity for a selected date or accounting-period range.
+ */
 const LocationTrends = async function ({
   searchParams,
 }: LocationTrendsProps): Promise<JSX.Element> {

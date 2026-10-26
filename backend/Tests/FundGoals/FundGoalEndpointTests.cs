@@ -1,9 +1,7 @@
 using System.Net;
 using Models;
+using Models.BalanceEvents;
 using Models.FundGoals;
-using Tests.AccountingPeriods;
-using Tests.Funds;
-using Tests.Infrastructure;
 
 namespace Tests.FundGoals;
 
@@ -182,45 +180,68 @@ public sealed class FundGoalEndpointTests
     }
 
     /// <summary>
-    /// Rejects negative Fund Goal quantities and inverted ending-balance bounds at the mutation boundary.
+    /// Rejects negative quantities, inverted bounds, goals in closed periods, and missing goals or funds.
     /// </summary>
     [Fact]
-    public async Task UpdateAsyncRejectsInvalidGoalConfiguration()
+    public async Task MutationsAndLookupsRejectInvalidGoals()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
-        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(august).CreateAsync();
+        FundHandle closed = await test.Funds.Create("Closed").In(july).CreateAsync();
+        await test.Periods.CloseAsync(july);
 
-        using HttpResponseMessage negative = await test.Api.PostResponseAsync($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel
-        {
-            PlannedMonthlyContribution = -1m
-        });
+        using HttpResponseMessage negative = await test.Api.PostResponseAsync($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel { PlannedMonthlyContribution = -1m });
         using HttpResponseMessage inverted = await test.Api.PostResponseAsync($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel
         {
             MinimumEndingBalance = 200m,
             MaximumEndingBalance = 100m
         });
+        using HttpResponseMessage closedPeriod = await test.Api.PostResponseAsync($"/fund-goals/{closed.Goal.Id}", new UpdateFundGoalModel { PlannedMonthlyContribution = 50m });
+        using HttpResponseMessage missingUpdate = await test.Api.PostResponseAsync($"/fund-goals/{Guid.NewGuid()}", new UpdateFundGoalModel());
+        using HttpResponseMessage missingFund = await test.Api.GetResponseAsync($"/fund-goals/fund/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, negative.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, inverted.StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, closedPeriod.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, missingUpdate.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, missingFund.StatusCode);
     }
 
     /// <summary>
-    /// Prevents configuration changes to a Fund Goal owned by a closed Accounting Period.
+    /// Filters goals by fund across every accounting period the fund belongs to.
     /// </summary>
     [Fact]
-    public async Task UpdateAsyncRejectsGoalsInClosedAccountingPeriods()
+    public async Task ListFiltersByFundAcrossPeriods()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        _ = await test.Periods.Create(2026, 8).CreateAsync();
+        FundHandle alpha = await test.Funds.Create("Alpha").In(july).CreateAsync();
+        _ = await test.Funds.Create("Beta").In(july).CreateAsync();
+
+        CollectionModel<FundGoalModel> goals = await test.Api.GetAsync<CollectionModel<FundGoalModel>>($"/fund-goals?filter.fundIds={alpha.Id}&sort=Fund");
+
+        Assert.Equal(2, goals.TotalCount);
+        Assert.All(goals.Items, goal => Assert.Equal(alpha.Id, goal.Fund.Id));
+        Assert.Contains(goals.Items, goal => goal.Id == alpha.Goal.Id);
+    }
+
+    /// <summary>
+    /// Returns zero balance-event totals for a goal without activity.
+    /// </summary>
+    [Fact]
+    public async Task BalanceEventTotalsAreZeroWithoutActivity()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
-        await test.Api.PostAsync($"/accounting-periods/{july.Id}/close");
 
-        using HttpResponseMessage response = await test.Api.PostResponseAsync($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel
-        {
-            PlannedMonthlyContribution = 50m
-        });
+        BalanceEventTotalsModel totals = await test.Api.GetAsync<BalanceEventTotalsModel>(
+            $"/fund-goals/balance-events/accounting-period-range/totals?Range.Start={july.Id}&Range.End={july.Id}&Filter.FundIds={groceries.Id}");
 
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        Assert.Equal(0m, totals.TotalInflow);
+        Assert.Equal(0m, totals.TotalOutflow);
     }
 }

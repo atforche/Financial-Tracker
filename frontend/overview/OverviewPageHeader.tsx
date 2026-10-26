@@ -19,11 +19,16 @@ import { overviewParamNames } from "@/overview/helpers";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
+/**
+ * Props for the OverviewPageHeader component.
+ */
 interface OverviewPageHeaderProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
 }
 
-/** Displays the Overview heading and shared account/fund range controls. */
+/**
+ * Displays the Overview heading and shared account/fund range controls.
+ */
 const OverviewPageHeader = function ({
   accountingPeriods,
 }: OverviewPageHeaderProps): JSX.Element {

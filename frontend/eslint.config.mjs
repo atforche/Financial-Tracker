@@ -73,7 +73,20 @@ const eslintConfig = defineConfig([
       "import/no-mutable-exports": "error",
       "import/no-named-as-default": "error",
       "import/no-named-as-default-member": "error",
-      "import/no-unused-modules": "error",
+      "import/no-unused-modules": [
+        "error",
+        {
+          unusedExports: true,
+          ignoreExports: [
+            "app/**",
+            "e2e/**",
+            "*.config.*",
+            "auth.ts",
+            "proxy.ts",
+            "framework/data/api.ts",
+          ],
+        },
+      ],
       "import/no-amd": "error",
       "import/no-commonjs": "error",
       "import/no-import-module-exports": "error",
@@ -112,22 +125,38 @@ const eslintConfig = defineConfig([
       "jsdoc/require-jsdoc": [
         "error",
         {
-          publicOnly: true,
           require: {
-            ArrowFunctionExpression: true,
             ClassDeclaration: true,
-            ClassExpression: true,
-            FunctionDeclaration: true,
-            FunctionExpression: true,
             MethodDefinition: true,
           },
+          contexts: [
+            "Program > TSInterfaceDeclaration",
+            "Program > TSTypeAliasDeclaration",
+            "Program > TSEnumDeclaration",
+            "Program > VariableDeclaration > VariableDeclarator > FunctionExpression",
+            "Program > ExportNamedDeclaration > TSInterfaceDeclaration",
+            "Program > ExportNamedDeclaration > TSTypeAliasDeclaration",
+            "Program > ExportNamedDeclaration > VariableDeclaration > VariableDeclarator > FunctionExpression",
+          ],
           checkGetters: true,
           checkSetters: true,
+          enableFixer: false,
         },
       ],
+      "jsdoc/multiline-blocks": ["error", { noSingleLineBlocks: true }],
       "jsdoc/require-param": "off",
       "jsdoc/require-returns": "off",
       "jsdoc/ts-method-signature-style": "error",
+
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "Program > VariableDeclaration > VariableDeclarator > ArrowFunctionExpression, Program > ExportNamedDeclaration > VariableDeclaration > VariableDeclarator > ArrowFunctionExpression",
+          message:
+            "Define top-level functions with `const name = function (...)`.",
+        },
+      ],
 
       // react rules
       "react/forbid-component-props": "off", // temporary

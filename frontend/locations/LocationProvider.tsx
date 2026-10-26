@@ -5,7 +5,9 @@ import type { Location } from "@/locations/types";
 
 const LocationContext = createContext<readonly Location[]>([]);
 
-/** Provides canonical Locations to transaction entry fields. */
+/**
+ * Provides canonical Locations to transaction entry fields.
+ */
 const LocationProvider = function ({
   locations,
   children,
@@ -20,7 +22,11 @@ const LocationProvider = function ({
   );
 };
 
-/** Gets canonical Locations available in the current transaction form. */
-const useLocations = (): readonly Location[] => useContext(LocationContext);
+/**
+ * Gets canonical Locations available in the current transaction form.
+ */
+const useLocations = function (): readonly Location[] {
+  return useContext(LocationContext);
+};
 
 export { LocationProvider, useLocations };

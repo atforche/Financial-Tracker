@@ -11,15 +11,18 @@ import {
 } from "@mui/material";
 import Frame, { type FrameColor } from "@/framework/view/Frame";
 import { type JSX, useState } from "react";
-import AccountGoalEndingBalanceRange from "@/account-goals/workspace/AccountGoalEndingBalanceRange";
 import type { AccountGoalWithProgress } from "@/account-goals/types";
 import type { AccountingPeriod } from "@/accounting-periods/types";
+import EndingBalanceRange from "@/framework/view/EndingBalanceRange";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { getAccountGoalDimensionSummary } from "@/account-goals/helpers";
 
+/**
+ * Props for the AccountGoalWorkspaceCard component.
+ */
 interface AccountGoalWorkspaceCardProps {
   readonly accountingPeriod: AccountingPeriod | null;
   readonly accountGoal: AccountGoalWithProgress;
@@ -82,8 +85,9 @@ const AccountGoalWorkspaceCard = function ({
           <Collapse in={expanded} unmountOnExit>
             <Stack spacing={2}>
               <Divider />
-              <AccountGoalEndingBalanceRange
-                endingBalance={accountGoal.progress.endingBalance}
+              <EndingBalanceRange
+                current={accountGoal.progress.endingBalance.currentBalance}
+                range={accountGoal.progress.endingBalance}
               />
             </Stack>
           </Collapse>

@@ -102,5 +102,4 @@ const Dialog = function ({
   );
 };
 
-export type { DialogProps };
 export default Dialog;

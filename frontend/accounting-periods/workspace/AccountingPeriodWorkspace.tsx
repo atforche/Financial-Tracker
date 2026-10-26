@@ -44,6 +44,9 @@ interface AccountingPeriodWorkspaceSearchParams {
   action?: AccountingPeriodWorkspaceAction;
 }
 
+/**
+ * Detail view that can be shown for the selected Accounting Period.
+ */
 type AccountingPeriodDetailView = "progress" | "plan";
 
 /**
@@ -150,8 +153,5 @@ const AccountingPeriodWorkspace = async function ({
   );
 };
 
-export type {
-  AccountingPeriodDetailView,
-  AccountingPeriodWorkspaceSearchParams,
-};
+export type { AccountingPeriodWorkspaceSearchParams };
 export default AccountingPeriodWorkspace;

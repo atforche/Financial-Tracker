@@ -33,8 +33,9 @@ public enum AccountingPeriodRangeQueryFailure
 }
 
 /// <summary>
-/// Result of resolving an Accounting Period range.
+/// Result of a query over an Accounting Period range.
 /// </summary>
-public sealed record AccountingPeriodRangeQueryResult(
-    AccountingPeriodRange? Range,
-    AccountingPeriodRangeQueryFailure Failure);
+public sealed record AccountingPeriodRangeQueryResult<TRange>(
+    TRange? Range,
+    AccountingPeriodRangeQueryFailure Failure)
+    where TRange : class;

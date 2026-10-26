@@ -1,9 +1,9 @@
 "use server";
 
 import type {
-  FundActionPayload,
-  FundActionState,
-} from "@/funds/workspace/fundAction";
+  WorkspaceActionPayload,
+  WorkspaceActionState,
+} from "@/framework/forms/workspaceAction";
 import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
 import mapApiValidationError from "@/framework/forms/mapApiValidationError";
@@ -13,12 +13,12 @@ import { revalidatePath } from "next/cache";
 /**
  * Interface representing the state of deleting a fund.
  */
-type ActionState = FundActionState;
+type ActionState = WorkspaceActionState;
 
 /**
  * Payload for the delete fund server action.
  */
-interface ActionPayload extends FundActionPayload {
+interface ActionPayload extends WorkspaceActionPayload {
   readonly fundId: string;
 }
 

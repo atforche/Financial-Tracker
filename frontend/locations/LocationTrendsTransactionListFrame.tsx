@@ -13,6 +13,9 @@ import type { Transaction } from "@/transactions/types";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import { useRouter } from "next/navigation";
 
+/**
+ * Props for the LocationTrendsTransactionListFrame component.
+ */
 interface LocationTrendsTransactionListFrameProps {
   readonly transactions: readonly Transaction[];
   readonly totalCount: number;
@@ -20,7 +23,9 @@ interface LocationTrendsTransactionListFrameProps {
   readonly transactionWorkspaceHref: Route;
 }
 
-/** Displays Transactions matched by the selected Location trends filters. */
+/**
+ * Displays Transactions matched by the selected Location trends filters.
+ */
 const LocationTrendsTransactionListFrame = function ({
   transactions,
   totalCount,

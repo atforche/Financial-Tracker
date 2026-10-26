@@ -1,5 +1,7 @@
 """Registration for frontend commands."""
 
+from argparse import ArgumentParser
+
 from . import (
     frontend_build,
     frontend_format,
@@ -32,7 +34,7 @@ def register(commands: object) -> None:
     )
     add_command(commands, "build", "Build the frontend", frontend_build.run)
 
-    def configure_models(parser):
+    def configure_models(parser: ArgumentParser) -> None:
         parser.add_argument(
             "--verify", action="store_true", help="Fail if generated models are stale"
         )

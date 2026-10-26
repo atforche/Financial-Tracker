@@ -253,8 +253,6 @@ const getDestinationsFromTransaction = function (
 
 export type { FundSourceDraft, FundDestinationDraft };
 export {
-  CreateTransactionModelCreateFundTransactionModelType as CreateFundTransactionType,
-  UpdateTransactionModelUpdateFundTransactionModelType as UpdateFundTransactionType,
   buildCreateRequest,
   buildDestinationFundFilter,
   buildSourceFundFilter,

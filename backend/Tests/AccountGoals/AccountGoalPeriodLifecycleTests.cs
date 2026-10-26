@@ -1,9 +1,6 @@
 using Domain.AccountGoals;
 using Models.AccountGoals;
 using Models.Accounts;
-using Tests.AccountingPeriods;
-using Tests.Accounts;
-using Tests.Infrastructure;
 
 namespace Tests.AccountGoals;
 

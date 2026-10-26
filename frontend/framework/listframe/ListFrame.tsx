@@ -22,7 +22,9 @@ import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
-/** Height of each row in the list frame. */
+/**
+ * Height of each row in the list frame.
+ */
 const listFrameRowHeight = 50;
 
 /**
@@ -39,7 +41,10 @@ interface EmptyStateDefinition {
  */
 interface ListFrameProps<T> {
   readonly title: string;
-  /** The viewport width at which the fixed-width desktop table is suitable. */
+
+  /**
+   * The viewport width at which the fixed-width desktop table is suitable.
+   */
   readonly desktopBreakpoint?: "sm" | "md" | "lg" | "xl";
   readonly headerContent?: ReactNode;
   readonly headerContentInline?: boolean;
@@ -268,4 +273,3 @@ const ListFrame = function <T>({
 };
 
 export default ListFrame;
-export type { EmptyStateDefinition };

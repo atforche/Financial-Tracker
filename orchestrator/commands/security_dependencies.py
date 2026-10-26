@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 from argparse import Namespace
-from typing import Any
 
 from ..core.context import Context
 
@@ -45,7 +44,7 @@ def run(context: Context, _args: Namespace) -> int:
     return 0
 
 
-def _get_vulnerabilities(value: Any) -> set[str]:
+def _get_vulnerabilities(value: object) -> set[str]:
     if isinstance(value, list):
         return set().union(*(_get_vulnerabilities(item) for item in value))
     if not isinstance(value, dict):

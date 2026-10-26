@@ -2,6 +2,9 @@ import { Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
 import { formatCurrency } from "@/framework/currencyHelpers";
 
+/**
+ * Props for the FundGoalContributionAdjustment component.
+ */
 interface FundGoalContributionAdjustmentProps {
   readonly plannedAmount: number;
   readonly adjustmentAmount: number;

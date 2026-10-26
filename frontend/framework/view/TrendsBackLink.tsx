@@ -3,13 +3,18 @@ import { Button } from "@mui/material";
 import type { JSX } from "react";
 import Link from "next/link";
 
+/**
+ * Props for the TrendsBackLink component.
+ */
 interface TrendsBackLinkProps {
   readonly returnUrl?: string | undefined;
   readonly workspace: "funds" | "accounts" | "fund-goals" | "account-goals";
   readonly label: string;
 }
 
-/** Shows a return link only for a detail page in the expected workspace. */
+/**
+ * Shows a return link only for a detail page in the expected workspace.
+ */
 const TrendsBackLink = function ({
   returnUrl,
   workspace,

@@ -18,6 +18,9 @@ import parseEnumValue from "@/framework/data/parseEnumValue";
 import propertyName from "@/framework/data/propertyName";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
+/**
+ * Props for the AccountGoalsFrame component.
+ */
 interface AccountGoalsFrameProps {
   readonly goals: readonly AccountGoalWithProgress[];
   readonly totalCount: number;
@@ -25,7 +28,9 @@ interface AccountGoalsFrameProps {
   readonly returnUrl: string;
 }
 
-/** Displays account goals for the accounting period. */
+/**
+ * Displays account goals for the accounting period.
+ */
 const AccountGoalsFrame = function ({
   goals,
   totalCount,

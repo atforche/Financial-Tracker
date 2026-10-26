@@ -7,6 +7,7 @@ import {
   startTransition,
   useActionState,
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
 } from "react";
@@ -61,12 +62,14 @@ const UpdateFundGoalForm = function ({
     );
     focusFirstEntryControl(formRef.current);
   };
+  const handleSuccess = useEffectEvent((): void => {
+    setOpen(false);
+    reset();
+  });
   useEffect(() => {
     if (state.success === true) {
-      setOpen(false);
-      reset();
+      handleSuccess();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.success]);
   const request: UpdateFundGoalRequest = {
     plannedMonthlyContribution,

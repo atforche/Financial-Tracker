@@ -1,6 +1,7 @@
 using Data;
 using Domain;
 using Domain.AccountingPeriods;
+using Domain.AccountingPeriods.Queries;
 using Domain.BalanceEvents;
 using Domain.Funds;
 using Domain.Funds.Queries;
@@ -131,7 +132,7 @@ public sealed class FundController(
         [FromQuery] FundsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        FundAccountingPeriodRangeQueryResult result = await fundQueryService.GetAccountingPeriodRangeAsync(
+        AccountingPeriodRangeQueryResult<FundAccountingPeriodRange> result = await fundQueryService.GetAccountingPeriodRangeAsync(
             fundConverter.ToDomain(query),
             cancellationToken);
         return result.Range == null

@@ -7,6 +7,9 @@ import type { AccountGoalTrendsSearchParams } from "@/account-goals/trends/helpe
 import type { AccountGoalWorkspaceSearchParams } from "@/account-goals/workspace/types";
 import type { Route } from "next";
 
+/**
+ * Converts Account Goal workspace search params to URL search params.
+ */
 const accountGoalWorkspaceSearchParamsToSearchParams = function (
   searchParams: AccountGoalWorkspaceSearchParams,
 ): URLSearchParams {
@@ -16,6 +19,9 @@ const accountGoalWorkspaceSearchParamsToSearchParams = function (
   return params;
 };
 
+/**
+ * Converts Account Goal trends search params to URL search params.
+ */
 const accountGoalTrendsSearchParamsToSearchParams = function (
   searchParams: AccountGoalTrendsSearchParams,
 ): URLSearchParams {
