@@ -94,7 +94,7 @@ public sealed class TransactionController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> CreateAsync(CreateTransactionModel createTransactionModel)
     {
-        TransactionChangeResult result = await TryCreateAsync(createTransactionModel, "Unable to create Transaction.");
+        TransactionChangeResult result = TryCreate(createTransactionModel, "Unable to create Transaction.");
         if (result.Problem != null)
         {
             return new UnprocessableEntityObjectResult(result.Problem);
@@ -114,7 +114,7 @@ public sealed class TransactionController(
         CreateTransactionModel createTransactionModel,
         CancellationToken cancellationToken) =>
         await PreviewAsync(
-            () => TryCreateAsync(createTransactionModel, "Unable to preview Transaction."),
+            () => TryCreate(createTransactionModel, "Unable to preview Transaction."),
             postOnTransactionDate: true,
             cancellationToken);
 
@@ -126,7 +126,7 @@ public sealed class TransactionController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UpdateAsync(Guid transactionId, UpdateTransactionModel updateTransactionModel)
     {
-        TransactionChangeResult result = await TryUpdateAsync(transactionId, updateTransactionModel, "Unable to update Transaction.");
+        TransactionChangeResult result = TryUpdate(transactionId, updateTransactionModel, "Unable to update Transaction.");
         if (result.Problem != null)
         {
             return new UnprocessableEntityObjectResult(result.Problem);
@@ -147,7 +147,7 @@ public sealed class TransactionController(
         UpdateTransactionModel updateTransactionModel,
         CancellationToken cancellationToken) =>
         await PreviewAsync(
-            () => TryUpdateAsync(transactionId, updateTransactionModel, "Unable to preview Transaction."),
+            () => TryUpdate(transactionId, updateTransactionModel, "Unable to preview Transaction."),
             postOnTransactionDate: true,
             cancellationToken);
 
@@ -180,7 +180,7 @@ public sealed class TransactionController(
         PostTransactionModel postTransactionModel,
         CancellationToken cancellationToken) =>
         await PreviewAsync(
-            () => Task.FromResult(TryPost(transactionId, postTransactionModel, "Unable to preview posting Transaction.")),
+            () => TryPost(transactionId, postTransactionModel, "Unable to preview posting Transaction."),
             postOnTransactionDate: false,
             cancellationToken);
 
@@ -245,7 +245,7 @@ public sealed class TransactionController(
     /// <summary>
     /// Maps and validates a create request, applying it to the tracked data without saving.
     /// </summary>
-    private async Task<TransactionChangeResult> TryCreateAsync(CreateTransactionModel createTransactionModel, string title)
+    private TransactionChangeResult TryCreate(CreateTransactionModel createTransactionModel, string title)
     {
         Dictionary<string, string[]> errors = [];
         if (!accountingPeriodRepository.TryGetById(createTransactionModel.AccountingPeriodId, out AccountingPeriod? accountingPeriod))
@@ -274,7 +274,7 @@ public sealed class TransactionController(
     /// <summary>
     /// Maps and validates an update request, applying it to the tracked data without saving.
     /// </summary>
-    private async Task<TransactionChangeResult> TryUpdateAsync(Guid transactionId, UpdateTransactionModel updateTransactionModel, string title)
+    private TransactionChangeResult TryUpdate(Guid transactionId, UpdateTransactionModel updateTransactionModel, string title)
     {
         Dictionary<string, string[]> errors = [];
         if (!transactionRepository.TryGetById(transactionId, out Transaction? transaction))
@@ -359,12 +359,12 @@ public sealed class TransactionController(
     /// each unposted Account is first posted on the Transaction's date.
     /// </summary>
     private async Task<IActionResult> PreviewAsync(
-        Func<Task<TransactionChangeResult>> applyChange,
+        Func<TransactionChangeResult> applyChange,
         bool postOnTransactionDate,
         CancellationToken cancellationToken)
     {
         await using IDbContextTransaction databaseTransaction = await unitOfWork.BeginTransactionAsync(cancellationToken: cancellationToken);
-        TransactionChangeResult result = await applyChange();
+        TransactionChangeResult result = applyChange();
         if (result.Problem != null)
         {
             return new UnprocessableEntityObjectResult(result.Problem);

@@ -13,6 +13,7 @@ from . import (
     backend_restore,
     container_build,
     container_smoke_test,
+    deps_check,
     frontend_format,
     frontend_install,
     frontend_lint,
@@ -59,6 +60,7 @@ def backend(context: Context, _args: Namespace) -> int:
     return _run(
         context,
         [
+            deps_check.check_dotnet,
             backend_restore.run,
             backend_format.run,
             backend_build.run,
@@ -94,6 +96,7 @@ def container_images(context: Context, _args: Namespace) -> int:
         [
             frontend_install.run,
             frontend_playwright_install.run,
+            deps_check.check_dotnet_pins,
             container_build.run,
             container_smoke_test.run,
         ],
@@ -105,7 +108,15 @@ def container_scan(context: Context, _args: Namespace) -> int:
 
 
 def container_release(context: Context, _args: Namespace) -> int:
-    return _run(context, [container_build.run, trivy_install.run, security_images.run])
+    return _run(
+        context,
+        [
+            deps_check.check_dotnet_pins,
+            container_build.run,
+            trivy_install.run,
+            security_images.run,
+        ],
+    )
 
 
 def run_all(context: Context, _args: Namespace) -> int:
