@@ -1,5 +1,6 @@
 using Data;
 using Domain.AccountingPeriods;
+using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
 using Domain.Transactions;
 using Domain.Transactions.Queries;
@@ -76,7 +77,7 @@ public sealed class TransactionController(
         [FromQuery] TransactionsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        TransactionAccountingPeriodRangeQueryResult result =
+        AccountingPeriodRangeQueryResult<TransactionAccountingPeriodRange> result =
             await transactionQueryService.GetAccountingPeriodRangeAsync(
                 transactionConverter.ToDomain(query),
                 cancellationToken);

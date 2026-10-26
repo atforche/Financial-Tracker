@@ -1,9 +1,9 @@
 "use server";
 
 import type {
-  AccountActionPayload,
-  AccountActionState,
-} from "@/accounts/workspace/accountAction";
+  WorkspaceActionPayload,
+  WorkspaceActionState,
+} from "@/framework/forms/workspaceAction";
 import type { OnboardAccountRequest } from "@/accounts/types";
 import createApiClient from "@/framework/data/createApiClient";
 import { isApiError } from "@/framework/data/apiError";
@@ -14,7 +14,7 @@ import { revalidatePath } from "next/cache";
 /**
  * Interface representing the state of onboarding an account.
  */
-interface ActionState extends AccountActionState {
+interface ActionState extends WorkspaceActionState {
   readonly nameErrors?: string | null;
   readonly typeErrors?: string | null;
   readonly onboardedBalanceErrors?: string | null;
@@ -23,7 +23,7 @@ interface ActionState extends AccountActionState {
 /**
  * Payload for the onboarding server action.
  */
-interface ActionPayload extends AccountActionPayload {
+interface ActionPayload extends WorkspaceActionPayload {
   readonly request: OnboardAccountRequest;
 }
 

@@ -1,20 +1,18 @@
 "use client";
 
-import { Box, Button, Stack, Tab, Tabs } from "@mui/material";
-import type { FundBalanceEvent, FundWithBalance } from "@/funds/types";
-import { type JSX, useState } from "react";
+import {
+  type FundBalanceEvent,
+  FundBalanceEventSort,
+  type FundWithBalance,
+} from "@/funds/types";
 import type { BalanceEventTotals } from "@/balance-events/types";
 import type { BalanceTrendDateSummary } from "@/framework/charts/balanceTrendHelpers";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import CurrentFundBalanceFrame from "@/funds/workspace/CurrentFundBalanceFrame";
-import DeleteFundForm from "@/funds/workspace/DeleteFundForm";
-import FundBalanceEventsFrame from "@/funds/workspace/FundBalanceEventsFrame";
-import FundSummaryFrame from "@/funds/workspace/FundSummaryFrame";
-import PageLayout from "@/framework/view/PageLayout";
-import RecentBalanceActivity from "@/balance-events/RecentBalanceActivity";
+import BalanceWorkspaceView from "@/balance-events/BalanceWorkspaceView";
+import type { JSX } from "react";
 import type { Route } from "next";
+import StringEntryField from "@/framework/forms/StringEntryField";
 import UpdateFundForm from "@/funds/workspace/UpdateFundForm";
-import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
+import deleteFund from "@/funds/workspace/deleteFund";
 
 /**
  * Props for the ViewFundForm component.
@@ -38,109 +36,43 @@ const ViewFundForm = function ({
   fund,
   redirectUrl,
   deleteRedirectUrl,
-  recentBalanceEvents,
-  recentBalanceEventCount,
-  activityTotals,
-  recentActivityBalances,
-  trendsHref,
-  addTransactionHref,
+  ...viewProps
 }: ViewFundFormProps): JSX.Element {
-  const canWrite = useWriteAccess();
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
-  const [activeView, setActiveView] = useState<"transactions" | "activity">(
-    "transactions",
-  );
-
   return (
-    <ConstrainedContent maxWidth={1200}>
-      <PageLayout>
-        <FundSummaryFrame
-          fund={fund}
-          headerContent={
-            !canWrite ? undefined : (
-              <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    setUpdateDialogOpen(true);
-                  }}
-                >
-                  Edit
-                </Button>
-                <DeleteFundForm fund={fund} redirectUrl={deleteRedirectUrl} />
-              </Stack>
-            )
-          }
-        />
-        <CurrentFundBalanceFrame fund={fund} />
-        <Box>
-          <Tabs
-            value={activeView}
-            onChange={(_, value: "transactions" | "activity") => {
-              setActiveView(value);
-            }}
-            aria-label="Fund workspace views"
-            sx={{ mb: 2 }}
-          >
-            <Tab
-              value="transactions"
-              label="Transactions"
-              id="fund-transactions-tab"
-              aria-controls="fund-transactions-panel"
-            />
-            <Tab
-              value="activity"
-              label="Recent Activity"
-              id="fund-activity-tab"
-              aria-controls="fund-activity-panel"
-            />
-          </Tabs>
-          <Box
-            role="tabpanel"
-            id="fund-transactions-panel"
-            aria-labelledby="fund-transactions-tab"
-            hidden={activeView !== "transactions"}
-          >
-            {activeView === "transactions" ? (
-              <FundBalanceEventsFrame
-                data={recentBalanceEvents}
-                totalCount={recentBalanceEventCount}
-                addTransactionHref={addTransactionHref}
-              />
-            ) : null}
-          </Box>
-          <Box
-            role="tabpanel"
-            id="fund-activity-panel"
-            aria-labelledby="fund-activity-tab"
-            hidden={activeView !== "activity"}
-          >
-            {activeView === "activity" ? (
-              <RecentBalanceActivity
-                summaryFirst
-                title="Balance Activity"
-                totals={activityTotals}
-                dailyBalances={recentActivityBalances}
-                {...(activityTotals.openingBalance === null ||
-                activityTotals.openingBalance === undefined
-                  ? {}
-                  : { periodOpeningBalance: activityTotals.openingBalance })}
-                trendsHref={trendsHref}
-              />
-            ) : null}
-          </Box>
-        </Box>
-        {canWrite && updateDialogOpen ? (
-          <UpdateFundForm
-            fund={fund}
-            redirectUrl={redirectUrl}
-            onClose={() => {
-              setUpdateDialogOpen(false);
-            }}
+    <BalanceWorkspaceView
+      {...viewProps}
+      entityName="fund"
+      name={fund.name}
+      summaryFields={
+        <>
+          <StringEntryField
+            label="Name"
+            value={fund.name}
+            setValue={null}
+            errorMessage={null}
           />
-        ) : null}
-      </PageLayout>
-    </ConstrainedContent>
+          <StringEntryField
+            label="Description"
+            value={fund.description}
+            setValue={null}
+            errorMessage={null}
+          />
+        </>
+      }
+      postedBalance={fund.currentBalance.postedBalance}
+      pendingAmount={fund.pendingAmount}
+      deleteAction={deleteFund}
+      deletePayload={{ fundId: fund.id, redirectUrl: deleteRedirectUrl }}
+      renderUpdateForm={(onClose) => (
+        <UpdateFundForm
+          fund={fund}
+          redirectUrl={redirectUrl}
+          onClose={onClose}
+        />
+      )}
+      balanceEventSort={FundBalanceEventSort}
+      emptyBalanceEventsDescription="Create a transaction for this fund to start building its balance history."
+    />
   );
 };
 

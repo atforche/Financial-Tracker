@@ -73,7 +73,7 @@ public sealed class AccountQueryService(
     /// <summary>
     /// Retrieves Account balances and financial totals over an Accounting Period range.
     /// </summary>
-    public async Task<AccountAccountingPeriodRangeQueryResult> GetAccountingPeriodRangeAsync(
+    public async Task<AccountingPeriodRangeQueryResult<AccountAccountingPeriodRange>> GetAccountingPeriodRangeAsync(
         AccountAccountingPeriodRangeQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -83,7 +83,7 @@ public sealed class AccountQueryService(
             cancellationToken);
         if (resolution.AccountingPeriods == null)
         {
-            return new AccountAccountingPeriodRangeQueryResult(null, resolution.Failure);
+            return new AccountingPeriodRangeQueryResult<AccountAccountingPeriodRange>(null, resolution.Failure);
         }
 
         AccountingPeriod start = resolution.AccountingPeriods.First();
@@ -98,7 +98,7 @@ public sealed class AccountQueryService(
             .ToList();
         if (!AccountingPeriodRangeResolver.IsContiguous(orderedHistories.Select(history => history.AccountingPeriod), start, end))
         {
-            return new AccountAccountingPeriodRangeQueryResult(null, AccountingPeriodRangeQueryFailure.NotContiguous);
+            return new AccountingPeriodRangeQueryResult<AccountAccountingPeriodRange>(null, AccountingPeriodRangeQueryFailure.NotContiguous);
         }
 
         IReadOnlyCollection<Account> accounts = await accountQueryRepository.GetRangeAccountsAsync(query.Filter, cancellationToken);
@@ -129,7 +129,7 @@ public sealed class AccountQueryService(
             totals.TrackedIncome,
             totals.TotalSpending,
             summaries);
-        return new AccountAccountingPeriodRangeQueryResult(range, AccountingPeriodRangeQueryFailure.None);
+        return new AccountingPeriodRangeQueryResult<AccountAccountingPeriodRange>(range, AccountingPeriodRangeQueryFailure.None);
     }
 
     /// <summary>

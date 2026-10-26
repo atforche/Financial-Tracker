@@ -87,15 +87,10 @@ const buildOnboardRequest = function (
 const getAccountCardColor = function (
   accountType: AccountType | null,
 ): FrameColor {
-  // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
-  switch (accountType) {
-    case AccountType.CreditCard:
-      return "warning";
-    case AccountType.Debt:
-      return "error";
-    default:
-      return "primary";
+  if (accountType === AccountType.CreditCard) {
+    return "warning";
   }
+  return accountType === AccountType.Debt ? "error" : "primary";
 };
 
 export {

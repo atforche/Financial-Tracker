@@ -17,8 +17,7 @@ public sealed class AccountBalanceEventQueryService(
     IAccountQueryRepository accountQueryRepository,
     IAccountBalanceEventQueryRepository repository,
     ITransactionBalanceEventQueryRepository transactionQueryRepository,
-    IAccountingPeriodQueryRepository accountingPeriodRepository,
-    AccountingPeriodRangeService accountingPeriodRangeService)
+    IAccountingPeriodQueryRepository accountingPeriodRepository)
 {
     /// <summary>
     /// Retrieves fully projected Account balance events for the requested Transactions.
@@ -133,37 +132,6 @@ public sealed class AccountBalanceEventQueryService(
         IReadOnlyCollection<AccountingPeriodId> periodIds = transactions.Select(transaction => transaction.AccountingPeriodId).Distinct().ToList();
         IReadOnlyCollection<AccountingPeriod> periods = await accountingPeriodRepository.GetByIdsAsync(periodIds, cancellationToken);
         return await GetAsync(transactions, periods, query.Filter, query.Sort, query.Offset, query.Limit, null, cancellationToken);
-    }
-
-    /// <summary>
-    /// Retrieves Account balance events in the requested Accounting Period range.
-    /// </summary>
-    public async Task<AccountBalanceEventAccountingPeriodRangeQueryResult> GetAsync(
-        AccountBalanceEventAccountingPeriodRangeQuery query,
-        CancellationToken cancellationToken = default)
-    {
-        AccountingPeriodRangeResolution resolution = await accountingPeriodRangeService.ResolveAsync(
-            query.StartId,
-            query.EndId,
-            cancellationToken);
-        if (resolution.AccountingPeriods == null)
-        {
-            return new AccountBalanceEventAccountingPeriodRangeQueryResult(null, resolution.Failure);
-        }
-
-        IReadOnlyCollection<AccountingPeriod> periods = resolution.AccountingPeriods;
-        IReadOnlyCollection<AccountingPeriodId> periodIds = periods.Select(period => period.Id).ToList();
-        IReadOnlyCollection<Transaction> transactions = await transactionQueryRepository.GetAsync(periodIds, cancellationToken);
-        QueryPage<AccountBalanceEvent> page = await GetAsync(
-            transactions,
-            periods,
-            query.Filter,
-            query.Sort,
-            query.Offset,
-            query.Limit,
-            null,
-            cancellationToken);
-        return new AccountBalanceEventAccountingPeriodRangeQueryResult(page, AccountingPeriodRangeQueryFailure.None);
     }
 
     /// <summary>

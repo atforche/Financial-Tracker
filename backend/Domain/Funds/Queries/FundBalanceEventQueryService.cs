@@ -17,8 +17,7 @@ namespace Domain.Funds.Queries;
 public sealed class FundBalanceEventQueryService(
     IFundBalanceEventQueryRepository repository,
     ITransactionBalanceEventQueryRepository transactionQueryRepository,
-    IAccountingPeriodQueryRepository accountingPeriodRepository,
-    AccountingPeriodRangeService accountingPeriodRangeService)
+    IAccountingPeriodQueryRepository accountingPeriodRepository)
 {
     /// <summary>
     /// Retrieves fully projected Fund balance events for the requested Transactions.
@@ -64,36 +63,6 @@ public sealed class FundBalanceEventQueryService(
         IReadOnlyCollection<AccountingPeriod> periods = await accountingPeriodRepository.GetByIdsAsync(periodIds, cancellationToken);
         return await GetAsync(transactions, periods, query.Filter, query.Sort, query.Offset, query.Limit, cancellationToken,
             query.Start, query.End, true, query.IncludePending);
-    }
-
-    /// <summary>
-    /// Retrieves Fund balance events in the requested Accounting Period range.
-    /// </summary>
-    public async Task<FundBalanceEventAccountingPeriodRangeQueryResult> GetAsync(
-        FundBalanceEventAccountingPeriodRangeQuery query,
-        CancellationToken cancellationToken = default)
-    {
-        AccountingPeriodRangeResolution resolution = await accountingPeriodRangeService.ResolveAsync(
-            query.StartId,
-            query.EndId,
-            cancellationToken);
-        if (resolution.AccountingPeriods == null)
-        {
-            return new FundBalanceEventAccountingPeriodRangeQueryResult(null, resolution.Failure);
-        }
-
-        IReadOnlyCollection<AccountingPeriod> periods = resolution.AccountingPeriods;
-        IReadOnlyCollection<AccountingPeriodId> periodIds = periods.Select(period => period.Id).ToList();
-        IReadOnlyCollection<Transaction> transactions = await transactionQueryRepository.GetAsync(periodIds, cancellationToken);
-        QueryPage<FundBalanceEvent> page = await GetAsync(
-            transactions,
-            periods,
-            query.Filter,
-            query.Sort,
-            query.Offset,
-            query.Limit,
-            cancellationToken);
-        return new FundBalanceEventAccountingPeriodRangeQueryResult(page, AccountingPeriodRangeQueryFailure.None);
     }
 
     /// <summary>

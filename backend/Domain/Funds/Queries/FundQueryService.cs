@@ -65,7 +65,7 @@ public sealed class FundQueryService(
     /// <summary>
     /// Retrieves Fund balances and financial totals over an Accounting Period range.
     /// </summary>
-    public async Task<FundAccountingPeriodRangeQueryResult> GetAccountingPeriodRangeAsync(
+    public async Task<AccountingPeriodRangeQueryResult<FundAccountingPeriodRange>> GetAccountingPeriodRangeAsync(
         FundAccountingPeriodRangeQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -75,7 +75,7 @@ public sealed class FundQueryService(
             cancellationToken);
         if (resolution.AccountingPeriods == null)
         {
-            return new FundAccountingPeriodRangeQueryResult(null, resolution.Failure);
+            return new AccountingPeriodRangeQueryResult<FundAccountingPeriodRange>(null, resolution.Failure);
         }
 
         AccountingPeriod start = resolution.AccountingPeriods.First();
@@ -90,7 +90,7 @@ public sealed class FundQueryService(
             .ToList();
         if (!AccountingPeriodRangeResolver.IsContiguous(orderedHistories.Select(history => history.AccountingPeriod), start, end))
         {
-            return new FundAccountingPeriodRangeQueryResult(null, AccountingPeriodRangeQueryFailure.NotContiguous);
+            return new AccountingPeriodRangeQueryResult<FundAccountingPeriodRange>(null, AccountingPeriodRangeQueryFailure.NotContiguous);
         }
 
         IReadOnlyCollection<Fund> funds = await fundQueryRepository.GetRangeFundsAsync(query.Filter, cancellationToken);
@@ -121,7 +121,7 @@ public sealed class FundQueryService(
             totals.TrackedIncome,
             totals.TotalSpending,
             summaries);
-        return new FundAccountingPeriodRangeQueryResult(range, AccountingPeriodRangeQueryFailure.None);
+        return new AccountingPeriodRangeQueryResult<FundAccountingPeriodRange>(range, AccountingPeriodRangeQueryFailure.None);
     }
 
     /// <summary>
