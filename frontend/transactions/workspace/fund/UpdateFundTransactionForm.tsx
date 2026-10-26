@@ -12,11 +12,9 @@ import type {
   UpdateTransactionRequest,
 } from "@/transactions/types";
 import { type JSX, useState } from "react";
-import dayjs, { type Dayjs } from "dayjs";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import FundTransactionForm from "@/transactions/workspace/fund/FundTransactionForm";
 import type { FundWithBalance } from "@/funds/types";
-import useTransactionPreview from "@/transactions/workspace/useTransactionPreview";
 import { useUpdateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
 
 /**
@@ -38,65 +36,38 @@ const UpdateFundTransactionForm = function ({
   funds,
   redirectUrl,
 }: UpdateFundTransactionFormProps): JSX.Element {
-  const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
-  const [description, setDescription] = useState<string>(
-    transaction.description,
-  );
   const [source, setSource] = useState<FundSourceDraft>(
     getSourceFromTransaction(transaction),
   );
   const [destinations, setDestinations] = useState<FundDestinationDraft[]>(
     getDestinationsFromTransaction(transaction),
   );
-
-  const { formRef, state, pending, reset, submit } = useUpdateTransactionEditor(
-    {
-      transactionId: transaction.id,
-      redirectUrl,
-      resetDraft: (): void => {
-        setDate(dayjs(transaction.date));
-        setDescription(transaction.description);
-        setSource(getSourceFromTransaction(transaction));
-        setDestinations(getDestinationsFromTransaction(transaction));
-      },
-    },
-  );
-
-  const request: UpdateTransactionRequest | null = buildUpdateRequest(
-    transactionAccountingPeriod,
-    date,
-    description,
-    source,
-    destinations,
-  );
-  const preview = useTransactionPreview(
-    request === null ? null : { transactionId: transaction.id, request },
+  const formProps = useUpdateTransactionEditor({
     transaction,
-  );
+    transactionAccountingPeriod,
+    redirectUrl,
+    resetDraft: (): void => {
+      setSource(getSourceFromTransaction(transaction));
+      setDestinations(getDestinationsFromTransaction(transaction));
+    },
+    buildRequest: (accountingPeriod, date, description) =>
+      buildUpdateRequest(
+        accountingPeriod,
+        date,
+        description,
+        source,
+        destinations,
+      ),
+  });
 
   return (
     <FundTransactionForm<UpdateTransactionRequest>
-      formRef={formRef}
+      {...formProps}
       funds={funds}
-      accountingPeriods={[transactionAccountingPeriod]}
-      accountingPeriod={transactionAccountingPeriod}
-      setAccountingPeriod={null}
-      date={date}
-      setDate={setDate}
-      defaultDate={null}
-      description={description}
-      setDescription={setDescription}
       source={source}
       setSource={setSource}
       destinations={destinations}
       setDestinations={setDestinations}
-      submitLabel="Update"
-      state={state}
-      pending={pending}
-      request={request}
-      preview={preview}
-      onReset={reset}
-      onSubmit={submit}
     />
   );
 };

@@ -15,9 +15,7 @@ import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import SpendingTransactionForm from "@/transactions/workspace/spending/SpendingTransactionForm";
 import type { TransactionDetails } from "@/transactions/workspace/TransactionForm";
-import { getDefaultDate } from "@/transactions/workspace/helpers";
 import { useCreateTransactionEditor } from "@/transactions/workspace/useTransactionEditor";
-import useTransactionPreview from "@/transactions/workspace/useTransactionPreview";
 
 /**
  * Props for the CreateSpendingTransactionForm component.
@@ -42,69 +40,40 @@ const CreateSpendingTransactionForm = function ({
   redirectUrl,
   details,
 }: CreateSpendingTransactionFormProps): JSX.Element {
-  const {
-    accountingPeriod,
-    setAccountingPeriod,
-    date,
-    setDate,
-    description,
-    setDescription,
-  } = details;
-  const defaultDate = getDefaultDate(accountingPeriod);
   const [source, setSource] =
     useState<SpendingSourceDraft>(createEmptySource());
   const [destinations, setDestinations] = useState<SpendingDestinationDraft[]>([
     createEmptyDestination(),
   ]);
-
-  const { formRef, state, pending, reset, submit } = useCreateTransactionEditor(
-    {
-      redirectUrl,
-      resetDraft: (): void => {
-        details.reset();
-        setSource(createEmptySource());
-        setDestinations([createEmptyDestination()]);
-      },
+  const formProps = useCreateTransactionEditor({
+    accountingPeriods,
+    details,
+    redirectUrl,
+    resetDraft: (): void => {
+      setSource(createEmptySource());
+      setDestinations([createEmptyDestination()]);
     },
-  );
-
-  const request: CreateTransactionRequest | null = buildCreateRequest(
-    accountingPeriod,
-    date,
-    defaultDate,
-    description,
-    source,
-    destinations,
-  );
-  const preview = useTransactionPreview(
-    request === null ? null : { transactionId: null, request },
-  );
+    buildRequest: (accountingPeriod, date, defaultDate, description) =>
+      buildCreateRequest(
+        accountingPeriod,
+        date,
+        defaultDate,
+        description,
+        source,
+        destinations,
+      ),
+  });
 
   return (
     <SpendingTransactionForm<CreateTransactionRequest>
-      formRef={formRef}
+      {...formProps}
       accounts={accounts}
       funds={funds}
       fundGoals={fundGoals}
-      accountingPeriods={accountingPeriods}
-      accountingPeriod={accountingPeriod}
-      setAccountingPeriod={setAccountingPeriod}
-      date={date}
-      setDate={setDate}
-      defaultDate={defaultDate}
-      description={description}
-      setDescription={setDescription}
       source={source}
       setSource={setSource}
       destinations={destinations}
       setDestinations={setDestinations}
-      submitLabel="Create"
-      state={state}
-      pending={pending}
-      request={request}
-      preview={preview}
-      onReset={reset}
-      onSubmit={submit}
     />
   );
 };
