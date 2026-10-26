@@ -4,10 +4,6 @@ using Models.AccountingPeriods;
 using Models.Accounts;
 using Models.FundGoals;
 using Models.Funds;
-using Tests.Accounts;
-using Tests.Funds;
-using Tests.Infrastructure;
-using Tests.Transactions;
 
 namespace Tests.AccountingPeriods;
 
@@ -51,8 +47,7 @@ public sealed class AccountingPeriodLifecycleTests
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
 
-        CollectionModel<FundWithBalanceModel> funds = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
-        FundWithBalanceModel unassigned = Assert.Single(funds.Items, fund => fund.Name == "Unassigned");
+        FundHandle unassigned = await test.FundQueries.GetUnassignedAsync(july);
         FundGoalModel goal = await test.Api.GetAsync<FundGoalModel>($"/fund-goals/fund/{unassigned.Id}?accountingPeriodId={july.Id}");
         IReadOnlyCollection<FundGoalProgressResultModel> progresses = await test.Api.GetAsync<IReadOnlyCollection<FundGoalProgressResultModel>>(
             $"/fund-goals/progress/{july.Id}");
@@ -77,13 +72,7 @@ public sealed class AccountingPeriodLifecycleTests
         AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle income = await test.Funds.Create("Income").In(july).CreateAsync();
-        TransactionHandle transaction = await test.Transactions.Income()
-            .In(july)
-            .On(new DateOnly(2026, 7, 15))
-            .For(40m)
-            .From("Employer")
-            .To(cash, income)
-            .CreateAsync();
+        TransactionHandle transaction = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 15)).For(40m).From("Employer").To(cash, income).CreateAsync();
         await test.Transactions.PostAsync(transaction, cash, new DateOnly(2026, 7, 15));
 
         AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
@@ -103,7 +92,7 @@ public sealed class AccountingPeriodLifecycleTests
     }
 
     /// <summary>
-    /// Allows a posted period to close and reopen, while preventing duplicate close operations.
+    /// Allows a period to close and reopen, while rejecting duplicate closes and missing periods.
     /// </summary>
     [Fact]
     public async Task CloseAndReopenAsyncEnforcePeriodState()
@@ -114,10 +103,16 @@ public sealed class AccountingPeriodLifecycleTests
         using HttpResponseMessage close = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/close", new { });
         using HttpResponseMessage repeatClose = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/close", new { });
         using HttpResponseMessage reopen = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/reopen", new { });
+        using HttpResponseMessage missingClose = await test.Api.PostResponseAsync($"/accounting-periods/{Guid.NewGuid()}/close", new { });
+        using HttpResponseMessage missingReopen = await test.Api.PostResponseAsync($"/accounting-periods/{Guid.NewGuid()}/reopen", new { });
+        using HttpResponseMessage missingDelete = await test.Api.DeleteResponseAsync($"/accounting-periods/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.OK, close.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, repeatClose.StatusCode);
         Assert.Equal(HttpStatusCode.OK, reopen.StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, missingClose.StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, missingReopen.StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, missingDelete.StatusCode);
     }
 
     /// <summary>
@@ -130,8 +125,8 @@ public sealed class AccountingPeriodLifecycleTests
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
 
-        await test.Api.PostAsync($"/accounting-periods/{july.Id}/close");
-        await test.Api.PostAsync($"/accounting-periods/{august.Id}/close");
+        await test.Periods.CloseAsync(july);
+        await test.Periods.CloseAsync(august);
 
         using HttpResponseMessage reopenJulyFirst = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/reopen", new { });
         using HttpResponseMessage reopenAugust = await test.Api.PostResponseAsync($"/accounting-periods/{august.Id}/reopen", new { });
@@ -291,7 +286,7 @@ public sealed class AccountingPeriodLifecycleTests
             UntrackedTransfers = [],
             ExpectedDates = [],
         };
-        await test.Api.PostAsync($"/accounting-periods/{july.Id}/close");
+        await test.Periods.CloseAsync(july);
 
         using HttpResponseMessage response = await test.Api.PostResponseAsync(
             $"/accounting-periods/{july.Id}/expected-income-sources", source);

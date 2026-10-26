@@ -1,11 +1,6 @@
 using System.Net;
 using Models.AccountingPeriods;
 using Models.FundGoals;
-using Tests.AccountingPeriods;
-using Tests.Accounts;
-using Tests.Funds;
-using Tests.Infrastructure;
-using Tests.Transactions;
 
 namespace Tests.FundGoals;
 
@@ -57,13 +52,7 @@ public sealed class FundGoalPeriodLifecycleTests
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
-        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
-        _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{groceries.Goal.Id}", new UpdateFundGoalModel
-        {
-            PlannedMonthlyContribution = 50m,
-            MinimumEndingBalance = 25m,
-            MaximumEndingBalance = 100m
-        });
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).WithGoal(50m, 25m, 100m).CreateAsync();
         TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(60m).From("Employer").To(cash, groceries).CreateAsync();
         _ = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(20m).From(cash).To("Market", groceries).CreateAsync();
         await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
@@ -72,10 +61,8 @@ public sealed class FundGoalPeriodLifecycleTests
 
         FundGoalProgressModel progress = await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{groceries.Goal.Id}/progress/{july.Id}");
         AccountingPeriodWithBalanceModel period = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}");
-        FundGoalAvailabilitySnapshot availability = await test.FundGoalQueries.GetAvailabilityAsync(groceries.Goal);
 
-        Assert.Equal(40m, availability.Posted);
-        Assert.Equal(20m, availability.PostedWithPending);
+        await test.AssertBalanceAsync(groceries, 40m, 20m);
         Assert.NotNull(progress.Contribution);
         Assert.Equal(50m, progress.Contribution.ExpectedAmount);
         Assert.Equal(40m, progress.Contribution.AssignedAmount);

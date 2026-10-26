@@ -6,10 +6,6 @@ using Models.Transactions;
 using Models.Transactions.Create;
 using Models.Transactions.Types;
 using Models.Transactions.Update;
-using Tests.AccountingPeriods;
-using Tests.Accounts;
-using Tests.Funds;
-using Tests.Infrastructure;
 
 namespace Tests.Transactions;
 
@@ -28,14 +24,14 @@ public sealed class TransactionPreviewTests
         _ = await test.Accounts.Onboard("Cash").WithOpeningBalance(1000m).CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
-        Guid unassignedId = await GetUnassignedFundIdAsync(test);
-        _ = await CreateFundTransferAsync(test, july, unassignedId, groceries.Id, new DateOnly(2026, 7, 5), 50m);
-        Guid later = await CreateFundTransferAsync(test, july, unassignedId, groceries.Id, new DateOnly(2026, 7, 20), 100m);
-        CreateTransactionModel request = CreateFundTransfer(july, unassignedId, groceries.Id, new DateOnly(2026, 7, 10), 200m);
+        FundHandle unassigned = await test.FundQueries.GetUnassignedAsync(july);
+        _ = await test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 5)).For(50m).From(unassigned).To(groceries).CreateAsync();
+        TransactionHandle later = await test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 20)).For(100m).From(unassigned).To(groceries).CreateAsync();
+        CreateTransactionModel request = test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 10)).For(200m).From(unassigned).To(groceries).CreateRequest();
 
         FundTransactionModel preview = await test.Api.PostAsync<CreateTransactionModel, FundTransactionModel>("/transactions/preview", request);
         CollectionModel<TransactionModel> afterPreview = await test.Api.GetAsync<CollectionModel<TransactionModel>>("/transactions");
-        FundTransactionModel laterAfterPreview = await test.Api.GetAsync<FundTransactionModel>($"/transactions/{later}");
+        FundTransactionModel laterAfterPreview = await test.Api.GetAsync<FundTransactionModel>($"/transactions/{later.Id}");
         CreateTransactionResultModel created = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", request);
         FundTransactionModel saved = await test.Api.GetAsync<FundTransactionModel>($"/transactions/{created.Id}");
 
@@ -59,15 +55,16 @@ public sealed class TransactionPreviewTests
         _ = await test.Accounts.Onboard("Cash").WithOpeningBalance(1000m).CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
-        Guid unassignedId = await GetUnassignedFundIdAsync(test);
-        _ = await CreateFundTransferAsync(test, july, unassignedId, groceries.Id, new DateOnly(2026, 7, 5), 50m);
-        Guid transfer = await CreateFundTransferAsync(test, july, unassignedId, groceries.Id, new DateOnly(2026, 7, 10), 200m);
-        UpdateTransactionModel request = UpdateFundTransfer(unassignedId, groceries.Id, new DateOnly(2026, 7, 10), 300m);
+        FundHandle unassigned = await test.FundQueries.GetUnassignedAsync(july);
+        _ = await test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 5)).For(50m).From(unassigned).To(groceries).CreateAsync();
+        FundTransactionBuilder builder = test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 10)).For(200m).From(unassigned).To(groceries);
+        TransactionHandle transfer = await builder.CreateAsync();
+        UpdateTransactionModel request = builder.For(300m).UpdateRequest();
 
-        FundTransactionModel preview = await test.Api.PostAsync<UpdateTransactionModel, FundTransactionModel>($"/transactions/{transfer}/preview", request);
-        FundTransactionModel afterPreview = await test.Api.GetAsync<FundTransactionModel>($"/transactions/{transfer}");
-        await test.Api.PostAsync($"/transactions/{transfer}", request);
-        FundTransactionModel saved = await test.Api.GetAsync<FundTransactionModel>($"/transactions/{transfer}");
+        FundTransactionModel preview = await test.Api.PostAsync<UpdateTransactionModel, FundTransactionModel>($"/transactions/{transfer.Id}/preview", request);
+        FundTransactionModel afterPreview = await test.Api.GetAsync<FundTransactionModel>($"/transactions/{transfer.Id}");
+        await test.Api.PostAsync($"/transactions/{transfer.Id}", request);
+        FundTransactionModel saved = await test.Api.GetAsync<FundTransactionModel>($"/transactions/{transfer.Id}");
 
         Assert.Equal(650m, preview.Source.Fund.NewBalance?.PostedBalance);
         Assert.Equal(350m, Assert.Single(preview.Destinations).Fund.NewBalance?.PostedBalance);
@@ -90,7 +87,7 @@ public sealed class TransactionPreviewTests
         TransactionHandle later = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 5)).For(50m).From(cash).To("Cafe", groceries).CreateAsync();
         await test.Transactions.PostAsync(later, cash, new DateOnly(2026, 7, 20));
         _ = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 10)).For(200m).From(cash).To("Market", groceries).CreateAsync();
-        CreateTransactionModel request = CreateSpending(july, cash, groceries, new DateOnly(2026, 7, 15), 100m);
+        CreateTransactionModel request = test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(100m).From(cash).To("Store", groceries).CreateRequest();
 
         SpendingTransactionModel preview = await test.Api.PostAsync<CreateTransactionModel, SpendingTransactionModel>("/transactions/preview", request);
         CollectionModel<TransactionModel> afterPreview = await test.Api.GetAsync<CollectionModel<TransactionModel>>("/transactions");
@@ -119,7 +116,7 @@ public sealed class TransactionPreviewTests
         AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(1000m).CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
-        CreateTransactionModel request = CreateSpending(july, cash, groceries, new DateOnly(2026, 7, 15), 100m);
+        CreateTransactionModel request = test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(100m).From(cash).To("Store", groceries).CreateRequest();
 
         for (int previewCount = 0; previewCount < 60; previewCount++)
         {
@@ -143,19 +140,15 @@ public sealed class TransactionPreviewTests
         AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(1000m).CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
-        TransactionHandle transaction = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 10)).For(200m).From(cash).To("Market", groceries).CreateAsync();
+        SpendingTransactionBuilder spending = test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 10)).For(200m).From(cash).To("Market", groceries);
+        TransactionHandle transaction = await spending.CreateAsync();
         await test.Transactions.PostAsync(transaction, cash, new DateOnly(2026, 7, 11));
-        var unknownAccount = new AccountHandle(Guid.NewGuid(), "Unknown");
+        UpdateTransactionModel update = spending.For(75m).UpdateRequest();
 
-        using HttpResponseMessage createResponse = await test.Api.PostResponseAsync<CreateTransactionModel>(
-            "/transactions/preview",
-            CreateSpending(july, unknownAccount, groceries, new DateOnly(2026, 7, 15), 100m));
-        using HttpResponseMessage postedResponse = await test.Api.PostResponseAsync<UpdateTransactionModel>(
-            $"/transactions/{transaction.Id}/preview",
-            UpdateSpending(cash, groceries, new DateOnly(2026, 7, 10), 75m));
-        using HttpResponseMessage missingResponse = await test.Api.PostResponseAsync<UpdateTransactionModel>(
-            $"/transactions/{Guid.NewGuid()}/preview",
-            UpdateSpending(cash, groceries, new DateOnly(2026, 7, 10), 75m));
+        using HttpResponseMessage createResponse = await test.Api.PostResponseAsync("/transactions/preview",
+            test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(100m).From(new AccountHandle(Guid.NewGuid(), "Unknown")).To("Store", groceries).CreateRequest());
+        using HttpResponseMessage postedResponse = await test.Api.PostResponseAsync($"/transactions/{transaction.Id}/preview", update);
+        using HttpResponseMessage missingResponse = await test.Api.PostResponseAsync($"/transactions/{Guid.NewGuid()}/preview", update);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, createResponse.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, postedResponse.StatusCode);
@@ -249,108 +242,4 @@ public sealed class TransactionPreviewTests
         Assert.Equal(expectedDestination.PreviousBalance?.PostedBalance, actualDestination.PreviousBalance?.PostedBalance);
         Assert.Equal(expectedDestination.NewBalance?.PostedBalance, actualDestination.NewBalance?.PostedBalance);
     }
-
-    /// <summary>
-    /// Gets the ID of the Unassigned fund.
-    /// </summary>
-    private static async Task<Guid> GetUnassignedFundIdAsync(FinancialTrackerTestContext test)
-    {
-        CollectionModel<FundWithBalanceModel> funds = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
-        return Assert.Single(funds.Items, fund => fund.Name == "Unassigned").Id;
-    }
-
-    /// <summary>
-    /// Creates a fund transfer and returns its ID.
-    /// </summary>
-    private static async Task<Guid> CreateFundTransferAsync(
-        FinancialTrackerTestContext test,
-        AccountingPeriodHandle period,
-        Guid sourceFundId,
-        Guid destinationFundId,
-        DateOnly date,
-        decimal amount)
-    {
-        CreateTransactionResultModel created = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>(
-            "/transactions",
-            CreateFundTransfer(period, sourceFundId, destinationFundId, date, amount));
-        return created.Id;
-    }
-
-    /// <summary>
-    /// Builds a request to create a transfer between two funds.
-    /// </summary>
-    private static CreateFundTransactionModel CreateFundTransfer(
-        AccountingPeriodHandle period,
-        Guid sourceFundId,
-        Guid destinationFundId,
-        DateOnly date,
-        decimal amount) => new()
-        {
-            AccountingPeriodId = period.Id,
-            Date = date,
-            Description = "Transfer",
-            Amount = amount,
-            Source = new CreateFundTransactionSourceModel { FundId = sourceFundId },
-            Destinations = [new CreateFundTransactionDestinationModel { FundId = destinationFundId, Amount = amount }]
-        };
-
-    /// <summary>
-    /// Builds a request to update a transfer between two funds.
-    /// </summary>
-    private static UpdateFundTransactionModel UpdateFundTransfer(
-        Guid sourceFundId,
-        Guid destinationFundId,
-        DateOnly date,
-        decimal amount) => new()
-        {
-            Date = date,
-            Description = "Transfer",
-            Amount = amount,
-            Source = new CreateFundTransactionSourceModel { FundId = sourceFundId },
-            Destinations = [new CreateFundTransactionDestinationModel { FundId = destinationFundId, Amount = amount }]
-        };
-
-    /// <summary>
-    /// Builds a request to create a spending Transaction to a single location.
-    /// </summary>
-    private static CreateSpendingTransactionModel CreateSpending(
-        AccountingPeriodHandle period,
-        AccountHandle source,
-        FundHandle fund,
-        DateOnly date,
-        decimal amount) => new()
-        {
-            AccountingPeriodId = period.Id,
-            Date = date,
-            Description = "Store",
-            Amount = amount,
-            Source = new CreateSpendingTransactionSourceModel { AccountId = source.Id },
-            Destinations = [new CreateSpendingTransactionDestinationModel
-            {
-                Location = new Models.Locations.LocationInputModel { NewLocationName = "Store" },
-                Amount = amount,
-                FundAssignments = [new CreateFundAmountModel { FundId = fund.Id, Amount = amount }]
-            }]
-        };
-
-    /// <summary>
-    /// Builds a request to update a spending Transaction to a single location.
-    /// </summary>
-    private static UpdateSpendingTransactionModel UpdateSpending(
-        AccountHandle source,
-        FundHandle fund,
-        DateOnly date,
-        decimal amount) => new()
-        {
-            Date = date,
-            Description = "Store",
-            Amount = amount,
-            Source = new CreateSpendingTransactionSourceModel { AccountId = source.Id },
-            Destinations = [new CreateSpendingTransactionDestinationModel
-            {
-                Location = new Models.Locations.LocationInputModel { NewLocationName = "Store" },
-                Amount = amount,
-                FundAssignments = [new CreateFundAmountModel { FundId = fund.Id, Amount = amount }]
-            }]
-        };
 }

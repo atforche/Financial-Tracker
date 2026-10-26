@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Models.Accounts;
-using Tests.Infrastructure;
 
 namespace Tests.Authentication;
 
