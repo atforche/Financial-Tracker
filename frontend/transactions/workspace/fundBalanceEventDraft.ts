@@ -52,7 +52,6 @@ const getSelectedTransactionFundDraft = function (
 };
 
 export {
-  createTransactionFundDraftFromFund,
   getSelectedTransactionFundDraft,
   getTransactionFundDraftFromTransactionFund,
 };

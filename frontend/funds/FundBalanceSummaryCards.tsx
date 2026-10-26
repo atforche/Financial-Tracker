@@ -100,5 +100,4 @@ const FundBalanceSummaryCards = function ({
   );
 };
 
-export type { FundBalanceSummaryCardsProps };
 export default FundBalanceSummaryCards;

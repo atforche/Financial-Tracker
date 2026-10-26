@@ -56,7 +56,6 @@ const getSelectedTransactionAccountDraft = function (
 };
 
 export {
-  createTransactionAccountDraftFromAccount,
   getSelectedTransactionAccountDraft,
   getTransactionAccountDraftFromTransactionAccount,
 };

@@ -47,5 +47,5 @@ const useWriteAccess = function (): boolean {
   );
 };
 
-export { useApplicationUser, useWriteAccess };
+export { useWriteAccess };
 export default ApplicationUserProvider;

@@ -308,5 +308,4 @@ const AccountTrends = async function ({
   );
 };
 
-export type { AccountTrendsSearchParams };
 export default AccountTrends;

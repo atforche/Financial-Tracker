@@ -73,7 +73,20 @@ const eslintConfig = defineConfig([
       "import/no-mutable-exports": "error",
       "import/no-named-as-default": "error",
       "import/no-named-as-default-member": "error",
-      "import/no-unused-modules": "error",
+      "import/no-unused-modules": [
+        "error",
+        {
+          unusedExports: true,
+          ignoreExports: [
+            "app/**",
+            "e2e/**",
+            "*.config.*",
+            "auth.ts",
+            "proxy.ts",
+            "framework/data/api.ts",
+          ],
+        },
+      ],
       "import/no-amd": "error",
       "import/no-commonjs": "error",
       "import/no-import-module-exports": "error",

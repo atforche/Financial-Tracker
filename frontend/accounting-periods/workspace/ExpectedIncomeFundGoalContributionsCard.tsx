@@ -91,5 +91,4 @@ const ExpectedIncomeFundGoalContributionsCard = function ({
   );
 };
 
-export type { ExpectedIncomeFundGoalContributionsCardProps };
 export default ExpectedIncomeFundGoalContributionsCard;

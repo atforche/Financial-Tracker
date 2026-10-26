@@ -35,5 +35,5 @@ const getCurrentApplicationUser =
     return { accessDenied: false, user: response.data };
   };
 
-export type { CurrentApplicationUser, CurrentApplicationUserResult };
+export type { CurrentApplicationUser };
 export default getCurrentApplicationUser;

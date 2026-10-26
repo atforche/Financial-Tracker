@@ -32,5 +32,4 @@ const InsetFrame = function ({ children, sx }: InsetFrameProps): JSX.Element {
   );
 };
 
-export type { InsetFrameProps };
 export default InsetFrame;

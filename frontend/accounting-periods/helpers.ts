@@ -130,7 +130,6 @@ export {
   accountingPeriodMonthOptions,
   compareAccountingPeriods,
   formatAccountingPeriodMonth,
-  getAccountingPeriodOrder,
   getMinimumDate,
   getMaximumDate,
   getDefaultDate,

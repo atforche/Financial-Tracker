@@ -296,5 +296,4 @@ const AccountingPeriodProgressFlow = function ({
   );
 };
 
-export type { AccountingPeriodProgressFlowProps };
 export default AccountingPeriodProgressFlow;

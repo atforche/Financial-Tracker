@@ -172,5 +172,4 @@ const CollectionEditor = function <T>({
   );
 };
 
-export type { CollectionItemControls };
 export default CollectionEditor;

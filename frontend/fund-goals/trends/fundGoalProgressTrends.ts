@@ -115,9 +115,7 @@ const buildFundGoalTrendPoints = function (
 
 export {
   buildFundGoalTrendPoints,
-  getFundGoalHealthSummary,
   isFundGoalSatisfied,
   type FundGoalPeriodProgress,
-  type FundGoalHealthSummary,
   type FundGoalTrendPoint,
 };

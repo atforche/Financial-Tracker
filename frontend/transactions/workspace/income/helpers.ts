@@ -452,8 +452,6 @@ export type {
   IncomeDestinationDraft,
 };
 export {
-  CreateTransactionModelCreateIncomeTransactionModelType as CreateIncomeTransactionType,
-  UpdateTransactionModelUpdateIncomeTransactionModelType as UpdateIncomeTransactionType,
   buildCreateRequest,
   buildDestinationAccountFilter,
   buildSourceAccountFilter,
@@ -463,7 +461,6 @@ export {
   createEmptySource,
   createEmptyDestination,
   getDestinationsFromTransaction,
-  getFundAssignmentFromTransactionFund,
   getNetIncomeAmount,
   getSourceFromTransaction,
   validateFundAssignments,

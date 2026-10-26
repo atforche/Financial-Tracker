@@ -179,5 +179,4 @@ const AccountBalanceSummaryCards = function ({
   );
 };
 
-export type { AccountBalanceSummaryCardsProps };
 export default AccountBalanceSummaryCards;

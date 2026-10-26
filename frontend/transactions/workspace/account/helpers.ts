@@ -336,8 +336,6 @@ const getDestinationsFromTransaction = function (
 
 export type { AccountDestinationDraft, AccountSourceDraft };
 export {
-  CreateTransactionModelCreateAccountTransactionModelType as CreateAccountTransactionType,
-  UpdateTransactionModelUpdateAccountTransactionModelType as UpdateAccountTransactionType,
   buildCreateRequest,
   buildUpdateRequest,
   buildSourceAccountFilter,

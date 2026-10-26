@@ -316,7 +316,6 @@ export {
   createEmptyDestination,
   getSourcesFromTransaction,
   getDestinationFromTransaction,
-  validateFundAssignments,
   validateDestination,
   validateSource,
 };

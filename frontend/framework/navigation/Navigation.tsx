@@ -89,4 +89,3 @@ const Navigation = function ({
 };
 
 export default Navigation;
-export { navigationWidth };

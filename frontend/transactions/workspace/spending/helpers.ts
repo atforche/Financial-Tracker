@@ -378,8 +378,6 @@ const getDestinationsFromTransaction = function (
 
 export type { SpendingSourceDraft, SpendingDestinationDraft };
 export {
-  CreateTransactionModelCreateSpendingTransactionModelType as CreateSpendingTransactionType,
-  UpdateTransactionModelUpdateSpendingTransactionModelType as UpdateSpendingTransactionType,
   buildCreateRequest,
   buildDestinationAccountFilter,
   buildSourceAccountFilter,
@@ -387,7 +385,6 @@ export {
   createEmptySource,
   createEmptyDestination,
   getDestinationsFromTransaction,
-  getFundAssignmentFromTransactionFund,
   getSourceFromTransaction,
   validateFundAssignments,
   validateDestination,

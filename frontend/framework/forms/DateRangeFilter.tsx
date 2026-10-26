@@ -88,5 +88,4 @@ const DateRangeFilter = function ({
   );
 };
 
-export type { DateRange };
 export default DateRangeFilter;

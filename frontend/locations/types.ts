@@ -40,10 +40,4 @@ const toLocationInput = function (
       : { locationId: location.id };
 };
 
-export {
-  type Location,
-  type LocationDraft,
-  type LocationInput,
-  toLocationDraft,
-  toLocationInput,
-};
+export { type Location, type LocationDraft, toLocationDraft, toLocationInput };

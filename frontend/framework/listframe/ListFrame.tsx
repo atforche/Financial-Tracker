@@ -273,4 +273,3 @@ const ListFrame = function <T>({
 };
 
 export default ListFrame;
-export type { EmptyStateDefinition };

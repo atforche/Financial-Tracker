@@ -73,17 +73,6 @@ type RefundTransaction =
 type RefundTransactionSource = RefundTransaction["sources"][number];
 
 /**
- * Type representing a destination of a refund transaction.
- */
-type RefundTransactionDestination = RefundTransaction["destination"];
-
-/**
- * Type representing a summary of transactions.
- */
-type TransactionSummaryByType =
-  components["schemas"]["TransactionSummaryByTypeModel"];
-
-/**
  * Type representing total, tracked, and untracked income amounts.
  */
 type IncomeAmount = components["schemas"]["IncomeAmountModel"];
@@ -213,8 +202,6 @@ export {
   type SpendingTransactionDestination,
   type RefundTransaction,
   type RefundTransactionSource,
-  type RefundTransactionDestination,
-  type TransactionSummaryByType,
   type IncomeAmount,
   type CreateTransactionRequest,
   type UpdateTransactionRequest,

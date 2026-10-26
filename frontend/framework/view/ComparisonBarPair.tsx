@@ -59,5 +59,4 @@ const ComparisonBarPair = function ({
   );
 };
 
-export type { ComparisonBarPairItem, ComparisonBarPairProps };
 export default ComparisonBarPair;
