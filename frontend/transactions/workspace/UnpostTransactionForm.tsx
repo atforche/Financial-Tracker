@@ -13,14 +13,21 @@ import { useRouter } from "next/navigation";
 interface UnpostTransactionFormProps {
   readonly transaction: Transaction;
   readonly redirectUrl: string;
+  readonly account?: { accountId: string; accountName: string } | null;
+  readonly label?: string;
+  readonly size?: "small" | "medium";
 }
 
 /**
- * Component that displays the action for unposting a transaction.
+ * Component that displays the action for unposting a transaction from the provided account,
+ * or from all posted accounts when none is provided.
  */
 const UnpostTransactionForm = function ({
   transaction,
   redirectUrl,
+  account = null,
+  label = "Unpost",
+  size = "medium",
 }: UnpostTransactionFormProps): JSX.Element {
   const router = useRouter();
   const [state, action, pending] = useActionState(unpostTransaction, {});
@@ -34,19 +41,27 @@ const UnpostTransactionForm = function ({
   return (
     <ConfirmActionDialog
       trigger={(openDialog) => (
-        <Button variant="outlined" onClick={openDialog}>
-          Unpost
+        <Button variant="outlined" size={size} onClick={openDialog}>
+          {label}
         </Button>
       )}
       title="Unpost Transaction"
-      confirmationCopy="Are you sure you want to unpost this transaction from all posted accounts?"
+      confirmationCopy={
+        account === null
+          ? "Are you sure you want to unpost this transaction from all posted accounts?"
+          : `Are you sure you want to unpost this transaction from ${account.accountName}?`
+      }
       confirmLabel="Unpost"
       pending={pending}
       errorTitle={state.errorTitle}
       unmappedErrors={state.unmappedErrors}
       onConfirm={() => {
         startTransition(() => {
-          action({ transactionId: transaction.id, redirectUrl });
+          action({
+            transactionId: transaction.id,
+            accountId: account?.accountId ?? null,
+            redirectUrl,
+          });
         });
       }}
     />

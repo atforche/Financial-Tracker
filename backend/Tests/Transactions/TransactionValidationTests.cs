@@ -285,13 +285,15 @@ public sealed class TransactionValidationTests
     }
 
     /// <summary>
-    /// Rejects unposting a pending or missing transaction and posting or unposting a fund transfer.
+    /// Rejects unposting a pending or missing transaction, unposting from an unposted or unaffected account,
+    /// and posting or unposting a fund transfer.
     /// </summary>
     [Fact]
     public async Task PostAndUnpostAsyncRejectInvalidTransactionStates()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountHandle savings = await test.Accounts.Onboard("Savings").WithOpeningBalance(100m).CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
         FundHandle dining = await test.Funds.Create("Dining").In(july).CreateAsync();
@@ -300,6 +302,9 @@ public sealed class TransactionValidationTests
 
         using HttpResponseMessage pendingUnpost = await test.Api.PostResponseAsync($"/transactions/{spending.Id}/unpost", new { });
         using HttpResponseMessage missingUnpost = await test.Api.PostResponseAsync($"/transactions/{Guid.NewGuid()}/unpost", new { });
+        using HttpResponseMessage pendingAccountUnpost = await test.Api.PostResponseAsync($"/transactions/{spending.Id}/unpost?accountId={cash.Id}", new { });
+        using HttpResponseMessage unaffectedAccountUnpost = await test.Api.PostResponseAsync($"/transactions/{spending.Id}/unpost?accountId={savings.Id}", new { });
+        using HttpResponseMessage missingAccountUnpost = await test.Api.PostResponseAsync($"/transactions/{spending.Id}/unpost?accountId={Guid.NewGuid()}", new { });
         using HttpResponseMessage fundPost = await test.Api.PostResponseAsync($"/transactions/{transfer.Id}/post", new PostTransactionModel
         {
             AccountId = cash.Id,
@@ -309,6 +314,9 @@ public sealed class TransactionValidationTests
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, pendingUnpost.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, missingUnpost.StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, pendingAccountUnpost.StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, unaffectedAccountUnpost.StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, missingAccountUnpost.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, fundPost.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, fundUnpost.StatusCode);
     }

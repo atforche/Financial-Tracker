@@ -22,10 +22,13 @@ import AccountEntryField from "@/accounts/AccountEntryField";
 import BalanceChangeChip from "@/framework/view/BalanceChangeChip";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import UnpostTransactionForm from "@/transactions/workspace/UnpostTransactionForm";
 import { buildUrl } from "@/framework/routes/helpers";
+import { createPortal } from "react-dom";
 import { getSelectedTransactionAccountDraft } from "@/transactions/workspace/accountBalanceEventDraft";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import postTransaction from "@/transactions/workspace/postTransaction";
+import { useFrameHeaderSlot } from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
 import { usePostingDateReporter } from "@/transactions/workspace/useTransactionPostingPreviews";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
@@ -132,6 +135,27 @@ const AccountBalanceEventFrame = function ({
   const hasSelectedAccount =
     selectedAccount !== null || readOnlyAccount !== null;
   let helperContent = null;
+  const headerSlot = useFrameHeaderSlot();
+  const unpostAction =
+    postedDate !== null &&
+    canWrite &&
+    setAccount === null &&
+    transaction !== null &&
+    headerSlot !== null &&
+    isNotNullOrUndefined(account?.accountId)
+      ? createPortal(
+          <UnpostTransactionForm
+            transaction={transaction}
+            redirectUrl={redirectUrl}
+            account={{
+              accountId: account.accountId,
+              accountName: account.accountName ?? "this account",
+            }}
+            size="small"
+          />,
+          headerSlot,
+        )
+      : null;
   if (postedDate !== null) {
     helperContent = (
       <Chip
@@ -209,6 +233,7 @@ const AccountBalanceEventFrame = function ({
 
   return (
     <Stack spacing={1} sx={sx}>
+      {unpostAction}
       {isReadOnly && hasSelectedAccount ? (
         <Stack spacing={0.25}>
           <Typography variant="caption" color="text.secondary">

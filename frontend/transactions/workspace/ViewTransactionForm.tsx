@@ -412,6 +412,7 @@ const ViewTransactionForm = function ({
                 <UnpostTransactionForm
                   transaction={transaction}
                   redirectUrl={currentUrl}
+                  label={postedAccountCount > 1 ? "Unpost All" : "Unpost"}
                 />
               ) : (
                 <DeleteTransactionForm

@@ -185,19 +185,26 @@ public sealed class TransactionController(
             cancellationToken);
 
     /// <summary>
-    /// Unposts the provided Transaction
+    /// Unposts the provided Transaction from the provided Account, or from all Accounts when none is provided
     /// </summary>
     [HttpPost("{transactionId}/unpost")]
     [ProducesResponseType(typeof(TransactionModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> UnpostAsync(Guid transactionId)
+    public async Task<IActionResult> UnpostAsync(Guid transactionId, [FromQuery] Guid? accountId)
     {
         const string title = "Unable to unpost Transaction.";
         if (!transactionRepository.TryGetById(transactionId, out Transaction? transaction))
         {
             return new UnprocessableEntityObjectResult(TransactionChangeResult.NotFound(title, transactionId).Problem);
         }
-        if (!transactionDispatcherService.TryUnpost(transaction, out IEnumerable<ValidationError> exceptions))
+        Account? account = null;
+        if (accountId != null && !accountRepository.TryGetById(accountId.Value, out account))
+        {
+            return new UnprocessableEntityObjectResult(TransactionChangeResult.Failure(
+                title,
+                new Dictionary<string, string[]> { [nameof(accountId)] = [$"Account with ID {accountId} was not found."] }).Problem);
+        }
+        if (!transactionDispatcherService.TryUnpost(transaction, account?.Id, out IEnumerable<ValidationError> exceptions))
         {
             return new UnprocessableEntityObjectResult(TransactionChangeResult.Failure(
                 title,

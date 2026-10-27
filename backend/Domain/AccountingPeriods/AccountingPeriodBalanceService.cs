@@ -209,11 +209,14 @@ public class AccountingPeriodBalanceService(
     }
 
     /// <summary>
-    /// Updates the Accounting Period Balances for a newly unposted Transaction
+    /// Updates the Accounting Period Balances for a Transaction being unposted from the provided Account,
+    /// or from all Accounts when none is provided
     /// </summary>
-    internal void UnpostTransaction(Transaction transaction)
+    internal void UnpostTransaction(Transaction transaction, AccountId? accountId)
     {
-        foreach (Account account in transaction.GetAllAffectedAccountIds().Select(accountRepository.GetById))
+        foreach (Account account in transaction.GetAllAffectedAccountIds()
+            .Where(id => accountId == null || id == accountId)
+            .Select(accountRepository.GetById))
         {
             AccountingPeriod? accountingPeriod = accountingPeriodRepository.GetById(transaction.AccountingPeriodId);
             DateOnly? postedDate = transaction.GetPostedDateForAccount(account.Id);

@@ -4,12 +4,7 @@ import type {
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
-import { Box, Chip, Stack } from "@mui/material";
-import {
-  type FundAssignmentDraft,
-  getAssignedFundAmount,
-  getRemainingFundAmount,
-} from "@/funds/assignmentPlanner/helpers";
+import { Box, Stack } from "@mui/material";
 import type { FundBalanceEvent, FundWithBalance } from "@/funds/types";
 import type {
   FundGoalBalanceEvent,
@@ -18,11 +13,11 @@ import type {
 import AccountBalanceEventFrame from "@/transactions/workspace/AccountBalanceEventFrame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
+import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 import IncomeFundAssignmentPlanner from "@/funds/assignmentPlanner/IncomeFundAssignmentPlanner";
 import type { JSX } from "react";
 import type { Transaction } from "@/transactions/types";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
-import { formatCurrency } from "@/framework/currencyHelpers";
 import { isTrackedAccount } from "@/accounts/helpers";
 
 const emptyFundAmounts: FundAssignmentDraft[] = [];
@@ -86,25 +81,12 @@ const IncomeTransactionDestinationFrame = function ({
   autoFocus = false,
 }: IncomeTransactionDestinationFrameProps): JSX.Element {
   const supportsFundAssignments = isTrackedAccount(account) === true;
-  const assignedAmount = getAssignedFundAmount(fundAssignments);
-  const remainingAmount = getRemainingFundAmount(amount, fundAssignments);
 
   return (
     <TransactionSourceOrDestinationFrame
       title={`Destination ${index + 1}`}
       onRemove={readOnly ? null : onRemove}
       color={fundAssignmentsValid ? color : "error"}
-      headerContent={
-        supportsFundAssignments ? (
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            <Chip label={`Assigned ${formatCurrency(assignedAmount)}`} />
-            <Chip
-              color={remainingAmount === 0 ? "success" : "error"}
-              label={`Unassigned ${formatCurrency(remainingAmount ?? 0)}`}
-            />
-          </Stack>
-        ) : null
-      }
     >
       <Stack
         direction={{ xs: "column", sm: "row" }}

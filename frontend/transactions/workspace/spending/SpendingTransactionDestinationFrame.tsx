@@ -4,23 +4,18 @@ import type {
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
-import { Box, Chip, Stack } from "@mui/material";
-import {
-  type FundAssignmentDraft,
-  getAssignedFundAmount,
-  getRemainingFundAmount,
-} from "@/funds/assignmentPlanner/helpers";
+import { Box, Stack } from "@mui/material";
 import type { FundBalanceEvent, FundWithBalance } from "@/funds/types";
 import type { Location, LocationDraft } from "@/locations/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
+import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { JSX } from "react";
 import SpendingFundAssignmentPlanner from "@/funds/assignmentPlanner/SpendingFundAssignmentPlanner";
 import type { Transaction } from "@/transactions/types";
 import TransactionAccountOrLocationFrame from "@/transactions/workspace/TransactionAccountOrLocationFrame";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
-import { formatCurrency } from "@/framework/currencyHelpers";
 
 /**
  * Props for the SpendingTransactionDestinationFrame component.
@@ -89,23 +84,11 @@ const SpendingTransactionDestinationFrame = function ({
   readOnly = false,
   autoFocus = false,
 }: SpendingTransactionDestinationFrameProps): JSX.Element {
-  const assignedAmount = getAssignedFundAmount(fundAssignments);
-  const remainingAmount = getRemainingFundAmount(amount, fundAssignments);
-
   return (
     <TransactionSourceOrDestinationFrame
       title={`${title} ${index + 1}`}
       onRemove={readOnly ? null : onRemove}
       color={fundAssignmentsValid ? color : "error"}
-      headerContent={
-        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-          <Chip label={`Assigned ${formatCurrency(assignedAmount)}`} />
-          <Chip
-            color={remainingAmount === 0 ? "success" : "error"}
-            label={`Unassigned ${formatCurrency(remainingAmount ?? 0)}`}
-          />
-        </Stack>
-      }
     >
       <Stack
         direction={{ xs: "column", sm: "row" }}
