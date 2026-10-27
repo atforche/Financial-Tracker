@@ -69,11 +69,13 @@ const AccountingPeriodProgressView = async function ({
     "AccountingPeriod",
     accountBalances.accountingPeriods,
     [],
+    null,
   );
   const fundBalanceSnapshot = getFundTrendsSnapshot(
     "AccountingPeriod",
     fundBalances.accountingPeriods,
     [],
+    null,
   );
   return (
     <>

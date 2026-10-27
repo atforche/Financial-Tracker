@@ -9,6 +9,7 @@ public sealed record FundDateRange(
     decimal TotalIncome,
     decimal TrackedIncome,
     decimal TotalSpending,
+    FundBalanceSummary? OpeningBalance,
     IReadOnlyCollection<FundDateBalanceSummary> Dates)
 {
     /// <summary>

@@ -22,6 +22,7 @@ interface BalanceTrendsChangeChartProps {
     readonly date: string;
     readonly totalBalance: number;
   }[];
+  readonly openingBalance: number | null;
   readonly title?: string;
 }
 
@@ -32,6 +33,7 @@ const BalanceTrendsChangeChart = function ({
   mode,
   accountingPeriods,
   dates,
+  openingBalance,
   title = "Balance Change",
 }: BalanceTrendsChangeChartProps): JSX.Element {
   return (
@@ -49,6 +51,7 @@ const BalanceTrendsChangeChart = function ({
           date: summary.date,
           balance: summary.totalBalance,
         })),
+        openingBalance,
       })}
       xAxisLabel={mode === "Date" ? "Date" : "Accounting Period"}
       yAxisLabel="Balance Change"

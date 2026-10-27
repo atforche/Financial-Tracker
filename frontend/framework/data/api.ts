@@ -3927,6 +3927,7 @@ export interface components {
              * @description Total spending over the requested range.
              */
             totalSpending: number;
+            openingBalance: null | components["schemas"]["AccountBalanceSummaryModel"];
             /** @description Summary balances for each date in the requested range. */
             dates: components["schemas"]["AccountBalanceSummaryByDateModel"][];
         };
@@ -5029,6 +5030,7 @@ export interface components {
              * @description Total spending over the requested range.
              */
             totalSpending: number;
+            openingBalance: null | components["schemas"]["FundBalanceSummaryModel"];
             /** @description Summary balances for each date in the requested range. */
             dates: components["schemas"]["FundBalanceSummaryByDateModel"][];
         };

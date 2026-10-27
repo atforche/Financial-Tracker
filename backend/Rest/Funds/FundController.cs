@@ -83,7 +83,7 @@ public sealed class FundController(
             FundBalanceEventQuery eventQuery = fundBalanceEventConverter.ToDomain(query);
             FundDateRange range = await fundQueryService.GetDateRangeAsync(new FundDateRangeQuery(
                 start, end, eventQuery.Filter, FundRangeSort.Name, 0, null), cancellationToken);
-            openingBalance = range.Funds.Items.Sum(item => item.StartingBalance);
+            openingBalance = range.OpeningBalance?.TotalBalance;
             dates = range.Dates.Select(item => (item.Date, item.Balance.TotalBalance)).ToList();
         }
         return Ok(new BalanceEventTotalsModel

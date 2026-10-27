@@ -180,10 +180,12 @@ const FundTrends = async function ({
   const periodSummaries =
     "accountingPeriods" in trends ? trends.accountingPeriods : [];
   const dateSummaries = "dates" in trends ? trends.dates : [];
+  const openingBalance = "dates" in trends ? trends.openingBalance : null;
   const snapshot = getFundTrendsSnapshot(
     modeValue,
     periodSummaries,
     dateSummaries,
+    openingBalance,
   );
   const chartPeriods = periodSummaries.map((summary) => ({
     accountingPeriodId: summary.accountingPeriod.id,
@@ -292,6 +294,7 @@ const FundTrends = async function ({
           mode={modeValue}
           accountingPeriods={periodSummaries}
           dates={dateSummaries}
+          openingBalance={openingBalance?.totalBalance ?? null}
         />
       </ResponsiveGrid>
       <FundTrendsListFrame

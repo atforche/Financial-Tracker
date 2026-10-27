@@ -97,9 +97,7 @@ public sealed class AccountController(
         {
             AccountDateRange range = await accountQueryService.GetDateRangeAsync(new AccountDateRangeQuery(
                 start, end, new AccountFilter(null, [account.Name], []), AccountRangeSort.Name, 0, null), cancellationToken);
-            openingBalance = account.DateOpened is DateOnly opened && opened > start
-                ? 0
-                : (account.Type.IsDebt() ? -1 : 1) * range.Accounts.Items.Single().StartingBalance;
+            openingBalance = range.OpeningBalance?.TotalBalance;
             dates = range.Dates.Select(item => (item.Date, item.Balance.TotalBalance)).ToList();
         }
         return Ok(new BalanceEventTotalsModel

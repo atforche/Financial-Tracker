@@ -158,6 +158,7 @@ public sealed class FundConverter
             Untracked = range.UntrackedIncome,
         },
         TotalSpending = range.TotalSpending,
+        OpeningBalance = range.OpeningBalance == null ? null : ToModel(range.OpeningBalance),
         Dates = range.Dates.Select(summary => new FundBalanceSummaryByDateModel
         {
             Date = summary.Date,

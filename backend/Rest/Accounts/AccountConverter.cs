@@ -173,6 +173,7 @@ public sealed class AccountConverter
             Untracked = range.UntrackedIncome,
         },
         TotalSpending = range.TotalSpending,
+        OpeningBalance = range.OpeningBalance == null ? null : ToModel(range.OpeningBalance),
         Dates = range.Dates.Select(summary => new AccountBalanceSummaryByDateModel
         {
             Date = summary.Date,

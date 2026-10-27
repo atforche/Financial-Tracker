@@ -33,10 +33,12 @@ const buildBalanceChangeChartPoints = function ({
   mode,
   accountingPeriods,
   dates,
+  openingBalance: dateOpeningBalance,
 }: {
   readonly mode: ChartRangeMode;
   readonly accountingPeriods: readonly PeriodBalanceSummary[];
   readonly dates: readonly DateBalanceSummary[];
+  readonly openingBalance: number | null;
 }): BarMetricChartPoint[] {
   if (mode === "AccountingPeriod") {
     return accountingPeriods.map(({ name, openingBalance, closingBalance }) => {
@@ -48,18 +50,12 @@ const buildBalanceChangeChartPoints = function ({
     });
   }
 
-  if (dates.length === 1) {
-    const [firstDate] = dates;
-    return typeof firstDate === "undefined"
-      ? []
-      : [createDateMetricPoint({ date: firstDate.date, value: 0 }, "neutral")];
-  }
-
-  return dates.slice(1).map((summary, index) => {
-    const value = getCurrencyDifference(
-      summary.balance,
-      dates[index]?.balance ?? 0,
-    );
+  return dates.map((summary, index) => {
+    const previousBalance =
+      index === 0
+        ? (dateOpeningBalance ?? summary.balance)
+        : (dates[index - 1]?.balance ?? 0);
+    const value = getCurrencyDifference(summary.balance, previousBalance);
     return createDateMetricPoint(
       { date: summary.date, value },
       getSignedChartColor(value),

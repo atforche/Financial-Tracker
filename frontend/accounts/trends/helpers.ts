@@ -59,6 +59,7 @@ const getAccountTrendsSnapshot = function (
   mode: AccountTrendsDataMode,
   accountingPeriods: readonly AccountBalanceSummaryByPeriod[],
   dates: readonly AccountBalanceSummaryByDate[],
+  openingBalance: AccountBalanceSummary | null,
 ): AccountTrendsSnapshot {
   if (mode === "AccountingPeriod") {
     const firstPeriod = accountingPeriods.at(0);
@@ -87,6 +88,12 @@ const getAccountTrendsSnapshot = function (
 
   const firstDate = dates.at(0);
   const lastDate = dates.at(-1);
+  const startingBalance: AccountBalanceSummary = openingBalance ?? {
+    totalBalance: firstDate?.totalBalance ?? 0,
+    totalTrackedBalance: firstDate?.totalTrackedBalance ?? 0,
+    totalUntrackedBalance: firstDate?.totalUntrackedBalance ?? 0,
+    balanceByAccountType: firstDate?.balanceByAccountType ?? [],
+  };
   return {
     startLabel: firstDate
       ? formatShortDate(new Date(`${firstDate.date}T00:00:00`))
@@ -94,20 +101,15 @@ const getAccountTrendsSnapshot = function (
     endLabel: lastDate
       ? formatShortDate(new Date(`${lastDate.date}T00:00:00`))
       : "End",
-    totalStartingBalance: firstDate?.totalBalance ?? 0,
+    totalStartingBalance: startingBalance.totalBalance,
     totalEndingBalance: lastDate?.totalBalance ?? 0,
-    trackedStartingBalance: firstDate?.totalTrackedBalance ?? 0,
+    trackedStartingBalance: startingBalance.totalTrackedBalance,
     trackedEndingBalance: lastDate?.totalTrackedBalance ?? 0,
-    untrackedStartingBalance: firstDate?.totalUntrackedBalance ?? 0,
+    untrackedStartingBalance: startingBalance.totalUntrackedBalance,
     untrackedEndingBalance: lastDate?.totalUntrackedBalance ?? 0,
-    startingBalancesByType: firstDate?.balanceByAccountType ?? [],
+    startingBalancesByType: startingBalance.balanceByAccountType,
     endingBalancesByType: lastDate?.balanceByAccountType ?? [],
-    startingBalance: {
-      totalBalance: firstDate?.totalBalance ?? 0,
-      totalTrackedBalance: firstDate?.totalTrackedBalance ?? 0,
-      totalUntrackedBalance: firstDate?.totalUntrackedBalance ?? 0,
-      balanceByAccountType: firstDate?.balanceByAccountType ?? [],
-    },
+    startingBalance,
     endingBalance: {
       totalBalance: lastDate?.totalBalance ?? 0,
       totalTrackedBalance: lastDate?.totalTrackedBalance ?? 0,

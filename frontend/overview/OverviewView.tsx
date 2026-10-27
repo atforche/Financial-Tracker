@@ -137,12 +137,22 @@ const OverviewView = async function ({
   const fundPeriods =
     "accountingPeriods" in fundTrends ? fundTrends.accountingPeriods : [];
   const fundDates = "dates" in fundTrends ? fundTrends.dates : [];
+  const accountOpeningBalance =
+    "dates" in accountTrends ? accountTrends.openingBalance : null;
+  const fundOpeningBalance =
+    "dates" in fundTrends ? fundTrends.openingBalance : null;
   const accountSnapshot = getAccountTrendsSnapshot(
     accountMode,
     accountPeriods,
     accountDates,
+    accountOpeningBalance,
   );
-  const fundSnapshot = getFundTrendsSnapshot(fundMode, fundPeriods, fundDates);
+  const fundSnapshot = getFundTrendsSnapshot(
+    fundMode,
+    fundPeriods,
+    fundDates,
+    fundOpeningBalance,
+  );
   const xAxisLabel = currentMode === "date" ? "Date" : "Accounting Period";
   const accountChartPoints = buildBalanceTrendChartPoints({
     mode: accountMode,
@@ -194,6 +204,7 @@ const OverviewView = async function ({
             mode={accountMode}
             accountingPeriods={accountPeriods}
             dates={accountDates}
+            openingBalance={accountOpeningBalance?.totalBalance ?? null}
             title="Account Balance Change"
           />
         </ResponsiveGrid>
@@ -214,6 +225,7 @@ const OverviewView = async function ({
             mode={fundMode}
             accountingPeriods={fundPeriods}
             dates={fundDates}
+            openingBalance={fundOpeningBalance?.totalBalance ?? null}
             title="Fund Balance Change"
           />
         </ResponsiveGrid>

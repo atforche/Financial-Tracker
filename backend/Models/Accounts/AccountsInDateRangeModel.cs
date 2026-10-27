@@ -26,6 +26,11 @@ public class AccountsInDateRangeModel
     public required decimal TotalSpending { get; init; }
 
     /// <summary>
+    /// Summary balances at the start of the requested range, before any activity on the start date.
+    /// </summary>
+    public required AccountBalanceSummaryModel? OpeningBalance { get; init; }
+
+    /// <summary>
     /// Summary balances for each date in the requested range.
     /// </summary>
     public required IReadOnlyCollection<AccountBalanceSummaryByDateModel> Dates { get; init; }

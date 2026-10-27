@@ -161,9 +161,10 @@ public sealed class AccountQueryService(
             query.End,
             cancellationToken);
         var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
-        IReadOnlyCollection<AccountDateBalanceSummary> dates =
+        // Summarizing from the day before the range yields the opening balance as the first entry
+        List<AccountDateBalanceSummary> summaries =
             query.Start is DateOnly start && query.End is DateOnly end
-                ? SummarizeDates(start, end, balances, history)
+                ? SummarizeDates(start.AddDays(-1), end, balances, history)
                 : [];
         IReadOnlyCollection<AccountRangeBalance> items = Sort(balances, query.Sort)
             .Skip(query.Offset)
@@ -175,7 +176,8 @@ public sealed class AccountQueryService(
             totals.TotalIncome,
             totals.TrackedIncome,
             totals.TotalSpending,
-            dates);
+            summaries.FirstOrDefault()?.Balance,
+            summaries.Skip(1).ToList());
     }
 
     /// <summary>
