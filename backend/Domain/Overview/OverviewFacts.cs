@@ -1,6 +1,6 @@
-using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Transactions;
 
 namespace Domain.Overview;
 
@@ -15,19 +15,12 @@ public sealed record OverviewAccountOpeningBalance(AccountId AccountId, AccountT
 public sealed record OverviewFundOpeningBalance(FundId FundId, decimal Balance);
 
 /// <summary>
-/// Persisted Account balances for an Accounting Period.
+/// Persisted effect of a Transaction that has not yet posted to one of its Accounts.
 /// </summary>
-public sealed record OverviewAccountPeriodBalance(
-    AccountingPeriodId AccountingPeriodId,
-    AccountType Type,
-    decimal OpeningBalance,
-    decimal ClosingBalance);
-
-/// <summary>
-/// Persisted Fund balances for an Accounting Period.
-/// </summary>
-public sealed record OverviewFundPeriodBalance(
-    AccountingPeriodId AccountingPeriodId,
-    FundId FundId,
-    decimal OpeningBalance,
-    decimal ClosingBalance);
+public sealed record OverviewUnpostedEffect(
+    AccountId AccountId,
+    string AccountName,
+    TransactionId TransactionId,
+    DateOnly Date,
+    decimal PendingDebitAmount,
+    decimal PendingCreditAmount);

@@ -60,30 +60,26 @@ public sealed class OverviewQueryRepository(DatabaseContext databaseContext) : I
             .ToListAsync(cancellationToken);
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<OverviewAccountPeriodBalance>> GetAccountPeriodBalancesAsync(
-        IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds,
-        CancellationToken cancellationToken = default) =>
-        await databaseContext.AccountingPeriodBalanceHistories.AsNoTracking()
-            .SelectMany(history => history.AccountBalances)
-            .Where(balance => accountingPeriodIds.Contains(balance.AccountingPeriod.Id))
-            .Select(balance => new OverviewAccountPeriodBalance(
-                balance.AccountingPeriod.Id,
-                balance.Account.Type,
-                balance.OpeningBalance,
-                balance.ClosingBalance))
-            .ToListAsync(cancellationToken);
+    public async Task<AccountingPeriodId?> GetLatestOpenAccountingPeriodIdAsync(CancellationToken cancellationToken = default) =>
+        await databaseContext.AccountingPeriods.AsNoTracking()
+            .Where(period => period.IsOpen)
+            .OrderByDescending(period => period.Year).ThenByDescending(period => period.Month)
+            .Select(period => period.Id)
+            .FirstOrDefaultAsync(cancellationToken);
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<OverviewFundPeriodBalance>> GetFundPeriodBalancesAsync(
-        IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds,
-        CancellationToken cancellationToken = default) =>
-        await databaseContext.AccountingPeriodBalanceHistories.AsNoTracking()
-            .SelectMany(history => history.FundBalances)
-            .Where(balance => accountingPeriodIds.Contains(balance.AccountingPeriod.Id))
-            .Select(balance => new OverviewFundPeriodBalance(
-                balance.AccountingPeriod.Id,
-                balance.Fund.Id,
-                balance.OpeningBalance,
-                balance.ClosingBalance))
+    public async Task<IReadOnlyCollection<OverviewUnpostedEffect>> GetUnpostedEffectsAsync(CancellationToken cancellationToken = default) =>
+        await databaseContext.PendingAccountBalanceEffects.AsNoTracking()
+            .Join(
+                databaseContext.Transactions,
+                effect => effect.TransactionId,
+                transaction => transaction.Id,
+                (effect, transaction) => new OverviewUnpostedEffect(
+                    effect.Account.Id,
+                    effect.Account.Name,
+                    effect.TransactionId,
+                    transaction.Date,
+                    effect.PendingDebitAmount,
+                    effect.PendingCreditAmount))
             .ToListAsync(cancellationToken);
 }

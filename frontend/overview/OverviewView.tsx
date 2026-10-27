@@ -1,34 +1,31 @@
+import { Box, Button, Stack, Typography } from "@mui/material";
 import {
   type OverviewSearchParams,
-  type OverviewSection,
-  buildDateSection,
-  buildPeriodSection,
-  overviewParamNames,
+  getOverviewHistoryStart,
+  parseOverviewHistoryRange,
 } from "@/overview/helpers";
-import { buildUrl, objectToSearchParams } from "@/framework/routes/helpers";
-import {
-  matchesTrendRange,
-  resolveTrendRange,
-} from "@/framework/routes/trendRange";
-import type { AccountBalanceSummary } from "@/accounts/types";
-import AccountBalanceSummaryCards from "@/accounts/AccountBalanceSummaryCards";
-import { AccountingPeriodSort } from "@/accounting-periods/types";
+import OverviewStat, { type OverviewStatDetail } from "@/overview/OverviewStat";
+import { formatAccountType, isTrackedAccountType } from "@/accounts/helpers";
+import ArrowForward from "@mui/icons-material/ArrowForward";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
-import BalanceTrendsChangeChart from "@/framework/charts/BalanceTrendsChangeChart";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import ContentSurface from "@/framework/view/ContentSurface";
-import type { FundBalanceSummary } from "@/funds/types";
-import FundBalanceSummaryCards from "@/funds/FundBalanceSummaryCards";
 import type { JSX } from "react";
-import OverviewPageHeader from "@/overview/OverviewPageHeader";
-import OverviewSectionHeading from "@/overview/OverviewSectionHeading";
+import Link from "next/link";
+import OverviewAddTransactionButton from "@/overview/OverviewAddTransactionButton";
+import OverviewAttentionList from "@/overview/OverviewAttentionList";
+import OverviewChange from "@/overview/OverviewChange";
+import { OverviewHistoryRangeModel } from "@/framework/data/api";
+import OverviewHistoryRangeSelector from "@/overview/OverviewHistoryRangeSelector";
+import OverviewPeriodCard from "@/overview/OverviewPeriodCard";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import { Stack } from "@mui/material";
 import accountRoutes from "@/accounts/routes";
+import { buildDateChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
+import dayjs from "dayjs";
+import { formatCurrency } from "@/framework/currencyHelpers";
+import { formatLongDate } from "@/framework/dateHelpers";
 import fundRoutes from "@/funds/routes";
-import { redirect } from "next/navigation";
+import { getAccountTypeBreakdownDetails } from "@/accounts/balanceSummaryHelpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -39,156 +36,189 @@ interface OverviewViewProps {
 }
 
 /**
- * Displays account and fund balance trends for one shared range.
+ * Describes each history length in the net worth change caption.
+ */
+const historyDescriptions = {
+  [OverviewHistoryRangeModel.ThreeMonths]: "the last 3 months",
+  [OverviewHistoryRangeModel.OneYear]: "the last year",
+  [OverviewHistoryRangeModel.FiveYears]: "the last 5 years",
+} as const satisfies Record<OverviewHistoryRangeModel, string>;
+
+/**
+ * Stretches a section's surface to the height of its row so side-by-side sections line up.
+ */
+const fillHeightSx = {
+  display: "flex",
+  flexDirection: "column",
+  "& > .MuiPaper-root": { flex: 1 },
+} as const;
+
+/**
+ * Displays where balances stand today, what needs attention, the current accounting period, and balance history.
  */
 const OverviewView = async function ({
   searchParams,
 }: OverviewViewProps): Promise<JSX.Element> {
+  const history = parseOverviewHistoryRange((await searchParams).history);
+  const asOf = dayjs().format("YYYY-MM-DD");
   const apiClient = await createApiClient();
-  const accountingPeriods = unwrapApiResponse(
-    await apiClient.GET("/accounting-periods", {
-      params: {
-        query: {
-          Sort: AccountingPeriodSort.DateDescending,
-          Limit: 500,
-          Offset: 0,
-        },
-      },
+  const overview = unwrapApiResponse(
+    await apiClient.GET("/overview", {
+      params: { query: { AsOf: asOf, History: history } },
     }),
-    "Failed to fetch accounting periods",
+    "Failed to load overview",
   );
-  const rangeParams = await searchParams;
-  const range = resolveTrendRange(rangeParams, accountingPeriods.items);
-  // The default range needs no parameters, but supplied ones that were corrected are rewritten in the URL
-  const hasRangeParams = Object.values(overviewParamNames).some(
-    (name) => typeof rangeParams[name] !== "undefined",
-  );
-  if (hasRangeParams && !matchesTrendRange(rangeParams, range)) {
-    redirect(buildUrl("/", objectToSearchParams(range)));
-  }
-  const chartMode = range.mode === "date" ? "Date" : "AccountingPeriod";
-  const { accounts, funds } = await (async function (): Promise<{
-    readonly accounts: OverviewSection<AccountBalanceSummary>;
-    readonly funds: OverviewSection<FundBalanceSummary>;
-  }> {
-    if (range.mode === "date") {
-      const overview = unwrapApiResponse(
-        await apiClient.GET("/overview/date-range", {
-          params: {
-            query: {
-              "Range.Start": range.startDate,
-              "Range.End": range.endDate,
-            },
-          },
-        }),
-        "Failed to load overview",
-      );
-      return {
-        accounts: buildDateSection({
-          balances: overview.accountBalances,
-          openingBalance: overview.accountOpeningBalance,
-          closingBalance: overview.accountClosingBalance,
-          startDate: range.startDate,
-          endDate: range.endDate,
-          granularity: overview.granularity,
-        }),
-        funds: buildDateSection({
-          balances: overview.fundBalances,
-          openingBalance: overview.fundOpeningBalance,
-          closingBalance: overview.fundClosingBalance,
-          startDate: range.startDate,
-          endDate: range.endDate,
-          granularity: overview.granularity,
-        }),
-      };
-    }
-    const overview = unwrapApiResponse(
-      await apiClient.GET("/overview/accounting-period-range", {
-        params: {
-          query: {
-            "Range.Start": range.startAccountingPeriodId,
-            "Range.End": range.endAccountingPeriodId,
-          },
-        },
-      }),
-      "Failed to load overview",
+  const currentPeriod = overview.currentPeriod ?? null;
+  const opening = overview.accountOpeningBalance;
+  const closing = overview.accountClosingBalance;
+  const describeChange = function (
+    current: number,
+    previous: number,
+  ): JSX.Element {
+    return (
+      <>
+        <OverviewChange amount={current - previous} /> over{" "}
+        {historyDescriptions[history]}
+      </>
     );
-    return {
-      accounts: buildPeriodSection({
-        balances: overview.accountBalances,
-        openingBalance: overview.accountOpeningBalance,
-        closingBalance: overview.accountClosingBalance,
-      }),
-      funds: buildPeriodSection({
-        balances: overview.fundBalances,
-        openingBalance: overview.fundOpeningBalance,
-        closingBalance: overview.fundClosingBalance,
-      }),
-    };
-  })();
-  const xAxisLabel = range.mode === "date" ? "Date" : "Accounting Period";
+  };
+  const accountTypeDetails = getAccountTypeBreakdownDetails(opening, closing);
+  const getTypeDetails = function (tracked: boolean): OverviewStatDetail[] {
+    return accountTypeDetails
+      .filter(
+        ({ accountType }) => isTrackedAccountType(accountType) === tracked,
+      )
+      .map((detail) => ({
+        key: detail.accountType,
+        label: formatAccountType(detail.accountType),
+        value: formatCurrency(detail.endingBalance),
+        change: detail.netChange,
+      }));
+  };
+  const trendsRange = {
+    mode: "date",
+    startDate: getOverviewHistoryStart(asOf, history),
+    endDate: asOf,
+  } as const;
 
   return (
     <PageLayout>
-      <ConstrainedContent>
-        <ContentSurface>
-          <OverviewPageHeader
-            accountingPeriods={accountingPeriods.items}
-            range={range}
+      <Stack
+        direction="row"
+        useFlexGap
+        spacing={2}
+        sx={{
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Stack spacing={0.5}>
+          <Typography variant="h4">Overview</Typography>
+          <Typography color="text.secondary">
+            {formatLongDate(new Date(`${asOf}T00:00:00`))} ·{" "}
+            {currentPeriod === null
+              ? "No open accounting period"
+              : `${currentPeriod.accountingPeriod.name} is open`}
+          </Typography>
+        </Stack>
+        <OverviewAddTransactionButton />
+      </Stack>
+      <ResponsiveGrid columns={{ xs: 1, sm: 2, lg: 4 }}>
+        <OverviewStat
+          label="Net worth"
+          value={formatCurrency(closing.totalBalance)}
+          caption={describeChange(closing.totalBalance, opening.totalBalance)}
+        />
+        <OverviewStat
+          label="Tracked money"
+          value={formatCurrency(closing.totalTrackedBalance)}
+          caption={describeChange(
+            closing.totalTrackedBalance,
+            opening.totalTrackedBalance,
+          )}
+          details={getTypeDetails(true)}
+          detailsLabel="by account type"
+        />
+        <OverviewStat
+          label="Untracked money"
+          value={formatCurrency(closing.totalUntrackedBalance)}
+          caption={describeChange(
+            closing.totalUntrackedBalance,
+            opening.totalUntrackedBalance,
+          )}
+          details={getTypeDetails(false)}
+          detailsLabel="by account type"
+        />
+        <OverviewStat
+          label="Unassigned funds"
+          value={formatCurrency(
+            overview.fundClosingBalance.totalUnassignedBalance,
+          )}
+          caption="Available to assign to funds"
+        />
+      </ResponsiveGrid>
+      <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
+        <Box sx={{ flex: 2, minWidth: 0, ...fillHeightSx }}>
+          <OverviewAttentionList
+            groups={overview.attention}
+            currentPeriodId={currentPeriod?.accountingPeriod.id ?? null}
           />
-        </ContentSurface>
-      </ConstrainedContent>
+        </Box>
+        <Box sx={{ flex: 1, minWidth: 0, ...fillHeightSx }}>
+          <OverviewPeriodCard period={currentPeriod} />
+        </Box>
+      </Stack>
       <Stack spacing={2}>
-        <OverviewSectionHeading
-          title="Accounts"
-          trendsHref={accountRoutes.trends(range)}
-        />
-        <AccountBalanceSummaryCards
-          startingLabel={accounts.startLabel}
-          endingLabel={accounts.endLabel}
-          startingBalance={accounts.openingBalance}
-          endingBalance={accounts.closingBalance}
-        />
+        <Stack
+          direction="row"
+          useFlexGap
+          spacing={1.5}
+          sx={{
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography variant="h5">Balance history</Typography>
+          <OverviewHistoryRangeSelector value={history} />
+        </Stack>
         <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
           <BalanceTrendChart
-            chartPoints={accounts.trendPoints}
+            chartPoints={buildDateChartPoints(
+              overview.accountBalances,
+              overview.granularity,
+            )}
             title="Account Balance Trend"
-            xAxisLabel={xAxisLabel}
+            xAxisLabel="Date"
           />
-          <BalanceTrendsChangeChart
-            mode={chartMode}
-            accountingPeriods={accounts.changePeriods}
-            dates={accounts.changeDates}
-            openingBalance={accounts.openingBalance.totalBalance}
-            granularity={accounts.granularity}
-            title="Account Balance Change"
-          />
-        </ResponsiveGrid>
-        <OverviewSectionHeading
-          title="Funds"
-          trendsHref={fundRoutes.trends(range)}
-        />
-        <FundBalanceSummaryCards
-          startingLabel={funds.startLabel}
-          endingLabel={funds.endLabel}
-          startingBalance={funds.openingBalance}
-          endingBalance={funds.closingBalance}
-        />
-        <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
           <BalanceTrendChart
-            chartPoints={funds.trendPoints}
+            chartPoints={buildDateChartPoints(
+              overview.fundBalances,
+              overview.granularity,
+            )}
             title="Fund Balance Trend"
-            xAxisLabel={xAxisLabel}
-          />
-          <BalanceTrendsChangeChart
-            mode={chartMode}
-            accountingPeriods={funds.changePeriods}
-            dates={funds.changeDates}
-            openingBalance={funds.openingBalance.totalBalance}
-            granularity={funds.granularity}
-            title="Fund Balance Change"
+            xAxisLabel="Date"
           />
         </ResponsiveGrid>
+        <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap" }}>
+          <Link
+            href={accountRoutes.trends(trendsRange)}
+            style={{ textDecoration: "none" }}
+          >
+            <Button component="span" endIcon={<ArrowForward />}>
+              View account trends
+            </Button>
+          </Link>
+          <Link
+            href={fundRoutes.trends(trendsRange)}
+            style={{ textDecoration: "none" }}
+          >
+            <Button component="span" endIcon={<ArrowForward />}>
+              View fund trends
+            </Button>
+          </Link>
+        </Stack>
       </Stack>
     </PageLayout>
   );

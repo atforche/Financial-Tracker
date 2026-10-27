@@ -250,7 +250,6 @@ const setTrendRangeMode = function (
 };
 
 export {
-  type ResolvedTrendRange,
   type TrendRangeMode,
   getDefaultTrendAccountingPeriodRange,
   getDefaultTrendDateRange,

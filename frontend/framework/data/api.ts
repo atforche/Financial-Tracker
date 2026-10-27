@@ -1119,19 +1119,21 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/overview/date-range": {
+    "/overview": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Retrieves Account and Fund balance summaries over a date range. */
+        /** Retrieves the balances, most recent open Accounting Period, and items needing attention as of a date. */
         get: {
             parameters: {
                 query?: {
-                    "Range.Start"?: string;
-                    "Range.End"?: string;
+                    /** @description Date the overview is shown as of, normally the viewer's current date. */
+                    AsOf?: string;
+                    /** @description Length of the balance history ending on the as-of date. */
+                    History?: components["schemas"]["OverviewHistoryRangeModel"];
                 };
                 header?: never;
                 path?: never;
@@ -1145,72 +1147,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["OverviewDateRangeModel"];
-                        "application/json": components["schemas"]["OverviewDateRangeModel"];
-                        "text/json": components["schemas"]["OverviewDateRangeModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/overview/accounting-period-range": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves Account and Fund balance summaries over an Accounting Period range. */
-        get: {
-            parameters: {
-                query?: {
-                    "Range.Start"?: string;
-                    "Range.End"?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["OverviewAccountingPeriodRangeModel"];
-                        "application/json": components["schemas"]["OverviewAccountingPeriodRangeModel"];
-                        "text/json": components["schemas"]["OverviewAccountingPeriodRangeModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/plain": components["schemas"]["OverviewModel"];
+                        "application/json": components["schemas"]["OverviewModel"];
+                        "text/json": components["schemas"]["OverviewModel"];
                     };
                 };
             };
@@ -5398,21 +5337,54 @@ export interface components {
             /** @description Whether the planned contribution may exceed the maximum ending balance. */
             allowExpectedContributionAboveMaximum?: boolean;
         };
-        /** @description Model representing Account and Fund balance summaries over an Accounting Period range. */
-        OverviewAccountingPeriodRangeModel: {
-            /** @description Account balances at the start of the range. */
-            accountOpeningBalance: components["schemas"]["AccountBalanceSummaryModel"];
-            /** @description Account balances at the end of the range. */
-            accountClosingBalance: components["schemas"]["AccountBalanceSummaryModel"];
-            /** @description Total Account balances for each Accounting Period in the range. */
-            accountBalances: components["schemas"]["OverviewPeriodBalanceModel"][];
-            /** @description Fund balances at the start of the range. */
-            fundOpeningBalance: components["schemas"]["FundBalanceSummaryModel"];
-            /** @description Fund balances at the end of the range. */
-            fundClosingBalance: components["schemas"]["FundBalanceSummaryModel"];
-            /** @description Total Fund balances for each Accounting Period in the range. */
-            fundBalances: components["schemas"]["OverviewPeriodBalanceModel"][];
+        /** @description Model representing a group of related items needing attention. */
+        OverviewAttentionGroupModel: {
+            /** @description Kind of items in the group. */
+            kind: components["schemas"]["OverviewAttentionKindModel"];
+            /**
+             * Format: int32
+             * @description Number of items in the group. For unposted Transactions, the number of Transactions.
+             */
+            count: number;
+            /**
+             * Format: double
+             * @description Total amount of the group: the shortfall for goals and income, or the effect on net worth for unposted
+             *     Transactions.
+             */
+            amount: number;
+            /**
+             * Format: int32
+             * @description Number of items the top items were chosen from. For unposted Transactions, the number of Accounts they affect.
+             */
+            itemCount: number;
+            /** @description The items with the largest amounts. For unposted Transactions, the Accounts they affect. */
+            topItems: components["schemas"]["OverviewAttentionItemModel"][];
+            /**
+             * Format: date
+             * @description Earliest date among the items, when the group's items are dated.
+             */
+            oldestDate?: null | string;
         };
+        /** @description Model representing a single item needing attention. */
+        OverviewAttentionItemModel: {
+            /** @description Name of the Fund, Account, or expected income source. */
+            name: string;
+            /**
+             * Format: double
+             * @description Amount for the item.
+             */
+            amount: number;
+            /**
+             * Format: int32
+             * @description Number of Transactions the item stands for, when it stands for several.
+             */
+            count?: null | number;
+        };
+        /**
+         * @description Enum representing the kinds of items the overview flags as needing attention
+         * @enum {unknown}
+         */
+        OverviewAttentionKindModel: OverviewAttentionKindModel;
         /** @description Model representing a total balance at the end of a date. */
         OverviewDateBalanceModel: {
             /**
@@ -5426,37 +5398,58 @@ export interface components {
              */
             totalBalance: number;
         };
-        /** @description Model representing Account and Fund balance summaries over a date range. */
-        OverviewDateRangeModel: {
-            /** @description Account balances at the start of the range. */
+        /**
+         * @description Enum representing the length of the balance history shown on the overview
+         * @enum {unknown}
+         */
+        OverviewHistoryRangeModel: OverviewHistoryRangeModel;
+        /** @description Model representing everything shown on the overview. */
+        OverviewModel: {
+            /** @description Account balances at the start of the balance history. */
             accountOpeningBalance: components["schemas"]["AccountBalanceSummaryModel"];
-            /** @description Account balances at the end of the range. */
+            /** @description Account balances as of the as-of date. */
             accountClosingBalance: components["schemas"]["AccountBalanceSummaryModel"];
-            /** @description Total Account balances for each date in the range. */
+            /** @description Total Account balances over the balance history. */
             accountBalances: components["schemas"]["OverviewDateBalanceModel"][];
-            /** @description Fund balances at the start of the range. */
-            fundOpeningBalance: components["schemas"]["FundBalanceSummaryModel"];
-            /** @description Fund balances at the end of the range. */
+            /** @description Fund balances as of the as-of date. */
             fundClosingBalance: components["schemas"]["FundBalanceSummaryModel"];
-            /** @description Total Fund balances for each date in the range. */
+            /** @description Total Fund balances over the balance history. */
             fundBalances: components["schemas"]["OverviewDateBalanceModel"][];
-            /** @description Spacing between the dates in the balance series. */
+            /** @description Spacing between the dates in the balance history. */
             granularity: components["schemas"]["BalanceGranularityModel"];
+            currentPeriod?: null | components["schemas"]["OverviewPeriodModel"];
+            /** @description Groups of items needing attention, only for groups that have items. */
+            attention: components["schemas"]["OverviewAttentionGroupModel"][];
         };
-        /** @description Model representing total opening and closing balances for an Accounting Period. */
-        OverviewPeriodBalanceModel: {
-            /** @description Accounting Period for the balances. */
+        /** @description Model representing the figures for the most recent open Accounting Period. */
+        OverviewPeriodModel: {
+            /** @description The most recent open Accounting Period. */
             accountingPeriod: components["schemas"]["AccountingPeriodModel"];
             /**
              * Format: double
-             * @description Total posted balance at the start of the Accounting Period.
+             * @description Total income expected during the Accounting Period.
              */
-            openingBalance: number;
+            expectedIncome: number;
             /**
              * Format: double
-             * @description Total posted balance at the end of the Accounting Period.
+             * @description Total income received during the Accounting Period.
              */
-            closingBalance: number;
+            actualIncome: number;
+            /**
+             * Format: double
+             * @description Total contributions expected toward Fund Goals during the Accounting Period.
+             */
+            expectedGoalContributions: number;
+            /**
+             * Format: double
+             * @description Total contributions made toward Fund Goals during the Accounting Period.
+             */
+            actualGoalContributions: number;
+            /**
+             * Format: double
+             * @description Total posted spending during the Accounting Period.
+             */
+            totalSpending: number;
         };
         /** @description Posted balance at the end of a calendar day, scoped to an Accounting Period. */
         PeriodBalanceDateModel: {
@@ -6295,6 +6288,17 @@ export enum FundWithBalanceSortModel {
 export enum LocationSortModel {
     Name = "Name",
     NameDescending = "NameDescending"
+}
+export enum OverviewAttentionKindModel {
+    GoalsBelowMinimum = "GoalsBelowMinimum",
+    GoalsBehind = "GoalsBehind",
+    UnpostedTransactions = "UnpostedTransactions",
+    IncomeNotReceived = "IncomeNotReceived"
+}
+export enum OverviewHistoryRangeModel {
+    ThreeMonths = "ThreeMonths",
+    OneYear = "OneYear",
+    FiveYears = "FiveYears"
 }
 export enum TransactionModelAccountTransactionModelType {
     Account = "Account"

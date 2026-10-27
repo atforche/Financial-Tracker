@@ -40,16 +40,12 @@ public interface IOverviewQueryRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves Account balances for the provided Accounting Periods.
+    /// Retrieves the ID of the most recent open Accounting Period, or null when none is open.
     /// </summary>
-    Task<IReadOnlyCollection<OverviewAccountPeriodBalance>> GetAccountPeriodBalancesAsync(
-        IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds,
-        CancellationToken cancellationToken = default);
+    Task<AccountingPeriodId?> GetLatestOpenAccountingPeriodIdAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves Fund balances for the provided Accounting Periods.
+    /// Retrieves the effects of every Transaction that has not yet posted to one of its Accounts.
     /// </summary>
-    Task<IReadOnlyCollection<OverviewFundPeriodBalance>> GetFundPeriodBalancesAsync(
-        IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds,
-        CancellationToken cancellationToken = default);
+    Task<IReadOnlyCollection<OverviewUnpostedEffect>> GetUnpostedEffectsAsync(CancellationToken cancellationToken = default);
 }
