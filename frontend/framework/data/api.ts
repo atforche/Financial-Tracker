@@ -1553,6 +1553,17 @@ export interface paths {
                         "text/json": components["schemas"]["BalanceEventTotalsModel"];
                     };
                 };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
             };
         };
         put?: never;
@@ -1643,6 +1654,17 @@ export interface paths {
                         "text/plain": components["schemas"]["FundsInDateRangeModel"];
                         "application/json": components["schemas"]["FundsInDateRangeModel"];
                         "text/json": components["schemas"]["FundsInDateRangeModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -2425,6 +2447,17 @@ export interface paths {
                         "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
             };
         };
         put?: never;
@@ -2555,6 +2588,17 @@ export interface paths {
                         "text/plain": components["schemas"]["AccountsInDateRangeModel"];
                         "application/json": components["schemas"]["AccountsInDateRangeModel"];
                         "text/json": components["schemas"]["AccountsInDateRangeModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
                     };
                 };
             };
@@ -4032,6 +4076,8 @@ export interface components {
              */
             totalSpending: number;
             openingBalance: null | components["schemas"]["AccountBalanceSummaryModel"];
+            /** @description Spacing between the dates in the balance series. */
+            granularity: components["schemas"]["BalanceGranularityModel"];
             /** @description Summary balances for each date in the requested range. */
             dates: components["schemas"]["AccountBalanceSummaryByDateModel"][];
         };
@@ -4149,14 +4195,23 @@ export interface components {
              * @description Posted balance before the first matching posted event.
              */
             openingBalance?: null | number;
-            /** @description Last matching posted balance on each event date. */
+            /**
+             * @description Last matching posted balance on each event date, or at the end of each day, week, or month when a date range
+             *     is requested.
+             */
             dates?: null | components["schemas"]["BalanceEventDateBalanceModel"][];
+            granularity?: null | components["schemas"]["BalanceGranularityModel"];
         };
         /**
          * @description Model representing the type of a balance event.
          * @enum {unknown}
          */
         BalanceEventTypeModel: BalanceEventTypeModel;
+        /**
+         * @description Enum representing the spacing between the points in a balance series
+         * @enum {unknown}
+         */
+        BalanceGranularityModel: BalanceGranularityModel;
         /** @description Request to change an application user's role. */
         ChangeUserRoleModel: {
             role?: null | components["schemas"]["UserRoleModel"];
@@ -5135,6 +5190,8 @@ export interface components {
              */
             totalSpending: number;
             openingBalance: null | components["schemas"]["FundBalanceSummaryModel"];
+            /** @description Spacing between the dates in the balance series. */
+            granularity: components["schemas"]["BalanceGranularityModel"];
             /** @description Summary balances for each date in the requested range. */
             dates: components["schemas"]["FundBalanceSummaryByDateModel"][];
         };
@@ -5383,6 +5440,8 @@ export interface components {
             fundClosingBalance: components["schemas"]["FundBalanceSummaryModel"];
             /** @description Total Fund balances for each date in the range. */
             fundBalances: components["schemas"]["OverviewDateBalanceModel"][];
+            /** @description Spacing between the dates in the balance series. */
+            granularity: components["schemas"]["BalanceGranularityModel"];
         };
         /** @description Model representing total opening and closing balances for an Accounting Period. */
         OverviewPeriodBalanceModel: {
@@ -6149,6 +6208,11 @@ export enum AccountWithBalanceSortModel {
 export enum BalanceEventTypeModel {
     Debit = "Debit",
     Credit = "Credit"
+}
+export enum BalanceGranularityModel {
+    Day = "Day",
+    Week = "Week",
+    Month = "Month"
 }
 export enum CreateTransactionModelCreateAccountTransactionModelType {
     Account = "Account"

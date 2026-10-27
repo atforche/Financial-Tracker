@@ -3,6 +3,8 @@ import propertyName from "@/framework/data/propertyName";
 
 const defaultTrendDateRangeDays = 90;
 const defaultTrendAccountingPeriodCount = 12;
+// Matches the longest date range the backend will summarize into a balance series
+const maximumTrendRangeYears = 10;
 
 /**
  * The start and end of a trend range.
@@ -97,7 +99,8 @@ const isIsoDate = function (value: string | undefined): value is string {
 };
 
 /**
- * Resolves trend range search parameters, replacing invalid or unknown values with defaults and ordering the range.
+ * Resolves trend range search parameters, replacing invalid or unknown values with defaults, ordering the range, and
+ * shortening date ranges longer than the maximum.
  */
 const resolveTrendRange = function (
   params: TrendRangeSearchParams,
@@ -144,9 +147,16 @@ const resolveTrendRange = function (
   const endDate = isIsoDate(params.endDate)
     ? params.endDate
     : defaultDateRange.end;
-  return startDate <= endDate
-    ? { mode: "date", startDate, endDate }
-    : { mode: "date", startDate: endDate, endDate: startDate };
+  const [orderedStart, orderedEnd] =
+    startDate <= endDate ? [startDate, endDate] : [endDate, startDate];
+  const earliestStart = dayjs(orderedEnd)
+    .subtract(maximumTrendRangeYears, "year")
+    .format("YYYY-MM-DD");
+  return {
+    mode: "date",
+    startDate: orderedStart < earliestStart ? earliestStart : orderedStart,
+    endDate: orderedEnd,
+  };
 };
 
 /**

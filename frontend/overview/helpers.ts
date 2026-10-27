@@ -1,9 +1,9 @@
+import { BalanceGranularityModel, type components } from "@/framework/data/api";
 import {
   type BalanceTrendChartPoint,
   buildBalanceTrendChartPoints,
 } from "@/framework/charts/balanceTrendHelpers";
 import type { TrendRangeMode } from "@/framework/routes/trendRange";
-import type { components } from "@/framework/data/api";
 import { formatShortDate } from "@/framework/dateHelpers";
 
 /**
@@ -45,6 +45,7 @@ interface OverviewSection<TSummary> {
   readonly openingBalance: TSummary;
   readonly closingBalance: TSummary;
   readonly trendPoints: BalanceTrendChartPoint[];
+  readonly granularity: BalanceGranularityModel;
   readonly changeDates: readonly OverviewDateBalance[];
   readonly changePeriods: readonly {
     readonly accountingPeriod: { readonly name: string };
@@ -56,29 +57,33 @@ interface OverviewSection<TSummary> {
 /**
  * Builds an overview section from daily balances.
  */
-const buildDateSection = function <TSummary>(
-  balances: readonly OverviewDateBalance[],
-  openingBalance: TSummary,
-  closingBalance: TSummary,
-): OverviewSection<TSummary> {
-  const formatLabel = function (
-    balance: OverviewDateBalance | undefined,
-    fallback: string,
-  ): string {
-    return typeof balance === "undefined"
-      ? fallback
-      : formatShortDate(new Date(`${balance.date}T00:00:00`));
-  };
+const buildDateSection = function <TSummary>({
+  balances,
+  openingBalance,
+  closingBalance,
+  startDate,
+  endDate,
+  granularity,
+}: {
+  readonly balances: readonly OverviewDateBalance[];
+  readonly openingBalance: TSummary;
+  readonly closingBalance: TSummary;
+  readonly startDate: string;
+  readonly endDate: string;
+  readonly granularity: BalanceGranularityModel;
+}): OverviewSection<TSummary> {
   return {
-    startLabel: formatLabel(balances.at(0), "Start"),
-    endLabel: formatLabel(balances.at(-1), "End"),
+    startLabel: formatShortDate(new Date(`${startDate}T00:00:00`)),
+    endLabel: formatShortDate(new Date(`${endDate}T00:00:00`)),
     openingBalance,
     closingBalance,
     trendPoints: buildBalanceTrendChartPoints({
       mode: "Date",
       accountingPeriods: null,
       dates: balances,
+      granularity,
     }),
+    granularity,
     changeDates: balances,
     changePeriods: [],
   };
@@ -87,11 +92,15 @@ const buildDateSection = function <TSummary>(
 /**
  * Builds an overview section from accounting period balances.
  */
-const buildPeriodSection = function <TSummary>(
-  balances: readonly OverviewPeriodBalance[],
-  openingBalance: TSummary,
-  closingBalance: TSummary,
-): OverviewSection<TSummary> {
+const buildPeriodSection = function <TSummary>({
+  balances,
+  openingBalance,
+  closingBalance,
+}: {
+  readonly balances: readonly OverviewPeriodBalance[];
+  readonly openingBalance: TSummary;
+  readonly closingBalance: TSummary;
+}): OverviewSection<TSummary> {
   return {
     startLabel: balances.at(0)?.accountingPeriod.name ?? "Start",
     endLabel: balances.at(-1)?.accountingPeriod.name ?? "End",
@@ -109,6 +118,7 @@ const buildPeriodSection = function <TSummary>(
       })),
       dates: null,
     }),
+    granularity: BalanceGranularityModel.Day,
     changeDates: [],
     changePeriods: balances.map((balance) => ({
       accountingPeriod: balance.accountingPeriod,

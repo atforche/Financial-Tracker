@@ -174,6 +174,7 @@ public sealed class AccountConverter
         },
         TotalSpending = range.TotalSpending,
         OpeningBalance = range.OpeningBalance == null ? null : ToModel(range.OpeningBalance),
+        Granularity = BalanceGranularityConverter.ToModel(range.Granularity),
         Dates = range.Dates.Select(summary => new AccountBalanceSummaryByDateModel
         {
             Date = summary.Date,

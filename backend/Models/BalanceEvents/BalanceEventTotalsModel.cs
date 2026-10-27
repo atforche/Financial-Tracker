@@ -21,9 +21,15 @@ public sealed class BalanceEventTotalsModel
     public decimal? OpeningBalance { get; init; }
 
     /// <summary>
-    /// Last matching posted balance on each event date.
+    /// Last matching posted balance on each event date, or at the end of each day, week, or month when a date range
+    /// is requested.
     /// </summary>
     public IReadOnlyCollection<BalanceEventDateBalanceModel>? Dates { get; init; }
+
+    /// <summary>
+    /// Spacing between the dates when a date range is requested, or null when the dates are event dates.
+    /// </summary>
+    public BalanceGranularityModel? Granularity { get; init; }
 }
 
 /// <summary>

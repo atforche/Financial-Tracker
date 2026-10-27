@@ -1,4 +1,5 @@
 using System.Net;
+using Models;
 using Models.Accounts;
 using Models.Funds;
 using Models.Overview;
@@ -83,6 +84,64 @@ public sealed class OverviewTests
         Assert.Equivalent(funds.AccountingPeriods.Last().ClosingBalance, overview.FundClosingBalance, strict: true);
         Assert.Equal(funds.AccountingPeriods.Select(item => (item.OpeningBalance.TotalBalance, item.ClosingBalance.TotalBalance)),
             overview.FundBalances.Select(item => (item.OpeningBalance, item.ClosingBalance)));
+    }
+
+    /// <summary>
+    /// Summarizes long date ranges by week, matching the Account and Fund date-range summaries.
+    /// </summary>
+    [Fact]
+    public async Task LongDateRangesAreSummarizedByWeek()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 15)).For(40m).From("Employer").To(cash, groceries).CreateAsync();
+        await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 15));
+
+        const string range = "range.start=2026-07-01&range.end=2027-02-03";
+        OverviewDateRangeModel overview = await test.Api.GetAsync<OverviewDateRangeModel>($"/overview/date-range?{range}");
+        AccountsInDateRangeModel accounts = await test.Api.GetAsync<AccountsInDateRangeModel>($"/accounts/date-range?{range}");
+        FundsInDateRangeModel funds = await test.Api.GetAsync<FundsInDateRangeModel>($"/funds/date-range?{range}");
+
+        Assert.Equal(BalanceGranularityModel.Week, overview.Granularity);
+        Assert.Equal(BalanceGranularityModel.Week, accounts.Granularity);
+        Assert.Equal(BalanceGranularityModel.Week, funds.Granularity);
+        Assert.Equal(new DateOnly(2026, 7, 4), overview.AccountBalances.First().Date);
+        Assert.Equal(new DateOnly(2027, 2, 3), overview.AccountBalances.Last().Date);
+        Assert.All(overview.AccountBalances.SkipLast(1), item => Assert.Equal(DayOfWeek.Saturday, item.Date.DayOfWeek));
+        Assert.Equal(100m, overview.AccountOpeningBalance.TotalBalance);
+        Assert.Equal(140m, overview.AccountClosingBalance.TotalBalance);
+        Assert.Equal(accounts.Dates.Select(item => (item.Date, item.TotalBalance)),
+            overview.AccountBalances.Select(item => (item.Date, item.TotalBalance)));
+        Assert.Equal(funds.Dates.Select(item => (item.Date, item.TotalBalance)),
+            overview.FundBalances.Select(item => (item.Date, item.TotalBalance)));
+    }
+
+    /// <summary>
+    /// Rejects date ranges longer than the maximum on every endpoint that summarizes them.
+    /// </summary>
+    [Fact]
+    public async Task DateRangesLongerThanTheMaximumAreRejected()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
+        const string range = "range.start=2016-01-01&range.end=2026-01-02";
+
+        foreach (string uri in new[]
+        {
+            $"/overview/date-range?{range}",
+            $"/accounts/date-range?{range}",
+            $"/funds/date-range?{range}",
+            $"/accounts/{cash.Id}/balance-events/totals?{range}",
+            $"/funds/balance-events/date-range/totals?{range}",
+        })
+        {
+            using HttpResponseMessage response = await test.Api.GetResponseAsync(uri);
+            Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        }
+        using HttpResponseMessage maximum = await test.Api.GetResponseAsync("/overview/date-range?range.start=2016-01-01&range.end=2026-01-01");
+        Assert.Equal(HttpStatusCode.OK, maximum.StatusCode);
     }
 
     /// <summary>

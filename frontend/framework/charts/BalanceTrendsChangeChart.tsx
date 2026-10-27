@@ -4,6 +4,7 @@ import {
   formatCompactCurrency,
   formatSignedCurrency,
 } from "@/framework/currencyHelpers";
+import { BalanceGranularityModel } from "@/framework/data/api";
 import BarMetricChart from "@/framework/charts/BarMetricChart";
 import type { JSX } from "react";
 import { buildBalanceChangeChartPoints } from "@/framework/charts/balanceChangeHelpers";
@@ -23,6 +24,7 @@ interface BalanceTrendsChangeChartProps {
     readonly totalBalance: number;
   }[];
   readonly openingBalance: number | null;
+  readonly granularity?: BalanceGranularityModel;
   readonly title?: string;
 }
 
@@ -34,6 +36,7 @@ const BalanceTrendsChangeChart = function ({
   accountingPeriods,
   dates,
   openingBalance,
+  granularity = BalanceGranularityModel.Day,
   title = "Balance Change",
 }: BalanceTrendsChangeChartProps): JSX.Element {
   return (
@@ -52,13 +55,17 @@ const BalanceTrendsChangeChart = function ({
           balance: summary.totalBalance,
         })),
         openingBalance,
+        granularity,
       })}
       xAxisLabel={mode === "Date" ? "Date" : "Accounting Period"}
       yAxisLabel="Balance Change"
       tickFormatter={(value) => formatCompactCurrency(value, true)}
       valueFormatter={formatSignedCurrency}
       getTooltipDescription={({ value }) => {
-        const comparison = mode === "Date" ? "previous day" : "opening balance";
+        const comparison =
+          mode === "AccountingPeriod"
+            ? "opening balance"
+            : `previous ${granularity.toLowerCase()}`;
         return value > 0
           ? `Increase from ${comparison}`
           : value < 0

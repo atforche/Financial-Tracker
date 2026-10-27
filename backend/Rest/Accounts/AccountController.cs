@@ -76,11 +76,16 @@ public sealed class AccountController(
     [HttpGet("{accountId}/balance-events/totals")]
     [ProducesResponseType(typeof(BalanceEventTotalsModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<BalanceEventTotalsModel>> GetBalanceEventTotalsAsync(
         Guid accountId,
         [FromQuery] AccountBalanceEventsQueryParameterModel query,
         CancellationToken cancellationToken)
     {
+        if (DateRangeValidationProblem.Validate(query.Range?.Start, query.Range?.End, "Unable to retrieve Account totals.") is ValidationProblemDetails problem)
+        {
+            return UnprocessableEntity(problem);
+        }
         Account? account = await accountQueryService.GetByIdAsync(accountId, cancellationToken);
         if (account == null)
         {
@@ -93,12 +98,14 @@ public sealed class AccountController(
         (decimal? openingBalance, IReadOnlyCollection<(DateOnly Date, decimal Balance)> dates) = BalanceEventTotals.BuildDateBalances(events.Items,
             item => item.EventDate, item => item.EventDateSequence,
             item => item.PreviousBalance?.PostedBalance, item => item.NewBalance?.PostedBalance);
+        BalanceGranularity? granularity = null;
         if (query.AccountingPeriodId == null && query.Range?.Start is DateOnly start && query.Range.End is DateOnly end)
         {
             AccountDateRange range = await accountQueryService.GetDateRangeAsync(new AccountDateRangeQuery(
                 start, end, new AccountFilter(null, [account.Name], []), AccountRangeSort.Name, 0, null), cancellationToken);
             openingBalance = range.OpeningBalance?.TotalBalance;
             dates = range.Dates.Select(item => (item.Date, item.Balance.TotalBalance)).ToList();
+            granularity = range.Granularity;
         }
         return Ok(new BalanceEventTotalsModel
         {
@@ -110,6 +117,7 @@ public sealed class AccountController(
                 Date = item.Date,
                 TotalBalance = item.Balance,
             }).ToList(),
+            Granularity = granularity == null ? null : BalanceGranularityConverter.ToModel(granularity.Value),
         });
     }
 
@@ -137,12 +145,15 @@ public sealed class AccountController(
     /// </summary>
     [HttpGet("date-range")]
     [ProducesResponseType(typeof(AccountsInDateRangeModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<AccountsInDateRangeModel>> GetDateRangeAsync(
         [FromQuery] AccountsInDateRangeQueryParameterModel query,
         CancellationToken cancellationToken) =>
-        Ok(accountConverter.ToModel(await accountQueryService.GetDateRangeAsync(
-            accountConverter.ToDomain(query),
-            cancellationToken)));
+        DateRangeValidationProblem.Validate(query.Range.Start, query.Range.End, "Unable to retrieve Account range.") is ValidationProblemDetails problem
+            ? UnprocessableEntity(problem)
+            : Ok(accountConverter.ToModel(await accountQueryService.GetDateRangeAsync(
+                accountConverter.ToDomain(query),
+                cancellationToken)));
 
     /// <summary>
     /// Retrieves Account balances over an Accounting Period range.

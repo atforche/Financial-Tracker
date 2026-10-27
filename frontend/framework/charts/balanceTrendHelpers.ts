@@ -2,10 +2,11 @@ import {
   findTooltipPayload,
   isObject,
 } from "@/framework/charts/tooltipHelpers";
+import { BalanceGranularityModel } from "@/framework/data/api";
 import type { ChartRangeMode } from "@/framework/charts/chartTypes";
 import type { TooltipContentProps } from "recharts";
 import dayjs from "dayjs";
-import { formatLongDate } from "@/framework/dateHelpers";
+import { getDateLabels } from "@/framework/charts/chartPointHelpers";
 
 /**
  * Indicates whether the chart is grouped by accounting period or date.
@@ -111,10 +112,10 @@ const getBalanceTrendTooltipPoint = function (
  */
 const buildDateChartPoints = function (
   dates: readonly BalanceTrendDateSummary[],
+  granularity: BalanceGranularityModel = BalanceGranularityModel.Day,
 ): BalanceTrendChartPoint[] {
   return dates.map((dateSummary) => ({
-    tickLabel: dayjs(dateSummary.date).format("MMMM D"),
-    tooltipLabel: formatLongDate(new Date(`${dateSummary.date}T00:00:00`)),
+    ...getDateLabels(dateSummary.date, granularity, "MMMM D"),
     balance: dateSummary.totalBalance,
   }));
 };
@@ -155,13 +156,15 @@ const buildBalanceTrendChartPoints = function ({
   mode,
   accountingPeriods,
   dates,
+  granularity,
 }: {
   readonly mode: BalanceTrendChartMode;
   readonly accountingPeriods: readonly BalanceTrendPeriodSummary[] | null;
   readonly dates: readonly BalanceTrendDateSummary[] | null;
+  readonly granularity?: BalanceGranularityModel;
 }): BalanceTrendChartPoint[] {
   if (mode === "Date") {
-    return buildDateChartPoints(dates ?? []);
+    return buildDateChartPoints(dates ?? [], granularity);
   }
 
   return buildAccountingPeriodChartPoints(accountingPeriods ?? []);

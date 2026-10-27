@@ -153,11 +153,13 @@ public sealed class FundQueryService(
             query.End,
             cancellationToken);
         var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
-        // Summarizing from the day before the range yields the opening balance as the first entry
-        List<FundDateBalanceSummary> summaries =
-            query.Start is DateOnly start && query.End is DateOnly end
-                ? SummarizeDates(start.AddDays(-1), end, balances, history)
-                : [];
+        BalanceGranularity granularity = BalanceGranularity.Day;
+        List<FundDateBalanceSummary> summaries = [];
+        if (query.Start is DateOnly start && query.End is DateOnly end)
+        {
+            granularity = BalanceSeries.GetGranularity(start, end);
+            summaries = SummarizeDates(BalanceSeries.GetSampleDates(start, end, granularity), balances, history);
+        }
         IReadOnlyCollection<FundRangeBalance> items = Sort(balances, query.Sort)
             .Skip(query.Offset)
             .Take(query.Limit ?? int.MaxValue)
@@ -169,6 +171,7 @@ public sealed class FundQueryService(
             totals.TrackedIncome,
             totals.TotalSpending,
             summaries.FirstOrDefault()?.Balance,
+            granularity,
             summaries.Skip(1).ToList());
     }
 
@@ -184,13 +187,11 @@ public sealed class FundQueryService(
     /// Summarizes Fund balances for each date.
     /// </summary>
     private static List<FundDateBalanceSummary> SummarizeDates(
-        DateOnly start,
-        DateOnly end,
+        IReadOnlyList<DateOnly> sampleDates,
         IReadOnlyCollection<FundRangeBalance> balances,
         IReadOnlyCollection<FundDateBalanceFact> history) =>
-        DailyBalanceSeries.Summarize(
-            start,
-            end,
+        BalanceSeries.Summarize(
+            sampleDates,
             balances.ToDictionary(balance => balance.Fund.Id, balance => balance.StartingBalance),
             history.Select(item => (item.FundId, item.Date, item.Sequence, item.PostedBalance)),
             (date, currentBalances) => new FundDateBalanceSummary(date, FundBalanceSummary.Create(

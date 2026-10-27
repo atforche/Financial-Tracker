@@ -81,16 +81,22 @@ const OverviewView = async function ({
         "Failed to load overview",
       );
       return {
-        accounts: buildDateSection(
-          overview.accountBalances,
-          overview.accountOpeningBalance,
-          overview.accountClosingBalance,
-        ),
-        funds: buildDateSection(
-          overview.fundBalances,
-          overview.fundOpeningBalance,
-          overview.fundClosingBalance,
-        ),
+        accounts: buildDateSection({
+          balances: overview.accountBalances,
+          openingBalance: overview.accountOpeningBalance,
+          closingBalance: overview.accountClosingBalance,
+          startDate: range.startDate,
+          endDate: range.endDate,
+          granularity: overview.granularity,
+        }),
+        funds: buildDateSection({
+          balances: overview.fundBalances,
+          openingBalance: overview.fundOpeningBalance,
+          closingBalance: overview.fundClosingBalance,
+          startDate: range.startDate,
+          endDate: range.endDate,
+          granularity: overview.granularity,
+        }),
       };
     }
     const overview = unwrapApiResponse(
@@ -105,16 +111,16 @@ const OverviewView = async function ({
       "Failed to load overview",
     );
     return {
-      accounts: buildPeriodSection(
-        overview.accountBalances,
-        overview.accountOpeningBalance,
-        overview.accountClosingBalance,
-      ),
-      funds: buildPeriodSection(
-        overview.fundBalances,
-        overview.fundOpeningBalance,
-        overview.fundClosingBalance,
-      ),
+      accounts: buildPeriodSection({
+        balances: overview.accountBalances,
+        openingBalance: overview.accountOpeningBalance,
+        closingBalance: overview.accountClosingBalance,
+      }),
+      funds: buildPeriodSection({
+        balances: overview.fundBalances,
+        openingBalance: overview.fundOpeningBalance,
+        closingBalance: overview.fundClosingBalance,
+      }),
     };
   })();
   const xAxisLabel = range.mode === "date" ? "Date" : "Accounting Period";
@@ -148,6 +154,7 @@ const OverviewView = async function ({
             accountingPeriods={accounts.changePeriods}
             dates={accounts.changeDates}
             openingBalance={accounts.openingBalance.totalBalance}
+            granularity={accounts.granularity}
             title="Account Balance Change"
           />
         </ResponsiveGrid>
@@ -169,6 +176,7 @@ const OverviewView = async function ({
             accountingPeriods={funds.changePeriods}
             dates={funds.changeDates}
             openingBalance={funds.openingBalance.totalBalance}
+            granularity={funds.granularity}
             title="Fund Balance Change"
           />
         </ResponsiveGrid>

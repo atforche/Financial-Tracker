@@ -28,6 +28,7 @@ import AccountBalanceSummaryCards from "@/accounts/AccountBalanceSummaryCards";
 import AccountTrendsFilter from "@/accounts/trends/AccountTrendsFilter";
 import AccountTrendsListFrame from "@/accounts/trends/AccountTrendsListFrame";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
+import { BalanceGranularityModel } from "@/framework/data/api";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import BalanceTrendsChangeChart from "@/framework/charts/BalanceTrendsChangeChart";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
@@ -149,6 +150,8 @@ const AccountTrends = async function ({
     "accountingPeriods" in trends ? trends.accountingPeriods : [];
   const dateSummaries = "dates" in trends ? trends.dates : [];
   const openingBalance = "dates" in trends ? trends.openingBalance : null;
+  const granularity =
+    "dates" in trends ? trends.granularity : BalanceGranularityModel.Day;
   const chartPeriods = periodSummaries.map((summary) => ({
     accountingPeriodId: summary.accountingPeriod.id,
     accountingPeriodName: summary.accountingPeriod.name,
@@ -161,6 +164,7 @@ const AccountTrends = async function ({
     mode: modeValue,
     accountingPeriods: chartPeriods,
     dates: dateSummaries,
+    granularity,
   });
   const currentRange =
     range.mode === "date"
@@ -214,6 +218,7 @@ const AccountTrends = async function ({
     periodSummaries,
     dateSummaries,
     openingBalance,
+    range.mode === "date" ? range.startDate : null,
   );
 
   return (
@@ -245,6 +250,7 @@ const AccountTrends = async function ({
           accountingPeriods={periodSummaries}
           dates={dateSummaries}
           openingBalance={openingBalance?.totalBalance ?? null}
+          granularity={granularity}
         />
       </ResponsiveGrid>
       <AccountTrendsListFrame

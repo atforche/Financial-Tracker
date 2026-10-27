@@ -25,16 +25,21 @@ public sealed class OverviewController(
         [FromQuery] OverviewDateRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        if (query.Range.Start is not DateOnly start || query.Range.End is not DateOnly end || start > end)
+        const string title = "Unable to retrieve overview.";
+        if (query.Range.Start is not DateOnly start || query.Range.End is not DateOnly end)
         {
             return UnprocessableEntity(new ValidationProblemDetails(new Dictionary<string, string[]>
             {
-                ["Range"] = ["A start and end date are required, and the start date must not occur after the end date."],
+                ["Range"] = ["A start and end date are required."],
             })
             {
-                Title = "Unable to retrieve overview.",
+                Title = title,
                 Status = StatusCodes.Status422UnprocessableEntity,
             });
+        }
+        if (DateRangeValidationProblem.Validate(start, end, title) is ValidationProblemDetails problem)
+        {
+            return UnprocessableEntity(problem);
         }
         return Ok(overviewConverter.ToModel(await overviewQueryService.GetDateRangeAsync(start, end, cancellationToken)));
     }

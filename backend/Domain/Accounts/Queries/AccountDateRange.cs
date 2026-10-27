@@ -10,6 +10,7 @@ public sealed record AccountDateRange(
     decimal TrackedIncome,
     decimal TotalSpending,
     AccountBalanceSummary? OpeningBalance,
+    BalanceGranularity Granularity,
     IReadOnlyCollection<AccountDateBalanceSummary> Dates)
 {
     /// <summary>

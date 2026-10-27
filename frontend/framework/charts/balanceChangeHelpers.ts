@@ -6,6 +6,7 @@ import {
   createAccountingPeriodMetricPoint,
   createDateMetricPoint,
 } from "@/framework/charts/chartPointHelpers";
+import { BalanceGranularityModel } from "@/framework/data/api";
 import type { ChartRangeMode } from "@/framework/charts/chartTypes";
 import { getCurrencyDifference } from "@/framework/currencyHelpers";
 
@@ -34,11 +35,13 @@ const buildBalanceChangeChartPoints = function ({
   accountingPeriods,
   dates,
   openingBalance: dateOpeningBalance,
+  granularity = BalanceGranularityModel.Day,
 }: {
   readonly mode: ChartRangeMode;
   readonly accountingPeriods: readonly PeriodBalanceSummary[];
   readonly dates: readonly DateBalanceSummary[];
   readonly openingBalance: number | null;
+  readonly granularity?: BalanceGranularityModel;
 }): BarMetricChartPoint[] {
   if (mode === "AccountingPeriod") {
     return accountingPeriods.map(({ name, openingBalance, closingBalance }) => {
@@ -59,6 +62,7 @@ const buildBalanceChangeChartPoints = function ({
     return createDateMetricPoint(
       { date: summary.date, value },
       getSignedChartColor(value),
+      granularity,
     );
   });
 };

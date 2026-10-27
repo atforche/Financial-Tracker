@@ -161,11 +161,13 @@ public sealed class AccountQueryService(
             query.End,
             cancellationToken);
         var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
-        // Summarizing from the day before the range yields the opening balance as the first entry
-        List<AccountDateBalanceSummary> summaries =
-            query.Start is DateOnly start && query.End is DateOnly end
-                ? SummarizeDates(start.AddDays(-1), end, balances, history)
-                : [];
+        BalanceGranularity granularity = BalanceGranularity.Day;
+        List<AccountDateBalanceSummary> summaries = [];
+        if (query.Start is DateOnly start && query.End is DateOnly end)
+        {
+            granularity = BalanceSeries.GetGranularity(start, end);
+            summaries = SummarizeDates(BalanceSeries.GetSampleDates(start, end, granularity), balances, history);
+        }
         IReadOnlyCollection<AccountRangeBalance> items = Sort(balances, query.Sort)
             .Skip(query.Offset)
             .Take(query.Limit ?? int.MaxValue)
@@ -177,6 +179,7 @@ public sealed class AccountQueryService(
             totals.TrackedIncome,
             totals.TotalSpending,
             summaries.FirstOrDefault()?.Balance,
+            granularity,
             summaries.Skip(1).ToList());
     }
 
@@ -192,13 +195,11 @@ public sealed class AccountQueryService(
     /// Summarizes Account balances for each date, treating Accounts as empty before they were opened.
     /// </summary>
     private static List<AccountDateBalanceSummary> SummarizeDates(
-        DateOnly start,
-        DateOnly end,
+        IReadOnlyList<DateOnly> sampleDates,
         IReadOnlyCollection<AccountRangeBalance> balances,
         IReadOnlyCollection<AccountDateBalanceFact> history) =>
-        DailyBalanceSeries.Summarize(
-            start,
-            end,
+        BalanceSeries.Summarize(
+            sampleDates,
             balances.ToDictionary(balance => balance.Account.Id, balance => balance.StartingBalance),
             history.Select(item => (item.AccountId, item.Date, item.Sequence, item.PostedBalance)),
             (date, currentBalances) => new AccountDateBalanceSummary(date, AccountBalanceSummary.Create(

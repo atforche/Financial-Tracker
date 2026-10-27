@@ -13,7 +13,8 @@ public sealed record OverviewDateRange(
     IReadOnlyCollection<OverviewDateBalance> AccountBalances,
     FundBalanceSummary FundOpeningBalance,
     FundBalanceSummary FundClosingBalance,
-    IReadOnlyCollection<OverviewDateBalance> FundBalances);
+    IReadOnlyCollection<OverviewDateBalance> FundBalances,
+    BalanceGranularity Granularity);
 
 /// <summary>
 /// Represents a total balance at the end of a date.

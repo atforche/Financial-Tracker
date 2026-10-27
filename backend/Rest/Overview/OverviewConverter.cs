@@ -22,6 +22,7 @@ public sealed class OverviewConverter(AccountingPeriodConverter accountingPeriod
         FundOpeningBalance = FundConverter.ToModel(range.FundOpeningBalance),
         FundClosingBalance = FundConverter.ToModel(range.FundClosingBalance),
         FundBalances = range.FundBalances.Select(ToModel).ToList(),
+        Granularity = BalanceGranularityConverter.ToModel(range.Granularity),
     };
 
     /// <summary>

@@ -37,4 +37,9 @@ public class OverviewDateRangeModel
     /// Total Fund balances for each date in the range.
     /// </summary>
     public required IReadOnlyCollection<OverviewDateBalanceModel> FundBalances { get; init; }
+
+    /// <summary>
+    /// Spacing between the dates in the balance series.
+    /// </summary>
+    public required BalanceGranularityModel Granularity { get; init; }
 }

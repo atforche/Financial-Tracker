@@ -21,6 +21,7 @@ import {
   shouldPersistFundNames,
 } from "@/funds/trends/fundNameFilter";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
+import { BalanceGranularityModel } from "@/framework/data/api";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import BalanceTrendsChangeChart from "@/framework/charts/BalanceTrendsChangeChart";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
@@ -135,11 +136,14 @@ const FundTrends = async function ({
     "accountingPeriods" in trends ? trends.accountingPeriods : [];
   const dateSummaries = "dates" in trends ? trends.dates : [];
   const openingBalance = "dates" in trends ? trends.openingBalance : null;
+  const granularity =
+    "dates" in trends ? trends.granularity : BalanceGranularityModel.Day;
   const snapshot = getFundTrendsSnapshot(
     modeValue,
     periodSummaries,
     dateSummaries,
     openingBalance,
+    range.mode === "date" ? range.startDate : null,
   );
   const chartPeriods = periodSummaries.map((summary) => ({
     accountingPeriodId: summary.accountingPeriod.id,
@@ -153,6 +157,7 @@ const FundTrends = async function ({
     mode: modeValue,
     accountingPeriods: chartPeriods,
     dates: dateSummaries,
+    granularity,
   });
   const selectedFundIds = trends.funds.items
     .filter((fund) =>
@@ -242,6 +247,7 @@ const FundTrends = async function ({
           accountingPeriods={periodSummaries}
           dates={dateSummaries}
           openingBalance={openingBalance?.totalBalance ?? null}
+          granularity={granularity}
         />
       </ResponsiveGrid>
       <FundTrendsListFrame

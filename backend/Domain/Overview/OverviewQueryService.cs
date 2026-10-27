@@ -29,18 +29,17 @@ public sealed class OverviewQueryService(
         IReadOnlyCollection<FundDateBalanceFact> fundHistory =
             await overviewQueryRepository.GetFundBalanceHistoryAsync(start, end, cancellationToken);
 
-        // Summarizing from the day before the range yields the opening balance as the first entry
-        List<(DateOnly Date, AccountBalanceSummary Summary)> accountSummaries = DailyBalanceSeries.Summarize(
-            start.AddDays(-1),
-            end,
+        BalanceGranularity granularity = BalanceSeries.GetGranularity(start, end);
+        List<DateOnly> sampleDates = BalanceSeries.GetSampleDates(start, end, granularity);
+        List<(DateOnly Date, AccountBalanceSummary Summary)> accountSummaries = BalanceSeries.Summarize(
+            sampleDates,
             accounts.ToDictionary(account => account.AccountId, account => account.Balance),
             accountHistory.Select(item => (item.AccountId, item.Date, item.Sequence, item.PostedBalance)),
             (date, currentBalances) => (date, AccountBalanceSummary.Create(accounts.Select(account => (
                 account.Type,
                 account.DateOpened is DateOnly opened && date < opened ? 0 : currentBalances[account.AccountId])))));
-        List<(DateOnly Date, FundBalanceSummary Summary)> fundSummaries = DailyBalanceSeries.Summarize(
-            start.AddDays(-1),
-            end,
+        List<(DateOnly Date, FundBalanceSummary Summary)> fundSummaries = BalanceSeries.Summarize(
+            sampleDates,
             funds.ToDictionary(fund => fund.FundId, fund => fund.Balance),
             fundHistory.Select(item => (item.FundId, item.Date, item.Sequence, item.PostedBalance)),
             (date, currentBalances) => (date, FundBalanceSummary.Create(
@@ -51,7 +50,8 @@ public sealed class OverviewQueryService(
             accountSummaries.Skip(1).Select(item => new OverviewDateBalance(item.Date, item.Summary.TotalBalance)).ToList(),
             fundSummaries[0].Summary,
             fundSummaries[^1].Summary,
-            fundSummaries.Skip(1).Select(item => new OverviewDateBalance(item.Date, item.Summary.TotalBalance)).ToList());
+            fundSummaries.Skip(1).Select(item => new OverviewDateBalance(item.Date, item.Summary.TotalBalance)).ToList(),
+            granularity);
     }
 
     /// <summary>
