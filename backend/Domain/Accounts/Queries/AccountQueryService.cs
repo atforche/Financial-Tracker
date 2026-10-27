@@ -183,76 +183,28 @@ public sealed class AccountQueryService(
     /// <summary>
     /// Summarizes the provided Account Period Balances into a single Account Balance Summary.
     /// </summary>
-    private static AccountBalanceSummary Summarize(IEnumerable<AccountPeriodBalanceFact> balances, bool opening)
-    {
-        var values = balances.Select(balance => (
+    private static AccountBalanceSummary Summarize(IEnumerable<AccountPeriodBalanceFact> balances, bool opening) =>
+        AccountBalanceSummary.Create(balances.Select(balance => (
             balance.Account.Type,
-            Amount: (balance.Account.Type.IsDebt() ? -1 : 1) * (opening ? balance.OpeningBalance : balance.ClosingBalance))).ToList();
-        return new AccountBalanceSummary(
-            values.Sum(item => item.Amount),
-            values.Where(item => item.Type.IsTracked()).Sum(item => item.Amount),
-            values.Where(item => !item.Type.IsTracked()).Sum(item => item.Amount),
-            values.GroupBy(item => item.Type).OrderBy(group => group.Key)
-                .Select(group => new AccountTypeBalance(group.Key, group.Sum(item => item.Amount))).ToList());
-    }
+            opening ? balance.OpeningBalance : balance.ClosingBalance)));
 
     /// <summary>
-    /// Summarizes Account balances for each date by advancing through the in-range history once.
+    /// Summarizes Account balances for each date, treating Accounts as empty before they were opened.
     /// </summary>
     private static List<AccountDateBalanceSummary> SummarizeDates(
         DateOnly start,
         DateOnly end,
-        IEnumerable<AccountRangeBalance> balances,
-        IReadOnlyCollection<AccountDateBalanceFact> history)
-    {
-        IReadOnlyCollection<AccountRangeBalance> rangeBalances = balances.ToList();
-        var currentBalances = rangeBalances.ToDictionary(
-            balance => balance.Account.Id,
-            balance => balance.StartingBalance);
-        var orderedHistory = history
-            .OrderBy(item => item.Date)
-            .ThenBy(item => item.Sequence)
-            .ToList();
-        int historyIndex = 0;
-        var summaries = new List<AccountDateBalanceSummary>();
-        foreach (DateOnly date in GetDates(start, end))
-        {
-            while (historyIndex < orderedHistory.Count && orderedHistory[historyIndex].Date <= date)
-            {
-                AccountDateBalanceFact item = orderedHistory[historyIndex++];
-                currentBalances[item.AccountId] = item.PostedBalance;
-            }
-            var values = rangeBalances.Select(balance =>
-            {
-                decimal amount = balance.Account.DateOpened is DateOnly opened && date < opened
-                    ? 0
-                    : currentBalances[balance.Account.Id];
-                return (balance.Account.Type, Amount: balance.Account.Type.IsDebt() ? -amount : amount);
-            }).ToList();
-            summaries.Add(new AccountDateBalanceSummary(date, new AccountBalanceSummary(
-                values.Sum(item => item.Amount),
-                values.Where(item => item.Type.IsTracked()).Sum(item => item.Amount),
-                values.Where(item => !item.Type.IsTracked()).Sum(item => item.Amount),
-                values.GroupBy(item => item.Type).OrderBy(group => group.Key)
-                    .Select(group => new AccountTypeBalance(group.Key, group.Sum(item => item.Amount))).ToList())));
-        }
-        return summaries;
-    }
-
-    /// <summary>
-    /// Generates a sequence of dates from the start date to the end date, inclusive.
-    /// </summary>
-    private static IEnumerable<DateOnly> GetDates(DateOnly start, DateOnly end)
-    {
-        for (DateOnly date = start; date <= end; date = date.AddDays(1))
-        {
-            yield return date;
-            if (date == end)
-            {
-                yield break;
-            }
-        }
-    }
+        IReadOnlyCollection<AccountRangeBalance> balances,
+        IReadOnlyCollection<AccountDateBalanceFact> history) =>
+        DailyBalanceSeries.Summarize(
+            start,
+            end,
+            balances.ToDictionary(balance => balance.Account.Id, balance => balance.StartingBalance),
+            history.Select(item => (item.AccountId, item.Date, item.Sequence, item.PostedBalance)),
+            (date, currentBalances) => new AccountDateBalanceSummary(date, AccountBalanceSummary.Create(
+                balances.Select(balance => (
+                    balance.Account.Type,
+                    balance.Account.DateOpened is DateOnly opened && date < opened ? 0 : currentBalances[balance.Account.Id])))));
 
     /// <summary>
     /// Sorts the provided Account Range Balances according to the provided sort order.

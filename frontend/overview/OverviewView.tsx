@@ -1,21 +1,8 @@
 import {
-  type AccountTrendsDataMode,
-  getAccountTrendsSnapshot,
-} from "@/accounts/trends/helpers";
-import type {
-  AccountsInAccountingPeriodRange,
-  AccountsInDateRange,
-} from "@/accounts/types";
-import {
-  type FundTrendsDataMode,
-  getFundTrendsSnapshot,
-} from "@/funds/trends/helpers";
-import type {
-  FundsInAccountingPeriodRange,
-  FundsInDateRange,
-} from "@/funds/types";
-import {
   type OverviewSearchParams,
+  type OverviewSection,
+  buildDateSection,
+  buildPeriodSection,
   overviewParamNames,
 } from "@/overview/helpers";
 import { Stack, Typography } from "@mui/material";
@@ -24,18 +11,19 @@ import {
   matchesTrendRange,
   resolveTrendRange,
 } from "@/framework/routes/trendRange";
+import type { AccountBalanceSummary } from "@/accounts/types";
 import AccountBalanceSummaryCards from "@/accounts/AccountBalanceSummaryCards";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import BalanceTrendsChangeChart from "@/framework/charts/BalanceTrendsChangeChart";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import ContentSurface from "@/framework/view/ContentSurface";
+import type { FundBalanceSummary } from "@/funds/types";
 import FundBalanceSummaryCards from "@/funds/FundBalanceSummaryCards";
 import type { JSX } from "react";
 import OverviewPageHeader from "@/overview/OverviewPageHeader";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -75,101 +63,61 @@ const OverviewView = async function ({
   if (hasRangeParams && !matchesTrendRange(rangeParams, range)) {
     redirect(buildUrl("/", objectToSearchParams(range)));
   }
-  const currentMode = range.mode;
-  const accountMode: AccountTrendsDataMode =
-    currentMode === "date" ? "Date" : "AccountingPeriod";
-  const fundMode: FundTrendsDataMode = accountMode;
-  const query = {
-    "Range.Start":
-      range.mode === "date" ? range.startDate : range.startAccountingPeriodId,
-    "Range.End":
-      range.mode === "date" ? range.endDate : range.endAccountingPeriodId,
-    Limit: 1,
-    Offset: 0,
-  };
-  const [accountTrends, fundTrends] = await Promise.all([
-    (async function (): Promise<
-      AccountsInDateRange | AccountsInAccountingPeriodRange
-    > {
-      return currentMode === "date"
-        ? unwrapApiResponse(
-            await apiClient.GET("/accounts/date-range", {
-              params: { query },
-            }),
-            "Failed to load account overview",
-          )
-        : unwrapApiResponse(
-            await apiClient.GET("/accounts/accounting-period-range", {
-              params: { query },
-            }),
-            "Failed to load account overview",
-          );
-    })(),
-    (async function (): Promise<
-      FundsInDateRange | FundsInAccountingPeriodRange
-    > {
-      return currentMode === "date"
-        ? unwrapApiResponse(
-            await apiClient.GET("/funds/date-range", {
-              params: { query },
-            }),
-            "Failed to load fund overview",
-          )
-        : unwrapApiResponse(
-            await apiClient.GET("/funds/accounting-period-range", {
-              params: { query },
-            }),
-            "Failed to load fund overview",
-          );
-    })(),
-  ]);
-  const accountPeriods =
-    "accountingPeriods" in accountTrends ? accountTrends.accountingPeriods : [];
-  const accountDates = "dates" in accountTrends ? accountTrends.dates : [];
-  const fundPeriods =
-    "accountingPeriods" in fundTrends ? fundTrends.accountingPeriods : [];
-  const fundDates = "dates" in fundTrends ? fundTrends.dates : [];
-  const accountOpeningBalance =
-    "dates" in accountTrends ? accountTrends.openingBalance : null;
-  const fundOpeningBalance =
-    "dates" in fundTrends ? fundTrends.openingBalance : null;
-  const accountSnapshot = getAccountTrendsSnapshot(
-    accountMode,
-    accountPeriods,
-    accountDates,
-    accountOpeningBalance,
-  );
-  const fundSnapshot = getFundTrendsSnapshot(
-    fundMode,
-    fundPeriods,
-    fundDates,
-    fundOpeningBalance,
-  );
-  const xAxisLabel = currentMode === "date" ? "Date" : "Accounting Period";
-  const accountChartPoints = buildBalanceTrendChartPoints({
-    mode: accountMode,
-    accountingPeriods: accountPeriods.map((summary) => ({
-      accountingPeriodId: summary.accountingPeriod.id,
-      accountingPeriodName: summary.accountingPeriod.name,
-      year: summary.accountingPeriod.year,
-      month: summary.accountingPeriod.month,
-      totalOpeningBalance: summary.openingBalance.totalBalance,
-      totalClosingBalance: summary.closingBalance.totalBalance,
-    })),
-    dates: accountDates,
-  });
-  const fundChartPoints = buildBalanceTrendChartPoints({
-    mode: fundMode,
-    accountingPeriods: fundPeriods.map((summary) => ({
-      accountingPeriodId: summary.accountingPeriod.id,
-      accountingPeriodName: summary.accountingPeriod.name,
-      year: summary.accountingPeriod.year,
-      month: summary.accountingPeriod.month,
-      totalOpeningBalance: summary.openingBalance.totalBalance,
-      totalClosingBalance: summary.closingBalance.totalBalance,
-    })),
-    dates: fundDates,
-  });
+  const chartMode = range.mode === "date" ? "Date" : "AccountingPeriod";
+  const { accounts, funds } = await (async function (): Promise<{
+    readonly accounts: OverviewSection<AccountBalanceSummary>;
+    readonly funds: OverviewSection<FundBalanceSummary>;
+  }> {
+    if (range.mode === "date") {
+      const overview = unwrapApiResponse(
+        await apiClient.GET("/overview/date-range", {
+          params: {
+            query: {
+              "Range.Start": range.startDate,
+              "Range.End": range.endDate,
+            },
+          },
+        }),
+        "Failed to load overview",
+      );
+      return {
+        accounts: buildDateSection(
+          overview.accountBalances,
+          overview.accountOpeningBalance,
+          overview.accountClosingBalance,
+        ),
+        funds: buildDateSection(
+          overview.fundBalances,
+          overview.fundOpeningBalance,
+          overview.fundClosingBalance,
+        ),
+      };
+    }
+    const overview = unwrapApiResponse(
+      await apiClient.GET("/overview/accounting-period-range", {
+        params: {
+          query: {
+            "Range.Start": range.startAccountingPeriodId,
+            "Range.End": range.endAccountingPeriodId,
+          },
+        },
+      }),
+      "Failed to load overview",
+    );
+    return {
+      accounts: buildPeriodSection(
+        overview.accountBalances,
+        overview.accountOpeningBalance,
+        overview.accountClosingBalance,
+      ),
+      funds: buildPeriodSection(
+        overview.fundBalances,
+        overview.fundOpeningBalance,
+        overview.fundClosingBalance,
+      ),
+    };
+  })();
+  const xAxisLabel = range.mode === "date" ? "Date" : "Accounting Period";
 
   return (
     <PageLayout>
@@ -184,43 +132,43 @@ const OverviewView = async function ({
       <Stack spacing={2}>
         <Typography variant="h5">Accounts</Typography>
         <AccountBalanceSummaryCards
-          startingLabel={accountSnapshot.startLabel}
-          endingLabel={accountSnapshot.endLabel}
-          startingBalance={accountSnapshot.startingBalance}
-          endingBalance={accountSnapshot.endingBalance}
+          startingLabel={accounts.startLabel}
+          endingLabel={accounts.endLabel}
+          startingBalance={accounts.openingBalance}
+          endingBalance={accounts.closingBalance}
         />
         <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
           <BalanceTrendChart
-            chartPoints={accountChartPoints}
+            chartPoints={accounts.trendPoints}
             title="Account Balance Trend"
             xAxisLabel={xAxisLabel}
           />
           <BalanceTrendsChangeChart
-            mode={accountMode}
-            accountingPeriods={accountPeriods}
-            dates={accountDates}
-            openingBalance={accountOpeningBalance?.totalBalance ?? null}
+            mode={chartMode}
+            accountingPeriods={accounts.changePeriods}
+            dates={accounts.changeDates}
+            openingBalance={accounts.openingBalance.totalBalance}
             title="Account Balance Change"
           />
         </ResponsiveGrid>
         <Typography variant="h5">Funds</Typography>
         <FundBalanceSummaryCards
-          startingLabel={fundSnapshot.startLabel}
-          endingLabel={fundSnapshot.endLabel}
-          startingBalance={fundSnapshot.startingBalance}
-          endingBalance={fundSnapshot.endingBalance}
+          startingLabel={funds.startLabel}
+          endingLabel={funds.endLabel}
+          startingBalance={funds.openingBalance}
+          endingBalance={funds.closingBalance}
         />
         <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
           <BalanceTrendChart
-            chartPoints={fundChartPoints}
+            chartPoints={funds.trendPoints}
             title="Fund Balance Trend"
             xAxisLabel={xAxisLabel}
           />
           <BalanceTrendsChangeChart
-            mode={fundMode}
-            accountingPeriods={fundPeriods}
-            dates={fundDates}
-            openingBalance={fundOpeningBalance?.totalBalance ?? null}
+            mode={chartMode}
+            accountingPeriods={funds.changePeriods}
+            dates={funds.changeDates}
+            openingBalance={funds.openingBalance.totalBalance}
             title="Fund Balance Change"
           />
         </ResponsiveGrid>

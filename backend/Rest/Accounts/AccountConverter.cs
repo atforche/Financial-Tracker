@@ -208,7 +208,7 @@ public sealed class AccountConverter
     /// <summary>
     /// Converts the provided Account Balance Summary to an API model.
     /// </summary>
-    private static AccountBalanceSummaryModel ToModel(AccountBalanceSummary summary) => new()
+    internal static AccountBalanceSummaryModel ToModel(AccountBalanceSummary summary) => new()
     {
         TotalBalance = summary.TotalBalance,
         TotalTrackedBalance = summary.TotalTrackedBalance,

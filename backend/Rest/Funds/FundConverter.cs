@@ -188,7 +188,7 @@ public sealed class FundConverter
     /// <summary>
     /// Converts the provided Fund Balance Summary to a model.
     /// </summary>
-    private static FundBalanceSummaryModel ToModel(FundBalanceSummary summary) => new()
+    internal static FundBalanceSummaryModel ToModel(FundBalanceSummary summary) => new()
     {
         TotalBalance = summary.TotalBalance,
         TotalAssignedBalance = summary.TotalAssignedBalance,

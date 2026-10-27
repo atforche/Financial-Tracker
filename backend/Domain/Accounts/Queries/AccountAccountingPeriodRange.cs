@@ -39,7 +39,24 @@ public sealed record AccountBalanceSummary(
     decimal TotalBalance,
     decimal TotalTrackedBalance,
     decimal TotalUntrackedBalance,
-    IReadOnlyCollection<AccountTypeBalance> BalanceByAccountType);
+    IReadOnlyCollection<AccountTypeBalance> BalanceByAccountType)
+{
+    /// <summary>
+    /// Summarizes posted Account balances, counting debt Account balances against the totals.
+    /// </summary>
+    public static AccountBalanceSummary Create(IEnumerable<(AccountType Type, decimal Balance)> balances)
+    {
+        var values = balances.Select(balance => (
+            balance.Type,
+            Amount: balance.Type.IsDebt() ? -balance.Balance : balance.Balance)).ToList();
+        return new AccountBalanceSummary(
+            values.Sum(item => item.Amount),
+            values.Where(item => item.Type.IsTracked()).Sum(item => item.Amount),
+            values.Where(item => !item.Type.IsTracked()).Sum(item => item.Amount),
+            values.GroupBy(item => item.Type).OrderBy(group => group.Key)
+                .Select(group => new AccountTypeBalance(group.Key, group.Sum(item => item.Amount))).ToList());
+    }
+}
 
 /// <summary>
 /// Represents a balance total for an Account type.
