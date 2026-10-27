@@ -95,6 +95,14 @@ public sealed class SpendingTransactionTests
         await test.AssertBalanceAsync(july, 100m, 80m);
         await test.AssertBalanceAsync(august, 80m, 80m);
 
+        await test.Transactions.UnpostAsync(transaction, card);
+        await test.AssertBalanceAsync(cash, 50m, 50m);
+        await test.AssertBalanceAsync(card, 0m, -30m);
+        await test.AssertBalanceAsync(groceries, 0m, -30m);
+        await test.AssertBalanceAsync(dining, -20m, -20m);
+        await test.AssertBalanceAsync(july, 100m, 50m);
+        await test.AssertBalanceAsync(august, 50m, 50m);
+
         await test.Transactions.UnpostAsync(transaction);
         await test.AssertBalanceAsync(cash, 100m, 50m);
         await test.AssertBalanceAsync(card, 0m, -30m);

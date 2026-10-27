@@ -44,16 +44,25 @@ public abstract class TransactionService(
     }
 
     /// <summary>
-    /// Attempts to unpost an existing Transaction
+    /// Attempts to unpost an existing Transaction from the provided Account, or from all Accounts when none is provided
     /// </summary>
-    public bool TryUnpost(Transaction transaction, out IEnumerable<ValidationError> exceptions)
+    public bool TryUnpost(Transaction transaction, AccountId? accountId, out IEnumerable<ValidationError> exceptions)
     {
-        if (!ValidateUnposting(transaction, out exceptions))
+        if (!ValidateUnposting(transaction, accountId, out exceptions))
         {
             return false;
         }
-        UnpostTransaction(transaction);
-        transaction.ClearPostedDates();
+        UnpostTransaction(transaction, accountId);
+        if (accountId == null)
+        {
+            transaction.ClearPostedDates();
+        }
+        else
+        {
+            transaction.SetPostedDate(accountId, null);
+        }
+        fundBalanceService.PostTransaction(transaction);
+        fundGoalTotalsHistoryService.PostTransaction(transaction);
         SynchronizePendingBalanceEffects(transaction);
         return true;
     }
@@ -268,7 +277,7 @@ public abstract class TransactionService(
     /// <summary>
     /// Validates the unposting of this Transaction
     /// </summary>
-    protected bool ValidateUnposting(Transaction transaction, out IEnumerable<ValidationError> exceptions)
+    protected bool ValidateUnposting(Transaction transaction, AccountId? accountId, out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
@@ -276,7 +285,19 @@ public abstract class TransactionService(
         {
             exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "The Transaction's Accounting Period is closed."));
         }
-        if (transaction.GetAllAffectedAccountIds().All(id => transaction.GetPostedDateForAccount(id) == null))
+        if (accountId != null)
+        {
+            var accountPath = new ValidationErrorPath(nameof(PostTransactionRequest.AccountId));
+            if (!transaction.GetAllAffectedAccountIds().Contains(accountId))
+            {
+                exceptions = exceptions.Append(new ValidationError(accountPath, "The Transaction does not affect this Account."));
+            }
+            else if (transaction.GetPostedDateForAccount(accountId) == null)
+            {
+                exceptions = exceptions.Append(new ValidationError(accountPath, "The Transaction has not been posted to this Account."));
+            }
+        }
+        else if (transaction.GetAllAffectedAccountIds().All(id => transaction.GetPostedDateForAccount(id) == null))
         {
             exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "The Transaction has not been posted to either account."));
         }
@@ -284,12 +305,13 @@ public abstract class TransactionService(
     }
 
     /// <summary>
-    /// Unposts a Transaction from all accounts
+    /// Unposts a Transaction from the provided Account, or from all Accounts when none is provided.
+    /// Fund and Fund Goal histories are removed entirely and must be rebuilt once the posted dates are updated.
     /// </summary>
-    protected void UnpostTransaction(Transaction transaction)
+    protected void UnpostTransaction(Transaction transaction, AccountId? accountId)
     {
-        accountingPeriodBalanceService.UnpostTransaction(transaction);
-        accountBalanceService.UnpostTransaction(transaction);
+        accountingPeriodBalanceService.UnpostTransaction(transaction, accountId);
+        accountBalanceService.UnpostTransaction(transaction, accountId);
         fundBalanceService.UnpostTransaction(transaction);
         fundGoalTotalsHistoryService.UnpostTransaction(transaction);
     }

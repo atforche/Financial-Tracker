@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Domain.Accounts;
 using Domain.Transactions.Accounts;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
@@ -74,10 +75,10 @@ public sealed class TransactionDispatcherService(
     /// <summary>
     /// Attempts to unpost the provided transaction.
     /// </summary>
-    public bool TryUnpost(Transaction transaction, out IEnumerable<ValidationError> exceptions) =>
+    public bool TryUnpost(Transaction transaction, AccountId? accountId, out IEnumerable<ValidationError> exceptions) =>
         transaction is FundTransaction
             ? Fail(out exceptions, "Fund transactions cannot be unposted.")
-            : GetService(transaction)?.TryUnpost(transaction, out exceptions) ?? FailUnrecognized(transaction, out exceptions);
+            : GetService(transaction)?.TryUnpost(transaction, accountId, out exceptions) ?? FailUnrecognized(transaction, out exceptions);
 
     /// <summary>
     /// Attempts to delete the provided transaction.

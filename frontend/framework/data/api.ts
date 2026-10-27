@@ -1075,10 +1075,12 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Unposts the provided Transaction */
+        /** Unposts the provided Transaction from the provided Account, or from all Accounts when none is provided */
         post: {
             parameters: {
-                query?: never;
+                query?: {
+                    accountId?: string;
+                };
                 header?: never;
                 path: {
                     transactionId: string;

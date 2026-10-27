@@ -44,9 +44,10 @@ internal sealed class TransactionBuilderFactory(TestApiClient apiClient)
         });
 
     /// <summary>
-    /// Unposts a transaction from every affected account.
+    /// Unposts a transaction from the provided account, or from every affected account when none is provided.
     /// </summary>
-    public Task UnpostAsync(TransactionHandle transaction) => apiClient.PostAsync($"/transactions/{transaction.Id}/unpost");
+    public Task UnpostAsync(TransactionHandle transaction, AccountHandle? account = null) => apiClient.PostAsync(
+        account == null ? $"/transactions/{transaction.Id}/unpost" : $"/transactions/{transaction.Id}/unpost?accountId={account.Id}");
 
     /// <summary>
     /// Deletes an unposted transaction.

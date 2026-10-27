@@ -19,15 +19,16 @@ interface ActionState extends TransactionActionErrorState {
  */
 interface ActionPayload {
   readonly transactionId: string;
+  readonly accountId?: string | null;
   readonly redirectUrl: string;
 }
 
 /**
- * Server action that unposts a transaction.
+ * Server action that unposts a transaction from the provided account, or from all accounts when none is provided.
  */
 const unpostTransaction = async function (
   _: ActionState,
-  { transactionId, redirectUrl }: ActionPayload,
+  { transactionId, accountId = null, redirectUrl }: ActionPayload,
 ): Promise<ActionState> {
   const client = await createApiClient();
   const { error } = await client.POST("/transactions/{transactionId}/unpost", {
@@ -35,6 +36,7 @@ const unpostTransaction = async function (
       path: {
         transactionId,
       },
+      query: accountId === null ? {} : { accountId },
     },
   });
   if (error) {

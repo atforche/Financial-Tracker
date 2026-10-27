@@ -47,13 +47,13 @@ public class AccountBalanceService(
     }
 
     /// <summary>
-    /// Updates the Account Balances for an unposted Transaction
+    /// Updates the Account Balances for a Transaction being unposted from the provided Account, or from all Accounts
     /// </summary>
-    internal void UnpostTransaction(Transaction transaction)
+    internal void UnpostTransaction(Transaction transaction, AccountId? accountId)
     {
-        foreach (AccountId accountId in transaction.GetAllAffectedAccountIds())
+        foreach (AccountId affectedAccountId in transaction.GetAllAffectedAccountIds().Where(id => accountId == null || id == accountId))
         {
-            RemoveBalanceHistories(transaction, accountId);
+            RemoveBalanceHistories(transaction, affectedAccountId);
         }
     }
 
