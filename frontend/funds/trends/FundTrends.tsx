@@ -8,14 +8,14 @@ import type {
   FundsInDateRange,
 } from "@/funds/types";
 import {
-  getDefaultTrendAccountingPeriodRange,
-  getDefaultTrendDateRange,
-} from "@/framework/routes/trendRange";
-import {
   getPageOffset,
   getRowsPerPage,
   normalizePageValue,
 } from "@/framework/listframe/page";
+import {
+  matchesTrendRange,
+  resolveTrendRange,
+} from "@/framework/routes/trendRange";
 import {
   normalizeRequestedFundNames,
   shouldPersistFundNames,
@@ -52,20 +52,8 @@ interface FundTrendsProps {
 const FundTrends = async function ({
   searchParams,
 }: FundTrendsProps): Promise<JSX.Element> {
-  const {
-    returnUrl,
-    sort,
-    page,
-    pageSize,
-    mode,
-    fundName,
-    startAccountingPeriodId,
-    endAccountingPeriodId,
-    startDate,
-    endDate,
-  } = await searchParams;
-
-  const defaultDateRange = getDefaultTrendDateRange();
+  const resolvedSearchParams = await searchParams;
+  const { returnUrl, sort, page, pageSize, fundName } = resolvedSearchParams;
 
   const apiClient = await createApiClient();
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
@@ -81,13 +69,12 @@ const FundTrends = async function ({
     await accountingPeriodsPromise,
     "Failed to fetch accounting periods",
   );
-  const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
-  const defaultAccountingPeriodRange = getDefaultTrendAccountingPeriodRange(
+  const isInOnboardingMode = accountingPeriods.items.length === 0;
+  const range = resolveTrendRange(
+    resolvedSearchParams,
     accountingPeriods.items,
   );
-  const isInOnboardingMode = latestAccountingPeriod === null;
-  const currentMode =
-    typeof mode === "undefined" || isInOnboardingMode ? "date" : mode;
+  const currentMode = range.mode;
   const currentFundNames = normalizeRequestedFundNames(
     toRepeatedSearchParams(fundName),
   );
@@ -101,39 +88,8 @@ const FundTrends = async function ({
       : {}),
   };
 
-  if (
-    (currentMode === "date" &&
-      (typeof startDate === "undefined" || typeof endDate === "undefined")) ||
-    (currentMode === "accounting-period" && latestAccountingPeriod === null)
-  ) {
-    redirect(
-      routes.trends({
-        mode: "date",
-        returnUrl,
-        ...persistedFilters,
-        startDate: defaultDateRange.start,
-        endDate: defaultDateRange.end,
-      }),
-    );
-  }
-
-  if (
-    currentMode === "accounting-period" &&
-    latestAccountingPeriod !== null &&
-    (typeof startAccountingPeriodId === "undefined" ||
-      typeof endAccountingPeriodId === "undefined")
-  ) {
-    redirect(
-      routes.trends({
-        mode: "accounting-period",
-        returnUrl,
-        ...persistedFilters,
-        startAccountingPeriodId:
-          defaultAccountingPeriodRange?.start ?? latestAccountingPeriod.id,
-        endAccountingPeriodId:
-          defaultAccountingPeriodRange?.end ?? latestAccountingPeriod.id,
-      }),
-    );
+  if (!matchesTrendRange(resolvedSearchParams, range)) {
+    redirect(routes.trends({ returnUrl, ...persistedFilters, ...range }));
   }
 
   const filterQuery = {
@@ -150,27 +106,25 @@ const FundTrends = async function ({
   const trends = await (async function (): Promise<
     FundsInDateRange | FundsInAccountingPeriodRange
   > {
-    if (currentMode === "date") {
-      const range = {
-        "Range.Start": startDate ?? defaultDateRange.start,
-        "Range.End": endDate ?? defaultDateRange.end,
+    if (range.mode === "date") {
+      const rangeQuery = {
+        "Range.Start": range.startDate,
+        "Range.End": range.endDate,
       };
       return unwrapApiResponse(
         await apiClient.GET("/funds/date-range", {
-          params: { query: { ...fundQuery, ...range } },
+          params: { query: { ...fundQuery, ...rangeQuery } },
         }),
         "Failed to load fund trends",
       );
     }
-    const range = {
-      "Range.Start":
-        startAccountingPeriodId ?? defaultAccountingPeriodRange?.start ?? "",
-      "Range.End":
-        endAccountingPeriodId ?? defaultAccountingPeriodRange?.end ?? "",
+    const rangeQuery = {
+      "Range.Start": range.startAccountingPeriodId,
+      "Range.End": range.endAccountingPeriodId,
     };
     return unwrapApiResponse(
       await apiClient.GET("/funds/accounting-period-range", {
-        params: { query: { ...fundQuery, ...range } },
+        params: { query: { ...fundQuery, ...rangeQuery } },
       }),
       "Failed to load fund trends",
     );
@@ -212,18 +166,11 @@ const FundTrends = async function ({
   const hasResolvedSelectedFundIds =
     selectedFundIds.length === currentFundNames.length;
   const currentRange =
-    currentMode === "date"
-      ? {
-          startDate: startDate ?? defaultDateRange.start,
-          endDate: endDate ?? defaultDateRange.end,
-        }
+    range.mode === "date"
+      ? { startDate: range.startDate, endDate: range.endDate }
       : {
-          startAccountingPeriodId:
-            startAccountingPeriodId ??
-            defaultAccountingPeriodRange?.start ??
-            "",
-          endAccountingPeriodId:
-            endAccountingPeriodId ?? defaultAccountingPeriodRange?.end ?? "",
+          startAccountingPeriodId: range.startAccountingPeriodId,
+          endAccountingPeriodId: range.endAccountingPeriodId,
         };
   const transactionWorkspaceHref = transactionRoutes.workspace({
     ...(currentMode === "date"

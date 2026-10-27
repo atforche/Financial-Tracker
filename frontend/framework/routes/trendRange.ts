@@ -73,6 +73,99 @@ interface TrendRangeSearchParams {
 }
 
 /**
+ * A validated trend range in the shape of its search parameters.
+ */
+type ResolvedTrendRange =
+  | {
+      readonly mode: "date";
+      readonly startDate: string;
+      readonly endDate: string;
+    }
+  | {
+      readonly mode: "accounting-period";
+      readonly startAccountingPeriodId: string;
+      readonly endAccountingPeriodId: string;
+    };
+
+/**
+ * Determines whether a value is a real calendar date in YYYY-MM-DD format.
+ */
+const isIsoDate = function (value: string | undefined): value is string {
+  return (
+    typeof value === "string" && dayjs(value).format("YYYY-MM-DD") === value
+  );
+};
+
+/**
+ * Resolves trend range search parameters, replacing invalid or unknown values with defaults and ordering the range.
+ */
+const resolveTrendRange = function (
+  params: TrendRangeSearchParams,
+  accountingPeriods: readonly { readonly id: string }[],
+): ResolvedTrendRange {
+  const defaultAccountingPeriodRange =
+    getDefaultTrendAccountingPeriodRange(accountingPeriods);
+  if (
+    params.mode === "accounting-period" &&
+    defaultAccountingPeriodRange !== null
+  ) {
+    const { startAccountingPeriodId = "", endAccountingPeriodId = "" } = params;
+    const startIndex = accountingPeriods.findIndex(
+      (period) => period.id === startAccountingPeriodId,
+    );
+    const endIndex = accountingPeriods.findIndex(
+      (period) => period.id === endAccountingPeriodId,
+    );
+    if (startIndex === -1 || endIndex === -1) {
+      return {
+        mode: "accounting-period",
+        startAccountingPeriodId: defaultAccountingPeriodRange.start,
+        endAccountingPeriodId: defaultAccountingPeriodRange.end,
+      };
+    }
+    // Accounting periods are sorted newest first, so the start has the larger index
+    return startIndex >= endIndex
+      ? {
+          mode: "accounting-period",
+          startAccountingPeriodId,
+          endAccountingPeriodId,
+        }
+      : {
+          mode: "accounting-period",
+          startAccountingPeriodId: endAccountingPeriodId,
+          endAccountingPeriodId: startAccountingPeriodId,
+        };
+  }
+
+  const defaultDateRange = getDefaultTrendDateRange();
+  const startDate = isIsoDate(params.startDate)
+    ? params.startDate
+    : defaultDateRange.start;
+  const endDate = isIsoDate(params.endDate)
+    ? params.endDate
+    : defaultDateRange.end;
+  return startDate <= endDate
+    ? { mode: "date", startDate, endDate }
+    : { mode: "date", startDate: endDate, endDate: startDate };
+};
+
+/**
+ * Determines whether search parameters already describe the resolved trend range exactly.
+ */
+const matchesTrendRange = function (
+  params: TrendRangeSearchParams,
+  range: ResolvedTrendRange,
+): boolean {
+  if (params.mode !== range.mode) {
+    return false;
+  }
+  return range.mode === "date"
+    ? params.startDate === range.startDate && params.endDate === range.endDate
+    : params.startAccountingPeriodId === range.startAccountingPeriodId &&
+        params.endAccountingPeriodId === range.endAccountingPeriodId;
+};
+
+/**
  * Switches a trend range mode while retaining values for that mode and clearing dependent parameters.
  */
 const setTrendRangeMode = function (
@@ -129,8 +222,11 @@ const setTrendRangeMode = function (
 };
 
 export {
+  type ResolvedTrendRange,
   type TrendRangeMode,
   getDefaultTrendAccountingPeriodRange,
   getDefaultTrendDateRange,
+  matchesTrendRange,
+  resolveTrendRange,
   setTrendRangeMode,
 };

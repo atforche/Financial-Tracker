@@ -14,11 +14,15 @@ import type {
   FundsInAccountingPeriodRange,
   FundsInDateRange,
 } from "@/funds/types";
-import { Stack, Typography } from "@mui/material";
 import {
-  type TrendRangeMode,
-  getDefaultTrendAccountingPeriodRange,
-  getDefaultTrendDateRange,
+  type OverviewSearchParams,
+  overviewParamNames,
+} from "@/overview/helpers";
+import { Stack, Typography } from "@mui/material";
+import { buildUrl, objectToSearchParams } from "@/framework/routes/helpers";
+import {
+  matchesTrendRange,
+  resolveTrendRange,
 } from "@/framework/routes/trendRange";
 import AccountBalanceSummaryCards from "@/accounts/AccountBalanceSummaryCards";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
@@ -29,11 +33,11 @@ import ContentSurface from "@/framework/view/ContentSurface";
 import FundBalanceSummaryCards from "@/funds/FundBalanceSummaryCards";
 import type { JSX } from "react";
 import OverviewPageHeader from "@/overview/OverviewPageHeader";
-import type { OverviewSearchParams } from "@/overview/helpers";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
+import { redirect } from "next/navigation";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -49,13 +53,6 @@ interface OverviewViewProps {
 const OverviewView = async function ({
   searchParams,
 }: OverviewViewProps): Promise<JSX.Element> {
-  const {
-    mode,
-    startAccountingPeriodId,
-    endAccountingPeriodId,
-    startDate,
-    endDate,
-  } = await searchParams;
   const apiClient = await createApiClient();
   const accountingPeriods = unwrapApiResponse(
     await apiClient.GET("/accounting-periods", {
@@ -69,32 +66,27 @@ const OverviewView = async function ({
     }),
     "Failed to fetch accounting periods",
   );
-  const defaultDateRange = getDefaultTrendDateRange();
-  const defaultAccountingPeriodRange = getDefaultTrendAccountingPeriodRange(
-    accountingPeriods.items,
+  const rangeParams = await searchParams;
+  const range = resolveTrendRange(rangeParams, accountingPeriods.items);
+  // The default range needs no parameters, but supplied ones that were corrected are rewritten in the URL
+  const hasRangeParams = Object.values(overviewParamNames).some(
+    (name) => typeof rangeParams[name] !== "undefined",
   );
-  const currentMode: TrendRangeMode =
-    mode === "accounting-period" && defaultAccountingPeriodRange !== null
-      ? "accounting-period"
-      : "date";
+  if (hasRangeParams && !matchesTrendRange(rangeParams, range)) {
+    redirect(buildUrl("/", objectToSearchParams(range)));
+  }
+  const currentMode = range.mode;
   const accountMode: AccountTrendsDataMode =
     currentMode === "date" ? "Date" : "AccountingPeriod";
   const fundMode: FundTrendsDataMode = accountMode;
-  const range =
-    currentMode === "date"
-      ? {
-          "Range.Start": startDate ?? defaultDateRange.start,
-          "Range.End": endDate ?? defaultDateRange.end,
-        }
-      : {
-          "Range.Start":
-            startAccountingPeriodId ??
-            defaultAccountingPeriodRange?.start ??
-            "",
-          "Range.End":
-            endAccountingPeriodId ?? defaultAccountingPeriodRange?.end ?? "",
-        };
-  const query = { ...range, Limit: 1, Offset: 0 };
+  const query = {
+    "Range.Start":
+      range.mode === "date" ? range.startDate : range.startAccountingPeriodId,
+    "Range.End":
+      range.mode === "date" ? range.endDate : range.endAccountingPeriodId,
+    Limit: 1,
+    Offset: 0,
+  };
   const [accountTrends, fundTrends] = await Promise.all([
     (async function (): Promise<
       AccountsInDateRange | AccountsInAccountingPeriodRange
@@ -183,7 +175,10 @@ const OverviewView = async function ({
     <PageLayout>
       <ConstrainedContent>
         <ContentSurface>
-          <OverviewPageHeader accountingPeriods={accountingPeriods.items} />
+          <OverviewPageHeader
+            accountingPeriods={accountingPeriods.items}
+            range={range}
+          />
         </ContentSurface>
       </ConstrainedContent>
       <Stack spacing={2}>

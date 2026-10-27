@@ -6,6 +6,7 @@ import type {
 } from "@/accounting-periods/types";
 import { Button, Stack, Typography } from "@mui/material";
 import {
+  type ResolvedTrendRange,
   type TrendRangeMode,
   getDefaultTrendAccountingPeriodRange,
   getDefaultTrendDateRange,
@@ -17,13 +18,13 @@ import type { JSX } from "react";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
 import { overviewParamNames } from "@/overview/helpers";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
-import { useSearchParams } from "next/navigation";
 
 /**
  * Props for the OverviewPageHeader component.
  */
 interface OverviewPageHeaderProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
+  readonly range: ResolvedTrendRange;
 }
 
 /**
@@ -31,6 +32,7 @@ interface OverviewPageHeaderProps {
  */
 const OverviewPageHeader = function ({
   accountingPeriods,
+  range,
 }: OverviewPageHeaderProps): JSX.Element {
   const defaultAccountingPeriodRange =
     getDefaultTrendAccountingPeriodRange(accountingPeriods);
@@ -40,29 +42,11 @@ const OverviewPageHeader = function ({
     defaultAccountingPeriodRange?.end ?? null;
   const { start: defaultStartDate, end: defaultEndDate } =
     getDefaultTrendDateRange();
-  const searchParams = useSearchParams();
-  const currentMode: TrendRangeMode =
-    searchParams.get(overviewParamNames.mode) === "accounting-period" &&
-    defaultAccountingPeriodRange !== null
-      ? "accounting-period"
-      : "date";
-  const currentStartAccountingPeriodId =
-    searchParams.get(overviewParamNames.startAccountingPeriodId) ??
-    defaultStartAccountingPeriodId ??
-    "";
-  const currentEndAccountingPeriodId =
-    searchParams.get(overviewParamNames.endAccountingPeriodId) ??
-    defaultEndAccountingPeriodId ??
-    "";
-  const currentStartDate =
-    searchParams.get(overviewParamNames.startDate) ?? defaultStartDate;
-  const currentEndDate =
-    searchParams.get(overviewParamNames.endDate) ?? defaultEndDate;
   const updateParams = useSearchParamUpdater([]);
   const hasCustomRange =
-    currentMode !== "date" ||
-    currentStartDate !== defaultStartDate ||
-    currentEndDate !== defaultEndDate;
+    range.mode !== "date" ||
+    range.startDate !== defaultStartDate ||
+    range.endDate !== defaultEndDate;
 
   const handleModeChange = function (nextMode: TrendRangeMode): void {
     updateParams((params) => {
@@ -75,17 +59,19 @@ const OverviewPageHeader = function ({
     });
   };
   const handleAccountingPeriodRangeChange = function (
-    range: AccountingPeriodRange,
+    nextRange: AccountingPeriodRange,
   ): void {
     updateParams((params) => {
-      params.set(overviewParamNames.startAccountingPeriodId, range.start);
-      params.set(overviewParamNames.endAccountingPeriodId, range.end);
+      params.set(overviewParamNames.startAccountingPeriodId, nextRange.start);
+      params.set(overviewParamNames.endAccountingPeriodId, nextRange.end);
     });
   };
-  const handleDateRangeChange = function (range: AccountingPeriodRange): void {
+  const handleDateRangeChange = function (
+    nextRange: AccountingPeriodRange,
+  ): void {
     updateParams((params) => {
-      params.set(overviewParamNames.startDate, range.start);
-      params.set(overviewParamNames.endDate, range.end);
+      params.set(overviewParamNames.startDate, nextRange.start);
+      params.set(overviewParamNames.endDate, nextRange.end);
     });
   };
   const resetRange = function (): void {
@@ -109,7 +95,7 @@ const OverviewPageHeader = function ({
         alignItems={{ xs: "stretch", md: "center" }}
       >
         <ToggleButtonSelector
-          value={currentMode}
+          value={range.mode}
           onChange={handleModeChange}
           options={[
             { value: "date", label: "Dates" },
@@ -120,16 +106,16 @@ const OverviewPageHeader = function ({
             },
           ]}
         />
-        {currentMode === "accounting-period" ? (
+        {range.mode === "accounting-period" ? (
           <AccountingPeriodRangeFilter
             accountingPeriods={accountingPeriods}
-            startValue={currentStartAccountingPeriodId}
-            endValue={currentEndAccountingPeriodId}
+            startValue={range.startAccountingPeriodId}
+            endValue={range.endAccountingPeriodId}
             onChange={handleAccountingPeriodRangeChange}
           />
         ) : (
           <DateRangeFilter
-            value={{ start: currentStartDate, end: currentEndDate }}
+            value={{ start: range.startDate, end: range.endDate }}
             onChange={handleDateRangeChange}
           />
         )}
