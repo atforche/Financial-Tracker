@@ -17,7 +17,15 @@ interface DateRange {
 interface DateRangeFilterProps {
   readonly value: DateRange;
   readonly onChange: (value: DateRange) => void;
+  readonly maxYears?: number;
 }
+
+/**
+ * Converts an applied date string to a date field value, treating an empty string as no date.
+ */
+const toDate = function (date: string): Dayjs | null {
+  return date === "" ? null : dayjs(date);
+};
 
 const fieldSx = {
   flex: 1,
@@ -27,29 +35,66 @@ const fieldSx = {
 };
 
 /**
- * Renders a pair of date fields while maintaining an ordered range.
+ * Renders a pair of date fields that apply a range once a date is picked, the field loses focus, or Enter is pressed,
+ * and only when the range is valid.
  */
 const DateRangeFilter = function ({
   value,
   onChange,
+  maxYears,
 }: DateRangeFilterProps): JSX.Element {
   const [startValue, setStartValue] = useState<Dayjs | null>(() =>
-    value.start === "" ? null : dayjs(value.start),
+    toDate(value.start),
   );
   const [endValue, setEndValue] = useState<Dayjs | null>(() =>
-    value.end === "" ? null : dayjs(value.end),
+    toDate(value.end),
   );
 
   useEffect(() => {
-    setStartValue(value.start === "" ? null : dayjs(value.start));
+    setStartValue(toDate(value.start));
   }, [value.start]);
 
   useEffect(() => {
-    setEndValue(value.end === "" ? null : dayjs(value.end));
+    setEndValue(toDate(value.end));
   }, [value.end]);
 
-  const formatDate = function (date: Dayjs | null): string {
-    return date?.isValid() === true ? date.format("YYYY-MM-DD") : "";
+  const getRangeError = function (
+    start: Dayjs | null,
+    end: Dayjs | null,
+  ): string | null {
+    if (start?.isValid() !== true || end?.isValid() !== true) {
+      return null;
+    }
+    if (start.isAfter(end, "day")) {
+      return "Start date must be on or before the end date";
+    }
+    if (
+      typeof maxYears === "number" &&
+      start.isBefore(end.subtract(maxYears, "year"), "day")
+    ) {
+      return `Date range can't be longer than ${maxYears} years`;
+    }
+    return null;
+  };
+  const rangeError = getRangeError(startValue, endValue);
+
+  const commit = function (start: Dayjs | null, end: Dayjs | null): void {
+    if (start?.isValid() !== true || end?.isValid() !== true) {
+      // An empty or partly typed date can never be applied, so show the applied range again
+      setStartValue(toDate(value.start));
+      setEndValue(toDate(value.end));
+      return;
+    }
+    if (getRangeError(start, end) !== null) {
+      return;
+    }
+    const range = {
+      start: start.format("YYYY-MM-DD"),
+      end: end.format("YYYY-MM-DD"),
+    };
+    if (range.start !== value.start || range.end !== value.end) {
+      onChange(range);
+    }
   };
 
   return (
@@ -59,14 +104,11 @@ const DateRangeFilter = function ({
           label="Start date"
           value={startValue}
           size="small"
-          setValue={(nextStart) => {
-            setStartValue(nextStart);
-            if (nextStart?.isValid() !== true) {
-              return;
-            }
-            const start = formatDate(nextStart);
-            onChange({ start, end: start > value.end ? start : value.end });
+          setValue={setStartValue}
+          onCommit={(start) => {
+            commit(start, endValue);
           }}
+          errorMessage={rangeError}
         />
       </Box>
       <Box sx={fieldSx}>
@@ -74,14 +116,12 @@ const DateRangeFilter = function ({
           label="End date"
           value={endValue}
           size="small"
-          setValue={(nextEnd) => {
-            setEndValue(nextEnd);
-            if (nextEnd?.isValid() !== true) {
-              return;
-            }
-            const end = formatDate(nextEnd);
-            onChange({ start: end < value.start ? end : value.start, end });
+          setValue={setEndValue}
+          onCommit={(end) => {
+            commit(startValue, end);
           }}
+          // The message shows under the start date, so the end date is only marked as invalid
+          errorMessage={rangeError === null ? null : ""}
         />
       </Box>
     </>

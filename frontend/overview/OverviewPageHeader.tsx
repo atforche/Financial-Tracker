@@ -10,6 +10,8 @@ import {
   type TrendRangeMode,
   getDefaultTrendAccountingPeriodRange,
   getDefaultTrendDateRange,
+  getTrendRangeModeOptions,
+  maximumTrendRangeYears,
   setTrendRangeMode,
 } from "@/framework/routes/trendRange";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
@@ -85,7 +87,7 @@ const OverviewPageHeader = function ({
   };
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={2} data-page-filters>
       <Typography variant="h4">Overview</Typography>
       <Stack
         direction="row"
@@ -97,14 +99,9 @@ const OverviewPageHeader = function ({
         <ToggleButtonSelector
           value={range.mode}
           onChange={handleModeChange}
-          options={[
-            { value: "date", label: "Dates" },
-            {
-              value: "accounting-period",
-              label: "Accounting periods",
-              disabled: defaultAccountingPeriodRange === null,
-            },
-          ]}
+          options={getTrendRangeModeOptions(
+            defaultAccountingPeriodRange !== null,
+          )}
         />
         {range.mode === "accounting-period" ? (
           <AccountingPeriodRangeFilter
@@ -117,6 +114,7 @@ const OverviewPageHeader = function ({
           <DateRangeFilter
             value={{ start: range.startDate, end: range.endDate }}
             onChange={handleDateRangeChange}
+            maxYears={maximumTrendRangeYears}
           />
         )}
         <Button

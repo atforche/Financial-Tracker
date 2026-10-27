@@ -1,4 +1,5 @@
 import dayjs, { type Dayjs } from "dayjs";
+import type { ToggleButtonSelectorOption } from "@/framework/forms/ToggleButtonSelector";
 import propertyName from "@/framework/data/propertyName";
 
 const defaultTrendDateRangeDays = 90;
@@ -52,6 +53,23 @@ const getDefaultTrendAccountingPeriodRange = function (
  * Defines the mode of a trend range, which can be based on accounting periods or specific dates.
  */
 type TrendRangeMode = "accounting-period" | "date";
+
+/**
+ * Returns the options for choosing a trend range mode, explaining why accounting periods are unavailable.
+ */
+const getTrendRangeModeOptions = function (
+  isAccountingPeriodModeAvailable: boolean,
+): ToggleButtonSelectorOption<TrendRangeMode>[] {
+  return [
+    { value: "date", label: "Dates" },
+    {
+      value: "accounting-period",
+      label: "Accounting periods",
+      disabled: !isAccountingPeriodModeAvailable,
+      disabledReason: "Create an accounting period to view by period",
+    },
+  ];
+};
 
 /**
  * Default values used when switching a trend range mode.
@@ -236,7 +254,9 @@ export {
   type TrendRangeMode,
   getDefaultTrendAccountingPeriodRange,
   getDefaultTrendDateRange,
+  getTrendRangeModeOptions,
   matchesTrendRange,
+  maximumTrendRangeYears,
   resolveTrendRange,
   setTrendRangeMode,
 };

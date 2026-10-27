@@ -5,7 +5,6 @@ import {
   buildPeriodSection,
   overviewParamNames,
 } from "@/overview/helpers";
-import { Stack, Typography } from "@mui/material";
 import { buildUrl, objectToSearchParams } from "@/framework/routes/helpers";
 import {
   matchesTrendRange,
@@ -22,9 +21,13 @@ import type { FundBalanceSummary } from "@/funds/types";
 import FundBalanceSummaryCards from "@/funds/FundBalanceSummaryCards";
 import type { JSX } from "react";
 import OverviewPageHeader from "@/overview/OverviewPageHeader";
+import OverviewSectionHeading from "@/overview/OverviewSectionHeading";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import { Stack } from "@mui/material";
+import accountRoutes from "@/accounts/routes";
 import createApiClient from "@/framework/data/createApiClient";
+import fundRoutes from "@/funds/routes";
 import { redirect } from "next/navigation";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
@@ -136,7 +139,10 @@ const OverviewView = async function ({
         </ContentSurface>
       </ConstrainedContent>
       <Stack spacing={2}>
-        <Typography variant="h5">Accounts</Typography>
+        <OverviewSectionHeading
+          title="Accounts"
+          trendsHref={accountRoutes.trends(range)}
+        />
         <AccountBalanceSummaryCards
           startingLabel={accounts.startLabel}
           endingLabel={accounts.endLabel}
@@ -158,7 +164,10 @@ const OverviewView = async function ({
             title="Account Balance Change"
           />
         </ResponsiveGrid>
-        <Typography variant="h5">Funds</Typography>
+        <OverviewSectionHeading
+          title="Funds"
+          trendsHref={fundRoutes.trends(range)}
+        />
         <FundBalanceSummaryCards
           startingLabel={funds.startLabel}
           endingLabel={funds.endLabel}
