@@ -158,10 +158,17 @@ public sealed class FundGoalService(
     /// </summary>
     public IReadOnlyDictionary<FundGoalId, FundGoalProgress> GetProgresses(
         IReadOnlyCollection<FundGoal> fundGoals,
-        AccountingPeriod accountingPeriod)
+        AccountingPeriod accountingPeriod) =>
+        GetProgresses(fundGoals, accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id));
+
+    /// <summary>
+    /// Calculates progress for Fund Goals in the Accounting Period of the provided balance history.
+    /// </summary>
+    public static IReadOnlyDictionary<FundGoalId, FundGoalProgress> GetProgresses(
+        IReadOnlyCollection<FundGoal> fundGoals,
+        AccountingPeriodBalanceHistory balanceHistory)
     {
-        AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository
-            .GetForAccountingPeriod(accountingPeriod.Id);
+        AccountingPeriod accountingPeriod = balanceHistory.AccountingPeriod;
         var results = new Dictionary<FundGoalId, FundGoalProgress>();
         foreach (FundGoal fundGoal in fundGoals)
         {

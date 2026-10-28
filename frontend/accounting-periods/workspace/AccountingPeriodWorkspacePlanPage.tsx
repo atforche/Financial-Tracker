@@ -44,6 +44,13 @@ const AccountingPeriodWorkspacePlanPage = async function ({
       : {}),
   } satisfies AccountingPeriodWorkspaceSearchParams;
   const workspaceUrl = routes.workspace(workspaceParams);
+  // Links between the period's own pages keep the page the user came from, so they can still return to it
+  const periodParams = {
+    ...workspaceParams,
+    ...(typeof resolvedSearchParams.returnUrl !== "undefined"
+      ? { returnUrl: resolvedSearchParams.returnUrl }
+      : {}),
+  } satisfies AccountingPeriodWorkspaceSearchParams;
   const apiClient = await createApiClient();
   const periodResponse = await apiClient.GET(
     "/accounting-periods/{accountingPeriodId}",
@@ -59,9 +66,9 @@ const AccountingPeriodWorkspacePlanPage = async function ({
   const { previousPeriod, nextPeriod } = await getAdjacentAccountingPeriods(
     period.id,
   );
-  const cashFlowHref = routes.workspaceDetail(period.id, workspaceParams);
+  const cashFlowHref = routes.workspaceDetail(period.id, periodParams);
   const adjacentPlanParams = {
-    ...workspaceParams,
+    ...periodParams,
     ...(typeof resolvedSearchParams.planTab !== "undefined"
       ? { planTab: resolvedSearchParams.planTab }
       : {}),
@@ -76,7 +83,7 @@ const AccountingPeriodWorkspacePlanPage = async function ({
       : {}),
   } satisfies AccountingPeriodWorkspaceSearchParams;
   const currentUrl = routes.workspacePlan(period.id, {
-    ...workspaceParams,
+    ...periodParams,
     ...(typeof resolvedSearchParams.incomeSourcePage !== "undefined"
       ? { incomeSourcePage: resolvedSearchParams.incomeSourcePage }
       : {}),
@@ -128,6 +135,7 @@ const AccountingPeriodWorkspacePlanPage = async function ({
         cashFlowHref={cashFlowHref}
         planHref={currentUrl}
         redirectUrl={currentUrl}
+        returnUrl={resolvedSearchParams.returnUrl}
       />
       <AccountingPeriodPlanView
         accountingPeriod={period}

@@ -10,6 +10,7 @@ import DateLocalizationProvider from "@/framework/forms/DateLocalizationProvider
 import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
 import type { JSX } from "react";
 import type { Metadata } from "next";
+import NavigationTransitionProvider from "@/framework/routes/NavigationTransitionProvider";
 import { auth } from "@/auth";
 import getCurrentApplicationUser from "@/framework/auth/currentApplicationUser";
 
@@ -51,7 +52,11 @@ const RootLayout = async function ({
         <InitColorSchemeScript attribute="data" defaultMode="system" />
         <AppRouterCacheProvider>
           <ApplicationThemeProvider>
-            <DateLocalizationProvider>{content}</DateLocalizationProvider>
+            <DateLocalizationProvider>
+              <NavigationTransitionProvider>
+                {content}
+              </NavigationTransitionProvider>
+            </DateLocalizationProvider>
           </ApplicationThemeProvider>
         </AppRouterCacheProvider>
       </body>

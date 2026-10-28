@@ -1,6 +1,11 @@
 "use client";
 
 import type { Account, AccountType } from "@/accounts/types";
+import { Button, MenuItem, TextField } from "@mui/material";
+import {
+  type FullyPostedFilterValue,
+  normalizeFullyPosted,
+} from "@/transactions/fullyPostedFilter";
 import { type JSX, useEffect, useState } from "react";
 import {
   normalizeAccountTypes,
@@ -17,7 +22,6 @@ import {
 } from "@/transactions/transactionTypeFilter";
 import AccountTypeFilter from "@/accounts/AccountTypeFilter";
 import type { AccountingPeriod } from "@/accounting-periods/types";
-import { Button } from "@mui/material";
 import DateRangeFilter from "@/framework/forms/DateRangeFilter";
 import type { Fund } from "@/funds/types";
 import type { Location } from "@/locations/types";
@@ -72,6 +76,8 @@ const TransactionWorkspaceFilter = function ({
     propertyName<TransactionWorkspaceSearchParams>("accountNames");
   const transactionTypeParamName =
     propertyName<TransactionWorkspaceSearchParams>("transactionTypes");
+  const fullyPostedParamName =
+    propertyName<TransactionWorkspaceSearchParams>("fullyPosted");
   const startDateParamName =
     propertyName<TransactionWorkspaceSearchParams>("startDate");
   const endDateParamName =
@@ -111,6 +117,9 @@ const TransactionWorkspaceFilter = function ({
   const initialTransactionTypes = normalizeTransactionTypes(
     searchParams.getAll(transactionTypeParamName),
   );
+  const initialFullyPosted = normalizeFullyPosted(
+    searchParams.get(fullyPostedParamName),
+  );
   const initialStartDate = searchParams.get(startDateParamName) ?? "";
   const initialEndDate = searchParams.get(endDateParamName) ?? "";
 
@@ -128,6 +137,8 @@ const TransactionWorkspaceFilter = function ({
   const [currentTransactionTypes, setCurrentTransactionTypes] = useState(
     initialTransactionTypes,
   );
+  const [currentFullyPosted, setCurrentFullyPosted] =
+    useState<FullyPostedFilterValue | null>(initialFullyPosted);
   const [currentStartDate, setCurrentStartDate] = useState(initialStartDate);
   const [currentEndDate, setCurrentEndDate] = useState(initialEndDate);
 
@@ -172,6 +183,9 @@ const TransactionWorkspaceFilter = function ({
     setCurrentTransactionTypes(
       normalizeTransactionTypes(params.getAll(transactionTypeParamName)),
     );
+    setCurrentFullyPosted(
+      normalizeFullyPosted(params.get(fullyPostedParamName)),
+    );
     setCurrentStartDate(params.get(startDateParamName) ?? "");
     setCurrentEndDate(params.get(endDateParamName) ?? "");
   }, [
@@ -181,6 +195,7 @@ const TransactionWorkspaceFilter = function ({
     accounts,
     currentSearchParams,
     fundParamName,
+    fullyPostedParamName,
     funds,
     locationParamName,
     locations,
@@ -204,6 +219,7 @@ const TransactionWorkspaceFilter = function ({
         accountTypeParamName,
         accountNameParamName,
         transactionTypeParamName,
+        fullyPostedParamName,
         startDateParamName,
         endDateParamName,
         startAccountingPeriodIdParamName,
@@ -233,6 +249,9 @@ const TransactionWorkspaceFilter = function ({
           params.append(transactionTypeParamName, transactionType);
         });
       }
+      if (currentFullyPosted !== null) {
+        params.set(fullyPostedParamName, currentFullyPosted);
+      }
       if (currentStartDate !== "") {
         params.set(startDateParamName, currentStartDate);
       }
@@ -250,6 +269,7 @@ const TransactionWorkspaceFilter = function ({
     currentLocations.length > 0 ||
     shouldPersistAccountTypes(currentAccountTypes) ||
     shouldPersistTransactionTypes(currentTransactionTypes) ||
+    currentFullyPosted !== null ||
     currentStartDate !== "" ||
     currentEndDate !== "" ||
     searchParams.has(startAccountingPeriodIdParamName) ||
@@ -263,6 +283,7 @@ const TransactionWorkspaceFilter = function ({
     accountTypeParamName,
     accountNameParamName,
     transactionTypeParamName,
+    fullyPostedParamName,
     startDateParamName,
     endDateParamName,
     startAccountingPeriodIdParamName,
@@ -322,6 +343,7 @@ const TransactionWorkspaceFilter = function ({
     setCurrentLocations([]);
     setCurrentAccountTypes([]);
     setCurrentTransactionTypes([]);
+    setCurrentFullyPosted(null);
     setCurrentStartDate("");
     setCurrentEndDate("");
     updateParams((params) => {
@@ -333,6 +355,7 @@ const TransactionWorkspaceFilter = function ({
       params.delete(accountTypeParamName);
       params.delete(accountNameParamName);
       params.delete(transactionTypeParamName);
+      params.delete(fullyPostedParamName);
       params.delete(startDateParamName);
       params.delete(endDateParamName);
       params.delete(startAccountingPeriodIdParamName);
@@ -374,6 +397,24 @@ const TransactionWorkspaceFilter = function ({
           noOptionsText="No transaction types found"
           onChange={handleTransactionTypeChange}
         />
+      </TransactionFilterControl>
+      <TransactionFilterControl>
+        <TextField
+          select
+          label="Fully posted"
+          value={currentFullyPosted ?? ""}
+          onChange={(event) => {
+            setCurrentFullyPosted(normalizeFullyPosted(event.target.value));
+          }}
+          slotProps={{
+            select: { displayEmpty: true },
+            inputLabel: { shrink: true },
+          }}
+        >
+          <MenuItem value="">All transactions</MenuItem>
+          <MenuItem value="true">Fully posted</MenuItem>
+          <MenuItem value="false">Not fully posted</MenuItem>
+        </TextField>
       </TransactionFilterControl>
       <TransactionFilterControl>
         <AccountTypeFilter

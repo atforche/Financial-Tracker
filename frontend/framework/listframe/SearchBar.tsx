@@ -44,6 +44,8 @@ const SearchBar = function ({
 
   return (
     <TextField
+      // Keeps the surrounding list from fading while its results update as the user types
+      data-page-filters
       size="small"
       placeholder="Search..."
       defaultValue={searchParams.get(searchParamName) ?? ""}

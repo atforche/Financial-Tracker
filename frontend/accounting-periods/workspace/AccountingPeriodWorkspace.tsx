@@ -21,6 +21,7 @@ import AccountingPeriodWorkspaceListFrame from "@/accounting-periods/workspace/A
 import type { FundGoalSort } from "@/fund-goals/types";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
+import ReturnLink from "@/framework/view/ReturnLink";
 import createApiClient from "@/framework/data/createApiClient";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
@@ -42,6 +43,7 @@ interface AccountingPeriodWorkspaceSearchParams {
   accountGoalPage?: number | string | null;
   accountGoalSort?: AccountGoalSort;
   action?: AccountingPeriodWorkspaceAction;
+  returnUrl?: string;
 }
 
 /**
@@ -63,7 +65,8 @@ const AccountingPeriodWorkspace = async function ({
   searchParams,
 }: AccountingPeriodWorkspaceProps): Promise<JSX.Element> {
   const apiClient = await createApiClient();
-  const { years, months, sort, page, pageSize, action } = await searchParams;
+  const { years, months, sort, page, pageSize, action, returnUrl } =
+    await searchParams;
   const currentPage = normalizePageValue(page);
   const rowsPerPage = getRowsPerPage(pageSize);
   const currentYear = new Date().getFullYear();
@@ -136,6 +139,7 @@ const AccountingPeriodWorkspace = async function ({
 
   return (
     <PageLayout>
+      <ReturnLink returnUrl={returnUrl} />
       <AccountingPeriodWorkspaceFilter
         firstAccountingPeriod={firstAccountingPeriod.items[0] ?? null}
         isInOnboardingMode={isInOnboardingMode}

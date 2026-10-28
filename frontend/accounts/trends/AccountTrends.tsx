@@ -8,15 +8,14 @@ import type {
   AccountsInDateRange,
 } from "@/accounts/types";
 import {
-  type TrendRangeMode,
-  getDefaultTrendAccountingPeriodRange,
-  getDefaultTrendDateRange,
-} from "@/framework/routes/trendRange";
-import {
   getPageOffset,
   getRowsPerPage,
   normalizePageValue,
 } from "@/framework/listframe/page";
+import {
+  matchesTrendRange,
+  resolveTrendRange,
+} from "@/framework/routes/trendRange";
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
@@ -29,13 +28,14 @@ import AccountBalanceSummaryCards from "@/accounts/AccountBalanceSummaryCards";
 import AccountTrendsFilter from "@/accounts/trends/AccountTrendsFilter";
 import AccountTrendsListFrame from "@/accounts/trends/AccountTrendsListFrame";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
+import { BalanceGranularityModel } from "@/framework/data/api";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import BalanceTrendsChangeChart from "@/framework/charts/BalanceTrendsChangeChart";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import TrendsBackLink from "@/framework/view/TrendsBackLink";
+import ReturnLink from "@/framework/view/ReturnLink";
 import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
@@ -57,21 +57,9 @@ interface AccountTrendsProps {
 const AccountTrends = async function ({
   searchParams,
 }: AccountTrendsProps): Promise<JSX.Element> {
-  const {
-    returnUrl,
-    sort,
-    page,
-    pageSize,
-    mode,
-    accountType,
-    accountName,
-    startAccountingPeriodId,
-    endAccountingPeriodId,
-    startDate,
-    endDate,
-  } = await searchParams;
-
-  const defaultDateRange = getDefaultTrendDateRange();
+  const resolvedSearchParams = await searchParams;
+  const { returnUrl, sort, page, pageSize, accountType, accountName } =
+    resolvedSearchParams;
 
   const apiClient = await createApiClient();
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
@@ -87,13 +75,12 @@ const AccountTrends = async function ({
     await accountingPeriodsPromise,
     "Failed to fetch accounting periods",
   );
-  const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
-  const defaultAccountingPeriodRange = getDefaultTrendAccountingPeriodRange(
+  const isInOnboardingMode = accountingPeriods.items.length === 0;
+  const range = resolveTrendRange(
+    resolvedSearchParams,
     accountingPeriods.items,
   );
-  const isInOnboardingMode = latestAccountingPeriod === null;
-  const currentMode: TrendRangeMode =
-    typeof mode === "undefined" || isInOnboardingMode ? "date" : mode;
+  const currentMode = range.mode;
   const currentAccountTypes = normalizeAccountTypes(
     toRepeatedSearchParams(accountType),
   );
@@ -113,39 +100,8 @@ const AccountTrends = async function ({
       : {}),
   };
 
-  if (
-    (currentMode === "date" &&
-      (typeof startDate === "undefined" || typeof endDate === "undefined")) ||
-    (currentMode === "accounting-period" && latestAccountingPeriod === null)
-  ) {
-    redirect(
-      routes.trends({
-        mode: "date",
-        returnUrl,
-        ...persistedFilters,
-        startDate: defaultDateRange.start,
-        endDate: defaultDateRange.end,
-      }),
-    );
-  }
-
-  if (
-    currentMode === "accounting-period" &&
-    latestAccountingPeriod !== null &&
-    (typeof startAccountingPeriodId === "undefined" ||
-      typeof endAccountingPeriodId === "undefined")
-  ) {
-    redirect(
-      routes.trends({
-        mode: "accounting-period",
-        returnUrl,
-        ...persistedFilters,
-        startAccountingPeriodId:
-          defaultAccountingPeriodRange?.start ?? latestAccountingPeriod.id,
-        endAccountingPeriodId:
-          defaultAccountingPeriodRange?.end ?? latestAccountingPeriod.id,
-      }),
-    );
+  if (!matchesTrendRange(resolvedSearchParams, range)) {
+    redirect(routes.trends({ returnUrl, ...persistedFilters, ...range }));
   }
 
   const filterQuery = {
@@ -165,27 +121,25 @@ const AccountTrends = async function ({
   const trends = await (async function (): Promise<
     AccountsInDateRange | AccountsInAccountingPeriodRange
   > {
-    if (currentMode === "date") {
-      const range = {
-        "Range.Start": startDate ?? defaultDateRange.start,
-        "Range.End": endDate ?? defaultDateRange.end,
+    if (range.mode === "date") {
+      const rangeQuery = {
+        "Range.Start": range.startDate,
+        "Range.End": range.endDate,
       };
       return unwrapApiResponse(
         await apiClient.GET("/accounts/date-range", {
-          params: { query: { ...accountQuery, ...range } },
+          params: { query: { ...accountQuery, ...rangeQuery } },
         }),
         "Failed to load account trends",
       );
     }
-    const range = {
-      "Range.Start":
-        startAccountingPeriodId ?? defaultAccountingPeriodRange?.start ?? "",
-      "Range.End":
-        endAccountingPeriodId ?? defaultAccountingPeriodRange?.end ?? "",
+    const rangeQuery = {
+      "Range.Start": range.startAccountingPeriodId,
+      "Range.End": range.endAccountingPeriodId,
     };
     return unwrapApiResponse(
       await apiClient.GET("/accounts/accounting-period-range", {
-        params: { query: { ...accountQuery, ...range } },
+        params: { query: { ...accountQuery, ...rangeQuery } },
       }),
       "Failed to load account trends",
     );
@@ -195,6 +149,9 @@ const AccountTrends = async function ({
   const periodSummaries =
     "accountingPeriods" in trends ? trends.accountingPeriods : [];
   const dateSummaries = "dates" in trends ? trends.dates : [];
+  const openingBalance = "dates" in trends ? trends.openingBalance : null;
+  const granularity =
+    "dates" in trends ? trends.granularity : BalanceGranularityModel.Day;
   const chartPeriods = periodSummaries.map((summary) => ({
     accountingPeriodId: summary.accountingPeriod.id,
     accountingPeriodName: summary.accountingPeriod.name,
@@ -207,20 +164,14 @@ const AccountTrends = async function ({
     mode: modeValue,
     accountingPeriods: chartPeriods,
     dates: dateSummaries,
+    granularity,
   });
   const currentRange =
-    currentMode === "date"
-      ? {
-          startDate: startDate ?? defaultDateRange.start,
-          endDate: endDate ?? defaultDateRange.end,
-        }
+    range.mode === "date"
+      ? { startDate: range.startDate, endDate: range.endDate }
       : {
-          startAccountingPeriodId:
-            startAccountingPeriodId ??
-            defaultAccountingPeriodRange?.start ??
-            "",
-          endAccountingPeriodId:
-            endAccountingPeriodId ?? defaultAccountingPeriodRange?.end ?? "",
+          startAccountingPeriodId: range.startAccountingPeriodId,
+          endAccountingPeriodId: range.endAccountingPeriodId,
         };
   const transactionWorkspaceHref = transactionRoutes.workspace({
     ...(currentMode === "date"
@@ -266,15 +217,13 @@ const AccountTrends = async function ({
     modeValue,
     periodSummaries,
     dateSummaries,
+    openingBalance,
+    range.mode === "date" ? range.startDate : null,
   );
 
   return (
     <PageLayout>
-      <TrendsBackLink
-        returnUrl={returnUrl}
-        workspace="accounts"
-        label="Back to Account Details"
-      />
+      <ReturnLink returnUrl={returnUrl} />
       <ConstrainedContent>
         <AccountTrendsFilter
           accountingPeriods={accountingPeriods.items}
@@ -296,6 +245,8 @@ const AccountTrends = async function ({
           mode={modeValue}
           accountingPeriods={periodSummaries}
           dates={dateSummaries}
+          openingBalance={openingBalance?.totalBalance ?? null}
+          granularity={granularity}
         />
       </ResponsiveGrid>
       <AccountTrendsListFrame

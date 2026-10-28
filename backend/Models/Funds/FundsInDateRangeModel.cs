@@ -26,6 +26,16 @@ public class FundsInDateRangeModel
     public required decimal TotalSpending { get; init; }
 
     /// <summary>
+    /// Summary balances at the start of the requested range, before any activity on the start date.
+    /// </summary>
+    public required FundBalanceSummaryModel? OpeningBalance { get; init; }
+
+    /// <summary>
+    /// Spacing between the dates in the balance series.
+    /// </summary>
+    public required BalanceGranularityModel Granularity { get; init; }
+
+    /// <summary>
     /// Summary balances for each date in the requested range.
     /// </summary>
     public required IReadOnlyCollection<FundBalanceSummaryByDateModel> Dates { get; init; }

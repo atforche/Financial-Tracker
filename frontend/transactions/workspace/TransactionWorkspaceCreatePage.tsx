@@ -3,6 +3,7 @@ import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import TransactionWorkspacePageHeader from "@/transactions/workspace/TransactionWorkspacePageHeader";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
+import getTransactionPageBackLink from "@/transactions/workspace/getTransactionPageBackLink";
 import { getTransactionWorkspaceReferenceData } from "@/transactions/workspace/getTransactionWorkspaceData";
 import routes from "@/transactions/routes";
 
@@ -27,12 +28,13 @@ const TransactionWorkspaceCreatePage = async function ({
     await getTransactionWorkspaceReferenceData();
 
   const workspaceUrl = routes.workspace(workspaceSearchParams);
+  const back = getTransactionPageBackLink(returnUrl, workspaceUrl);
 
   return (
     <PageLayout>
       <TransactionWorkspacePageHeader
-        backHref={returnUrl ?? workspaceUrl}
-        backLabel={returnUrl === "/" ? "Back to Overview" : "Back to Workspace"}
+        backHref={back.href}
+        backLabel={back.label}
         title="Create Transaction"
       />
       <CreateTransactionForm

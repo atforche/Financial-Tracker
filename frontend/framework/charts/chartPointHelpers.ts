@@ -1,4 +1,5 @@
 import type { ChartColor, ChartRangeMode } from "@/framework/charts/chartTypes";
+import { BalanceGranularityModel } from "@/framework/data/api";
 import type { BarMetricChartPoint } from "@/framework/charts/barMetricHelpers";
 import dayjs from "dayjs";
 import { formatLongDate } from "@/framework/dateHelpers";
@@ -35,15 +36,42 @@ const createAccountingPeriodMetricPoint = function (
 };
 
 /**
- * Creates a normalized metric point for a calendar date.
+ * Formats the tick and tooltip labels for a date that ends a day, week, or month of a series.
+ */
+const getDateLabels = function (
+  date: string,
+  granularity: BalanceGranularityModel,
+  dayTickFormat: string,
+): { readonly tickLabel: string; readonly tooltipLabel: string } {
+  const longDate = formatLongDate(new Date(`${date}T00:00:00`));
+  if (granularity === BalanceGranularityModel.Week) {
+    return {
+      tickLabel: dayjs(date).format("MMM D"),
+      tooltipLabel: `Week ending ${longDate}`,
+    };
+  }
+  if (granularity === BalanceGranularityModel.Month) {
+    return {
+      tickLabel: dayjs(date).format("MMM YYYY"),
+      tooltipLabel: `Month ending ${longDate}`,
+    };
+  }
+  return {
+    tickLabel: dayjs(date).format(dayTickFormat),
+    tooltipLabel: longDate,
+  };
+};
+
+/**
+ * Creates a normalized metric point for a date that ends a day, week, or month.
  */
 const createDateMetricPoint = function (
   metric: DateMetric,
   color?: ChartColor,
+  granularity: BalanceGranularityModel = BalanceGranularityModel.Day,
 ): BarMetricChartPoint {
   return {
-    tickLabel: dayjs(metric.date).format("MMM D"),
-    tooltipLabel: formatLongDate(new Date(`${metric.date}T00:00:00`)),
+    ...getDateLabels(metric.date, granularity, "MMM D"),
     value: metric.value,
     ...(typeof color === "undefined" ? {} : { color }),
   };
@@ -78,4 +106,5 @@ export {
   buildRangeMetricChartPoints,
   createAccountingPeriodMetricPoint,
   createDateMetricPoint,
+  getDateLabels,
 };

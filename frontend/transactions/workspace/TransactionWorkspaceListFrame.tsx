@@ -8,8 +8,6 @@ import ListFrame from "@/framework/listframe/ListFrame";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import { buildUrl } from "@/framework/routes/helpers";
 import createTransactionListColumns from "@/transactions/createTransactionListColumns";
-import { normalizeAccountTypes } from "@/accounts/accountTypeFilterHelpers";
-import { normalizeTransactionTypes } from "@/transactions/transactionTypeFilter";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/transactions/routes";
@@ -54,6 +52,8 @@ const TransactionWorkspaceListFrame = function ({
     propertyName<TransactionWorkspaceSearchParams>("accountNames");
   const transactionTypesParamName =
     propertyName<TransactionWorkspaceSearchParams>("transactionTypes");
+  const fullyPostedParamName =
+    propertyName<TransactionWorkspaceSearchParams>("fullyPosted");
   const sortParamName = propertyName<TransactionWorkspaceSearchParams>("sort");
   const pageParamName = propertyName<TransactionWorkspaceSearchParams>("page");
 
@@ -70,42 +70,10 @@ const TransactionWorkspaceListFrame = function ({
     });
   };
 
+  // Pages opened from this list return to it, and it keeps its own return link
+  const listUrl = buildUrl(pathname, new URLSearchParams(searchParams));
   const openTransaction = function (transaction: Transaction): void {
-    const params = new URLSearchParams(searchParams.toString());
-    const startDate = params.get("startDate");
-    const endDate = params.get("endDate");
-    const startAccountingPeriodId = params.get("startAccountingPeriodId");
-    const endAccountingPeriodId = params.get("endAccountingPeriodId");
-    const pageSize = params.get("pageSize");
-    const returnUrl = params.get("returnUrl");
-    router.push(
-      routes.workspaceDetail(transaction.id, {
-        accountingPeriodIds: params.getAll(accountingPeriodIdsParamName),
-        accountIds: params.getAll(accountIdsParamName),
-        fundIds: params.getAll(fundIdsParamName),
-        locationIds: params.getAll(locationIdsParamName),
-        fundNames: params.getAll(fundNamesParamName),
-        accountTypes: normalizeAccountTypes(
-          params.getAll(accountTypesParamName),
-        ),
-        accountNames: params.getAll(accountNamesParamName),
-        transactionTypes: normalizeTransactionTypes(
-          params.getAll(transactionTypesParamName),
-        ),
-        ...(startDate === null ? {} : { startDate }),
-        ...(endDate === null ? {} : { endDate }),
-        ...(startAccountingPeriodId === null
-          ? {}
-          : { startAccountingPeriodId }),
-        ...(endAccountingPeriodId === null ? {} : { endAccountingPeriodId }),
-        sort:
-          parseEnumValue(TransactionSort, params.get(sortParamName) ?? "") ??
-          null,
-        page: params.get(pageParamName),
-        ...(pageSize === null ? {} : { pageSize }),
-        ...(returnUrl === null ? {} : { returnUrl }),
-      } satisfies TransactionWorkspaceSearchParams),
-    );
+    router.push(routes.workspaceDetail(transaction.id, { returnUrl: listUrl }));
   };
 
   const currentSort = parseEnumValue(
@@ -114,7 +82,7 @@ const TransactionWorkspaceListFrame = function ({
   );
   const createUrl = buildUrl(
     `${pathname}/create`,
-    new URLSearchParams(searchParams),
+    new URLSearchParams({ returnUrl: listUrl }),
   );
 
   const columns = createTransactionListColumns({
@@ -169,6 +137,7 @@ const TransactionWorkspaceListFrame = function ({
                 params.delete(accountTypesParamName);
                 params.delete(accountNamesParamName);
                 params.delete(transactionTypesParamName);
+                params.delete(fullyPostedParamName);
                 params.delete("startDate");
                 params.delete("endDate");
                 params.delete("startAccountingPeriodId");

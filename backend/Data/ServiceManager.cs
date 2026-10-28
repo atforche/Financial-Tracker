@@ -4,6 +4,7 @@ using Data.Accounts;
 using Data.FundGoals;
 using Data.Funds;
 using Data.Locations;
+using Data.Overview;
 using Data.Transactions;
 using Data.Users;
 using Domain.AccountGoals;
@@ -18,6 +19,7 @@ using Domain.Funds;
 using Domain.Funds.Queries;
 using Domain.Locations;
 using Domain.Locations.Queries;
+using Domain.Overview;
 using Domain.Transactions;
 using Domain.Transactions.Queries;
 using Domain.Users;
@@ -72,6 +74,8 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<ILocationRepository, LocationRepository>();
         _ = serviceCollection.AddScoped<ILocationQueryRepository, LocationQueryRepository>();
+
+        _ = serviceCollection.AddScoped<IOverviewQueryRepository, OverviewQueryRepository>();
 
         _ = serviceCollection.AddScoped<IUserRepository, UserRepository>();
         _ = serviceCollection.AddScoped<IUserInvitationRepository, UserInvitationRepository>();

@@ -1,8 +1,11 @@
 import dayjs, { type Dayjs } from "dayjs";
+import type { ToggleButtonSelectorOption } from "@/framework/forms/ToggleButtonSelector";
 import propertyName from "@/framework/data/propertyName";
 
 const defaultTrendDateRangeDays = 90;
 const defaultTrendAccountingPeriodCount = 12;
+// Matches the longest date range the backend will summarize into a balance series
+const maximumTrendRangeYears = 10;
 
 /**
  * The start and end of a trend range.
@@ -52,6 +55,23 @@ const getDefaultTrendAccountingPeriodRange = function (
 type TrendRangeMode = "accounting-period" | "date";
 
 /**
+ * Returns the options for choosing a trend range mode, explaining why accounting periods are unavailable.
+ */
+const getTrendRangeModeOptions = function (
+  isAccountingPeriodModeAvailable: boolean,
+): ToggleButtonSelectorOption<TrendRangeMode>[] {
+  return [
+    { value: "date", label: "Dates" },
+    {
+      value: "accounting-period",
+      label: "Accounting periods",
+      disabled: !isAccountingPeriodModeAvailable,
+      disabledReason: "Create an accounting period to view by period",
+    },
+  ];
+};
+
+/**
  * Default values used when switching a trend range mode.
  */
 interface TrendRangeDefaults {
@@ -71,6 +91,107 @@ interface TrendRangeSearchParams {
   startDate?: string;
   endDate?: string;
 }
+
+/**
+ * A validated trend range in the shape of its search parameters.
+ */
+type ResolvedTrendRange =
+  | {
+      readonly mode: "date";
+      readonly startDate: string;
+      readonly endDate: string;
+    }
+  | {
+      readonly mode: "accounting-period";
+      readonly startAccountingPeriodId: string;
+      readonly endAccountingPeriodId: string;
+    };
+
+/**
+ * Determines whether a value is a real calendar date in YYYY-MM-DD format.
+ */
+const isIsoDate = function (value: string | undefined): value is string {
+  return (
+    typeof value === "string" && dayjs(value).format("YYYY-MM-DD") === value
+  );
+};
+
+/**
+ * Resolves trend range search parameters, replacing invalid or unknown values with defaults, ordering the range, and
+ * shortening date ranges longer than the maximum.
+ */
+const resolveTrendRange = function (
+  params: TrendRangeSearchParams,
+  accountingPeriods: readonly { readonly id: string }[],
+): ResolvedTrendRange {
+  const defaultAccountingPeriodRange =
+    getDefaultTrendAccountingPeriodRange(accountingPeriods);
+  if (
+    params.mode === "accounting-period" &&
+    defaultAccountingPeriodRange !== null
+  ) {
+    const { startAccountingPeriodId = "", endAccountingPeriodId = "" } = params;
+    const startIndex = accountingPeriods.findIndex(
+      (period) => period.id === startAccountingPeriodId,
+    );
+    const endIndex = accountingPeriods.findIndex(
+      (period) => period.id === endAccountingPeriodId,
+    );
+    if (startIndex === -1 || endIndex === -1) {
+      return {
+        mode: "accounting-period",
+        startAccountingPeriodId: defaultAccountingPeriodRange.start,
+        endAccountingPeriodId: defaultAccountingPeriodRange.end,
+      };
+    }
+    // Accounting periods are sorted newest first, so the start has the larger index
+    return startIndex >= endIndex
+      ? {
+          mode: "accounting-period",
+          startAccountingPeriodId,
+          endAccountingPeriodId,
+        }
+      : {
+          mode: "accounting-period",
+          startAccountingPeriodId: endAccountingPeriodId,
+          endAccountingPeriodId: startAccountingPeriodId,
+        };
+  }
+
+  const defaultDateRange = getDefaultTrendDateRange();
+  const startDate = isIsoDate(params.startDate)
+    ? params.startDate
+    : defaultDateRange.start;
+  const endDate = isIsoDate(params.endDate)
+    ? params.endDate
+    : defaultDateRange.end;
+  const [orderedStart, orderedEnd] =
+    startDate <= endDate ? [startDate, endDate] : [endDate, startDate];
+  const earliestStart = dayjs(orderedEnd)
+    .subtract(maximumTrendRangeYears, "year")
+    .format("YYYY-MM-DD");
+  return {
+    mode: "date",
+    startDate: orderedStart < earliestStart ? earliestStart : orderedStart,
+    endDate: orderedEnd,
+  };
+};
+
+/**
+ * Determines whether search parameters already describe the resolved trend range exactly.
+ */
+const matchesTrendRange = function (
+  params: TrendRangeSearchParams,
+  range: ResolvedTrendRange,
+): boolean {
+  if (params.mode !== range.mode) {
+    return false;
+  }
+  return range.mode === "date"
+    ? params.startDate === range.startDate && params.endDate === range.endDate
+    : params.startAccountingPeriodId === range.startAccountingPeriodId &&
+        params.endAccountingPeriodId === range.endAccountingPeriodId;
+};
 
 /**
  * Switches a trend range mode while retaining values for that mode and clearing dependent parameters.
@@ -132,5 +253,9 @@ export {
   type TrendRangeMode,
   getDefaultTrendAccountingPeriodRange,
   getDefaultTrendDateRange,
+  getTrendRangeModeOptions,
+  matchesTrendRange,
+  maximumTrendRangeYears,
+  resolveTrendRange,
   setTrendRangeMode,
 };

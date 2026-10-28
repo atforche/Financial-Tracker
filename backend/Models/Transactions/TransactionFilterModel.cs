@@ -29,4 +29,9 @@ public class TransactionFilterModel
     /// Transaction Types to filter the Transactions by.
     /// </summary>
     public IReadOnlyCollection<TransactionTypeModel>? Types { get; init; }
+
+    /// <summary>
+    /// Whether to keep only Transactions that are, or are not, posted to every Account they affect.
+    /// </summary>
+    public bool? FullyPosted { get; init; }
 }

@@ -7,6 +7,7 @@ import PageLayout from "@/framework/view/PageLayout";
 import TransactionWorkspacePageHeader from "@/transactions/workspace/TransactionWorkspacePageHeader";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import UpdateTransactionForm from "@/transactions/workspace/UpdateTransactionForm";
+import getTransactionPageBackLink from "@/transactions/workspace/getTransactionPageBackLink";
 import { redirect } from "next/navigation";
 import routes from "@/transactions/routes";
 
@@ -42,9 +43,10 @@ const TransactionWorkspaceEditPage = async function ({
     selectedTransactionId: transactionId,
   };
   const workspaceUrl = routes.workspace(selectedWorkspaceSearchParams);
+  const back = getTransactionPageBackLink(returnUrl, workspaceUrl);
 
   if (transaction === null) {
-    redirect(routes.workspace(workspaceSearchParams));
+    redirect(back.href);
   }
 
   const transactionAccountingPeriod =
@@ -59,7 +61,8 @@ const TransactionWorkspaceEditPage = async function ({
   return (
     <PageLayout>
       <TransactionWorkspacePageHeader
-        backHref={returnUrl ?? workspaceUrl}
+        backHref={back.href}
+        backLabel={back.label}
         title="Edit Transaction"
       />
       <UpdateTransactionForm

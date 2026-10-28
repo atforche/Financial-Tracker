@@ -118,8 +118,16 @@ const AccountingPeriodTrends = async function ({
     "AccountingPeriod",
     [],
     [],
+    null,
+    null,
   );
-  let fundBalanceSnapshot = getFundTrendsSnapshot("AccountingPeriod", [], []);
+  let fundBalanceSnapshot = getFundTrendsSnapshot(
+    "AccountingPeriod",
+    [],
+    [],
+    null,
+    null,
+  );
   let rangeExpectations = {
     expectedGoalContributions: 0,
     actualGoalContributions: 0,
@@ -170,6 +178,8 @@ const AccountingPeriodTrends = async function ({
         "Failed to fetch account balance trends",
       ).accountingPeriods,
       [],
+      null,
+      null,
     );
     fundBalanceSnapshot = getFundTrendsSnapshot(
       "AccountingPeriod",
@@ -178,6 +188,8 @@ const AccountingPeriodTrends = async function ({
         "Failed to fetch fund balance trends",
       ).accountingPeriods,
       [],
+      null,
+      null,
     );
     fullRangeAccountingPeriods = unwrapApiResponse(
       rangePeriodsResponse,

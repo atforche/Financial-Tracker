@@ -133,6 +133,20 @@ public sealed class AccountQueryService(
     }
 
     /// <summary>
+    /// Retrieves Account balance summaries for each date sampled between the provided dates, and the spacing between them.
+    /// </summary>
+    public async Task<(List<AccountDateBalanceSummary> Summaries, BalanceGranularity Granularity)> GetDateSummariesAsync(
+        AccountFilter filter,
+        DateOnly start,
+        DateOnly end,
+        CancellationToken cancellationToken = default) =>
+        await SummarizeDatesAsync(
+            await accountQueryRepository.GetDateRangeBalancesAsync(filter, start, end, cancellationToken),
+            start,
+            end,
+            cancellationToken);
+
+    /// <summary>
     /// Retrieves Account balances and financial totals over a date range.
     /// </summary>
     public async Task<AccountDateRange> GetDateRangeAsync(
@@ -141,11 +155,6 @@ public sealed class AccountQueryService(
     {
         IReadOnlyCollection<AccountRangeBalance> balances = await accountQueryRepository.GetDateRangeBalancesAsync(
             query.Filter,
-            query.Start,
-            query.End,
-            cancellationToken);
-        IReadOnlyCollection<AccountDateBalanceFact> history = await accountQueryRepository.GetDateBalanceFactsAsync(
-            balances.Select(balance => balance.Account.Id).ToList(),
             query.Start,
             query.End,
             cancellationToken);
@@ -161,10 +170,12 @@ public sealed class AccountQueryService(
             query.End,
             cancellationToken);
         var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
-        IReadOnlyCollection<AccountDateBalanceSummary> dates =
-            query.Start is DateOnly start && query.End is DateOnly end
-                ? SummarizeDates(start, end, balances, history)
-                : [];
+        BalanceGranularity granularity = BalanceGranularity.Day;
+        List<AccountDateBalanceSummary> summaries = [];
+        if (query.Start is DateOnly start && query.End is DateOnly end)
+        {
+            (summaries, granularity) = await SummarizeDatesAsync(balances, start, end, cancellationToken);
+        }
         IReadOnlyCollection<AccountRangeBalance> items = Sort(balances, query.Sort)
             .Skip(query.Offset)
             .Take(query.Limit ?? int.MaxValue)
@@ -175,81 +186,52 @@ public sealed class AccountQueryService(
             totals.TotalIncome,
             totals.TrackedIncome,
             totals.TotalSpending,
-            dates);
+            summaries.FirstOrDefault()?.Balance,
+            granularity,
+            summaries.Skip(1).ToList());
     }
 
     /// <summary>
     /// Summarizes the provided Account Period Balances into a single Account Balance Summary.
     /// </summary>
-    private static AccountBalanceSummary Summarize(IEnumerable<AccountPeriodBalanceFact> balances, bool opening)
-    {
-        var values = balances.Select(balance => (
+    private static AccountBalanceSummary Summarize(IEnumerable<AccountPeriodBalanceFact> balances, bool opening) =>
+        AccountBalanceSummary.Create(balances.Select(balance => (
             balance.Account.Type,
-            Amount: (balance.Account.Type.IsDebt() ? -1 : 1) * (opening ? balance.OpeningBalance : balance.ClosingBalance))).ToList();
-        return new AccountBalanceSummary(
-            values.Sum(item => item.Amount),
-            values.Where(item => item.Type.IsTracked()).Sum(item => item.Amount),
-            values.Where(item => !item.Type.IsTracked()).Sum(item => item.Amount),
-            values.GroupBy(item => item.Type).OrderBy(group => group.Key)
-                .Select(group => new AccountTypeBalance(group.Key, group.Sum(item => item.Amount))).ToList());
-    }
+            opening ? balance.OpeningBalance : balance.ClosingBalance)));
 
     /// <summary>
-    /// Summarizes Account balances for each date by advancing through the in-range history once.
+    /// Summarizes Account balances for each date, treating Accounts as empty before they were opened.
     /// </summary>
     private static List<AccountDateBalanceSummary> SummarizeDates(
-        DateOnly start,
-        DateOnly end,
-        IEnumerable<AccountRangeBalance> balances,
-        IReadOnlyCollection<AccountDateBalanceFact> history)
-    {
-        IReadOnlyCollection<AccountRangeBalance> rangeBalances = balances.ToList();
-        var currentBalances = rangeBalances.ToDictionary(
-            balance => balance.Account.Id,
-            balance => balance.StartingBalance);
-        var orderedHistory = history
-            .OrderBy(item => item.Date)
-            .ThenBy(item => item.Sequence)
-            .ToList();
-        int historyIndex = 0;
-        var summaries = new List<AccountDateBalanceSummary>();
-        foreach (DateOnly date in GetDates(start, end))
-        {
-            while (historyIndex < orderedHistory.Count && orderedHistory[historyIndex].Date <= date)
-            {
-                AccountDateBalanceFact item = orderedHistory[historyIndex++];
-                currentBalances[item.AccountId] = item.PostedBalance;
-            }
-            var values = rangeBalances.Select(balance =>
-            {
-                decimal amount = balance.Account.DateOpened is DateOnly opened && date < opened
-                    ? 0
-                    : currentBalances[balance.Account.Id];
-                return (balance.Account.Type, Amount: balance.Account.Type.IsDebt() ? -amount : amount);
-            }).ToList();
-            summaries.Add(new AccountDateBalanceSummary(date, new AccountBalanceSummary(
-                values.Sum(item => item.Amount),
-                values.Where(item => item.Type.IsTracked()).Sum(item => item.Amount),
-                values.Where(item => !item.Type.IsTracked()).Sum(item => item.Amount),
-                values.GroupBy(item => item.Type).OrderBy(group => group.Key)
-                    .Select(group => new AccountTypeBalance(group.Key, group.Sum(item => item.Amount))).ToList())));
-        }
-        return summaries;
-    }
+        IReadOnlyList<DateOnly> sampleDates,
+        IReadOnlyCollection<AccountRangeBalance> balances,
+        IReadOnlyCollection<AccountDateBalanceFact> history) =>
+        BalanceSeries.Summarize(
+            sampleDates,
+            balances.ToDictionary(balance => balance.Account.Id, balance => balance.StartingBalance),
+            history.Select(item => (item.AccountId, item.Date, item.Sequence, item.PostedBalance)),
+            (date, currentBalances) => new AccountDateBalanceSummary(date, AccountBalanceSummary.Create(
+                balances.Select(balance => (
+                    balance.Account.Type,
+                    balance.Account.DateOpened is DateOnly opened && date < opened ? 0 : currentBalances[balance.Account.Id])))));
 
     /// <summary>
-    /// Generates a sequence of dates from the start date to the end date, inclusive.
+    /// Summarizes the provided Account balances for each date sampled between the provided dates, using the balance
+    /// history within those dates, and gets the spacing between the sampled dates.
     /// </summary>
-    private static IEnumerable<DateOnly> GetDates(DateOnly start, DateOnly end)
+    private async Task<(List<AccountDateBalanceSummary> Summaries, BalanceGranularity Granularity)> SummarizeDatesAsync(
+        IReadOnlyCollection<AccountRangeBalance> balances,
+        DateOnly start,
+        DateOnly end,
+        CancellationToken cancellationToken)
     {
-        for (DateOnly date = start; date <= end; date = date.AddDays(1))
-        {
-            yield return date;
-            if (date == end)
-            {
-                yield break;
-            }
-        }
+        IReadOnlyCollection<AccountDateBalanceFact> history = await accountQueryRepository.GetDateBalanceFactsAsync(
+            balances.Select(balance => balance.Account.Id).ToList(),
+            start,
+            end,
+            cancellationToken);
+        BalanceGranularity granularity = BalanceSeries.GetGranularity(start, end);
+        return (SummarizeDates(BalanceSeries.GetSampleDates(start, end, granularity), balances, history), granularity);
     }
 
     /// <summary>

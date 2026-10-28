@@ -8,6 +8,7 @@ import {
   type TrendRangeMode,
   getDefaultTrendAccountingPeriodRange,
   getDefaultTrendDateRange,
+  getTrendRangeModeOptions,
   setTrendRangeMode,
 } from "@/framework/routes/trendRange";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
@@ -81,14 +82,9 @@ const LocationTrendsFilter = function ({
             });
           });
         }}
-        options={[
-          { value: "date", label: "Dates" },
-          {
-            value: "accounting-period",
-            label: "Accounting periods",
-            disabled: defaultEndAccountingPeriodId === null,
-          },
-        ]}
+        options={getTrendRangeModeOptions(
+          defaultEndAccountingPeriodId !== null,
+        )}
       />
       {mode === "accounting-period" ? (
         <AccountingPeriodRangeFilter

@@ -1,14 +1,13 @@
 import type { TransactionSort, TransactionType } from "@/transactions/types";
 import type { AccountType } from "@/accounts/types";
-import ArrowBack from "@mui/icons-material/ArrowBack";
-import { Button } from "@mui/material";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
-import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
+import ReturnLink from "@/framework/view/ReturnLink";
 import TransactionWorkspaceFilter from "@/transactions/workspace/TransactionWorkspaceFilter";
 import TransactionWorkspaceListFrame from "@/transactions/workspace/TransactionWorkspaceListFrame";
 import { getTransactionWorkspaceListData } from "@/transactions/workspace/getTransactionWorkspaceData";
+import { normalizeFullyPosted } from "@/transactions/fullyPostedFilter";
 
 /**
  * Search parameters supported by the Transactions workspace.
@@ -22,6 +21,7 @@ interface TransactionWorkspaceSearchParams {
   accountTypes?: AccountType | readonly AccountType[];
   accountNames?: string | readonly string[];
   transactionTypes?: TransactionType | readonly TransactionType[];
+  fullyPosted?: string | readonly string[];
   startDate?: string;
   endDate?: string;
   startAccountingPeriodId?: string;
@@ -47,22 +47,23 @@ const TransactionWorkspace = async function ({
   searchParams,
 }: TransactionWorkspaceProps): Promise<JSX.Element> {
   const resolvedSearchParams = await searchParams;
-  const hasFilter = [
-    resolvedSearchParams.accountingPeriodIds,
-    resolvedSearchParams.accountIds,
-    resolvedSearchParams.fundIds,
-    resolvedSearchParams.locationIds,
-    resolvedSearchParams.fundNames,
-    resolvedSearchParams.accountTypes,
-    resolvedSearchParams.accountNames,
-    resolvedSearchParams.transactionTypes,
-    resolvedSearchParams.startDate,
-    resolvedSearchParams.endDate,
-    resolvedSearchParams.startAccountingPeriodId,
-    resolvedSearchParams.endAccountingPeriodId,
-  ].some((value) =>
-    Array.isArray(value) ? value.length > 0 : typeof value !== "undefined",
-  );
+  const hasFilter =
+    [
+      resolvedSearchParams.accountingPeriodIds,
+      resolvedSearchParams.accountIds,
+      resolvedSearchParams.fundIds,
+      resolvedSearchParams.locationIds,
+      resolvedSearchParams.fundNames,
+      resolvedSearchParams.accountTypes,
+      resolvedSearchParams.accountNames,
+      resolvedSearchParams.transactionTypes,
+      resolvedSearchParams.startDate,
+      resolvedSearchParams.endDate,
+      resolvedSearchParams.startAccountingPeriodId,
+      resolvedSearchParams.endAccountingPeriodId,
+    ].some((value) =>
+      Array.isArray(value) ? value.length > 0 : typeof value !== "undefined",
+    ) || normalizeFullyPosted(resolvedSearchParams.fullyPosted) !== null;
   const {
     allAccountingPeriods,
     accounts,
@@ -76,16 +77,7 @@ const TransactionWorkspace = async function ({
   return (
     <ConstrainedContent>
       <PageLayout>
-        {typeof resolvedSearchParams.returnUrl === "undefined" ? null : (
-          <Link
-            href={resolvedSearchParams.returnUrl}
-            style={{ alignSelf: "flex-start", textDecoration: "none" }}
-          >
-            <Button component="span" startIcon={<ArrowBack />}>
-              Back to Trends
-            </Button>
-          </Link>
-        )}
+        <ReturnLink returnUrl={resolvedSearchParams.returnUrl} />
         <TransactionWorkspaceFilter
           accountingPeriods={allAccountingPeriods}
           accounts={accounts}
