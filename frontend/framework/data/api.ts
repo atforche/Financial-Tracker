@@ -5424,6 +5424,11 @@ export interface components {
         };
         /** @description Model representing everything shown on the overview. */
         OverviewModel: {
+            /**
+             * Format: date
+             * @description First date of the balance history.
+             */
+            historyStart: string;
             /** @description Account balances at the start of the balance history. */
             accountOpeningBalance: components["schemas"]["AccountBalanceSummaryModel"];
             /** @description Account balances as of the as-of date. */

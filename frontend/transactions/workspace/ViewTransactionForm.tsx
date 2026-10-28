@@ -69,9 +69,8 @@ interface ViewTransactionFormProps {
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
   readonly currentUrl: string;
-  readonly workspaceUrl: string;
   readonly editUrl: string;
-  readonly returnUrl?: string | null;
+  readonly deleteRedirectUrl: string;
 }
 
 const emptyFunds: FundWithBalance[] = [];
@@ -85,9 +84,8 @@ const ViewTransactionForm = function ({
   funds,
   fundGoals,
   currentUrl,
-  workspaceUrl,
   editUrl,
-  returnUrl = null,
+  deleteRedirectUrl,
 }: ViewTransactionFormProps): JSX.Element {
   const canWrite = useWriteAccess();
   const currentFundGoals = fundGoals.filter(
@@ -417,7 +415,7 @@ const ViewTransactionForm = function ({
               ) : (
                 <DeleteTransactionForm
                   transaction={transaction}
-                  redirectUrl={returnUrl ?? workspaceUrl}
+                  redirectUrl={deleteRedirectUrl}
                 />
               )}
             </Stack>

@@ -4,11 +4,15 @@ import OverviewAddTransactionButton, {
 } from "@/overview/OverviewAddTransactionButton";
 import {
   type OverviewSearchParams,
-  getOverviewHistoryStart,
+  getOverviewUrl,
   parseOverviewHistoryRange,
 } from "@/overview/helpers";
 import OverviewStat, { type OverviewStatDetail } from "@/overview/OverviewStat";
 import { formatAccountType, isTrackedAccountType } from "@/accounts/helpers";
+import {
+  formatCurrency,
+  getCurrencyDifference,
+} from "@/framework/currencyHelpers";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import ChevronRight from "@mui/icons-material/ChevronRight";
 import type { JSX } from "react";
@@ -24,7 +28,6 @@ import accountRoutes from "@/accounts/routes";
 import { buildDateChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
-import { formatCurrency } from "@/framework/currencyHelpers";
 import fundRoutes from "@/funds/routes";
 import { getAccountTypeBreakdownDetails } from "@/accounts/balanceSummaryHelpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -78,8 +81,8 @@ const OverviewView = async function ({
   ): JSX.Element {
     return (
       <>
-        <OverviewChange amount={current - previous} /> over{" "}
-        {historyDescriptions[history]}
+        <OverviewChange amount={getCurrencyDifference(current, previous)} />{" "}
+        over {historyDescriptions[history]}
       </>
     );
   };
@@ -96,11 +99,12 @@ const OverviewView = async function ({
         change: detail.netChange,
       }));
   };
+  const overviewUrl = getOverviewUrl(history);
   const trendsRange = {
     mode: "date",
-    startDate: getOverviewHistoryStart(asOf, history),
+    startDate: overview.historyStart,
     endDate: asOf,
-    returnUrl: "/",
+    returnUrl: overviewUrl,
   } as const;
 
   return (
@@ -109,6 +113,8 @@ const OverviewView = async function ({
         direction="row"
         useFlexGap
         spacing={2}
+        // Keeps the range selector usable while a new range loads
+        data-page-filters
         sx={{
           flexWrap: "wrap",
           alignItems: "center",
@@ -125,7 +131,7 @@ const OverviewView = async function ({
           sx={{ flexWrap: "wrap", alignItems: "center" }}
         >
           <OverviewHistoryRangeSelector value={history} />
-          <OverviewAddTransactionButton />
+          <OverviewAddTransactionButton returnUrl={overviewUrl} />
         </Stack>
       </Stack>
       <ResponsiveGrid columns={{ xs: 1, sm: 2, lg: 4 }}>
@@ -167,10 +173,11 @@ const OverviewView = async function ({
           <OverviewAttentionList
             groups={overview.attention}
             currentPeriodId={currentPeriod?.accountingPeriod.id ?? null}
+            returnUrl={overviewUrl}
           />
         </Box>
         <Box sx={{ flex: 1, minWidth: 0, ...fillHeightSx }}>
-          <OverviewPeriodCard period={currentPeriod} />
+          <OverviewPeriodCard period={currentPeriod} returnUrl={overviewUrl} />
         </Box>
       </Stack>
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>

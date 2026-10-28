@@ -12,12 +12,13 @@ namespace Domain.Overview;
 /// </summary>
 public sealed class OverviewQueryService(
     IOverviewQueryRepository overviewQueryRepository,
+    AccountQueryService accountQueryService,
+    FundQueryService fundQueryService,
     AccountingPeriodQueryService accountingPeriodQueryService,
     IAccountingPeriodQueryRepository accountingPeriodQueryRepository,
+    IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
     IFundGoalRepository fundGoalRepository,
-    FundGoalService fundGoalService,
-    IAccountGoalRepository accountGoalRepository,
-    AccountGoalService accountGoalService)
+    IAccountGoalRepository accountGoalRepository)
 {
     /// <summary>
     /// Number of items named in each group needing attention.
@@ -40,15 +41,19 @@ public sealed class OverviewQueryService(
             _ => throw new ArgumentOutOfRangeException(nameof(historyRange)),
         };
         OverviewDateRange history = await GetDateRangeAsync(start, asOf, cancellationToken);
-        OverviewPeriod? currentPeriod = await GetCurrentPeriodAsync(cancellationToken);
+        AccountingPeriod? period = await overviewQueryRepository.GetLatestOpenAccountingPeriodAsync(cancellationToken);
+        OverviewPeriod? currentPeriod = null;
         var attention = new List<OverviewAttentionGroup?>();
-        if (currentPeriod != null)
+        OverviewAttentionGroup? incomeNotReceived = null;
+        if (period != null)
         {
-            AccountingPeriod period = currentPeriod.AccountingPeriod;
+            AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(period.Id);
             IReadOnlyCollection<FundGoal> fundGoals = fundGoalRepository.GetAllByAccountingPeriod(period.Id);
-            IReadOnlyDictionary<FundGoalId, FundGoalProgress> fundGoalProgress = fundGoalService.GetProgresses(fundGoals, period);
+            IReadOnlyDictionary<FundGoalId, FundGoalProgress> fundGoalProgress = FundGoalService.GetProgresses(fundGoals, balanceHistory);
             IReadOnlyCollection<AccountGoal> accountGoals = accountGoalRepository.GetAllByAccountingPeriod(period.Id);
-            IReadOnlyDictionary<AccountGoalId, AccountGoalProgress> accountGoalProgress = accountGoalService.GetProgresses(accountGoals, period);
+            IReadOnlyDictionary<AccountGoalId, AccountGoalProgress> accountGoalProgress = AccountGoalService.GetProgresses(accountGoals, balanceHistory);
+            AccountingPeriodBalance balance = await accountingPeriodQueryService.EnrichBalanceAsync(period, balanceHistory, fundGoals, cancellationToken);
+            currentPeriod = await GetCurrentPeriodAsync(balance, cancellationToken);
             List<OverviewGoalRange> goalRanges = GetGoalRanges(fundGoals, fundGoalProgress, accountGoals, accountGoalProgress);
             attention.Add(CreateGroup(OverviewAttentionKind.GoalsBelowMinimum, goalRanges
                 .Where(goal => goal.AmountBelowMinimum > 0)
@@ -59,12 +64,10 @@ public sealed class OverviewQueryService(
                 .Select(goal => new OverviewAttentionItem(goal.Name, goal.AmountAboveMaximum, null))
                 .ToList()));
             attention.Add(GetGoalsBehind(fundGoals, fundGoalProgress));
+            incomeNotReceived = GetIncomeNotReceived(balance, asOf);
         }
         attention.Add(GetUnpostedTransactions(await overviewQueryRepository.GetUnpostedEffectsAsync(cancellationToken)));
-        if (currentPeriod != null)
-        {
-            attention.Add(GetIncomeNotReceived(currentPeriod, asOf));
-        }
+        attention.Add(incomeNotReceived);
         return new OverviewSummary(history, currentPeriod, attention.OfType<OverviewAttentionGroup>().ToList());
     }
 
@@ -76,53 +79,25 @@ public sealed class OverviewQueryService(
         DateOnly end,
         CancellationToken cancellationToken)
     {
-        IReadOnlyCollection<OverviewAccountOpeningBalance> accounts =
-            await overviewQueryRepository.GetAccountOpeningBalancesAsync(start, cancellationToken);
-        IReadOnlyCollection<AccountDateBalanceFact> accountHistory =
-            await overviewQueryRepository.GetAccountBalanceHistoryAsync(start, end, cancellationToken);
-        IReadOnlyCollection<OverviewFundOpeningBalance> funds =
-            await overviewQueryRepository.GetFundOpeningBalancesAsync(start, cancellationToken);
-        IReadOnlyCollection<FundDateBalanceFact> fundHistory =
-            await overviewQueryRepository.GetFundBalanceHistoryAsync(start, end, cancellationToken);
-
-        BalanceGranularity granularity = BalanceSeries.GetGranularity(start, end);
-        List<DateOnly> sampleDates = BalanceSeries.GetSampleDates(start, end, granularity);
-        List<(DateOnly Date, AccountBalanceSummary Summary)> accountSummaries = BalanceSeries.Summarize(
-            sampleDates,
-            accounts.ToDictionary(account => account.AccountId, account => account.Balance),
-            accountHistory.Select(item => (item.AccountId, item.Date, item.Sequence, item.PostedBalance)),
-            (date, currentBalances) => (date, AccountBalanceSummary.Create(accounts.Select(account => (
-                account.Type,
-                account.DateOpened is DateOnly opened && date < opened ? 0 : currentBalances[account.AccountId])))));
-        List<(DateOnly Date, FundBalanceSummary Summary)> fundSummaries = BalanceSeries.Summarize(
-            sampleDates,
-            funds.ToDictionary(fund => fund.FundId, fund => fund.Balance),
-            fundHistory.Select(item => (item.FundId, item.Date, item.Sequence, item.PostedBalance)),
-            (date, currentBalances) => (date, FundBalanceSummary.Create(
-                funds.Select(fund => (fund.FundId, currentBalances[fund.FundId])))));
+        (List<AccountDateBalanceSummary> accountSummaries, BalanceGranularity granularity) =
+            await accountQueryService.GetDateSummariesAsync(new AccountFilter(null, [], []), start, end, cancellationToken);
+        (List<FundDateBalanceSummary> fundSummaries, _) =
+            await fundQueryService.GetDateSummariesAsync(new FundFilter(null, []), start, end, cancellationToken);
         return new OverviewDateRange(
-            accountSummaries[0].Summary,
-            accountSummaries[^1].Summary,
-            accountSummaries.Skip(1).Select(item => new OverviewDateBalance(item.Date, item.Summary.TotalBalance)).ToList(),
-            fundSummaries[0].Summary,
-            fundSummaries[^1].Summary,
-            fundSummaries.Skip(1).Select(item => new OverviewDateBalance(item.Date, item.Summary.TotalBalance)).ToList(),
+            start,
+            accountSummaries[0].Balance,
+            accountSummaries[^1].Balance,
+            accountSummaries.Skip(1).Select(item => new OverviewDateBalance(item.Date, item.Balance.TotalBalance)).ToList(),
+            fundSummaries[^1].Balance,
+            fundSummaries.Skip(1).Select(item => new OverviewDateBalance(item.Date, item.Balance.TotalBalance)).ToList(),
             granularity);
     }
 
     /// <summary>
-    /// Retrieves the figures for the most recent open Accounting Period, or null when none is open.
+    /// Gets the income, goal contribution, spending, and net worth figures for the current Accounting Period.
     /// </summary>
-    private async Task<OverviewPeriod?> GetCurrentPeriodAsync(CancellationToken cancellationToken)
+    private async Task<OverviewPeriod> GetCurrentPeriodAsync(AccountingPeriodBalance balance, CancellationToken cancellationToken)
     {
-        AccountingPeriodId? periodId = await overviewQueryRepository.GetLatestOpenAccountingPeriodIdAsync(cancellationToken);
-        AccountingPeriodBalance? balance = periodId == null
-            ? null
-            : await accountingPeriodQueryService.GetBalanceByIdAsync(periodId.Value, cancellationToken);
-        if (balance == null)
-        {
-            return null;
-        }
         IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts =
             await accountingPeriodQueryRepository.GetRangeSpendingFactsAsync([balance.AccountingPeriod.Id.Value], cancellationToken);
         return new OverviewPeriod(
@@ -144,17 +119,14 @@ public sealed class OverviewQueryService(
         IReadOnlyCollection<AccountGoal> accountGoals,
         IReadOnlyDictionary<AccountGoalId, AccountGoalProgress> accountGoalProgress) =>
         fundGoals
-            .Where(goal => fundGoalProgress.ContainsKey(goal.Id))
-            .Select(goal => new OverviewGoalRange(
-                goal.Fund.Name,
-                fundGoalProgress[goal.Id].EndingBalance.AmountBelowMinimum,
-                fundGoalProgress[goal.Id].EndingBalance.AmountAboveMaximum))
+            .Select(goal => fundGoalProgress.GetValueOrDefault(goal.Id)?.EndingBalance is { } balance
+                ? new OverviewGoalRange(goal.Fund.Name, balance.AmountBelowMinimum, balance.AmountAboveMaximum)
+                : null)
             .Concat(accountGoals
-                .Where(goal => accountGoalProgress.ContainsKey(goal.Id))
-                .Select(goal => new OverviewGoalRange(
-                    goal.Account.Name,
-                    accountGoalProgress[goal.Id].EndingBalance.AmountBelowMinimum,
-                    accountGoalProgress[goal.Id].EndingBalance.AmountAboveMaximum)))
+                .Select(goal => accountGoalProgress.GetValueOrDefault(goal.Id)?.EndingBalance is { } balance
+                    ? new OverviewGoalRange(goal.Account.Name, balance.AmountBelowMinimum, balance.AmountAboveMaximum)
+                    : null))
+            .OfType<OverviewGoalRange>()
             .ToList();
 
     /// <summary>
@@ -164,8 +136,7 @@ public sealed class OverviewQueryService(
         IReadOnlyCollection<FundGoal> fundGoals,
         IReadOnlyDictionary<FundGoalId, FundGoalProgress> fundGoalProgress) =>
         CreateGroup(OverviewAttentionKind.GoalsBehind, fundGoals
-            .Where(goal => fundGoalProgress.ContainsKey(goal.Id))
-            .Select(goal => (goal.Fund.Name, fundGoalProgress[goal.Id].Contribution))
+            .Select(goal => (goal.Fund.Name, fundGoalProgress.GetValueOrDefault(goal.Id)?.Contribution))
             .Where(item => item.Contribution is { IsSatisfied: false })
             .Select(item => new OverviewAttentionItem(item.Name, item.Contribution!.RemainingAmount, null))
             .ToList());
@@ -201,7 +172,7 @@ public sealed class OverviewQueryService(
     /// not linked to the source it came from, so only the totals are compared and no sources are named. The group's
     /// date is when the expected payments, taken in date order, first added up to more than was received.
     /// </summary>
-    private static OverviewAttentionGroup? GetIncomeNotReceived(OverviewPeriod period, DateOnly asOf)
+    private static OverviewAttentionGroup? GetIncomeNotReceived(AccountingPeriodBalance period, DateOnly asOf)
     {
         var passedPayments = period.AccountingPeriod.ExpectedIncomeSources
             .Where(source => source.TrackedAmount > 0)

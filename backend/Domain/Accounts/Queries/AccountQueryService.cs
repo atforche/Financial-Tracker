@@ -133,6 +133,20 @@ public sealed class AccountQueryService(
     }
 
     /// <summary>
+    /// Retrieves Account balance summaries for each date sampled between the provided dates, and the spacing between them.
+    /// </summary>
+    public async Task<(List<AccountDateBalanceSummary> Summaries, BalanceGranularity Granularity)> GetDateSummariesAsync(
+        AccountFilter filter,
+        DateOnly start,
+        DateOnly end,
+        CancellationToken cancellationToken = default) =>
+        await SummarizeDatesAsync(
+            await accountQueryRepository.GetDateRangeBalancesAsync(filter, start, end, cancellationToken),
+            start,
+            end,
+            cancellationToken);
+
+    /// <summary>
     /// Retrieves Account balances and financial totals over a date range.
     /// </summary>
     public async Task<AccountDateRange> GetDateRangeAsync(
@@ -141,11 +155,6 @@ public sealed class AccountQueryService(
     {
         IReadOnlyCollection<AccountRangeBalance> balances = await accountQueryRepository.GetDateRangeBalancesAsync(
             query.Filter,
-            query.Start,
-            query.End,
-            cancellationToken);
-        IReadOnlyCollection<AccountDateBalanceFact> history = await accountQueryRepository.GetDateBalanceFactsAsync(
-            balances.Select(balance => balance.Account.Id).ToList(),
             query.Start,
             query.End,
             cancellationToken);
@@ -165,8 +174,7 @@ public sealed class AccountQueryService(
         List<AccountDateBalanceSummary> summaries = [];
         if (query.Start is DateOnly start && query.End is DateOnly end)
         {
-            granularity = BalanceSeries.GetGranularity(start, end);
-            summaries = SummarizeDates(BalanceSeries.GetSampleDates(start, end, granularity), balances, history);
+            (summaries, granularity) = await SummarizeDatesAsync(balances, start, end, cancellationToken);
         }
         IReadOnlyCollection<AccountRangeBalance> items = Sort(balances, query.Sort)
             .Skip(query.Offset)
@@ -206,6 +214,25 @@ public sealed class AccountQueryService(
                 balances.Select(balance => (
                     balance.Account.Type,
                     balance.Account.DateOpened is DateOnly opened && date < opened ? 0 : currentBalances[balance.Account.Id])))));
+
+    /// <summary>
+    /// Summarizes the provided Account balances for each date sampled between the provided dates, using the balance
+    /// history within those dates, and gets the spacing between the sampled dates.
+    /// </summary>
+    private async Task<(List<AccountDateBalanceSummary> Summaries, BalanceGranularity Granularity)> SummarizeDatesAsync(
+        IReadOnlyCollection<AccountRangeBalance> balances,
+        DateOnly start,
+        DateOnly end,
+        CancellationToken cancellationToken)
+    {
+        IReadOnlyCollection<AccountDateBalanceFact> history = await accountQueryRepository.GetDateBalanceFactsAsync(
+            balances.Select(balance => balance.Account.Id).ToList(),
+            start,
+            end,
+            cancellationToken);
+        BalanceGranularity granularity = BalanceSeries.GetGranularity(start, end);
+        return (SummarizeDates(BalanceSeries.GetSampleDates(start, end, granularity), balances, history), granularity);
+    }
 
     /// <summary>
     /// Sorts the provided Account Range Balances according to the provided sort order.

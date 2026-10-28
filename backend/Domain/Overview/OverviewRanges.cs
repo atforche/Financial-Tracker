@@ -7,10 +7,10 @@ namespace Domain.Overview;
 /// Represents Account and Fund balance summaries over a date range.
 /// </summary>
 public sealed record OverviewDateRange(
+    DateOnly Start,
     AccountBalanceSummary AccountOpeningBalance,
     AccountBalanceSummary AccountClosingBalance,
     IReadOnlyCollection<OverviewDateBalance> AccountBalances,
-    FundBalanceSummary FundOpeningBalance,
     FundBalanceSummary FundClosingBalance,
     IReadOnlyCollection<OverviewDateBalance> FundBalances,
     BalanceGranularity Granularity);

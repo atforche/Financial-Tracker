@@ -209,10 +209,17 @@ public sealed class AccountGoalService(
     /// </summary>
     public IReadOnlyDictionary<AccountGoalId, AccountGoalProgress> GetProgresses(
         IReadOnlyCollection<AccountGoal> accountGoals,
-        AccountingPeriod accountingPeriod)
+        AccountingPeriod accountingPeriod) =>
+        GetProgresses(accountGoals, accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(accountingPeriod.Id));
+
+    /// <summary>
+    /// Calculates progress for Account Goals in the Accounting Period of the provided balance history.
+    /// </summary>
+    public static IReadOnlyDictionary<AccountGoalId, AccountGoalProgress> GetProgresses(
+        IReadOnlyCollection<AccountGoal> accountGoals,
+        AccountingPeriodBalanceHistory balanceHistory)
     {
-        AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository
-            .GetForAccountingPeriod(accountingPeriod.Id);
+        AccountingPeriod accountingPeriod = balanceHistory.AccountingPeriod;
         var accountBalances = balanceHistory.AccountBalances.ToDictionary(balance => balance.Account.Id);
         var results = new Dictionary<AccountGoalId, AccountGoalProgress>();
         foreach (AccountGoal accountGoal in accountGoals)

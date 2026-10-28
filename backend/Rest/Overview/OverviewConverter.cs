@@ -27,6 +27,7 @@ public sealed class OverviewConverter(AccountingPeriodConverter accountingPeriod
     /// </summary>
     public OverviewModel ToModel(OverviewSummary overview) => new()
     {
+        HistoryStart = overview.History.Start,
         AccountOpeningBalance = AccountConverter.ToModel(overview.History.AccountOpeningBalance),
         AccountClosingBalance = AccountConverter.ToModel(overview.History.AccountClosingBalance),
         AccountBalances = overview.History.AccountBalances.Select(ToModel).ToList(),

@@ -9,6 +9,11 @@ namespace Models.Overview;
 public class OverviewModel
 {
     /// <summary>
+    /// First date of the balance history.
+    /// </summary>
+    public required DateOnly HistoryStart { get; init; }
+
+    /// <summary>
     /// Account balances at the start of the balance history.
     /// </summary>
     public required AccountBalanceSummaryModel AccountOpeningBalance { get; init; }

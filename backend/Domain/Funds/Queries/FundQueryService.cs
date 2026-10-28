@@ -125,6 +125,20 @@ public sealed class FundQueryService(
     }
 
     /// <summary>
+    /// Retrieves Fund balance summaries for each date sampled between the provided dates, and the spacing between them.
+    /// </summary>
+    public async Task<(List<FundDateBalanceSummary> Summaries, BalanceGranularity Granularity)> GetDateSummariesAsync(
+        FundFilter filter,
+        DateOnly start,
+        DateOnly end,
+        CancellationToken cancellationToken = default) =>
+        await SummarizeDatesAsync(
+            await fundQueryRepository.GetDateRangeBalancesAsync(filter, start, end, cancellationToken),
+            start,
+            end,
+            cancellationToken);
+
+    /// <summary>
     /// Retrieves Fund balances and financial totals over a date range.
     /// </summary>
     public async Task<FundDateRange> GetDateRangeAsync(
@@ -133,11 +147,6 @@ public sealed class FundQueryService(
     {
         IReadOnlyCollection<FundRangeBalance> balances = await fundQueryRepository.GetDateRangeBalancesAsync(
             query.Filter,
-            query.Start,
-            query.End,
-            cancellationToken);
-        IReadOnlyCollection<FundDateBalanceFact> history = await fundQueryRepository.GetDateBalanceFactsAsync(
-            balances.Select(balance => balance.Fund.Id).ToList(),
             query.Start,
             query.End,
             cancellationToken);
@@ -157,8 +166,7 @@ public sealed class FundQueryService(
         List<FundDateBalanceSummary> summaries = [];
         if (query.Start is DateOnly start && query.End is DateOnly end)
         {
-            granularity = BalanceSeries.GetGranularity(start, end);
-            summaries = SummarizeDates(BalanceSeries.GetSampleDates(start, end, granularity), balances, history);
+            (summaries, granularity) = await SummarizeDatesAsync(balances, start, end, cancellationToken);
         }
         IReadOnlyCollection<FundRangeBalance> items = Sort(balances, query.Sort)
             .Skip(query.Offset)
@@ -196,6 +204,25 @@ public sealed class FundQueryService(
             history.Select(item => (item.FundId, item.Date, item.Sequence, item.PostedBalance)),
             (date, currentBalances) => new FundDateBalanceSummary(date, FundBalanceSummary.Create(
                 balances.Select(balance => (balance.Fund.Id, currentBalances[balance.Fund.Id])))));
+
+    /// <summary>
+    /// Summarizes the provided Fund balances for each date sampled between the provided dates, using the balance
+    /// history within those dates, and gets the spacing between the sampled dates.
+    /// </summary>
+    private async Task<(List<FundDateBalanceSummary> Summaries, BalanceGranularity Granularity)> SummarizeDatesAsync(
+        IReadOnlyCollection<FundRangeBalance> balances,
+        DateOnly start,
+        DateOnly end,
+        CancellationToken cancellationToken)
+    {
+        IReadOnlyCollection<FundDateBalanceFact> history = await fundQueryRepository.GetDateBalanceFactsAsync(
+            balances.Select(balance => balance.Fund.Id).ToList(),
+            start,
+            end,
+            cancellationToken);
+        BalanceGranularity granularity = BalanceSeries.GetGranularity(start, end);
+        return (SummarizeDates(BalanceSeries.GetSampleDates(start, end, granularity), balances, history), granularity);
+    }
 
     /// <summary>
     /// Sorts Fund balances according to the specified sort order.

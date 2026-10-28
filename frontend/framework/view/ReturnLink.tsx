@@ -9,7 +9,11 @@ import type { Route } from "next";
  */
 const returnLabels: readonly (readonly [RegExp, string])[] = [
   [/^\/(?:\?|$)/u, "Back to Overview"],
-  [/^\/accounting-periods\/trends(?:\?|$)/u, "Back to Trends"],
+  [/^\/transactions\/workspace(?:\?|$)/u, "Back to Transactions"],
+  [
+    /^\/(?:accounting-periods|accounts|funds|locations)\/trends(?:\?|$)/u,
+    "Back to Trends",
+  ],
   [/^\/locations\/workspace\/[^/?#]+(?:\?|$)/u, "Back to Location"],
   [/^\/accounts\/workspace\/[^/?#]+(?:\?|$)/u, "Back to Account Details"],
   [/^\/funds\/workspace\/[^/?#]+(?:\?|$)/u, "Back to Fund Details"],
@@ -21,21 +25,39 @@ const returnLabels: readonly (readonly [RegExp, string])[] = [
 ];
 
 /**
- * Gets the label for a link back to the provided URL, or null when the URL is not a page within the app that a return
- * link supports.
+ * Checks whether a return URL is a path within the app, so it can't send the user to another site.
  */
-const getReturnLabel = function (
-  returnUrl: string | readonly string[] | undefined,
-): string | null {
-  if (
-    typeof returnUrl !== "string" ||
-    !returnUrl.startsWith("/") ||
-    returnUrl.startsWith("//") ||
-    returnUrl.includes("\\")
-  ) {
+const isInternalUrl = function (
+  returnUrl: string | readonly string[] | null | undefined,
+): returnUrl is string {
+  return (
+    typeof returnUrl === "string" &&
+    returnUrl.startsWith("/") &&
+    !returnUrl.startsWith("//") &&
+    !returnUrl.includes("\\")
+  );
+};
+
+/**
+ * A link back to a page, with its label.
+ */
+interface ReturnLinkTarget {
+  readonly href: string;
+  readonly label: string;
+}
+
+/**
+ * Gets the link back to the provided URL, or null when the URL is not a page within the app that a return link
+ * supports.
+ */
+const getReturnLinkTarget = function (
+  returnUrl: string | readonly string[] | null | undefined,
+): ReturnLinkTarget | null {
+  if (!isInternalUrl(returnUrl)) {
     return null;
   }
-  return returnLabels.find(([pattern]) => pattern.test(returnUrl))?.[1] ?? null;
+  const label = returnLabels.find(([pattern]) => pattern.test(returnUrl))?.[1];
+  return label === undefined ? null : { href: returnUrl, label };
 };
 
 /**
@@ -54,11 +76,7 @@ const ReturnLink = function ({
   returnUrl,
   fallback,
 }: ReturnLinkProps): JSX.Element | null {
-  const resolvedLabel = getReturnLabel(returnUrl);
-  const link =
-    resolvedLabel === null || typeof returnUrl !== "string"
-      ? (fallback ?? null)
-      : { href: returnUrl, label: resolvedLabel };
+  const link = getReturnLinkTarget(returnUrl) ?? fallback ?? null;
   if (link === null) {
     return null;
   }
@@ -75,4 +93,6 @@ const ReturnLink = function ({
   );
 };
 
+export { getReturnLinkTarget };
+export type { ReturnLinkTarget };
 export default ReturnLink;

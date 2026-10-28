@@ -1,9 +1,12 @@
 "use client";
 
+import {
+  defaultOverviewHistory,
+  overviewHistoryOptions,
+} from "@/overview/helpers";
 import type { JSX } from "react";
 import type { OverviewHistoryRangeModel } from "@/framework/data/api";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
-import { overviewHistoryOptions } from "@/overview/helpers";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
@@ -26,7 +29,12 @@ const OverviewHistoryRangeSelector = function ({
       options={overviewHistoryOptions}
       onChange={(history) => {
         updateParams((params) => {
-          params.set("history", history);
+          // The default range is left out, matching the URL from getOverviewUrl
+          if (history === defaultOverviewHistory) {
+            params.delete("history");
+          } else {
+            params.set("history", history);
+          }
         });
       }}
     />

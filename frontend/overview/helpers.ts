@@ -10,7 +10,6 @@ import {
 import type { Route } from "next";
 import type { ToggleButtonSelectorOption } from "@/framework/forms/ToggleButtonSelector";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
-import dayjs from "dayjs";
 import { formatShortDate } from "@/framework/dateHelpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import transactionRoutes from "@/transactions/routes";
@@ -39,7 +38,20 @@ const overviewHistoryOptions: readonly ToggleButtonSelectorOption<OverviewHistor
   ];
 
 /**
- * Reads the balance history length from a search param, defaulting to three months.
+ * Balance history length shown when the search params don't choose one.
+ */
+const defaultOverviewHistory = OverviewHistoryRangeModel.ThreeMonths;
+
+/**
+ * Gets the overview URL showing the provided balance history length. The default length is left out, so the URL
+ * matches a direct visit to the overview.
+ */
+const getOverviewUrl = function (history: OverviewHistoryRangeModel): Route {
+  return history === defaultOverviewHistory ? "/" : `/?history=${history}`;
+};
+
+/**
+ * Reads the balance history length from a search param, falling back to the default.
  */
 const parseOverviewHistoryRange = function (
   value: string | undefined,
@@ -47,26 +59,8 @@ const parseOverviewHistoryRange = function (
   return (
     (typeof value === "string"
       ? parseEnumValue(OverviewHistoryRangeModel, value)
-      : null) ?? OverviewHistoryRangeModel.ThreeMonths
+      : null) ?? defaultOverviewHistory
   );
-};
-
-/**
- * Gets the first date of the balance history ending on the as-of date, matching the backend.
- */
-const getOverviewHistoryStart = function (
-  asOf: string,
-  history: OverviewHistoryRangeModel,
-): string {
-  const end = dayjs(asOf);
-  const start =
-    history === OverviewHistoryRangeModel.ThreeMonths
-      ? end.subtract(3, "month")
-      : end.subtract(
-          history === OverviewHistoryRangeModel.OneYear ? 1 : 5,
-          "year",
-        );
-  return start.format("YYYY-MM-DD");
 };
 
 /**
@@ -98,11 +92,13 @@ interface OverviewAttentionDescription {
 }
 
 /**
- * Describes a group of items needing attention. Goal and income groups link to the current period's plan.
+ * Describes a group of items needing attention, with links that return to the provided URL. Goal and income groups
+ * link to the current period's plan.
  */
 const describeAttentionGroup = function (
   group: OverviewAttentionGroup,
   currentPeriodId: string | null,
+  returnUrl: string,
 ): OverviewAttentionDescription {
   /*
    * Revisit these links for the goals below minimum, goals above maximum, goals not fully funded, and tracked income
@@ -112,10 +108,10 @@ const describeAttentionGroup = function (
     planTab: "fund-goals" | "income-sources",
   ): Route {
     return currentPeriodId === null
-      ? accountingPeriodRoutes.workspace({ returnUrl: "/" })
+      ? accountingPeriodRoutes.workspace({ returnUrl })
       : accountingPeriodRoutes.workspacePlan(currentPeriodId, {
           planTab,
-          returnUrl: "/",
+          returnUrl,
         });
   };
   const remainingItemCount = group.itemCount - group.topItems.length;
@@ -172,7 +168,7 @@ const describeAttentionGroup = function (
         facts: oldestDate === null ? [] : [`Oldest ${oldestDate}`],
         href: transactionRoutes.workspace({
           fullyPosted: "false",
-          returnUrl: "/",
+          returnUrl,
         }),
       };
     case OverviewAttentionKindModel.IncomeNotReceived:
@@ -197,7 +193,8 @@ const describeAttentionGroup = function (
 
 export {
   describeAttentionGroup,
-  getOverviewHistoryStart,
+  defaultOverviewHistory,
+  getOverviewUrl,
   overviewHistoryOptions,
   parseOverviewHistoryRange,
 };

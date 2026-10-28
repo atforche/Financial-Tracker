@@ -14,6 +14,7 @@ import Link from "next/link";
 interface OverviewAttentionListProps {
   readonly groups: readonly OverviewAttentionGroup[];
   readonly currentPeriodId: string | null;
+  readonly returnUrl: string;
 }
 
 /**
@@ -22,6 +23,7 @@ interface OverviewAttentionListProps {
 const OverviewAttentionList = function ({
   groups,
   currentPeriodId,
+  returnUrl,
 }: OverviewAttentionListProps): JSX.Element {
   return (
     <ContentSurface>
@@ -33,7 +35,11 @@ const OverviewAttentionList = function ({
           </Typography>
         ) : (
           groups.map((group) => {
-            const description = describeAttentionGroup(group, currentPeriodId);
+            const description = describeAttentionGroup(
+              group,
+              currentPeriodId,
+              returnUrl,
+            );
             return (
               <Link
                 key={group.kind}

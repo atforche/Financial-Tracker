@@ -1,13 +1,13 @@
 import { Box, Button, Stack, Typography } from "@mui/material";
 import {
-  compareCurrencyAmounts,
   formatCurrency,
-  formatSignedCurrency,
+  getCurrencyDifference,
 } from "@/framework/currencyHelpers";
 import ChevronRight from "@mui/icons-material/ChevronRight";
 import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
 import Link from "next/link";
+import OverviewChange from "@/overview/OverviewChange";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
 import type { components } from "@/framework/data/api";
 
@@ -16,21 +16,8 @@ import type { components } from "@/framework/data/api";
  */
 interface OverviewPeriodCardProps {
   readonly period: components["schemas"]["OverviewPeriodModel"] | null;
+  readonly returnUrl: string;
 }
-
-/**
- * Gets the text color for a change: green when it is good, red when it is bad, and grey when there is none.
- */
-const getChangeColor = function (
-  change: number,
-  isIncreaseGood: boolean,
-): string {
-  const comparison = compareCurrencyAmounts(change, 0);
-  if (comparison === 0) {
-    return "text.secondary";
-  }
-  return comparison > 0 === isIncreaseGood ? "success.main" : "error.main";
-};
 
 /**
  * Props for the PeriodProgressRow component.
@@ -52,13 +39,14 @@ const PeriodProgressRow = function ({
   expected,
   isExtraGood = true,
 }: PeriodProgressRowProps): JSX.Element {
-  const extra = actual - expected;
+  const extra = getCurrencyDifference(actual, expected);
   const extraColor = isExtraGood ? "success.main" : "error.main";
-  const differenceColor = getChangeColor(extra, isExtraGood);
   // The bar spans whichever is larger, so anything beyond what was expected shows as its own segment
-  const total = Math.max(actual, expected);
-  const metShare = total > 0 ? Math.min(actual, expected) / total : 0;
-  const extraShare = total > 0 ? Math.max(extra, 0) / total : 0;
+  const total = Math.max(actual, expected, 0);
+  const metShare =
+    total > 0 ? Math.max(Math.min(actual, expected), 0) / total : 0;
+  const extraShare =
+    total > 0 ? Math.min(Math.max(extra, 0) / total, 1 - metShare) : 0;
   return (
     <Stack spacing={0.75}>
       <Stack
@@ -69,11 +57,8 @@ const PeriodProgressRow = function ({
         <Typography variant="subtitle2" noWrap sx={{ minWidth: 0 }}>
           {label}
         </Typography>
-        <Typography
-          variant="body2"
-          sx={{ color: differenceColor, fontWeight: 500, whiteSpace: "nowrap" }}
-        >
-          {formatSignedCurrency(extra)}
+        <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
+          <OverviewChange amount={extra} isIncreaseGood={isExtraGood} />
         </Typography>
       </Stack>
       <Box
@@ -100,6 +85,7 @@ const PeriodProgressRow = function ({
  */
 const OverviewPeriodCard = function ({
   period,
+  returnUrl,
 }: OverviewPeriodCardProps): JSX.Element {
   if (period === null) {
     return (
@@ -110,7 +96,7 @@ const OverviewPeriodCard = function ({
             No accounting period is open.
           </Typography>
           <Link
-            href={accountingPeriodRoutes.workspace({ returnUrl: "/" })}
+            href={accountingPeriodRoutes.workspace({ returnUrl })}
             style={{ textDecoration: "none" }}
           >
             <Button component="span">Go to accounting periods</Button>
@@ -126,7 +112,7 @@ const OverviewPeriodCard = function ({
         <Link
           href={accountingPeriodRoutes.workspaceDetail(
             period.accountingPeriod.id,
-            { returnUrl: "/" },
+            { returnUrl },
           )}
           style={{ textDecoration: "none", color: "inherit" }}
         >
@@ -167,13 +153,8 @@ const OverviewPeriodCard = function ({
           }}
         >
           <Typography variant="subtitle2">Net worth change</Typography>
-          <Typography
-            sx={{
-              fontWeight: 500,
-              color: getChangeColor(period.netWorthChange, true),
-            }}
-          >
-            {formatSignedCurrency(period.netWorthChange)}
+          <Typography>
+            <OverviewChange amount={period.netWorthChange} />
           </Typography>
         </Stack>
       </Stack>

@@ -8,12 +8,21 @@ import transactionRoutes from "@/transactions/routes";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
+ * Props for the OverviewAddTransactionButton component.
+ */
+interface OverviewAddTransactionButtonProps {
+  readonly returnUrl: string;
+}
+
+/**
  * Links to transaction entry, returning to the overview, for users who can make changes. Small screens get a floating
  * button instead, so it does not take up room in the page header.
  */
-const OverviewAddTransactionButton = function (): JSX.Element | null {
+const OverviewAddTransactionButton = function ({
+  returnUrl,
+}: OverviewAddTransactionButtonProps): JSX.Element | null {
   const canWrite = useWriteAccess();
-  const href = transactionRoutes.workspaceCreate({ returnUrl: "/" });
+  const href = transactionRoutes.workspaceCreate({ returnUrl });
   return canWrite ? (
     <>
       <Button
