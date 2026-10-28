@@ -1,4 +1,4 @@
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Box, IconButton, Stack, Typography } from "@mui/material";
 import OverviewAddTransactionButton, {
   OverviewAddTransactionButtonSpacer,
 } from "@/overview/OverviewAddTransactionButton";
@@ -9,8 +9,8 @@ import {
 } from "@/overview/helpers";
 import OverviewStat, { type OverviewStatDetail } from "@/overview/OverviewStat";
 import { formatAccountType, isTrackedAccountType } from "@/accounts/helpers";
-import ArrowForward from "@mui/icons-material/ArrowForward";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
+import ChevronRight from "@mui/icons-material/ChevronRight";
 import type { JSX } from "react";
 import Link from "next/link";
 import OverviewAttentionList from "@/overview/OverviewAttentionList";
@@ -100,6 +100,7 @@ const OverviewView = async function ({
     mode: "date",
     startDate: getOverviewHistoryStart(asOf, history),
     endDate: asOf,
+    returnUrl: "/",
   } as const;
 
   return (
@@ -114,14 +115,8 @@ const OverviewView = async function ({
           justifyContent: "space-between",
         }}
       >
-        <Typography
-          variant="h4"
-          noWrap
-          sx={{ typography: { xs: "h5", sm: "h4" }, maxWidth: "100%" }}
-        >
-          {currentPeriod === null
-            ? "Overview"
-            : `Overview - ${currentPeriod.accountingPeriod.name}`}
+        <Typography variant="h4" noWrap sx={{ maxWidth: "100%" }}>
+          Overview
         </Typography>
         <Stack
           direction="row"
@@ -178,45 +173,46 @@ const OverviewView = async function ({
           <OverviewPeriodCard period={currentPeriod} />
         </Box>
       </Stack>
-      <Stack spacing={2}>
-        <Typography variant="h5">Balance history</Typography>
-        <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
-          <BalanceTrendChart
-            chartPoints={buildDateChartPoints(
-              overview.accountBalances,
-              overview.granularity,
-            )}
-            title="Account Balance Trend"
-            xAxisLabel="Date"
-          />
-          <BalanceTrendChart
-            chartPoints={buildDateChartPoints(
-              overview.fundBalances,
-              overview.granularity,
-            )}
-            title="Fund Balance Trend"
-            xAxisLabel="Date"
-          />
-        </ResponsiveGrid>
-        <Stack direction="row" useFlexGap spacing={1} sx={{ flexWrap: "wrap" }}>
-          <Link
-            href={accountRoutes.trends(trendsRange)}
-            style={{ textDecoration: "none" }}
-          >
-            <Button component="span" endIcon={<ArrowForward />}>
-              View account trends
-            </Button>
-          </Link>
-          <Link
-            href={fundRoutes.trends(trendsRange)}
-            style={{ textDecoration: "none" }}
-          >
-            <Button component="span" endIcon={<ArrowForward />}>
-              View fund trends
-            </Button>
-          </Link>
-        </Stack>
-      </Stack>
+      <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
+        <BalanceTrendChart
+          chartPoints={buildDateChartPoints(
+            overview.accountBalances,
+            overview.granularity,
+          )}
+          title="Account Balance Trend"
+          xAxisLabel="Date"
+          variant="surface"
+          headerContent={
+            <Link
+              href={accountRoutes.trends(trendsRange)}
+              aria-label="View account trends"
+            >
+              <IconButton component="span" size="small">
+                <ChevronRight />
+              </IconButton>
+            </Link>
+          }
+        />
+        <BalanceTrendChart
+          chartPoints={buildDateChartPoints(
+            overview.fundBalances,
+            overview.granularity,
+          )}
+          title="Fund Balance Trend"
+          xAxisLabel="Date"
+          variant="surface"
+          headerContent={
+            <Link
+              href={fundRoutes.trends(trendsRange)}
+              aria-label="View fund trends"
+            >
+              <IconButton component="span" size="small">
+                <ChevronRight />
+              </IconButton>
+            </Link>
+          }
+        />
+      </ResponsiveGrid>
       <OverviewAddTransactionButtonSpacer />
     </PageLayout>
   );

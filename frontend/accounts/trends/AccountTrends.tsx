@@ -35,7 +35,7 @@ import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import TrendsBackLink from "@/framework/view/TrendsBackLink";
+import ReturnLink from "@/framework/view/ReturnLink";
 import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
@@ -223,11 +223,7 @@ const AccountTrends = async function ({
 
   return (
     <PageLayout>
-      <TrendsBackLink
-        returnUrl={returnUrl}
-        workspace="accounts"
-        label="Back to Account Details"
-      />
+      <ReturnLink returnUrl={returnUrl} />
       <ConstrainedContent>
         <AccountTrendsFilter
           accountingPeriods={accountingPeriods.items}

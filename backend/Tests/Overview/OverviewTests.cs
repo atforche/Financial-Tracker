@@ -61,7 +61,7 @@ public sealed class OverviewTests
     }
 
     /// <summary>
-    /// Reports the most recent open Accounting Period with its income, contribution, and spending figures.
+    /// Reports the most recent open Accounting Period with its tracked income, contribution, and spending figures.
     /// </summary>
     [Fact]
     public async Task CurrentPeriodIsTheMostRecentOpenPeriod()
@@ -72,7 +72,7 @@ public sealed class OverviewTests
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(august).CreateAsync();
-        await AddExpectedIncomeAsync(test, august, "Employer", 100m, new DateOnly(2026, 8, 15));
+        await AddExpectedIncomeAsync(test, august, "Employer", 100m, new DateOnly(2026, 8, 15), untrackedAmount: 40m);
         TransactionHandle income = await test.Transactions.Income().In(august).On(new DateOnly(2026, 8, 15)).For(100m).From("Employer").To(cash, groceries).CreateAsync();
         TransactionHandle spending = await test.Transactions.Spending().In(august).On(new DateOnly(2026, 8, 16)).For(30m).From(cash).To("Market", groceries).CreateAsync();
         await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 8, 15));
@@ -85,9 +85,10 @@ public sealed class OverviewTests
         OverviewPeriodModel current = Assert.IsType<OverviewPeriodModel>(overview.CurrentPeriod);
         Assert.Equal(august.Id, current.AccountingPeriod.Id);
         Assert.NotEqual(july.Id, current.AccountingPeriod.Id);
-        Assert.Equal(100m, current.ExpectedIncome);
-        Assert.Equal(100m, current.ActualIncome);
+        Assert.Equal(60m, current.ExpectedTrackedIncome);
+        Assert.Equal(100m, current.ActualTrackedIncome);
         Assert.Equal(30m, current.TotalSpending);
+        Assert.Equal(70m, current.NetWorthChange);
     }
 
     /// <summary>

@@ -52,11 +52,12 @@ public sealed class OverviewConverter(AccountingPeriodConverter accountingPeriod
     private OverviewPeriodModel ToModel(OverviewPeriod period) => new()
     {
         AccountingPeriod = accountingPeriodConverter.ToModel(period.AccountingPeriod),
-        ExpectedIncome = period.ExpectedIncome,
-        ActualIncome = period.ActualIncome,
+        ExpectedTrackedIncome = period.ExpectedTrackedIncome,
+        ActualTrackedIncome = period.ActualTrackedIncome,
         ExpectedGoalContributions = period.ExpectedGoalContributions,
         ActualGoalContributions = period.ActualGoalContributions,
         TotalSpending = period.TotalSpending,
+        NetWorthChange = period.NetWorthChange,
     };
 
     /// <summary>

@@ -15,12 +15,12 @@ public sealed record OverviewSummary(
 /// </summary>
 public sealed record OverviewPeriod(
     AccountingPeriod AccountingPeriod,
-    decimal ExpectedIncome,
-    decimal ActualIncome,
+    decimal ExpectedTrackedIncome,
     decimal ActualTrackedIncome,
     decimal ExpectedGoalContributions,
     decimal ActualGoalContributions,
-    decimal TotalSpending);
+    decimal TotalSpending,
+    decimal NetWorthChange);
 
 /// <summary>
 /// Kinds of items the overview flags as needing attention.

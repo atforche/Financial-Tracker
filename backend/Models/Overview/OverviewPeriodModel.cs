@@ -13,14 +13,14 @@ public class OverviewPeriodModel
     public required AccountingPeriodModel AccountingPeriod { get; init; }
 
     /// <summary>
-    /// Total income expected during the Accounting Period.
+    /// Tracked income expected during the Accounting Period.
     /// </summary>
-    public required decimal ExpectedIncome { get; init; }
+    public required decimal ExpectedTrackedIncome { get; init; }
 
     /// <summary>
-    /// Total income received during the Accounting Period.
+    /// Tracked income received during the Accounting Period.
     /// </summary>
-    public required decimal ActualIncome { get; init; }
+    public required decimal ActualTrackedIncome { get; init; }
 
     /// <summary>
     /// Total contributions expected toward Fund Goals during the Accounting Period.
@@ -36,4 +36,9 @@ public class OverviewPeriodModel
     /// Total posted spending during the Accounting Period.
     /// </summary>
     public required decimal TotalSpending { get; init; }
+
+    /// <summary>
+    /// Change in net worth from the start of the Accounting Period, across every Account with debts subtracted.
+    /// </summary>
+    public required decimal NetWorthChange { get; init; }
 }

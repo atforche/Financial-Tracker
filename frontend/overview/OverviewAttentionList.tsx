@@ -65,39 +65,60 @@ const OverviewAttentionList = function ({
                       <Typography sx={{ fontWeight: 500 }}>
                         {description.title}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {description.detail.map((part, index) => (
-                          <Fragment key={index}>
-                            {/* Lines only break between parts, with each separator leading the part after it */}
-                            {index > 0 ? " " : null}
-                            <Box
-                              component="span"
-                              sx={{
-                                display: "inline-block",
-                                maxWidth: "100%",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                verticalAlign: "bottom",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {index > 0 ? "· " : null}
-                              {part.text}
-                              {typeof part.amount === "string" ? (
-                                <>
-                                  {" "}
-                                  <Box
-                                    component="span"
-                                    sx={{ color: "error.main" }}
-                                  >
-                                    {part.amount}
-                                  </Box>
-                                </>
-                              ) : null}
-                            </Box>
-                          </Fragment>
-                        ))}
-                      </Typography>
+                      {description.items.length === 0 ? null : (
+                        <Typography variant="body2" color="text.secondary">
+                          {[
+                            ...description.items,
+                            ...(description.remainingItemCount > 0
+                              ? [
+                                  {
+                                    text: `and ${description.remainingItemCount} more`,
+                                  },
+                                ]
+                              : []),
+                          ].map((item, index, items) => (
+                            <Fragment key={index}>
+                              {/* Lines only break between items, and each comma stays with the item before it */}
+                              {index > 0 ? " " : null}
+                              <Box
+                                component="span"
+                                sx={{
+                                  display: "inline-block",
+                                  maxWidth: "100%",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  verticalAlign: "bottom",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {item.text}
+                                {"amount" in item &&
+                                typeof item.amount === "string" ? (
+                                  <>
+                                    {" "}
+                                    <Box
+                                      component="span"
+                                      sx={{ color: "error.main" }}
+                                    >
+                                      {item.amount}
+                                    </Box>
+                                  </>
+                                ) : null}
+                                {index < items.length - 1 ? "," : null}
+                              </Box>
+                            </Fragment>
+                          ))}
+                        </Typography>
+                      )}
+                      {description.facts.map((fact) => (
+                        <Typography
+                          key={fact}
+                          variant="caption"
+                          color="text.secondary"
+                        >
+                          {fact}
+                        </Typography>
+                      ))}
                     </Stack>
                     <Typography
                       sx={{

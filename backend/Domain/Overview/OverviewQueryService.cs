@@ -127,12 +127,12 @@ public sealed class OverviewQueryService(
             await accountingPeriodQueryRepository.GetRangeSpendingFactsAsync([balance.AccountingPeriod.Id.Value], cancellationToken);
         return new OverviewPeriod(
             balance.AccountingPeriod,
-            balance.AccountingPeriod.ExpectedIncomeSources.Sum(source => source.ExpectedAmount),
-            balance.ActualIncome,
+            balance.AccountingPeriod.ExpectedIncomeSources.Sum(source => source.ExpectedTrackedAmount),
             balance.ActualTrackedIncome,
             balance.ExpectedGoalContributions,
             balance.ActualGoalContributions,
-            FinancialRangeTotals.Calculate([], spendingFacts).TotalSpending);
+            FinancialRangeTotals.Calculate([], spendingFacts).TotalSpending,
+            balance.ClosingBalance - balance.OpeningBalance);
     }
 
     /// <summary>

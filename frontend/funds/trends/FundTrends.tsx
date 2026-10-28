@@ -31,7 +31,7 @@ import FundTrendsListFrame from "@/funds/trends/FundTrendsListFrame";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import TrendsBackLink from "@/framework/view/TrendsBackLink";
+import ReturnLink from "@/framework/view/ReturnLink";
 import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
@@ -220,11 +220,7 @@ const FundTrends = async function ({
 
   return (
     <PageLayout>
-      <TrendsBackLink
-        returnUrl={returnUrl}
-        workspace="funds"
-        label="Back to Fund Details"
-      />
+      <ReturnLink returnUrl={returnUrl} />
       <ConstrainedContent>
         <FundTrendsFilter
           accountingPeriods={accountingPeriods.items}

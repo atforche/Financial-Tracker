@@ -5446,14 +5446,14 @@ export interface components {
             accountingPeriod: components["schemas"]["AccountingPeriodModel"];
             /**
              * Format: double
-             * @description Total income expected during the Accounting Period.
+             * @description Tracked income expected during the Accounting Period.
              */
-            expectedIncome: number;
+            expectedTrackedIncome: number;
             /**
              * Format: double
-             * @description Total income received during the Accounting Period.
+             * @description Tracked income received during the Accounting Period.
              */
-            actualIncome: number;
+            actualTrackedIncome: number;
             /**
              * Format: double
              * @description Total contributions expected toward Fund Goals during the Accounting Period.
@@ -5469,6 +5469,11 @@ export interface components {
              * @description Total posted spending during the Accounting Period.
              */
             totalSpending: number;
+            /**
+             * Format: double
+             * @description Change in net worth from the start of the Accounting Period, across every Account with debts subtracted.
+             */
+            netWorthChange: number;
         };
         /** @description Posted balance at the end of a calendar day, scoped to an Accounting Period. */
         PeriodBalanceDateModel: {
