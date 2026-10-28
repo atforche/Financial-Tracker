@@ -17,6 +17,7 @@ public sealed record OverviewPeriod(
     AccountingPeriod AccountingPeriod,
     decimal ExpectedIncome,
     decimal ActualIncome,
+    decimal ActualTrackedIncome,
     decimal ExpectedGoalContributions,
     decimal ActualGoalContributions,
     decimal TotalSpending);
@@ -32,7 +33,12 @@ public enum OverviewAttentionKind
     GoalsBelowMinimum,
 
     /// <summary>
-    /// Fund Goals still short of their expected contribution after all expected income has been received.
+    /// Fund or Account Goals whose balance is above their maximum.
+    /// </summary>
+    GoalsAboveMaximum,
+
+    /// <summary>
+    /// Fund Goals still short of their expected contribution.
     /// </summary>
     GoalsBehind,
 
@@ -49,8 +55,8 @@ public enum OverviewAttentionKind
 
 /// <summary>
 /// A group of related items needing attention, with its largest items. Count is the number of goals, Transactions,
-/// or income sources; ItemCount is the number of items the top items were chosen from, which differs for unposted
-/// Transactions, whose items are their Accounts.
+/// or passed expected income payments; ItemCount is the number of items the top items were chosen from, which differs
+/// for unposted Transactions, whose items are their Accounts. Income is set only for income not received.
 /// </summary>
 public sealed record OverviewAttentionGroup(
     OverviewAttentionKind Kind,
@@ -58,7 +64,13 @@ public sealed record OverviewAttentionGroup(
     decimal Amount,
     int ItemCount,
     IReadOnlyCollection<OverviewAttentionItem> TopItems,
-    DateOnly? OldestDate);
+    DateOnly? OldestDate,
+    OverviewIncomeShortfall? Income = null);
+
+/// <summary>
+/// Tracked income expected so far in the current Accounting Period, and how much of it has been received.
+/// </summary>
+public sealed record OverviewIncomeShortfall(decimal ExpectedAmount, decimal ReceivedAmount);
 
 /// <summary>
 /// A single item needing attention. Count is set when the item stands for several Transactions.

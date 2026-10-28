@@ -1,4 +1,7 @@
 import { Box, Button, Stack, Typography } from "@mui/material";
+import OverviewAddTransactionButton, {
+  OverviewAddTransactionButtonSpacer,
+} from "@/overview/OverviewAddTransactionButton";
 import {
   type OverviewSearchParams,
   getOverviewHistoryStart,
@@ -10,7 +13,6 @@ import ArrowForward from "@mui/icons-material/ArrowForward";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import type { JSX } from "react";
 import Link from "next/link";
-import OverviewAddTransactionButton from "@/overview/OverviewAddTransactionButton";
 import OverviewAttentionList from "@/overview/OverviewAttentionList";
 import OverviewChange from "@/overview/OverviewChange";
 import { OverviewHistoryRangeModel } from "@/framework/data/api";
@@ -23,7 +25,6 @@ import { buildDateChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
 import { formatCurrency } from "@/framework/currencyHelpers";
-import { formatLongDate } from "@/framework/dateHelpers";
 import fundRoutes from "@/funds/routes";
 import { getAccountTypeBreakdownDetails } from "@/accounts/balanceSummaryHelpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -113,16 +114,24 @@ const OverviewView = async function ({
           justifyContent: "space-between",
         }}
       >
-        <Stack spacing={0.5}>
-          <Typography variant="h4">Overview</Typography>
-          <Typography color="text.secondary">
-            {formatLongDate(new Date(`${asOf}T00:00:00`))} ·{" "}
-            {currentPeriod === null
-              ? "No open accounting period"
-              : `${currentPeriod.accountingPeriod.name} is open`}
-          </Typography>
+        <Typography
+          variant="h4"
+          noWrap
+          sx={{ typography: { xs: "h5", sm: "h4" }, maxWidth: "100%" }}
+        >
+          {currentPeriod === null
+            ? "Overview"
+            : `Overview - ${currentPeriod.accountingPeriod.name}`}
+        </Typography>
+        <Stack
+          direction="row"
+          useFlexGap
+          spacing={1.5}
+          sx={{ flexWrap: "wrap", alignItems: "center" }}
+        >
+          <OverviewHistoryRangeSelector value={history} />
+          <OverviewAddTransactionButton />
         </Stack>
-        <OverviewAddTransactionButton />
       </Stack>
       <ResponsiveGrid columns={{ xs: 1, sm: 2, lg: 4 }}>
         <OverviewStat
@@ -170,19 +179,7 @@ const OverviewView = async function ({
         </Box>
       </Stack>
       <Stack spacing={2}>
-        <Stack
-          direction="row"
-          useFlexGap
-          spacing={1.5}
-          sx={{
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Typography variant="h5">Balance history</Typography>
-          <OverviewHistoryRangeSelector value={history} />
-        </Stack>
+        <Typography variant="h5">Balance history</Typography>
         <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
           <BalanceTrendChart
             chartPoints={buildDateChartPoints(
@@ -220,6 +217,7 @@ const OverviewView = async function ({
           </Link>
         </Stack>
       </Stack>
+      <OverviewAddTransactionButtonSpacer />
     </PageLayout>
   );
 };

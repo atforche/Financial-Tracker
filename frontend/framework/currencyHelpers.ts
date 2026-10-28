@@ -41,13 +41,6 @@ const signedCompactCurrencyFormatter = new Intl.NumberFormat("en-US", {
 const currencyEditPattern = /^-?\d*(?:\.\d{0,2})?$/u;
 
 /**
- * Formats the provided USD amount with two decimal places.
- */
-const formatCurrency = function (amount: number): string {
-  return `$ ${currencyNumberFormatter.format(amount)}`;
-};
-
-/**
  * Formats a currency value for display in an entry field.
  */
 const formatCurrencyValue = function (value: number): string {
@@ -84,14 +77,18 @@ const compareCurrencyAmounts = function (
 };
 
 /**
+ * Formats the provided USD amount with two decimal places, placing any negative sign before the dollar sign.
+ */
+const formatCurrency = function (amount: number): string {
+  const sign = compareCurrencyAmounts(amount, 0) < 0 ? "-" : "";
+  return `${sign}$ ${currencyNumberFormatter.format(Math.abs(amount))}`;
+};
+
+/**
  * Formats a currency value with an explicit sign when it is non-zero.
  */
 const formatSignedCurrency = function (value: number): string {
-  const comparisonToZero = compareCurrencyAmounts(value, 0);
-  if (comparisonToZero === 0) {
-    return formatCurrency(value);
-  }
-  return `${comparisonToZero > 0 ? "+" : "-"}${formatCurrency(Math.abs(value))}`;
+  return `${compareCurrencyAmounts(value, 0) > 0 ? "+" : ""}${formatCurrency(value)}`;
 };
 
 /**

@@ -77,13 +77,21 @@ const pluralize = function (count: number, noun: string): string {
 };
 
 /**
+ * One piece of the detail line for a group of items needing attention, with an optional amount that is
+ * highlighted after its text.
+ */
+interface OverviewAttentionDetailPart {
+  readonly text: string;
+  readonly amount?: string;
+}
+
+/**
  * What the overview says about a group of items needing attention, and where to resolve it.
  */
 interface OverviewAttentionDescription {
   readonly title: string;
   readonly amount: string;
-  readonly detail: string;
-  readonly actionLabel: string;
+  readonly detail: readonly OverviewAttentionDetailPart[];
   readonly href: Route;
 }
 
@@ -94,6 +102,10 @@ const describeAttentionGroup = function (
   group: OverviewAttentionGroup,
   currentPeriodId: string | null,
 ): OverviewAttentionDescription {
+  /*
+   * Revisit these links for the goals below minimum, goals above maximum, goals not fully funded, and tracked income
+   * behind expectations cards when reviewing the accounting period pages.
+   */
   const getPlanHref = function (
     planTab: "fund-goals" | "income-sources",
   ): Route {
@@ -102,15 +114,17 @@ const describeAttentionGroup = function (
       : accountingPeriodRoutes.workspacePlan(currentPeriodId, { planTab });
   };
   const listItems = function (
-    formatItem: (item: OverviewAttentionGroup["topItems"][number]) => string,
+    formatItem: (
+      item: OverviewAttentionGroup["topItems"][number],
+    ) => OverviewAttentionDetailPart,
     ...extra: string[]
-  ): string {
+  ): OverviewAttentionDetailPart[] {
     const remaining = group.itemCount - group.topItems.length;
     return [
       ...group.topItems.map(formatItem),
-      ...(remaining > 0 ? [`+${remaining} more`] : []),
-      ...extra,
-    ].join(" · ");
+      ...(remaining > 0 ? [{ text: `+${remaining} more` }] : []),
+      ...extra.map((text) => ({ text })),
+    ];
   };
   const oldestDate =
     typeof group.oldestDate === "string"
@@ -122,43 +136,59 @@ const describeAttentionGroup = function (
       return {
         title: `${pluralize(group.count, "goal")} below minimum`,
         amount: `${formatCurrency(group.amount)} short`,
-        detail: listItems(
-          (item) => `${item.name} ${formatCurrency(item.amount)}`,
-        ),
-        actionLabel: "Review",
+        detail: listItems((item) => ({
+          text: item.name,
+          amount: formatSignedCurrency(-item.amount),
+        })),
+        href: getPlanHref("fund-goals"),
+      };
+    case OverviewAttentionKindModel.GoalsAboveMaximum:
+      return {
+        title: `${pluralize(group.count, "goal")} above maximum`,
+        amount: `${formatCurrency(group.amount)} over`,
+        detail: listItems((item) => ({
+          text: item.name,
+          amount: formatSignedCurrency(item.amount),
+        })),
         href: getPlanHref("fund-goals"),
       };
     case OverviewAttentionKindModel.GoalsBehind:
       return {
-        title: `${pluralize(group.count, "goal")} behind`,
-        amount: `${formatCurrency(group.amount)} to go`,
-        detail: listItems(
-          (item) => `${item.name} ${formatCurrency(item.amount)}`,
-        ),
-        actionLabel: "Review",
+        title: `${pluralize(group.count, "goal")} not fully funded`,
+        amount: `${formatCurrency(group.amount)} remaining`,
+        detail: listItems((item) => ({
+          text: item.name,
+          amount: formatCurrency(item.amount),
+        })),
         href: getPlanHref("fund-goals"),
       };
     case OverviewAttentionKindModel.UnpostedTransactions:
       return {
         title: `${pluralize(group.count, "transaction")} not posted`,
-        amount: formatSignedCurrency(group.amount),
+        amount: `${formatSignedCurrency(group.amount)} pending`,
         detail: listItems(
-          (item) => `${item.name} (${item.count ?? 0})`,
+          (item) => ({ text: `${item.name} (${item.count ?? 0})` }),
           ...(oldestDate === null ? [] : [`oldest ${oldestDate}`]),
         ),
-        actionLabel: "Post",
-        href: transactionRoutes.workspace({}),
+        href: transactionRoutes.workspace({ fullyPosted: "false" }),
       };
     case OverviewAttentionKindModel.IncomeNotReceived:
     default:
       return {
-        title: "Expected income not received",
+        title: "Tracked income behind expectations",
         amount: `${formatCurrency(group.amount)} short`,
-        detail: listItems(
-          (item) => `${item.name} ${formatCurrency(item.amount)}`,
-          ...(oldestDate === null ? [] : [`due since ${oldestDate}`]),
-        ),
-        actionLabel: "Review",
+        detail: [
+          ...(group.income === null || group.income === undefined
+            ? []
+            : [
+                {
+                  text: `${formatCurrency(group.income.receivedAmount)} of ${formatCurrency(group.income.expectedAmount)} received`,
+                },
+              ]),
+          ...(oldestDate === null
+            ? []
+            : [{ text: `behind since ${oldestDate}` }]),
+        ],
         href: getPlanHref("income-sources"),
       };
   }

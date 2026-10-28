@@ -9,6 +9,7 @@ import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/
 import { buildUrl } from "@/framework/routes/helpers";
 import createTransactionListColumns from "@/transactions/createTransactionListColumns";
 import { normalizeAccountTypes } from "@/accounts/accountTypeFilterHelpers";
+import { normalizeFullyPosted } from "@/transactions/fullyPostedFilter";
 import { normalizeTransactionTypes } from "@/transactions/transactionTypeFilter";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import propertyName from "@/framework/data/propertyName";
@@ -54,6 +55,8 @@ const TransactionWorkspaceListFrame = function ({
     propertyName<TransactionWorkspaceSearchParams>("accountNames");
   const transactionTypesParamName =
     propertyName<TransactionWorkspaceSearchParams>("transactionTypes");
+  const fullyPostedParamName =
+    propertyName<TransactionWorkspaceSearchParams>("fullyPosted");
   const sortParamName = propertyName<TransactionWorkspaceSearchParams>("sort");
   const pageParamName = propertyName<TransactionWorkspaceSearchParams>("page");
 
@@ -76,6 +79,7 @@ const TransactionWorkspaceListFrame = function ({
     const endDate = params.get("endDate");
     const startAccountingPeriodId = params.get("startAccountingPeriodId");
     const endAccountingPeriodId = params.get("endAccountingPeriodId");
+    const fullyPosted = normalizeFullyPosted(params.get(fullyPostedParamName));
     const pageSize = params.get("pageSize");
     const returnUrl = params.get("returnUrl");
     router.push(
@@ -92,6 +96,7 @@ const TransactionWorkspaceListFrame = function ({
         transactionTypes: normalizeTransactionTypes(
           params.getAll(transactionTypesParamName),
         ),
+        ...(fullyPosted === null ? {} : { fullyPosted }),
         ...(startDate === null ? {} : { startDate }),
         ...(endDate === null ? {} : { endDate }),
         ...(startAccountingPeriodId === null
@@ -169,6 +174,7 @@ const TransactionWorkspaceListFrame = function ({
                 params.delete(accountTypesParamName);
                 params.delete(accountNamesParamName);
                 params.delete(transactionTypesParamName);
+                params.delete(fullyPostedParamName);
                 params.delete("startDate");
                 params.delete("endDate");
                 params.delete("startAccountingPeriodId");

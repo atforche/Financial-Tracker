@@ -49,8 +49,16 @@ public sealed class OverviewQueryService(
             IReadOnlyDictionary<FundGoalId, FundGoalProgress> fundGoalProgress = fundGoalService.GetProgresses(fundGoals, period);
             IReadOnlyCollection<AccountGoal> accountGoals = accountGoalRepository.GetAllByAccountingPeriod(period.Id);
             IReadOnlyDictionary<AccountGoalId, AccountGoalProgress> accountGoalProgress = accountGoalService.GetProgresses(accountGoals, period);
-            attention.Add(GetGoalsBelowMinimum(fundGoals, fundGoalProgress, accountGoals, accountGoalProgress));
-            attention.Add(GetGoalsBehind(currentPeriod, fundGoals, fundGoalProgress));
+            List<OverviewGoalRange> goalRanges = GetGoalRanges(fundGoals, fundGoalProgress, accountGoals, accountGoalProgress);
+            attention.Add(CreateGroup(OverviewAttentionKind.GoalsBelowMinimum, goalRanges
+                .Where(goal => goal.AmountBelowMinimum > 0)
+                .Select(goal => new OverviewAttentionItem(goal.Name, goal.AmountBelowMinimum, null))
+                .ToList()));
+            attention.Add(CreateGroup(OverviewAttentionKind.GoalsAboveMaximum, goalRanges
+                .Where(goal => goal.AmountAboveMaximum > 0)
+                .Select(goal => new OverviewAttentionItem(goal.Name, goal.AmountAboveMaximum, null))
+                .ToList()));
+            attention.Add(GetGoalsBehind(fundGoals, fundGoalProgress));
         }
         attention.Add(GetUnpostedTransactions(await overviewQueryRepository.GetUnpostedEffectsAsync(cancellationToken)));
         if (currentPeriod != null)
@@ -121,44 +129,46 @@ public sealed class OverviewQueryService(
             balance.AccountingPeriod,
             balance.AccountingPeriod.ExpectedIncomeSources.Sum(source => source.ExpectedAmount),
             balance.ActualIncome,
+            balance.ActualTrackedIncome,
             balance.ExpectedGoalContributions,
             balance.ActualGoalContributions,
             FinancialRangeTotals.Calculate([], spendingFacts).TotalSpending);
     }
 
     /// <summary>
-    /// Flags Fund and Account Goals whose balance is below their minimum.
+    /// Gets how far each Fund and Account Goal's balance is below its minimum and above its maximum.
     /// </summary>
-    private static OverviewAttentionGroup? GetGoalsBelowMinimum(
+    private static List<OverviewGoalRange> GetGoalRanges(
         IReadOnlyCollection<FundGoal> fundGoals,
         IReadOnlyDictionary<FundGoalId, FundGoalProgress> fundGoalProgress,
         IReadOnlyCollection<AccountGoal> accountGoals,
         IReadOnlyDictionary<AccountGoalId, AccountGoalProgress> accountGoalProgress) =>
-        CreateGroup(OverviewAttentionKind.GoalsBelowMinimum, fundGoals
+        fundGoals
             .Where(goal => fundGoalProgress.ContainsKey(goal.Id))
-            .Select(goal => new OverviewAttentionItem(goal.Fund.Name, fundGoalProgress[goal.Id].EndingBalance.AmountBelowMinimum, null))
+            .Select(goal => new OverviewGoalRange(
+                goal.Fund.Name,
+                fundGoalProgress[goal.Id].EndingBalance.AmountBelowMinimum,
+                fundGoalProgress[goal.Id].EndingBalance.AmountAboveMaximum))
             .Concat(accountGoals
                 .Where(goal => accountGoalProgress.ContainsKey(goal.Id))
-                .Select(goal => new OverviewAttentionItem(goal.Account.Name, accountGoalProgress[goal.Id].EndingBalance.AmountBelowMinimum, null)))
-            .Where(item => item.Amount > 0)
-            .ToList());
+                .Select(goal => new OverviewGoalRange(
+                    goal.Account.Name,
+                    accountGoalProgress[goal.Id].EndingBalance.AmountBelowMinimum,
+                    accountGoalProgress[goal.Id].EndingBalance.AmountAboveMaximum)))
+            .ToList();
 
     /// <summary>
-    /// Flags Fund Goals short of their expected contribution, but only once all expected income has been received,
-    /// since contributions usually wait on that income.
+    /// Flags Fund Goals short of their expected contribution.
     /// </summary>
     private static OverviewAttentionGroup? GetGoalsBehind(
-        OverviewPeriod period,
         IReadOnlyCollection<FundGoal> fundGoals,
         IReadOnlyDictionary<FundGoalId, FundGoalProgress> fundGoalProgress) =>
-        period.ActualIncome < period.ExpectedIncome
-            ? null
-            : CreateGroup(OverviewAttentionKind.GoalsBehind, fundGoals
-                .Where(goal => fundGoalProgress.ContainsKey(goal.Id))
-                .Select(goal => (goal.Fund.Name, fundGoalProgress[goal.Id].Contribution))
-                .Where(item => item.Contribution is { IsSatisfied: false })
-                .Select(item => new OverviewAttentionItem(item.Name, item.Contribution!.RemainingAmount, null))
-                .ToList());
+        CreateGroup(OverviewAttentionKind.GoalsBehind, fundGoals
+            .Where(goal => fundGoalProgress.ContainsKey(goal.Id))
+            .Select(goal => (goal.Fund.Name, fundGoalProgress[goal.Id].Contribution))
+            .Where(item => item.Contribution is { IsSatisfied: false })
+            .Select(item => new OverviewAttentionItem(item.Name, item.Contribution!.RemainingAmount, null))
+            .ToList());
 
     /// <summary>
     /// Flags every Transaction not yet posted to all of its Accounts, totalled by Account as its effect on net worth.
@@ -186,30 +196,45 @@ public sealed class OverviewQueryService(
     }
 
     /// <summary>
-    /// Flags expected income whose dates have passed when less than that much income has been received. Received
-    /// income is not linked to the source it came from, so only the totals are compared.
+    /// Flags expected tracked income whose dates have passed when less than that much tracked income has been
+    /// received. Untracked income often arrives weeks after its expected date, so it is left out. Received income is
+    /// not linked to the source it came from, so only the totals are compared and no sources are named. The group's
+    /// date is when the expected payments, taken in date order, first added up to more than was received.
     /// </summary>
     private static OverviewAttentionGroup? GetIncomeNotReceived(OverviewPeriod period, DateOnly asOf)
     {
-        var overdueSources = period.AccountingPeriod.ExpectedIncomeSources
-            .Select(source => (
-                source.Name,
-                PassedDates: source.ExpectedDates.Select(expectedDate => expectedDate.Date).Where(date => date < asOf).ToList(),
-                source.NetAmount))
-            .Where(source => source.PassedDates.Count > 0)
+        var passedPayments = period.AccountingPeriod.ExpectedIncomeSources
+            .Where(source => source.TrackedAmount > 0)
+            .SelectMany(source => source.ExpectedDates
+                .Where(expectedDate => expectedDate.Date < asOf)
+                .Select(expectedDate => (expectedDate.Date, Amount: source.TrackedAmount)))
+            .OrderBy(payment => payment.Date)
             .ToList();
-        decimal shortfall = overdueSources.Sum(source => source.NetAmount * source.PassedDates.Count) - period.ActualIncome;
-        return shortfall <= 0
-            ? null
-            : new OverviewAttentionGroup(
-                OverviewAttentionKind.IncomeNotReceived,
-                overdueSources.Count,
-                shortfall,
-                overdueSources.Count,
-                GetTopItems(overdueSources
-                    .Select(source => new OverviewAttentionItem(source.Name, source.NetAmount * source.PassedDates.Count, null))
-                    .ToList()),
-                overdueSources.Min(source => source.PassedDates.Min()));
+        decimal expected = passedPayments.Sum(payment => payment.Amount);
+        decimal shortfall = expected - period.ActualTrackedIncome;
+        if (shortfall <= 0)
+        {
+            return null;
+        }
+        DateOnly behindSince = default;
+        decimal runningExpected = 0;
+        foreach ((DateOnly date, decimal amount) in passedPayments)
+        {
+            runningExpected += amount;
+            if (runningExpected > period.ActualTrackedIncome)
+            {
+                behindSince = date;
+                break;
+            }
+        }
+        return new OverviewAttentionGroup(
+            OverviewAttentionKind.IncomeNotReceived,
+            passedPayments.Count,
+            shortfall,
+            0,
+            [],
+            behindSince,
+            new OverviewIncomeShortfall(expected, period.ActualTrackedIncome));
     }
 
     /// <summary>
@@ -230,3 +255,8 @@ public sealed class OverviewQueryService(
             .Take(TopItemCount)
             .ToList();
 }
+
+/// <summary>
+/// How far a Fund or Account Goal's balance is below its minimum and above its maximum.
+/// </summary>
+internal sealed record OverviewGoalRange(string Name, decimal AmountBelowMinimum, decimal AmountAboveMaximum);

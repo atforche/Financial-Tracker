@@ -533,6 +533,7 @@ export interface paths {
                     "Filter.FundIds"?: string[];
                     "Filter.LocationIds"?: string[];
                     "Filter.Types"?: components["schemas"]["TransactionTypeModel"][];
+                    "Filter.FullyPosted"?: boolean;
                     /** @description Sort to apply to the results */
                     Sort?: components["schemas"]["TransactionSortModel"];
                     Limit?: number;
@@ -738,6 +739,7 @@ export interface paths {
                     "Filter.FundIds"?: string[];
                     "Filter.LocationIds"?: string[];
                     "Filter.Types"?: components["schemas"]["TransactionTypeModel"][];
+                    "Filter.FullyPosted"?: boolean;
                     /** @description Sort to apply to the results */
                     Sort?: components["schemas"]["TransactionSortModel"];
                     Limit?: number;
@@ -788,6 +790,7 @@ export interface paths {
                     "Filter.FundIds"?: string[];
                     "Filter.LocationIds"?: string[];
                     "Filter.Types"?: components["schemas"]["TransactionTypeModel"][];
+                    "Filter.FullyPosted"?: boolean;
                     /** @description Sort to apply to the results */
                     Sort?: components["schemas"]["TransactionSortModel"];
                     Limit?: number;
@@ -5343,7 +5346,8 @@ export interface components {
             kind: components["schemas"]["OverviewAttentionKindModel"];
             /**
              * Format: int32
-             * @description Number of items in the group. For unposted Transactions, the number of Transactions.
+             * @description Number of items in the group. For unposted Transactions, the number of Transactions. For income not received,
+             *     the number of expected payments whose dates have passed.
              */
             count: number;
             /**
@@ -5361,9 +5365,11 @@ export interface components {
             topItems: components["schemas"]["OverviewAttentionItemModel"][];
             /**
              * Format: date
-             * @description Earliest date among the items, when the group's items are dated.
+             * @description Earliest date among the items, when the group's items are dated. For income not received, the date it first fell
+             *     behind.
              */
             oldestDate?: null | string;
+            income?: null | components["schemas"]["OverviewIncomeShortfallModel"];
         };
         /** @description Model representing a single item needing attention. */
         OverviewAttentionItemModel: {
@@ -5403,6 +5409,19 @@ export interface components {
          * @enum {unknown}
          */
         OverviewHistoryRangeModel: OverviewHistoryRangeModel;
+        /** @description Model representing tracked income expected so far in the current Accounting Period and how much has been received. */
+        OverviewIncomeShortfallModel: {
+            /**
+             * Format: double
+             * @description Tracked income expected so far.
+             */
+            expectedAmount: number;
+            /**
+             * Format: double
+             * @description Tracked income received so far.
+             */
+            receivedAmount: number;
+        };
         /** @description Model representing everything shown on the overview. */
         OverviewModel: {
             /** @description Account balances at the start of the balance history. */
@@ -6291,6 +6310,7 @@ export enum LocationSortModel {
 }
 export enum OverviewAttentionKindModel {
     GoalsBelowMinimum = "GoalsBelowMinimum",
+    GoalsAboveMaximum = "GoalsAboveMaximum",
     GoalsBehind = "GoalsBehind",
     UnpostedTransactions = "UnpostedTransactions",
     IncomeNotReceived = "IncomeNotReceived"

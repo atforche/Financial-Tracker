@@ -67,6 +67,7 @@ public sealed class OverviewConverter(AccountingPeriodConverter accountingPeriod
         Kind = group.Kind switch
         {
             OverviewAttentionKind.GoalsBelowMinimum => OverviewAttentionKindModel.GoalsBelowMinimum,
+            OverviewAttentionKind.GoalsAboveMaximum => OverviewAttentionKindModel.GoalsAboveMaximum,
             OverviewAttentionKind.GoalsBehind => OverviewAttentionKindModel.GoalsBehind,
             OverviewAttentionKind.UnpostedTransactions => OverviewAttentionKindModel.UnpostedTransactions,
             OverviewAttentionKind.IncomeNotReceived => OverviewAttentionKindModel.IncomeNotReceived,
@@ -82,5 +83,12 @@ public sealed class OverviewConverter(AccountingPeriodConverter accountingPeriod
             Count = item.Count,
         }).ToList(),
         OldestDate = group.OldestDate,
+        Income = group.Income == null
+            ? null
+            : new OverviewIncomeShortfallModel
+            {
+                ExpectedAmount = group.Income.ExpectedAmount,
+                ReceivedAmount = group.Income.ReceivedAmount,
+            },
     };
 }

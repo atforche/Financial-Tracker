@@ -1,10 +1,11 @@
+import { Box, Stack, Typography } from "@mui/material";
+import { Fragment, type JSX } from "react";
 import {
   type OverviewAttentionGroup,
   describeAttentionGroup,
 } from "@/overview/helpers";
-import { Stack, Typography } from "@mui/material";
+import ChevronRight from "@mui/icons-material/ChevronRight";
 import ContentSurface from "@/framework/view/ContentSurface";
-import type { JSX } from "react";
 import Link from "next/link";
 
 /**
@@ -40,10 +41,10 @@ const OverviewAttentionList = function ({
                 style={{ textDecoration: "none", color: "inherit" }}
               >
                 <Stack
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={{ xs: 1, sm: 2 }}
+                  direction="row"
+                  spacing={1}
                   sx={{
-                    alignItems: { xs: "stretch", sm: "center" },
+                    alignItems: "center",
                     p: 1.5,
                     minHeight: 44,
                     borderRadius: 2,
@@ -51,30 +52,67 @@ const OverviewAttentionList = function ({
                     "&:hover": { bgcolor: "action.selected" },
                   }}
                 >
-                  <Stack spacing={0.25} sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography sx={{ fontWeight: 500 }}>
-                      {description.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {description.detail}
-                    </Typography>
-                  </Stack>
                   <Stack
-                    direction={{ xs: "row", sm: "column" }}
-                    spacing={{ xs: 2, sm: 0.25 }}
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={{ xs: 1, sm: 2 }}
                     sx={{
-                      alignItems: { xs: "center", sm: "flex-end" },
-                      justifyContent: "space-between",
-                      flexShrink: 0,
+                      alignItems: { xs: "stretch", sm: "center" },
+                      flex: 1,
+                      minWidth: 0,
                     }}
                   >
-                    <Typography sx={{ fontWeight: 500, whiteSpace: "nowrap" }}>
+                    <Stack spacing={0.25} sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography sx={{ fontWeight: 500 }}>
+                        {description.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {description.detail.map((part, index) => (
+                          <Fragment key={index}>
+                            {/* Lines only break between parts, with each separator leading the part after it */}
+                            {index > 0 ? " " : null}
+                            <Box
+                              component="span"
+                              sx={{
+                                display: "inline-block",
+                                maxWidth: "100%",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                verticalAlign: "bottom",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {index > 0 ? "· " : null}
+                              {part.text}
+                              {typeof part.amount === "string" ? (
+                                <>
+                                  {" "}
+                                  <Box
+                                    component="span"
+                                    sx={{ color: "error.main" }}
+                                  >
+                                    {part.amount}
+                                  </Box>
+                                </>
+                              ) : null}
+                            </Box>
+                          </Fragment>
+                        ))}
+                      </Typography>
+                    </Stack>
+                    <Typography
+                      sx={{
+                        fontWeight: 500,
+                        whiteSpace: "nowrap",
+                        flexShrink: 0,
+                      }}
+                    >
                       {description.amount}
                     </Typography>
-                    <Typography variant="body2" color="primary">
-                      {description.actionLabel}
-                    </Typography>
                   </Stack>
+                  <ChevronRight
+                    aria-hidden
+                    sx={{ color: "text.secondary", flexShrink: 0 }}
+                  />
                 </Stack>
               </Link>
             );

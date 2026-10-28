@@ -11,7 +11,12 @@ public enum OverviewAttentionKindModel
     GoalsBelowMinimum,
 
     /// <summary>
-    /// Fund Goals still short of their expected contribution after all expected income has been received
+    /// Fund or Account Goals whose balance is above their maximum
+    /// </summary>
+    GoalsAboveMaximum,
+
+    /// <summary>
+    /// Fund Goals still short of their expected contribution
     /// </summary>
     GoalsBehind,
 

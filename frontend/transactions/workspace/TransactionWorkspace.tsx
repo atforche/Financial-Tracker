@@ -9,6 +9,7 @@ import PageLayout from "@/framework/view/PageLayout";
 import TransactionWorkspaceFilter from "@/transactions/workspace/TransactionWorkspaceFilter";
 import TransactionWorkspaceListFrame from "@/transactions/workspace/TransactionWorkspaceListFrame";
 import { getTransactionWorkspaceListData } from "@/transactions/workspace/getTransactionWorkspaceData";
+import { normalizeFullyPosted } from "@/transactions/fullyPostedFilter";
 
 /**
  * Search parameters supported by the Transactions workspace.
@@ -22,6 +23,7 @@ interface TransactionWorkspaceSearchParams {
   accountTypes?: AccountType | readonly AccountType[];
   accountNames?: string | readonly string[];
   transactionTypes?: TransactionType | readonly TransactionType[];
+  fullyPosted?: string | readonly string[];
   startDate?: string;
   endDate?: string;
   startAccountingPeriodId?: string;
@@ -47,22 +49,23 @@ const TransactionWorkspace = async function ({
   searchParams,
 }: TransactionWorkspaceProps): Promise<JSX.Element> {
   const resolvedSearchParams = await searchParams;
-  const hasFilter = [
-    resolvedSearchParams.accountingPeriodIds,
-    resolvedSearchParams.accountIds,
-    resolvedSearchParams.fundIds,
-    resolvedSearchParams.locationIds,
-    resolvedSearchParams.fundNames,
-    resolvedSearchParams.accountTypes,
-    resolvedSearchParams.accountNames,
-    resolvedSearchParams.transactionTypes,
-    resolvedSearchParams.startDate,
-    resolvedSearchParams.endDate,
-    resolvedSearchParams.startAccountingPeriodId,
-    resolvedSearchParams.endAccountingPeriodId,
-  ].some((value) =>
-    Array.isArray(value) ? value.length > 0 : typeof value !== "undefined",
-  );
+  const hasFilter =
+    [
+      resolvedSearchParams.accountingPeriodIds,
+      resolvedSearchParams.accountIds,
+      resolvedSearchParams.fundIds,
+      resolvedSearchParams.locationIds,
+      resolvedSearchParams.fundNames,
+      resolvedSearchParams.accountTypes,
+      resolvedSearchParams.accountNames,
+      resolvedSearchParams.transactionTypes,
+      resolvedSearchParams.startDate,
+      resolvedSearchParams.endDate,
+      resolvedSearchParams.startAccountingPeriodId,
+      resolvedSearchParams.endAccountingPeriodId,
+    ].some((value) =>
+      Array.isArray(value) ? value.length > 0 : typeof value !== "undefined",
+    ) || normalizeFullyPosted(resolvedSearchParams.fullyPosted) !== null;
   const {
     allAccountingPeriods,
     accounts,

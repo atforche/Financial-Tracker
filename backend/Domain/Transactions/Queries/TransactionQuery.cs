@@ -10,14 +10,16 @@ public sealed record TransactionQuery(
     int? Limit);
 
 /// <summary>
-/// Criteria used to filter Transactions.
+/// Criteria used to filter Transactions. FullyPosted, when set, keeps only Transactions that are (or are not) posted
+/// to every Account they affect.
 /// </summary>
 public sealed record TransactionFilter(
     IReadOnlyCollection<Guid> AccountingPeriodIds,
     IReadOnlyCollection<Guid> AccountIds,
     IReadOnlyCollection<Guid> FundIds,
     IReadOnlyCollection<Guid> LocationIds,
-    IReadOnlyCollection<TransactionType> Types);
+    IReadOnlyCollection<TransactionType> Types,
+    bool? FullyPosted = null);
 
 /// <summary>
 /// Supported Transaction sort orders.

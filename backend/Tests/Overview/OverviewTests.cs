@@ -117,7 +117,7 @@ public sealed class OverviewTests
     }
 
     /// <summary>
-    /// Flags expected income once its date has passed, until that much income has been received.
+    /// Flags expected tracked income once its date has passed, until that much tracked income has been received.
     /// </summary>
     [Fact]
     public async Task IncomeIsFlaggedOnlyAfterItsDatePassesUnreceived()
@@ -139,51 +139,131 @@ public sealed class OverviewTests
             group => group.Kind == OverviewAttentionKindModel.IncomeNotReceived);
         Assert.Equal(1, notReceived.Count);
         Assert.Equal(100m, notReceived.Amount);
+        Assert.Equal(100m, notReceived.Income!.ExpectedAmount);
+        Assert.Equal(0m, notReceived.Income.ReceivedAmount);
         Assert.Equal(new DateOnly(2026, 7, 15), notReceived.OldestDate);
-        Assert.Equal("Employer", Assert.Single(notReceived.TopItems).Name);
+        Assert.Empty(notReceived.TopItems);
         Assert.DoesNotContain(received.Attention, group => group.Kind == OverviewAttentionKindModel.IncomeNotReceived);
     }
 
     /// <summary>
-    /// Flags goals below their minimum at any time, and goals short of their contribution only once all expected
-    /// income has been received.
+    /// Ignores the untracked part of expected income, but keeps flagging a paycheck that arrived short of its
+    /// tracked amount.
     /// </summary>
     [Fact]
-    public async Task GoalsAreFlaggedBelowMinimumAndBehindAfterIncomeArrives()
+    public async Task IncomeIgnoresUntrackedAmountsAndFlagsShortPaychecks()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        await AddExpectedIncomeAsync(test, july, "Employer", 100m, new DateOnly(2026, 7, 15), untrackedAmount: 40m);
+        await AddExpectedIncomeAsync(test, july, "Retirement match", 40m, new DateOnly(2026, 7, 15), untrackedAmount: 40m);
+
+        TransactionHandle shortPaycheck = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 15)).For(50m).From("Employer").To(cash, groceries).CreateAsync();
+        await test.Transactions.PostAsync(shortPaycheck, cash, new DateOnly(2026, 7, 15));
+        OverviewModel afterShortPaycheck = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-16&history=ThreeMonths");
+        TransactionHandle correction = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 16)).For(10m).From("Employer").To(cash, groceries).CreateAsync();
+        await test.Transactions.PostAsync(correction, cash, new DateOnly(2026, 7, 16));
+        OverviewModel afterCorrection = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-17&history=ThreeMonths");
+
+        OverviewAttentionGroupModel notReceived = Assert.Single(afterShortPaycheck.Attention,
+            group => group.Kind == OverviewAttentionKindModel.IncomeNotReceived);
+        Assert.Equal(1, notReceived.Count);
+        Assert.Equal(10m, notReceived.Amount);
+        Assert.Equal(60m, notReceived.Income!.ExpectedAmount);
+        Assert.Equal(50m, notReceived.Income.ReceivedAmount);
+        Assert.DoesNotContain(afterCorrection.Attention, group => group.Kind == OverviewAttentionKindModel.IncomeNotReceived);
+    }
+
+    /// <summary>
+    /// Dates an income shortfall from the first expected payment that received income no longer covers.
+    /// </summary>
+    [Fact]
+    public async Task IncomeShortfallIsDatedFromWhenItFellBehind()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        await AddExpectedIncomeAsync(test, july, "First paycheck", 100m, new DateOnly(2026, 7, 1));
+        await AddExpectedIncomeAsync(test, july, "Second paycheck", 100m, new DateOnly(2026, 7, 15));
+        TransactionHandle firstPaycheck = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 1)).For(100m).From("Employer").To(cash, groceries).CreateAsync();
+        await test.Transactions.PostAsync(firstPaycheck, cash, new DateOnly(2026, 7, 1));
+        TransactionHandle secondPaycheck = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 15)).For(60m).From("Employer").To(cash, groceries).CreateAsync();
+        await test.Transactions.PostAsync(secondPaycheck, cash, new DateOnly(2026, 7, 15));
+
+        OverviewModel overview = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-20&history=ThreeMonths");
+
+        OverviewAttentionGroupModel notReceived = Assert.Single(overview.Attention,
+            group => group.Kind == OverviewAttentionKindModel.IncomeNotReceived);
+        Assert.Equal(2, notReceived.Count);
+        Assert.Equal(40m, notReceived.Amount);
+        Assert.Equal(200m, notReceived.Income!.ExpectedAmount);
+        Assert.Equal(160m, notReceived.Income.ReceivedAmount);
+        Assert.Equal(new DateOnly(2026, 7, 15), notReceived.OldestDate);
+    }
+
+    /// <summary>
+    /// Flags goals below their minimum and goals short of their contribution, even before expected income arrives.
+    /// </summary>
+    [Fact]
+    public async Task GoalsAreFlaggedBelowMinimumAndBehind()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        _ = await test.Accounts.Onboard("Cash").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        _ = await test.Funds.Create("Groceries").In(july).CreateAsync();
         _ = await test.Funds.Create("Vacation").In(july).WithGoal(100m).CreateAsync();
         _ = await test.Funds.Create("Emergency").In(july).WithGoal(null, 50m).CreateAsync();
         await AddExpectedIncomeAsync(test, july, "Employer", 200m, new DateOnly(2026, 7, 15));
 
-        OverviewModel beforeIncome = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-10&history=ThreeMonths");
-        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 15)).For(200m).From("Employer").To(cash, groceries).CreateAsync();
-        await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 15));
-        OverviewModel afterIncome = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-16&history=ThreeMonths");
+        OverviewModel overview = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-10&history=ThreeMonths");
 
-        OverviewAttentionGroupModel belowMinimum = Assert.Single(beforeIncome.Attention,
+        OverviewAttentionGroupModel belowMinimum = Assert.Single(overview.Attention,
             group => group.Kind == OverviewAttentionKindModel.GoalsBelowMinimum);
         Assert.Equal(50m, belowMinimum.Amount);
         Assert.Equal("Emergency", Assert.Single(belowMinimum.TopItems).Name);
-        Assert.DoesNotContain(beforeIncome.Attention, group => group.Kind == OverviewAttentionKindModel.GoalsBehind);
-        OverviewAttentionGroupModel behind = Assert.Single(afterIncome.Attention,
+        OverviewAttentionGroupModel behind = Assert.Single(overview.Attention,
             group => group.Kind == OverviewAttentionKindModel.GoalsBehind);
         Assert.Equal(100m, behind.Amount);
         Assert.Equal("Vacation", Assert.Single(behind.TopItems).Name);
     }
 
     /// <summary>
-    /// Adds an expected income source with a single expected payment to an Accounting Period.
+    /// Flags goals whose balance is above their maximum by how far they are over it.
+    /// </summary>
+    [Fact]
+    public async Task GoalsAreFlaggedAboveMaximum()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).WithGoal(null, null, 50m).CreateAsync();
+        _ = await test.Funds.Create("Vacation").In(july).WithGoal(null, null, 500m).CreateAsync();
+        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 5)).For(200m).From("Employer").To(cash, groceries).CreateAsync();
+        await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 5));
+
+        OverviewModel overview = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-10&history=ThreeMonths");
+
+        OverviewAttentionGroupModel aboveMaximum = Assert.Single(overview.Attention,
+            group => group.Kind == OverviewAttentionKindModel.GoalsAboveMaximum);
+        Assert.Equal(1, aboveMaximum.Count);
+        Assert.Equal(150m, aboveMaximum.Amount);
+        Assert.Equal("Groceries", Assert.Single(aboveMaximum.TopItems).Name);
+    }
+
+    /// <summary>
+    /// Adds an expected income source with a single expected payment, and optionally an untracked transfer, to an
+    /// Accounting Period.
     /// </summary>
     private static async Task AddExpectedIncomeAsync(
         FinancialTrackerTestContext test,
         AccountingPeriodHandle period,
         string name,
         decimal amount,
-        DateOnly date) =>
+        DateOnly date,
+        decimal untrackedAmount = 0m) =>
         _ = await test.Api.PostAsync<ExpectedIncomeSourceRequestModel, AccountingPeriodWithBalanceModel>(
             $"/accounting-periods/{period.Id}/expected-income-sources",
             new ExpectedIncomeSourceRequestModel
@@ -191,7 +271,9 @@ public sealed class OverviewTests
                 Name = name,
                 IncomeLines = [new CreateIncomeLineModel { Description = "Salary", Amount = amount }],
                 IncomeDeductions = [],
-                UntrackedTransfers = [],
+                UntrackedTransfers = untrackedAmount == 0m
+                    ? []
+                    : [new ExpectedUntrackedIncomeTransferRequestModel { Description = "Retirement", Amount = untrackedAmount }],
                 ExpectedDates = [date],
             });
 }

@@ -145,7 +145,8 @@ public sealed class TransactionConverter(
         filter?.AccountIds ?? [],
         filter?.FundIds ?? [],
         filter?.LocationIds ?? [],
-        (filter?.Types ?? []).Select(ToDomain).ToList());
+        (filter?.Types ?? []).Select(ToDomain).ToList(),
+        filter?.FullyPosted);
 
     /// <summary>
     /// Converts an API Transaction Type to its Domain equivalent.
