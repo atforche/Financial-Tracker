@@ -10,7 +10,7 @@ import { AccountingPeriodSort } from "@/accounting-periods/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import TrendsBackLink from "@/framework/view/TrendsBackLink";
+import ReturnLink from "@/framework/view/ReturnLink";
 import createApiClient from "@/framework/data/createApiClient";
 import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
@@ -166,11 +166,7 @@ const AccountGoalTrends = async function ({
 
   return (
     <PageLayout>
-      <TrendsBackLink
-        returnUrl={params.returnUrl}
-        workspace="account-goals"
-        label="Back to Account Goal Details"
-      />
+      <ReturnLink returnUrl={params.returnUrl} />
       <ConstrainedContent>
         <AccountGoalTrendsFilter
           accountingPeriods={periods}

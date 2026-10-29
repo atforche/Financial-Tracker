@@ -13,7 +13,7 @@ interface PageLayoutProps {
  */
 const PageLayout = function ({ children }: PageLayoutProps): JSX.Element {
   return (
-    <Stack spacing={3} sx={{ width: "100%" }}>
+    <Stack spacing={3} sx={{ width: "100%" }} data-page-layout>
       {children}
     </Stack>
   );

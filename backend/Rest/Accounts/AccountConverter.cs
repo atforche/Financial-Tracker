@@ -173,6 +173,8 @@ public sealed class AccountConverter
             Untracked = range.UntrackedIncome,
         },
         TotalSpending = range.TotalSpending,
+        OpeningBalance = range.OpeningBalance == null ? null : ToModel(range.OpeningBalance),
+        Granularity = BalanceGranularityConverter.ToModel(range.Granularity),
         Dates = range.Dates.Select(summary => new AccountBalanceSummaryByDateModel
         {
             Date = summary.Date,
@@ -207,7 +209,7 @@ public sealed class AccountConverter
     /// <summary>
     /// Converts the provided Account Balance Summary to an API model.
     /// </summary>
-    private static AccountBalanceSummaryModel ToModel(AccountBalanceSummary summary) => new()
+    internal static AccountBalanceSummaryModel ToModel(AccountBalanceSummary summary) => new()
     {
         TotalBalance = summary.TotalBalance,
         TotalTrackedBalance = summary.TotalTrackedBalance,

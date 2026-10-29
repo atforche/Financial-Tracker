@@ -8,6 +8,8 @@ import {
   type TrendRangeMode,
   getDefaultTrendAccountingPeriodRange,
   getDefaultTrendDateRange,
+  getTrendRangeModeOptions,
+  maximumTrendRangeYears,
   setTrendRangeMode,
 } from "@/framework/routes/trendRange";
 import {
@@ -150,14 +152,9 @@ const FundTrendsFilter = function ({
       <ToggleButtonSelector
         value={currentMode}
         onChange={handleModeChange}
-        options={[
-          { value: "date", label: "Dates" },
-          {
-            value: "accounting-period",
-            label: "Accounting periods",
-            disabled: defaultEndAccountingPeriodId === null,
-          },
-        ]}
+        options={getTrendRangeModeOptions(
+          defaultEndAccountingPeriodId !== null,
+        )}
       />
       {currentMode === "accounting-period" ? (
         <AccountingPeriodRangeFilter
@@ -170,6 +167,7 @@ const FundTrendsFilter = function ({
         <DateRangeFilter
           value={{ start: currentStartDate, end: currentEndDate }}
           onChange={handleDateRangeChange}
+          maxYears={maximumTrendRangeYears}
         />
       )}
       <FundTrendsFundNameFilter

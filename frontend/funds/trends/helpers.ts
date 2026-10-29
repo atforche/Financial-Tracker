@@ -54,6 +54,8 @@ const getFundTrendsSnapshot = function (
   mode: FundTrendsDataMode,
   accountingPeriods: readonly FundBalanceSummaryByPeriod[],
   dates: readonly FundBalanceSummaryByDate[],
+  openingBalance: FundBalanceSummary | null,
+  startDate: string | null,
 ): FundTrendsSnapshot {
   if (mode === "AccountingPeriod") {
     const firstPeriod = accountingPeriods.at(0);
@@ -82,24 +84,27 @@ const getFundTrendsSnapshot = function (
 
   const firstDate = dates.at(0);
   const lastDate = dates.at(-1);
+  const startLabelDate = startDate ?? firstDate?.date;
+  const startingBalance: FundBalanceSummary = openingBalance ?? {
+    totalBalance: firstDate?.totalBalance ?? 0,
+    totalAssignedBalance: firstDate?.totalAssignedBalance ?? 0,
+    totalUnassignedBalance: firstDate?.totalUnassignedBalance ?? 0,
+  };
   return {
-    startLabel: firstDate
-      ? formatShortDate(new Date(`${firstDate.date}T00:00:00`))
-      : "Start",
+    startLabel:
+      typeof startLabelDate === "undefined"
+        ? "Start"
+        : formatShortDate(new Date(`${startLabelDate}T00:00:00`)),
     endLabel: lastDate
       ? formatShortDate(new Date(`${lastDate.date}T00:00:00`))
       : "End",
-    totalStartingBalance: firstDate?.totalBalance ?? 0,
+    totalStartingBalance: startingBalance.totalBalance,
     totalEndingBalance: lastDate?.totalBalance ?? 0,
-    assignedStartingBalance: firstDate?.totalAssignedBalance ?? 0,
+    assignedStartingBalance: startingBalance.totalAssignedBalance,
     assignedEndingBalance: lastDate?.totalAssignedBalance ?? 0,
-    unassignedStartingBalance: firstDate?.totalUnassignedBalance ?? 0,
+    unassignedStartingBalance: startingBalance.totalUnassignedBalance,
     unassignedEndingBalance: lastDate?.totalUnassignedBalance ?? 0,
-    startingBalance: {
-      totalBalance: firstDate?.totalBalance ?? 0,
-      totalAssignedBalance: firstDate?.totalAssignedBalance ?? 0,
-      totalUnassignedBalance: firstDate?.totalUnassignedBalance ?? 0,
-    },
+    startingBalance,
     endingBalance: {
       totalBalance: lastDate?.totalBalance ?? 0,
       totalAssignedBalance: lastDate?.totalAssignedBalance ?? 0,

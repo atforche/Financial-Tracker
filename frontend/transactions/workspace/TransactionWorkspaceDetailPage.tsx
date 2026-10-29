@@ -7,6 +7,7 @@ import PageLayout from "@/framework/view/PageLayout";
 import TransactionWorkspacePageHeader from "@/transactions/workspace/TransactionWorkspacePageHeader";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import ViewTransactionForm from "@/transactions/workspace/ViewTransactionForm";
+import getTransactionPageBackLink from "@/transactions/workspace/getTransactionPageBackLink";
 import { redirect } from "next/navigation";
 import routes from "@/transactions/routes";
 
@@ -39,9 +40,10 @@ const TransactionWorkspaceDetailPage = async function ({
     selectedTransactionId: transactionId,
   };
   const workspaceUrl = routes.workspace(selectedWorkspaceSearchParams);
+  const back = getTransactionPageBackLink(returnUrl, workspaceUrl);
 
   if (transaction === null) {
-    redirect(routes.workspace(workspaceSearchParams));
+    redirect(back.href);
   }
 
   const referenceData = await getTransactionWorkspaceDetailReferenceData(
@@ -51,7 +53,8 @@ const TransactionWorkspaceDetailPage = async function ({
   return (
     <PageLayout>
       <TransactionWorkspacePageHeader
-        backHref={returnUrl ?? workspaceUrl}
+        backHref={back.href}
+        backLabel={back.label}
         title="Transaction Details"
       />
       <ViewTransactionForm
@@ -63,12 +66,11 @@ const TransactionWorkspaceDetailPage = async function ({
           transaction.id,
           selectedWorkspaceSearchParams,
         )}
-        workspaceUrl={workspaceUrl}
         editUrl={routes.workspaceEdit(
           transaction.id,
           selectedWorkspaceSearchParams,
         )}
-        returnUrl={returnUrl ?? null}
+        deleteRedirectUrl={back.href}
       />
     </PageLayout>
   );

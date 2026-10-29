@@ -45,6 +45,13 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
       : {}),
   } satisfies AccountingPeriodWorkspaceSearchParams;
   const workspaceUrl = routes.workspace(workspaceParams);
+  // Links between the period's own pages keep the page the user came from, so they can still return to it
+  const periodParams = {
+    ...workspaceParams,
+    ...(typeof resolvedSearchParams.returnUrl !== "undefined"
+      ? { returnUrl: resolvedSearchParams.returnUrl }
+      : {}),
+  } satisfies AccountingPeriodWorkspaceSearchParams;
   const periodResponse = await apiClient.GET(
     "/accounting-periods/{accountingPeriodId}",
     { params: { path: { accountingPeriodId } } },
@@ -59,7 +66,7 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
   if (resolvedSearchParams.view === "plan") {
     redirect(
       routes.workspacePlan(period.id, {
-        ...workspaceParams,
+        ...periodParams,
         ...(typeof resolvedSearchParams.incomeSourcePage !== "undefined"
           ? { incomeSourcePage: resolvedSearchParams.incomeSourcePage }
           : {}),
@@ -75,10 +82,8 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
   const { previousPeriod, nextPeriod } = await getAdjacentAccountingPeriods(
     period.id,
   );
-  const currentUrl = routes.workspaceDetail(period.id, workspaceParams);
-  const planHref = routes.workspacePlan(period.id, {
-    ...workspaceParams,
-  });
+  const currentUrl = routes.workspaceDetail(period.id, periodParams);
+  const planHref = routes.workspacePlan(period.id, periodParams);
   return (
     <PageLayout>
       <AccountingPeriodWorkspaceHeader
@@ -89,10 +94,7 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
             ? null
             : {
                 name: previousPeriod.name,
-                href: routes.workspaceDetail(
-                  previousPeriod.id,
-                  workspaceParams,
-                ),
+                href: routes.workspaceDetail(previousPeriod.id, periodParams),
               }
         }
         nextPeriod={
@@ -100,13 +102,14 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
             ? null
             : {
                 name: nextPeriod.name,
-                href: routes.workspaceDetail(nextPeriod.id, workspaceParams),
+                href: routes.workspaceDetail(nextPeriod.id, periodParams),
               }
         }
         activeView="cash-flow"
         cashFlowHref={currentUrl}
         planHref={planHref}
         redirectUrl={currentUrl}
+        returnUrl={resolvedSearchParams.returnUrl}
       />
       <AccountingPeriodProgressView accountingPeriod={period} />
     </PageLayout>

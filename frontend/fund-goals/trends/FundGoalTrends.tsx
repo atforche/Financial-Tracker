@@ -10,7 +10,7 @@ import FundGoalTrendsFilter from "@/fund-goals/trends/FundGoalTrendsFilter";
 import type { FundGoalTrendsSearchParams } from "@/fund-goals/trends/helpers";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import TrendsBackLink from "@/framework/view/TrendsBackLink";
+import ReturnLink from "@/framework/view/ReturnLink";
 import createApiClient from "@/framework/data/createApiClient";
 import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import { isNullOrUndefined } from "@/framework/nullHelpers";
@@ -165,11 +165,7 @@ const FundGoalTrends = async function ({
 
   return (
     <PageLayout>
-      <TrendsBackLink
-        returnUrl={params.returnUrl}
-        workspace="fund-goals"
-        label="Back to Fund Goal Details"
-      />
+      <ReturnLink returnUrl={params.returnUrl} />
       <ConstrainedContent>
         <FundGoalTrendsFilter accountingPeriods={periods} funds={funds} />
       </ConstrainedContent>

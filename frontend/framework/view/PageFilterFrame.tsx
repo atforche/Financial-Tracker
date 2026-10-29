@@ -23,7 +23,7 @@ const PageFilterFrame = function ({
 }: PageFilterFrameProps): JSX.Element {
   return (
     <ContentSurface sticky mobileSticky={mobileSticky}>
-      <Stack spacing={2}>
+      <Stack spacing={2} data-page-filters>
         <Stack
           direction={{ xs: "column", lg: "row" }}
           spacing={1.5}

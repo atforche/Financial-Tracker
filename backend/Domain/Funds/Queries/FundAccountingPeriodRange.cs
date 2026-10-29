@@ -38,4 +38,17 @@ public sealed record FundPeriodBalanceSummary(
 public sealed record FundBalanceSummary(
     decimal TotalBalance,
     decimal TotalAssignedBalance,
-    decimal TotalUnassignedBalance);
+    decimal TotalUnassignedBalance)
+{
+    /// <summary>
+    /// Summarizes posted Fund balances, separating the unassigned Fund from assigned Funds.
+    /// </summary>
+    public static FundBalanceSummary Create(IEnumerable<(FundId Id, decimal Balance)> balances)
+    {
+        var values = balances.ToList();
+        return new FundBalanceSummary(
+            values.Sum(item => item.Balance),
+            values.Where(item => item.Id != Fund.UnassignedFundId).Sum(item => item.Balance),
+            values.Where(item => item.Id == Fund.UnassignedFundId).Sum(item => item.Balance));
+    }
+}

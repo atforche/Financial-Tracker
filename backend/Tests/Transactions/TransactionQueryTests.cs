@@ -39,6 +39,36 @@ public sealed class TransactionQueryTests
     }
 
     /// <summary>
+    /// Filters to Transactions that are, or are not, posted to every Account they affect, counting a Transaction
+    /// posted to only some of its Accounts as not fully posted.
+    /// </summary>
+    [Fact]
+    public async Task TransactionListFiltersByFullyPosted()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountHandle savings = await test.Accounts.Onboard("Savings").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        TransactionHandle unposted = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(20m).From(cash).To("Market", groceries).CreateAsync();
+        TransactionHandle partiallyPosted = await test.Transactions.Account().In(july).On(new DateOnly(2026, 7, 16)).For(10m).From(cash).To(savings).CreateAsync();
+        await test.Transactions.PostAsync(partiallyPosted, cash, new DateOnly(2026, 7, 16));
+        TransactionHandle posted = await test.Transactions.Account().In(july).On(new DateOnly(2026, 7, 17)).For(5m).From(cash).To(savings).CreateAsync();
+        await test.Transactions.PostAsync(posted, cash, new DateOnly(2026, 7, 17));
+        await test.Transactions.PostAsync(posted, savings, new DateOnly(2026, 7, 17));
+
+        CollectionModel<TransactionModel> notFullyPosted = await test.Api.GetAsync<CollectionModel<TransactionModel>>(
+            "/transactions?filter.fullyPosted=false");
+        CollectionModel<TransactionModel> fullyPosted = await test.Api.GetAsync<CollectionModel<TransactionModel>>(
+            "/transactions?filter.fullyPosted=true");
+
+        Assert.Equal(
+            new[] { unposted.Id, partiallyPosted.Id }.Order(),
+            notFullyPosted.Items.Select(transaction => transaction.Id).Order());
+        Assert.Equal(posted.Id, Assert.Single(fullyPosted.Items).Id);
+    }
+
+    /// <summary>
     /// Returns Transactions that affect a Location through either supported endpoint shape.
     /// </summary>
     [Fact]

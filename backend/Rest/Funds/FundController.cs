@@ -67,10 +67,15 @@ public sealed class FundController(
     /// </summary>
     [HttpGet("balance-events/date-range/totals")]
     [ProducesResponseType(typeof(BalanceEventTotalsModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<BalanceEventTotalsModel>> GetBalanceEventTotalsAsync(
         [FromQuery] FundBalanceEventsInDateRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
+        if (DateRangeValidationProblem.Validate(query.Range.Start, query.Range.End, "Unable to retrieve Fund totals.") is ValidationProblemDetails problem)
+        {
+            return UnprocessableEntity(problem);
+        }
         QueryPage<FundBalanceEvent> events = await fundBalanceEventQueryService.GetAsync(
             fundBalanceEventConverter.ToDomain(query) with { Offset = 0, Limit = null }, cancellationToken);
         var totals = BalanceEventTotals.Calculate(events.Items,
@@ -78,13 +83,15 @@ public sealed class FundController(
         (decimal? openingBalance, IReadOnlyCollection<(DateOnly Date, decimal Balance)> dates) = BalanceEventTotals.BuildDateBalances(events.Items,
             item => item.EventDate, item => item.EventDateSequence,
             item => item.PreviousBalance?.PostedBalance, item => item.NewBalance?.PostedBalance);
+        BalanceGranularity? granularity = null;
         if (query.Range.Start is DateOnly start && query.Range.End is DateOnly end)
         {
             FundBalanceEventQuery eventQuery = fundBalanceEventConverter.ToDomain(query);
             FundDateRange range = await fundQueryService.GetDateRangeAsync(new FundDateRangeQuery(
                 start, end, eventQuery.Filter, FundRangeSort.Name, 0, null), cancellationToken);
-            openingBalance = range.Funds.Items.Sum(item => item.StartingBalance);
+            openingBalance = range.OpeningBalance?.TotalBalance;
             dates = range.Dates.Select(item => (item.Date, item.Balance.TotalBalance)).ToList();
+            granularity = range.Granularity;
         }
         return Ok(new BalanceEventTotalsModel
         {
@@ -96,6 +103,7 @@ public sealed class FundController(
                 Date = item.Date,
                 TotalBalance = item.Balance,
             }).ToList(),
+            Granularity = granularity == null ? null : BalanceGranularityConverter.ToModel(granularity.Value),
         });
     }
 
@@ -115,12 +123,15 @@ public sealed class FundController(
     /// </summary>
     [HttpGet("date-range")]
     [ProducesResponseType(typeof(FundsInDateRangeModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<FundsInDateRangeModel>> GetDateRangeAsync(
         [FromQuery] FundsInDateRangeQueryParameterModel query,
         CancellationToken cancellationToken) =>
-        Ok(fundConverter.ToModel(await fundQueryService.GetDateRangeAsync(
-            fundConverter.ToDomain(query),
-            cancellationToken)));
+        DateRangeValidationProblem.Validate(query.Range.Start, query.Range.End, "Unable to retrieve Fund range.") is ValidationProblemDetails problem
+            ? UnprocessableEntity(problem)
+            : Ok(fundConverter.ToModel(await fundQueryService.GetDateRangeAsync(
+                fundConverter.ToDomain(query),
+                cancellationToken)));
 
     /// <summary>
     /// Retrieves Fund balances over an Accounting Period range.

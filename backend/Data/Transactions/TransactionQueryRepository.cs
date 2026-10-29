@@ -235,7 +235,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
     /// <summary>
     /// Applies Transaction filters in the database.
     /// </summary>
-    private static IQueryable<Transaction> ApplyFilter(IQueryable<Transaction> transactions, TransactionFilter filter)
+    private IQueryable<Transaction> ApplyFilter(IQueryable<Transaction> transactions, TransactionFilter filter)
     {
         if (filter.AccountingPeriodIds.Count > 0)
         {
@@ -293,6 +293,12 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
         if (filter.Types.Count > 0)
         {
             transactions = transactions.Where(transaction => filter.Types.Contains(transaction.Type));
+        }
+        if (filter.FullyPosted is bool fullyPosted)
+        {
+            // A Transaction is fully posted when none of its Account balance effects are still pending
+            transactions = transactions.Where(transaction =>
+                databaseContext.PendingAccountBalanceEffects.Any(effect => effect.TransactionId == transaction.Id) != fullyPosted);
         }
         return transactions;
     }

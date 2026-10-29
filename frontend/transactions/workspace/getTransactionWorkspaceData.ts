@@ -16,6 +16,7 @@ import type { Transaction } from "@/transactions/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import createApiClient from "@/framework/data/createApiClient";
 import { normalizeAccountTypes } from "@/accounts/accountTypeFilterHelpers";
+import { normalizeFullyPosted } from "@/transactions/fullyPostedFilter";
 import { normalizeTransactionTypes } from "@/transactions/transactionTypeFilter";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
@@ -255,6 +256,7 @@ const getTransactionWorkspaceListData = async function (
     accountTypes,
     accountNames,
     transactionTypes,
+    fullyPosted,
     startDate,
     endDate,
     startAccountingPeriodId,
@@ -291,6 +293,7 @@ const getTransactionWorkspaceListData = async function (
   const normalizedTransactionTypes = normalizeTransactionTypes(
     toRepeatedSearchParams(transactionTypes),
   );
+  const normalizedFullyPosted = normalizeFullyPosted(fullyPosted);
   const referenceData = await getTransactionWorkspaceReferenceData();
   const hasDerivedAccountFilter =
     normalizedAccountTypes.length > 0 || normalizedAccountNames.length > 0;
@@ -330,6 +333,9 @@ const getTransactionWorkspaceListData = async function (
     ...(normalizedTransactionTypes.length > 0
       ? { "Filter.Types": [...normalizedTransactionTypes] }
       : {}),
+    ...(normalizedFullyPosted === null
+      ? {}
+      : { "Filter.FullyPosted": normalizedFullyPosted === "true" }),
     Sort: sort ?? null,
     Limit: rowsPerPage,
     Offset: getPageOffset(currentPage, rowsPerPage),

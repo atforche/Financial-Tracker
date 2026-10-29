@@ -134,6 +134,31 @@ public sealed class RangeSummaryTests
     }
 
     /// <summary>
+    /// Reports opening balances from before the start date so activity on the start date counts as range change.
+    /// </summary>
+    [Fact]
+    public async Task DateRangeOpeningBalancesExcludeStartDateActivity()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(40m).From("Employer").To(cash, groceries).CreateAsync();
+        await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
+
+        AccountsInDateRangeModel accounts = await test.Api.GetAsync<AccountsInDateRangeModel>(
+            "/accounts/date-range?range.start=2026-07-10&range.end=2026-07-31");
+        FundsInDateRangeModel funds = await test.Api.GetAsync<FundsInDateRangeModel>(
+            "/funds/date-range?range.start=2026-07-10&range.end=2026-07-31");
+
+        Assert.Equal(100m, accounts.OpeningBalance?.TotalBalance);
+        Assert.Equal(140m, accounts.Dates.First().TotalBalance);
+        Assert.Equal(new DateOnly(2026, 7, 10), accounts.Dates.First().Date);
+        Assert.Equal(0m, funds.OpeningBalance?.TotalAssignedBalance);
+        Assert.Equal(40m, funds.Dates.First().TotalAssignedBalance);
+    }
+
+    /// <summary>
     /// Sorts, filters, and pages the accounts and funds in an accounting-period range.
     /// </summary>
     [Fact]
