@@ -3,6 +3,7 @@ import {
   buildUrl,
   objectToSearchParams,
 } from "@/framework/routes/helpers";
+import type { AccountingPeriodSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspaceDetailPage";
 import type { AccountingPeriodTrendsSearchParams } from "@/accounting-periods/trends/AccountingPeriodTrends";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import type { Route } from "next";
@@ -35,19 +36,11 @@ const routes = {
     ),
   workspaceDetail: (
     accountingPeriodId: string,
-    searchParams: AccountingPeriodWorkspaceSearchParams,
+    searchParams: AccountingPeriodSearchParams,
   ): Route =>
     buildUrl(
       `/accounting-periods/workspace/${accountingPeriodId}`,
-      accountingPeriodWorkspaceSearchParamsToSearchParams(searchParams),
-    ),
-  workspacePlan: (
-    accountingPeriodId: string,
-    searchParams: AccountingPeriodWorkspaceSearchParams,
-  ): Route =>
-    buildUrl(
-      `/accounting-periods/workspace/${accountingPeriodId}/plan`,
-      accountingPeriodWorkspaceSearchParamsToSearchParams(searchParams),
+      objectToSearchParams(searchParams),
     ),
   expectedIncomeSourceCreate: (
     accountingPeriodId: string,

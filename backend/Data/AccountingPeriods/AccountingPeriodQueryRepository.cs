@@ -111,6 +111,23 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
             .ToListAsync(cancellationToken);
 
     /// <inheritdoc/>
+    public async Task<(AccountingPeriod? Previous, AccountingPeriod? Next)> GetAdjacentAsync(
+        AccountingPeriod accountingPeriod,
+        CancellationToken cancellationToken = default)
+    {
+        int index = (accountingPeriod.Year * 12) + accountingPeriod.Month;
+        AccountingPeriod? previous = await databaseContext.AccountingPeriods.AsNoTracking()
+            .Where(period => (period.Year * 12) + period.Month < index)
+            .OrderByDescending(period => period.Year).ThenByDescending(period => period.Month)
+            .FirstOrDefaultAsync(cancellationToken);
+        AccountingPeriod? next = await databaseContext.AccountingPeriods.AsNoTracking()
+            .Where(period => (period.Year * 12) + period.Month > index)
+            .OrderBy(period => period.Year).ThenBy(period => period.Month)
+            .FirstOrDefaultAsync(cancellationToken);
+        return (previous, next);
+    }
+
+    /// <inheritdoc/>
     public async Task<IReadOnlyCollection<AccountingPeriod>> GetByIdsAsync(
         IReadOnlyCollection<AccountingPeriodId> ids,
         CancellationToken cancellationToken = default) =>

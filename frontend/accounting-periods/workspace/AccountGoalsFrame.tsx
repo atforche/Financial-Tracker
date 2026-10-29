@@ -1,11 +1,8 @@
 "use client";
 
-import {
-  AccountGoalSort,
-  type AccountGoalWithProgress,
-} from "@/account-goals/types";
+import { type AccountGoal, AccountGoalSort } from "@/account-goals/types";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
+import type { AccountingPeriodSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspaceDetailPage";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
@@ -22,7 +19,7 @@ import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
  * Props for the AccountGoalsFrame component.
  */
 interface AccountGoalsFrameProps {
-  readonly goals: readonly AccountGoalWithProgress[];
+  readonly goals: readonly AccountGoal[];
   readonly totalCount: number;
   readonly accountingPeriodId: string;
   readonly returnUrl: string;
@@ -40,9 +37,9 @@ const AccountGoalsFrame = function ({
   const router = useRouter();
   const searchParams = useSearchParams();
   const sortParamName =
-    propertyName<AccountingPeriodWorkspaceSearchParams>("accountGoalSort");
+    propertyName<AccountingPeriodSearchParams>("accountGoalSort");
   const pageParamName =
-    propertyName<AccountingPeriodWorkspaceSearchParams>("accountGoalPage");
+    propertyName<AccountingPeriodSearchParams>("accountGoalPage");
   const updateParams = useSearchParamUpdater([pageParamName]);
   const currentSort = parseEnumValue(
     AccountGoalSort,
@@ -58,7 +55,7 @@ const AccountGoalsFrame = function ({
     });
   };
   const getSortProps = createColumnSortProps(currentSort, setSort);
-  const openAccountGoal = function (goal: AccountGoalWithProgress): void {
+  const openAccountGoal = function (goal: AccountGoal): void {
     router.push(
       accountGoalRoutes.workspaceDetail(goal.account.id, {
         accountingPeriodId,
@@ -66,7 +63,7 @@ const AccountGoalsFrame = function ({
       }),
     );
   };
-  const columns: ColumnDefinition<AccountGoalWithProgress>[] = [
+  const columns: ColumnDefinition<AccountGoal>[] = [
     {
       name: "account",
       headerContent: "Account",

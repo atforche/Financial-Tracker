@@ -7,8 +7,6 @@ import {
   getOverviewUrl,
   parseOverviewHistoryRange,
 } from "@/overview/helpers";
-import OverviewStat, { type OverviewStatDetail } from "@/overview/OverviewStat";
-import { formatAccountType, isTrackedAccountType } from "@/accounts/helpers";
 import {
   formatCurrency,
   getCurrencyDifference,
@@ -18,18 +16,19 @@ import ChevronRight from "@mui/icons-material/ChevronRight";
 import type { JSX } from "react";
 import Link from "next/link";
 import OverviewAttentionList from "@/overview/OverviewAttentionList";
-import OverviewChange from "@/overview/OverviewChange";
 import { OverviewHistoryRangeModel } from "@/framework/data/api";
 import OverviewHistoryRangeSelector from "@/overview/OverviewHistoryRangeSelector";
 import OverviewPeriodCard from "@/overview/OverviewPeriodCard";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import SignedChange from "@/framework/view/SignedChange";
+import StatCard from "@/framework/view/StatCard";
 import accountRoutes from "@/accounts/routes";
 import { buildDateChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
 import fundRoutes from "@/funds/routes";
-import { getAccountTypeBreakdownDetails } from "@/accounts/balanceSummaryHelpers";
+import { getAccountTypeStatDetails } from "@/accounts/balanceSummaryHelpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -81,23 +80,10 @@ const OverviewView = async function ({
   ): JSX.Element {
     return (
       <>
-        <OverviewChange amount={getCurrencyDifference(current, previous)} />{" "}
-        over {historyDescriptions[history]}
+        <SignedChange amount={getCurrencyDifference(current, previous)} /> over{" "}
+        {historyDescriptions[history]}
       </>
     );
-  };
-  const accountTypeDetails = getAccountTypeBreakdownDetails(opening, closing);
-  const getTypeDetails = function (tracked: boolean): OverviewStatDetail[] {
-    return accountTypeDetails
-      .filter(
-        ({ accountType }) => isTrackedAccountType(accountType) === tracked,
-      )
-      .map((detail) => ({
-        key: detail.accountType,
-        label: formatAccountType(detail.accountType),
-        value: formatCurrency(detail.endingBalance),
-        change: detail.netChange,
-      }));
   };
   const overviewUrl = getOverviewUrl(history);
   const trendsRange = {
@@ -135,32 +121,32 @@ const OverviewView = async function ({
         </Stack>
       </Stack>
       <ResponsiveGrid columns={{ xs: 1, sm: 2, lg: 4 }}>
-        <OverviewStat
+        <StatCard
           label="Net worth"
           value={formatCurrency(closing.totalBalance)}
           caption={describeChange(closing.totalBalance, opening.totalBalance)}
         />
-        <OverviewStat
+        <StatCard
           label="Tracked money"
           value={formatCurrency(closing.totalTrackedBalance)}
           caption={describeChange(
             closing.totalTrackedBalance,
             opening.totalTrackedBalance,
           )}
-          details={getTypeDetails(true)}
+          details={getAccountTypeStatDetails(opening, closing, true)}
           detailsLabel="by account type"
         />
-        <OverviewStat
+        <StatCard
           label="Untracked money"
           value={formatCurrency(closing.totalUntrackedBalance)}
           caption={describeChange(
             closing.totalUntrackedBalance,
             opening.totalUntrackedBalance,
           )}
-          details={getTypeDetails(false)}
+          details={getAccountTypeStatDetails(opening, closing, false)}
           detailsLabel="by account type"
         />
-        <OverviewStat
+        <StatCard
           label="Unassigned funds"
           value={formatCurrency(
             overview.fundClosingBalance.totalUnassignedBalance,

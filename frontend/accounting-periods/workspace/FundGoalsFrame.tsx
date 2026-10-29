@@ -1,8 +1,8 @@
 "use client";
 
-import { FundGoalSort, type FundGoalWithProgress } from "@/fund-goals/types";
+import { type FundGoal, FundGoalSort } from "@/fund-goals/types";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
+import type { AccountingPeriodSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspaceDetailPage";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
@@ -19,7 +19,7 @@ import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
  * Props for the FundGoalsFrame component.
  */
 interface FundGoalsFrameProps {
-  readonly goals: readonly FundGoalWithProgress[];
+  readonly goals: readonly FundGoal[];
   readonly totalCount: number;
   readonly accountingPeriodId: string;
   readonly returnUrl: string;
@@ -37,9 +37,9 @@ const FundGoalsFrame = function ({
   const router = useRouter();
   const searchParams = useSearchParams();
   const sortParamName =
-    propertyName<AccountingPeriodWorkspaceSearchParams>("fundGoalSort");
+    propertyName<AccountingPeriodSearchParams>("fundGoalSort");
   const pageParamName =
-    propertyName<AccountingPeriodWorkspaceSearchParams>("fundGoalPage");
+    propertyName<AccountingPeriodSearchParams>("fundGoalPage");
   const updateParams = useSearchParamUpdater([pageParamName]);
   const currentSort = parseEnumValue(
     FundGoalSort,
@@ -55,7 +55,7 @@ const FundGoalsFrame = function ({
     });
   };
   const getSortProps = createColumnSortProps(currentSort, setSort);
-  const openFundGoal = function (goal: FundGoalWithProgress): void {
+  const openFundGoal = function (goal: FundGoal): void {
     router.push(
       fundGoalRoutes.workspaceDetail(goal.fund.id, {
         accountingPeriodId,
@@ -63,7 +63,7 @@ const FundGoalsFrame = function ({
       }),
     );
   };
-  const columns: ColumnDefinition<FundGoalWithProgress>[] = [
+  const columns: ColumnDefinition<FundGoal>[] = [
     {
       name: "fund",
       headerContent: "Fund",

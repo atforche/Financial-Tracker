@@ -7,7 +7,7 @@ import {
 } from "@/accounting-periods/types";
 import { getPaginationIndex, getRowsPerPage } from "@/framework/listframe/page";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
+import type { AccountingPeriodSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspaceDetailPage";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import { Button } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
@@ -44,9 +44,9 @@ const ExpectedIncomeSourcesFrame = function ({
   const searchParams = useSearchParams();
   const sources = accountingPeriod.expectedIncomeSources;
   const sortParamName =
-    propertyName<AccountingPeriodWorkspaceSearchParams>("incomeSourceSort");
+    propertyName<AccountingPeriodSearchParams>("incomeSourceSort");
   const pageParamName =
-    propertyName<AccountingPeriodWorkspaceSearchParams>("incomeSourcePage");
+    propertyName<AccountingPeriodSearchParams>("incomeSourcePage");
   const updateParams = useSearchParamUpdater([pageParamName]);
   const currentSort = parseEnumValue(
     ExpectedIncomeSourceSort,

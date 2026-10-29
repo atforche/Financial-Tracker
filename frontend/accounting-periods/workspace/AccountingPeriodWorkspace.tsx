@@ -1,7 +1,6 @@
 import {
   AccountingPeriodSort,
   AccountingPeriodWithBalanceSort,
-  type ExpectedIncomeSourceSort,
 } from "@/accounting-periods/types";
 import {
   compactSearchParams,
@@ -13,12 +12,10 @@ import {
   getRowsPerPage,
   normalizePageValue,
 } from "@/framework/listframe/page";
-import type { AccountGoalSort } from "@/account-goals/types";
 import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/workspace/helpers";
 import AccountingPeriodWorkspaceActions from "@/accounting-periods/workspace/AccountingPeriodWorkspaceActions";
 import AccountingPeriodWorkspaceFilter from "@/accounting-periods/workspace/AccountingPeriodWorkspaceFilter";
 import AccountingPeriodWorkspaceListFrame from "@/accounting-periods/workspace/AccountingPeriodWorkspaceListFrame";
-import type { FundGoalSort } from "@/fund-goals/types";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ReturnLink from "@/framework/view/ReturnLink";
@@ -34,22 +31,9 @@ interface AccountingPeriodWorkspaceSearchParams {
   sort?: AccountingPeriodWithBalanceSort;
   page?: number | string | null;
   pageSize?: number | string | null;
-  view?: AccountingPeriodDetailView;
-  planTab?: "fund-goals" | "account-goals" | "income-sources";
-  incomeSourcePage?: number | string | null;
-  incomeSourceSort?: ExpectedIncomeSourceSort;
-  fundGoalPage?: number | string | null;
-  fundGoalSort?: FundGoalSort;
-  accountGoalPage?: number | string | null;
-  accountGoalSort?: AccountGoalSort;
   action?: AccountingPeriodWorkspaceAction;
   returnUrl?: string;
 }
-
-/**
- * Detail view that can be shown for the selected Accounting Period.
- */
-type AccountingPeriodDetailView = "progress" | "plan";
 
 /**
  * Props for the AccountingPeriodWorkspace component.

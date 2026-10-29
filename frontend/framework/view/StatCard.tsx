@@ -3,41 +3,41 @@
 import { Collapse, IconButton, Paper, Stack, Typography } from "@mui/material";
 import { type JSX, type ReactNode, useState } from "react";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-import OverviewChange from "@/overview/OverviewChange";
+import SignedChange from "@/framework/view/SignedChange";
 
 /**
- * One row of an overview stat's breakdown.
+ * One row of a stat card's breakdown.
  */
-interface OverviewStatDetail {
+interface StatCardDetail {
   readonly key: string;
   readonly label: string;
   readonly value: string;
   readonly change: number;
 }
 
-const noDetails: readonly OverviewStatDetail[] = [];
+const noDetails: readonly StatCardDetail[] = [];
 
 /**
- * Props for the OverviewStat component.
+ * Props for the StatCard component.
  */
-interface OverviewStatProps {
+interface StatCardProps {
   readonly label: string;
   readonly value: string;
   readonly caption: ReactNode;
-  readonly details?: readonly OverviewStatDetail[];
+  readonly details?: readonly StatCardDetail[];
   readonly detailsLabel?: string;
 }
 
 /**
  * Displays one headline number with a short label and caption, and an optional collapsible breakdown.
  */
-const OverviewStat = function ({
+const StatCard = function ({
   label,
   value,
   caption,
   details = noDetails,
   detailsLabel = "breakdown",
-}: OverviewStatProps): JSX.Element {
+}: StatCardProps): JSX.Element {
   const [expanded, setExpanded] = useState(false);
   return (
     <Paper
@@ -103,7 +103,7 @@ const OverviewStat = function ({
                     {detail.value}
                   </Typography>
                   <Typography variant="caption">
-                    <OverviewChange amount={detail.change} />
+                    <SignedChange amount={detail.change} />
                   </Typography>
                 </Stack>
               </Stack>
@@ -115,5 +115,5 @@ const OverviewStat = function ({
   );
 };
 
-export default OverviewStat;
-export type { OverviewStatDetail };
+export default StatCard;
+export type { StatCardDetail };

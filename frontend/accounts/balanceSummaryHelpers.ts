@@ -1,5 +1,10 @@
 import type { AccountBalanceSummary, AccountType } from "@/accounts/types";
-import { getCurrencyDifference } from "@/framework/currencyHelpers";
+import { formatAccountType, isTrackedAccountType } from "@/accounts/helpers";
+import {
+  formatCurrency,
+  getCurrencyDifference,
+} from "@/framework/currencyHelpers";
+import type { StatCardDetail } from "@/framework/view/StatCard";
 
 /**
  * Details of account balances and changes for a specific account type.
@@ -49,5 +54,23 @@ const getAccountTypeBreakdownDetails = function (
     );
 };
 
-export { getAccountTypeBreakdownDetails };
+/**
+ * Gets the ending balance and change of each tracked or untracked account type, for a stat card's breakdown.
+ */
+const getAccountTypeStatDetails = function (
+  startingBalance: AccountBalanceSummary,
+  endingBalance: AccountBalanceSummary,
+  tracked: boolean,
+): StatCardDetail[] {
+  return getAccountTypeBreakdownDetails(startingBalance, endingBalance)
+    .filter(({ accountType }) => isTrackedAccountType(accountType) === tracked)
+    .map((detail) => ({
+      key: detail.accountType,
+      label: formatAccountType(detail.accountType),
+      value: formatCurrency(detail.endingBalance),
+      change: detail.netChange,
+    }));
+};
+
+export { getAccountTypeBreakdownDetails, getAccountTypeStatDetails };
 export type { AccountTypeBreakdownDetail };

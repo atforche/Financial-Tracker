@@ -59,6 +59,20 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     }
 
     /// <summary>
+    /// Retrieves an Accounting Period with its totals, neighbors, and opening and closing balances.
+    /// </summary>
+    [HttpGet("{accountingPeriodId:guid}/detail")]
+    [ProducesResponseType(typeof(AccountingPeriodDetailModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AccountingPeriodDetailModel>> GetDetailAsync(
+        Guid accountingPeriodId,
+        CancellationToken cancellationToken)
+    {
+        AccountingPeriodDetail? detail = await accountingPeriodQueryService.GetDetailAsync(accountingPeriodId, cancellationToken);
+        return detail == null ? NotFound() : Ok(accountingPeriodQueryConverter.ToModel(detail));
+    }
+
+    /// <summary>
     /// Retrieves an Accounting Period with its Transactions.
     /// </summary>
     [HttpGet("{accountingPeriodId:guid}/transactions")]

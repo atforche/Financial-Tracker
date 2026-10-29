@@ -3,6 +3,8 @@ using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
 using Models;
 using Models.AccountingPeriods;
+using Rest.Accounts;
+using Rest.Funds;
 using Rest.Transactions;
 
 namespace Rest.AccountingPeriods;
@@ -125,6 +127,22 @@ public sealed class AccountingPeriodQueryConverter(
     {
         Items = page.Items.Select(ToModel).ToList(),
         TotalCount = page.TotalCount,
+    };
+
+    /// <summary>
+    /// Converts the provided Accounting Period detail to an API model.
+    /// </summary>
+    public AccountingPeriodDetailModel ToModel(AccountingPeriodDetail detail) => new()
+    {
+        AccountingPeriod = ToModel(detail.Balance),
+        CappedGoalCount = detail.CappedGoalCount,
+        PreviousPeriod = detail.PreviousPeriod == null ? null : ToModel(detail.PreviousPeriod),
+        NextPeriod = detail.NextPeriod == null ? null : ToModel(detail.NextPeriod),
+        TotalSpending = detail.TotalSpending,
+        AccountOpeningBalance = AccountConverter.ToModel(detail.AccountOpeningBalance),
+        AccountClosingBalance = AccountConverter.ToModel(detail.AccountClosingBalance),
+        FundOpeningBalance = FundConverter.ToModel(detail.FundOpeningBalance),
+        FundClosingBalance = FundConverter.ToModel(detail.FundClosingBalance),
     };
 
     /// <summary>

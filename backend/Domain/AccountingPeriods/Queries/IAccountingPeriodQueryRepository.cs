@@ -32,6 +32,13 @@ public interface IAccountingPeriodQueryRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves the Accounting Periods immediately before and after the provided one, when they exist.
+    /// </summary>
+    Task<(AccountingPeriod? Previous, AccountingPeriod? Next)> GetAdjacentAsync(
+        AccountingPeriod accountingPeriod,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves Accounting Periods with the provided IDs.
     /// </summary>
     Task<IReadOnlyCollection<AccountingPeriod>> GetByIdsAsync(

@@ -1,4 +1,6 @@
+using Domain.Accounts.Queries;
 using Domain.FundGoals;
+using Domain.Funds.Queries;
 using Domain.Transactions.Queries;
 
 namespace Domain.AccountingPeriods.Queries;
@@ -52,6 +54,40 @@ public sealed class AccountingPeriodQueryService(
         Guid accountingPeriodId,
         CancellationToken cancellationToken = default) =>
         accountingPeriodQueryRepository.GetByIdAsync(new AccountingPeriodId(accountingPeriodId), cancellationToken);
+
+    /// <summary>
+    /// Retrieves an Accounting Period with its totals, neighbors, and opening and closing balances, or null when it
+    /// does not exist.
+    /// </summary>
+    public async Task<AccountingPeriodDetail?> GetDetailAsync(
+        Guid accountingPeriodId,
+        CancellationToken cancellationToken = default)
+    {
+        AccountingPeriodBalance? balance = await accountingPeriodQueryRepository.GetBalanceByIdAsync(
+            new AccountingPeriodId(accountingPeriodId),
+            cancellationToken);
+        if (balance == null)
+        {
+            return null;
+        }
+        AccountingPeriod period = balance.AccountingPeriod;
+        IReadOnlyCollection<Guid> ids = [accountingPeriodId];
+        ILookup<Guid, FinancialRangeIncomeFact> incomeFacts = await accountingPeriodQueryRepository.GetIncomeFactsByAccountingPeriodAsync(ids, cancellationToken);
+        IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await accountingPeriodQueryRepository.GetRangeSpendingFactsAsync(ids, cancellationToken);
+        (AccountingPeriod? previous, AccountingPeriod? next) = await accountingPeriodQueryRepository.GetAdjacentAsync(period, cancellationToken);
+        AccountingPeriodBalanceHistory history = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(period.Id);
+        IReadOnlyCollection<FundGoal> fundGoals = fundGoalRepository.GetAllByAccountingPeriod(period.Id);
+        return new AccountingPeriodDetail(
+            EnrichBalance(period, history, fundGoals, incomeFacts[accountingPeriodId]),
+            GetGoalContributions(fundGoals, history).CappedCount,
+            previous,
+            next,
+            FinancialRangeTotals.Calculate([], spendingFacts).TotalSpending,
+            AccountBalanceSummary.Create(history.AccountBalances.Select(item => (item.Account.Type, item.OpeningBalance))),
+            AccountBalanceSummary.Create(history.AccountBalances.Select(item => (item.Account.Type, item.ClosingBalance))),
+            FundBalanceSummary.Create(history.FundBalances.Select(item => (item.Fund.Id, item.OpeningBalance))),
+            FundBalanceSummary.Create(history.FundBalances.Select(item => (item.Fund.Id, item.ClosingBalance))));
+    }
 
     /// <summary>
     /// Retrieves an Accounting Period with its Transactions and interpreted totals.
@@ -194,7 +230,7 @@ public sealed class AccountingPeriodQueryService(
         IEnumerable<FinancialRangeIncomeFact> incomeFacts)
     {
         var incomeTotals = FinancialRangeTotals.Calculate(incomeFacts, []);
-        (decimal expectedGoalContributions, decimal actualGoalContributions) = GetGoalContributions(fundGoals, history);
+        (decimal expectedGoalContributions, decimal actualGoalContributions, _) = GetGoalContributions(fundGoals, history);
         return new AccountingPeriodBalance(
             accountingPeriod,
             history.OpeningBalance,
@@ -208,27 +244,34 @@ public sealed class AccountingPeriodQueryService(
     }
 
     /// <summary>
-    /// Gets the contributions expected toward the provided Fund Goals and the amount assigned to them so far.
+    /// Gets the contributions expected toward the provided Fund Goals, the amount assigned to them so far, and how many
+    /// of them expect less than they plan because of their maximum ending balance.
     /// </summary>
-    private static (decimal Expected, decimal Actual) GetGoalContributions(
+    private static (decimal Expected, decimal Actual, int CappedCount) GetGoalContributions(
         IReadOnlyCollection<FundGoal> fundGoals,
         AccountingPeriodBalanceHistory history)
     {
         decimal expected = 0;
         decimal actual = 0;
+        int cappedCount = 0;
         foreach (FundGoal goal in fundGoals)
         {
             decimal assigned = history.FundGoalTotals.SingleOrDefault(item => item.Fund.Id == goal.Fund.Id)
                 ?.GetTotals().AmountAssignedToExpectedContribution ?? 0;
-            expected += FundGoalProgressService.CalculateExpectedContribution(
+            decimal goalExpected = FundGoalProgressService.CalculateExpectedContribution(
                 history.FundBalances.SingleOrDefault(item => item.Fund.Id == goal.Fund.Id)?.ClosingBalance ?? 0,
                 assigned,
                 goal.PlannedMonthlyContribution,
                 goal.MaximumEndingBalance,
                 goal.AllowExpectedContributionAboveMaximum);
+            if (goalExpected < Math.Max(goal.PlannedMonthlyContribution ?? 0, 0))
+            {
+                cappedCount++;
+            }
+            expected += goalExpected;
             actual += assigned;
         }
-        return (expected, actual);
+        return (expected, actual, cappedCount);
     }
 
     /// <summary>

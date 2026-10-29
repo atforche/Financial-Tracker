@@ -93,23 +93,19 @@ interface OverviewAttentionDescription {
 
 /**
  * Describes a group of items needing attention, with links that return to the provided URL. Goal and income groups
- * link to the current period's plan.
+ * link to the matching plan tab of the current period.
  */
 const describeAttentionGroup = function (
   group: OverviewAttentionGroup,
   currentPeriodId: string | null,
   returnUrl: string,
 ): OverviewAttentionDescription {
-  /*
-   * Revisit these links for the goals below minimum, goals above maximum, goals not fully funded, and tracked income
-   * behind expectations cards when reviewing the accounting period pages.
-   */
   const getPlanHref = function (
     planTab: "fund-goals" | "income-sources",
   ): Route {
     return currentPeriodId === null
       ? accountingPeriodRoutes.workspace({ returnUrl })
-      : accountingPeriodRoutes.workspacePlan(currentPeriodId, {
+      : accountingPeriodRoutes.workspaceDetail(currentPeriodId, {
           planTab,
           returnUrl,
         });

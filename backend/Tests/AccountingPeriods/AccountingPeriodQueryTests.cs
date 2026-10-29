@@ -108,6 +108,46 @@ public sealed class AccountingPeriodQueryTests
     }
 
     /// <summary>
+    /// Returns a period's totals, its neighbors, and its opening and closing balances in one response.
+    /// </summary>
+    [Fact]
+    public async Task DetailReturnsTotalsNeighborsAndBalances()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle june = await test.Periods.Create(2026, 6).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        _ = await test.Funds.Create("Dining").In(july).WithGoal(50m, maximumEndingBalance: 0m).CreateAsync();
+        _ = await test.Funds.Create("Travel").In(july).WithGoal(25m).CreateAsync();
+        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(60m).From("Employer").To(cash, groceries).CreateAsync();
+        TransactionHandle spending = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(20m).From(cash).To("Market", groceries).CreateAsync();
+        await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
+        await test.Transactions.PostAsync(spending, cash, new DateOnly(2026, 7, 15));
+
+        AccountingPeriodDetailModel detail = await test.Api.GetAsync<AccountingPeriodDetailModel>($"/accounting-periods/{july.Id}/detail");
+        AccountingPeriodDetailModel first = await test.Api.GetAsync<AccountingPeriodDetailModel>($"/accounting-periods/{june.Id}/detail");
+        HttpResponseMessage missing = await test.Api.GetResponseAsync($"/accounting-periods/{Guid.NewGuid()}/detail");
+
+        Assert.Equal(july.Id, detail.AccountingPeriod.Id);
+        Assert.Equal(june.Id, detail.PreviousPeriod?.Id);
+        Assert.Equal(august.Id, detail.NextPeriod?.Id);
+        Assert.Equal(60m, detail.AccountingPeriod.ActualIncome.Total);
+        Assert.Equal(20m, detail.TotalSpending);
+        Assert.Equal(75m, detail.AccountingPeriod.PlannedGoalContributions);
+        Assert.Equal(25m, detail.AccountingPeriod.ExpectedGoalContributions);
+        Assert.Equal(1, detail.CappedGoalCount);
+        Assert.Equal(100m, detail.AccountOpeningBalance.TotalBalance);
+        Assert.Equal(140m, detail.AccountClosingBalance.TotalBalance);
+        Assert.Equal(100m, detail.FundOpeningBalance.TotalBalance);
+        Assert.Equal(40m, detail.FundClosingBalance.TotalAssignedBalance);
+        Assert.Null(first.PreviousPeriod);
+        Assert.Equal(july.Id, first.NextPeriod?.Id);
+        Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+    }
+
+    /// <summary>
     /// Accepts a contiguous accounting-period range and rejects missing or reversed endpoints on every range surface.
     /// </summary>
     [Fact]

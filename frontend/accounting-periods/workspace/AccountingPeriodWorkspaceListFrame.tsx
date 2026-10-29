@@ -5,13 +5,14 @@ import {
   AccountingPeriodWithBalanceSort,
 } from "@/accounting-periods/types";
 import { Button, Checkbox } from "@mui/material";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import type { JSX } from "react";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import ListFrame from "@/framework/listframe/ListFrame";
 import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
+import { buildUrl } from "@/framework/routes/helpers";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
@@ -35,6 +36,7 @@ const AccountingPeriodWorkspaceListFrame = function ({
   totalCount,
 }: AccountingPeriodWorkspaceListFrameProps): JSX.Element {
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const router = useRouter();
 
   const sortParamName =
@@ -74,10 +76,9 @@ const AccountingPeriodWorkspaceListFrame = function ({
     accountingPeriod: AccountingPeriodWithBalance,
   ): void {
     router.push(
+      // The period's page returns to this list
       routes.workspaceDetail(accountingPeriod.id, {
-        years: searchParams.getAll(yearParamName).map(Number),
-        months: searchParams.getAll(monthParamName).map(Number),
-        ...(currentSort === null ? {} : { sort: currentSort }),
+        returnUrl: buildUrl(pathname, new URLSearchParams(searchParams)),
       }),
     );
   };

@@ -3009,6 +3009,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/accounting-periods/{accountingPeriodId}/detail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves an Accounting Period with its totals, neighbors, and opening and closing balances. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountingPeriodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountingPeriodDetailModel"];
+                        "application/json": components["schemas"]["AccountingPeriodDetailModel"];
+                        "text/json": components["schemas"]["AccountingPeriodDetailModel"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/accounting-periods/{accountingPeriodId}/transactions": {
         parameters: {
             query?: never;
@@ -3809,6 +3860,31 @@ export interface components {
         };
         /** @enum {unknown} */
         AccountGoalSortModel: AccountGoalSortModel | null;
+        /** @description Model representing everything shown for a single Accounting Period. */
+        AccountingPeriodDetailModel: {
+            /** @description The Accounting Period with its balance and totals. */
+            accountingPeriod: components["schemas"]["AccountingPeriodWithBalanceModel"];
+            /**
+             * Format: int32
+             * @description The number of Fund Goals whose expected contribution is less than planned because of their maximum ending balance.
+             */
+            cappedGoalCount: number;
+            previousPeriod: null | components["schemas"]["AccountingPeriodModel"];
+            nextPeriod: null | components["schemas"]["AccountingPeriodModel"];
+            /**
+             * Format: double
+             * @description Posted spending, net of refunds, during the Accounting Period.
+             */
+            totalSpending: number;
+            /** @description Account balances at the start of the Accounting Period. */
+            accountOpeningBalance: components["schemas"]["AccountBalanceSummaryModel"];
+            /** @description Account balances at the end of the Accounting Period. */
+            accountClosingBalance: components["schemas"]["AccountBalanceSummaryModel"];
+            /** @description Fund balances at the start of the Accounting Period. */
+            fundOpeningBalance: components["schemas"]["FundBalanceSummaryModel"];
+            /** @description Fund balances at the end of the Accounting Period. */
+            fundClosingBalance: components["schemas"]["FundBalanceSummaryModel"];
+        };
         /** @description Model representing an Accounting Period */
         AccountingPeriodModel: {
             /**
