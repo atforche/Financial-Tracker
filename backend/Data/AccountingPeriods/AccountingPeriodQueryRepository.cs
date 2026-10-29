@@ -151,21 +151,26 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetRangeIncomeFactsAsync(
+    public async Task<ILookup<Guid, FinancialRangeIncomeFact>> GetIncomeFactsByAccountingPeriodAsync(
         IReadOnlyCollection<Guid> accountingPeriodIds,
         CancellationToken cancellationToken = default)
     {
         var ids = accountingPeriodIds.Select(id => new AccountingPeriodId(id)).ToList();
-        return await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
+        var facts = await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
             .Where(transaction => ids.Contains(transaction.AccountingPeriodId))
-            .SelectMany(transaction => transaction.Destinations, (transaction, destination) => new FinancialRangeIncomeFact(
-                destination.Amount,
-                destination.Account.Type,
-                destination.PostedDate,
-                destination.FundAssignments
-                    .Where(assignment => assignment.IsExtraContribution)
-                    .Sum(assignment => assignment.Amount)))
+            .SelectMany(transaction => transaction.Destinations, (transaction, destination) => new
+            {
+                transaction.AccountingPeriodId,
+                Fact = new FinancialRangeIncomeFact(
+                    destination.Amount,
+                    destination.Account.Type,
+                    destination.PostedDate,
+                    destination.FundAssignments
+                        .Where(assignment => assignment.IsExtraContribution)
+                        .Sum(assignment => assignment.Amount)),
+            })
             .ToListAsync(cancellationToken);
+        return facts.ToLookup(item => item.AccountingPeriodId.Value, item => item.Fact);
     }
 
     /// <inheritdoc/>

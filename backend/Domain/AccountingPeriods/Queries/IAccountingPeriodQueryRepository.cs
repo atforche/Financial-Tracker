@@ -55,9 +55,9 @@ public interface IAccountingPeriodQueryRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves persisted income destination facts for the provided Accounting Periods.
+    /// Retrieves persisted income destination facts for the provided Accounting Periods, keyed by Accounting Period ID.
     /// </summary>
-    Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetRangeIncomeFactsAsync(
+    Task<ILookup<Guid, FinancialRangeIncomeFact>> GetIncomeFactsByAccountingPeriodAsync(
         IReadOnlyCollection<Guid> accountingPeriodIds,
         CancellationToken cancellationToken = default);
 

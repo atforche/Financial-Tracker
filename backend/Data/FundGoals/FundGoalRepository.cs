@@ -33,6 +33,12 @@ public sealed class FundGoalRepository(DatabaseContext databaseContext) : IFundG
             : fundGoal.AccountingPeriod.Id == accountingPeriodId).ToList();
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<FundGoal> GetAllByAccountingPeriods(IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds) =>
+        databaseContext.FundGoals.AsSplitQuery()
+            .Where(fundGoal => fundGoal.AccountingPeriod != null && accountingPeriodIds.Contains(fundGoal.AccountingPeriod.Id))
+            .ToList();
+
+    /// <inheritdoc/>
     public FundGoal? GetByFundAndAccountingPeriod(FundId fundId, AccountingPeriodId? accountingPeriodId) =>
         databaseContext.FundGoals.AsSplitQuery().SingleOrDefault(fundGoal => fundGoal.Fund.Id == fundId && (fundGoal.AccountingPeriod == null
             ? accountingPeriodId == null

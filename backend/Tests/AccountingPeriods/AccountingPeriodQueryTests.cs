@@ -78,6 +78,36 @@ public sealed class AccountingPeriodQueryTests
     }
 
     /// <summary>
+    /// Calculates each period's own income and Fund Goal totals when several periods are returned or a range is paged.
+    /// </summary>
+    [Fact]
+    public async Task MultiplePeriodsEachGetTheirOwnCalculatedTotals()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).WithGoal(50m).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        TransactionHandle julyIncome = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(60m).From("Employer").To(cash, groceries).CreateAsync();
+        TransactionHandle augustIncome = await test.Transactions.Income().In(august).On(new DateOnly(2026, 8, 10)).For(40m).From("Employer").To(cash, groceries).CreateAsync();
+        await test.Transactions.PostAsync(julyIncome, cash, new DateOnly(2026, 7, 10));
+        await test.Transactions.PostAsync(augustIncome, cash, new DateOnly(2026, 8, 10));
+
+        CollectionModel<AccountingPeriodWithBalanceModel> balances = await test.Api.GetAsync<CollectionModel<AccountingPeriodWithBalanceModel>>(
+            "/accounting-periods/with-balances?sort=Date");
+        AccountingPeriodsInRangeModel secondPage = await test.Api.GetAsync<AccountingPeriodsInRangeModel>(
+            $"/accounting-periods/range?range.start={july.Id}&range.end={august.Id}&sort=Date&offset=1&limit=1");
+
+        Assert.Equal([60m, 40m], balances.Items.Select(period => period.ActualIncome.Total));
+        Assert.All(balances.Items, period => Assert.Equal(50m, period.PlannedGoalContributions));
+        AccountingPeriodWithBalanceModel pagedPeriod = Assert.Single(secondPage.AccountingPeriods.Items);
+        Assert.Equal(august.Id, pagedPeriod.Id);
+        Assert.Equal(40m, pagedPeriod.ActualIncome.Total);
+        Assert.Equal(50m, pagedPeriod.PlannedGoalContributions);
+        Assert.Equal(2, secondPage.AccountingPeriods.TotalCount);
+    }
+
+    /// <summary>
     /// Accepts a contiguous accounting-period range and rejects missing or reversed endpoints on every range surface.
     /// </summary>
     [Fact]
