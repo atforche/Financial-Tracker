@@ -32,7 +32,10 @@ ENTRYPOINT ["dotnet", "./Migrator.dll"]
 
 FROM ${DOTNET_RUNTIME_IMAGE} AS backend
 WORKDIR /backend
-RUN apt-get update \
+# Passed by the build so this layer is rebuilt daily with current security updates.
+ARG OS_PACKAGES_DATE
+RUN echo "OS packages as of ${OS_PACKAGES_DATE}" \
+    && apt-get update \
     && apt-get install --yes --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=build --chown=$APP_UID /backend/.artifacts/publish/Rest ./Rest

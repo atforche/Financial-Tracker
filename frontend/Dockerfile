@@ -22,7 +22,10 @@ FROM ${NODE_IMAGE} AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
-RUN apk upgrade --no-cache
+# Passed by the build so this layer is rebuilt daily with current security updates.
+ARG OS_PACKAGES_DATE
+RUN echo "OS packages as of ${OS_PACKAGES_DATE}" \
+    && apk upgrade --no-cache
 
 COPY --from=production-dependencies --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/.next ./.next

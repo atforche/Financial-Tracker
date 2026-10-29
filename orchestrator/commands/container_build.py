@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from argparse import Namespace
+from datetime import UTC, datetime
 
 from ..config.toolchain import Toolchain
 from ..core.context import Context
@@ -11,14 +12,21 @@ from ..core.context import Context
 
 def run(context: Context, _args: Namespace) -> int:
     cache_backend = os.environ.get("DOCKER_BUILD_CACHE", "").strip().lower()
-    if cache_backend not in ("", "gha"):
+    # "gha-write" refreshes the cache without reusing it, so scans see a fresh build.
+    if cache_backend not in ("", "gha", "gha-write"):
         raise ValueError(f"Unsupported Docker build cache backend: {cache_backend}")
     toolchain = Toolchain.read(context.paths.toolchain)
+    # Changes daily so cached OS package layers pick up new security updates.
+    os_packages_date = datetime.now(UTC).date().isoformat()
     dotnet_build_args = {
         "DOTNET_SDK_IMAGE": toolchain.require_base_image("dotnet_sdk"),
         "DOTNET_RUNTIME_IMAGE": toolchain.require_base_image("dotnet_runtime"),
+        "OS_PACKAGES_DATE": os_packages_date,
     }
-    node_build_args = {"NODE_IMAGE": toolchain.require_base_image("node")}
+    node_build_args = {
+        "NODE_IMAGE": toolchain.require_base_image("node"),
+        "OS_PACKAGES_DATE": os_packages_date,
+    }
     # The backend and migrator targets share one build stage, so each reads the
     # other's cache scope to reuse that stage.
     backend_scopes = ("financial-tracker-backend", "financial-tracker-migrator")
@@ -52,9 +60,7 @@ def run(context: Context, _args: Namespace) -> int:
         tag = toolchain.require_image(image_name)
         scope = f"financial-tracker-{image_name}"
         command = (
-            ["docker", "buildx", "build"]
-            if cache_backend == "gha"
-            else ["docker", "build"]
+            ["docker", "buildx", "build"] if cache_backend else ["docker", "build"]
         )
         command.extend(["--tag", tag])
         for name, value in build_args.items():
@@ -62,9 +68,9 @@ def run(context: Context, _args: Namespace) -> int:
         command.extend(["--file", str(dockerfile)])
         if target is not None:
             command.extend(["--target", target])
-        if cache_backend == "gha":
+        if cache_backend:
             command.append("--load")
-            for cache_scope in scopes:
+            for cache_scope in scopes if cache_backend == "gha" else ():
                 command.extend(["--cache-from", f"type=gha,scope={cache_scope}"])
             command.extend(
                 ["--cache-to", f"type=gha,mode=max,ignore-error=true,scope={scope}"]
