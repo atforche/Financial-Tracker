@@ -125,13 +125,28 @@ const getDefaultDate = function (
   return getAccountingPeriodDate(accountingPeriod);
 };
 
+/**
+ * Gets the year and month of the accounting period that follows the provided one, and its display name.
+ */
+const getNextAccountingPeriod = function (accountingPeriod: AccountingPeriod): {
+  year: number;
+  month: number;
+  name: string;
+} {
+  const year =
+    accountingPeriod.month === 12
+      ? accountingPeriod.year + 1
+      : accountingPeriod.year;
+  const month = (accountingPeriod.month % 12) + 1;
+  return { year, month, name: `${formatAccountingPeriodMonth(month)} ${year}` };
+};
+
 export {
-  accountingPeriodMonths,
   accountingPeriodMonthOptions,
   compareAccountingPeriods,
-  formatAccountingPeriodMonth,
   getMinimumDate,
   getMaximumDate,
   getDefaultDate,
+  getNextAccountingPeriod,
   updateAccountingPeriodRange,
 };

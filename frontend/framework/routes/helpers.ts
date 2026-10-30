@@ -11,27 +11,6 @@ type RepeatedSearchParamValue = string | number;
 type SearchParamComparisonValue = string | number;
 
 /**
- * A search parameter object with undefined values removed.
- */
-type CompactSearchParams<T extends Record<string, unknown>> = {
-  [
-    K in keyof T as undefined extends T[K]
-      ? never
-      : T[K] extends readonly unknown[]
-        ? never
-        : K
-  ]: Exclude<T[K], undefined>;
-} & {
-  [
-    K in keyof T as undefined extends T[K]
-      ? K
-      : T[K] extends readonly unknown[]
-        ? K
-        : never
-  ]?: Exclude<T[K], undefined>;
-};
-
-/**
  * Determines if the provided value is a repeated search param array.
  */
 const isRepeatedSearchParamArray = function <
@@ -79,40 +58,6 @@ const normalizeStringSearchParams = function (
 };
 
 /**
- * Normalizes repeated integer search parameters into a bounded, unique list.
- */
-const normalizeIntegerSearchParams = function (
-  values: readonly RepeatedSearchParamValue[],
-  minimumValue: number,
-  maximumValue: number,
-): number[] {
-  const seenValues = new Set<number>();
-  const normalizedValues: number[] = [];
-
-  values.forEach((value) => {
-    const normalizedValue = String(value).trim();
-    if (!/^-?\d+$/u.test(normalizedValue)) {
-      return;
-    }
-
-    const parsedValue = Number(normalizedValue);
-    if (
-      !Number.isSafeInteger(parsedValue) ||
-      parsedValue < minimumValue ||
-      parsedValue > maximumValue ||
-      seenValues.has(parsedValue)
-    ) {
-      return;
-    }
-
-    seenValues.add(parsedValue);
-    normalizedValues.push(parsedValue);
-  });
-
-  return normalizedValues;
-};
-
-/**
  * Selects available values whose keys occur in the requested values.
  */
 const selectAvailableSearchParamValues = function <
@@ -146,22 +91,6 @@ const appendRepeatedSearchParam = function <T extends RepeatedSearchParamValue>(
   toRepeatedSearchParams(value).forEach((item) => {
     params.append(key, String(item));
   });
-};
-
-/**
- * Omits undefined values and empty arrays from a search parameter object.
- */
-const compactSearchParams = function <T extends Record<string, unknown>>(
-  searchParams: T,
-): CompactSearchParams<T> {
-  const entries = Object.entries(searchParams).filter(
-    ([, value]) =>
-      typeof value !== "undefined" &&
-      (!Array.isArray(value) || value.length > 0),
-  );
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-  return Object.fromEntries(entries) as CompactSearchParams<T>;
 };
 
 /**
@@ -237,8 +166,6 @@ const objectToSearchParams = function <T extends object>(
 export {
   appendRepeatedSearchParam,
   buildUrl,
-  compactSearchParams,
-  normalizeIntegerSearchParams,
   normalizeStringSearchParams,
   objectToSearchParams,
   selectAvailableSearchParamValues,

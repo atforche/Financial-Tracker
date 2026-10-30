@@ -1,11 +1,13 @@
 "use client";
 
 import { usePathname, useSearchParams } from "next/navigation";
-import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
+import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/workspace/helpers";
+import { Button } from "@mui/material";
 import CreateAccountingPeriodForm from "@/accounting-periods/workspace/CreateAccountingPeriodForm";
 import type { JSX } from "react";
 import { buildUrl } from "@/framework/routes/helpers";
+import { getNextAccountingPeriod } from "@/accounting-periods/helpers";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
@@ -13,16 +15,14 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
  * Props for the AccountingPeriodWorkspaceActions component.
  */
 interface AccountingPeriodWorkspaceActionsProps {
-  readonly isInOnboardingMode: boolean;
-  readonly latestAccountingPeriod: AccountingPeriodWithBalance | null;
+  readonly latestAccountingPeriod: AccountingPeriod | null;
   readonly requestedAction: AccountingPeriodWorkspaceAction | null;
 }
 
 /**
- * Displays the available accounting period actions for the current workspace selection.
+ * Displays the button that creates the next accounting period, or the first when there are none, and its dialog.
  */
 const AccountingPeriodWorkspaceActions = function ({
-  isInOnboardingMode,
   latestAccountingPeriod,
   requestedAction,
 }: AccountingPeriodWorkspaceActionsProps): JSX.Element | null {
@@ -49,16 +49,29 @@ const AccountingPeriodWorkspaceActions = function ({
     return null;
   }
 
-  return requestedAction === "create" ? (
-    <CreateAccountingPeriodForm
-      isInOnboardingMode={isInOnboardingMode}
-      latestAccountingPeriod={latestAccountingPeriod}
-      onClose={() => {
-        setAction(null);
-      }}
-      redirectUrl={dialogRedirectUrl}
-    />
-  ) : null;
+  return (
+    <>
+      <Button
+        variant="contained"
+        onClick={() => {
+          setAction("create");
+        }}
+      >
+        {latestAccountingPeriod === null
+          ? "Create First Period"
+          : `Create ${getNextAccountingPeriod(latestAccountingPeriod).name}`}
+      </Button>
+      {requestedAction === "create" ? (
+        <CreateAccountingPeriodForm
+          latestAccountingPeriod={latestAccountingPeriod}
+          onClose={() => {
+            setAction(null);
+          }}
+          redirectUrl={dialogRedirectUrl}
+        />
+      ) : null}
+    </>
+  );
 };
 
 export default AccountingPeriodWorkspaceActions;

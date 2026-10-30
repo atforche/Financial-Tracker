@@ -1,7 +1,7 @@
 "use client";
 
 import type {
-  AccountingPeriodWithBalance,
+  AccountingPeriod,
   CreateAccountingPeriodRequest,
 } from "@/accounting-periods/types";
 import { Alert, Button, Stack, Typography } from "@mui/material";
@@ -14,7 +14,7 @@ import {
 } from "react";
 import {
   accountingPeriodMonthOptions,
-  formatAccountingPeriodMonth,
+  getNextAccountingPeriod,
 } from "@/accounting-periods/helpers";
 import { ComboBoxEntryField } from "@/framework/forms/ComboBoxEntryField";
 import Dialog from "@/framework/dialog/Dialog";
@@ -27,8 +27,7 @@ import { useRouter } from "next/navigation";
  * Props for the CreateAccountingPeriodForm component.
  */
 interface CreateAccountingPeriodFormProps {
-  readonly isInOnboardingMode: boolean;
-  readonly latestAccountingPeriod: AccountingPeriodWithBalance | null;
+  readonly latestAccountingPeriod: AccountingPeriod | null;
   readonly onClose: () => void;
   readonly redirectUrl: string;
 }
@@ -37,7 +36,6 @@ interface CreateAccountingPeriodFormProps {
  * Displays the form for creating an accounting period.
  */
 const CreateAccountingPeriodForm = function ({
-  isInOnboardingMode,
   latestAccountingPeriod,
   onClose,
   redirectUrl,
@@ -57,28 +55,20 @@ const CreateAccountingPeriodForm = function ({
     }
   }, [onClose, redirectUrl, router, state.success]);
 
-  const nextRequest: CreateAccountingPeriodRequest | null =
+  const nextPeriod =
     latestAccountingPeriod === null
       ? null
-      : latestAccountingPeriod.month === 12
-        ? { year: latestAccountingPeriod.year + 1, month: 1 }
-        : {
-            year: latestAccountingPeriod.year,
-            month: latestAccountingPeriod.month + 1,
-          };
+      : getNextAccountingPeriod(latestAccountingPeriod);
   const request: CreateAccountingPeriodRequest | null =
-    isInOnboardingMode || latestAccountingPeriod === null
+    nextPeriod === null
       ? year !== null && month !== null
         ? { year, month }
         : null
-      : nextRequest;
-  const title = isInOnboardingMode
-    ? "Create First Accounting Period"
-    : "Create Next Accounting Period";
-  const nextPeriodName =
-    nextRequest === null
-      ? null
-      : `${formatAccountingPeriodMonth(nextRequest.month)} ${nextRequest.year}`;
+      : { year: nextPeriod.year, month: nextPeriod.month };
+  const title =
+    nextPeriod === null
+      ? "Create First Accounting Period"
+      : "Create Next Accounting Period";
 
   return (
     <Dialog
@@ -110,14 +100,14 @@ const CreateAccountingPeriodForm = function ({
       }
     >
       <Stack spacing={2}>
-        {isInOnboardingMode ? (
+        {nextPeriod === null ? (
           <Alert severity="info">
             You are currently in onboarding mode. Adding an accounting period
             will start regular data tracking. You will be unable to modify your
             onboarded accounts and funds once you proceed.
           </Alert>
         ) : null}
-        {nextPeriodName === null ? (
+        {nextPeriod === null ? (
           <>
             <IntegerEntryField
               value={year}
@@ -136,7 +126,7 @@ const CreateAccountingPeriodForm = function ({
           </>
         ) : (
           <Typography>
-            Create the next accounting period, {nextPeriodName}?
+            Create the next accounting period, {nextPeriod.name}?
           </Typography>
         )}
         <ErrorAlert
