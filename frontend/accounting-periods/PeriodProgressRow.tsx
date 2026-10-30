@@ -8,7 +8,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { type JSX, useId, useState } from "react";
+import { type JSX, type ReactNode, useId, useState } from "react";
 import {
   compareCurrencyAmounts,
   formatCurrency,
@@ -16,6 +16,8 @@ import {
   getCurrencyTotal,
 } from "@/framework/currencyHelpers";
 import ExpandMore from "@mui/icons-material/ExpandMore";
+import Link from "next/link";
+import type { Route } from "next";
 
 /**
  * Props for the PeriodProgressRow component.
@@ -30,6 +32,8 @@ interface PeriodProgressRowProps {
   readonly expectedLabel?: string;
   readonly overLabel: string;
   readonly underLabel?: string;
+  readonly caption?: ReactNode;
+  readonly href?: Route;
 }
 
 /**
@@ -90,7 +94,8 @@ const KeyLine = function ({
  * anything beyond what was expected, colored as good or bad, or the empty track for any shortfall, and last an
  * unplanned amount, which isn't compared against what was expected. The heading shows the total, planned and unplanned.
  * The full breakdown, collapsed beneath the bar until the row is expanded, lists each segment in the bar's order and
- * sums them to the bar's full length.
+ * sums them to the bar's full length. With an href, the row links there instead of expanding. A caption, when given,
+ * sits beneath the bar.
  */
 const PeriodProgressRow = function ({
   label,
@@ -102,6 +107,8 @@ const PeriodProgressRow = function ({
   expectedLabel = "Planned",
   overLabel,
   underLabel = "Short",
+  caption,
+  href,
 }: PeriodProgressRowProps): JSX.Element {
   const [expanded, setExpanded] = useState(false);
   const breakdownId = useId();
@@ -120,12 +127,16 @@ const PeriodProgressRow = function ({
   return (
     <Stack>
       <ButtonBase
-        onClick={() => {
-          setExpanded(!expanded);
-        }}
-        aria-label={`${expanded ? "Collapse" : "Expand"} ${label} breakdown`}
-        aria-expanded={expanded}
-        aria-controls={breakdownId}
+        {...(href === undefined
+          ? {
+              onClick: (): void => {
+                setExpanded(!expanded);
+              },
+              "aria-label": `${expanded ? "Collapse" : "Expand"} ${label} breakdown`,
+              "aria-expanded": expanded,
+              "aria-controls": breakdownId,
+            }
+          : { href, LinkComponent: Link })}
         sx={{
           display: "flex",
           flexDirection: "column",
@@ -147,16 +158,18 @@ const PeriodProgressRow = function ({
             <Box component="span" sx={{ fontWeight: 500 }}>
               {formatCurrency(getCurrencyTotal([actual, unplannedAmount]))}
             </Box>
-            <ExpandMore
-              fontSize="small"
-              sx={{
-                ml: 0.5,
-                verticalAlign: "middle",
-                color: "text.secondary",
-                transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.3s ease-in-out",
-              }}
-            />
+            {href === undefined ? (
+              <ExpandMore
+                fontSize="small"
+                sx={{
+                  ml: 0.5,
+                  verticalAlign: "middle",
+                  color: "text.secondary",
+                  transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.3s ease-in-out",
+                }}
+              />
+            ) : null}
           </Typography>
         </Stack>
         <Box
@@ -175,6 +188,11 @@ const PeriodProgressRow = function ({
             sx={{ width: getShare(unplannedAmount), bgcolor: "secondary.main" }}
           />
         </Box>
+        {caption === undefined ? null : (
+          <Typography variant="caption" color="text.secondary">
+            {caption}
+          </Typography>
+        )}
       </ButtonBase>
       <Collapse id={breakdownId} in={expanded} timeout="auto" unmountOnExit>
         <Stack spacing={0.5} sx={{ pt: 1.25 }}>

@@ -5,12 +5,13 @@ import AccountingPeriodPlanTabs from "@/accounting-periods/workspace/AccountingP
 import AccountingPeriodProgressCard from "@/accounting-periods/workspace/AccountingPeriodProgressCard";
 import BalanceStatCards from "@/accounts/BalanceStatCards";
 import { Box } from "@mui/material";
-import type { ExpectedIncomeSourceSort } from "@/accounting-periods/types";
+import ExpectedIncomeSourcesFrame from "@/accounting-periods/workspace/ExpectedIncomeSourcesFrame";
 import type { FundGoalSort } from "@/fund-goals/types";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import SignedChange from "@/framework/view/SignedChange";
 import createApiClient from "@/framework/data/createApiClient";
+import { expectedIncomeSourcesId } from "@/accounting-periods/workspace/helpers";
 import fillHeightSx from "@/framework/view/fillHeightSx";
 import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import { redirect } from "next/navigation";
@@ -18,10 +19,9 @@ import routes from "@/accounting-periods/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
- * The list shown below an accounting period's progress: its Fund Goals, Account Goals, or Expected Income Sources.
+ * The goal list shown at the bottom of an accounting period's page: its Fund Goals or Account Goals.
  */
-type AccountingPeriodPlanTab =
-  "fund-goals" | "account-goals" | "income-sources";
+type AccountingPeriodPlanTab = "fund-goals" | "account-goals";
 
 /**
  * Search parameters supported by an accounting period's page.
@@ -33,8 +33,6 @@ interface AccountingPeriodSearchParams {
   fundGoalSort?: FundGoalSort;
   accountGoalPage?: number | string | null;
   accountGoalSort?: AccountGoalSort;
-  incomeSourcePage?: number | string | null;
-  incomeSourceSort?: ExpectedIncomeSourceSort;
   returnUrl?: string;
 }
 
@@ -60,7 +58,7 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
     "/accounting-periods/{accountingPeriodId}/detail",
     { params: { path: { accountingPeriodId } } },
   );
-  if (detailResponse.error) {
+  if (detailResponse.response.status === 404) {
     redirect(routes.workspace({}));
   }
   const detail = unwrapApiResponse(
@@ -117,6 +115,12 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
             })}
           />
         </Box>
+      </Box>
+      <Box id={expectedIncomeSourcesId}>
+        <ExpectedIncomeSourcesFrame
+          accountingPeriod={period}
+          redirectUrl={currentUrl}
+        />
       </Box>
       <AccountingPeriodPlanTabs
         accountingPeriod={period}

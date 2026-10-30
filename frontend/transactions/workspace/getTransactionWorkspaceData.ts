@@ -1,7 +1,6 @@
 import type {
   AccountingPeriod,
-  AccountingPeriodWithBalance,
-  ExpectedIncomeSource,
+  AccountingPeriodWithExpectedIncomeSources,
   ExpectedIncomeSourcesByPeriod,
 } from "@/accounting-periods/types";
 import {
@@ -58,7 +57,7 @@ interface TransactionWorkspaceListData extends TransactionWorkspaceReferenceData
  * Represents the reference data required for a Transaction detail page.
  */
 interface TransactionWorkspaceDetailReferenceData {
-  readonly accountingPeriod: AccountingPeriodWithBalance;
+  readonly accountingPeriod: AccountingPeriodWithExpectedIncomeSources;
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
 }
@@ -114,29 +113,25 @@ const getTransactionWorkspaceReferenceData =
     );
     let fundGoals: FundGoalWithProgress[] = [];
     // Income can only be entered in open periods, so only their Expected Income Sources can be chosen
-    const expectedIncomeSources: ExpectedIncomeSourcesByPeriod =
-      Object.fromEntries(
-        await Promise.all(
-          openAccountingPeriods.map(
-            async (
-              accountingPeriod,
-            ): Promise<[string, ExpectedIncomeSource[]]> => [
-              accountingPeriod.id,
+    const expectedIncomeSourcesPromise =
+      openAccountingPeriods.length === 0
+        ? Promise.resolve([])
+        : apiClient
+            .GET("/accounting-periods/expected-income-sources", {
+              params: {
+                query: {
+                  accountingPeriodIds: openAccountingPeriods.map(
+                    (period) => period.id,
+                  ),
+                },
+              },
+            })
+            .then((response) =>
               unwrapApiResponse(
-                await apiClient.GET(
-                  "/accounting-periods/{accountingPeriodId}",
-                  {
-                    params: {
-                      path: { accountingPeriodId: accountingPeriod.id },
-                    },
-                  },
-                ),
+                response,
                 "Failed to fetch expected income sources",
-              ).expectedIncomeSources,
-            ],
-          ),
-        ),
-      );
+              ),
+            );
 
     if (openAccountingPeriods.length > 0) {
       const goalResponse = await apiClient.GET("/fund-goals", {
@@ -175,6 +170,14 @@ const getTransactionWorkspaceReferenceData =
           : [{ ...fundGoal, progress: result.progress }];
       });
     }
+
+    const expectedIncomeSources: ExpectedIncomeSourcesByPeriod =
+      Object.fromEntries(
+        (await expectedIncomeSourcesPromise).map((period) => [
+          period.id,
+          period.expectedIncomeSources,
+        ]),
+      );
 
     return {
       openAccountingPeriods,
@@ -217,9 +220,9 @@ const getTransactionWorkspaceDetailReferenceData = async function (
 ): Promise<TransactionWorkspaceDetailReferenceData> {
   const apiClient = await createApiClient();
   const accountingPeriodPromise = apiClient.GET(
-    "/accounting-periods/{accountingPeriodId}",
+    "/accounting-periods/expected-income-sources",
     {
-      params: { path: { accountingPeriodId } },
+      params: { query: { accountingPeriodIds: [accountingPeriodId] } },
     },
   );
   const fundsPromise = apiClient.GET("/funds/with-balances");
@@ -248,6 +251,13 @@ const getTransactionWorkspaceDetailReferenceData = async function (
     fundGoalsPromise,
     progressPromise,
   ]);
+  const [accountingPeriod] = unwrapApiResponse(
+    accountingPeriodResponse,
+    "Failed to fetch accounting period",
+  );
+  if (accountingPeriod === undefined) {
+    throw new Error("Failed to find the transaction accounting period");
+  }
   const progressByFundGoalId = new Map(
     unwrapApiResponse(
       progressResponse,
@@ -256,10 +266,7 @@ const getTransactionWorkspaceDetailReferenceData = async function (
   );
 
   return {
-    accountingPeriod: unwrapApiResponse(
-      accountingPeriodResponse,
-      "Failed to fetch accounting period",
-    ),
+    accountingPeriod,
     funds: unwrapApiResponse(fundsResponse, "Failed to fetch funds").items,
     fundGoals: unwrapApiResponse(
       fundGoalsResponse,

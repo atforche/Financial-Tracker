@@ -9,7 +9,6 @@ import {
 } from "@/framework/listframe/page";
 import AccountGoalsFrame from "@/accounting-periods/workspace/AccountGoalsFrame";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
-import ExpectedIncomeSourcesFrame from "@/accounting-periods/workspace/ExpectedIncomeSourcesFrame";
 import FundGoalsFrame from "@/accounting-periods/workspace/FundGoalsFrame";
 import type { JSX } from "react";
 import UrlTabs from "@/framework/view/UrlTabs";
@@ -26,8 +25,7 @@ interface AccountingPeriodPlanTabsProps {
 }
 
 /**
- * Displays an accounting period's Fund Goals, Account Goals, and Expected Income Sources as tabs, loading only the
- * selected tab's list.
+ * Displays an accounting period's Fund Goals and Account Goals as tabs, loading only the selected tab's list.
  */
 const AccountingPeriodPlanTabs = async function ({
   accountingPeriod,
@@ -39,10 +37,7 @@ const AccountingPeriodPlanTabs = async function ({
   const accountingPeriodId = accountingPeriod.id;
   // The tab comes from the URL, so anything unrecognized falls back to the first tab
   const activeTab: AccountingPeriodPlanTab =
-    searchParams.planTab === "account-goals" ||
-    searchParams.planTab === "income-sources"
-      ? searchParams.planTab
-      : "fund-goals";
+    searchParams.planTab === "account-goals" ? "account-goals" : "fund-goals";
   const fundGoals =
     activeTab === "fund-goals"
       ? unwrapApiResponse(
@@ -116,16 +111,6 @@ const AccountingPeriodPlanTabs = async function ({
                 returnUrl={currentUrl}
               />
             ),
-        },
-        {
-          value: "income-sources",
-          label: "Expected Income Sources",
-          content: (
-            <ExpectedIncomeSourcesFrame
-              accountingPeriod={accountingPeriod}
-              redirectUrl={currentUrl}
-            />
-          ),
         },
       ]}
     />

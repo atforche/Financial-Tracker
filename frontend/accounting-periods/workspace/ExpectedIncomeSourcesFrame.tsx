@@ -1,26 +1,14 @@
 "use client";
 
-import {
-  type AccountingPeriodWithBalance,
-  type ExpectedIncomeSource,
-  ExpectedIncomeSourceSort,
-} from "@/accounting-periods/types";
-import { getPaginationIndex, getRowsPerPage } from "@/framework/listframe/page";
-import { useRouter, useSearchParams } from "next/navigation";
-import type { AccountingPeriodSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspaceDetailPage";
-import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
-import { Button } from "@mui/material";
-import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
+import { Button, Stack, Typography } from "@mui/material";
+import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
+import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
 import Link from "next/link";
-import ListFrame from "@/framework/listframe/ListFrame";
-import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
-import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
+import PeriodProgressRow from "@/accounting-periods/PeriodProgressRow";
 import { formatCurrency } from "@/framework/currencyHelpers";
-import parseEnumValue from "@/framework/data/parseEnumValue";
-import propertyName from "@/framework/data/propertyName";
+import { formatShortDate } from "@/framework/dateHelpers";
 import routes from "@/accounting-periods/routes";
-import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
@@ -32,167 +20,71 @@ interface ExpectedIncomeSourcesFrameProps {
 }
 
 /**
- * Displays expected income sources and actions to manage individual sources.
+ * Shows each expected income source's tracked income received against what it expects, linking to the source.
  */
 const ExpectedIncomeSourcesFrame = function ({
   accountingPeriod,
   redirectUrl,
 }: ExpectedIncomeSourcesFrameProps): JSX.Element {
-  const canWrite = useWriteAccess();
-  const router = useRouter();
-  const canManageSources = canWrite && accountingPeriod.isOpen;
-  const searchParams = useSearchParams();
+  const canManageSources = useWriteAccess() && accountingPeriod.isOpen;
   const sources = accountingPeriod.expectedIncomeSources;
-  const sortParamName =
-    propertyName<AccountingPeriodSearchParams>("incomeSourceSort");
-  const pageParamName =
-    propertyName<AccountingPeriodSearchParams>("incomeSourcePage");
-  const updateParams = useSearchParamUpdater([pageParamName]);
-  const currentSort = parseEnumValue(
-    ExpectedIncomeSourceSort,
-    searchParams.get(sortParamName) ?? "",
-  );
-  const setSort = function (sort: ExpectedIncomeSourceSort | null): void {
-    updateParams((params) => {
-      if (sort === null) {
-        params.delete(sortParamName);
-      } else {
-        params.set(sortParamName, sort);
-      }
-    });
-  };
-  const sortedSources =
-    currentSort === null
-      ? sources
-      : sources.toSorted((left, right) => {
-          const direction =
-            currentSort === ExpectedIncomeSourceSort.SourceDescending ||
-            currentSort ===
-              ExpectedIncomeSourceSort.ExpectedTrackedIncomeDescending ||
-            currentSort ===
-              ExpectedIncomeSourceSort.ExpectedUntrackedIncomeDescending
-              ? -1
-              : 1;
-          const comparison =
-            currentSort === ExpectedIncomeSourceSort.Source ||
-            currentSort === ExpectedIncomeSourceSort.SourceDescending
-              ? left.name.localeCompare(right.name)
-              : currentSort ===
-                    ExpectedIncomeSourceSort.ExpectedTrackedIncome ||
-                  currentSort ===
-                    ExpectedIncomeSourceSort.ExpectedTrackedIncomeDescending
-                ? left.expectedAmount.tracked - right.expectedAmount.tracked
-                : left.expectedAmount.untracked -
-                  right.expectedAmount.untracked;
-          return comparison === 0
-            ? left.id.localeCompare(right.id)
-            : comparison * direction;
-        });
-  const rowsPerPage = getRowsPerPage(searchParams.get("pageSize"));
-  const paginationIndex = getPaginationIndex(
-    searchParams.get(pageParamName),
-    sources.length,
-    rowsPerPage,
-  );
-  const paginatedSources = sortedSources.slice(
-    paginationIndex * rowsPerPage,
-    (paginationIndex + 1) * rowsPerPage,
-  );
-  const getSortProps = createColumnSortProps(currentSort, setSort);
-  const columns: ColumnDefinition<ExpectedIncomeSource>[] = [
-    {
-      name: "name",
-      headerContent: "Source",
-      getBodyContent: (source) => source.name,
-      mobilePrimary: true,
-      ...getSortProps(
-        ExpectedIncomeSourceSort.Source,
-        ExpectedIncomeSourceSort.SourceDescending,
-      ),
-    },
-    {
-      name: "expectedTrackedIncome",
-      headerContent: "Tracked Income",
-      getBodyContent: (source) => formatCurrency(source.expectedAmount.tracked),
-      ...getSortProps(
-        ExpectedIncomeSourceSort.ExpectedTrackedIncome,
-        ExpectedIncomeSourceSort.ExpectedTrackedIncomeDescending,
-      ),
-      alignment: "right",
-    },
-    {
-      name: "expectedUntrackedIncome",
-      headerContent: "Untracked Income",
-      getBodyContent: (source) =>
-        formatCurrency(source.expectedAmount.untracked),
-      ...getSortProps(
-        ExpectedIncomeSourceSort.ExpectedUntrackedIncome,
-        ExpectedIncomeSourceSort.ExpectedUntrackedIncomeDescending,
-      ),
-      alignment: "right",
-    },
-    {
-      name: "actions",
-      headerContent: "",
-      getBodyContent: (source) => (
-        <ListFrameActionButton
-          ariaLabel={`View ${source.name}`}
-          onClick={() => {
-            router.push(
-              routes.expectedIncomeSource(
+  return (
+    <ContentSurface>
+      <Stack spacing={2}>
+        <Stack
+          direction="row"
+          useFlexGap
+          spacing={2}
+          sx={{
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography variant="h5">Expected Income Sources</Typography>
+          {canManageSources ? (
+            <Button
+              component={Link}
+              href={routes.expectedIncomeSourceCreate(
+                accountingPeriod.id,
+                redirectUrl,
+              )}
+              variant="contained"
+            >
+              Add Expected Income
+            </Button>
+          ) : null}
+        </Stack>
+        {sources.length === 0 ? (
+          <Typography variant="body2" color="text.secondary">
+            Add income sources to plan this period&apos;s expected income.
+          </Typography>
+        ) : (
+          sources.map((source) => (
+            <PeriodProgressRow
+              key={source.id}
+              label={source.name}
+              actual={source.receivedAmount.tracked}
+              expected={source.expectedAmount.tracked}
+              actualLabel="Received"
+              expectedLabel="Expected"
+              overLabel="Extra income"
+              href={routes.expectedIncomeSource(
                 accountingPeriod.id,
                 source.id,
                 redirectUrl,
-              ),
-            );
-          }}
-        >
-          <ArrowForwardOutlined fontSize="small" color="action" />
-        </ListFrameActionButton>
-      ),
-      alignment: "right",
-      minWidth: 52,
-      maxWidth: 52,
-    },
-  ];
-  return (
-    <ListFrame
-      title="Expected Income Sources"
-      headerContent={
-        !canManageSources ? undefined : (
-          <Button
-            component={Link}
-            href={routes.expectedIncomeSourceCreate(
-              accountingPeriod.id,
-              redirectUrl,
-            )}
-            variant="contained"
-          >
-            Add Expected Income
-          </Button>
-        )
-      }
-      columns={columns}
-      getId={(source) => source.id}
-      data={paginatedSources}
-      totalCount={sources.length}
-      pageParamName={pageParamName}
-      onRowClick={(source) => {
-        router.push(
-          routes.expectedIncomeSource(
-            accountingPeriod.id,
-            source.id,
-            redirectUrl,
-          ),
-        );
-      }}
-      initialEmptyState={{
-        title: "No Expected Income Sources",
-        description:
-          "Add income sources to plan this period's expected income.",
-        action: null,
-      }}
-    />
+              )}
+              caption={[
+                `of ${formatCurrency(source.expectedAmount.tracked)} tracked expected`,
+                ...source.expectedDates.map((date) =>
+                  formatShortDate(new Date(`${date}T00:00:00`)),
+                ),
+              ].join(" · ")}
+            />
+          ))
+        )}
+      </Stack>
+    </ContentSurface>
   );
 };
 

@@ -1,6 +1,8 @@
 import { Box, TableCell, TableSortLabel } from "@mui/material";
+import ColumnSortType, {
+  getNextSortType,
+} from "@/framework/listframe/ColumnSortType";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import ColumnSortType from "@/framework/listframe/ColumnSortType";
 import type { JSX } from "react";
 
 /**
@@ -41,14 +43,7 @@ const ColumnHeader = function <T>({
             column.sortType === ColumnSortType.Ascending ? "asc" : "desc"
           }
           onClick={(): void => {
-            const sortType = column.sortType ?? null;
-            if (sortType === null) {
-              column.onSort(ColumnSortType.Ascending);
-            } else if (sortType === ColumnSortType.Ascending) {
-              column.onSort(ColumnSortType.Descending);
-            } else {
-              column.onSort(null);
-            }
+            column.onSort(getNextSortType(column.sortType ?? null));
           }}
           sx={{ maxWidth: "100%" }}
         >

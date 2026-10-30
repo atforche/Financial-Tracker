@@ -1,7 +1,9 @@
 import { Box, Paper, Stack, TableSortLabel, Typography } from "@mui/material";
+import ColumnSortType, {
+  getNextSortType,
+} from "@/framework/listframe/ColumnSortType";
 import type { JSX, ReactNode } from "react";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import ColumnSortType from "@/framework/listframe/ColumnSortType";
 
 /**
  * Props for the ListFrameMobileRow component.
@@ -30,13 +32,7 @@ const getMobileColumnHeader = function <T>(
       direction={sortType === ColumnSortType.Ascending ? "asc" : "desc"}
       onClick={(event) => {
         event.stopPropagation();
-        if (sortType === null) {
-          column.onSort(ColumnSortType.Ascending);
-        } else if (sortType === ColumnSortType.Ascending) {
-          column.onSort(ColumnSortType.Descending);
-        } else {
-          column.onSort(null);
-        }
+        column.onSort(getNextSortType(sortType));
       }}
       onKeyDown={(event) => {
         event.stopPropagation();

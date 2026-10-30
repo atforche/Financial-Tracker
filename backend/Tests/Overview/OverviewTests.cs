@@ -1,4 +1,5 @@
 using Models;
+using Models.AccountingPeriods;
 using Models.Accounts;
 using Models.Funds;
 using Models.Overview;
@@ -144,8 +145,40 @@ public sealed class OverviewTests
         Assert.Equal(100m, notReceived.Income!.ExpectedAmount);
         Assert.Equal(0m, notReceived.Income.ReceivedAmount);
         Assert.Equal(new DateOnly(2026, 7, 15), notReceived.OldestDate);
-        Assert.Empty(notReceived.TopItems);
+        OverviewAttentionItemModel source = Assert.Single(notReceived.TopItems);
+        Assert.Equal("Employer", source.Name);
+        Assert.Equal(100m, source.Amount);
         Assert.DoesNotContain(received.Attention, group => group.Kind == OverviewAttentionKindModel.IncomeNotReceived);
+    }
+
+    /// <summary>
+    /// Flags each source that is behind by name, without letting income received from one source make up for another.
+    /// </summary>
+    [Fact]
+    public async Task IncomeIsFlaggedBySourceEvenWhenTotalsMatch()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        Guid employer = await test.Api.AddExpectedIncomeSourceAsync(july, "Employer", 100m, new DateOnly(2026, 7, 10));
+        _ = await test.Api.AddExpectedIncomeSourceAsync(july, "Side job", 50m, new DateOnly(2026, 7, 12));
+        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(150m).From("Employer").PlannedAs(employer).To(cash, groceries).CreateAsync();
+        await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
+
+        OverviewModel overview = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-16&history=ThreeMonths");
+        AccountingPeriodWithBalanceModel period = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}");
+
+        OverviewAttentionGroupModel notReceived = Assert.Single(overview.Attention,
+            group => group.Kind == OverviewAttentionKindModel.IncomeNotReceived);
+        Assert.Equal(1, notReceived.Count);
+        Assert.Equal(50m, notReceived.Amount);
+        Assert.Equal(50m, notReceived.Income!.ExpectedAmount);
+        Assert.Equal(0m, notReceived.Income.ReceivedAmount);
+        Assert.Equal(new DateOnly(2026, 7, 12), notReceived.OldestDate);
+        Assert.Equal("Side job", Assert.Single(notReceived.TopItems).Name);
+        Assert.Equal(150m, period.ExpectedIncomeSources.Single(source => source.Name == "Employer").ReceivedAmount.Tracked);
+        Assert.Equal(0m, period.ExpectedIncomeSources.Single(source => source.Name == "Side job").ReceivedAmount.Total);
     }
 
     /// <summary>
@@ -179,7 +212,7 @@ public sealed class OverviewTests
     }
 
     /// <summary>
-    /// Dates an income shortfall from the first expected payment that received income no longer covers.
+    /// Flags only the source that received less than expected, dated from its first expected date not covered.
     /// </summary>
     [Fact]
     public async Task IncomeShortfallIsDatedFromWhenItFellBehind()
@@ -199,11 +232,12 @@ public sealed class OverviewTests
 
         OverviewAttentionGroupModel notReceived = Assert.Single(overview.Attention,
             group => group.Kind == OverviewAttentionKindModel.IncomeNotReceived);
-        Assert.Equal(2, notReceived.Count);
+        Assert.Equal(1, notReceived.Count);
         Assert.Equal(40m, notReceived.Amount);
-        Assert.Equal(200m, notReceived.Income!.ExpectedAmount);
-        Assert.Equal(160m, notReceived.Income.ReceivedAmount);
+        Assert.Equal(100m, notReceived.Income!.ExpectedAmount);
+        Assert.Equal(60m, notReceived.Income.ReceivedAmount);
         Assert.Equal(new DateOnly(2026, 7, 15), notReceived.OldestDate);
+        Assert.Equal("Second paycheck", Assert.Single(notReceived.TopItems).Name);
     }
 
     /// <summary>

@@ -1,11 +1,11 @@
 "use client";
 
 import type {
-  AccountingPeriodWithBalance,
+  AccountingPeriod,
   ExpectedIncomeSource,
   ExpectedIncomeSourceRequest,
 } from "@/accounting-periods/types";
-import { Button, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -13,26 +13,23 @@ import {
   useEffect,
   useState,
 } from "react";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
+import ContentSurface from "@/framework/view/ContentSurface";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import ExpectedIncomePaymentCard from "@/accounting-periods/workspace/ExpectedIncomePaymentCard";
+import ExpectedIncomePeriodCard from "@/accounting-periods/workspace/ExpectedIncomePeriodCard";
 import ExpectedIncomeSourcesEditor from "@/accounting-periods/workspace/ExpectedIncomeSourcesEditor";
-import ExpectedIncomeTotalsFrame from "@/accounting-periods/workspace/ExpectedIncomeTotalsFrame";
 import PageLayout from "@/framework/view/PageLayout";
-import TransactionWorkspacePageHeader from "@/transactions/workspace/TransactionWorkspacePageHeader";
+import ReturnLink from "@/framework/view/ReturnLink";
+import StringEntryField from "@/framework/forms/StringEntryField";
+import routes from "@/accounting-periods/routes";
 import saveExpectedIncomeSource from "@/accounting-periods/workspace/saveExpectedIncomeSource";
 import { useRouter } from "next/navigation";
-
-/**
- * Mode for the ExpectedIncomeSourceForm component, indicating whether the form is being used to add, change, or delete an expected income source.
- */
-type ExpectedIncomeSourceMode = "view" | "add" | "change" | "delete";
 
 /**
  * Props for the ExpectedIncomeSourceForm component.
  */
 interface ExpectedIncomeSourceFormProps {
-  readonly accountingPeriod: AccountingPeriodWithBalance;
-  readonly mode: ExpectedIncomeSourceMode;
+  readonly accountingPeriod: AccountingPeriod;
   readonly source?: ExpectedIncomeSource;
   readonly backHref: string;
   readonly redirectUrl: string;
@@ -67,11 +64,11 @@ const emptySource = function (): ExpectedIncomeSourceRequest {
 };
 
 /**
- * Dialog for adding, changing, or removing one expected-income source.
+ * Form for adding an expected-income source, or changing the provided one, with live totals for the period and a
+ * breakdown of each payment.
  */
 const ExpectedIncomeSourceForm = function ({
   accountingPeriod,
-  mode,
   source,
   backHref,
   redirectUrl,
@@ -96,79 +93,99 @@ const ExpectedIncomeSourceForm = function ({
       });
     });
   };
-  const actionLabel =
-    mode === "add" ? "Add" : mode === "change" ? "Save Changes" : "Delete";
-  const netAmount =
-    draft.incomeLines.reduce((total, line) => total + line.amount, 0) -
-    draft.incomeDeductions.reduce(
-      (total, deduction) => total + deduction.amount,
-      0,
-    );
-  const untrackedAmount = draft.untrackedTransfers.reduce(
-    (total, transfer) => total + transfer.amount,
-    0,
+  const actions = (
+    <Stack
+      direction="row"
+      spacing={1}
+      sx={{ "& > *": { flex: { xs: 1, sm: "none" } } }}
+    >
+      <Button variant="outlined" disabled={pending} href={backHref}>
+        Cancel
+      </Button>
+      <Button variant="contained" loading={pending} onClick={save}>
+        {source === undefined ? "Add" : "Save Changes"}
+      </Button>
+    </Stack>
   );
-  const trackedAmount = netAmount - untrackedAmount;
   return (
     <PageLayout>
-      <TransactionWorkspacePageHeader
-        backHref={backHref}
-        title={`${mode === "add" ? "Add" : mode === "change" ? "Edit" : "Delete"} Expected Income Source`}
-      />
-      <ConstrainedContent maxWidth={1200}>
-        <Stack spacing={3}>
-          {mode === "delete" ? (
-            <Typography>
-              Delete {source?.name ?? "this expected income source"} from{" "}
-              {accountingPeriod.name}?
-            </Typography>
-          ) : (
-            <>
-              <ExpectedIncomeTotalsFrame
-                sourceName={draft.name}
-                accountingPeriodName={accountingPeriod.name}
-                setSourceName={(name): void => {
-                  setDraft({ ...draft, name });
-                }}
-                netPerPayment={netAmount}
-                trackedPerPayment={trackedAmount}
-                untrackedPerPayment={untrackedAmount}
-                paymentCount={draft.expectedDates.length}
-              />
-              <ExpectedIncomeSourcesEditor
-                source={draft}
-                setSource={setDraft}
-                year={accountingPeriod.year}
-                month={accountingPeriod.month}
-              />
-            </>
-          )}
-          <ErrorAlert
-            errorMessage={state.errorTitle ?? null}
-            unmappedErrors={state.unmappedErrors ?? null}
-          />
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={1.5}
-            justifyContent="flex-end"
-          >
-            <Button variant="outlined" disabled={pending} href={backHref}>
-              Cancel
-            </Button>
-            <Button
-              color={mode === "delete" ? "error" : "primary"}
-              variant="contained"
-              loading={pending}
-              onClick={save}
-            >
-              {actionLabel}
-            </Button>
-          </Stack>
+      <Stack spacing={2}>
+        <ReturnLink
+          returnUrl={backHref}
+          fallback={{
+            href: routes.workspaceDetail(accountingPeriod.id, {}),
+            label: `Back to ${accountingPeriod.name}`,
+          }}
+        />
+        <Stack
+          direction="row"
+          useFlexGap
+          spacing={2}
+          sx={{
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography variant="h4" sx={{ overflowWrap: "anywhere" }}>
+            {source === undefined
+              ? `Add Expected Income to ${accountingPeriod.name}`
+              : `Edit ${source.name}`}
+          </Typography>
+          <Box sx={{ display: { xs: "none", sm: "block" } }}>{actions}</Box>
         </Stack>
-      </ConstrainedContent>
+        <ErrorAlert
+          errorMessage={state.errorTitle ?? null}
+          unmappedErrors={state.unmappedErrors ?? null}
+        />
+      </Stack>
+      <Box
+        sx={{
+          display: "grid",
+          gap: 2,
+          gridTemplateColumns: { xs: "minmax(0, 1fr)", lg: "2fr 1fr" },
+          alignItems: "start",
+        }}
+      >
+        <ContentSurface>
+          <Stack spacing={2}>
+            <StringEntryField
+              label="Source Name"
+              value={draft.name}
+              setValue={(name): void => {
+                setDraft({ ...draft, name });
+              }}
+            />
+            <ExpectedIncomeSourcesEditor
+              source={draft}
+              setSource={setDraft}
+              year={accountingPeriod.year}
+              month={accountingPeriod.month}
+            />
+          </Stack>
+        </ContentSurface>
+        <Stack spacing={2} sx={{ position: { lg: "sticky" }, top: { lg: 10 } }}>
+          <ExpectedIncomePeriodCard source={draft} />
+          <ExpectedIncomePaymentCard source={draft} />
+        </Stack>
+      </Box>
+      {/* On small screens the actions stay pinned to the bottom so they remain in reach while scrolling */}
+      <Box
+        sx={{
+          display: { xs: "block", sm: "none" },
+          position: "sticky",
+          bottom: 0,
+          zIndex: "appBar",
+          py: 1.5,
+          bgcolor: "background.default",
+          borderTop: 1,
+          borderColor: "divider",
+        }}
+      >
+        {actions}
+      </Box>
     </PageLayout>
   );
 };
 
-export type { ExpectedIncomeSourceMode };
 export default ExpectedIncomeSourceForm;

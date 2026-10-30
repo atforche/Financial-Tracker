@@ -1,14 +1,15 @@
-import ExpectedIncomeSourceForm, {
-  type ExpectedIncomeSourceMode,
-} from "@/accounting-periods/workspace/ExpectedIncomeSourceForm";
-import type { ExpectedIncomeSource } from "@/accounting-periods/types";
-import ExpectedIncomeSourceDetailsDialog from "@/accounting-periods/workspace/ExpectedIncomeSourceDetailsDialog";
+import ExpectedIncomeSourceDetails from "@/accounting-periods/workspace/ExpectedIncomeSourceDetails";
+import ExpectedIncomeSourceForm from "@/accounting-periods/workspace/ExpectedIncomeSourceForm";
 import type { JSX } from "react";
 import createApiClient from "@/framework/data/createApiClient";
-import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
+
+/**
+ * Whether an expected income source page views a source, or adds or changes one with the form.
+ */
+type ExpectedIncomeSourceMode = "view" | "add" | "change";
 
 /**
  * Props for the ExpectedIncomeSourcePage component.
@@ -30,41 +31,63 @@ const ExpectedIncomeSourcePage = async function ({
   returnUrl,
 }: ExpectedIncomeSourcePageProps): Promise<JSX.Element> {
   const apiClient = await createApiClient();
+  const backHref = returnUrl ?? routes.workspaceDetail(accountingPeriodId, {});
+  if (sourceId === undefined) {
+    const response = await apiClient.GET(
+      "/accounting-periods/expected-income-sources",
+      {
+        params: { query: { accountingPeriodIds: [accountingPeriodId] } },
+      },
+    );
+    const [accountingPeriod] = unwrapApiResponse(
+      response,
+      "Failed to fetch accounting period",
+    );
+    if (accountingPeriod === undefined) {
+      redirect(backHref);
+    }
+    return (
+      <ExpectedIncomeSourceForm
+        accountingPeriod={accountingPeriod}
+        backHref={backHref}
+        redirectUrl={backHref}
+      />
+    );
+  }
   const response = await apiClient.GET(
-    "/accounting-periods/{accountingPeriodId}",
+    "/accounting-periods/{accountingPeriodId}/expected-income-sources/{expectedIncomeSourceId}",
     {
-      params: { path: { accountingPeriodId } },
+      params: {
+        path: { accountingPeriodId, expectedIncomeSourceId: sourceId },
+      },
     },
   );
-  const accountingPeriod = unwrapApiResponse(
-    response,
-    "Failed to fetch accounting period",
-  );
-  const backHref = returnUrl ?? routes.workspaceDetail(accountingPeriodId, {});
-  const source: ExpectedIncomeSource | undefined = isNotNullOrUndefined(
-    sourceId,
-  )
-    ? accountingPeriod.expectedIncomeSources.find(
-        (item) => item.id === sourceId,
-      )
-    : undefined;
-  if (sourceId !== undefined && source === undefined) {
+  if (response.response.status === 404) {
     redirect(backHref);
   }
-  if (mode === "view" && source !== undefined) {
+  const { accountingPeriod, source, income } = unwrapApiResponse(
+    response,
+    "Failed to fetch expected income source",
+  );
+  if (mode === "view") {
+    const currentUrl = routes.expectedIncomeSource(
+      accountingPeriodId,
+      source.id,
+      backHref,
+    );
     return (
-      <ExpectedIncomeSourceDetailsDialog
+      <ExpectedIncomeSourceDetails
         source={source}
+        income={income}
         accountingPeriodId={accountingPeriodId}
         accountingPeriodName={accountingPeriod.name}
-        year={accountingPeriod.year}
-        month={accountingPeriod.month}
         canManage={accountingPeriod.isOpen}
         backHref={backHref}
+        currentUrl={currentUrl}
         editHref={routes.expectedIncomeSourceEdit(
           accountingPeriodId,
           source.id,
-          backHref,
+          currentUrl,
         )}
       />
     );
@@ -72,8 +95,7 @@ const ExpectedIncomeSourcePage = async function ({
   return (
     <ExpectedIncomeSourceForm
       accountingPeriod={accountingPeriod}
-      mode={mode}
-      {...(source === undefined ? {} : { source })}
+      source={source}
       backHref={backHref}
       redirectUrl={backHref}
     />

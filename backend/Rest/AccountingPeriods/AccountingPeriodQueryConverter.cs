@@ -92,7 +92,9 @@ public sealed class AccountingPeriodQueryConverter(AccountingPeriodConverter acc
         IsOpen = balance.AccountingPeriod.IsOpen,
         OpeningBalance = balance.OpeningBalance,
         ClosingBalance = balance.ClosingBalance,
-        ExpectedIncomeSources = balance.AccountingPeriod.ExpectedIncomeSources.Select(accountingPeriodConverter.ToModel).ToList(),
+        ExpectedIncomeSources = balance.AccountingPeriod.ExpectedIncomeSources
+            .Select(source => accountingPeriodConverter.ToModel(source, balance.ReceivedIncome.Get(source.Id)))
+            .ToList(),
         ExpectedIncome = ToExpectedIncomeAmountModel(balance.AccountingPeriod.ExpectedIncomeSources),
         ActualIncome = new IncomeAmountModel
         {
@@ -119,6 +121,43 @@ public sealed class AccountingPeriodQueryConverter(AccountingPeriodConverter acc
     {
         Items = page.Items.Select(ToModel).ToList(),
         TotalCount = page.TotalCount,
+    };
+
+    /// <summary>
+    /// Converts the provided Accounting Period and its Expected Income Sources to an API model.
+    /// </summary>
+    public AccountingPeriodWithExpectedIncomeSourcesModel ToModel(AccountingPeriodExpectedIncome expectedIncome) => new()
+    {
+        Id = expectedIncome.AccountingPeriod.Id.Value,
+        Name = expectedIncome.AccountingPeriod.Name,
+        Year = expectedIncome.AccountingPeriod.Year,
+        Month = expectedIncome.AccountingPeriod.Month,
+        IsOpen = expectedIncome.AccountingPeriod.IsOpen,
+        ExpectedIncomeSources = expectedIncome.AccountingPeriod.ExpectedIncomeSources
+            .Select(source => accountingPeriodConverter.ToModel(source, expectedIncome.ReceivedIncome.Get(source.Id)))
+            .ToList(),
+    };
+
+    /// <summary>
+    /// Converts the provided Expected Income Source detail to an API model.
+    /// </summary>
+    public ExpectedIncomeSourceDetailModel ToModel(ExpectedIncomeSourceDetail detail) => new()
+    {
+        AccountingPeriod = ToModel(detail.AccountingPeriod),
+        Source = accountingPeriodConverter.ToModel(detail.Source, detail.Received),
+        Income = detail.Income.Select(income => new ExpectedIncomeSourceIncomeModel
+        {
+            TransactionId = income.TransactionId,
+            Date = income.Date,
+            Description = income.Description,
+            Amount = income.Amount,
+            ReceivedAmount = new IncomeAmountModel
+            {
+                Total = income.Received.Total,
+                Tracked = income.Received.Tracked,
+                Untracked = income.Received.Total - income.Received.Tracked,
+            },
+        }).ToList(),
     };
 
     /// <summary>

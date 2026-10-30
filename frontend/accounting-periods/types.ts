@@ -41,23 +41,23 @@ type CreateAccountingPeriodRequest =
 type ExpectedIncomeSource = components["schemas"]["ExpectedIncomeSourceModel"];
 
 /**
+ * Type representing an accounting period with its Expected Income Sources.
+ */
+type AccountingPeriodWithExpectedIncomeSources =
+  components["schemas"]["AccountingPeriodWithExpectedIncomeSourcesModel"];
+
+/**
+ * Type representing an Income Transaction linked to an Expected Income Source.
+ */
+type ExpectedIncomeSourceIncome =
+  components["schemas"]["ExpectedIncomeSourceIncomeModel"];
+
+/**
  * Expected Income Sources keyed by the ID of the accounting period they belong to.
  */
 type ExpectedIncomeSourcesByPeriod = Readonly<
   Record<string, readonly ExpectedIncomeSource[]>
 >;
-
-/**
- * Supported Expected Income Source sort orders on the planning page.
- */
-enum ExpectedIncomeSourceSort {
-  Source = "Source",
-  SourceDescending = "SourceDescending",
-  ExpectedTrackedIncome = "ExpectedTrackedIncome",
-  ExpectedTrackedIncomeDescending = "ExpectedTrackedIncomeDescending",
-  ExpectedUntrackedIncome = "ExpectedUntrackedIncome",
-  ExpectedUntrackedIncomeDescending = "ExpectedUntrackedIncomeDescending",
-}
 
 /**
  * Type representing an expected-income source request.
@@ -70,11 +70,12 @@ export {
   type AccountingPeriodRange,
   AccountingPeriodSortModel as AccountingPeriodSort,
   type AccountingPeriodWithBalance,
+  type AccountingPeriodWithExpectedIncomeSources,
   AccountingPeriodWithBalanceSortModel as AccountingPeriodWithBalanceSort,
   type AccountingPeriodsInRange,
   type CreateAccountingPeriodRequest,
   type ExpectedIncomeSource,
+  type ExpectedIncomeSourceIncome,
   type ExpectedIncomeSourcesByPeriod,
-  ExpectedIncomeSourceSort,
   type ExpectedIncomeSourceRequest,
 };

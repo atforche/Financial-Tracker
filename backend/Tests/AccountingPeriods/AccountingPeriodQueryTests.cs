@@ -173,4 +173,64 @@ public sealed class AccountingPeriodQueryTests
         Assert.Equal(HttpStatusCode.UnprocessableEntity, reversedTransactions.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, events.StatusCode);
     }
+
+    /// <summary>
+    /// Returns an Expected Income Source with its linked income in date order, counting only posted income as received.
+    /// </summary>
+    [Fact]
+    public async Task ExpectedIncomeSourceReturnsItsLinkedIncome()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        Guid employer = await test.Api.AddExpectedIncomeSourceAsync(july, "Employer", 100m, new DateOnly(2026, 7, 15));
+        TransactionHandle second = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 20)).For(40m).From("Employer").PlannedAs(employer).To(cash, groceries).CreateAsync();
+        TransactionHandle first = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 15)).For(100m).From("Employer").PlannedAs(employer).To(cash, groceries).CreateAsync();
+        _ = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 16)).For(25m).From("Gift").To(cash, groceries).CreateAsync();
+        await test.Transactions.PostAsync(first, cash, new DateOnly(2026, 7, 15));
+
+        ExpectedIncomeSourceDetailModel detail = await test.Api.GetAsync<ExpectedIncomeSourceDetailModel>(
+            $"/accounting-periods/{july.Id}/expected-income-sources/{employer}");
+        using HttpResponseMessage missing = await test.Api.GetResponseAsync(
+            $"/accounting-periods/{july.Id}/expected-income-sources/{Guid.NewGuid()}");
+
+        Assert.Equal(july.Id, detail.AccountingPeriod.Id);
+        Assert.Equal("Employer", detail.Source.Name);
+        Assert.Equal(100m, detail.Source.ReceivedAmount.Total);
+        Assert.Equal(100m, detail.Source.ReceivedAmount.Tracked);
+        Assert.Equal([first.Id, second.Id], detail.Income.Select(income => income.TransactionId));
+        Assert.Equal([100m, 40m], detail.Income.Select(income => income.Amount));
+        Assert.Equal([100m, 0m], detail.Income.Select(income => income.ReceivedAmount.Total));
+        Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+    }
+
+    /// <summary>
+    /// Returns the requested periods in date order with their sources and received income, leaving out unknown periods.
+    /// </summary>
+    [Fact]
+    public async Task ExpectedIncomeSourcesAreReturnedForRequestedPeriods()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        Guid employer = await test.Api.AddExpectedIncomeSourceAsync(july, "Employer", 100m, new DateOnly(2026, 7, 15));
+        _ = await test.Api.AddExpectedIncomeSourceAsync(august, "Side job", 50m, new DateOnly(2026, 8, 15));
+        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 15)).For(100m).From("Employer").PlannedAs(employer).To(cash, groceries).CreateAsync();
+        await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 15));
+
+        IReadOnlyCollection<AccountingPeriodWithExpectedIncomeSourcesModel> periods =
+            await test.Api.GetAsync<IReadOnlyCollection<AccountingPeriodWithExpectedIncomeSourcesModel>>(
+                $"/accounting-periods/expected-income-sources?accountingPeriodIds={august.Id}&accountingPeriodIds={july.Id}&accountingPeriodIds={Guid.NewGuid()}");
+
+        Assert.Equal([july.Id, august.Id], periods.Select(period => period.Id));
+        ExpectedIncomeSourceModel employerSource = Assert.Single(periods.First().ExpectedIncomeSources);
+        Assert.Equal("Employer", employerSource.Name);
+        Assert.Equal(100m, employerSource.ReceivedAmount.Tracked);
+        ExpectedIncomeSourceModel sideJob = Assert.Single(periods.Last().ExpectedIncomeSources);
+        Assert.Equal("Side job", sideJob.Name);
+        Assert.Equal(0m, sideJob.ReceivedAmount.Total);
+    }
 }

@@ -169,45 +169,46 @@ public sealed class OverviewQueryService(
     }
 
     /// <summary>
-    /// Flags expected tracked income whose dates have passed when less than that much tracked income has been
-    /// received. Untracked income often arrives weeks after its expected date, so it is left out. Received income is
-    /// not linked to the source it came from, so only the totals are compared and no sources are named. The group's
-    /// date is when the expected payments, taken in date order, first added up to more than was received.
+    /// Flags each Expected Income Source that has received less tracked income than it expected on its dates that have
+    /// passed. Untracked income often arrives weeks after its expected date, so it is left out. A source that received
+    /// more than expected does not make up for another. The group's date is the earliest expected date that a source's
+    /// received income does not cover.
     /// </summary>
     private static OverviewAttentionGroup? GetIncomeNotReceived(AccountingPeriodBalance period, DateOnly asOf)
     {
-        var passedPayments = period.AccountingPeriod.ExpectedIncomeSources
+        var behindSources = period.AccountingPeriod.ExpectedIncomeSources
             .Where(source => source.TrackedAmount > 0)
-            .SelectMany(source => source.ExpectedDates
-                .Where(expectedDate => expectedDate.Date < asOf)
-                .Select(expectedDate => (expectedDate.Date, Amount: source.TrackedAmount)))
-            .OrderBy(payment => payment.Date)
+            .Select(source =>
+            {
+                var passedDates = source.ExpectedDates
+                    .Select(expectedDate => expectedDate.Date)
+                    .Where(date => date < asOf)
+                    .Order()
+                    .ToList();
+                decimal received = period.ReceivedIncome.Get(source.Id).Tracked;
+                decimal expected = source.TrackedAmount * passedDates.Count;
+                return (source.Name, Expected: expected, Received: received, Shortfall: expected - received,
+                    BehindSince: expected > received
+                        ? passedDates[(int)Math.Floor(Math.Max(received, 0) / source.TrackedAmount)]
+                        : default);
+            })
+            .Where(source => source.Shortfall > 0)
             .ToList();
-        decimal expected = passedPayments.Sum(payment => payment.Amount);
-        decimal shortfall = expected - period.ActualPlannedTrackedIncome;
-        if (shortfall <= 0)
+        if (behindSources.Count == 0)
         {
             return null;
         }
-        DateOnly behindSince = default;
-        decimal runningExpected = 0;
-        foreach ((DateOnly date, decimal amount) in passedPayments)
-        {
-            runningExpected += amount;
-            if (runningExpected > period.ActualPlannedTrackedIncome)
-            {
-                behindSince = date;
-                break;
-            }
-        }
+        var items = behindSources.Select(source => new OverviewAttentionItem(source.Name, source.Shortfall, null)).ToList();
         return new OverviewAttentionGroup(
             OverviewAttentionKind.IncomeNotReceived,
-            passedPayments.Count,
-            shortfall,
-            0,
-            [],
-            behindSince,
-            new OverviewIncomeShortfall(expected, period.ActualPlannedTrackedIncome));
+            items.Count,
+            items.Sum(item => item.Amount),
+            items.Count,
+            GetTopItems(items),
+            behindSources.Min(source => source.BehindSince),
+            new OverviewIncomeShortfall(
+                behindSources.Sum(source => source.Expected),
+                behindSources.Sum(source => source.Received)));
     }
 
     /// <summary>

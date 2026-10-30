@@ -73,6 +73,37 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     }
 
     /// <summary>
+    /// Retrieves the provided Accounting Periods in date order with their Expected Income Sources. Accounting Periods
+    /// that do not exist are left out.
+    /// </summary>
+    [HttpGet("expected-income-sources")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<AccountingPeriodWithExpectedIncomeSourcesModel>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyCollection<AccountingPeriodWithExpectedIncomeSourcesModel>>> GetExpectedIncomeSourcesAsync(
+        [FromQuery] IReadOnlyCollection<Guid> accountingPeriodIds,
+        CancellationToken cancellationToken) =>
+        Ok((await accountingPeriodQueryService.GetExpectedIncomeAsync(accountingPeriodIds, cancellationToken))
+            .Select(accountingPeriodQueryConverter.ToModel)
+            .ToList());
+
+    /// <summary>
+    /// Retrieves an Expected Income Source with its Accounting Period and the Income Transactions linked to it.
+    /// </summary>
+    [HttpGet("{accountingPeriodId:guid}/expected-income-sources/{expectedIncomeSourceId:guid}")]
+    [ProducesResponseType(typeof(ExpectedIncomeSourceDetailModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ExpectedIncomeSourceDetailModel>> GetExpectedIncomeSourceAsync(
+        Guid accountingPeriodId,
+        Guid expectedIncomeSourceId,
+        CancellationToken cancellationToken)
+    {
+        ExpectedIncomeSourceDetail? detail = await accountingPeriodQueryService.GetExpectedIncomeSourceAsync(
+            accountingPeriodId,
+            expectedIncomeSourceId,
+            cancellationToken);
+        return detail == null ? NotFound() : Ok(accountingPeriodQueryConverter.ToModel(detail));
+    }
+
+    /// <summary>
     /// Retrieves Accounting Periods and totals for a contiguous range.
     /// </summary>
     [HttpGet("range")]

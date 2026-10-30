@@ -21,39 +21,42 @@ interface ExpectedIncomeAmountEditorProps {
   readonly description: string;
   readonly addLabel: string;
   readonly items: AmountItem[];
-  readonly setItems?: ((items: AmountItem[]) => void) | null;
+  readonly setItems: (items: AmountItem[]) => void;
   readonly requireItem?: boolean;
 }
 
 /**
- * Displays an expected-income collection whose items contain a description and amount.
+ * Edits an expected-income collection whose items contain a description and amount.
  */
 const ExpectedIncomeAmountEditor = function ({
   title,
   description,
   addLabel,
   items,
-  setItems = null,
+  setItems,
   requireItem = false,
 }: ExpectedIncomeAmountEditorProps): JSX.Element {
-  const readOnly = setItems === null;
+  const updateItem = function (
+    index: number,
+    changes: Partial<AmountItem>,
+  ): void {
+    setItems(
+      items.map((current, itemIndex) =>
+        itemIndex === index ? { ...current, ...changes } : current,
+      ),
+    );
+  };
   return (
     <Stack spacing={1.5}>
-      {!readOnly || items.length <= 1 ? (
-        <Stack spacing={0.25}>
-          <Typography variant="subtitle2">{title}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            {description}
-          </Typography>
-        </Stack>
-      ) : null}
-      {readOnly && items.length === 0 ? (
-        <Typography color="text.secondary">No items available.</Typography>
-      ) : null}
+      <Stack spacing={0.25}>
+        <Typography variant="subtitle2">{title}</Typography>
+        <Typography variant="body2" color="text.secondary">
+          {description}
+        </Typography>
+      </Stack>
       <CollectionEditor
         items={items}
         label={title}
-        readOnly={readOnly}
         setItems={setItems}
         createItem={() => ({ description: "", amount: 0 })}
         addLabel={addLabel}
@@ -69,61 +72,47 @@ const ExpectedIncomeAmountEditor = function ({
             sx={{
               display: "grid",
               gap: 1.5,
+              // On small screens the delete button sits beside the description, with the amount below
               gridTemplateColumns: {
-                xs: "1fr",
-                md: readOnly
-                  ? "minmax(0, 1.8fr) minmax(180px, 1fr)"
-                  : "minmax(0, 1.8fr) minmax(180px, 1fr) auto",
+                xs: "minmax(0, 1fr) auto",
+                md: "minmax(0, 1.8fr) minmax(180px, 1fr) auto",
+              },
+              gridTemplateAreas: {
+                xs: '"description delete" "amount amount"',
+                md: '"description amount delete"',
               },
               alignItems: "start",
             }}
           >
-            <StringEntryField
-              label="Description"
-              value={item.description}
-              autoFocus={controls.autoFocus}
-              setValue={
-                readOnly
-                  ? null
-                  : (newDescription): void => {
-                      setItems(
-                        items.map((current, itemIndex) =>
-                          itemIndex === index
-                            ? { ...current, description: newDescription }
-                            : current,
-                        ),
-                      );
-                    }
-              }
-            />
-            <CurrencyEntryField
-              label="Amount"
-              value={item.amount}
-              setValue={
-                readOnly
-                  ? null
-                  : (amount): void => {
-                      setItems(
-                        items.map((current, itemIndex) =>
-                          itemIndex === index
-                            ? { ...current, amount: amount ?? 0 }
-                            : current,
-                        ),
-                      );
-                    }
-              }
-            />
-            {readOnly ? null : (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: { xs: "flex-end", md: "center" },
-                  pt: { xs: 0, md: 1.25 },
+            <Box sx={{ gridArea: "description" }}>
+              <StringEntryField
+                label="Description"
+                value={item.description}
+                autoFocus={controls.autoFocus}
+                setValue={(newDescription): void => {
+                  updateItem(index, { description: newDescription });
                 }}
-              >
-                {controls.deleteButton}
-              </Box>
-            )}
+              />
+            </Box>
+            <Box sx={{ gridArea: "amount", "& > *": { width: "100%" } }}>
+              <CurrencyEntryField
+                label="Amount"
+                value={item.amount}
+                setValue={(amount): void => {
+                  updateItem(index, { amount: amount ?? 0 });
+                }}
+              />
+            </Box>
+            <Box
+              sx={{
+                gridArea: "delete",
+                display: "flex",
+                justifyContent: "center",
+                pt: 1.25,
+              }}
+            >
+              {controls.deleteButton}
+            </Box>
           </InsetFrame>
         )}
       />

@@ -1,4 +1,5 @@
 using Domain.AccountingPeriods;
+using Domain.AccountingPeriods.Queries;
 using Models;
 using Models.AccountingPeriods;
 using Models.Transactions.Types;
@@ -23,9 +24,9 @@ public sealed class AccountingPeriodConverter
     };
 
     /// <summary>
-    /// Converts an expected income source to its API model.
+    /// Converts an expected income source and the income received from it to its API model.
     /// </summary>
-    public ExpectedIncomeSourceModel ToModel(ExpectedIncomeSource source) => new()
+    public ExpectedIncomeSourceModel ToModel(ExpectedIncomeSource source, ReceivedIncome received) => new()
     {
         Id = source.Id.Value,
         Name = source.Name,
@@ -42,6 +43,7 @@ public sealed class AccountingPeriodConverter
         ExpectedDates = source.ExpectedDates.Select(date => date.Date).ToList(),
         NetAmount = ToIncomeAmountModel(source.NetAmount, source.TrackedAmount),
         ExpectedAmount = ToIncomeAmountModel(source.ExpectedAmount, source.ExpectedTrackedAmount),
+        ReceivedAmount = ToIncomeAmountModel(received.Total, received.Tracked),
         UntrackedTransfers = source.UntrackedTransfers.Select(transfer => new ExpectedUntrackedIncomeTransferModel
         {
             Description = transfer.Description,

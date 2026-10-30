@@ -41,7 +41,7 @@ import {
 } from "@/transactions/workspace/spending/helpers";
 import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFrame";
 import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFrame";
-import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
+import type { AccountingPeriodWithExpectedIncomeSources } from "@/accounting-periods/types";
 import DeleteTransactionForm from "@/transactions/workspace/DeleteTransactionForm";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
@@ -65,7 +65,7 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
  */
 interface ViewTransactionFormProps {
   readonly transaction: Transaction;
-  readonly transactionAccountingPeriod: AccountingPeriodWithBalance;
+  readonly transactionAccountingPeriod: AccountingPeriodWithExpectedIncomeSources;
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
   readonly currentUrl: string;

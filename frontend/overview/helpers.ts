@@ -11,6 +11,7 @@ import type { AccountingPeriodPlanTab } from "@/accounting-periods/workspace/Acc
 import type { Route } from "next";
 import type { ToggleButtonSelectorOption } from "@/framework/forms/ToggleButtonSelector";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
+import { expectedIncomeSourcesId } from "@/accounting-periods/workspace/helpers";
 import { formatShortDate } from "@/framework/dateHelpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import transactionRoutes from "@/transactions/routes";
@@ -93,8 +94,8 @@ interface OverviewAttentionDescription {
 }
 
 /**
- * Describes a group of items needing attention, with links that return to the provided URL. Goal and income groups
- * link to the matching plan tab of the current period.
+ * Describes a group of items needing attention, with links that return to the provided URL. Goal groups link to the
+ * matching plan tab of the current period, and income groups to its Expected Income Sources.
  */
 const describeAttentionGroup = function (
   group: OverviewAttentionGroup,
@@ -169,10 +170,13 @@ const describeAttentionGroup = function (
     case OverviewAttentionKindModel.IncomeNotReceived:
     default:
       return {
-        title: "Tracked income behind expectations",
+        title: `${pluralize(group.count, "income source")} behind`,
         amount: `${formatCurrency(group.amount)} short`,
-        items: [],
-        remainingItemCount: 0,
+        items: group.topItems.map((item) => ({
+          text: item.name,
+          amount: formatSignedCurrency(-item.amount),
+        })),
+        remainingItemCount,
         facts: [
           ...(group.income === null || group.income === undefined
             ? []
@@ -181,7 +185,10 @@ const describeAttentionGroup = function (
               ]),
           ...(oldestDate === null ? [] : [`Behind since ${oldestDate}`]),
         ],
-        href: getPlanHref("income-sources"),
+        href:
+          currentPeriodId === null
+            ? accountingPeriodRoutes.workspace({ returnUrl })
+            : `${accountingPeriodRoutes.workspaceDetail(currentPeriodId, { returnUrl })}#${expectedIncomeSourcesId}`,
       };
   }
 };
