@@ -1,11 +1,13 @@
 "use client";
 
+import { Button, Stack } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import type { AccountingPeriodTrendsSearchParams } from "@/accounting-periods/trends/AccountingPeriodTrends";
-import { Button } from "@mui/material";
 import type { JSX } from "react";
+import Link from "next/link";
 import PageFilterFrame from "@/framework/view/PageFilterFrame";
+import type { Route } from "next";
 import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import propertyName from "@/framework/data/propertyName";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -17,6 +19,7 @@ import { useSearchParams } from "next/navigation";
 interface AccountingPeriodTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly disabled?: boolean;
+  readonly transactionsHref: Route | null;
 }
 
 /**
@@ -25,14 +28,13 @@ interface AccountingPeriodTrendsFilterProps {
 const AccountingPeriodTrendsFilter = function ({
   accountingPeriods,
   disabled = false,
+  transactionsHref,
 }: AccountingPeriodTrendsFilterProps): JSX.Element {
   const defaultRange = getDefaultTrendAccountingPeriodRange(accountingPeriods);
   const defaultStartAccountingPeriodId = defaultRange?.start ?? null;
   const defaultEndAccountingPeriodId = defaultRange?.end ?? null;
   const searchParams = useSearchParams();
 
-  const pageParamName =
-    propertyName<AccountingPeriodTrendsSearchParams>("page");
   const startAccountingPeriodIdParamName =
     propertyName<AccountingPeriodTrendsSearchParams>("startAccountingPeriodId");
   const endAccountingPeriodIdParamName =
@@ -47,7 +49,7 @@ const AccountingPeriodTrendsFilter = function ({
     defaultEndAccountingPeriodId ??
     "";
 
-  const updateParams = useSearchParamUpdater([pageParamName]);
+  const updateParams = useSearchParamUpdater([]);
 
   const hasActiveView =
     currentStartAccountingPeriodId !== (defaultStartAccountingPeriodId ?? "") ||
@@ -88,13 +90,20 @@ const AccountingPeriodTrendsFilter = function ({
     <PageFilterFrame
       title="Accounting Period Trends"
       actions={
-        <Button
-          variant="outlined"
-          onClick={clearView}
-          disabled={!hasActiveView}
-        >
-          Reset filters
-        </Button>
+        <Stack direction="row" spacing={1}>
+          {transactionsHref === null ? null : (
+            <Button component={Link} href={transactionsHref} variant="outlined">
+              View transactions
+            </Button>
+          )}
+          <Button
+            variant="outlined"
+            onClick={clearView}
+            disabled={!hasActiveView}
+          >
+            Reset filters
+          </Button>
+        </Stack>
       }
     >
       <AccountingPeriodRangeFilter

@@ -24,12 +24,6 @@ type AccountingPeriodWithBalance =
   components["schemas"]["AccountingPeriodWithBalanceModel"];
 
 /**
- * Type representing a range of Accounting Periods.
- */
-type AccountingPeriodsInRange =
-  components["schemas"]["AccountingPeriodsInRangeModel"];
-
-/**
  * Type representing a request to create an Accounting Period.
  */
 type CreateAccountingPeriodRequest =
@@ -72,7 +66,6 @@ export {
   type AccountingPeriodWithBalance,
   type AccountingPeriodWithExpectedIncomeSources,
   AccountingPeriodWithBalanceSortModel as AccountingPeriodWithBalanceSort,
-  type AccountingPeriodsInRange,
   type CreateAccountingPeriodRequest,
   type ExpectedIncomeSource,
   type ExpectedIncomeSourceIncome,

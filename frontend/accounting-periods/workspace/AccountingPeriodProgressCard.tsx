@@ -6,15 +6,28 @@ import PeriodProgressRow from "@/accounting-periods/PeriodProgressRow";
 import { getCurrencyDifference } from "@/framework/currencyHelpers";
 
 /**
+ * The income and Fund Goal contribution totals the progress card compares, for one accounting period or a range.
+ */
+type AccountingPeriodProgress = Pick<
+  AccountingPeriodWithBalance,
+  | "expectedIncome"
+  | "actualIncome"
+  | "unplannedIncome"
+  | "expectedGoalContributions"
+  | "actualGoalContributions"
+  | "actualUnplannedGoalContributions"
+>;
+
+/**
  * Props for the AccountingPeriodProgressCard component.
  */
 interface AccountingPeriodProgressCardProps {
-  readonly accountingPeriod: AccountingPeriodWithBalance;
+  readonly accountingPeriod: AccountingPeriodProgress;
   readonly totalSpending: number;
 }
 
 /**
- * Compares an accounting period's planned income, goal contributions, and spending against what it expected, with
+ * Compares an accounting period's, or a range's, planned income, goal contributions, and spending against what it expected, with
  * unplanned income and the goal contributions made from it shown as segments of their own.
  */
 const AccountingPeriodProgressCard = function ({
@@ -69,4 +82,5 @@ const AccountingPeriodProgressCard = function ({
   );
 };
 
+export type { AccountingPeriodProgress };
 export default AccountingPeriodProgressCard;

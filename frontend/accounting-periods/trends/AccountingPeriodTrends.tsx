@@ -1,33 +1,22 @@
-import {
-  AccountingPeriodSort,
-  type AccountingPeriodWithBalance,
-  type AccountingPeriodWithBalanceSort,
-} from "@/accounting-periods/types";
-import {
-  getPageOffset,
-  getRowsPerPage,
-  normalizePageValue,
-} from "@/framework/listframe/page";
-import AccountBalanceSummaryCards from "@/accounts/AccountBalanceSummaryCards";
-import AccountingPeriodProgressFlow from "@/accounting-periods/workspace/AccountingPeriodProgressFlow";
+import AccountingPeriodCard from "@/accounting-periods/workspace/AccountingPeriodCard";
+import AccountingPeriodProgressCard from "@/accounting-periods/workspace/AccountingPeriodProgressCard";
+import { AccountingPeriodSort } from "@/accounting-periods/types";
 import AccountingPeriodTrendChart from "@/accounting-periods/trends/AccountingPeriodTrendChart";
 import AccountingPeriodTrendsChangeChart from "@/accounting-periods/trends/AccountingPeriodTrendsChangeChart";
 import AccountingPeriodTrendsFilter from "@/accounting-periods/trends/AccountingPeriodTrendsFilter";
-import AccountingPeriodTrendsListFrame from "@/accounting-periods/trends/AccountingPeriodTrendsListFrame";
+import BalanceStatCards from "@/accounts/BalanceStatCards";
+import CardResponsiveGrid from "@/framework/view/CardResponsiveGrid";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import FundBalanceSummaryCards from "@/funds/FundBalanceSummaryCards";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import UrlTabs from "@/framework/view/UrlTabs";
+import SignedChange from "@/framework/view/SignedChange";
 import { compareAccountingPeriods } from "@/accounting-periods/helpers";
 import createApiClient from "@/framework/data/createApiClient";
-import { createEmptyTrends } from "@/accounting-periods/trends/helpers";
-import { getAccountTrendsSnapshot } from "@/accounts/trends/helpers";
+import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
-import { getFundTrendsSnapshot } from "@/funds/trends/helpers";
-import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import routes from "@/accounting-periods/routes";
+import { sumProgress } from "@/accounting-periods/trends/helpers";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
@@ -35,12 +24,8 @@ import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
  * Search parameters for the AccountingPeriodTrends component.
  */
 interface AccountingPeriodTrendsSearchParams {
-  sort?: AccountingPeriodWithBalanceSort;
-  page?: number | string | null;
-  pageSize?: number | string | null;
   startAccountingPeriodId?: string;
   endAccountingPeriodId?: string;
-  tab?: "cash-flow" | "balances" | "accounting-periods";
 }
 
 /**
@@ -51,268 +36,129 @@ interface AccountingPeriodTrendsProps {
 }
 
 /**
- * Component that displays the Accounting Period trends.
+ * Displays how balances, income, Fund Goal contributions, and spending went across a range of accounting periods,
+ * along with each period in the range.
  */
 const AccountingPeriodTrends = async function ({
   searchParams,
 }: AccountingPeriodTrendsProps): Promise<JSX.Element> {
-  const {
-    sort,
-    page,
-    pageSize,
-    startAccountingPeriodId,
-    endAccountingPeriodId,
-    tab,
-  } = await searchParams;
-
+  const { startAccountingPeriodId, endAccountingPeriodId } = await searchParams;
   const apiClient = await createApiClient();
-  const accountingPeriodsResponse = await apiClient.GET("/accounting-periods", {
-    params: {
-      query: {
-        Sort: AccountingPeriodSort.DateDescending,
-        Limit: 500,
-        Offset: 0,
-      },
-    },
-  });
   const accountingPeriods = unwrapApiResponse(
-    accountingPeriodsResponse,
+    await apiClient.GET("/accounting-periods", {
+      params: {
+        query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
+      },
+    }),
     "Failed to fetch accounting periods",
-  );
-  const currentPage = normalizePageValue(page);
-  const rowsPerPage = getRowsPerPage(pageSize);
+  ).items;
 
-  const latestAccountingPeriod = accountingPeriods.items[0] ?? null;
-  const defaultAccountingPeriodRange = getDefaultTrendAccountingPeriodRange(
-    accountingPeriods.items,
-  );
-  const defaultStartAccountingPeriodId =
-    defaultAccountingPeriodRange?.start ?? null;
-  const defaultEndAccountingPeriodId =
-    defaultAccountingPeriodRange?.end ?? null;
-  const selectedAccountingPeriodIds = ((): string[] => {
-    if (latestAccountingPeriod === null) {
-      return [];
-    }
-    const startId =
-      startAccountingPeriodId ?? defaultStartAccountingPeriodId ?? "";
-    const endId = endAccountingPeriodId ?? defaultEndAccountingPeriodId ?? "";
-    const startIndex = accountingPeriods.items.findIndex(
-      (period) => period.id === startId,
-    );
-    const endIndex = accountingPeriods.items.findIndex(
-      (period) => period.id === endId,
-    );
-    return startIndex < 0 || endIndex < 0
+  // Accounting periods are sorted newest first, so the range runs from the end's index to the start's
+  const defaultRange = getDefaultTrendAccountingPeriodRange(accountingPeriods);
+  const start = startAccountingPeriodId ?? defaultRange?.start ?? "";
+  const end = endAccountingPeriodId ?? defaultRange?.end ?? "";
+  const startIndex = accountingPeriods.findIndex(({ id }) => id === start);
+  const endIndex = accountingPeriods.findIndex(({ id }) => id === end);
+  const selectedIds =
+    startIndex < 0 || endIndex < 0
       ? []
-      : accountingPeriods.items
+      : accountingPeriods
           .slice(
             Math.min(startIndex, endIndex),
             Math.max(startIndex, endIndex) + 1,
           )
-          .map((period) => period.id);
-  })();
-  let trends = createEmptyTrends();
-  let fullRangeAccountingPeriods: AccountingPeriodWithBalance[] = [];
-  let accountBalanceSnapshot = getAccountTrendsSnapshot(
-    "AccountingPeriod",
-    [],
-    [],
-    null,
-    null,
+          .map(({ id }) => id);
+  const filter = (
+    <ConstrainedContent>
+      <AccountingPeriodTrendsFilter
+        accountingPeriods={accountingPeriods}
+        disabled={accountingPeriods.length === 0}
+        transactionsHref={
+          selectedIds.length === 0
+            ? null
+            : transactionRoutes.workspace({
+                accountingPeriodIds: selectedIds,
+                returnUrl: routes.trends({
+                  startAccountingPeriodId: start,
+                  endAccountingPeriodId: end,
+                }),
+              })
+        }
+      />
+    </ConstrainedContent>
   );
-  let fundBalanceSnapshot = getFundTrendsSnapshot(
-    "AccountingPeriod",
-    [],
-    [],
-    null,
-    null,
-  );
-  let rangeExpectations = {
-    expectedGoalContributions: 0,
-    actualGoalContributions: 0,
-    actualUnplannedGoalContributions: 0,
-  };
-  if (latestAccountingPeriod !== null) {
-    const range = {
-      "Range.Start":
-        startAccountingPeriodId ?? defaultStartAccountingPeriodId ?? "",
-      "Range.End": endAccountingPeriodId ?? defaultEndAccountingPeriodId ?? "",
-    };
-    const trendsResponse = await apiClient.GET("/accounting-periods/range", {
-      params: {
-        query: {
-          ...range,
-          ...(isNotNullOrUndefined(sort) ? { Sort: sort } : {}),
-          Limit: rowsPerPage,
-          Offset: getPageOffset(currentPage, rowsPerPage),
-        },
-      },
-    });
-    trends = unwrapApiResponse(
-      trendsResponse,
-      "Failed to fetch accounting period trends",
-    );
-    const [accountTrendsResponse, fundTrendsResponse, rangePeriodsResponse] =
-      await Promise.all([
-        apiClient.GET("/accounts/accounting-period-range", {
-          params: { query: { ...range, Limit: 1, Offset: 0 } },
-        }),
-        apiClient.GET("/funds/accounting-period-range", {
-          params: { query: { ...range, Limit: 1, Offset: 0 } },
-        }),
-        apiClient.GET("/accounting-periods/range", {
-          params: {
-            query: {
-              ...range,
-              Limit: trends.accountingPeriods.totalCount,
-              Offset: 0,
-            },
-          },
-        }),
-      ]);
-    accountBalanceSnapshot = getAccountTrendsSnapshot(
-      "AccountingPeriod",
-      unwrapApiResponse(
-        accountTrendsResponse,
-        "Failed to fetch account balance trends",
-      ).accountingPeriods,
-      [],
-      null,
-      null,
-    );
-    fundBalanceSnapshot = getFundTrendsSnapshot(
-      "AccountingPeriod",
-      unwrapApiResponse(
-        fundTrendsResponse,
-        "Failed to fetch fund balance trends",
-      ).accountingPeriods,
-      [],
-      null,
-      null,
-    );
-    fullRangeAccountingPeriods = unwrapApiResponse(
-      rangePeriodsResponse,
-      "Failed to fetch accounting period range",
-    ).accountingPeriods.items;
-    rangeExpectations = fullRangeAccountingPeriods.reduce(
-      (totals, accountingPeriod) => ({
-        expectedGoalContributions:
-          totals.expectedGoalContributions +
-          accountingPeriod.expectedGoalContributions,
-        actualGoalContributions:
-          totals.actualGoalContributions +
-          accountingPeriod.actualGoalContributions,
-        actualUnplannedGoalContributions:
-          totals.actualUnplannedGoalContributions +
-          accountingPeriod.actualUnplannedGoalContributions,
-      }),
-      rangeExpectations,
-    );
+  if (selectedIds.length === 0) {
+    return <PageLayout>{filter}</PageLayout>;
   }
-  const chronologicalAccountingPeriods = [...fullRangeAccountingPeriods].sort(
+
+  const query = { "Range.Start": start, "Range.End": end };
+  const [rangeResponse, accountsResponse, fundsResponse] = await Promise.all([
+    apiClient.GET("/accounting-periods/range", { params: { query } }),
+    apiClient.GET("/accounts/accounting-period-range", {
+      params: { query: { ...query, Limit: 1 } },
+    }),
+    apiClient.GET("/funds/accounting-period-range", {
+      params: { query: { ...query, Limit: 1 } },
+    }),
+  ]);
+  const range = unwrapApiResponse(
+    rangeResponse,
+    "Failed to fetch accounting period range",
+  );
+  const accountBalances = unwrapApiResponse(
+    accountsResponse,
+    "Failed to fetch account balance trends",
+  ).accountingPeriods;
+  const fundBalances = unwrapApiResponse(
+    fundsResponse,
+    "Failed to fetch fund balance trends",
+  ).accountingPeriods;
+  const periods = [...range.accountingPeriods.items].sort(
     compareAccountingPeriods,
   );
-  const transactionWorkspaceHref =
-    selectedAccountingPeriodIds.length === 0
-      ? null
-      : transactionRoutes.workspace({
-          accountingPeriodIds: selectedAccountingPeriodIds,
-          returnUrl: routes.trends({
-            ...(typeof tab === "undefined" ? {} : { tab }),
-            ...(typeof sort === "undefined" ? {} : { sort }),
-            ...(typeof page === "undefined" ? {} : { page }),
-            ...(typeof pageSize === "undefined" ? {} : { pageSize }),
-            ...(latestAccountingPeriod === null
-              ? {}
-              : {
-                  startAccountingPeriodId:
-                    startAccountingPeriodId ??
-                    defaultStartAccountingPeriodId ??
-                    "",
-                  endAccountingPeriodId:
-                    endAccountingPeriodId ?? defaultEndAccountingPeriodId ?? "",
-                }),
-          }),
-        });
+  const firstAccounts = accountBalances.at(0);
+  const lastAccounts = accountBalances.at(-1);
+  const firstFunds = fundBalances.at(0);
+  const lastFunds = fundBalances.at(-1);
 
   return (
     <PageLayout>
-      <ConstrainedContent>
-        <AccountingPeriodTrendsFilter
-          accountingPeriods={accountingPeriods.items}
-          disabled={latestAccountingPeriod === null}
+      {filter}
+      {firstAccounts === undefined ||
+      lastAccounts === undefined ||
+      firstFunds === undefined ||
+      lastFunds === undefined ? null : (
+        <BalanceStatCards
+          openingBalance={firstAccounts.openingBalance}
+          closingBalance={lastAccounts.closingBalance}
+          unassignedBalance={lastFunds.closingBalance.totalUnassignedBalance}
+          unassignedCaption={
+            <>
+              <SignedChange
+                amount={getCurrencyDifference(
+                  lastFunds.closingBalance.totalUnassignedBalance,
+                  firstFunds.openingBalance.totalUnassignedBalance,
+                )}
+              />{" "}
+              over this range
+            </>
+          }
+          changeDescription="over this range"
         />
-      </ConstrainedContent>
-      <UrlTabs
-        label="Accounting period trends views"
-        paramName="tab"
-        tabs={[
-          {
-            value: "balances",
-            label: "Balances",
-            content: (
-              <PageLayout>
-                <AccountBalanceSummaryCards
-                  startingLabel={accountBalanceSnapshot.startLabel}
-                  endingLabel={accountBalanceSnapshot.endLabel}
-                  startingBalance={accountBalanceSnapshot.startingBalance}
-                  endingBalance={accountBalanceSnapshot.endingBalance}
-                  titlePrefix="Account"
-                />
-                <FundBalanceSummaryCards
-                  startingLabel={fundBalanceSnapshot.startLabel}
-                  endingLabel={fundBalanceSnapshot.endLabel}
-                  startingBalance={fundBalanceSnapshot.startingBalance}
-                  endingBalance={fundBalanceSnapshot.endingBalance}
-                  titlePrefix="Fund"
-                />
-                <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
-                  <AccountingPeriodTrendChart
-                    accountingPeriods={chronologicalAccountingPeriods}
-                  />
-                  <AccountingPeriodTrendsChangeChart
-                    accountingPeriods={chronologicalAccountingPeriods}
-                  />
-                </ResponsiveGrid>
-              </PageLayout>
-            ),
-          },
-          {
-            value: "cash-flow",
-            label: "Cash Flow",
-            content: (
-              <AccountingPeriodProgressFlow
-                expectedIncome={trends.totalExpectedIncome}
-                actualIncome={trends.totalIncome}
-                totalSpending={trends.totalSpending}
-                expectedFundGoalContributions={
-                  rangeExpectations.expectedGoalContributions
-                }
-                actualFundGoalContributions={
-                  rangeExpectations.actualGoalContributions
-                }
-                actualExtraFundGoalContributions={
-                  rangeExpectations.actualUnplannedGoalContributions
-                }
-              />
-            ),
-          },
-          {
-            value: "accounting-periods",
-            label: "Accounting Periods",
-            content: (
-              <ResponsiveGrid minimumColumnWidth={800}>
-                <AccountingPeriodTrendsListFrame
-                  data={trends.accountingPeriods.items}
-                  totalCount={trends.accountingPeriods.totalCount}
-                  transactionWorkspaceHref={transactionWorkspaceHref}
-                />
-              </ResponsiveGrid>
-            ),
-          },
-        ]}
+      )}
+      <AccountingPeriodProgressCard
+        accountingPeriod={sumProgress(periods)}
+        totalSpending={range.totalSpending}
       />
+      <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
+        <AccountingPeriodTrendChart accountingPeriods={periods} />
+        <AccountingPeriodTrendsChangeChart accountingPeriods={periods} />
+      </ResponsiveGrid>
+      <CardResponsiveGrid minimumColumnWidth={280} spacing={2}>
+        {periods.toReversed().map((period) => (
+          <AccountingPeriodCard key={period.id} period={period} />
+        ))}
+      </CardResponsiveGrid>
     </PageLayout>
   );
 };
