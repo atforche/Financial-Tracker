@@ -101,7 +101,7 @@ public sealed class FundGoalContributionTests
 
     /// <summary>
     /// Assigned and planned monthly contribution totals remain distinct across income, spending, fund transfers,
-    /// and lifecycle actions.
+    /// and lifecycle actions. Transfers between two non-Unassigned funds move balances without counting as contributions.
     /// </summary>
     [Fact]
     public async Task ContributionTotalsReconcileAcrossIncomeSpendingTransferAndLifecycleActions()
@@ -116,29 +116,29 @@ public sealed class FundGoalContributionTests
         TransactionHandle spending = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 11)).For(30m).From(cash).To("Market", groceries).CreateAsync();
         _ = await test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 12)).For(20m).From(groceries).To(reserve).CreateAsync();
 
-        await AssertAssignedAsync(test, july, groceries, -20m);
+        await AssertAssignedAsync(test, july, groceries, 0m);
         FundGoalBalanceEventModel transferEvent = Assert.Single(await GetGoalEventsAsync(test, july),
             item => item.Fund.Id == groceries.Id && item.Type == BalanceEventTypeModel.Debit && item.Source.DisplayName == groceries.Name);
         Assert.Equal(-20m, transferEvent.NewTotals?.AmountAssigned);
-        Assert.Equal(-20m, transferEvent.NewTotals?.AmountAssignedToExpectedContribution);
+        Assert.Equal(0m, transferEvent.NewTotals?.AmountAssignedToExpectedContribution);
         Assert.Equal(0m, transferEvent.NewTotals?.AmountSpent);
 
         await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
-        await AssertAssignedAsync(test, july, groceries, 80m);
+        await AssertAssignedAsync(test, july, groceries, 100m);
 
         await test.Transactions.PostAsync(spending, cash, new DateOnly(2026, 7, 11));
-        await AssertAssignedAsync(test, july, groceries, 80m);
+        await AssertAssignedAsync(test, july, groceries, 100m);
         FundGoalBalanceEventModel spendingEvent = Assert.Single(await GetGoalEventsAsync(test, july),
             item => item.Fund.Id == groceries.Id && item.Type == BalanceEventTypeModel.Debit && item.Source.DisplayName == "Cash");
         Assert.Equal(30m, spendingEvent.NewTotals?.AmountSpent);
 
         await test.Transactions.UnpostAsync(spending);
         await test.Transactions.UnpostAsync(income);
-        await AssertAssignedAsync(test, july, groceries, -20m);
+        await AssertAssignedAsync(test, july, groceries, 0m);
 
         await test.Transactions.DeleteAsync(spending);
         await test.Transactions.DeleteAsync(income);
-        await AssertAssignedAsync(test, july, groceries, -20m);
+        await AssertAssignedAsync(test, july, groceries, 0m);
     }
 
     /// <summary>
@@ -185,6 +185,11 @@ public sealed class FundGoalContributionTests
         await AssertAssignedAsync(test, july, phone, 105m);
         Assert.Equal(105m, (await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}")).ActualGoalContributions);
 
+        TransactionHandle returned = await test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 12)).For(5m).From(phone).To(unassigned).CreateAsync();
+        await AssertContributionTotalAsync(test, july, unassigned, 5m);
+        await AssertAssignedAsync(test, july, phone, 100m);
+
+        await test.Transactions.DeleteAsync(returned);
         await test.Transactions.DeleteAsync(transfer);
         await AssertContributionTotalAsync(test, july, unassigned, 5m);
         await AssertAssignedAsync(test, july, phone, 100m);

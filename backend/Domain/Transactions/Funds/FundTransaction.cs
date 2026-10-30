@@ -112,16 +112,26 @@ public class FundTransaction : Transaction
         if (existingTotals.FundId == Source.Fund.Id)
         {
             decimal amount = reverse ? Amount : -Amount;
-            newTotals = newTotals.Assign(amount);
+            newTotals = newTotals.Assign(amount, CountsTowardContribution(Source.Fund) ? amount : 0);
         }
         FundTransactionDestination? destination = _destinations.FirstOrDefault(destination => destination.Fund.Id == existingTotals.FundId);
         if (destination != null)
         {
             decimal amount = reverse ? -destination.Amount : destination.Amount;
-            newTotals = newTotals.Assign(amount);
+            newTotals = newTotals.Assign(amount, CountsTowardContribution(destination.Fund) ? amount : 0);
         }
         return newTotals;
     }
+
+    /// <summary>
+    /// Determines whether this transfer's effect on the provided fund counts toward its planned contribution.
+    /// Only transfers into or out of the Unassigned fund allocate income; transfers between other funds only
+    /// move balances.
+    /// </summary>
+    private bool CountsTowardContribution(Fund fund) =>
+        fund.IsUnassignedFund
+        || Source.Fund.IsUnassignedFund
+        || _destinations.Any(destination => destination.Fund.IsUnassignedFund);
 
     /// <inheritdoc/>
     protected override FundGoalTotals PostToFundGoalTotals(FundGoalTotals existingTotals, AccountId accountId, bool reverse) => existingTotals;

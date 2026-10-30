@@ -97,7 +97,7 @@ public sealed class FundTransactionTests
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle oldSource = await test.Funds.Create("Old source").In(july).CreateAsync();
         FundHandle oldDestination = await test.Funds.Create("Old destination").In(july).CreateAsync();
-        FundHandle newSource = await test.Funds.Create("New source").In(july).WithGoal(1m).CreateAsync();
+        FundHandle newSource = await test.FundQueries.GetUnassignedAsync(july);
         FundHandle newDestination = await test.Funds.Create("New destination").In(july).WithGoal(1m).CreateAsync();
         TransactionHandle transfer = await test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 12)).For(10m).From(oldSource).To(oldDestination).CreateAsync();
 
@@ -107,7 +107,6 @@ public sealed class FundTransactionTests
         await test.AssertBalanceAsync(oldDestination, 0m, 0m);
         await test.AssertBalanceAsync(newSource, -10m, -10m);
         await test.AssertBalanceAsync(newDestination, 10m, 10m);
-        Assert.Equal(-10m, (await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{newSource.Goal.Id}/progress/{july.Id}")).Contribution?.AssignedAmount);
         Assert.Equal(10m, (await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{newDestination.Goal.Id}/progress/{july.Id}")).Contribution?.AssignedAmount);
     }
 }

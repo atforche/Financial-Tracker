@@ -272,7 +272,7 @@ const IncomeFundAssignmentPlanner = function ({
         <Typography variant="body2" color="text.secondary">
           Unplanned income doesn&apos;t count toward fund goals, so it
           isn&apos;t assigned automatically. Assign it to its fund here: money
-          moved later by a transfer counts toward that fund&apos;s goal.
+          moved later from Unassigned counts toward that fund&apos;s goal.
         </Typography>
       )}
       <FundAssignmentPlanner

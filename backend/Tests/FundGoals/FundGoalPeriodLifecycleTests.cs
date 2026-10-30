@@ -66,7 +66,7 @@ public sealed class FundGoalPeriodLifecycleTests
         await test.AssertBalanceAsync(groceries, 40m, 20m);
         Assert.NotNull(progress.Contribution);
         Assert.Equal(50m, progress.Contribution.ExpectedAmount);
-        Assert.Equal(40m, progress.Contribution.AssignedAmount);
+        Assert.Equal(60m, progress.Contribution.AssignedAmount);
         Assert.Equal(50m, period.PlannedGoalContributions);
         Assert.Equal(60m, period.ActualGoalContributions);
         Assert.NotNull(progress.EndingBalance);
