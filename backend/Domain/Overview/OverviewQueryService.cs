@@ -103,9 +103,11 @@ public sealed class OverviewQueryService(
         return new OverviewPeriod(
             balance.AccountingPeriod,
             balance.AccountingPeriod.ExpectedIncomeSources.Sum(source => source.ExpectedTrackedAmount),
-            balance.ActualTrackedIncome,
+            balance.ActualPlannedTrackedIncome,
+            balance.ActualUnplannedTrackedIncome,
             balance.ExpectedGoalContributions,
             balance.ActualGoalContributions,
+            balance.ActualUnplannedGoalContributions,
             FinancialRangeTotals.Calculate([], spendingFacts).TotalSpending,
             balance.ClosingBalance - balance.OpeningBalance);
     }
@@ -182,7 +184,7 @@ public sealed class OverviewQueryService(
             .OrderBy(payment => payment.Date)
             .ToList();
         decimal expected = passedPayments.Sum(payment => payment.Amount);
-        decimal shortfall = expected - period.ActualTrackedIncome;
+        decimal shortfall = expected - period.ActualPlannedTrackedIncome;
         if (shortfall <= 0)
         {
             return null;
@@ -192,7 +194,7 @@ public sealed class OverviewQueryService(
         foreach ((DateOnly date, decimal amount) in passedPayments)
         {
             runningExpected += amount;
-            if (runningExpected > period.ActualTrackedIncome)
+            if (runningExpected > period.ActualPlannedTrackedIncome)
             {
                 behindSince = date;
                 break;
@@ -205,7 +207,7 @@ public sealed class OverviewQueryService(
             0,
             [],
             behindSince,
-            new OverviewIncomeShortfall(expected, period.ActualTrackedIncome));
+            new OverviewIncomeShortfall(expected, period.ActualPlannedTrackedIncome));
     }
 
     /// <summary>

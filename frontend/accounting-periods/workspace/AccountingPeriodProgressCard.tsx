@@ -3,7 +3,7 @@ import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
 import PeriodProgressRow from "@/accounting-periods/PeriodProgressRow";
-import { formatCurrency } from "@/framework/currencyHelpers";
+import { getCurrencyDifference } from "@/framework/currencyHelpers";
 
 /**
  * Props for the AccountingPeriodProgressCard component.
@@ -14,49 +14,55 @@ interface AccountingPeriodProgressCardProps {
 }
 
 /**
- * Compares an accounting period's income, goal contributions, and spending against what it expected.
+ * Compares an accounting period's planned income, goal contributions, and spending against what it expected, with
+ * unplanned income and the goal contributions made from it shown as segments of their own.
  */
 const AccountingPeriodProgressCard = function ({
   accountingPeriod,
   totalSpending,
 }: AccountingPeriodProgressCardProps): JSX.Element {
-  const { expectedIncome, actualIncome } = accountingPeriod;
+  const { expectedIncome, actualIncome, unplannedIncome } = accountingPeriod;
   return (
     <ContentSurface>
       <Stack spacing={2}>
         <Typography variant="h5">Progress</Typography>
         <PeriodProgressRow
           label="Tracked income"
-          actual={actualIncome.tracked}
+          overLabel="Extra planned income"
+          actual={getCurrencyDifference(
+            actualIncome.tracked,
+            unplannedIncome.tracked,
+          )}
           expected={expectedIncome.tracked}
+          unplanned={unplannedIncome.tracked}
         />
         <PeriodProgressRow
           label="Untracked income"
-          actual={actualIncome.untracked}
+          overLabel="Extra planned income"
+          actual={getCurrencyDifference(
+            actualIncome.untracked,
+            unplannedIncome.untracked,
+          )}
           expected={expectedIncome.untracked}
+          unplanned={unplannedIncome.untracked}
         />
-        <Stack spacing={1}>
-          <PeriodProgressRow
-            label="Goal contributions"
-            actual={accountingPeriod.actualGoalContributions}
-            expected={accountingPeriod.expectedGoalContributions}
-          />
-          <Stack
-            direction="row"
-            spacing={2}
-            sx={{ alignItems: "baseline", justifyContent: "space-between" }}
-          >
-            <Typography variant="subtitle2">Extra contributions</Typography>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              {formatCurrency(accountingPeriod.actualExtraGoalContributions)}
-            </Typography>
-          </Stack>
-        </Stack>
+        <PeriodProgressRow
+          label="Fund contributions"
+          overLabel="Extra planned contributions"
+          actual={accountingPeriod.actualGoalContributions}
+          expected={accountingPeriod.expectedGoalContributions}
+          unplanned={accountingPeriod.actualUnplannedGoalContributions}
+          actualLabel="Contributed"
+        />
         <PeriodProgressRow
           label="Spending"
           actual={totalSpending}
           expected={actualIncome.tracked}
-          isExtraGood={false}
+          actualLabel="Spending"
+          expectedLabel="Tracked income"
+          overLabel="Overspent"
+          underLabel="Left over"
+          isOverGood={false}
         />
       </Stack>
     </ContentSurface>

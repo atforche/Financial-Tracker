@@ -18,9 +18,14 @@ public class OverviewPeriodModel
     public required decimal ExpectedTrackedIncome { get; init; }
 
     /// <summary>
-    /// Tracked income received during the Accounting Period.
+    /// Tracked income received during the Accounting Period that was planned as one of its Expected Income Sources.
     /// </summary>
-    public required decimal ActualTrackedIncome { get; init; }
+    public required decimal ActualPlannedTrackedIncome { get; init; }
+
+    /// <summary>
+    /// Tracked income received during the Accounting Period that was not planned as any Expected Income Source.
+    /// </summary>
+    public required decimal ActualUnplannedTrackedIncome { get; init; }
 
     /// <summary>
     /// Total contributions expected toward Fund Goals during the Accounting Period.
@@ -31,6 +36,12 @@ public class OverviewPeriodModel
     /// Total contributions made toward Fund Goals during the Accounting Period.
     /// </summary>
     public required decimal ActualGoalContributions { get; init; }
+
+    /// <summary>
+    /// Unplanned income assigned to Fund Goals during the Accounting Period, which does not count toward their
+    /// contributions.
+    /// </summary>
+    public required decimal ActualUnplannedGoalContributions { get; init; }
 
     /// <summary>
     /// Total posted spending during the Accounting Period.

@@ -9,7 +9,7 @@ public sealed record FinancialRangeIncomeFact(
     decimal Amount,
     AccountType AccountType,
     DateOnly? PostedDate,
-    decimal ExtraFundGoalContributions = 0);
+    bool IsPlanned = true);
 
 /// <summary>
 /// Persisted spending facts for a financial range.

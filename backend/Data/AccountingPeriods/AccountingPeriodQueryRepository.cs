@@ -71,6 +71,8 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
             0,
             0,
             0,
+            0,
+            0,
             0)).ToList();
         return new QueryPage<AccountingPeriodBalance>(items, totalCount);
     }
@@ -90,7 +92,7 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
                 OpeningBalance = history.OpeningBalance,
                 ClosingBalance = history.ClosingBalance,
             }).SingleOrDefaultAsync(cancellationToken);
-        return row == null ? null : new AccountingPeriodBalance(row.AccountingPeriod, row.OpeningBalance, row.ClosingBalance, 0, 0, 0, 0, 0, 0);
+        return row == null ? null : new AccountingPeriodBalance(row.AccountingPeriod, row.OpeningBalance, row.ClosingBalance, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     /// <inheritdoc/>
@@ -164,6 +166,8 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
             0,
             0,
             0,
+            0,
+            0,
             0)).ToList();
     }
 
@@ -182,9 +186,7 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
                     destination.Amount,
                     destination.Account.Type,
                     destination.PostedDate,
-                    destination.FundAssignments
-                        .Where(assignment => assignment.IsExtraContribution)
-                        .Sum(assignment => assignment.Amount)),
+                    transaction.ExpectedIncomeSourceId != null),
             })
             .ToListAsync(cancellationToken);
         return facts.ToLookup(item => item.AccountingPeriodId.Value, item => item.Fact);

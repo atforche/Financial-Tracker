@@ -1,22 +1,18 @@
-import {
-  formatCurrency,
-  getCurrencyDifference,
-} from "@/framework/currencyHelpers";
 import type { AccountGoalSort } from "@/account-goals/types";
 import AccountingPeriodHeader from "@/accounting-periods/workspace/AccountingPeriodHeader";
 import AccountingPeriodPlanCard from "@/accounting-periods/workspace/AccountingPeriodPlanCard";
 import AccountingPeriodPlanTabs from "@/accounting-periods/workspace/AccountingPeriodPlanTabs";
 import AccountingPeriodProgressCard from "@/accounting-periods/workspace/AccountingPeriodProgressCard";
+import BalanceStatCards from "@/accounts/BalanceStatCards";
 import { Box } from "@mui/material";
 import type { ExpectedIncomeSourceSort } from "@/accounting-periods/types";
 import type { FundGoalSort } from "@/fund-goals/types";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import SignedChange from "@/framework/view/SignedChange";
-import StatCard from "@/framework/view/StatCard";
 import createApiClient from "@/framework/data/createApiClient";
-import { getAccountTypeStatDetails } from "@/accounts/balanceSummaryHelpers";
+import fillHeightSx from "@/framework/view/fillHeightSx";
+import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -51,15 +47,6 @@ interface AccountingPeriodWorkspaceDetailPageProps {
 }
 
 /**
- * Stretches a section's surface to the height of its row so side-by-side sections line up.
- */
-const fillHeightSx = {
-  display: "flex",
-  flexDirection: "column",
-  "& > .MuiPaper-root": { flex: 1 },
-} as const;
-
-/**
  * Displays an accounting period's balances, progress against its plan, and the goals and income sources it plans.
  */
 const AccountingPeriodWorkspaceDetailPage = async function ({
@@ -82,19 +69,6 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
   );
   const period = detail.accountingPeriod;
   const currentUrl = routes.workspaceDetail(period.id, resolvedSearchParams);
-  const opening = detail.accountOpeningBalance;
-  const closing = detail.accountClosingBalance;
-  const describeChange = function (
-    current: number,
-    previous: number,
-  ): JSX.Element {
-    return (
-      <>
-        <SignedChange amount={getCurrencyDifference(current, previous)} /> this
-        period
-      </>
-    );
-  };
 
   return (
     <PageLayout>
@@ -103,43 +77,23 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
         searchParams={resolvedSearchParams}
         currentUrl={currentUrl}
       />
-      <ResponsiveGrid columns={{ xs: 1, sm: 2, lg: 4 }}>
-        <StatCard
-          label="Net worth"
-          value={formatCurrency(closing.totalBalance)}
-          caption={describeChange(closing.totalBalance, opening.totalBalance)}
-        />
-        <StatCard
-          label="Tracked money"
-          value={formatCurrency(closing.totalTrackedBalance)}
-          caption={describeChange(
-            closing.totalTrackedBalance,
-            opening.totalTrackedBalance,
-          )}
-          details={getAccountTypeStatDetails(opening, closing, true)}
-          detailsLabel="by account type"
-        />
-        <StatCard
-          label="Untracked money"
-          value={formatCurrency(closing.totalUntrackedBalance)}
-          caption={describeChange(
-            closing.totalUntrackedBalance,
-            opening.totalUntrackedBalance,
-          )}
-          details={getAccountTypeStatDetails(opening, closing, false)}
-          detailsLabel="by account type"
-        />
-        <StatCard
-          label="Unassigned funds"
-          value={formatCurrency(
-            detail.fundClosingBalance.totalUnassignedBalance,
-          )}
-          caption={describeChange(
-            detail.fundClosingBalance.totalUnassignedBalance,
-            detail.fundOpeningBalance.totalUnassignedBalance,
-          )}
-        />
-      </ResponsiveGrid>
+      <BalanceStatCards
+        openingBalance={detail.accountOpeningBalance}
+        closingBalance={detail.accountClosingBalance}
+        unassignedBalance={detail.fundClosingBalance.totalUnassignedBalance}
+        unassignedCaption={
+          <>
+            <SignedChange
+              amount={getCurrencyDifference(
+                detail.fundClosingBalance.totalUnassignedBalance,
+                detail.fundOpeningBalance.totalUnassignedBalance,
+              )}
+            />{" "}
+            this period
+          </>
+        }
+        changeDescription="this period"
+      />
       <Box
         sx={{
           display: "grid",

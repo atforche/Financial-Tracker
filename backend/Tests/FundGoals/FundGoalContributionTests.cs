@@ -11,15 +11,15 @@ using Models.Transactions.Types;
 namespace Tests.FundGoals;
 
 /// <summary>
-/// Covers how transactions credit fund goals with planned and extra contributions.
+/// Covers how transactions credit fund goals with planned and unplanned contributions.
 /// </summary>
 public sealed class FundGoalContributionTests
 {
     /// <summary>
-    /// Extra income funding increases ending-balance progress without satisfying the planned monthly contribution.
+    /// Unplanned income funding increases ending-balance progress without satisfying the planned monthly contribution.
     /// </summary>
     [Fact]
-    public async Task ExtraIncomeFundingCountsTowardEndingBalanceButNotPlannedMonthlyContribution()
+    public async Task UnplannedIncomeFundingCountsTowardEndingBalanceButNotPlannedMonthlyContribution()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
@@ -27,6 +27,7 @@ public sealed class FundGoalContributionTests
         FundHandle gifts = await test.Funds.Create("Gifts").In(july).WithGoal(200m, 50m, 300m).CreateAsync();
         CreateTransactionResultModel created = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", new CreateIncomeTransactionModel
         {
+            ExpectedIncomeSourceId = null,
             AccountingPeriodId = july.Id,
             Date = new DateOnly(2026, 7, 10),
             Description = "Birthday gift",
@@ -41,7 +42,7 @@ public sealed class FundGoalContributionTests
             {
                 AccountId = cash.Id,
                 Amount = 50m,
-                FundAssignments = [new CreateIncomeFundAmountModel { FundId = gifts.Id, Amount = 50m, IsExtraContribution = true }],
+                FundAssignments = [new CreateFundAmountModel { FundId = gifts.Id, Amount = 50m }],
             }],
         });
 
@@ -51,16 +52,51 @@ public sealed class FundGoalContributionTests
         IncomeTransactionModel transaction = await test.Api.GetAsync<IncomeTransactionModel>($"/transactions/{created.Id}");
         AccountingPeriodWithBalanceModel postedPeriod = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}");
 
-        Assert.Equal(0m, pendingPeriod.ActualExtraGoalContributions);
-        Assert.Equal(50m, postedPeriod.ActualExtraGoalContributions);
+        Assert.Equal(0m, pendingPeriod.ActualUnplannedGoalContributions);
+        Assert.Equal(50m, postedPeriod.ActualUnplannedGoalContributions);
         Assert.Equal(0m, postedPeriod.ActualGoalContributions);
-        Assert.True(Assert.Single(Assert.Single(transaction.Destinations).FundAssignments).IsExtraContribution);
+        Assert.Null(transaction.ExpectedIncomeSourceId);
         Assert.NotNull(progress.Contribution);
         Assert.Equal(0m, progress.Contribution.AssignedAmount);
         Assert.Equal(200m, progress.Contribution.RemainingAmount);
         Assert.NotNull(progress.EndingBalance);
         Assert.Equal(50m, progress.EndingBalance.EndingBalance);
         Assert.Equal(FundGoalEndingBalanceStatusModel.WithinRange, progress.EndingBalance.Status);
+    }
+
+    /// <summary>
+    /// Planning or unplanning income moves its assignments into or out of the planned monthly contribution, and deleting
+    /// the Expected Income Source it was planned as leaves the contribution as it was posted.
+    /// </summary>
+    [Fact]
+    public async Task PlanningIncomeMovesItsAssignmentsIntoThePlannedContribution()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).WithGoal(100m).CreateAsync();
+        Guid employer = await test.Api.AddExpectedIncomeSourceAsync(july, "Employer", 100m);
+        IncomeTransactionBuilder paycheck = test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(100m).From("Employer").To(cash, groceries);
+        TransactionHandle income = await paycheck.CreateAsync();
+        await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
+
+        AccountingPeriodWithBalanceModel unplanned = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}");
+        await test.Transactions.UnpostAsync(income);
+        await paycheck.PlannedAs(employer).UpdateAsync(income);
+        await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
+        AccountingPeriodWithBalanceModel planned = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}");
+        await test.Api.DeleteAsync($"/accounting-periods/{july.Id}/expected-income-sources/{employer}");
+        AccountingPeriodWithBalanceModel sourceDeleted = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}");
+        IncomeTransactionModel transaction = await test.Api.GetAsync<IncomeTransactionModel>($"/transactions/{income.Id}");
+
+        Assert.Equal(0m, unplanned.ActualGoalContributions);
+        Assert.Equal(100m, unplanned.ActualUnplannedGoalContributions);
+        Assert.Equal(100m, unplanned.UnplannedIncome.Tracked);
+        Assert.Equal(100m, planned.ActualGoalContributions);
+        Assert.Equal(0m, planned.ActualUnplannedGoalContributions);
+        Assert.Equal(0m, planned.UnplannedIncome.Total);
+        Assert.Equal(100m, sourceDeleted.ActualGoalContributions);
+        Assert.Equal(employer, transaction.ExpectedIncomeSourceId);
     }
 
     /// <summary>
@@ -75,7 +111,8 @@ public sealed class FundGoalContributionTests
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).WithGoal(100m).CreateAsync();
         FundHandle reserve = await test.Funds.Create("Reserve").In(july).CreateAsync();
-        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(100m).From("Employer").To(cash, groceries).CreateAsync();
+        Guid employer = await test.Api.AddExpectedIncomeSourceAsync(july, "Employer", 100m);
+        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(100m).From("Employer").PlannedAs(employer).To(cash, groceries).CreateAsync();
         TransactionHandle spending = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 11)).For(30m).From(cash).To("Market", groceries).CreateAsync();
         _ = await test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 12)).For(20m).From(groceries).To(reserve).CreateAsync();
 
@@ -116,8 +153,10 @@ public sealed class FundGoalContributionTests
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle phone = await test.Funds.Create("Phone").In(july).WithGoal(105m).CreateAsync();
         FundHandle unassigned = await test.FundQueries.GetUnassignedAsync(july);
+        Guid employer = await test.Api.AddExpectedIncomeSourceAsync(july, "Employer", 105m);
         CreateTransactionResultModel income = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", new CreateIncomeTransactionModel
         {
+            ExpectedIncomeSourceId = employer,
             AccountingPeriodId = july.Id,
             Date = new DateOnly(2026, 7, 10),
             Description = "Pay",
@@ -132,7 +171,7 @@ public sealed class FundGoalContributionTests
             {
                 AccountId = cash.Id,
                 Amount = 105m,
-                FundAssignments = [new CreateIncomeFundAmountModel { FundId = phone.Id, Amount = 100m }],
+                FundAssignments = [new CreateFundAmountModel { FundId = phone.Id, Amount = 100m }],
             }],
         });
         await test.Transactions.PostAsync(new TransactionHandle(income.Id), cash, new DateOnly(2026, 7, 10));

@@ -53,7 +53,8 @@ public sealed class FundGoalPeriodLifecycleTests
         AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).WithGoal(50m, 25m, 100m).CreateAsync();
-        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(60m).From("Employer").To(cash, groceries).CreateAsync();
+        Guid employer = await test.Api.AddExpectedIncomeSourceAsync(july, "Employer", 60m);
+        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(60m).From("Employer").PlannedAs(employer).To(cash, groceries).CreateAsync();
         _ = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(20m).From(cash).To("Market", groceries).CreateAsync();
         await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
         FundHandle dining = await test.Funds.Create("Dining").In(july).CreateAsync();

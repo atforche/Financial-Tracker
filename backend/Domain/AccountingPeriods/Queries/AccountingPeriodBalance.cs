@@ -9,7 +9,16 @@ public sealed record AccountingPeriodBalance(
     decimal ClosingBalance,
     decimal ActualIncome,
     decimal ActualTrackedIncome,
+    decimal ActualUnplannedIncome,
+    decimal ActualUnplannedTrackedIncome,
     decimal PlannedGoalContributions,
     decimal ExpectedGoalContributions,
     decimal ActualGoalContributions,
-    decimal ActualExtraGoalContributions);
+    decimal ActualUnplannedGoalContributions)
+{
+    /// <summary>
+    /// Gets tracked income received during the Accounting Period that was planned as one of its Expected Income
+    /// Sources.
+    /// </summary>
+    public decimal ActualPlannedTrackedIncome => ActualTrackedIncome - ActualUnplannedTrackedIncome;
+}

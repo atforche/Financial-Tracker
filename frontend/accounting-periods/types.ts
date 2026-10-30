@@ -41,6 +41,13 @@ type CreateAccountingPeriodRequest =
 type ExpectedIncomeSource = components["schemas"]["ExpectedIncomeSourceModel"];
 
 /**
+ * Expected Income Sources keyed by the ID of the accounting period they belong to.
+ */
+type ExpectedIncomeSourcesByPeriod = Readonly<
+  Record<string, readonly ExpectedIncomeSource[]>
+>;
+
+/**
  * Supported Expected Income Source sort orders on the planning page.
  */
 enum ExpectedIncomeSourceSort {
@@ -67,6 +74,7 @@ export {
   type AccountingPeriodsInRange,
   type CreateAccountingPeriodRequest,
   type ExpectedIncomeSource,
+  type ExpectedIncomeSourcesByPeriod,
   ExpectedIncomeSourceSort,
   type ExpectedIncomeSourceRequest,
 };

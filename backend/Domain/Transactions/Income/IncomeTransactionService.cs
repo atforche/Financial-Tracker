@@ -19,7 +19,6 @@ public class IncomeTransactionService(
     FundGoalTotalsHistoryService fundGoalTotalsHistoryService,
     IAccountingPeriodRepository accountingPeriodRepository,
     IFundRepository fundRepository,
-    IFundGoalRepository fundGoalRepository,
     ITransactionRepository transactionRepository) :
     TransactionService(
         accountBalanceService,
@@ -70,6 +69,7 @@ public class IncomeTransactionService(
             {
                 transaction.UpdateIncomeSource(request.Source);
                 transaction.UpdateIncomeDestinations(request.Destinations);
+                transaction.UpdateExpectedIncomeSource(request.ExpectedIncomeSourceId);
             });
         return true;
     }
@@ -128,8 +128,15 @@ public class IncomeTransactionService(
         {
             exceptions = exceptions.Concat(structureExceptions);
         }
-        if (!ValidateDestinationFundAssignments(
+        if (!ValidateExpectedIncomeSource(
                 request.AccountingPeriodId,
+                request.ExpectedIncomeSourceId,
+                null,
+                out IEnumerable<ValidationError> sourceExceptions))
+        {
+            exceptions = exceptions.Concat(sourceExceptions);
+        }
+        if (!ValidateDestinationFundAssignments(
                 request.Destinations,
                 (i) => new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.Destinations), i),
                 out IEnumerable<ValidationError> fundAssignmentExceptions))
@@ -199,8 +206,15 @@ public class IncomeTransactionService(
         {
             exceptions = exceptions.Concat(structureExceptions);
         }
-        if (!ValidateDestinationFundAssignments(
+        if (!ValidateExpectedIncomeSource(
                 transaction.AccountingPeriodId,
+                request.ExpectedIncomeSourceId,
+                transaction.ExpectedIncomeSourceId,
+                out IEnumerable<ValidationError> sourceExceptions))
+        {
+            exceptions = exceptions.Concat(sourceExceptions);
+        }
+        if (!ValidateDestinationFundAssignments(
                 request.Destinations,
                 (i) => new ValidationErrorPath(nameof(UpdateIncomeTransactionRequest.Destinations), i),
                 out IEnumerable<ValidationError> fundAssignmentExceptions))
@@ -324,7 +338,6 @@ public class IncomeTransactionService(
     /// Validates the accounts for this Income Transaction
     /// </summary>
     private bool ValidateDestinationFundAssignments(
-        AccountingPeriodId accountingPeriodId,
         IReadOnlyCollection<IncomeTransactionDestination> destinations,
         Func<int, ValidationErrorPath> destinationsPathBuilder,
         out IEnumerable<ValidationError> exceptions)
@@ -346,18 +359,28 @@ public class IncomeTransactionService(
             {
                 exceptions = exceptions.Concat(fundAssignmentExceptions);
             }
-            foreach ((int fundAssignmentIndex, IncomeFundAmount fundAssignment) in destination.FundAssignments.Index())
-            {
-                if (fundAssignment.IsExtraContribution
-                    && fundGoalRepository.GetByFundAndAccountingPeriod(fundAssignment.FundId, accountingPeriodId)?.PlannedMonthlyContribution == null)
-                {
-                    exceptions = exceptions.Append(new ValidationError(
-                        destinationsPathBuilder(index)
-                            .AppendWithIndex(nameof(IncomeTransactionDestination.FundAssignments), fundAssignmentIndex)
-                            .Append(nameof(IncomeFundAmount.IsExtraContribution)),
-                        "Extra contributions require a Fund Goal with a planned monthly contribution"));
-                }
-            }
+        }
+        return !exceptions.Any();
+    }
+
+    /// <summary>
+    /// Validates that a planned income's Expected Income Source belongs to its Accounting Period. A transaction may keep
+    /// a link to a source that has since been deleted, so its contributions stay as they were posted.
+    /// </summary>
+    private bool ValidateExpectedIncomeSource(
+        AccountingPeriodId accountingPeriodId,
+        Guid? expectedIncomeSourceId,
+        ExpectedIncomeSourceId? currentExpectedIncomeSourceId,
+        out IEnumerable<ValidationError> exceptions)
+    {
+        exceptions = [];
+        if (expectedIncomeSourceId is Guid id
+            && id != currentExpectedIncomeSourceId?.Value
+            && AccountingPeriodRepository.GetById(accountingPeriodId).ExpectedIncomeSources.All(source => source.Id.Value != id))
+        {
+            exceptions = exceptions.Append(new ValidationError(
+                new ValidationErrorPath(nameof(CreateIncomeTransactionRequest.ExpectedIncomeSourceId)),
+                "The Expected Income Source must belong to the transaction's Accounting Period"));
         }
         return !exceptions.Any();
     }

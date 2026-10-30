@@ -73,23 +73,6 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     }
 
     /// <summary>
-    /// Retrieves an Accounting Period with its Transactions.
-    /// </summary>
-    [HttpGet("{accountingPeriodId:guid}/transactions")]
-    [ProducesResponseType(typeof(AccountingPeriodWithTransactionsModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<AccountingPeriodWithTransactionsModel>> GetWithTransactionsAsync(
-        Guid accountingPeriodId,
-        [FromQuery] AccountingPeriodWithTransactionsQueryParameterModel query,
-        CancellationToken cancellationToken)
-    {
-        AccountingPeriodTransactions? result = await accountingPeriodQueryService.GetWithTransactionsAsync(
-            accountingPeriodQueryConverter.ToDomain(accountingPeriodId, query),
-            cancellationToken);
-        return result == null ? NotFound() : Ok(accountingPeriodQueryConverter.ToModel(result));
-    }
-
-    /// <summary>
     /// Retrieves Accounting Periods and totals for a contiguous range.
     /// </summary>
     [HttpGet("range")]

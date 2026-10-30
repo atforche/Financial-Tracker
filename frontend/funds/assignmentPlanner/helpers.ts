@@ -18,7 +18,6 @@ interface FundAssignmentDraft {
   readonly fundId: string;
   readonly fundName: string;
   readonly amount: number;
-  readonly isExtraContribution: boolean;
 }
 
 /**
@@ -29,7 +28,6 @@ const createFundAssignmentDraft = function (amount = 0): FundAssignmentDraft {
     fundId: "",
     fundName: "",
     amount,
-    isExtraContribution: false,
   };
 };
 
@@ -112,7 +110,6 @@ const updateUnassignedFundAmount = function (
       fundId: unassignedFund.id,
       fundName: unassignedFund.name,
       amount: unassignedAmount,
-      isExtraContribution: false,
     },
     ...explicitFundAssignments,
   ];
@@ -203,9 +200,7 @@ const getContributionRemainingAmount = function (
   const fundGoal = fundGoals.find((goal) => goal.fund.id === fundId);
   return getRemainingAmount(
     fundGoal?.progress.contribution?.remainingAmount,
-    baselineFundAssignments.filter(
-      (assignment) => !assignment.isExtraContribution,
-    ),
+    baselineFundAssignments,
     fundId,
   );
 };
@@ -418,7 +413,6 @@ const autoAssignIncomeFundAssignments = function (
       fundId: fund.id,
       fundName: fund.name,
       amount,
-      isExtraContribution: false,
     });
     remainingAmount = getCurrencyTotal([remainingAmount, -amount]);
   }

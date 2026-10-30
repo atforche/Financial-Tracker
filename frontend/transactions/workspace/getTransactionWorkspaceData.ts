@@ -1,3 +1,9 @@
+import type {
+  AccountingPeriod,
+  AccountingPeriodWithBalance,
+  ExpectedIncomeSource,
+  ExpectedIncomeSourcesByPeriod,
+} from "@/accounting-periods/types";
 import {
   getPageOffset,
   getRowsPerPage,
@@ -8,7 +14,6 @@ import {
   toRepeatedSearchParams,
 } from "@/framework/routes/helpers";
 import type { AccountWithBalance } from "@/accounts/types";
-import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import type { Location } from "@/locations/types";
@@ -29,6 +34,7 @@ interface TransactionWorkspaceReferenceData {
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
+  readonly expectedIncomeSources: ExpectedIncomeSourcesByPeriod;
   readonly locations: Location[];
 }
 
@@ -52,7 +58,7 @@ interface TransactionWorkspaceListData extends TransactionWorkspaceReferenceData
  * Represents the reference data required for a Transaction detail page.
  */
 interface TransactionWorkspaceDetailReferenceData {
-  readonly accountingPeriod: AccountingPeriod;
+  readonly accountingPeriod: AccountingPeriodWithBalance;
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
 }
@@ -107,6 +113,30 @@ const getTransactionWorkspaceReferenceData =
       (period) => period.isOpen,
     );
     let fundGoals: FundGoalWithProgress[] = [];
+    // Income can only be entered in open periods, so only their Expected Income Sources can be chosen
+    const expectedIncomeSources: ExpectedIncomeSourcesByPeriod =
+      Object.fromEntries(
+        await Promise.all(
+          openAccountingPeriods.map(
+            async (
+              accountingPeriod,
+            ): Promise<[string, ExpectedIncomeSource[]]> => [
+              accountingPeriod.id,
+              unwrapApiResponse(
+                await apiClient.GET(
+                  "/accounting-periods/{accountingPeriodId}",
+                  {
+                    params: {
+                      path: { accountingPeriodId: accountingPeriod.id },
+                    },
+                  },
+                ),
+                "Failed to fetch expected income sources",
+              ).expectedIncomeSources,
+            ],
+          ),
+        ),
+      );
 
     if (openAccountingPeriods.length > 0) {
       const goalResponse = await apiClient.GET("/fund-goals", {
@@ -152,6 +182,7 @@ const getTransactionWorkspaceReferenceData =
       accounts: accounts.items,
       funds: funds.items,
       fundGoals,
+      expectedIncomeSources,
       locations,
     };
   };

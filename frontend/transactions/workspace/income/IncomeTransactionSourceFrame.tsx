@@ -13,6 +13,8 @@ import {
 } from "@/transactions/workspace/income/helpers";
 import type { Location, LocationDraft } from "@/locations/types";
 import { Chip } from "@mui/material";
+import type { ExpectedIncomeSource } from "@/accounting-periods/types";
+import ExpectedIncomeSourceEntryField from "@/transactions/workspace/income/ExpectedIncomeSourceEntryField";
 import type { FrameColor } from "@/framework/view/Frame";
 import IncomeTransactionItemSection from "@/transactions/workspace/income/IncomeTransactionSourceItemFrame";
 import type { JSX } from "react";
@@ -33,6 +35,10 @@ interface IncomeTransactionSourceFrameProps {
   readonly locations?: readonly Location[] | undefined;
   readonly location: LocationDraft | null;
   readonly setLocation: ((location: LocationDraft | null) => void) | null;
+  readonly expectedIncomeSources: readonly ExpectedIncomeSource[];
+  readonly expectedIncomeSourceId: string | null;
+  readonly setExpectedIncomeSourceId:
+    ((expectedIncomeSourceId: string | null) => void) | null;
   readonly incomeLines: IncomeLineDraft[];
   readonly setIncomeLines: ((incomeLines: IncomeLineDraft[]) => void) | null;
   readonly incomeDeductions: IncomeDeductionDraft[];
@@ -55,6 +61,9 @@ const IncomeTransactionSourceFrame = function ({
   location,
   locations,
   setLocation,
+  expectedIncomeSources,
+  expectedIncomeSourceId,
+  setExpectedIncomeSourceId,
   incomeLines,
   setIncomeLines,
   incomeDeductions,
@@ -67,6 +76,7 @@ const IncomeTransactionSourceFrame = function ({
   const netIncomeAmount = getNetIncomeAmount({
     account,
     location,
+    expectedIncomeSourceId,
     incomeLines,
     incomeDeductions,
   });
@@ -93,6 +103,11 @@ const IncomeTransactionSourceFrame = function ({
         accountFilter={accountFilter}
         balanceEvent={accountBalanceEvent}
         readOnly={readOnly}
+      />
+      <ExpectedIncomeSourceEntryField
+        expectedIncomeSources={expectedIncomeSources}
+        value={expectedIncomeSourceId}
+        setValue={readOnly ? null : setExpectedIncomeSourceId}
       />
       <IncomeTransactionItemSection
         title="Income Lines"

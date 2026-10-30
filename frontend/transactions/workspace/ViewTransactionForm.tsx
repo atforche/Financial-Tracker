@@ -41,7 +41,7 @@ import {
 } from "@/transactions/workspace/spending/helpers";
 import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFrame";
 import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFrame";
-import type { AccountingPeriod } from "@/accounting-periods/types";
+import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import DeleteTransactionForm from "@/transactions/workspace/DeleteTransactionForm";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
@@ -65,7 +65,7 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
  */
 interface ViewTransactionFormProps {
   readonly transaction: Transaction;
-  readonly transactionAccountingPeriod: AccountingPeriod;
+  readonly transactionAccountingPeriod: AccountingPeriodWithBalance;
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
   readonly currentUrl: string;
@@ -265,6 +265,11 @@ const ViewTransactionForm = function ({
         setAccount={null}
         location={source.location}
         setLocation={null}
+        expectedIncomeSources={
+          transactionAccountingPeriod.expectedIncomeSources
+        }
+        expectedIncomeSourceId={source.expectedIncomeSourceId}
+        setExpectedIncomeSourceId={null}
         incomeLines={source.incomeLines}
         setIncomeLines={null}
         incomeDeductions={source.incomeDeductions}
@@ -279,6 +284,7 @@ const ViewTransactionForm = function ({
         accounts={[]}
         funds={funds}
         fundGoals={currentFundGoals}
+        isPlanned={source.expectedIncomeSourceId !== null}
         transaction={incomeTransaction}
         account={destination.account}
         accountBalanceEvent={

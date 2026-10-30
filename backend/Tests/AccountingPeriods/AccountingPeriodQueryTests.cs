@@ -173,21 +173,4 @@ public sealed class AccountingPeriodQueryTests
         Assert.Equal(HttpStatusCode.UnprocessableEntity, reversedTransactions.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, events.StatusCode);
     }
-
-    /// <summary>
-    /// Includes pending transactions in an accounting period's transaction page.
-    /// </summary>
-    [Fact]
-    public async Task PeriodTransactionsIncludePendingTransactions()
-    {
-        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
-        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
-        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
-        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
-        TransactionHandle transaction = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(20m).From(cash).To("Market", groceries).CreateAsync();
-
-        AccountingPeriodWithTransactionsModel period = await test.Api.GetAsync<AccountingPeriodWithTransactionsModel>($"/accounting-periods/{july.Id}/transactions");
-
-        Assert.Contains(period.Transactions.Items, item => item.Id == transaction.Id);
-    }
 }

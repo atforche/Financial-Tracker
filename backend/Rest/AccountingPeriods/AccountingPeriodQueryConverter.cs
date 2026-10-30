@@ -5,16 +5,13 @@ using Models;
 using Models.AccountingPeriods;
 using Rest.Accounts;
 using Rest.Funds;
-using Rest.Transactions;
 
 namespace Rest.AccountingPeriods;
 
 /// <summary>
 /// Converts between Accounting Period API models and Domain query types.
 /// </summary>
-public sealed class AccountingPeriodQueryConverter(
-    TransactionConverter transactionConverter,
-    AccountingPeriodConverter accountingPeriodConverter)
+public sealed class AccountingPeriodQueryConverter(AccountingPeriodConverter accountingPeriodConverter)
 {
     /// <summary>
     /// Converts the provided Accounting Period query model to a Domain query.
@@ -63,17 +60,6 @@ public sealed class AccountingPeriodQueryConverter(
         model.Limit);
 
     /// <summary>
-    /// Converts an Accounting Period Transactions query model to a Domain query.
-    /// </summary>
-    public AccountingPeriodTransactionsQuery ToDomain(
-        Guid accountingPeriodId,
-        AccountingPeriodWithTransactionsQueryParameterModel model) => new(
-            accountingPeriodId,
-            transactionConverter.ToDomain(model.Sort),
-            model.Offset ?? 0,
-            model.Limit);
-
-    /// <summary>
     /// Converts the provided Accounting Period to an API model.
     /// </summary>
     public AccountingPeriodModel ToModel(AccountingPeriod accountingPeriod) => new()
@@ -114,10 +100,16 @@ public sealed class AccountingPeriodQueryConverter(
             Tracked = balance.ActualTrackedIncome,
             Untracked = balance.ActualIncome - balance.ActualTrackedIncome,
         },
+        UnplannedIncome = new IncomeAmountModel
+        {
+            Total = balance.ActualUnplannedIncome,
+            Tracked = balance.ActualUnplannedTrackedIncome,
+            Untracked = balance.ActualUnplannedIncome - balance.ActualUnplannedTrackedIncome,
+        },
         PlannedGoalContributions = balance.PlannedGoalContributions,
         ExpectedGoalContributions = balance.ExpectedGoalContributions,
         ActualGoalContributions = balance.ActualGoalContributions,
-        ActualExtraGoalContributions = balance.ActualExtraGoalContributions,
+        ActualUnplannedGoalContributions = balance.ActualUnplannedGoalContributions,
     };
 
     /// <summary>
@@ -164,40 +156,6 @@ public sealed class AccountingPeriodQueryConverter(
             Untracked = range.UntrackedExpectedIncome,
         },
         TotalSpending = range.TotalSpending,
-    };
-
-    /// <summary>
-    /// Converts interpreted Accounting Period Transactions to an API model.
-    /// </summary>
-    public AccountingPeriodWithTransactionsModel ToModel(AccountingPeriodTransactions result) => new()
-    {
-        Id = result.Balance.AccountingPeriod.Id.Value,
-        Name = result.Balance.AccountingPeriod.Name,
-        Year = result.Balance.AccountingPeriod.Year,
-        Month = result.Balance.AccountingPeriod.Month,
-        IsOpen = result.Balance.AccountingPeriod.IsOpen,
-        OpeningBalance = result.Balance.OpeningBalance,
-        ClosingBalance = result.Balance.ClosingBalance,
-        ExpectedIncomeSources = result.Balance.AccountingPeriod.ExpectedIncomeSources.Select(accountingPeriodConverter.ToModel).ToList(),
-        ExpectedIncome = ToExpectedIncomeAmountModel(result.Balance.AccountingPeriod.ExpectedIncomeSources),
-        ActualIncome = new IncomeAmountModel
-        {
-            Total = result.Balance.ActualIncome,
-            Tracked = result.Balance.ActualTrackedIncome,
-            Untracked = result.Balance.ActualIncome - result.Balance.ActualTrackedIncome,
-        },
-        PlannedGoalContributions = result.Balance.PlannedGoalContributions,
-        ExpectedGoalContributions = result.Balance.ExpectedGoalContributions,
-        ActualGoalContributions = result.Balance.ActualGoalContributions,
-        ActualExtraGoalContributions = result.Balance.ActualExtraGoalContributions,
-        Transactions = transactionConverter.ToModel(result.Transactions),
-        TotalIncome = new IncomeAmountModel
-        {
-            Total = result.TotalIncome,
-            Tracked = result.TrackedIncome,
-            Untracked = result.UntrackedIncome,
-        },
-        TotalSpending = result.TotalSpending,
     };
 
     /// <summary>

@@ -167,6 +167,12 @@ internal sealed class TransactionConfiguration :
     public void Configure(EntityTypeBuilder<IncomeTransaction> builder)
     {
         builder.Property(transaction => transaction.TrackedAmount);
+        // Expected Income Sources are owned by their Accounting Period, so this is a plain reference without a foreign key
+        builder.Property(transaction => transaction.ExpectedIncomeSourceId)
+            .HasColumnName("IncomeTransaction_ExpectedIncomeSourceId")
+            .HasConversion(
+                expectedIncomeSourceId => expectedIncomeSourceId == null ? (Guid?)null : expectedIncomeSourceId.Value,
+                value => value == null ? null : new ExpectedIncomeSourceId(value.Value));
 
         builder.OwnsOne(transaction => transaction.Source, sourceBuilder =>
         {
@@ -213,7 +219,7 @@ internal sealed class TransactionConfiguration :
             destinationBuilder.HasOne(destination => destination.Account).WithMany().HasForeignKey("AccountId");
             destinationBuilder.Navigation(destination => destination.Account).AutoInclude();
 
-            destinationBuilder.OwnsMany<IncomeFundAmount>(nameof(IncomeTransactionDestination.FundAssignments), fundAssignmentBuilder =>
+            destinationBuilder.OwnsMany<FundAmount>(nameof(IncomeTransactionDestination.FundAssignments), fundAssignmentBuilder =>
             {
                 fundAssignmentBuilder.ToTable("IncomeTransactionIncomeDestinationFundAssignments");
                 fundAssignmentBuilder.WithOwner().HasForeignKey("IncomeDestinationId");

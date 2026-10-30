@@ -1,5 +1,9 @@
 "use client";
 
+import type {
+  AccountingPeriod,
+  ExpectedIncomeSourcesByPeriod,
+} from "@/accounting-periods/types";
 import {
   type IncomeDestinationDraft,
   type IncomeSourceDraft,
@@ -9,7 +13,6 @@ import {
 } from "@/transactions/workspace/income/helpers";
 import { type JSX, useState } from "react";
 import type { AccountWithBalance } from "@/accounts/types";
-import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { CreateTransactionRequest } from "@/transactions/types";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
@@ -25,6 +28,7 @@ interface CreateIncomeTransactionFormProps {
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
+  readonly expectedIncomeSources: ExpectedIncomeSourcesByPeriod;
   readonly redirectUrl: string;
   readonly details: TransactionDetails;
 }
@@ -37,6 +41,7 @@ const CreateIncomeTransactionForm = function ({
   accounts,
   funds,
   fundGoals,
+  expectedIncomeSources,
   redirectUrl,
   details,
 }: CreateIncomeTransactionFormProps): JSX.Element {
@@ -70,6 +75,7 @@ const CreateIncomeTransactionForm = function ({
       accounts={accounts}
       funds={funds}
       fundGoals={fundGoals}
+      expectedIncomeSources={expectedIncomeSources}
       source={source}
       setSource={setSource}
       destinations={destinations}

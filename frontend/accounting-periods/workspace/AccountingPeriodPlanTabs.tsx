@@ -37,8 +37,12 @@ const AccountingPeriodPlanTabs = async function ({
   const apiClient = await createApiClient();
   const rowsPerPage = getRowsPerPage(searchParams.pageSize);
   const accountingPeriodId = accountingPeriod.id;
+  // The tab comes from the URL, so anything unrecognized falls back to the first tab
   const activeTab: AccountingPeriodPlanTab =
-    searchParams.planTab ?? "fund-goals";
+    searchParams.planTab === "account-goals" ||
+    searchParams.planTab === "income-sources"
+      ? searchParams.planTab
+      : "fund-goals";
   const fundGoals =
     activeTab === "fund-goals"
       ? unwrapApiResponse(

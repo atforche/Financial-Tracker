@@ -7,10 +7,7 @@ import {
   getOverviewUrl,
   parseOverviewHistoryRange,
 } from "@/overview/helpers";
-import {
-  formatCurrency,
-  getCurrencyDifference,
-} from "@/framework/currencyHelpers";
+import BalanceStatCards from "@/accounts/BalanceStatCards";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import ChevronRight from "@mui/icons-material/ChevronRight";
 import type { JSX } from "react";
@@ -21,14 +18,12 @@ import OverviewHistoryRangeSelector from "@/overview/OverviewHistoryRangeSelecto
 import OverviewPeriodCard from "@/overview/OverviewPeriodCard";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import SignedChange from "@/framework/view/SignedChange";
-import StatCard from "@/framework/view/StatCard";
 import accountRoutes from "@/accounts/routes";
 import { buildDateChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
+import fillHeightSx from "@/framework/view/fillHeightSx";
 import fundRoutes from "@/funds/routes";
-import { getAccountTypeStatDetails } from "@/accounts/balanceSummaryHelpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -48,15 +43,6 @@ const historyDescriptions = {
 } as const satisfies Record<OverviewHistoryRangeModel, string>;
 
 /**
- * Stretches a section's surface to the height of its row so side-by-side sections line up.
- */
-const fillHeightSx = {
-  display: "flex",
-  flexDirection: "column",
-  "& > .MuiPaper-root": { flex: 1 },
-} as const;
-
-/**
  * Displays where balances stand today, what needs attention, the current accounting period, and balance history.
  */
 const OverviewView = async function ({
@@ -72,19 +58,6 @@ const OverviewView = async function ({
     "Failed to load overview",
   );
   const currentPeriod = overview.currentPeriod ?? null;
-  const opening = overview.accountOpeningBalance;
-  const closing = overview.accountClosingBalance;
-  const describeChange = function (
-    current: number,
-    previous: number,
-  ): JSX.Element {
-    return (
-      <>
-        <SignedChange amount={getCurrencyDifference(current, previous)} /> over{" "}
-        {historyDescriptions[history]}
-      </>
-    );
-  };
   const overviewUrl = getOverviewUrl(history);
   const trendsRange = {
     mode: "date",
@@ -120,40 +93,13 @@ const OverviewView = async function ({
           <OverviewAddTransactionButton returnUrl={overviewUrl} />
         </Stack>
       </Stack>
-      <ResponsiveGrid columns={{ xs: 1, sm: 2, lg: 4 }}>
-        <StatCard
-          label="Net worth"
-          value={formatCurrency(closing.totalBalance)}
-          caption={describeChange(closing.totalBalance, opening.totalBalance)}
-        />
-        <StatCard
-          label="Tracked money"
-          value={formatCurrency(closing.totalTrackedBalance)}
-          caption={describeChange(
-            closing.totalTrackedBalance,
-            opening.totalTrackedBalance,
-          )}
-          details={getAccountTypeStatDetails(opening, closing, true)}
-          detailsLabel="by account type"
-        />
-        <StatCard
-          label="Untracked money"
-          value={formatCurrency(closing.totalUntrackedBalance)}
-          caption={describeChange(
-            closing.totalUntrackedBalance,
-            opening.totalUntrackedBalance,
-          )}
-          details={getAccountTypeStatDetails(opening, closing, false)}
-          detailsLabel="by account type"
-        />
-        <StatCard
-          label="Unassigned funds"
-          value={formatCurrency(
-            overview.fundClosingBalance.totalUnassignedBalance,
-          )}
-          caption="Available to assign to funds"
-        />
-      </ResponsiveGrid>
+      <BalanceStatCards
+        openingBalance={overview.accountOpeningBalance}
+        closingBalance={overview.accountClosingBalance}
+        unassignedBalance={overview.fundClosingBalance.totalUnassignedBalance}
+        unassignedCaption="Available to assign to funds"
+        changeDescription={`over ${historyDescriptions[history]}`}
+      />
       <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
         <Box sx={{ flex: 2, minWidth: 0, ...fillHeightSx }}>
           <OverviewAttentionList

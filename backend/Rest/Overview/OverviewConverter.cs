@@ -54,7 +54,9 @@ public sealed class OverviewConverter(AccountingPeriodConverter accountingPeriod
     {
         AccountingPeriod = accountingPeriodConverter.ToModel(period.AccountingPeriod),
         ExpectedTrackedIncome = period.ExpectedTrackedIncome,
-        ActualTrackedIncome = period.ActualTrackedIncome,
+        ActualPlannedTrackedIncome = period.ActualPlannedTrackedIncome,
+        ActualUnplannedTrackedIncome = period.ActualUnplannedTrackedIncome,
+        ActualUnplannedGoalContributions = period.ActualUnplannedGoalContributions,
         ExpectedGoalContributions = period.ExpectedGoalContributions,
         ActualGoalContributions = period.ActualGoalContributions,
         TotalSpending = period.TotalSpending,

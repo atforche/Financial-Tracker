@@ -7,6 +7,7 @@ import {
   formatCurrency,
   formatSignedCurrency,
 } from "@/framework/currencyHelpers";
+import type { AccountingPeriodPlanTab } from "@/accounting-periods/workspace/AccountingPeriodWorkspaceDetailPage";
 import type { Route } from "next";
 import type { ToggleButtonSelectorOption } from "@/framework/forms/ToggleButtonSelector";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
@@ -100,9 +101,7 @@ const describeAttentionGroup = function (
   currentPeriodId: string | null,
   returnUrl: string,
 ): OverviewAttentionDescription {
-  const getPlanHref = function (
-    planTab: "fund-goals" | "income-sources",
-  ): Route {
+  const getPlanHref = function (planTab: AccountingPeriodPlanTab): Route {
     return currentPeriodId === null
       ? accountingPeriodRoutes.workspace({ returnUrl })
       : accountingPeriodRoutes.workspaceDetail(currentPeriodId, {

@@ -7,6 +7,7 @@ import PeriodProgressRow from "@/accounting-periods/PeriodProgressRow";
 import SignedChange from "@/framework/view/SignedChange";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
 import type { components } from "@/framework/data/api";
+import { getCurrencyTotal } from "@/framework/currencyHelpers";
 
 /**
  * Props for the OverviewPeriodCard component.
@@ -63,19 +64,32 @@ const OverviewPeriodCard = function ({
         </Link>
         <PeriodProgressRow
           label="Tracked income"
-          actual={period.actualTrackedIncome}
+          overLabel="Extra planned income"
+          actual={period.actualPlannedTrackedIncome}
           expected={period.expectedTrackedIncome}
+          unplanned={period.actualUnplannedTrackedIncome}
         />
         <PeriodProgressRow
-          label="Goal contributions"
+          label="Fund contributions"
+          overLabel="Extra planned contributions"
           actual={period.actualGoalContributions}
           expected={period.expectedGoalContributions}
+          unplanned={period.actualUnplannedGoalContributions}
+          actualLabel="Contributed"
         />
         <PeriodProgressRow
           label="Spending"
           actual={period.totalSpending}
-          expected={period.actualTrackedIncome}
-          isExtraGood={false}
+          // Spending is paid from all tracked income, planned or not
+          expected={getCurrencyTotal([
+            period.actualPlannedTrackedIncome,
+            period.actualUnplannedTrackedIncome,
+          ])}
+          actualLabel="Spending"
+          expectedLabel="Tracked income"
+          overLabel="Overspent"
+          underLabel="Left over"
+          isOverGood={false}
         />
         <Stack
           direction="row"

@@ -299,6 +299,7 @@ public sealed class BalanceEventQueryTests
         FundHandle unassigned = await test.FundQueries.GetUnassignedAsync(july);
         CreateTransactionResultModel created = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", new CreateIncomeTransactionModel
         {
+            ExpectedIncomeSourceId = null,
             AccountingPeriodId = july.Id,
             Date = new DateOnly(2026, 7, 15),
             Description = "Pay",
@@ -313,7 +314,7 @@ public sealed class BalanceEventQueryTests
             {
                 AccountId = cash.Id,
                 Amount = 100m,
-                FundAssignments = [new CreateIncomeFundAmountModel { FundId = groceries.Id, Amount = 40m }],
+                FundAssignments = [new CreateFundAmountModel { FundId = groceries.Id, Amount = 40m }],
             }],
         });
         string goalEventsUri = $"/fund-goals/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}";

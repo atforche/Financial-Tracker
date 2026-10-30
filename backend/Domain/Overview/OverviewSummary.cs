@@ -16,9 +16,11 @@ public sealed record OverviewSummary(
 public sealed record OverviewPeriod(
     AccountingPeriod AccountingPeriod,
     decimal ExpectedTrackedIncome,
-    decimal ActualTrackedIncome,
+    decimal ActualPlannedTrackedIncome,
+    decimal ActualUnplannedTrackedIncome,
     decimal ExpectedGoalContributions,
     decimal ActualGoalContributions,
+    decimal ActualUnplannedGoalContributions,
     decimal TotalSpending,
     decimal NetWorthChange);
 

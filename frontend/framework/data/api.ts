@@ -3060,62 +3060,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/accounting-periods/{accountingPeriodId}/transactions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves an Accounting Period with its Transactions. */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Optional sort to apply to the matching transactions. */
-                    Sort?: components["schemas"]["TransactionSortModel"];
-                    Limit?: number;
-                    Offset?: number;
-                };
-                header?: never;
-                path: {
-                    accountingPeriodId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AccountingPeriodWithTransactionsModel"];
-                        "application/json": components["schemas"]["AccountingPeriodWithTransactionsModel"];
-                        "text/json": components["schemas"]["AccountingPeriodWithTransactionsModel"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/accounting-periods/range": {
         parameters: {
             query?: never;
@@ -3941,6 +3885,8 @@ export interface components {
             expectedIncome: components["schemas"]["IncomeAmountModel"];
             /** @description Posted income for the Accounting Period. */
             actualIncome: components["schemas"]["IncomeAmountModel"];
+            /** @description Income received during the Accounting Period that was not planned as any Expected Income Source. */
+            unplannedIncome: components["schemas"]["IncomeAmountModel"];
             /**
              * Format: double
              * @description Sum of the planned monthly contributions for all Fund Goals in the Accounting Period.
@@ -3958,9 +3904,10 @@ export interface components {
             actualGoalContributions: number;
             /**
              * Format: double
-             * @description Extra amount assigned to Fund Goals in the Accounting Period.
+             * @description Amount of unplanned income assigned to Fund Goals in the Accounting Period, which does not count toward their
+             *     contributions.
              */
-            actualExtraGoalContributions: number;
+            actualUnplannedGoalContributions: number;
             /**
              * Format: uuid
              * @description ID for the Accounting Period
@@ -3983,73 +3930,6 @@ export interface components {
         };
         /** @enum {unknown} */
         AccountingPeriodWithBalanceSortModel: AccountingPeriodWithBalanceSortModel | null;
-        /** @description Model representing an Accounting Period with its associated transactions. */
-        AccountingPeriodWithTransactionsModel: {
-            /** @description Matching transactions for the current Accounting Period page. */
-            transactions: components["schemas"]["CollectionModelOfTransactionModel"];
-            /** @description Total income for the current Accounting Period. */
-            totalIncome: components["schemas"]["IncomeAmountModel"];
-            /**
-             * Format: double
-             * @description Total spending for the current Accounting Period.
-             */
-            totalSpending: number;
-            /**
-             * Format: double
-             * @description Opening balance for the Accounting Period
-             */
-            openingBalance: number;
-            /**
-             * Format: double
-             * @description Closing balance for the Accounting Period
-             */
-            closingBalance: number;
-            /** @description Sources of expected income for the Accounting Period. */
-            expectedIncomeSources: components["schemas"]["ExpectedIncomeSourceModel"][];
-            /** @description Income expected for the Accounting Period. */
-            expectedIncome: components["schemas"]["IncomeAmountModel"];
-            /** @description Posted income for the Accounting Period. */
-            actualIncome: components["schemas"]["IncomeAmountModel"];
-            /**
-             * Format: double
-             * @description Sum of the planned monthly contributions for all Fund Goals in the Accounting Period.
-             */
-            plannedGoalContributions: number;
-            /**
-             * Format: double
-             * @description Amount required to satisfy all Fund Goals for the Accounting Period.
-             */
-            expectedGoalContributions: number;
-            /**
-             * Format: double
-             * @description Amount assigned toward expected monthly contributions for all Fund Goals in the Accounting Period.
-             */
-            actualGoalContributions: number;
-            /**
-             * Format: double
-             * @description Extra amount assigned to Fund Goals in the Accounting Period.
-             */
-            actualExtraGoalContributions: number;
-            /**
-             * Format: uuid
-             * @description ID for the Accounting Period
-             */
-            id: string;
-            /**
-             * Format: int32
-             * @description Year for the Accounting Period
-             */
-            year: number;
-            /**
-             * Format: int32
-             * @description Month for the Accounting Period
-             */
-            month: number;
-            /** @description Name of the Accounting Period */
-            name: string;
-            /** @description True if the Accounting Period is open, false otherwise */
-            isOpen: boolean;
-        };
         /** @description Model representing an Account */
         AccountModel: {
             /**
@@ -4560,24 +4440,6 @@ export interface components {
              */
             amount: number;
         };
-        /** @description Model representing a Fund amount assigned by an income transaction. */
-        CreateIncomeFundAmountModel: {
-            /**
-             * @description Whether this assignment is extra funding outside the expected monthly
-             *     contribution.
-             */
-            isExtraContribution?: boolean;
-            /**
-             * Format: uuid
-             * @description Fund for this Fund Amount
-             */
-            fundId: string;
-            /**
-             * Format: double
-             * @description Amount for this Fund Amount
-             */
-            amount: number;
-        };
         /** @description Model representing an income line in a create income transaction request. */
         CreateIncomeLineModel: {
             /** @description Description for the income line. */
@@ -4601,7 +4463,7 @@ export interface components {
              */
             amount: number;
             /** @description Fund assignments for this destination. */
-            fundAssignments: components["schemas"]["CreateIncomeFundAmountModel"][];
+            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
         };
         /** @description Model representing the source of an income transaction create request. */
         CreateIncomeTransactionSourceModel: {
@@ -4726,6 +4588,11 @@ export interface components {
             source: components["schemas"]["CreateIncomeTransactionSourceModel"];
             /** @description Destinations for the income transaction. */
             destinations: components["schemas"]["CreateIncomeTransactionDestinationModel"][];
+            /**
+             * Format: uuid
+             * @description ID of the Expected Income Source this income was planned as, or null when the income is unplanned.
+             */
+            expectedIncomeSourceId: null | string;
             /**
              * Format: uuid
              * @description Accounting Period for the Transaction.
@@ -4879,11 +4746,6 @@ export interface components {
         };
         /** @description Model representing a balance event for a fund. */
         FundBalanceEventModel: {
-            /**
-             * @description Whether this income assignment is extra funding outside the expected
-             *     monthly Fund Goal contribution.
-             */
-            isExtraContribution?: boolean;
             /** @description Fund affected by the balance event. */
             fund: components["schemas"]["FundModel"];
             /** @description Source associated with the balance event's Transaction. */
@@ -5532,9 +5394,14 @@ export interface components {
             expectedTrackedIncome: number;
             /**
              * Format: double
-             * @description Tracked income received during the Accounting Period.
+             * @description Tracked income received during the Accounting Period that was planned as one of its Expected Income Sources.
              */
-            actualTrackedIncome: number;
+            actualPlannedTrackedIncome: number;
+            /**
+             * Format: double
+             * @description Tracked income received during the Accounting Period that was not planned as any Expected Income Source.
+             */
+            actualUnplannedTrackedIncome: number;
             /**
              * Format: double
              * @description Total contributions expected toward Fund Goals during the Accounting Period.
@@ -5545,6 +5412,12 @@ export interface components {
              * @description Total contributions made toward Fund Goals during the Accounting Period.
              */
             actualGoalContributions: number;
+            /**
+             * Format: double
+             * @description Unplanned income assigned to Fund Goals during the Accounting Period, which does not count toward their
+             *     contributions.
+             */
+            actualUnplannedGoalContributions: number;
             /**
              * Format: double
              * @description Total posted spending during the Accounting Period.
@@ -5752,6 +5625,11 @@ export interface components {
             trackedAmount: number;
             /** @description Destinations for the income transaction. */
             destinations: components["schemas"]["IncomeTransactionDestinationModel"][];
+            /**
+             * Format: uuid
+             * @description ID of the Expected Income Source this income was planned as, or null when the income is unplanned.
+             */
+            expectedIncomeSourceId: null | string;
             /**
              * Format: uuid
              * @description ID for the Transaction.
@@ -6058,6 +5936,11 @@ export interface components {
             source: components["schemas"]["CreateIncomeTransactionSourceModel"];
             /** @description Destinations for the income transaction. */
             destinations: components["schemas"]["CreateIncomeTransactionDestinationModel"][];
+            /**
+             * Format: uuid
+             * @description ID of the Expected Income Source this income was planned as, or null when the income is unplanned.
+             */
+            expectedIncomeSourceId: null | string;
             /**
              * Format: date
              * @description Date for the Transaction.

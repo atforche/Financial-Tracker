@@ -4,6 +4,11 @@ import type {
   AccountBalanceEventDraft,
   AccountWithBalance,
 } from "@/accounts/types";
+import type {
+  AccountingPeriod,
+  ExpectedIncomeSource,
+  ExpectedIncomeSourcesByPeriod,
+} from "@/accounting-periods/types";
 import {
   type Dispatch,
   type JSX,
@@ -28,7 +33,6 @@ import {
   compareCurrencyAmounts,
   getCurrencyTotal,
 } from "@/framework/currencyHelpers";
-import type { AccountingPeriod } from "@/accounting-periods/types";
 import CollectionEditor from "@/framework/view/CollectionEditor";
 import type { Dayjs } from "dayjs";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
@@ -38,6 +42,8 @@ import TransactionForm from "@/transactions/workspace/TransactionForm";
 import { getUnassignedFund } from "@/funds/helpers";
 import { isTrackedAccount } from "@/accounts/helpers";
 import { updateUnassignedFundAmount } from "@/funds/assignmentPlanner/helpers";
+
+const noExpectedIncomeSources: readonly ExpectedIncomeSource[] = [];
 
 /**
  * Represents the state of the income transaction form.
@@ -57,6 +63,7 @@ interface IncomeTransactionFormProps<RequestPayload> {
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
+  readonly expectedIncomeSources: ExpectedIncomeSourcesByPeriod;
   readonly accountingPeriods: AccountingPeriod[];
   readonly accountingPeriod: AccountingPeriod | null;
   readonly setAccountingPeriod?: Dispatch<
@@ -134,6 +141,7 @@ const IncomeTransactionForm = function <RequestPayload>({
   accounts,
   funds,
   fundGoals,
+  expectedIncomeSources,
   accountingPeriods,
   accountingPeriod,
   setAccountingPeriod = null,
@@ -160,6 +168,11 @@ const IncomeTransactionForm = function <RequestPayload>({
   const currentFundGoals = fundGoals.filter(
     (fundGoal) => fundGoal.accountingPeriod?.id === accountingPeriod?.id,
   );
+  const periodExpectedIncomeSources =
+    accountingPeriod === null
+      ? noExpectedIncomeSources
+      : (expectedIncomeSources[accountingPeriod.id] ?? noExpectedIncomeSources);
+  const isPlanned = source.expectedIncomeSourceId !== null;
   const sourceNetAmount = getNetIncomeAmount(source);
   const destinationTotal = getCurrencyTotal(
     destinations.map((destination) => destination.amount),
@@ -187,6 +200,28 @@ const IncomeTransactionForm = function <RequestPayload>({
       location: account === null ? currentSource.location : null,
     }));
   };
+
+  // A source from a different period can't be kept once the period changes, which only happens while creating
+  useLayoutEffect(() => {
+    if (
+      setAccountingPeriod !== null &&
+      source.expectedIncomeSourceId !== null &&
+      periodExpectedIncomeSources.every(
+        (expectedIncomeSource) =>
+          expectedIncomeSource.id !== source.expectedIncomeSourceId,
+      )
+    ) {
+      setSource((currentSource) => ({
+        ...currentSource,
+        expectedIncomeSourceId: null,
+      }));
+    }
+  }, [
+    setAccountingPeriod,
+    source.expectedIncomeSourceId,
+    periodExpectedIncomeSources,
+    setSource,
+  ]);
 
   // Sync after render so the single destination amount always uses the latest source.
   useLayoutEffect(() => {
@@ -222,9 +257,26 @@ const IncomeTransactionForm = function <RequestPayload>({
           setAccount={setSourceAccount}
           location={source.location}
           setLocation={(location): void => {
+            // Income from a location named like one of the period's sources is most likely that source
+            const matchingSource = periodExpectedIncomeSources.find(
+              (expectedIncomeSource) =>
+                location?.name
+                  .toLowerCase()
+                  .startsWith(expectedIncomeSource.name.toLowerCase()) === true,
+            );
             setSource((currentSource) => ({
               ...currentSource,
               location,
+              expectedIncomeSourceId:
+                matchingSource?.id ?? currentSource.expectedIncomeSourceId,
+            }));
+          }}
+          expectedIncomeSources={periodExpectedIncomeSources}
+          expectedIncomeSourceId={source.expectedIncomeSourceId}
+          setExpectedIncomeSourceId={(expectedIncomeSourceId): void => {
+            setSource((currentSource) => ({
+              ...currentSource,
+              expectedIncomeSourceId,
             }));
           }}
           incomeLines={source.incomeLines}
@@ -267,6 +319,7 @@ const IncomeTransactionForm = function <RequestPayload>({
               accounts={accounts}
               funds={funds}
               fundGoals={currentFundGoals}
+              isPlanned={isPlanned}
               transaction={null}
               account={destination.account}
               setAccount={(account): void => {

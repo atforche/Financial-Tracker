@@ -116,7 +116,9 @@ const AccountingPeriodPlanCard = function ({
                     : `${cappedGoalCount.toString()} goals are`}
                 </Link>
               </Typography>{" "}
-              near their maximum balance
+              {cappedGoalCount === 1
+                ? "near its maximum balance"
+                : "near their maximum balances"}
             </Typography>
           </Stack>
         )}

@@ -9,7 +9,8 @@ public sealed record FinancialRangeTotals(
     decimal TotalIncome,
     decimal TrackedIncome,
     decimal TotalSpending,
-    decimal ExtraFundGoalContributions)
+    decimal UnplannedIncome,
+    decimal UnplannedTrackedIncome)
 {
     /// <summary>
     /// Calculates financial totals from persisted income and spending facts.
@@ -25,6 +26,7 @@ public sealed record FinancialRangeTotals(
             recognizedIncome.Sum(fact => fact.Amount),
             recognizedIncome.Where(fact => fact.AccountType.IsTracked()).Sum(fact => fact.Amount),
             spendingFacts.Where(fact => fact.PostedDate != null).Sum(fact => fact.Amount),
-            recognizedIncome.Sum(fact => fact.ExtraFundGoalContributions));
+            recognizedIncome.Where(fact => !fact.IsPlanned).Sum(fact => fact.Amount),
+            recognizedIncome.Where(fact => !fact.IsPlanned && fact.AccountType.IsTracked()).Sum(fact => fact.Amount));
     }
 }

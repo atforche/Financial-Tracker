@@ -1,4 +1,3 @@
-import { Checkbox, FormControlLabel, Stack } from "@mui/material";
 import type { Fund, FundBalanceEvent, FundWithBalance } from "@/funds/types";
 import {
   type FundAssignmentDraft,
@@ -19,6 +18,7 @@ import type {
   FundGoalWithProgress,
 } from "@/fund-goals/types";
 import { type JSX, useState } from "react";
+import { Stack, Typography } from "@mui/material";
 import BalanceChangeChip from "@/framework/view/BalanceChangeChip";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
 import Toast from "@/framework/alerts/Toast";
@@ -38,6 +38,7 @@ interface IncomeFundAssignmentPlannerProps {
   readonly setFundAssignments:
     ((fundAssignments: FundAssignmentDraft[]) => void) | null;
   readonly baselineFundAssignments: FundAssignmentDraft[];
+  readonly isPlanned: boolean;
   readonly readOnly?: boolean;
 }
 
@@ -46,7 +47,8 @@ const emptyFundGoalBalanceEvents: FundGoalBalanceEvent[] = [];
 
 /**
  * Displays the fund assignment planner for income transactions. Shows each fund's balance and goal
- * changes from its balance events once they have posted.
+ * changes from its balance events once they have posted. Only planned income can be assigned automatically, since
+ * only it counts toward fund goals.
  */
 const IncomeFundAssignmentPlanner = function ({
   funds,
@@ -57,6 +59,7 @@ const IncomeFundAssignmentPlanner = function ({
   fundAssignments,
   setFundAssignments,
   baselineFundAssignments,
+  isPlanned,
   readOnly = false,
 }: IncomeFundAssignmentPlannerProps): JSX.Element {
   const [autoAssignMessage, setAutoAssignMessage] = useState<string | null>(
@@ -132,9 +135,7 @@ const IncomeFundAssignmentPlanner = function ({
         const currentAssignment = plannerFundAssignments[index];
         return (
           assignment.fundId !== currentAssignment?.fundId ||
-          assignment.amount !== currentAssignment.amount ||
-          assignment.isExtraContribution !==
-            currentAssignment.isExtraContribution
+          assignment.amount !== currentAssignment.amount
         );
       });
 
@@ -184,9 +185,6 @@ const IncomeFundAssignmentPlanner = function ({
             fundId: newFund.id,
             fundName: newFund.name,
             amount: recommendedAmount,
-            isExtraContribution:
-              hasPlannedMonthlyContribution(newFund.id) &&
-              assignment.isExtraContribution,
           };
         },
       ),
@@ -204,21 +202,6 @@ const IncomeFundAssignmentPlanner = function ({
         fundAssignments,
         getExplicitAssignmentIndex(index),
         (assignment) => ({ ...assignment, amount: newAmount ?? 0 }),
-      ),
-    );
-  };
-
-  const updateExtraContribution = function (
-    index: number,
-    isExtraContribution: boolean,
-  ): void {
-    setFundAssignments?.(
-      updateFundAssignment(
-        unassignedFund,
-        totalAmountToAssign,
-        fundAssignments,
-        getExplicitAssignmentIndex(index),
-        (assignment) => ({ ...assignment, isExtraContribution }),
       ),
     );
   };
@@ -283,43 +266,21 @@ const IncomeFundAssignmentPlanner = function ({
     );
   };
 
-  const renderAssignmentControl = function (
-    assignment: FundAssignmentDraft,
-    index: number,
-  ): JSX.Element | null {
-    if (
-      assignment.fundId === "" ||
-      assignment.fundId === unassignedFund?.id ||
-      (!hasPlannedMonthlyContribution(assignment.fundId) &&
-        !assignment.isExtraContribution)
-    ) {
-      return null;
-    }
-    return (
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={assignment.isExtraContribution}
-            disabled={readOnly}
-            onChange={(event) => {
-              updateExtraContribution(index, event.target.checked);
-            }}
-          />
-        }
-        label="Extra contribution"
-        sx={{ flexShrink: 0, m: 0, whiteSpace: "nowrap" }}
-      />
-    );
-  };
-
   return (
     <>
+      {readOnly || isPlanned ? null : (
+        <Typography variant="body2" color="text.secondary">
+          Unplanned income doesn&apos;t count toward fund goals, so it
+          isn&apos;t assigned automatically. Assign it to its fund here: money
+          moved later by a transfer counts toward that fund&apos;s goal.
+        </Typography>
+      )}
       <FundAssignmentPlanner
         funds={funds}
         totalAmountToAssign={totalAmountToAssign}
         fundAssignments={plannerFundAssignments}
         addFundAssignment={addFundAssignment}
-        onAutoAssign={readOnly ? null : autoAssign}
+        onAutoAssign={readOnly || !isPlanned ? null : autoAssign}
         deleteFundAssignment={deleteFundAssignment}
         updateFund={updateFund}
         updateAmount={updateAmount}
@@ -342,7 +303,6 @@ const IncomeFundAssignmentPlanner = function ({
         }
         sortFunds={sortFunds}
         renderAssignmentDetails={renderAssignmentDetails}
-        renderAssignmentControl={renderAssignmentControl}
         readOnly={readOnly}
       />
       <Toast

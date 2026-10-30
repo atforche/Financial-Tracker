@@ -131,7 +131,7 @@ const AccountingPeriodTrends = async function ({
   let rangeExpectations = {
     expectedGoalContributions: 0,
     actualGoalContributions: 0,
-    actualExtraGoalContributions: 0,
+    actualUnplannedGoalContributions: 0,
   };
   if (latestAccountingPeriod !== null) {
     const range = {
@@ -203,9 +203,9 @@ const AccountingPeriodTrends = async function ({
         actualGoalContributions:
           totals.actualGoalContributions +
           accountingPeriod.actualGoalContributions,
-        actualExtraGoalContributions:
-          totals.actualExtraGoalContributions +
-          accountingPeriod.actualExtraGoalContributions,
+        actualUnplannedGoalContributions:
+          totals.actualUnplannedGoalContributions +
+          accountingPeriod.actualUnplannedGoalContributions,
       }),
       rangeExpectations,
     );
@@ -293,7 +293,7 @@ const AccountingPeriodTrends = async function ({
                   rangeExpectations.actualGoalContributions
                 }
                 actualExtraFundGoalContributions={
-                  rangeExpectations.actualExtraGoalContributions
+                  rangeExpectations.actualUnplannedGoalContributions
                 }
               />
             ),

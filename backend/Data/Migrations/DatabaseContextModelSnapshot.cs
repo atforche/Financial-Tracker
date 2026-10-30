@@ -586,6 +586,10 @@ namespace Data.Migrations
                 {
                     b.HasBaseType("Domain.Transactions.Transaction");
 
+                    b.Property<Guid?>("ExpectedIncomeSourceId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("IncomeTransaction_ExpectedIncomeSourceId");
+
                     b.Property<decimal>("TrackedAmount")
                         .HasColumnType("TEXT");
 
@@ -1238,7 +1242,7 @@ namespace Data.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("IncomeTransactionId");
 
-                            b1.OwnsMany("Domain.Transactions.Income.IncomeFundAmount", "FundAssignments", b2 =>
+                            b1.OwnsMany("Domain.Funds.FundAmount", "FundAssignments", b2 =>
                                 {
                                     b2.Property<int>("Id")
                                         .ValueGeneratedOnAdd()
@@ -1251,9 +1255,6 @@ namespace Data.Migrations
                                         .HasColumnType("TEXT");
 
                                     b2.Property<int>("IncomeDestinationId")
-                                        .HasColumnType("INTEGER");
-
-                                    b2.Property<bool>("IsExtraContribution")
                                         .HasColumnType("INTEGER");
 
                                     b2.HasKey("Id");

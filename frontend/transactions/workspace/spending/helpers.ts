@@ -352,7 +352,6 @@ const getFundAssignmentFromTransactionFund = function (
     fundId: assignment.fund.id,
     fundName: assignment.fund.name,
     amount: assignment.amount,
-    isExtraContribution: false,
   };
 };
 
