@@ -7,12 +7,12 @@ import {
   formatCurrency,
   formatSignedCurrency,
 } from "@/framework/currencyHelpers";
-import type { AccountingPeriodPlanTab } from "@/accounting-periods/workspace/AccountingPeriodWorkspaceDetailPage";
 import type { Route } from "next";
 import type { ToggleButtonSelectorOption } from "@/framework/forms/ToggleButtonSelector";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
 import { expectedIncomeSourcesId } from "@/accounting-periods/workspace/helpers";
 import { formatShortDate } from "@/framework/dateHelpers";
+import fundGoalRoutes from "@/fund-goals/routes";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import transactionRoutes from "@/transactions/routes";
 
@@ -95,21 +95,19 @@ interface OverviewAttentionDescription {
 
 /**
  * Describes a group of items needing attention, with links that return to the provided URL. Goal groups link to the
- * matching plan tab of the current period, and income groups to its Expected Income Sources.
+ * current period's Fund Goals, and income groups to its Expected Income Sources.
  */
 const describeAttentionGroup = function (
   group: OverviewAttentionGroup,
   currentPeriodId: string | null,
   returnUrl: string,
 ): OverviewAttentionDescription {
-  const getPlanHref = function (planTab: AccountingPeriodPlanTab): Route {
-    return currentPeriodId === null
-      ? accountingPeriodRoutes.workspace({ returnUrl })
-      : accountingPeriodRoutes.workspaceDetail(currentPeriodId, {
-          planTab,
-          returnUrl,
-        });
-  };
+  const fundGoalsHref = fundGoalRoutes.workspace({
+    ...(currentPeriodId === null
+      ? {}
+      : { accountingPeriodId: currentPeriodId }),
+    returnUrl,
+  });
   const remainingItemCount = group.itemCount - group.topItems.length;
   const oldestDate =
     typeof group.oldestDate === "string"
@@ -127,7 +125,7 @@ const describeAttentionGroup = function (
         })),
         remainingItemCount,
         facts: [],
-        href: getPlanHref("fund-goals"),
+        href: fundGoalsHref,
       };
     case OverviewAttentionKindModel.GoalsAboveMaximum:
       return {
@@ -139,7 +137,7 @@ const describeAttentionGroup = function (
         })),
         remainingItemCount,
         facts: [],
-        href: getPlanHref("fund-goals"),
+        href: fundGoalsHref,
       };
     case OverviewAttentionKindModel.GoalsBehind:
       return {
@@ -151,7 +149,7 @@ const describeAttentionGroup = function (
         })),
         remainingItemCount,
         facts: [],
-        href: getPlanHref("fund-goals"),
+        href: fundGoalsHref,
       };
     case OverviewAttentionKindModel.UnpostedTransactions:
       return {

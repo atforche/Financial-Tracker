@@ -18,6 +18,7 @@ import {
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import Link from "next/link";
 import type { Route } from "next";
+import SegmentedBar from "@/framework/view/SegmentedBar";
 
 /**
  * Props for the PeriodProgressRow component.
@@ -122,8 +123,6 @@ const PeriodProgressRow = function ({
   const isShort = compareCurrencyAmounts(under, 0) > 0;
   // Unplanned amounts sit outside the comparison, so the bar's end is always exactly the extra or the shortfall
   const barTotal = Math.max(actual, expected, 0) + unplannedAmount;
-  const getShare = (amount: number): string =>
-    `${barTotal > 0 ? (amount / barTotal) * 100 : 0}%`;
   return (
     <Stack>
       <ButtonBase
@@ -172,22 +171,19 @@ const PeriodProgressRow = function ({
             ) : null}
           </Typography>
         </Stack>
-        <Box
-          sx={{
-            display: "flex",
-            height: 12,
-            borderRadius: 6,
-            overflow: "hidden",
-            bgcolor: "action.hover",
-          }}
-        >
-          <Box sx={{ width: getShare(met), bgcolor: "primary.main" }} />
-          <Box sx={{ width: getShare(over), bgcolor: overColor }} />
-          <Box sx={{ width: getShare(under) }} />
-          <Box
-            sx={{ width: getShare(unplannedAmount), bgcolor: "secondary.main" }}
-          />
-        </Box>
+        <SegmentedBar
+          segments={[
+            { key: "met", amount: met, color: "primary.main" },
+            { key: "over", amount: over, color: overColor },
+            { key: "under", amount: under },
+            {
+              key: "unplanned",
+              amount: unplannedAmount,
+              color: "secondary.main",
+            },
+          ]}
+          total={barTotal}
+        />
         {caption === undefined ? null : (
           <Typography variant="caption" color="text.secondary">
             {caption}

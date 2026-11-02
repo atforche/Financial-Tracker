@@ -1,6 +1,5 @@
 import {
   AccountGoalEndingBalanceStatusModel,
-  AccountGoalSortModel,
   type components,
 } from "@/framework/data/api";
 
@@ -31,6 +30,5 @@ export {
   AccountGoalEndingBalanceStatusModel as AccountGoalEndingBalanceStatus,
   type AccountGoalProgress,
   type AccountGoalWithProgress,
-  AccountGoalSortModel as AccountGoalSort,
   type UpdateAccountGoalRequest,
 };

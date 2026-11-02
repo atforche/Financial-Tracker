@@ -21,9 +21,9 @@ public interface ITransactionRepository
     bool DoAnyTransactionsExistForAccount(Account account);
 
     /// <summary>
-    /// Gets all the Transactions that are associated with the specified Accounting Period
+    /// Checks if any Transactions exist for the specified Accounting Period
     /// </summary>
-    IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId);
+    bool DoAnyTransactionsExistForAccountingPeriod(AccountingPeriodId accountingPeriodId);
 
     /// <summary>
     /// Checks if any Transactions exist for the specified Fund

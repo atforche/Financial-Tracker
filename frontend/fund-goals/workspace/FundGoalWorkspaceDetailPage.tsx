@@ -199,7 +199,7 @@ const FundGoalWorkspaceDetailPage = async function ({
   return (
     <PageLayout>
       <FundGoalWorkspacePageHeader
-        backHref={returnUrl ?? workspaceUrl}
+        backHref={workspaceUrl}
         previousPeriod={
           previousPeriod === undefined
             ? null

@@ -11,6 +11,7 @@ namespace Domain.AccountingPeriods.Queries;
 public sealed record AccountingPeriodDetail(
     AccountingPeriodBalance Balance,
     int CappedGoalCount,
+    AccountingPeriodGoalSummary GoalSummary,
     AccountingPeriod? PreviousPeriod,
     AccountingPeriod? NextPeriod,
     decimal TotalSpending,

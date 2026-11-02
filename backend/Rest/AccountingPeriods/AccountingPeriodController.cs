@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Data;
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
@@ -15,6 +16,7 @@ namespace Rest.AccountingPeriods;
 [ApiController]
 [Route("/accounting-periods")]
 public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
+    AccountingPeriodConverter accountingPeriodConverter,
     AccountingPeriodQueryConverter accountingPeriodQueryConverter,
     AccountingPeriodQueryService accountingPeriodQueryService,
     AccountingPeriodService accountingPeriodService,
@@ -131,7 +133,6 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     /// Creates a new Accounting Period with the provided properties
     /// </summary>
     /// <param name="createAccountingPeriodModel">Request to create an Accounting Period</param>
-    /// <returns>The created Accounting Period</returns>
     [HttpPost("")]
     [ProducesResponseType(typeof(AccountingPeriodModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
@@ -146,24 +147,19 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
                 out AccountingPeriod? newAccountingPeriod,
                 out IEnumerable<ValidationError> validationErrors))
         {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to create Accounting Period.",
-                Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors),
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
+            return Unprocessable("Unable to create Accounting Period.", validationErrors);
         }
         accountingPeriodRepository.Add(newAccountingPeriod);
         await unitOfWork.SaveChangesAsync();
-        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetBalanceByIdAsync(newAccountingPeriod.Id.Value);
-        return Ok(accountingPeriodQueryConverter.ToModel(balance!));
+        return Ok(accountingPeriodConverter.ToModel(newAccountingPeriod));
     }
 
     /// <summary>
     /// Adds an expected income source to an open Accounting Period.
     /// </summary>
     [HttpPost("{accountingPeriodId:guid}/expected-income-sources")]
-    [ProducesResponseType(typeof(AccountingPeriodWithBalanceModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ExpectedIncomeSourceModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> AddExpectedIncomeSourceAsync(
         Guid accountingPeriodId,
@@ -176,26 +172,21 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         if (!AccountingPeriodService.TryAddExpectedIncomeSource(
                 accountingPeriod,
                 ToRequest(source),
-                out _,
+                out ExpectedIncomeSource? expectedIncomeSource,
                 out IEnumerable<ValidationError> validationErrors))
         {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to add expected income source.",
-                Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors),
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
+            return Unprocessable("Unable to add expected income source.", validationErrors);
         }
         await unitOfWork.SaveChangesAsync();
-        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetBalanceByIdAsync(accountingPeriodId);
-        return Ok(accountingPeriodQueryConverter.ToModel(balance!));
+        // A new source has no income linked to it yet
+        return Ok(accountingPeriodConverter.ToModel(expectedIncomeSource, new ReceivedIncome(0, 0)));
     }
 
     /// <summary>
     /// Updates one expected income source in an open Accounting Period.
     /// </summary>
     [HttpPost("{accountingPeriodId:guid}/expected-income-sources/{expectedIncomeSourceId:guid}")]
-    [ProducesResponseType(typeof(AccountingPeriodWithBalanceModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UpdateExpectedIncomeSourceAsync(
@@ -203,13 +194,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         Guid expectedIncomeSourceId,
         [FromBody] ExpectedIncomeSourceRequestModel source)
     {
-        if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out AccountingPeriod? accountingPeriod))
-        {
-            return NotFound();
-        }
-        ExpectedIncomeSource? expectedIncomeSource = accountingPeriod.ExpectedIncomeSources
-            .SingleOrDefault(item => item.Id.Value == expectedIncomeSourceId);
-        if (expectedIncomeSource == null)
+        if (!TryGetExpectedIncomeSource(accountingPeriodId, expectedIncomeSourceId, out AccountingPeriod? accountingPeriod, out ExpectedIncomeSource? expectedIncomeSource))
         {
             return NotFound();
         }
@@ -219,36 +204,24 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
                 ToRequest(source),
                 out IEnumerable<ValidationError> validationErrors))
         {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to update expected income source.",
-                Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors),
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
+            return Unprocessable("Unable to update expected income source.", validationErrors);
         }
         await unitOfWork.SaveChangesAsync();
-        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetBalanceByIdAsync(accountingPeriodId);
-        return Ok(accountingPeriodQueryConverter.ToModel(balance!));
+        return NoContent();
     }
 
     /// <summary>
     /// Deletes one expected income source from an open Accounting Period.
     /// </summary>
     [HttpDelete("{accountingPeriodId:guid}/expected-income-sources/{expectedIncomeSourceId:guid}")]
-    [ProducesResponseType(typeof(AccountingPeriodWithBalanceModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> DeleteExpectedIncomeSourceAsync(
         Guid accountingPeriodId,
         Guid expectedIncomeSourceId)
     {
-        if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out AccountingPeriod? accountingPeriod))
-        {
-            return NotFound();
-        }
-        ExpectedIncomeSource? expectedIncomeSource = accountingPeriod.ExpectedIncomeSources
-            .SingleOrDefault(item => item.Id.Value == expectedIncomeSourceId);
-        if (expectedIncomeSource == null)
+        if (!TryGetExpectedIncomeSource(accountingPeriodId, expectedIncomeSourceId, out AccountingPeriod? accountingPeriod, out ExpectedIncomeSource? expectedIncomeSource))
         {
             return NotFound();
         }
@@ -257,124 +230,90 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
                 expectedIncomeSource,
                 out IEnumerable<ValidationError> validationErrors))
         {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to delete expected income source.",
-                Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors),
-                Status = StatusCodes.Status422UnprocessableEntity,
-            });
+            return Unprocessable("Unable to delete expected income source.", validationErrors);
         }
         await unitOfWork.SaveChangesAsync();
-        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetBalanceByIdAsync(accountingPeriodId);
-        return Ok(accountingPeriodQueryConverter.ToModel(balance!));
+        return NoContent();
     }
 
     /// <summary>
     /// Closes the Accounting Period with the provided ID
     /// </summary>
-    [HttpPost("{accountingPeriodId}/close")]
-    [ProducesResponseType(typeof(AccountingPeriodModel), StatusCodes.Status200OK)]
+    [HttpPost("{accountingPeriodId:guid}/close")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> CloseAsync(Guid accountingPeriodId)
-    {
-        Dictionary<string, string[]> errors = [];
-        if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out AccountingPeriod? accountingPeriod))
-        {
-            errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
-        }
-        if (errors.Count > 0 || accountingPeriod == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to close Accounting Period.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        if (!accountingPeriodService.TryClose(accountingPeriod, out IEnumerable<ValidationError> validationErrors))
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to close Accounting Period.",
-                Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors),
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        await unitOfWork.SaveChangesAsync();
-        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetBalanceByIdAsync(accountingPeriodId);
-        return Ok(accountingPeriodQueryConverter.ToModel(balance!));
-    }
+    public Task<IActionResult> CloseAsync(Guid accountingPeriodId) =>
+        ChangeAsync(accountingPeriodId, "Unable to close Accounting Period.", accountingPeriodService.TryClose);
 
     /// <summary>
     /// Reopens the Accounting Period with the provided ID
     /// </summary>
-    [HttpPost("{accountingPeriodId}/reopen")]
-    [ProducesResponseType(typeof(AccountingPeriodModel), StatusCodes.Status200OK)]
+    [HttpPost("{accountingPeriodId:guid}/reopen")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> ReopenAsync(Guid accountingPeriodId)
-    {
-        Dictionary<string, string[]> errors = [];
-        if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out AccountingPeriod? accountingPeriod))
-        {
-            errors.Add(nameof(accountingPeriodId), [$"Accounting Period with ID {accountingPeriodId} not found."]);
-        }
-        if (errors.Count > 0 || accountingPeriod == null)
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to reopen Accounting Period.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        if (!accountingPeriodService.TryReopen(accountingPeriod, out IEnumerable<ValidationError> validationErrors))
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to reopen Accounting Period.",
-                Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors),
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        await unitOfWork.SaveChangesAsync();
-        AccountingPeriodBalance? balance = await accountingPeriodQueryService.GetBalanceByIdAsync(accountingPeriodId);
-        return Ok(accountingPeriodQueryConverter.ToModel(balance!));
-    }
+    public Task<IActionResult> ReopenAsync(Guid accountingPeriodId) =>
+        ChangeAsync(accountingPeriodId, "Unable to reopen Accounting Period.", accountingPeriodService.TryReopen);
 
     /// <summary>
     /// Deletes the Accounting Period with the provided ID
     /// </summary>
     /// <param name="accountingPeriodId">ID of the Accounting Period to delete</param>
-    [HttpDelete("{accountingPeriodId}")]
+    [HttpDelete("{accountingPeriodId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> DeleteAsync(Guid accountingPeriodId)
+    public Task<IActionResult> DeleteAsync(Guid accountingPeriodId) =>
+        ChangeAsync(accountingPeriodId, "Unable to delete Accounting Period.", accountingPeriodService.TryDelete);
+
+    /// <summary>
+    /// A change to an Accounting Period that reports why it could not be made.
+    /// </summary>
+    private delegate bool AccountingPeriodChange(AccountingPeriod accountingPeriod, out IEnumerable<ValidationError> validationErrors);
+
+    /// <summary>
+    /// Applies a change to the Accounting Period with the provided ID and saves it.
+    /// </summary>
+    private async Task<IActionResult> ChangeAsync(Guid accountingPeriodId, string failureTitle, AccountingPeriodChange change)
     {
-        Dictionary<string, string[]> errors = [];
         if (!accountingPeriodRepository.TryGetById(accountingPeriodId, out AccountingPeriod? accountingPeriod))
         {
-            errors.Add(nameof(accountingPeriodId), new[] { $"Accounting Period with ID {accountingPeriodId} not found." });
+            return NotFound();
         }
-        if (errors.Count > 0 || accountingPeriod == null)
+        if (!change(accountingPeriod, out IEnumerable<ValidationError> validationErrors))
         {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to delete Accounting Period.",
-                Errors = errors,
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
-        }
-        if (!accountingPeriodService.TryDelete(accountingPeriod, out IEnumerable<ValidationError> validationErrors))
-        {
-            return new UnprocessableEntityObjectResult(new ValidationProblemDetails
-            {
-                Title = "Unable to delete Accounting Period.",
-                Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors),
-                Status = StatusCodes.Status422UnprocessableEntity
-            });
+            return Unprocessable(failureTitle, validationErrors);
         }
         await unitOfWork.SaveChangesAsync();
-        return Ok();
+        return NoContent();
     }
+
+    /// <summary>
+    /// Gets an Accounting Period and one of its expected income sources, or false when either does not exist.
+    /// </summary>
+    private bool TryGetExpectedIncomeSource(
+        Guid accountingPeriodId,
+        Guid expectedIncomeSourceId,
+        [NotNullWhen(true)] out AccountingPeriod? accountingPeriod,
+        [NotNullWhen(true)] out ExpectedIncomeSource? expectedIncomeSource)
+    {
+        expectedIncomeSource = accountingPeriodRepository.TryGetById(accountingPeriodId, out accountingPeriod)
+            ? accountingPeriod.ExpectedIncomeSources.SingleOrDefault(item => item.Id.Value == expectedIncomeSourceId)
+            : null;
+        return expectedIncomeSource != null && accountingPeriod != null;
+    }
+
+    /// <summary>
+    /// Builds the response for a change that failed validation.
+    /// </summary>
+    private static UnprocessableEntityObjectResult Unprocessable(string title, IEnumerable<ValidationError> validationErrors) =>
+        new(new ValidationProblemDetails
+        {
+            Title = title,
+            Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors),
+            Status = StatusCodes.Status422UnprocessableEntity,
+        });
 
     /// <summary>
     /// Converts expected-income API models to domain requests.

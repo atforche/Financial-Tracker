@@ -20,7 +20,7 @@ internal static class ExpectedIncomeSourceSetup
         DateOnly? date = null,
         decimal untrackedAmount = 0m)
     {
-        AccountingPeriodWithBalanceModel updated = await api.PostAsync<ExpectedIncomeSourceRequestModel, AccountingPeriodWithBalanceModel>(
+        ExpectedIncomeSourceModel added = await api.PostAsync<ExpectedIncomeSourceRequestModel, ExpectedIncomeSourceModel>(
             $"/accounting-periods/{period.Id}/expected-income-sources",
             new ExpectedIncomeSourceRequestModel
             {
@@ -32,6 +32,6 @@ internal static class ExpectedIncomeSourceSetup
                     : [new ExpectedUntrackedIncomeTransferRequestModel { Description = "Retirement", Amount = untrackedAmount }],
                 ExpectedDates = date is DateOnly expectedDate ? [expectedDate] : [],
             });
-        return updated.ExpectedIncomeSources.Single(source => source.Name == name).Id;
+        return added.Id;
     }
 }

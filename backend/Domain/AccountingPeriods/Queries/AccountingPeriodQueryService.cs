@@ -1,3 +1,4 @@
+using Domain.AccountGoals;
 using Domain.Accounts.Queries;
 using Domain.FundGoals;
 using Domain.Funds.Queries;
@@ -11,7 +12,8 @@ public sealed class AccountingPeriodQueryService(
     IAccountingPeriodQueryRepository accountingPeriodQueryRepository,
     AccountingPeriodRangeService accountingPeriodRangeService,
     IAccountingPeriodBalanceHistoryRepository accountingPeriodBalanceHistoryRepository,
-    IFundGoalRepository fundGoalRepository)
+    IFundGoalRepository fundGoalRepository,
+    IAccountGoalRepository accountGoalRepository)
 {
     /// <summary>
     /// Retrieves Accounting Periods matching the provided query.
@@ -88,8 +90,8 @@ public sealed class AccountingPeriodQueryService(
             cancellationToken);
 
     /// <summary>
-    /// Retrieves an Accounting Period with its totals, neighbors, and opening and closing balances, or null when it
-    /// does not exist.
+    /// Retrieves an Accounting Period with its totals, goal summary, neighbors, and opening and closing balances, or null
+    /// when it does not exist.
     /// </summary>
     public async Task<AccountingPeriodDetail?> GetDetailAsync(
         Guid accountingPeriodId,
@@ -106,9 +108,13 @@ public sealed class AccountingPeriodQueryService(
         (AccountingPeriod? previous, AccountingPeriod? next) = await accountingPeriodQueryRepository.GetAdjacentAsync(period, cancellationToken);
         AccountingPeriodBalanceHistory history = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(period.Id);
         IReadOnlyCollection<FundGoal> fundGoals = fundGoalRepository.GetAllByAccountingPeriod(period.Id);
+        IReadOnlyCollection<AccountGoal> accountGoals = accountGoalRepository.GetAllByAccountingPeriod(period.Id);
         return new AccountingPeriodDetail(
             EnrichBalance(period, history, fundGoals, incomeFacts[accountingPeriodId], out int cappedGoalCount),
             cappedGoalCount,
+            AccountingPeriodGoalSummary.From(
+                FundGoalService.GetProgresses(fundGoals, history).Values.ToList(),
+                AccountGoalService.GetProgresses(accountGoals, history).Values.ToList()),
             previous,
             next,
             FinancialRangeTotals.Calculate([], spendingFacts).TotalSpending,
@@ -119,23 +125,19 @@ public sealed class AccountingPeriodQueryService(
     }
 
     /// <summary>
-    /// Retrieves and interprets the requested Accounting Period range.
+    /// Retrieves the requested Accounting Period range with each period's balance and the range's total spending.
     /// </summary>
     public async Task<AccountingPeriodRangeQueryResult<AccountingPeriodRange>> GetRangeAsync(
         AccountingPeriodRangeQuery query,
         CancellationToken cancellationToken = default)
     {
-        AccountingPeriodRangeResolution resolution = await accountingPeriodRangeService.ResolveAsync(
-            query.StartId,
-            query.EndId,
-            cancellationToken);
-        if (resolution.AccountingPeriods == null)
+        (AccountingPeriod? start, AccountingPeriod? end, AccountingPeriodRangeQueryFailure failure) =
+            await accountingPeriodRangeService.ResolveEndpointsAsync(query.StartId, query.EndId, cancellationToken);
+        if (start == null || end == null)
         {
-            return new AccountingPeriodRangeQueryResult<AccountingPeriodRange>(null, resolution.Failure);
+            return new AccountingPeriodRangeQueryResult<AccountingPeriodRange>(null, failure);
         }
 
-        AccountingPeriod start = resolution.AccountingPeriods.First();
-        AccountingPeriod end = resolution.AccountingPeriods.Last();
         IReadOnlyCollection<StoredAccountingPeriodBalance> periods = await accountingPeriodQueryRepository.GetRangeBalancesAsync(
             AccountingPeriodRangeResolver.GetChronologicalIndex(start),
             AccountingPeriodRangeResolver.GetChronologicalIndex(end),
@@ -148,22 +150,9 @@ public sealed class AccountingPeriodQueryService(
         IReadOnlyCollection<Guid> ids = periods.Select(period => period.AccountingPeriod.Id.Value).ToList();
         ILookup<Guid, FinancialRangeIncomeFact> incomeFacts = await accountingPeriodQueryRepository.GetIncomeFactsByAccountingPeriodAsync(ids, cancellationToken);
         IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await accountingPeriodQueryRepository.GetRangeSpendingFactsAsync(ids, cancellationToken);
-        var totals = FinancialRangeTotals.Calculate(incomeFacts.SelectMany(group => group), spendingFacts);
-        decimal totalExpectedIncome = periods.Sum(period =>
-            period.AccountingPeriod.ExpectedIncomeSources.Sum(source => source.ExpectedAmount));
-        decimal trackedExpectedIncome = periods.Sum(period =>
-            period.AccountingPeriod.ExpectedIncomeSources.Sum(source => source.ExpectedTrackedAmount));
-        // Sorting only uses persisted fields, so only the requested page needs its calculated totals
-        IReadOnlyCollection<AccountingPeriodBalance> items = EnrichBalances(
-            Sort(periods, query.Sort).Skip(query.Offset).Take(query.Limit ?? int.MaxValue).Select(period => period.AccountingPeriod).ToList(),
-            incomeFacts);
         var range = new AccountingPeriodRange(
-            new QueryPage<AccountingPeriodBalance>(items, periods.Count),
-            totals.TotalIncome,
-            totals.TrackedIncome,
-            totals.TotalSpending,
-            totalExpectedIncome,
-            trackedExpectedIncome);
+            EnrichBalances(periods.Select(period => period.AccountingPeriod).ToList(), incomeFacts),
+            FinancialRangeTotals.Calculate([], spendingFacts).TotalSpending);
         return new AccountingPeriodRangeQueryResult<AccountingPeriodRange>(range, AccountingPeriodRangeQueryFailure.None);
     }
 
@@ -290,22 +279,4 @@ public sealed class AccountingPeriodQueryService(
         }
         return (expected, actual, unplanned, cappedCount);
     }
-
-    /// <summary>
-    /// Sorts the provided Accounting Period balances based on the specified sort criteria.
-    /// </summary>
-    private static IOrderedEnumerable<StoredAccountingPeriodBalance> Sort(
-        IEnumerable<StoredAccountingPeriodBalance> periods,
-        AccountingPeriodBalanceSort sort) => sort switch
-        {
-            AccountingPeriodBalanceSort.Date => periods.OrderBy(period => period.AccountingPeriod.Year).ThenBy(period => period.AccountingPeriod.Month).ThenBy(period => period.AccountingPeriod.Id),
-            AccountingPeriodBalanceSort.DateDescending => periods.OrderByDescending(period => period.AccountingPeriod.Year).ThenByDescending(period => period.AccountingPeriod.Month).ThenBy(period => period.AccountingPeriod.Id),
-            AccountingPeriodBalanceSort.IsOpen => periods.OrderBy(period => period.AccountingPeriod.IsOpen).ThenBy(period => period.AccountingPeriod.Id),
-            AccountingPeriodBalanceSort.IsOpenDescending => periods.OrderByDescending(period => period.AccountingPeriod.IsOpen).ThenBy(period => period.AccountingPeriod.Id),
-            AccountingPeriodBalanceSort.OpeningBalance => periods.OrderBy(period => period.OpeningBalance).ThenBy(period => period.AccountingPeriod.Id),
-            AccountingPeriodBalanceSort.OpeningBalanceDescending => periods.OrderByDescending(period => period.OpeningBalance).ThenBy(period => period.AccountingPeriod.Id),
-            AccountingPeriodBalanceSort.ClosingBalance => periods.OrderBy(period => period.ClosingBalance).ThenBy(period => period.AccountingPeriod.Id),
-            AccountingPeriodBalanceSort.ClosingBalanceDescending => periods.OrderByDescending(period => period.ClosingBalance).ThenBy(period => period.AccountingPeriod.Id),
-            _ => periods.OrderByDescending(period => period.AccountingPeriod.Year).ThenByDescending(period => period.AccountingPeriod.Month).ThenBy(period => period.AccountingPeriod.Id),
-        };
 }

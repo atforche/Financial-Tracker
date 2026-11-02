@@ -11,7 +11,6 @@ import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import SignedChange from "@/framework/view/SignedChange";
-import { compareAccountingPeriods } from "@/accounting-periods/helpers";
 import createApiClient from "@/framework/data/createApiClient";
 import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
@@ -113,9 +112,6 @@ const AccountingPeriodTrends = async function ({
     fundsResponse,
     "Failed to fetch fund balance trends",
   ).accountingPeriods;
-  const periods = [...range.accountingPeriods.items].sort(
-    compareAccountingPeriods,
-  );
   const firstAccounts = accountBalances.at(0);
   const lastAccounts = accountBalances.at(-1);
   const firstFunds = fundBalances.at(0);
@@ -147,15 +143,19 @@ const AccountingPeriodTrends = async function ({
         />
       )}
       <AccountingPeriodProgressCard
-        accountingPeriod={sumProgress(periods)}
+        accountingPeriod={sumProgress(range.accountingPeriods)}
         totalSpending={range.totalSpending}
       />
       <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
-        <AccountingPeriodTrendChart accountingPeriods={periods} />
-        <AccountingPeriodTrendsChangeChart accountingPeriods={periods} />
+        <AccountingPeriodTrendChart
+          accountingPeriods={range.accountingPeriods}
+        />
+        <AccountingPeriodTrendsChangeChart
+          accountingPeriods={range.accountingPeriods}
+        />
       </ResponsiveGrid>
       <CardResponsiveGrid minimumColumnWidth={280} spacing={2}>
-        {periods.toReversed().map((period) => (
+        {range.accountingPeriods.toReversed().map((period) => (
           <AccountingPeriodCard key={period.id} period={period} />
         ))}
       </CardResponsiveGrid>

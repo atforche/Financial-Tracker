@@ -343,7 +343,7 @@ public class AccountingPeriodService(
         {
             exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "This Accounting Period is closed."));
         }
-        if (transactionRepository.GetAllByAccountingPeriod(accountingPeriod.Id).Count > 0)
+        if (transactionRepository.DoAnyTransactionsExistForAccountingPeriod(accountingPeriod.Id))
         {
             exceptions = exceptions.Append(new ValidationError(ValidationErrorPath.Empty, "This Accounting Period has transactions."));
         }

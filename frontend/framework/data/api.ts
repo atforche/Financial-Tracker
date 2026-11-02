@@ -2991,6 +2991,24 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
                 /** @description Unprocessable Entity */
                 422: {
                     headers: {
@@ -3167,16 +3185,12 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content: {
-                        "text/plain": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                        "application/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                        "text/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                    };
+                    content?: never;
                 };
                 /** @description Not Found */
                 404: {
@@ -3215,16 +3229,12 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content: {
-                        "text/plain": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                        "application/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                        "text/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                    };
+                    content?: never;
                 };
                 /** @description Not Found */
                 404: {
@@ -3268,10 +3278,6 @@ export interface paths {
                 query?: {
                     "Range.Start"?: string;
                     "Range.End"?: string;
-                    /** @description Optional sort to apply to the matching Accounting Periods. */
-                    Sort?: components["schemas"]["AccountingPeriodWithBalanceSortModel"];
-                    Limit?: number;
-                    Offset?: number;
                 };
                 header?: never;
                 path?: never;
@@ -3344,9 +3350,20 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                        "application/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                        "text/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
+                        "text/plain": components["schemas"]["ExpectedIncomeSourceModel"];
+                        "application/json": components["schemas"]["ExpectedIncomeSourceModel"];
+                        "text/json": components["schemas"]["ExpectedIncomeSourceModel"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -3389,15 +3406,22 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["AccountingPeriodModel"];
-                        "application/json": components["schemas"]["AccountingPeriodModel"];
-                        "text/json": components["schemas"]["AccountingPeriodModel"];
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -3440,15 +3464,22 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["AccountingPeriodModel"];
-                        "application/json": components["schemas"]["AccountingPeriodModel"];
-                        "text/json": components["schemas"]["AccountingPeriodModel"];
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -3892,6 +3923,8 @@ export interface components {
              * @description The number of Fund Goals whose expected contribution is less than planned because of their maximum ending balance.
              */
             cappedGoalCount: number;
+            /** @description Counts of the Accounting Period's Fund Goals and Account Goals by their progress. */
+            goalSummary: components["schemas"]["AccountingPeriodGoalSummaryModel"];
             previousPeriod: null | components["schemas"]["AccountingPeriodModel"];
             nextPeriod: null | components["schemas"]["AccountingPeriodModel"];
             /**
@@ -3907,6 +3940,49 @@ export interface components {
             fundOpeningBalance: components["schemas"]["FundBalanceSummaryModel"];
             /** @description Fund balances at the end of the Accounting Period. */
             fundClosingBalance: components["schemas"]["FundBalanceSummaryModel"];
+        };
+        /** @description Model representing counts of an Accounting Period's Fund Goals and Account Goals by their progress. */
+        AccountingPeriodGoalSummaryModel: {
+            /**
+             * Format: int32
+             * @description The number of Fund Goals.
+             */
+            fundGoalCount: number;
+            /**
+             * Format: int32
+             * @description The number of Fund Goals with a planned contribution.
+             */
+            contributionGoalCount: number;
+            /**
+             * Format: int32
+             * @description The number of Fund Goals whose expected contribution has been assigned.
+             */
+            contributedGoalCount: number;
+            /**
+             * Format: int32
+             * @description The number of Fund Goals whose ending balance is below their minimum.
+             */
+            fundGoalsBelowMinimumCount: number;
+            /**
+             * Format: int32
+             * @description The number of Fund Goals whose ending balance is above their maximum.
+             */
+            fundGoalsAboveMaximumCount: number;
+            /**
+             * Format: int32
+             * @description The number of Account Goals.
+             */
+            accountGoalCount: number;
+            /**
+             * Format: int32
+             * @description The number of Account Goals whose ending balance is below their minimum.
+             */
+            accountGoalsBelowMinimumCount: number;
+            /**
+             * Format: int32
+             * @description The number of Account Goals whose ending balance is above their maximum.
+             */
+            accountGoalsAboveMaximumCount: number;
         };
         /** @description Model representing an Accounting Period */
         AccountingPeriodModel: {
@@ -3932,12 +4008,8 @@ export interface components {
         };
         /** @description Model representing the Accounting Periods in a requested range. */
         AccountingPeriodsInRangeModel: {
-            /** @description Accounting Periods in the requested range. */
-            accountingPeriods: components["schemas"]["CollectionModelOfAccountingPeriodWithBalanceModel"];
-            /** @description Total income for the requested range. */
-            totalIncome: components["schemas"]["IncomeAmountModel"];
-            /** @description Total expected income for the requested range. */
-            totalExpectedIncome: components["schemas"]["IncomeAmountModel"];
+            /** @description Accounting Periods in the requested range, in date order. */
+            accountingPeriods: components["schemas"]["AccountingPeriodWithBalanceModel"][];
             /**
              * Format: double
              * @description Total spending for the requested range.

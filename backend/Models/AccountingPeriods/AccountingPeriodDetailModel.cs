@@ -19,6 +19,11 @@ public class AccountingPeriodDetailModel
     public required int CappedGoalCount { get; init; }
 
     /// <summary>
+    /// Counts of the Accounting Period's Fund Goals and Account Goals by their progress.
+    /// </summary>
+    public required AccountingPeriodGoalSummaryModel GoalSummary { get; init; }
+
+    /// <summary>
     /// The Accounting Period immediately before this one, or null when this is the first.
     /// </summary>
     public required AccountingPeriodModel? PreviousPeriod { get; init; }

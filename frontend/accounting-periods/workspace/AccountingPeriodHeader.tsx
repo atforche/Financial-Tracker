@@ -27,7 +27,7 @@ const AccountingPeriodHeader = function ({
 }: AccountingPeriodHeaderProps): JSX.Element {
   const period = detail.accountingPeriod;
   const workspaceUrl = routes.workspace({});
-  // Neighbors open on the same plan tab and still return to the page the user came from
+  // Neighbors still return to the page the user came from
   const getNeighborLink = function (
     neighbor: AccountingPeriod | null | undefined,
   ): { name: string; href: ReturnType<typeof routes.workspaceDetail> } | null {
@@ -36,9 +36,6 @@ const AccountingPeriodHeader = function ({
       : {
           name: neighbor.name,
           href: routes.workspaceDetail(neighbor.id, {
-            ...(typeof searchParams.planTab === "undefined"
-              ? {}
-              : { planTab: searchParams.planTab }),
             ...(typeof searchParams.returnUrl === "undefined"
               ? {}
               : { returnUrl: searchParams.returnUrl }),

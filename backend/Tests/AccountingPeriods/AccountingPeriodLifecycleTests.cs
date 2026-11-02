@@ -107,12 +107,12 @@ public sealed class AccountingPeriodLifecycleTests
         using HttpResponseMessage missingReopen = await test.Api.PostResponseAsync($"/accounting-periods/{Guid.NewGuid()}/reopen", new { });
         using HttpResponseMessage missingDelete = await test.Api.DeleteResponseAsync($"/accounting-periods/{Guid.NewGuid()}");
 
-        Assert.Equal(HttpStatusCode.OK, close.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, close.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, repeatClose.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, reopen.StatusCode);
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, missingClose.StatusCode);
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, missingReopen.StatusCode);
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, missingDelete.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, reopen.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, missingClose.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, missingReopen.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, missingDelete.StatusCode);
     }
 
     /// <summary>
@@ -133,8 +133,8 @@ public sealed class AccountingPeriodLifecycleTests
         using HttpResponseMessage reopenJuly = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/reopen", new { });
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, reopenJulyFirst.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, reopenAugust.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, reopenJuly.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, reopenAugust.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, reopenJuly.StatusCode);
     }
 
     /// <summary>
@@ -152,7 +152,7 @@ public sealed class AccountingPeriodLifecycleTests
         using HttpResponseMessage close = await test.Api.PostResponseAsync($"/accounting-periods/{july.Id}/close", new { });
         await test.Transactions.PostAsync(transaction, cash, new DateOnly(2026, 7, 20));
 
-        Assert.Equal(HttpStatusCode.OK, close.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, close.StatusCode);
     }
 
     /// <summary>
@@ -187,7 +187,7 @@ public sealed class AccountingPeriodLifecycleTests
         CollectionModel<FundWithBalanceModel> after = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
 
         Assert.Contains(before.Items, fund => fund.Name == "Unassigned");
-        Assert.Equal(HttpStatusCode.OK, deleted.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, deleted.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
         Assert.DoesNotContain(after.Items, fund => fund.Name == "Unassigned");
     }
@@ -209,12 +209,14 @@ public sealed class AccountingPeriodLifecycleTests
             ExpectedDates = [new DateOnly(2026, 7, 15)],
         };
 
-        AccountingPeriodWithBalanceModel updated = await test.Api.PostAsync<ExpectedIncomeSourceRequestModel, AccountingPeriodWithBalanceModel>(
+        ExpectedIncomeSourceModel added = await test.Api.PostAsync<ExpectedIncomeSourceRequestModel, ExpectedIncomeSourceModel>(
             $"/accounting-periods/{july.Id}/expected-income-sources", source);
+        AccountingPeriodWithBalanceModel updated = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}");
         Assert.Equal(800m, updated.ExpectedIncome.Total);
         Assert.Equal(500m, updated.ExpectedIncome.Tracked);
         Assert.Equal(300m, updated.ExpectedIncome.Untracked);
         ExpectedIncomeSourceModel updatedSource = Assert.Single(updated.ExpectedIncomeSources);
+        Assert.Equal(added.Id, updatedSource.Id);
         Assert.Equal(800m, updatedSource.ExpectedAmount.Total);
         Assert.Equal(500m, updatedSource.ExpectedAmount.Tracked);
         Assert.Equal(300m, updatedSource.ExpectedAmount.Untracked);
@@ -227,8 +229,9 @@ public sealed class AccountingPeriodLifecycleTests
             UntrackedTransfers = source.UntrackedTransfers,
             ExpectedDates = [new DateOnly(2026, 7, 20)],
         };
-        AccountingPeriodWithBalanceModel changed = await test.Api.PostAsync<ExpectedIncomeSourceRequestModel, AccountingPeriodWithBalanceModel>(
+        await test.Api.PostAsync(
             $"/accounting-periods/{july.Id}/expected-income-sources/{updatedSource.Id}", changedSource);
+        AccountingPeriodWithBalanceModel changed = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}");
         ExpectedIncomeSourceModel changedResult = Assert.Single(changed.ExpectedIncomeSources);
         Assert.Equal("Employer (updated)", changedResult.Name);
         Assert.Equal(updatedSource.Id, changedResult.Id);

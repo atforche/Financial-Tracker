@@ -34,18 +34,7 @@ public sealed class AccountingPeriodQueryConverter(AccountingPeriodConverter acc
     /// </summary>
     public AccountingPeriodBalanceQuery ToDomain(AccountingPeriodWithBalanceQueryParameterModel model) => new(
         ToDomain(model.Filter),
-        model.Sort switch
-        {
-            AccountingPeriodWithBalanceSortModel.Date => AccountingPeriodBalanceSort.Date,
-            AccountingPeriodWithBalanceSortModel.DateDescending => AccountingPeriodBalanceSort.DateDescending,
-            AccountingPeriodWithBalanceSortModel.IsOpen => AccountingPeriodBalanceSort.IsOpen,
-            AccountingPeriodWithBalanceSortModel.IsOpenDescending => AccountingPeriodBalanceSort.IsOpenDescending,
-            AccountingPeriodWithBalanceSortModel.OpeningBalance => AccountingPeriodBalanceSort.OpeningBalance,
-            AccountingPeriodWithBalanceSortModel.OpeningBalanceDescending => AccountingPeriodBalanceSort.OpeningBalanceDescending,
-            AccountingPeriodWithBalanceSortModel.ClosingBalance => AccountingPeriodBalanceSort.ClosingBalance,
-            AccountingPeriodWithBalanceSortModel.ClosingBalanceDescending => AccountingPeriodBalanceSort.ClosingBalanceDescending,
-            _ => AccountingPeriodBalanceSort.DateDescending,
-        },
+        ToDomain(model.Sort),
         model.Offset ?? 0,
         model.Limit);
 
@@ -54,22 +43,12 @@ public sealed class AccountingPeriodQueryConverter(AccountingPeriodConverter acc
     /// </summary>
     public AccountingPeriodRangeQuery ToDomain(AccountingPeriodsInRangeQueryParameterModel model) => new(
         model.Range.Start,
-        model.Range.End,
-        ToDomain(model.Sort),
-        model.Offset ?? 0,
-        model.Limit);
+        model.Range.End);
 
     /// <summary>
     /// Converts the provided Accounting Period to an API model.
     /// </summary>
-    public AccountingPeriodModel ToModel(AccountingPeriod accountingPeriod) => new()
-    {
-        Id = accountingPeriod.Id.Value,
-        Name = accountingPeriod.Name,
-        Year = accountingPeriod.Year,
-        Month = accountingPeriod.Month,
-        IsOpen = accountingPeriod.IsOpen,
-    };
+    public AccountingPeriodModel ToModel(AccountingPeriod accountingPeriod) => accountingPeriodConverter.ToModel(accountingPeriod);
 
     /// <summary>
     /// Converts the provided Accounting Period page to a collection model.
@@ -167,6 +146,17 @@ public sealed class AccountingPeriodQueryConverter(AccountingPeriodConverter acc
     {
         AccountingPeriod = ToModel(detail.Balance),
         CappedGoalCount = detail.CappedGoalCount,
+        GoalSummary = new AccountingPeriodGoalSummaryModel
+        {
+            FundGoalCount = detail.GoalSummary.FundGoalCount,
+            ContributionGoalCount = detail.GoalSummary.ContributionGoalCount,
+            ContributedGoalCount = detail.GoalSummary.ContributedGoalCount,
+            FundGoalsBelowMinimumCount = detail.GoalSummary.FundGoalsBelowMinimumCount,
+            FundGoalsAboveMaximumCount = detail.GoalSummary.FundGoalsAboveMaximumCount,
+            AccountGoalCount = detail.GoalSummary.AccountGoalCount,
+            AccountGoalsBelowMinimumCount = detail.GoalSummary.AccountGoalsBelowMinimumCount,
+            AccountGoalsAboveMaximumCount = detail.GoalSummary.AccountGoalsAboveMaximumCount,
+        },
         PreviousPeriod = detail.PreviousPeriod == null ? null : ToModel(detail.PreviousPeriod),
         NextPeriod = detail.NextPeriod == null ? null : ToModel(detail.NextPeriod),
         TotalSpending = detail.TotalSpending,
@@ -181,19 +171,7 @@ public sealed class AccountingPeriodQueryConverter(AccountingPeriodConverter acc
     /// </summary>
     public AccountingPeriodsInRangeModel ToModel(AccountingPeriodRange range) => new()
     {
-        AccountingPeriods = ToModel(range.AccountingPeriods),
-        TotalIncome = new IncomeAmountModel
-        {
-            Total = range.TotalIncome,
-            Tracked = range.TrackedIncome,
-            Untracked = range.UntrackedIncome,
-        },
-        TotalExpectedIncome = new IncomeAmountModel
-        {
-            Total = range.TotalExpectedIncome,
-            Tracked = range.TrackedExpectedIncome,
-            Untracked = range.UntrackedExpectedIncome,
-        },
+        AccountingPeriods = range.AccountingPeriods.Select(ToModel).ToList(),
         TotalSpending = range.TotalSpending,
     };
 

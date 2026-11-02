@@ -1,38 +1,26 @@
-import type { AccountGoalSort } from "@/account-goals/types";
+import AccountingPeriodGoalCards from "@/accounting-periods/workspace/AccountingPeriodGoalCards";
 import AccountingPeriodHeader from "@/accounting-periods/workspace/AccountingPeriodHeader";
 import AccountingPeriodPlanCard from "@/accounting-periods/workspace/AccountingPeriodPlanCard";
-import AccountingPeriodPlanTabs from "@/accounting-periods/workspace/AccountingPeriodPlanTabs";
 import AccountingPeriodProgressCard from "@/accounting-periods/workspace/AccountingPeriodProgressCard";
 import BalanceStatCards from "@/accounts/BalanceStatCards";
 import { Box } from "@mui/material";
 import ExpectedIncomeSourcesFrame from "@/accounting-periods/workspace/ExpectedIncomeSourcesFrame";
-import type { FundGoalSort } from "@/fund-goals/types";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import SignedChange from "@/framework/view/SignedChange";
 import createApiClient from "@/framework/data/createApiClient";
 import { expectedIncomeSourcesId } from "@/accounting-periods/workspace/helpers";
 import fillHeightSx from "@/framework/view/fillHeightSx";
+import fundGoalRoutes from "@/fund-goals/routes";
 import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
- * The goal list shown at the bottom of an accounting period's page: its Fund Goals or Account Goals.
- */
-type AccountingPeriodPlanTab = "fund-goals" | "account-goals";
-
-/**
  * Search parameters supported by an accounting period's page.
  */
 interface AccountingPeriodSearchParams {
-  planTab?: AccountingPeriodPlanTab;
-  pageSize?: number | string | null;
-  fundGoalPage?: number | string | null;
-  fundGoalSort?: FundGoalSort;
-  accountGoalPage?: number | string | null;
-  accountGoalSort?: AccountGoalSort;
   returnUrl?: string;
 }
 
@@ -45,7 +33,8 @@ interface AccountingPeriodWorkspaceDetailPageProps {
 }
 
 /**
- * Displays an accounting period's balances, progress against its plan, and the goals and income sources it plans.
+ * Displays an accounting period's balances, progress against its plan, and the income sources it plans, with links
+ * to its goals.
  */
 const AccountingPeriodWorkspaceDetailPage = async function ({
   params,
@@ -109,9 +98,9 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
           <AccountingPeriodPlanCard
             accountingPeriod={period}
             cappedGoalCount={detail.cappedGoalCount}
-            fundGoalsHref={routes.workspaceDetail(period.id, {
-              ...resolvedSearchParams,
-              planTab: "fund-goals",
+            fundGoalsHref={fundGoalRoutes.workspace({
+              accountingPeriodId: period.id,
+              returnUrl: currentUrl,
             })}
           />
         </Box>
@@ -122,14 +111,14 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
           redirectUrl={currentUrl}
         />
       </Box>
-      <AccountingPeriodPlanTabs
-        accountingPeriod={period}
-        searchParams={resolvedSearchParams}
-        currentUrl={currentUrl}
+      <AccountingPeriodGoalCards
+        accountingPeriodId={period.id}
+        summary={detail.goalSummary}
+        returnUrl={currentUrl}
       />
     </PageLayout>
   );
 };
 
-export type { AccountingPeriodPlanTab, AccountingPeriodSearchParams };
+export type { AccountingPeriodSearchParams };
 export default AccountingPeriodWorkspaceDetailPage;

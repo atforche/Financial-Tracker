@@ -5,7 +5,4 @@ namespace Domain.AccountingPeriods.Queries;
 /// </summary>
 public sealed record AccountingPeriodRangeQuery(
     Guid StartId,
-    Guid EndId,
-    AccountingPeriodBalanceSort Sort,
-    int Offset,
-    int? Limit);
+    Guid EndId);

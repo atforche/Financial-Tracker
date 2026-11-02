@@ -39,15 +39,15 @@ public sealed class AccountingPeriodQueryTests
     }
 
     /// <summary>
-    /// Returns the periods in a range in the requested order with expected income totaled across them.
+    /// Returns the periods in a range in date order, each with its own expected income.
     /// </summary>
     [Fact]
-    public async Task RangeReturnsSortedPeriodsAndExpectedIncomeTotals()
+    public async Task RangeReturnsPeriodsInDateOrderWithTheirExpectedIncome()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
-        _ = await test.Api.PostAsync<ExpectedIncomeSourceRequestModel, AccountingPeriodWithBalanceModel>(
+        await test.Api.PostAsync(
             $"/accounting-periods/{july.Id}/expected-income-sources",
             new ExpectedIncomeSourceRequestModel
             {
@@ -57,7 +57,7 @@ public sealed class AccountingPeriodQueryTests
                 UntrackedTransfers = [new ExpectedUntrackedIncomeTransferRequestModel { Description = "Transfer", Amount = 20m }],
                 ExpectedDates = [new DateOnly(2026, 7, 15)],
             });
-        _ = await test.Api.PostAsync<ExpectedIncomeSourceRequestModel, AccountingPeriodWithBalanceModel>(
+        await test.Api.PostAsync(
             $"/accounting-periods/{august.Id}/expected-income-sources",
             new ExpectedIncomeSourceRequestModel
             {
@@ -69,16 +69,15 @@ public sealed class AccountingPeriodQueryTests
             });
 
         AccountingPeriodsInRangeModel range = await test.Api.GetAsync<AccountingPeriodsInRangeModel>(
-            $"/accounting-periods/range?range.start={july.Id}&range.end={august.Id}&sort=Date");
+            $"/accounting-periods/range?range.start={july.Id}&range.end={august.Id}");
 
-        Assert.Equal([july.Id, august.Id], range.AccountingPeriods.Items.Select(period => period.Id));
-        Assert.Equal(200m, range.TotalExpectedIncome.Total);
-        Assert.Equal(180m, range.TotalExpectedIncome.Tracked);
-        Assert.Equal(20m, range.TotalExpectedIncome.Untracked);
+        Assert.Equal([july.Id, august.Id], range.AccountingPeriods.Select(period => period.Id));
+        Assert.Equal([100m, 100m], range.AccountingPeriods.Select(period => period.ExpectedIncome.Total));
+        Assert.Equal([80m, 100m], range.AccountingPeriods.Select(period => period.ExpectedIncome.Tracked));
     }
 
     /// <summary>
-    /// Calculates each period's own income and Fund Goal totals when several periods are returned or a range is paged.
+    /// Calculates each period's own income and Fund Goal totals when several periods are returned.
     /// </summary>
     [Fact]
     public async Task MultiplePeriodsEachGetTheirOwnCalculatedTotals()
@@ -95,16 +94,13 @@ public sealed class AccountingPeriodQueryTests
 
         CollectionModel<AccountingPeriodWithBalanceModel> balances = await test.Api.GetAsync<CollectionModel<AccountingPeriodWithBalanceModel>>(
             "/accounting-periods/with-balances?sort=Date");
-        AccountingPeriodsInRangeModel secondPage = await test.Api.GetAsync<AccountingPeriodsInRangeModel>(
-            $"/accounting-periods/range?range.start={july.Id}&range.end={august.Id}&sort=Date&offset=1&limit=1");
+        AccountingPeriodsInRangeModel range = await test.Api.GetAsync<AccountingPeriodsInRangeModel>(
+            $"/accounting-periods/range?range.start={july.Id}&range.end={august.Id}");
 
         Assert.Equal([60m, 40m], balances.Items.Select(period => period.ActualIncome.Total));
         Assert.All(balances.Items, period => Assert.Equal(50m, period.PlannedGoalContributions));
-        AccountingPeriodWithBalanceModel pagedPeriod = Assert.Single(secondPage.AccountingPeriods.Items);
-        Assert.Equal(august.Id, pagedPeriod.Id);
-        Assert.Equal(40m, pagedPeriod.ActualIncome.Total);
-        Assert.Equal(50m, pagedPeriod.PlannedGoalContributions);
-        Assert.Equal(2, secondPage.AccountingPeriods.TotalCount);
+        Assert.Equal([60m, 40m], range.AccountingPeriods.Select(period => period.ActualIncome.Total));
+        Assert.All(range.AccountingPeriods, period => Assert.Equal(50m, period.PlannedGoalContributions));
     }
 
     /// <summary>
@@ -138,6 +134,13 @@ public sealed class AccountingPeriodQueryTests
         Assert.Equal(75m, detail.AccountingPeriod.PlannedGoalContributions);
         Assert.Equal(25m, detail.AccountingPeriod.ExpectedGoalContributions);
         Assert.Equal(1, detail.CappedGoalCount);
+        Assert.Equal(4, detail.GoalSummary.FundGoalCount);
+        Assert.Equal(2, detail.GoalSummary.ContributionGoalCount);
+        Assert.Equal(1, detail.GoalSummary.ContributedGoalCount);
+        Assert.Equal(0, detail.GoalSummary.FundGoalsBelowMinimumCount);
+        Assert.Equal(0, detail.GoalSummary.FundGoalsAboveMaximumCount);
+        Assert.Equal(1, detail.GoalSummary.AccountGoalCount);
+        Assert.Equal(0, detail.GoalSummary.AccountGoalsBelowMinimumCount);
         Assert.Equal(100m, detail.AccountOpeningBalance.TotalBalance);
         Assert.Equal(140m, detail.AccountClosingBalance.TotalBalance);
         Assert.Equal(100m, detail.FundOpeningBalance.TotalBalance);

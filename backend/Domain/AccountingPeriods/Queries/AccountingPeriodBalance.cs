@@ -64,11 +64,6 @@ public sealed class ReceivedIncomeBySource
     private readonly IReadOnlyDictionary<ExpectedIncomeSourceId, ReceivedIncome> _receivedIncome;
 
     /// <summary>
-    /// Received income for no Expected Income Sources.
-    /// </summary>
-    public static ReceivedIncomeBySource None { get; } = new(new Dictionary<ExpectedIncomeSourceId, ReceivedIncome>());
-
-    /// <summary>
     /// Totals the posted income in the provided facts by the Expected Income Source it is linked to.
     /// </summary>
     public static ReceivedIncomeBySource From(IEnumerable<FinancialRangeIncomeFact> incomeFacts) => new(incomeFacts

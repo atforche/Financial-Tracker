@@ -12,7 +12,7 @@ internal sealed class AccountingPeriodBuilder(TestApiClient apiClient, int year,
     /// </summary>
     public async Task<AccountingPeriodHandle> CreateAsync()
     {
-        AccountingPeriodWithBalanceModel model = await apiClient.PostAsync<CreateAccountingPeriodModel, AccountingPeriodWithBalanceModel>("/accounting-periods", new CreateAccountingPeriodModel
+        AccountingPeriodModel model = await apiClient.PostAsync<CreateAccountingPeriodModel, AccountingPeriodModel>("/accounting-periods", new CreateAccountingPeriodModel
         {
             Year = year,
             Month = month,
