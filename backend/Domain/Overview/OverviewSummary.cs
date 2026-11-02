@@ -16,9 +16,11 @@ public sealed record OverviewSummary(
 public sealed record OverviewPeriod(
     AccountingPeriod AccountingPeriod,
     decimal ExpectedTrackedIncome,
-    decimal ActualTrackedIncome,
+    decimal ActualPlannedTrackedIncome,
+    decimal ActualUnplannedTrackedIncome,
     decimal ExpectedGoalContributions,
     decimal ActualGoalContributions,
+    decimal ActualUnplannedGoalContributions,
     decimal TotalSpending,
     decimal NetWorthChange);
 
@@ -48,14 +50,14 @@ public enum OverviewAttentionKind
     UnpostedTransactions,
 
     /// <summary>
-    /// Expected income whose dates have passed without that much income being received.
+    /// Expected Income Sources whose dates have passed without that much income being received from them.
     /// </summary>
     IncomeNotReceived,
 }
 
 /// <summary>
 /// A group of related items needing attention, with its largest items. Count is the number of goals, Transactions,
-/// or passed expected income payments; ItemCount is the number of items the top items were chosen from, which differs
+/// or Expected Income Sources; ItemCount is the number of items the top items were chosen from, which differs
 /// for unposted Transactions, whose items are their Accounts. Income is set only for income not received.
 /// </summary>
 public sealed record OverviewAttentionGroup(
@@ -68,7 +70,8 @@ public sealed record OverviewAttentionGroup(
     OverviewIncomeShortfall? Income = null);
 
 /// <summary>
-/// Tracked income expected so far in the current Accounting Period, and how much of it has been received.
+/// Tracked income expected so far from the current Accounting Period's Expected Income Sources that are behind, and how
+/// much of it has been received.
 /// </summary>
 public sealed record OverviewIncomeShortfall(decimal ExpectedAmount, decimal ReceivedAmount);
 

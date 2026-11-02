@@ -7,18 +7,12 @@ import {
   getOverviewUrl,
   parseOverviewHistoryRange,
 } from "@/overview/helpers";
-import OverviewStat, { type OverviewStatDetail } from "@/overview/OverviewStat";
-import { formatAccountType, isTrackedAccountType } from "@/accounts/helpers";
-import {
-  formatCurrency,
-  getCurrencyDifference,
-} from "@/framework/currencyHelpers";
+import BalanceStatCards from "@/accounts/BalanceStatCards";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import ChevronRight from "@mui/icons-material/ChevronRight";
 import type { JSX } from "react";
 import Link from "next/link";
 import OverviewAttentionList from "@/overview/OverviewAttentionList";
-import OverviewChange from "@/overview/OverviewChange";
 import { OverviewHistoryRangeModel } from "@/framework/data/api";
 import OverviewHistoryRangeSelector from "@/overview/OverviewHistoryRangeSelector";
 import OverviewPeriodCard from "@/overview/OverviewPeriodCard";
@@ -28,8 +22,8 @@ import accountRoutes from "@/accounts/routes";
 import { buildDateChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
 import dayjs from "dayjs";
+import fillHeightSx from "@/framework/view/fillHeightSx";
 import fundRoutes from "@/funds/routes";
-import { getAccountTypeBreakdownDetails } from "@/accounts/balanceSummaryHelpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -49,15 +43,6 @@ const historyDescriptions = {
 } as const satisfies Record<OverviewHistoryRangeModel, string>;
 
 /**
- * Stretches a section's surface to the height of its row so side-by-side sections line up.
- */
-const fillHeightSx = {
-  display: "flex",
-  flexDirection: "column",
-  "& > .MuiPaper-root": { flex: 1 },
-} as const;
-
-/**
  * Displays where balances stand today, what needs attention, the current accounting period, and balance history.
  */
 const OverviewView = async function ({
@@ -73,32 +58,6 @@ const OverviewView = async function ({
     "Failed to load overview",
   );
   const currentPeriod = overview.currentPeriod ?? null;
-  const opening = overview.accountOpeningBalance;
-  const closing = overview.accountClosingBalance;
-  const describeChange = function (
-    current: number,
-    previous: number,
-  ): JSX.Element {
-    return (
-      <>
-        <OverviewChange amount={getCurrencyDifference(current, previous)} />{" "}
-        over {historyDescriptions[history]}
-      </>
-    );
-  };
-  const accountTypeDetails = getAccountTypeBreakdownDetails(opening, closing);
-  const getTypeDetails = function (tracked: boolean): OverviewStatDetail[] {
-    return accountTypeDetails
-      .filter(
-        ({ accountType }) => isTrackedAccountType(accountType) === tracked,
-      )
-      .map((detail) => ({
-        key: detail.accountType,
-        label: formatAccountType(detail.accountType),
-        value: formatCurrency(detail.endingBalance),
-        change: detail.netChange,
-      }));
-  };
   const overviewUrl = getOverviewUrl(history);
   const trendsRange = {
     mode: "date",
@@ -134,40 +93,13 @@ const OverviewView = async function ({
           <OverviewAddTransactionButton returnUrl={overviewUrl} />
         </Stack>
       </Stack>
-      <ResponsiveGrid columns={{ xs: 1, sm: 2, lg: 4 }}>
-        <OverviewStat
-          label="Net worth"
-          value={formatCurrency(closing.totalBalance)}
-          caption={describeChange(closing.totalBalance, opening.totalBalance)}
-        />
-        <OverviewStat
-          label="Tracked money"
-          value={formatCurrency(closing.totalTrackedBalance)}
-          caption={describeChange(
-            closing.totalTrackedBalance,
-            opening.totalTrackedBalance,
-          )}
-          details={getTypeDetails(true)}
-          detailsLabel="by account type"
-        />
-        <OverviewStat
-          label="Untracked money"
-          value={formatCurrency(closing.totalUntrackedBalance)}
-          caption={describeChange(
-            closing.totalUntrackedBalance,
-            opening.totalUntrackedBalance,
-          )}
-          details={getTypeDetails(false)}
-          detailsLabel="by account type"
-        />
-        <OverviewStat
-          label="Unassigned funds"
-          value={formatCurrency(
-            overview.fundClosingBalance.totalUnassignedBalance,
-          )}
-          caption="Available to assign to funds"
-        />
-      </ResponsiveGrid>
+      <BalanceStatCards
+        openingBalance={overview.accountOpeningBalance}
+        closingBalance={overview.accountClosingBalance}
+        unassignedBalance={overview.fundClosingBalance.totalUnassignedBalance}
+        unassignedCaption="Available to assign to funds"
+        changeDescription={`over ${historyDescriptions[history]}`}
+      />
       <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
         <Box sx={{ flex: 2, minWidth: 0, ...fillHeightSx }}>
           <OverviewAttentionList

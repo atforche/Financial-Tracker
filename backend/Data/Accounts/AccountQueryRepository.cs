@@ -166,7 +166,8 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
             .SelectMany(transaction => transaction.Destinations.Where(destination => accountIds.Contains(destination.Account.Id)), (transaction, destination) => new FinancialRangeIncomeFact(
                 destination.Amount,
                 destination.Account.Type,
-                destination.PostedDate))
+                destination.PostedDate,
+                transaction.ExpectedIncomeSourceId))
             .ToListAsync(cancellationToken);
 
     /// <inheritdoc/>
@@ -203,7 +204,8 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
             .SelectMany(transaction => transaction.Destinations.Where(destination => accountIds.Contains(destination.Account.Id)), (transaction, destination) => new FinancialRangeIncomeFact(
                 destination.Amount,
                 destination.Account.Type,
-                destination.PostedDate))
+                destination.PostedDate,
+                transaction.ExpectedIncomeSourceId))
             .ToListAsync(cancellationToken);
     }
 

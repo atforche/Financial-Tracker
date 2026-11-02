@@ -120,6 +120,7 @@ public sealed class TransactionRequestConverter(
             Amount = model.Amount,
             Source = source,
             Destinations = destinations,
+            ExpectedIncomeSourceId = model.ExpectedIncomeSourceId,
         };
     }
 
@@ -202,6 +203,7 @@ public sealed class TransactionRequestConverter(
             Amount = model.Amount,
             Source = source,
             Destinations = destinations,
+            ExpectedIncomeSourceId = model.ExpectedIncomeSourceId,
         };
     }
 
@@ -318,17 +320,6 @@ public sealed class TransactionRequestConverter(
         };
     }
 
-    private IncomeFundAmount? GetIncomeFundAmount(CreateIncomeFundAmountModel model, string errorKey, Dictionary<string, string[]> errors)
-    {
-        Fund? fund = TryGetFund(model.FundId, errorKey, errors);
-        return fund == null ? null : new IncomeFundAmount
-        {
-            FundId = fund.Id,
-            Amount = model.Amount,
-            IsExtraContribution = model.IsExtraContribution,
-        };
-    }
-
     private SpendingTransactionSource? GetSpendingSource(
         CreateSpendingTransactionSourceModel model,
         string errorKeyPrefix,
@@ -380,7 +371,7 @@ public sealed class TransactionRequestConverter(
         {
             return null;
         }
-        IReadOnlyCollection<IncomeFundAmount>? fundAssignments = GetAll(model.FundAssignments, $"{errorKeyPrefix}.FundAssignments", errors, GetIncomeFundAmount);
+        IReadOnlyCollection<FundAmount>? fundAssignments = GetAll(model.FundAssignments, $"{errorKeyPrefix}.FundAssignments", errors, GetFundAmount);
         return fundAssignments == null ? null : new IncomeTransactionDestination(account, model.Amount, null, fundAssignments);
     }
 

@@ -216,6 +216,7 @@ public sealed class TransactionConverter(
             Amount = income.Amount,
             FullyPosted = IsFullyPosted(income),
             TrackedAmount = income.TrackedAmount,
+            ExpectedIncomeSourceId = income.ExpectedIncomeSourceId?.Value,
             Source = new IncomeTransactionSourceModel
             {
                 Account = income.Source.Account == null ? null : accountBalanceEventConverter.ToModel(details.GetAccountEvent(
@@ -245,9 +246,7 @@ public sealed class TransactionConverter(
                 Amount = destination.Amount,
                 PostedDate = destination.PostedDate,
                 FundAssignments = destination.FundAssignments.Select(amount =>
-                    fundBalanceEventConverter.ToModel(
-                        details.GetFundEvent(amount, BalanceEventType.Credit),
-                        amount.IsExtraContribution)).ToList(),
+                    fundBalanceEventConverter.ToModel(details.GetFundEvent(amount, BalanceEventType.Credit))).ToList(),
                 FundGoals = destination.FundAssignments.Select(amount =>
                     fundGoalBalanceEventConverter.ToModel(details.GetFundGoalEvent(
                         amount,

@@ -11,6 +11,11 @@ public interface IAccountingPeriodBalanceHistoryRepository
     AccountingPeriodBalanceHistory GetForAccountingPeriod(AccountingPeriodId accountingPeriodId);
 
     /// <summary>
+    /// Gets the Accounting Period Balance Histories for the specified Accounting Period IDs
+    /// </summary>
+    IReadOnlyCollection<AccountingPeriodBalanceHistory> GetForAccountingPeriods(IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds);
+
+    /// <summary>
     /// Adds the provided Accounting Period Balance History to the repository
     /// </summary>
     void Add(AccountingPeriodBalanceHistory accountingPeriodBalanceHistory);

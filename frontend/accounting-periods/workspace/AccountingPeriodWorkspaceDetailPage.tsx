@@ -1,24 +1,40 @@
-import AccountingPeriodProgressView from "@/accounting-periods/workspace/AccountingPeriodProgressView";
-import AccountingPeriodWorkspaceHeader from "@/accounting-periods/workspace/AccountingPeriodWorkspaceHeader";
-import type { AccountingPeriodWorkspaceSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspace";
+import AccountingPeriodGoalCards from "@/accounting-periods/workspace/AccountingPeriodGoalCards";
+import AccountingPeriodHeader from "@/accounting-periods/workspace/AccountingPeriodHeader";
+import AccountingPeriodPlanCard from "@/accounting-periods/workspace/AccountingPeriodPlanCard";
+import AccountingPeriodProgressCard from "@/accounting-periods/workspace/AccountingPeriodProgressCard";
+import BalanceStatCards from "@/accounts/BalanceStatCards";
+import { Box } from "@mui/material";
+import ExpectedIncomeSourcesFrame from "@/accounting-periods/workspace/ExpectedIncomeSourcesFrame";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
+import SignedChange from "@/framework/view/SignedChange";
 import createApiClient from "@/framework/data/createApiClient";
-import getAdjacentAccountingPeriods from "@/accounting-periods/workspace/periodNavigation";
+import { expectedIncomeSourcesId } from "@/accounting-periods/workspace/helpers";
+import fillHeightSx from "@/framework/view/fillHeightSx";
+import fundGoalRoutes from "@/fund-goals/routes";
+import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
+
+/**
+ * Search parameters supported by an accounting period's page.
+ */
+interface AccountingPeriodSearchParams {
+  returnUrl?: string;
+}
 
 /**
  * Props for the AccountingPeriodWorkspaceDetailPage component.
  */
 interface AccountingPeriodWorkspaceDetailPageProps {
   readonly params: Promise<{ accountingPeriodId: string }>;
-  readonly searchParams: Promise<AccountingPeriodWorkspaceSearchParams>;
+  readonly searchParams: Promise<AccountingPeriodSearchParams>;
 }
 
 /**
- * Displays the detailed plan, progress, activity, and actions for one accounting period.
+ * Displays an accounting period's balances, progress against its plan, and the income sources it plans, with links
+ * to its goals.
  */
 const AccountingPeriodWorkspaceDetailPage = async function ({
   params,
@@ -27,93 +43,82 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
   const { accountingPeriodId } = await params;
   const resolvedSearchParams = await searchParams;
   const apiClient = await createApiClient();
-  const workspaceParams = {
-    ...(typeof resolvedSearchParams.years !== "undefined"
-      ? { years: resolvedSearchParams.years }
-      : {}),
-    ...(typeof resolvedSearchParams.months !== "undefined"
-      ? { months: resolvedSearchParams.months }
-      : {}),
-    ...(typeof resolvedSearchParams.sort !== "undefined"
-      ? { sort: resolvedSearchParams.sort }
-      : {}),
-    ...(typeof resolvedSearchParams.page !== "undefined"
-      ? { page: resolvedSearchParams.page }
-      : {}),
-    ...(typeof resolvedSearchParams.pageSize !== "undefined"
-      ? { pageSize: resolvedSearchParams.pageSize }
-      : {}),
-  } satisfies AccountingPeriodWorkspaceSearchParams;
-  const workspaceUrl = routes.workspace(workspaceParams);
-  // Links between the period's own pages keep the page the user came from, so they can still return to it
-  const periodParams = {
-    ...workspaceParams,
-    ...(typeof resolvedSearchParams.returnUrl !== "undefined"
-      ? { returnUrl: resolvedSearchParams.returnUrl }
-      : {}),
-  } satisfies AccountingPeriodWorkspaceSearchParams;
-  const periodResponse = await apiClient.GET(
-    "/accounting-periods/{accountingPeriodId}",
+  const detailResponse = await apiClient.GET(
+    "/accounting-periods/{accountingPeriodId}/detail",
     { params: { path: { accountingPeriodId } } },
   );
-  if (periodResponse.error) {
-    redirect(workspaceUrl);
+  if (detailResponse.response.status === 404) {
+    redirect(routes.workspace({}));
   }
-  const period = unwrapApiResponse(
-    periodResponse,
+  const detail = unwrapApiResponse(
+    detailResponse,
     "Failed to fetch accounting period",
   );
-  if (resolvedSearchParams.view === "plan") {
-    redirect(
-      routes.workspacePlan(period.id, {
-        ...periodParams,
-        ...(typeof resolvedSearchParams.incomeSourcePage !== "undefined"
-          ? { incomeSourcePage: resolvedSearchParams.incomeSourcePage }
-          : {}),
-        ...(typeof resolvedSearchParams.fundGoalPage !== "undefined"
-          ? { fundGoalPage: resolvedSearchParams.fundGoalPage }
-          : {}),
-        ...(typeof resolvedSearchParams.accountGoalPage !== "undefined"
-          ? { accountGoalPage: resolvedSearchParams.accountGoalPage }
-          : {}),
-      }),
-    );
-  }
-  const { previousPeriod, nextPeriod } = await getAdjacentAccountingPeriods(
-    period.id,
-  );
-  const currentUrl = routes.workspaceDetail(period.id, periodParams);
-  const planHref = routes.workspacePlan(period.id, periodParams);
+  const period = detail.accountingPeriod;
+  const currentUrl = routes.workspaceDetail(period.id, resolvedSearchParams);
+
   return (
     <PageLayout>
-      <AccountingPeriodWorkspaceHeader
-        accountingPeriod={period}
-        workspaceUrl={workspaceUrl}
-        previousPeriod={
-          previousPeriod === null
-            ? null
-            : {
-                name: previousPeriod.name,
-                href: routes.workspaceDetail(previousPeriod.id, periodParams),
-              }
-        }
-        nextPeriod={
-          nextPeriod === null
-            ? null
-            : {
-                name: nextPeriod.name,
-                href: routes.workspaceDetail(nextPeriod.id, periodParams),
-              }
-        }
-        activeView="cash-flow"
-        cashFlowHref={currentUrl}
-        planHref={planHref}
-        redirectUrl={currentUrl}
-        returnUrl={resolvedSearchParams.returnUrl}
+      <AccountingPeriodHeader
+        detail={detail}
+        searchParams={resolvedSearchParams}
+        currentUrl={currentUrl}
       />
-      <AccountingPeriodProgressView accountingPeriod={period} />
+      <BalanceStatCards
+        openingBalance={detail.accountOpeningBalance}
+        closingBalance={detail.accountClosingBalance}
+        unassignedBalance={detail.fundClosingBalance.totalUnassignedBalance}
+        unassignedCaption={
+          <>
+            <SignedChange
+              amount={getCurrencyDifference(
+                detail.fundClosingBalance.totalUnassignedBalance,
+                detail.fundOpeningBalance.totalUnassignedBalance,
+              )}
+            />{" "}
+            this period
+          </>
+        }
+        changeDescription="this period"
+      />
+      <Box
+        sx={{
+          display: "grid",
+          gap: 2,
+          gridTemplateColumns: { xs: "minmax(0, 1fr)", lg: "2fr 1fr" },
+        }}
+      >
+        <Box sx={fillHeightSx}>
+          <AccountingPeriodProgressCard
+            accountingPeriod={period}
+            totalSpending={detail.totalSpending}
+          />
+        </Box>
+        <Box sx={fillHeightSx}>
+          <AccountingPeriodPlanCard
+            accountingPeriod={period}
+            cappedGoalCount={detail.cappedGoalCount}
+            fundGoalsHref={fundGoalRoutes.workspace({
+              accountingPeriodId: period.id,
+              returnUrl: currentUrl,
+            })}
+          />
+        </Box>
+      </Box>
+      <Box id={expectedIncomeSourcesId}>
+        <ExpectedIncomeSourcesFrame
+          accountingPeriod={period}
+          redirectUrl={currentUrl}
+        />
+      </Box>
+      <AccountingPeriodGoalCards
+        accountingPeriodId={period.id}
+        summary={detail.goalSummary}
+        returnUrl={currentUrl}
+      />
     </PageLayout>
   );
 };
 
+export type { AccountingPeriodSearchParams };
 export default AccountingPeriodWorkspaceDetailPage;

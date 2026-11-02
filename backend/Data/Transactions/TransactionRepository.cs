@@ -38,8 +38,8 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
             .Any(t => (t.Source.Account != null && t.Source.Account.Id == account.Id) || t.Destinations.Any(d => d.Account != null && d.Account.Id == account.Id));
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Transaction> GetAllByAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
-        databaseContext.Transactions.Where(transaction => transaction.AccountingPeriodId == accountingPeriodId).AsSplitQuery().ToList();
+    public bool DoAnyTransactionsExistForAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
+        databaseContext.Transactions.Any(transaction => transaction.AccountingPeriodId == accountingPeriodId);
 
     /// <inheritdoc/>
     public bool DoAnyTransactionsExistForFund(FundId fundId) =>

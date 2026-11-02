@@ -43,6 +43,11 @@ public sealed class ExpectedIncomeSourceModel
     public required IncomeAmountModel ExpectedAmount { get; init; }
 
     /// <summary>
+    /// Posted income received from this source so far.
+    /// </summary>
+    public required IncomeAmountModel ReceivedAmount { get; init; }
+
+    /// <summary>
     /// Transfers expected from each payment to untracked accounts.
     /// </summary>
     public required IReadOnlyCollection<ExpectedUntrackedIncomeTransferModel> UntrackedTransfers { get; init; }

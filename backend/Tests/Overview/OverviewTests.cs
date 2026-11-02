@@ -3,7 +3,6 @@ using Models.AccountingPeriods;
 using Models.Accounts;
 using Models.Funds;
 using Models.Overview;
-using Models.Transactions.Create;
 
 namespace Tests.Overview;
 
@@ -72,10 +71,12 @@ public sealed class OverviewTests
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(august).CreateAsync();
-        await AddExpectedIncomeAsync(test, august, "Employer", 100m, new DateOnly(2026, 8, 15), untrackedAmount: 40m);
-        TransactionHandle income = await test.Transactions.Income().In(august).On(new DateOnly(2026, 8, 15)).For(100m).From("Employer").To(cash, groceries).CreateAsync();
+        Guid employer = await test.Api.AddExpectedIncomeSourceAsync(august, "Employer", 100m, new DateOnly(2026, 8, 15), untrackedAmount: 40m);
+        TransactionHandle income = await test.Transactions.Income().In(august).On(new DateOnly(2026, 8, 15)).For(100m).From("Employer").PlannedAs(employer).To(cash, groceries).CreateAsync();
+        TransactionHandle gift = await test.Transactions.Income().In(august).On(new DateOnly(2026, 8, 15)).For(25m).From("Family").To(cash, groceries).CreateAsync();
         TransactionHandle spending = await test.Transactions.Spending().In(august).On(new DateOnly(2026, 8, 16)).For(30m).From(cash).To("Market", groceries).CreateAsync();
         await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 8, 15));
+        await test.Transactions.PostAsync(gift, cash, new DateOnly(2026, 8, 15));
         await test.Transactions.PostAsync(spending, cash, new DateOnly(2026, 8, 16));
 
         OverviewModel overview = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-08-20&history=ThreeMonths");
@@ -86,9 +87,10 @@ public sealed class OverviewTests
         Assert.Equal(august.Id, current.AccountingPeriod.Id);
         Assert.NotEqual(july.Id, current.AccountingPeriod.Id);
         Assert.Equal(60m, current.ExpectedTrackedIncome);
-        Assert.Equal(100m, current.ActualTrackedIncome);
+        Assert.Equal(100m, current.ActualPlannedTrackedIncome);
+        Assert.Equal(25m, current.ActualUnplannedTrackedIncome);
         Assert.Equal(30m, current.TotalSpending);
-        Assert.Equal(70m, current.NetWorthChange);
+        Assert.Equal(95m, current.NetWorthChange);
     }
 
     /// <summary>
@@ -127,11 +129,11 @@ public sealed class OverviewTests
         AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
-        await AddExpectedIncomeAsync(test, july, "Employer", 100m, new DateOnly(2026, 7, 15));
+        Guid employer = await test.Api.AddExpectedIncomeSourceAsync(july, "Employer", 100m, new DateOnly(2026, 7, 15));
 
         OverviewModel onDate = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-15&history=ThreeMonths");
         OverviewModel afterDate = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-16&history=ThreeMonths");
-        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 16)).For(100m).From("Employer").To(cash, groceries).CreateAsync();
+        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 16)).For(100m).From("Employer").PlannedAs(employer).To(cash, groceries).CreateAsync();
         await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 16));
         OverviewModel received = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-16&history=ThreeMonths");
 
@@ -143,8 +145,40 @@ public sealed class OverviewTests
         Assert.Equal(100m, notReceived.Income!.ExpectedAmount);
         Assert.Equal(0m, notReceived.Income.ReceivedAmount);
         Assert.Equal(new DateOnly(2026, 7, 15), notReceived.OldestDate);
-        Assert.Empty(notReceived.TopItems);
+        OverviewAttentionItemModel source = Assert.Single(notReceived.TopItems);
+        Assert.Equal("Employer", source.Name);
+        Assert.Equal(100m, source.Amount);
         Assert.DoesNotContain(received.Attention, group => group.Kind == OverviewAttentionKindModel.IncomeNotReceived);
+    }
+
+    /// <summary>
+    /// Flags each source that is behind by name, without letting income received from one source make up for another.
+    /// </summary>
+    [Fact]
+    public async Task IncomeIsFlaggedBySourceEvenWhenTotalsMatch()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        Guid employer = await test.Api.AddExpectedIncomeSourceAsync(july, "Employer", 100m, new DateOnly(2026, 7, 10));
+        _ = await test.Api.AddExpectedIncomeSourceAsync(july, "Side job", 50m, new DateOnly(2026, 7, 12));
+        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(150m).From("Employer").PlannedAs(employer).To(cash, groceries).CreateAsync();
+        await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
+
+        OverviewModel overview = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-16&history=ThreeMonths");
+        AccountingPeriodWithBalanceModel period = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}");
+
+        OverviewAttentionGroupModel notReceived = Assert.Single(overview.Attention,
+            group => group.Kind == OverviewAttentionKindModel.IncomeNotReceived);
+        Assert.Equal(1, notReceived.Count);
+        Assert.Equal(50m, notReceived.Amount);
+        Assert.Equal(50m, notReceived.Income!.ExpectedAmount);
+        Assert.Equal(0m, notReceived.Income.ReceivedAmount);
+        Assert.Equal(new DateOnly(2026, 7, 12), notReceived.OldestDate);
+        Assert.Equal("Side job", Assert.Single(notReceived.TopItems).Name);
+        Assert.Equal(150m, period.ExpectedIncomeSources.Single(source => source.Name == "Employer").ReceivedAmount.Tracked);
+        Assert.Equal(0m, period.ExpectedIncomeSources.Single(source => source.Name == "Side job").ReceivedAmount.Total);
     }
 
     /// <summary>
@@ -158,13 +192,13 @@ public sealed class OverviewTests
         AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
-        await AddExpectedIncomeAsync(test, july, "Employer", 100m, new DateOnly(2026, 7, 15), untrackedAmount: 40m);
-        await AddExpectedIncomeAsync(test, july, "Retirement match", 40m, new DateOnly(2026, 7, 15), untrackedAmount: 40m);
+        Guid employer = await test.Api.AddExpectedIncomeSourceAsync(july, "Employer", 100m, new DateOnly(2026, 7, 15), untrackedAmount: 40m);
+        _ = await test.Api.AddExpectedIncomeSourceAsync(july, "Retirement match", 40m, new DateOnly(2026, 7, 15), untrackedAmount: 40m);
 
-        TransactionHandle shortPaycheck = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 15)).For(50m).From("Employer").To(cash, groceries).CreateAsync();
+        TransactionHandle shortPaycheck = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 15)).For(50m).From("Employer").PlannedAs(employer).To(cash, groceries).CreateAsync();
         await test.Transactions.PostAsync(shortPaycheck, cash, new DateOnly(2026, 7, 15));
         OverviewModel afterShortPaycheck = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-16&history=ThreeMonths");
-        TransactionHandle correction = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 16)).For(10m).From("Employer").To(cash, groceries).CreateAsync();
+        TransactionHandle correction = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 16)).For(10m).From("Employer").PlannedAs(employer).To(cash, groceries).CreateAsync();
         await test.Transactions.PostAsync(correction, cash, new DateOnly(2026, 7, 16));
         OverviewModel afterCorrection = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-17&history=ThreeMonths");
 
@@ -178,7 +212,7 @@ public sealed class OverviewTests
     }
 
     /// <summary>
-    /// Dates an income shortfall from the first expected payment that received income no longer covers.
+    /// Flags only the source that received less than expected, dated from its first expected date not covered.
     /// </summary>
     [Fact]
     public async Task IncomeShortfallIsDatedFromWhenItFellBehind()
@@ -187,22 +221,23 @@ public sealed class OverviewTests
         AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
-        await AddExpectedIncomeAsync(test, july, "First paycheck", 100m, new DateOnly(2026, 7, 1));
-        await AddExpectedIncomeAsync(test, july, "Second paycheck", 100m, new DateOnly(2026, 7, 15));
-        TransactionHandle firstPaycheck = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 1)).For(100m).From("Employer").To(cash, groceries).CreateAsync();
+        Guid first = await test.Api.AddExpectedIncomeSourceAsync(july, "First paycheck", 100m, new DateOnly(2026, 7, 1));
+        Guid second = await test.Api.AddExpectedIncomeSourceAsync(july, "Second paycheck", 100m, new DateOnly(2026, 7, 15));
+        TransactionHandle firstPaycheck = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 1)).For(100m).From("Employer").PlannedAs(first).To(cash, groceries).CreateAsync();
         await test.Transactions.PostAsync(firstPaycheck, cash, new DateOnly(2026, 7, 1));
-        TransactionHandle secondPaycheck = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 15)).For(60m).From("Employer").To(cash, groceries).CreateAsync();
+        TransactionHandle secondPaycheck = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 15)).For(60m).From("Employer").PlannedAs(second).To(cash, groceries).CreateAsync();
         await test.Transactions.PostAsync(secondPaycheck, cash, new DateOnly(2026, 7, 15));
 
         OverviewModel overview = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-20&history=ThreeMonths");
 
         OverviewAttentionGroupModel notReceived = Assert.Single(overview.Attention,
             group => group.Kind == OverviewAttentionKindModel.IncomeNotReceived);
-        Assert.Equal(2, notReceived.Count);
+        Assert.Equal(1, notReceived.Count);
         Assert.Equal(40m, notReceived.Amount);
-        Assert.Equal(200m, notReceived.Income!.ExpectedAmount);
-        Assert.Equal(160m, notReceived.Income.ReceivedAmount);
+        Assert.Equal(100m, notReceived.Income!.ExpectedAmount);
+        Assert.Equal(60m, notReceived.Income.ReceivedAmount);
         Assert.Equal(new DateOnly(2026, 7, 15), notReceived.OldestDate);
+        Assert.Equal("Second paycheck", Assert.Single(notReceived.TopItems).Name);
     }
 
     /// <summary>
@@ -217,7 +252,7 @@ public sealed class OverviewTests
         _ = await test.Funds.Create("Groceries").In(july).CreateAsync();
         _ = await test.Funds.Create("Vacation").In(july).WithGoal(100m).CreateAsync();
         _ = await test.Funds.Create("Emergency").In(july).WithGoal(null, 50m).CreateAsync();
-        await AddExpectedIncomeAsync(test, july, "Employer", 200m, new DateOnly(2026, 7, 15));
+        _ = await test.Api.AddExpectedIncomeSourceAsync(july, "Employer", 200m, new DateOnly(2026, 7, 15));
 
         OverviewModel overview = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-10&history=ThreeMonths");
 
@@ -253,28 +288,4 @@ public sealed class OverviewTests
         Assert.Equal(150m, aboveMaximum.Amount);
         Assert.Equal("Groceries", Assert.Single(aboveMaximum.TopItems).Name);
     }
-
-    /// <summary>
-    /// Adds an expected income source with a single expected payment, and optionally an untracked transfer, to an
-    /// Accounting Period.
-    /// </summary>
-    private static async Task AddExpectedIncomeAsync(
-        FinancialTrackerTestContext test,
-        AccountingPeriodHandle period,
-        string name,
-        decimal amount,
-        DateOnly date,
-        decimal untrackedAmount = 0m) =>
-        _ = await test.Api.PostAsync<ExpectedIncomeSourceRequestModel, AccountingPeriodWithBalanceModel>(
-            $"/accounting-periods/{period.Id}/expected-income-sources",
-            new ExpectedIncomeSourceRequestModel
-            {
-                Name = name,
-                IncomeLines = [new CreateIncomeLineModel { Description = "Salary", Amount = amount }],
-                IncomeDeductions = [],
-                UntrackedTransfers = untrackedAmount == 0m
-                    ? []
-                    : [new ExpectedUntrackedIncomeTransferRequestModel { Description = "Retirement", Amount = untrackedAmount }],
-                ExpectedDates = [date],
-            });
 }

@@ -6,9 +6,9 @@ import { Box } from "@mui/material";
 import type { JSX } from "react";
 
 /**
- * Props for the OverviewChange component.
+ * Props for the SignedChange component.
  */
-interface OverviewChangeProps {
+interface SignedChangeProps {
   readonly amount: number;
   readonly isIncreaseGood?: boolean;
 }
@@ -30,10 +30,10 @@ const getChangeColor = function (
 /**
  * Displays a signed change amount in green when it is good and red when it is bad. By default an increase is good.
  */
-const OverviewChange = function ({
+const SignedChange = function ({
   amount,
   isIncreaseGood = true,
-}: OverviewChangeProps): JSX.Element {
+}: SignedChangeProps): JSX.Element {
   return (
     <Box
       component="span"
@@ -44,4 +44,4 @@ const OverviewChange = function ({
   );
 };
 
-export default OverviewChange;
+export default SignedChange;

@@ -17,6 +17,13 @@ public class AccountingPeriodBalanceHistoryRepository(DatabaseContext databaseCo
             .Single(accountingPeriodBalanceHistory => accountingPeriodBalanceHistory.AccountingPeriod.Id == accountingPeriodId);
 
     /// <inheritdoc/>
+    public IReadOnlyCollection<AccountingPeriodBalanceHistory> GetForAccountingPeriods(IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds) =>
+        databaseContext.AccountingPeriodBalanceHistories
+            .AsSplitQuery()
+            .Where(accountingPeriodBalanceHistory => accountingPeriodIds.Contains(accountingPeriodBalanceHistory.AccountingPeriod.Id))
+            .ToList();
+
+    /// <inheritdoc/>
     public void Add(AccountingPeriodBalanceHistory accountingPeriodBalanceHistory) => databaseContext.Add(accountingPeriodBalanceHistory);
 
     /// <inheritdoc/>

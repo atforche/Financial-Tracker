@@ -201,7 +201,7 @@ const AccountGoalWorkspaceDetailPage = async function ({
   return (
     <PageLayout>
       <AccountGoalWorkspacePageHeader
-        backHref={returnUrl ?? workspaceUrl}
+        backHref={workspaceUrl}
         previousPeriod={
           previousPeriod === undefined
             ? null

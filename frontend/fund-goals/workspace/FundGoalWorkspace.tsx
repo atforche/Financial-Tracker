@@ -3,6 +3,7 @@ import FundGoalWorkspaceCards from "@/fund-goals/workspace/FundGoalWorkspaceCard
 import FundGoalWorkspaceFilter from "@/fund-goals/workspace/FundGoalWorkspaceFilter";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
+import ReturnLink from "@/framework/view/ReturnLink";
 import createApiClient from "@/framework/data/createApiClient";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -33,7 +34,7 @@ interface FundGoalWorkspaceProps {
 const FundGoalWorkspace = async function ({
   searchParams,
 }: FundGoalWorkspaceProps): Promise<JSX.Element> {
-  const { accountingPeriodId, search } = await searchParams;
+  const { accountingPeriodId, search, returnUrl } = await searchParams;
   const apiClient = await createApiClient();
   const periods = unwrapApiResponse(
     await apiClient.GET("/accounting-periods", {
@@ -79,6 +80,7 @@ const FundGoalWorkspace = async function ({
   });
   return (
     <PageLayout>
+      <ReturnLink returnUrl={returnUrl} />
       <FundGoalWorkspaceFilter
         accountingPeriods={periods.items}
         selectedAccountingPeriodId={selectedAccountingPeriodId ?? null}

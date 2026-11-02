@@ -14,6 +14,14 @@ const returnLabels: readonly (readonly [RegExp, string])[] = [
     /^\/(?:accounting-periods|accounts|funds|locations)\/trends(?:\?|$)/u,
     "Back to Trends",
   ],
+  [
+    /^\/accounting-periods\/workspace\/[^/?#]+\/expected-income-sources\/[^/?#]+(?:\?|$)/u,
+    "Back to Expected Income Source",
+  ],
+  [
+    /^\/accounting-periods\/workspace\/[^/?#]+(?:\?|$)/u,
+    "Back to Accounting Period",
+  ],
   [/^\/locations\/workspace\/[^/?#]+(?:\?|$)/u, "Back to Location"],
   [/^\/accounts\/workspace\/[^/?#]+(?:\?|$)/u, "Back to Account Details"],
   [/^\/funds\/workspace\/[^/?#]+(?:\?|$)/u, "Back to Fund Details"],

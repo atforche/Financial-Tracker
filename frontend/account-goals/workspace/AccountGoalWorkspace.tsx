@@ -3,6 +3,7 @@ import AccountGoalWorkspaceFilter from "@/account-goals/workspace/AccountGoalWor
 import type { AccountGoalWorkspaceSearchParams } from "@/account-goals/workspace/types";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
+import ReturnLink from "@/framework/view/ReturnLink";
 import createApiClient from "@/framework/data/createApiClient";
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
@@ -21,7 +22,7 @@ interface AccountGoalWorkspaceProps {
 const AccountGoalWorkspace = async function ({
   searchParams,
 }: AccountGoalWorkspaceProps): Promise<JSX.Element> {
-  const { accountingPeriodId, accountIds } = await searchParams;
+  const { accountingPeriodId, accountIds, returnUrl } = await searchParams;
   const apiClient = await createApiClient();
   const periods = unwrapApiResponse(
     await apiClient.GET("/accounting-periods", {
@@ -80,6 +81,7 @@ const AccountGoalWorkspace = async function ({
   });
   return (
     <PageLayout>
+      <ReturnLink returnUrl={returnUrl} />
       <AccountGoalWorkspaceFilter
         accountingPeriods={periods.items}
         accounts={filterGoals.map((goal) => goal.account)}

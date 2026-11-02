@@ -11,17 +11,10 @@ public interface IAccountingPeriodQueryRepository
     Task<QueryPage<AccountingPeriod>> GetAsync(AccountingPeriodQuery query, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves Accounting Period balances matching the provided query.
+    /// Retrieves Accounting Periods with their stored balances matching the provided query.
     /// </summary>
-    Task<QueryPage<AccountingPeriodBalance>> GetBalancesAsync(
+    Task<QueryPage<StoredAccountingPeriodBalance>> GetBalancesAsync(
         AccountingPeriodBalanceQuery query,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves an Accounting Period and its balance by ID, or null when it does not exist.
-    /// </summary>
-    Task<AccountingPeriodBalance?> GetBalanceByIdAsync(
-        AccountingPeriodId accountingPeriodId,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -29,6 +22,13 @@ public interface IAccountingPeriodQueryRepository
     /// </summary>
     Task<AccountingPeriod?> GetByIdAsync(
         AccountingPeriodId accountingPeriodId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the Accounting Periods immediately before and after the provided one, when they exist.
+    /// </summary>
+    Task<(AccountingPeriod? Previous, AccountingPeriod? Next)> GetAdjacentAsync(
+        AccountingPeriod accountingPeriod,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -47,18 +47,34 @@ public interface IAccountingPeriodQueryRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves Accounting Period balances between the provided chronological indexes.
+    /// Retrieves Accounting Periods with their stored balances between the provided chronological indexes.
     /// </summary>
-    Task<IReadOnlyCollection<AccountingPeriodBalance>> GetRangeBalancesAsync(
+    Task<IReadOnlyCollection<StoredAccountingPeriodBalance>> GetRangeBalancesAsync(
         int startIndex,
         int endIndex,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves persisted income destination facts for the provided Accounting Periods.
+    /// Retrieves persisted income destination facts for the provided Accounting Periods, keyed by Accounting Period ID.
     /// </summary>
-    Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetRangeIncomeFactsAsync(
+    Task<ILookup<Guid, FinancialRangeIncomeFact>> GetIncomeFactsByAccountingPeriodAsync(
         IReadOnlyCollection<Guid> accountingPeriodIds,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the provided Accounting Periods with their Expected Income Sources loaded.
+    /// </summary>
+    Task<IReadOnlyCollection<AccountingPeriod>> GetWithExpectedIncomeSourcesByIdsAsync(
+        IReadOnlyCollection<AccountingPeriodId> ids,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves an Expected Income Source with its Accounting Period and its linked Income Transactions in date
+    /// order, or null when the source does not exist in that Accounting Period.
+    /// </summary>
+    Task<ExpectedIncomeSourceDetail?> GetExpectedIncomeSourceDetailAsync(
+        AccountingPeriodId accountingPeriodId,
+        Guid expectedIncomeSourceId,
         CancellationToken cancellationToken = default);
 
     /// <summary>

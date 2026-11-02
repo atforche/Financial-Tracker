@@ -54,6 +54,7 @@ interface IncomeDeductionDraft {
 interface IncomeSourceDraft {
   readonly account: AccountBalanceEventDraft | null;
   readonly location: LocationDraft | null;
+  readonly expectedIncomeSourceId: string | null;
   readonly incomeLines: IncomeLineDraft[];
   readonly incomeDeductions: IncomeDeductionDraft[];
 }
@@ -103,6 +104,7 @@ const createEmptySource = function (): IncomeSourceDraft {
   return {
     account: null,
     location: null,
+    expectedIncomeSourceId: null,
     incomeLines: [],
     incomeDeductions: [],
   };
@@ -275,9 +277,9 @@ const buildRequestFields = function (
         .map((fundAmount) => ({
           fundId: fundAmount.fundId,
           amount: fundAmount.amount,
-          isExtraContribution: fundAmount.isExtraContribution,
         })),
     })),
+    expectedIncomeSourceId: source.expectedIncomeSourceId,
   };
 };
 
@@ -398,6 +400,7 @@ const getSourceFromTransaction = function (
       transaction.source.account,
     ),
     location: toLocationDraft(transaction.source.location ?? null),
+    expectedIncomeSourceId: transaction.expectedIncomeSourceId ?? null,
     incomeLines: transaction.source.incomeLines.map((line) => ({
       description: line.description,
       amount: line.amount,
@@ -419,7 +422,6 @@ const getFundAssignmentFromTransactionFund = function (
     fundId: assignment.fund.id,
     fundName: assignment.fund.name,
     amount: assignment.amount,
-    isExtraContribution: assignment.isExtraContribution === true,
   };
 };
 
@@ -438,9 +440,14 @@ const getDestinationsFromTransaction = function (
       fundAssignments: destination.fundAssignments.map(
         getFundAssignmentFromTransactionFund,
       ),
-      baselineFundAssignments: destination.fundAssignments.map(
-        getFundAssignmentFromTransactionFund,
-      ),
+      // Only planned income counted toward Fund Goals, so only it is added back to their remaining contributions
+      baselineFundAssignments:
+        transaction.expectedIncomeSourceId === null ||
+        typeof transaction.expectedIncomeSourceId === "undefined"
+          ? []
+          : destination.fundAssignments.map(
+              getFundAssignmentFromTransactionFund,
+            ),
     }),
   );
 };

@@ -41,12 +41,6 @@ interface FundAssignmentPlannerProps {
         index: number,
       ) => React.JSX.Element | null)
     | null;
-  readonly renderAssignmentControl?:
-    | ((
-        assignment: FundAssignmentDraft,
-        index: number,
-      ) => React.JSX.Element | null)
-    | null;
   readonly readOnly?: boolean;
 }
 
@@ -70,7 +64,6 @@ const FundAssignmentPlanner = function ({
   getFundOptionSecondaryLabel = null,
   sortFunds = null,
   renderAssignmentDetails = null,
-  renderAssignmentControl = null,
   readOnly = false,
 }: FundAssignmentPlannerProps): React.JSX.Element {
   const explicitFundAssignments = getExplicitFundAssignments(fundAssignments);
@@ -192,7 +185,6 @@ const FundAssignmentPlanner = function ({
                     }
                   />
                 </Box>
-                {renderAssignmentControl?.(assignment, index) ?? null}
                 {showAutoAssign ? (
                   <IconButton
                     aria-label="Auto-assign fund assignments"

@@ -1,3 +1,4 @@
+using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.FundGoals;
 using Domain.Funds;
@@ -26,6 +27,12 @@ public class IncomeTransaction : Transaction
     /// Destinations for this Income Transaction
     /// </summary>
     public IReadOnlyCollection<IncomeTransactionDestination> Destinations => _destinations;
+
+    /// <summary>
+    /// Expected Income Source this income was planned as, or null when the income is unplanned. Only planned income
+    /// counts toward Fund Goal contributions.
+    /// </summary>
+    public ExpectedIncomeSourceId? ExpectedIncomeSourceId { get; private set; }
 
     /// <inheritdoc/>
     public override IEnumerable<AccountId> GetAllAffectedAccountIds()
@@ -84,6 +91,12 @@ public class IncomeTransaction : Transaction
     internal void UpdateIncomeSource(IncomeTransactionSource incomeSource) => Source = incomeSource;
 
     /// <summary>
+    /// Updates the Expected Income Source this income was planned as.
+    /// </summary>
+    internal void UpdateExpectedIncomeSource(Guid? expectedIncomeSourceId) =>
+        ExpectedIncomeSourceId = expectedIncomeSourceId is Guid id ? new ExpectedIncomeSourceId(id) : null;
+
+    /// <summary>
     /// Updates the income destinations for this income transaction.
     /// </summary>
     internal void UpdateIncomeDestinations(IReadOnlyCollection<IncomeTransactionDestination> incomeDestinations)
@@ -127,6 +140,7 @@ public class IncomeTransaction : Transaction
     {
         Source = request.Source;
         UpdateIncomeDestinations(request.Destinations);
+        UpdateExpectedIncomeSource(request.ExpectedIncomeSourceId);
     }
 
     /// <summary>
@@ -197,9 +211,7 @@ public class IncomeTransaction : Transaction
             .SelectMany(destination => destination.FundAssignments)
             .Where(assignment => assignment.FundId == existingTotals.FundId).ToList();
         decimal amount = fundAmounts.Sum(assignment => assignment.Amount);
-        decimal expectedAmount = fundAmounts
-            .Where(assignment => !assignment.IsExtraContribution)
-            .Sum(assignment => assignment.Amount);
+        decimal expectedAmount = ExpectedIncomeSourceId == null ? 0 : amount;
         return amount == 0 ? existingTotals : existingTotals.Assign(
             reverse ? -amount : amount,
             reverse ? -expectedAmount : expectedAmount);

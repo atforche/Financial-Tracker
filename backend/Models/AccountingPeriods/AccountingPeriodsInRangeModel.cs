@@ -6,19 +6,9 @@ namespace Models.AccountingPeriods;
 public class AccountingPeriodsInRangeModel
 {
     /// <summary>
-    /// Accounting Periods in the requested range.
+    /// Accounting Periods in the requested range, in date order.
     /// </summary>
-    public required CollectionModel<AccountingPeriodWithBalanceModel> AccountingPeriods { get; init; }
-
-    /// <summary>
-    /// Total income for the requested range.
-    /// </summary>
-    public required IncomeAmountModel TotalIncome { get; init; }
-
-    /// <summary>
-    /// Total expected income for the requested range.
-    /// </summary>
-    public required IncomeAmountModel TotalExpectedIncome { get; init; }
+    public required IReadOnlyCollection<AccountingPeriodWithBalanceModel> AccountingPeriods { get; init; }
 
     /// <summary>
     /// Total spending for the requested range.

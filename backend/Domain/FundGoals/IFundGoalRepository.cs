@@ -30,6 +30,11 @@ public interface IFundGoalRepository
     IReadOnlyCollection<FundGoal> GetAllByAccountingPeriod(AccountingPeriodId? accountingPeriodId);
 
     /// <summary>
+    /// Gets all the Fund Goals associated with the specified Accounting Periods.
+    /// </summary>
+    IReadOnlyCollection<FundGoal> GetAllByAccountingPeriods(IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds);
+
+    /// <summary>
     /// Attempts to get the Fund Goal associated with the specified Fund and Accounting Period.
     /// </summary>
     FundGoal? GetByFundAndAccountingPeriod(FundId fundId, AccountingPeriodId? accountingPeriodId);

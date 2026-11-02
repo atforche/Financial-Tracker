@@ -30,6 +30,9 @@ const FundGoalWorkspaceCards = function ({
   const search = searchParams
     .get(propertyName<FundGoalWorkspaceSearchParams>("search"))
     ?.trim();
+  const returnUrl = searchParams.get(
+    propertyName<FundGoalWorkspaceSearchParams>("returnUrl"),
+  );
   if (!fundGoals.length) {
     return (
       <Typography color="text.secondary">
@@ -45,6 +48,7 @@ const FundGoalWorkspaceCards = function ({
             ? { accountingPeriodId: accountingPeriod.id }
             : {}),
           ...(search !== undefined && search !== "" ? { search } : {}),
+          ...(returnUrl === null ? {} : { returnUrl }),
         };
         return (
           <FundGoalWorkspaceCard

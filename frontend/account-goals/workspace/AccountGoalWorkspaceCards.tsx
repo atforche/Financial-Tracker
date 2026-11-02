@@ -38,6 +38,9 @@ const AccountGoalWorkspaceCards = function ({
   const accountIdsParamName =
     propertyName<AccountGoalWorkspaceSearchParams>("accountIds");
   const selectedAccountIds = searchParams.getAll(accountIdsParamName);
+  const returnUrl = searchParams.get(
+    propertyName<AccountGoalWorkspaceSearchParams>("returnUrl"),
+  );
   return (
     <CardResponsiveGrid minimumColumnWidth={340} spacing={2}>
       {accountGoals.map((accountGoal) => (
@@ -52,6 +55,7 @@ const AccountGoalWorkspaceCards = function ({
             ...(selectedAccountIds.length
               ? { accountIds: selectedAccountIds }
               : {}),
+            ...(returnUrl === null ? {} : { returnUrl }),
           })}
         />
       ))}

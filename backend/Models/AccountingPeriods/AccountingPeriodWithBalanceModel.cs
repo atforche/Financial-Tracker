@@ -31,6 +31,11 @@ public class AccountingPeriodWithBalanceModel : AccountingPeriodModel
     public required IncomeAmountModel ActualIncome { get; init; }
 
     /// <summary>
+    /// Income received during the Accounting Period that was not planned as any Expected Income Source.
+    /// </summary>
+    public required IncomeAmountModel UnplannedIncome { get; init; }
+
+    /// <summary>
     /// Sum of the planned monthly contributions for all Fund Goals in the Accounting Period.
     /// </summary>
     public required decimal PlannedGoalContributions { get; init; }
@@ -46,7 +51,8 @@ public class AccountingPeriodWithBalanceModel : AccountingPeriodModel
     public required decimal ActualGoalContributions { get; init; }
 
     /// <summary>
-    /// Extra amount assigned to Fund Goals in the Accounting Period.
+    /// Amount of unplanned income assigned to Fund Goals in the Accounting Period, which does not count toward their
+    /// contributions.
     /// </summary>
-    public required decimal ActualExtraGoalContributions { get; init; }
+    public required decimal ActualUnplannedGoalContributions { get; init; }
 }

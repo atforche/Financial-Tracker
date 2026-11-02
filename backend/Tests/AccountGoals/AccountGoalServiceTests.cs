@@ -212,6 +212,9 @@ public sealed class AccountGoalServiceTests
         public AccountingPeriodBalanceHistory GetForAccountingPeriod(AccountingPeriodId accountingPeriodId) =>
             histories.Single(history => history.AccountingPeriod.Id == accountingPeriodId);
 
+        public IReadOnlyCollection<AccountingPeriodBalanceHistory> GetForAccountingPeriods(IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds) =>
+            histories.Where(history => accountingPeriodIds.Contains(history.AccountingPeriod.Id)).ToList();
+
         public void Add(AccountingPeriodBalanceHistory accountingPeriodBalanceHistory) => throw new NotSupportedException();
 
         public void Delete(AccountingPeriodBalanceHistory accountingPeriodBalanceHistory) => throw new NotSupportedException();

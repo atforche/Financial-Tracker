@@ -16,4 +16,9 @@ public sealed class UpdateIncomeTransactionModel : UpdateTransactionModel
     /// Destinations for the income transaction.
     /// </summary>
     public required IReadOnlyCollection<CreateIncomeTransactionDestinationModel> Destinations { get; init; }
+
+    /// <summary>
+    /// ID of the Expected Income Source this income was planned as, or null when the income is unplanned.
+    /// </summary>
+    public required Guid? ExpectedIncomeSourceId { get; init; }
 }

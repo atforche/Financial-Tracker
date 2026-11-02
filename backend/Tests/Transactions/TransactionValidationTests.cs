@@ -86,6 +86,7 @@ public sealed class TransactionValidationTests
 
         using HttpResponseMessage response = await test.Api.PostResponseAsync<CreateTransactionModel>("/transactions", new CreateIncomeTransactionModel
         {
+            ExpectedIncomeSourceId = null,
             AccountingPeriodId = july.Id,
             Date = new DateOnly(2026, 7, 15),
             Description = "Pay",
@@ -100,7 +101,7 @@ public sealed class TransactionValidationTests
             {
                 AccountId = cash.Id,
                 Amount = 100m,
-                FundAssignments = [new CreateIncomeFundAmountModel { FundId = income.Id, Amount = 90m }]
+                FundAssignments = [new CreateFundAmountModel { FundId = income.Id, Amount = 90m }]
             }]
         });
 
@@ -108,35 +109,20 @@ public sealed class TransactionValidationTests
     }
 
     /// <summary>
-    /// Rejects extra funding when the selected fund goal has no planned monthly contribution.
+    /// Rejects planning income as an Expected Income Source from a different Accounting Period.
     /// </summary>
     [Fact]
-    public async Task CreateAsyncRejectsExtraContributionWithoutPlannedFundGoalContribution()
+    public async Task CreateAsyncRejectsExpectedIncomeSourceFromAnotherPeriod()
     {
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountHandle cash = await test.Accounts.Onboard("Cash").CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
-        FundHandle gifts = await test.Funds.Create("Gifts").In(july).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        Guid augustEmployer = await test.Api.AddExpectedIncomeSourceAsync(august, "Employer", 50m);
 
-        using HttpResponseMessage response = await test.Api.PostResponseAsync<CreateTransactionModel>("/transactions", new CreateIncomeTransactionModel
-        {
-            AccountingPeriodId = july.Id,
-            Date = new DateOnly(2026, 7, 15),
-            Description = "Birthday gift",
-            Amount = 50m,
-            Source = new CreateIncomeTransactionSourceModel
-            {
-                Location = new LocationInputModel { NewLocationName = "Family" },
-                IncomeLines = [new CreateIncomeLineModel { Description = "Gift", Amount = 50m }],
-                IncomeDeductions = [],
-            },
-            Destinations = [new CreateIncomeTransactionDestinationModel
-            {
-                AccountId = cash.Id,
-                Amount = 50m,
-                FundAssignments = [new CreateIncomeFundAmountModel { FundId = gifts.Id, Amount = 50m, IsExtraContribution = true }],
-            }],
-        });
+        using HttpResponseMessage response = await test.Api.PostResponseAsync(
+            "/transactions",
+            test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 15)).For(50m).From("Employer").PlannedAs(augustEmployer).To(cash, null).CreateRequest());
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }

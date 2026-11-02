@@ -9,47 +9,36 @@ import dayjs from "dayjs";
  */
 interface ExpectedIncomeDatesEditorProps {
   readonly dates: string[];
-  readonly setDates?: ((dates: string[]) => void) | null;
-  readonly year: number | null;
-  readonly month: number | null;
+  readonly setDates: (dates: string[]) => void;
+  readonly year: number;
+  readonly month: number;
 }
 
 /**
- * Displays expected payment dates in editable or read-only form.
+ * Edits the dates an expected-income source is expected to pay, limited to its accounting period's month.
  */
 const ExpectedIncomeDatesEditor = function ({
   dates,
-  setDates = null,
+  setDates,
   year,
   month,
 }: ExpectedIncomeDatesEditorProps): JSX.Element {
-  const readOnly = setDates === null;
-  const minDate =
-    year === null || month === null
-      ? null
-      : dayjs(new Date(year, month - 1, 1));
-  const maxDate = minDate?.endOf("month") ?? null;
+  const minDate = dayjs(new Date(year, month - 1, 1));
+  const maxDate = minDate.endOf("month");
   return (
     <Stack spacing={1.5}>
-      {!readOnly || dates.length <= 1 ? (
-        <Stack spacing={0.25}>
-          <Typography variant="subtitle2">Expected Payment Dates</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Add the dates on which this source is expected to pay.
-          </Typography>
-        </Stack>
-      ) : null}
-      {readOnly && dates.length === 0 ? (
-        <Typography color="text.secondary">No items available.</Typography>
-      ) : null}
+      <Stack spacing={0.25}>
+        <Typography variant="subtitle2">Expected Payment Dates</Typography>
+        <Typography variant="body2" color="text.secondary">
+          Add the dates on which this source is expected to pay.
+        </Typography>
+      </Stack>
       <CollectionEditor
         items={dates}
         label="Expected Payment Dates"
-        readOnly={readOnly}
         setItems={setDates}
-        createItem={() => minDate?.format("YYYY-MM-DD") ?? ""}
+        createItem={() => minDate.format("YYYY-MM-DD")}
         addLabel="Add Expected Date"
-        showAddButton={minDate !== null}
         itemContainerSx={{
           display: "grid",
           gap: 1.5,
@@ -61,10 +50,7 @@ const ExpectedIncomeDatesEditor = function ({
             sx={{
               display: "grid",
               gap: 1.5,
-              gridTemplateColumns: {
-                xs: "1fr",
-                md: readOnly ? "1fr" : "minmax(0, 1fr) auto",
-              },
+              gridTemplateColumns: "minmax(0, 1fr) auto",
               alignItems: "start",
               border: "1px solid",
               borderColor: "divider",
@@ -78,37 +64,21 @@ const ExpectedIncomeDatesEditor = function ({
               minDate={minDate}
               maxDate={maxDate}
               autoFocus={controls.autoFocus}
-              setValue={
-                readOnly
-                  ? null
-                  : (value): void => {
-                      if (value === null) {
-                        setDates(
-                          dates.filter((_, itemIndex) => itemIndex !== index),
-                        );
-                      } else if (value.isValid()) {
-                        setDates(
-                          dates.map((item, itemIndex) =>
-                            itemIndex === index
-                              ? value.format("YYYY-MM-DD")
-                              : item,
-                          ),
-                        );
-                      }
-                    }
-              }
+              setValue={(value): void => {
+                if (value === null) {
+                  setDates(dates.filter((_, itemIndex) => itemIndex !== index));
+                } else if (value.isValid()) {
+                  setDates(
+                    dates.map((item, itemIndex) =>
+                      itemIndex === index ? value.format("YYYY-MM-DD") : item,
+                    ),
+                  );
+                }
+              }}
             />
-            {readOnly ? null : (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: { xs: "flex-end", md: "center" },
-                  pt: { xs: 0, md: 1.25 },
-                }}
-              >
-                {controls.deleteButton}
-              </Box>
-            )}
+            <Box sx={{ display: "flex", justifyContent: "center", pt: 1.25 }}>
+              {controls.deleteButton}
+            </Box>
           </Box>
         )}
       />

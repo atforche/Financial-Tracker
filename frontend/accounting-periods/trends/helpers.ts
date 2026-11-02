@@ -1,14 +1,16 @@
-import type {
-  AccountingPeriodWithBalance,
-  AccountingPeriodsInRange,
-} from "@/accounting-periods/types";
 import {
   type BarMetricChartPoint,
   getSignedChartColor,
 } from "@/framework/charts/barMetricHelpers";
+import {
+  getCurrencyDifference,
+  getCurrencyTotal,
+} from "@/framework/currencyHelpers";
+import type { AccountingPeriodProgress } from "@/accounting-periods/workspace/AccountingPeriodProgressCard";
+import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import type { BalanceTrendChartPoint } from "@/framework/charts/balanceTrendHelpers";
+import type { IncomeAmount } from "@/transactions/types";
 import { createAccountingPeriodMetricPoint } from "@/framework/charts/chartPointHelpers";
-import { getCurrencyDifference } from "@/framework/currencyHelpers";
 
 /**
  * Builds the chart points for the balance trend chart based on the provided accounting periods.
@@ -57,26 +59,33 @@ const buildChangeChartPoints = function (
 };
 
 /**
- * Creates an empty AccountingPeriodsInRange object with default values.
+ * Adds up the provided accounting periods' income and Fund Goal contribution totals.
  */
-const createEmptyTrends = function (): AccountingPeriodsInRange {
+const sumProgress = function (
+  accountingPeriods: readonly AccountingPeriodWithBalance[],
+): AccountingPeriodProgress {
+  const sum = (
+    getAmount: (period: AccountingPeriodWithBalance) => number,
+  ): number => getCurrencyTotal(accountingPeriods.map(getAmount));
+  const sumIncome = (
+    getIncome: (period: AccountingPeriodWithBalance) => IncomeAmount,
+  ): IncomeAmount => ({
+    total: sum((period) => getIncome(period).total),
+    tracked: sum((period) => getIncome(period).tracked),
+    untracked: sum((period) => getIncome(period).untracked),
+  });
   return {
-    accountingPeriods: {
-      items: [],
-      totalCount: 0,
-    },
-    totalIncome: {
-      total: 0,
-      tracked: 0,
-      untracked: 0,
-    },
-    totalExpectedIncome: {
-      total: 0,
-      tracked: 0,
-      untracked: 0,
-    },
-    totalSpending: 0,
+    expectedIncome: sumIncome((period) => period.expectedIncome),
+    actualIncome: sumIncome((period) => period.actualIncome),
+    unplannedIncome: sumIncome((period) => period.unplannedIncome),
+    expectedGoalContributions: sum(
+      (period) => period.expectedGoalContributions,
+    ),
+    actualGoalContributions: sum((period) => period.actualGoalContributions),
+    actualUnplannedGoalContributions: sum(
+      (period) => period.actualUnplannedGoalContributions,
+    ),
   };
 };
 
-export { buildTrendChartPoints, buildChangeChartPoints, createEmptyTrends };
+export { buildTrendChartPoints, buildChangeChartPoints, sumProgress };

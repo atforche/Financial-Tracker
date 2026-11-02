@@ -8,7 +8,7 @@ namespace Domain.Transactions.Income;
 /// </summary>
 public class IncomeTransactionDestination
 {
-    private readonly List<IncomeFundAmount> _fundAssignments = [];
+    private readonly List<FundAmount> _fundAssignments = [];
 
     /// <summary>
     /// Account for this income transaction destination.
@@ -28,12 +28,12 @@ public class IncomeTransactionDestination
     /// <summary>
     /// Fund assignments for this income transaction destination.
     /// </summary>
-    public IReadOnlyCollection<IncomeFundAmount> FundAssignments => _fundAssignments;
+    public IReadOnlyCollection<FundAmount> FundAssignments => _fundAssignments;
 
     /// <summary>
     /// Constructs a new instance of this class
     /// </summary>
-    public IncomeTransactionDestination(Account account, decimal amount, DateOnly? postedDate, IEnumerable<IncomeFundAmount> fundAssignments)
+    public IncomeTransactionDestination(Account account, decimal amount, DateOnly? postedDate, IEnumerable<FundAmount> fundAssignments)
     {
         Account = account;
         Amount = amount;
@@ -41,7 +41,7 @@ public class IncomeTransactionDestination
         _fundAssignments.AddRange(fundAssignments);
         if (Account.Type.IsTracked() && Amount != _fundAssignments.Sum(f => f.Amount))
         {
-            _fundAssignments.Add(new IncomeFundAmount
+            _fundAssignments.Add(new FundAmount
             {
                 FundId = Fund.UnassignedFundId,
                 Amount = Amount - _fundAssignments.Sum(f => f.Amount)

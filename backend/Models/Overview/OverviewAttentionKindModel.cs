@@ -26,7 +26,7 @@ public enum OverviewAttentionKindModel
     UnpostedTransactions,
 
     /// <summary>
-    /// Expected income whose dates have passed without that much income being received
+    /// Expected Income Sources whose dates have passed without that much income being received from them
     /// </summary>
     IncomeNotReceived,
 }

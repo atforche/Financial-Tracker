@@ -2991,6 +2991,24 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
                 /** @description Unprocessable Entity */
                 422: {
                     headers: {
@@ -3009,22 +3027,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/accounting-periods/{accountingPeriodId}/transactions": {
+    "/accounting-periods/{accountingPeriodId}/detail": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Retrieves an Accounting Period with its Transactions. */
+        /** Retrieves an Accounting Period with its totals, neighbors, and opening and closing balances. */
         get: {
             parameters: {
-                query?: {
-                    /** @description Optional sort to apply to the matching transactions. */
-                    Sort?: components["schemas"]["TransactionSortModel"];
-                    Limit?: number;
-                    Offset?: number;
-                };
+                query?: never;
                 header?: never;
                 path: {
                     accountingPeriodId: string;
@@ -3039,9 +3052,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["AccountingPeriodWithTransactionsModel"];
-                        "application/json": components["schemas"]["AccountingPeriodWithTransactionsModel"];
-                        "text/json": components["schemas"]["AccountingPeriodWithTransactionsModel"];
+                        "text/plain": components["schemas"]["AccountingPeriodDetailModel"];
+                        "application/json": components["schemas"]["AccountingPeriodDetailModel"];
+                        "text/json": components["schemas"]["AccountingPeriodDetailModel"];
                     };
                 };
                 /** @description Not Found */
@@ -3065,6 +3078,193 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/accounting-periods/expected-income-sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the provided Accounting Periods in date order with their Expected Income Sources. Accounting Periods
+         *     that do not exist are left out.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    accountingPeriodIds?: string[];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountingPeriodWithExpectedIncomeSourcesModel"][];
+                        "application/json": components["schemas"]["AccountingPeriodWithExpectedIncomeSourcesModel"][];
+                        "text/json": components["schemas"]["AccountingPeriodWithExpectedIncomeSourcesModel"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounting-periods/{accountingPeriodId}/expected-income-sources/{expectedIncomeSourceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves an Expected Income Source with its Accounting Period and the Income Transactions linked to it. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountingPeriodId: string;
+                    expectedIncomeSourceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ExpectedIncomeSourceDetailModel"];
+                        "application/json": components["schemas"]["ExpectedIncomeSourceDetailModel"];
+                        "text/json": components["schemas"]["ExpectedIncomeSourceDetailModel"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Updates one expected income source in an open Accounting Period. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountingPeriodId: string;
+                    expectedIncomeSourceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ExpectedIncomeSourceRequestModel"];
+                    "text/json": components["schemas"]["ExpectedIncomeSourceRequestModel"];
+                    "application/*+json": components["schemas"]["ExpectedIncomeSourceRequestModel"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        /** Deletes one expected income source from an open Accounting Period. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountingPeriodId: string;
+                    expectedIncomeSourceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/accounting-periods/range": {
         parameters: {
             query?: never;
@@ -3078,10 +3278,6 @@ export interface paths {
                 query?: {
                     "Range.Start"?: string;
                     "Range.End"?: string;
-                    /** @description Optional sort to apply to the matching Accounting Periods. */
-                    Sort?: components["schemas"]["AccountingPeriodWithBalanceSortModel"];
-                    Limit?: number;
-                    Offset?: number;
                 };
                 header?: never;
                 path?: never;
@@ -3154,9 +3350,20 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                        "application/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                        "text/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
+                        "text/plain": components["schemas"]["ExpectedIncomeSourceModel"];
+                        "application/json": components["schemas"]["ExpectedIncomeSourceModel"];
+                        "text/json": components["schemas"]["ExpectedIncomeSourceModel"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -3173,122 +3380,6 @@ export interface paths {
             };
         };
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/accounting-periods/{accountingPeriodId}/expected-income-sources/{expectedIncomeSourceId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Updates one expected income source in an open Accounting Period. */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    accountingPeriodId: string;
-                    expectedIncomeSourceId: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ExpectedIncomeSourceRequestModel"];
-                    "text/json": components["schemas"]["ExpectedIncomeSourceRequestModel"];
-                    "application/*+json": components["schemas"]["ExpectedIncomeSourceRequestModel"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                        "application/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                        "text/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        /** Deletes one expected income source from an open Accounting Period. */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    accountingPeriodId: string;
-                    expectedIncomeSourceId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                        "application/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                        "text/json": components["schemas"]["AccountingPeriodWithBalanceModel"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
         options?: never;
         head?: never;
         patch?: never;
@@ -3315,15 +3406,22 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["AccountingPeriodModel"];
-                        "application/json": components["schemas"]["AccountingPeriodModel"];
-                        "text/json": components["schemas"]["AccountingPeriodModel"];
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -3366,15 +3464,22 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["AccountingPeriodModel"];
-                        "application/json": components["schemas"]["AccountingPeriodModel"];
-                        "text/json": components["schemas"]["AccountingPeriodModel"];
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -3809,6 +3914,76 @@ export interface components {
         };
         /** @enum {unknown} */
         AccountGoalSortModel: AccountGoalSortModel | null;
+        /** @description Model representing everything shown for a single Accounting Period. */
+        AccountingPeriodDetailModel: {
+            /** @description The Accounting Period with its balance and totals. */
+            accountingPeriod: components["schemas"]["AccountingPeriodWithBalanceModel"];
+            /**
+             * Format: int32
+             * @description The number of Fund Goals whose expected contribution is less than planned because of their maximum ending balance.
+             */
+            cappedGoalCount: number;
+            /** @description Counts of the Accounting Period's Fund Goals and Account Goals by their progress. */
+            goalSummary: components["schemas"]["AccountingPeriodGoalSummaryModel"];
+            previousPeriod: null | components["schemas"]["AccountingPeriodModel"];
+            nextPeriod: null | components["schemas"]["AccountingPeriodModel"];
+            /**
+             * Format: double
+             * @description Posted spending, net of refunds, during the Accounting Period.
+             */
+            totalSpending: number;
+            /** @description Account balances at the start of the Accounting Period. */
+            accountOpeningBalance: components["schemas"]["AccountBalanceSummaryModel"];
+            /** @description Account balances at the end of the Accounting Period. */
+            accountClosingBalance: components["schemas"]["AccountBalanceSummaryModel"];
+            /** @description Fund balances at the start of the Accounting Period. */
+            fundOpeningBalance: components["schemas"]["FundBalanceSummaryModel"];
+            /** @description Fund balances at the end of the Accounting Period. */
+            fundClosingBalance: components["schemas"]["FundBalanceSummaryModel"];
+        };
+        /** @description Model representing counts of an Accounting Period's Fund Goals and Account Goals by their progress. */
+        AccountingPeriodGoalSummaryModel: {
+            /**
+             * Format: int32
+             * @description The number of Fund Goals.
+             */
+            fundGoalCount: number;
+            /**
+             * Format: int32
+             * @description The number of Fund Goals with a planned contribution.
+             */
+            contributionGoalCount: number;
+            /**
+             * Format: int32
+             * @description The number of Fund Goals whose expected contribution has been assigned.
+             */
+            contributedGoalCount: number;
+            /**
+             * Format: int32
+             * @description The number of Fund Goals whose ending balance is below their minimum.
+             */
+            fundGoalsBelowMinimumCount: number;
+            /**
+             * Format: int32
+             * @description The number of Fund Goals whose ending balance is above their maximum.
+             */
+            fundGoalsAboveMaximumCount: number;
+            /**
+             * Format: int32
+             * @description The number of Account Goals.
+             */
+            accountGoalCount: number;
+            /**
+             * Format: int32
+             * @description The number of Account Goals whose ending balance is below their minimum.
+             */
+            accountGoalsBelowMinimumCount: number;
+            /**
+             * Format: int32
+             * @description The number of Account Goals whose ending balance is above their maximum.
+             */
+            accountGoalsAboveMaximumCount: number;
+        };
         /** @description Model representing an Accounting Period */
         AccountingPeriodModel: {
             /**
@@ -3833,12 +4008,8 @@ export interface components {
         };
         /** @description Model representing the Accounting Periods in a requested range. */
         AccountingPeriodsInRangeModel: {
-            /** @description Accounting Periods in the requested range. */
-            accountingPeriods: components["schemas"]["CollectionModelOfAccountingPeriodWithBalanceModel"];
-            /** @description Total income for the requested range. */
-            totalIncome: components["schemas"]["IncomeAmountModel"];
-            /** @description Total expected income for the requested range. */
-            totalExpectedIncome: components["schemas"]["IncomeAmountModel"];
+            /** @description Accounting Periods in the requested range, in date order. */
+            accountingPeriods: components["schemas"]["AccountingPeriodWithBalanceModel"][];
             /**
              * Format: double
              * @description Total spending for the requested range.
@@ -3865,6 +4036,8 @@ export interface components {
             expectedIncome: components["schemas"]["IncomeAmountModel"];
             /** @description Posted income for the Accounting Period. */
             actualIncome: components["schemas"]["IncomeAmountModel"];
+            /** @description Income received during the Accounting Period that was not planned as any Expected Income Source. */
+            unplannedIncome: components["schemas"]["IncomeAmountModel"];
             /**
              * Format: double
              * @description Sum of the planned monthly contributions for all Fund Goals in the Accounting Period.
@@ -3882,9 +4055,10 @@ export interface components {
             actualGoalContributions: number;
             /**
              * Format: double
-             * @description Extra amount assigned to Fund Goals in the Accounting Period.
+             * @description Amount of unplanned income assigned to Fund Goals in the Accounting Period, which does not count toward their
+             *     contributions.
              */
-            actualExtraGoalContributions: number;
+            actualUnplannedGoalContributions: number;
             /**
              * Format: uuid
              * @description ID for the Accounting Period
@@ -3907,53 +4081,10 @@ export interface components {
         };
         /** @enum {unknown} */
         AccountingPeriodWithBalanceSortModel: AccountingPeriodWithBalanceSortModel | null;
-        /** @description Model representing an Accounting Period with its associated transactions. */
-        AccountingPeriodWithTransactionsModel: {
-            /** @description Matching transactions for the current Accounting Period page. */
-            transactions: components["schemas"]["CollectionModelOfTransactionModel"];
-            /** @description Total income for the current Accounting Period. */
-            totalIncome: components["schemas"]["IncomeAmountModel"];
-            /**
-             * Format: double
-             * @description Total spending for the current Accounting Period.
-             */
-            totalSpending: number;
-            /**
-             * Format: double
-             * @description Opening balance for the Accounting Period
-             */
-            openingBalance: number;
-            /**
-             * Format: double
-             * @description Closing balance for the Accounting Period
-             */
-            closingBalance: number;
-            /** @description Sources of expected income for the Accounting Period. */
+        /** @description Model representing an Accounting Period with its Expected Income Sources. */
+        AccountingPeriodWithExpectedIncomeSourcesModel: {
+            /** @description Sources of expected income for the Accounting Period, with the income received from each so far. */
             expectedIncomeSources: components["schemas"]["ExpectedIncomeSourceModel"][];
-            /** @description Income expected for the Accounting Period. */
-            expectedIncome: components["schemas"]["IncomeAmountModel"];
-            /** @description Posted income for the Accounting Period. */
-            actualIncome: components["schemas"]["IncomeAmountModel"];
-            /**
-             * Format: double
-             * @description Sum of the planned monthly contributions for all Fund Goals in the Accounting Period.
-             */
-            plannedGoalContributions: number;
-            /**
-             * Format: double
-             * @description Amount required to satisfy all Fund Goals for the Accounting Period.
-             */
-            expectedGoalContributions: number;
-            /**
-             * Format: double
-             * @description Amount assigned toward expected monthly contributions for all Fund Goals in the Accounting Period.
-             */
-            actualGoalContributions: number;
-            /**
-             * Format: double
-             * @description Extra amount assigned to Fund Goals in the Accounting Period.
-             */
-            actualExtraGoalContributions: number;
             /**
              * Format: uuid
              * @description ID for the Accounting Period
@@ -4484,24 +4615,6 @@ export interface components {
              */
             amount: number;
         };
-        /** @description Model representing a Fund amount assigned by an income transaction. */
-        CreateIncomeFundAmountModel: {
-            /**
-             * @description Whether this assignment is extra funding outside the expected monthly
-             *     contribution.
-             */
-            isExtraContribution?: boolean;
-            /**
-             * Format: uuid
-             * @description Fund for this Fund Amount
-             */
-            fundId: string;
-            /**
-             * Format: double
-             * @description Amount for this Fund Amount
-             */
-            amount: number;
-        };
         /** @description Model representing an income line in a create income transaction request. */
         CreateIncomeLineModel: {
             /** @description Description for the income line. */
@@ -4525,7 +4638,7 @@ export interface components {
              */
             amount: number;
             /** @description Fund assignments for this destination. */
-            fundAssignments: components["schemas"]["CreateIncomeFundAmountModel"][];
+            fundAssignments: components["schemas"]["CreateFundAmountModel"][];
         };
         /** @description Model representing the source of an income transaction create request. */
         CreateIncomeTransactionSourceModel: {
@@ -4652,6 +4765,11 @@ export interface components {
             destinations: components["schemas"]["CreateIncomeTransactionDestinationModel"][];
             /**
              * Format: uuid
+             * @description ID of the Expected Income Source this income was planned as, or null when the income is unplanned.
+             */
+            expectedIncomeSourceId: null | string;
+            /**
+             * Format: uuid
              * @description Accounting Period for the Transaction.
              */
             accountingPeriodId: string;
@@ -4739,6 +4857,37 @@ export interface components {
              */
             expiresAt?: null | string;
         };
+        /** @description Model representing everything shown for a single Expected Income Source. */
+        ExpectedIncomeSourceDetailModel: {
+            /** @description The Accounting Period that owns the source. */
+            accountingPeriod: components["schemas"]["AccountingPeriodModel"];
+            /** @description The source, with the income received from it so far. */
+            source: components["schemas"]["ExpectedIncomeSourceModel"];
+            /** @description The Income Transactions linked to the source, in date order. */
+            income: components["schemas"]["ExpectedIncomeSourceIncomeModel"][];
+        };
+        /** @description Model representing an Income Transaction linked to an Expected Income Source. */
+        ExpectedIncomeSourceIncomeModel: {
+            /**
+             * Format: uuid
+             * @description Identifier for the Income Transaction.
+             */
+            transactionId: string;
+            /**
+             * Format: date
+             * @description Date of the Income Transaction.
+             */
+            date: string;
+            /** @description Description of the Income Transaction. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount the Income Transaction sends to its destination Accounts.
+             */
+            amount: number;
+            /** @description Part of the amount that has posted. */
+            receivedAmount: components["schemas"]["IncomeAmountModel"];
+        };
         /** @description Expected income from a named source during an Accounting Period. */
         ExpectedIncomeSourceModel: {
             /**
@@ -4758,6 +4907,8 @@ export interface components {
             netAmount: components["schemas"]["IncomeAmountModel"];
             /** @description Total income expected for this source. */
             expectedAmount: components["schemas"]["IncomeAmountModel"];
+            /** @description Posted income received from this source so far. */
+            receivedAmount: components["schemas"]["IncomeAmountModel"];
             /** @description Transfers expected from each payment to untracked accounts. */
             untrackedTransfers: components["schemas"]["ExpectedUntrackedIncomeTransferModel"][];
         };
@@ -4803,11 +4954,6 @@ export interface components {
         };
         /** @description Model representing a balance event for a fund. */
         FundBalanceEventModel: {
-            /**
-             * @description Whether this income assignment is extra funding outside the expected
-             *     monthly Fund Goal contribution.
-             */
-            isExtraContribution?: boolean;
             /** @description Fund affected by the balance event. */
             fund: components["schemas"]["FundModel"];
             /** @description Source associated with the balance event's Transaction. */
@@ -5347,7 +5493,7 @@ export interface components {
             /**
              * Format: int32
              * @description Number of items in the group. For unposted Transactions, the number of Transactions. For income not received,
-             *     the number of expected payments whose dates have passed.
+             *     the number of Expected Income Sources that are behind.
              */
             count: number;
             /**
@@ -5365,8 +5511,8 @@ export interface components {
             topItems: components["schemas"]["OverviewAttentionItemModel"][];
             /**
              * Format: date
-             * @description Earliest date among the items, when the group's items are dated. For income not received, the date it first fell
-             *     behind.
+             * @description Earliest date among the items, when the group's items are dated. For income not received, the earliest expected
+             *     date a source's received income does not cover.
              */
             oldestDate?: null | string;
             income?: null | components["schemas"]["OverviewIncomeShortfallModel"];
@@ -5409,7 +5555,10 @@ export interface components {
          * @enum {unknown}
          */
         OverviewHistoryRangeModel: OverviewHistoryRangeModel;
-        /** @description Model representing tracked income expected so far in the current Accounting Period and how much has been received. */
+        /**
+         * @description Model representing tracked income expected so far from the current Accounting Period's Expected Income Sources that
+         *     are behind, and how much of it has been received.
+         */
         OverviewIncomeShortfallModel: {
             /**
              * Format: double
@@ -5456,9 +5605,14 @@ export interface components {
             expectedTrackedIncome: number;
             /**
              * Format: double
-             * @description Tracked income received during the Accounting Period.
+             * @description Tracked income received during the Accounting Period that was planned as one of its Expected Income Sources.
              */
-            actualTrackedIncome: number;
+            actualPlannedTrackedIncome: number;
+            /**
+             * Format: double
+             * @description Tracked income received during the Accounting Period that was not planned as any Expected Income Source.
+             */
+            actualUnplannedTrackedIncome: number;
             /**
              * Format: double
              * @description Total contributions expected toward Fund Goals during the Accounting Period.
@@ -5469,6 +5623,12 @@ export interface components {
              * @description Total contributions made toward Fund Goals during the Accounting Period.
              */
             actualGoalContributions: number;
+            /**
+             * Format: double
+             * @description Unplanned income assigned to Fund Goals during the Accounting Period, which does not count toward their
+             *     contributions.
+             */
+            actualUnplannedGoalContributions: number;
             /**
              * Format: double
              * @description Total posted spending during the Accounting Period.
@@ -5676,6 +5836,11 @@ export interface components {
             trackedAmount: number;
             /** @description Destinations for the income transaction. */
             destinations: components["schemas"]["IncomeTransactionDestinationModel"][];
+            /**
+             * Format: uuid
+             * @description ID of the Expected Income Source this income was planned as, or null when the income is unplanned.
+             */
+            expectedIncomeSourceId: null | string;
             /**
              * Format: uuid
              * @description ID for the Transaction.
@@ -5982,6 +6147,11 @@ export interface components {
             source: components["schemas"]["CreateIncomeTransactionSourceModel"];
             /** @description Destinations for the income transaction. */
             destinations: components["schemas"]["CreateIncomeTransactionDestinationModel"][];
+            /**
+             * Format: uuid
+             * @description ID of the Expected Income Source this income was planned as, or null when the income is unplanned.
+             */
+            expectedIncomeSourceId: null | string;
             /**
              * Format: date
              * @description Date for the Transaction.

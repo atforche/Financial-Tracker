@@ -8,12 +8,6 @@ namespace Models.Funds;
 public class FundBalanceEventModel : BalanceEventModel
 {
     /// <summary>
-    /// Whether this income assignment is extra funding outside the expected
-    /// monthly Fund Goal contribution.
-    /// </summary>
-    public bool IsExtraContribution { get; init; }
-
-    /// <summary>
     /// Fund affected by the balance event.
     /// </summary>
     public required FundModel Fund { get; init; }

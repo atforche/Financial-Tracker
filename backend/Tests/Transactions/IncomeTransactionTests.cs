@@ -221,6 +221,7 @@ public sealed class IncomeTransactionTests
         FundHandle income = await test.Funds.Create("Income").In(july).CreateAsync();
         CreateTransactionResultModel created = await test.Api.PostAsync<CreateTransactionModel, CreateTransactionResultModel>("/transactions", new CreateIncomeTransactionModel
         {
+            ExpectedIncomeSourceId = null,
             AccountingPeriodId = july.Id,
             Date = new DateOnly(2026, 7, 15),
             Description = "Paycheck",
@@ -238,13 +239,14 @@ public sealed class IncomeTransactionTests
             {
                 AccountId = cash.Id,
                 Amount = 100m,
-                FundAssignments = [new CreateIncomeFundAmountModel { FundId = income.Id, Amount = 100m }]
+                FundAssignments = [new CreateFundAmountModel { FundId = income.Id, Amount = 100m }]
             }]
         });
         TransactionHandle transaction = new(created.Id);
 
         UpdateTransactionModel update = new UpdateIncomeTransactionModel
         {
+            ExpectedIncomeSourceId = null,
             Date = new DateOnly(2026, 7, 16),
             Description = "Updated paycheck",
             Amount = 150m,
@@ -261,7 +263,7 @@ public sealed class IncomeTransactionTests
             {
                 AccountId = cash.Id,
                 Amount = 150m,
-                FundAssignments = [new CreateIncomeFundAmountModel { FundId = income.Id, Amount = 150m }]
+                FundAssignments = [new CreateFundAmountModel { FundId = income.Id, Amount = 150m }]
             }]
         };
         await test.Api.PostAsync($"/transactions/{transaction.Id}", update);

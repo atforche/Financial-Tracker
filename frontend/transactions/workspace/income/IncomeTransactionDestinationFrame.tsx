@@ -47,6 +47,7 @@ interface IncomeTransactionDestinationFrameProps {
   readonly accountBalanceEvent?: AccountBalanceEvent | null;
   readonly fundBalanceEvents?: FundBalanceEvent[] | undefined;
   readonly fundGoalBalanceEvents?: FundGoalBalanceEvent[] | undefined;
+  readonly isPlanned: boolean;
   readonly readOnly?: boolean;
   readonly autoFocus?: boolean;
 }
@@ -77,6 +78,7 @@ const IncomeTransactionDestinationFrame = function ({
   accountBalanceEvent = null,
   fundBalanceEvents = emptyFundBalanceEvents,
   fundGoalBalanceEvents = emptyFundGoalBalanceEvents,
+  isPlanned,
   readOnly = false,
   autoFocus = false,
 }: IncomeTransactionDestinationFrameProps): JSX.Element {
@@ -122,6 +124,7 @@ const IncomeTransactionDestinationFrame = function ({
           fundAssignments={fundAssignments}
           setFundAssignments={readOnly ? null : setFundAssignments}
           baselineFundAssignments={baselineFundAssignments}
+          isPlanned={isPlanned}
           readOnly={readOnly}
         />
       ) : null}

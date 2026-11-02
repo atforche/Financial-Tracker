@@ -13,6 +13,7 @@ internal sealed class IncomeTransactionBuilder(TestApiClient apiClient) : Transa
     private readonly List<(AccountHandle Account, FundHandle? Fund, decimal? Amount)> _destinations = [];
     private string? _sourceLocation;
     private AccountHandle? _sourceAccount;
+    private Guid? _expectedIncomeSourceId;
 
     /// <summary>
     /// Sets the income source location.
@@ -29,6 +30,15 @@ internal sealed class IncomeTransactionBuilder(TestApiClient apiClient) : Transa
     public IncomeTransactionBuilder From(AccountHandle account)
     {
         _sourceAccount = account;
+        return this;
+    }
+
+    /// <summary>
+    /// Plans the income as the Expected Income Source with the provided ID, so its fund assignments count toward Fund Goals.
+    /// </summary>
+    public IncomeTransactionBuilder PlannedAs(Guid expectedIncomeSourceId)
+    {
+        _expectedIncomeSourceId = expectedIncomeSourceId;
         return this;
     }
 
@@ -50,7 +60,8 @@ internal sealed class IncomeTransactionBuilder(TestApiClient apiClient) : Transa
         Description = GetDescription(),
         Amount = Amount,
         Source = CreateSource(),
-        Destinations = CreateDestinations()
+        Destinations = CreateDestinations(),
+        ExpectedIncomeSourceId = _expectedIncomeSourceId,
     };
 
     /// <inheritdoc/>
@@ -60,7 +71,8 @@ internal sealed class IncomeTransactionBuilder(TestApiClient apiClient) : Transa
         Description = GetDescription(),
         Amount = Amount,
         Source = CreateSource(),
-        Destinations = CreateDestinations()
+        Destinations = CreateDestinations(),
+        ExpectedIncomeSourceId = _expectedIncomeSourceId,
     };
 
     private string GetDescription() => _sourceLocation
@@ -82,7 +94,7 @@ internal sealed class IncomeTransactionBuilder(TestApiClient apiClient) : Transa
             Amount = destination.Amount ?? Amount,
             FundAssignments = destination.Fund is null
                 ? []
-                : [new CreateIncomeFundAmountModel { FundId = destination.Fund.Id, Amount = destination.Amount ?? Amount }]
+                : [new CreateFundAmountModel { FundId = destination.Fund.Id, Amount = destination.Amount ?? Amount }]
         })
         .ToList();
 }

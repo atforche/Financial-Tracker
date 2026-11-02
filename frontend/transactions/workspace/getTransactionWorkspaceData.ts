@@ -1,3 +1,8 @@
+import type {
+  AccountingPeriod,
+  AccountingPeriodWithExpectedIncomeSources,
+  ExpectedIncomeSourcesByPeriod,
+} from "@/accounting-periods/types";
 import {
   getPageOffset,
   getRowsPerPage,
@@ -8,7 +13,6 @@ import {
   toRepeatedSearchParams,
 } from "@/framework/routes/helpers";
 import type { AccountWithBalance } from "@/accounts/types";
-import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { FundWithBalance } from "@/funds/types";
 import type { Location } from "@/locations/types";
@@ -29,6 +33,7 @@ interface TransactionWorkspaceReferenceData {
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
+  readonly expectedIncomeSources: ExpectedIncomeSourcesByPeriod;
   readonly locations: Location[];
 }
 
@@ -52,7 +57,7 @@ interface TransactionWorkspaceListData extends TransactionWorkspaceReferenceData
  * Represents the reference data required for a Transaction detail page.
  */
 interface TransactionWorkspaceDetailReferenceData {
-  readonly accountingPeriod: AccountingPeriod;
+  readonly accountingPeriod: AccountingPeriodWithExpectedIncomeSources;
   readonly funds: FundWithBalance[];
   readonly fundGoals: FundGoalWithProgress[];
 }
@@ -107,6 +112,26 @@ const getTransactionWorkspaceReferenceData =
       (period) => period.isOpen,
     );
     let fundGoals: FundGoalWithProgress[] = [];
+    // Income can only be entered in open periods, so only their Expected Income Sources can be chosen
+    const expectedIncomeSourcesPromise =
+      openAccountingPeriods.length === 0
+        ? Promise.resolve([])
+        : apiClient
+            .GET("/accounting-periods/expected-income-sources", {
+              params: {
+                query: {
+                  accountingPeriodIds: openAccountingPeriods.map(
+                    (period) => period.id,
+                  ),
+                },
+              },
+            })
+            .then((response) =>
+              unwrapApiResponse(
+                response,
+                "Failed to fetch expected income sources",
+              ),
+            );
 
     if (openAccountingPeriods.length > 0) {
       const goalResponse = await apiClient.GET("/fund-goals", {
@@ -146,12 +171,21 @@ const getTransactionWorkspaceReferenceData =
       });
     }
 
+    const expectedIncomeSources: ExpectedIncomeSourcesByPeriod =
+      Object.fromEntries(
+        (await expectedIncomeSourcesPromise).map((period) => [
+          period.id,
+          period.expectedIncomeSources,
+        ]),
+      );
+
     return {
       openAccountingPeriods,
       allAccountingPeriods: allAccountingPeriods.items,
       accounts: accounts.items,
       funds: funds.items,
       fundGoals,
+      expectedIncomeSources,
       locations,
     };
   };
@@ -186,9 +220,9 @@ const getTransactionWorkspaceDetailReferenceData = async function (
 ): Promise<TransactionWorkspaceDetailReferenceData> {
   const apiClient = await createApiClient();
   const accountingPeriodPromise = apiClient.GET(
-    "/accounting-periods/{accountingPeriodId}",
+    "/accounting-periods/expected-income-sources",
     {
-      params: { path: { accountingPeriodId } },
+      params: { query: { accountingPeriodIds: [accountingPeriodId] } },
     },
   );
   const fundsPromise = apiClient.GET("/funds/with-balances");
@@ -217,6 +251,13 @@ const getTransactionWorkspaceDetailReferenceData = async function (
     fundGoalsPromise,
     progressPromise,
   ]);
+  const [accountingPeriod] = unwrapApiResponse(
+    accountingPeriodResponse,
+    "Failed to fetch accounting period",
+  );
+  if (accountingPeriod === undefined) {
+    throw new Error("Failed to find the transaction accounting period");
+  }
   const progressByFundGoalId = new Map(
     unwrapApiResponse(
       progressResponse,
@@ -225,10 +266,7 @@ const getTransactionWorkspaceDetailReferenceData = async function (
   );
 
   return {
-    accountingPeriod: unwrapApiResponse(
-      accountingPeriodResponse,
-      "Failed to fetch accounting period",
-    ),
+    accountingPeriod,
     funds: unwrapApiResponse(fundsResponse, "Failed to fetch funds").items,
     fundGoals: unwrapApiResponse(
       fundGoalsResponse,
