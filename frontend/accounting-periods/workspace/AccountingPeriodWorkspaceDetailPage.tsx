@@ -87,23 +87,6 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
         searchParams={resolvedSearchParams}
         currentUrl={currentUrl}
       />
-      <BalanceStatCards
-        openingBalance={detail.accountOpeningBalance}
-        closingBalance={detail.accountClosingBalance}
-        unassignedBalance={detail.fundClosingBalance.totalUnassignedBalance}
-        unassignedCaption={
-          <>
-            <SignedChange
-              amount={getCurrencyDifference(
-                detail.fundClosingBalance.totalUnassignedBalance,
-                detail.fundOpeningBalance.totalUnassignedBalance,
-              )}
-            />{" "}
-            this period
-          </>
-        }
-        changeDescription="this period"
-      />
       <UrlTabs
         label="Accounting period views"
         paramName="tab"
@@ -113,6 +96,25 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
             label: "Summary",
             content: (
               <Stack spacing={2}>
+                <BalanceStatCards
+                  openingBalance={detail.accountOpeningBalance}
+                  closingBalance={detail.accountClosingBalance}
+                  unassignedBalance={
+                    detail.fundClosingBalance.totalUnassignedBalance
+                  }
+                  unassignedCaption={
+                    <>
+                      <SignedChange
+                        amount={getCurrencyDifference(
+                          detail.fundClosingBalance.totalUnassignedBalance,
+                          detail.fundOpeningBalance.totalUnassignedBalance,
+                        )}
+                      />{" "}
+                      this period
+                    </>
+                  }
+                  changeDescription="this period"
+                />
                 <AttentionList descriptions={getPeriodAttention(detail)} />
                 <Box
                   sx={{
