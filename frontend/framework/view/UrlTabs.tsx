@@ -24,7 +24,7 @@ interface UrlTabsProps {
 }
 
 /**
- * Shows one view at a time and keeps the selected view in the URL.
+ * Shows one view at a time behind a segmented control and keeps the selected view in the URL.
  */
 const UrlTabs = function ({
   label,
@@ -53,7 +53,32 @@ const UrlTabs = function ({
         aria-label={label}
         variant="scrollable"
         scrollButtons="auto"
-        sx={{ mb: 2 }}
+        sx={{
+          width: { xs: "100%", sm: "fit-content" },
+          maxWidth: "100%",
+          minHeight: 0,
+          mb: 2,
+          p: 0.5,
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 3,
+          bgcolor: "action.hover",
+          "& .MuiTabs-indicator": { display: "none" },
+          "& .MuiTabs-flexContainer": { gap: 0.5 },
+          "& .MuiTab-root": {
+            flex: { xs: 1, sm: "none" },
+            minHeight: 44,
+            px: 3,
+            borderRadius: 2,
+            color: "text.primary",
+            fontSize: "1rem",
+            textTransform: "none",
+          },
+          "& .MuiTab-root.Mui-selected": {
+            bgcolor: "primary.main",
+            color: "primary.contrastText",
+          },
+        }}
       >
         {tabs.map((tab) => (
           <Tab
