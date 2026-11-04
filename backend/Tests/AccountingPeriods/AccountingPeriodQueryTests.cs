@@ -127,6 +127,9 @@ public sealed class AccountingPeriodQueryTests
         HttpResponseMessage missing = await test.Api.GetResponseAsync($"/accounting-periods/{Guid.NewGuid()}/detail");
 
         Assert.Equal(july.Id, detail.AccountingPeriod.Id);
+        Assert.NotEmpty(detail.Accounts);
+        Assert.NotEmpty(detail.Funds);
+        Assert.All(detail.Funds, fund => Assert.NotNull(fund.GoalProgress));
         Assert.Equal(june.Id, detail.PreviousPeriod?.Id);
         Assert.Equal(august.Id, detail.NextPeriod?.Id);
         Assert.Equal(60m, detail.AccountingPeriod.ActualIncome.Total);

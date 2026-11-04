@@ -109,19 +109,35 @@ public sealed class AccountingPeriodQueryService(
         AccountingPeriodBalanceHistory history = accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(period.Id);
         IReadOnlyCollection<FundGoal> fundGoals = fundGoalRepository.GetAllByAccountingPeriod(period.Id);
         IReadOnlyCollection<AccountGoal> accountGoals = accountGoalRepository.GetAllByAccountingPeriod(period.Id);
+        IReadOnlyDictionary<FundGoalId, FundGoalProgress> fundProgress = FundGoalService.GetProgresses(fundGoals, history);
+        IReadOnlyDictionary<AccountGoalId, AccountGoalProgress> accountProgress = AccountGoalService.GetProgresses(accountGoals, history);
+        var fundProgressByFund = fundGoals.Where(goal => fundProgress.ContainsKey(goal.Id))
+            .ToDictionary(goal => goal.Fund.Id, goal => fundProgress[goal.Id]);
+        var accountProgressByAccount = accountGoals.Where(goal => accountProgress.ContainsKey(goal.Id))
+            .ToDictionary(goal => goal.Account.Id, goal => accountProgress[goal.Id]);
         return new AccountingPeriodDetail(
             EnrichBalance(period, history, fundGoals, incomeFacts[accountingPeriodId], out int cappedGoalCount),
             cappedGoalCount,
             AccountingPeriodGoalSummary.From(
-                FundGoalService.GetProgresses(fundGoals, history).Values.ToList(),
-                AccountGoalService.GetProgresses(accountGoals, history).Values.ToList()),
+                fundProgress.Values.ToList(),
+                accountProgress.Values.ToList()),
             previous,
             next,
             FinancialRangeTotals.Calculate([], spendingFacts).TotalSpending,
             AccountBalanceSummary.Create(history.AccountBalances.Select(item => (item.Account.Type, item.OpeningBalance))),
             AccountBalanceSummary.Create(history.AccountBalances.Select(item => (item.Account.Type, item.ClosingBalance))),
             FundBalanceSummary.Create(history.FundBalances.Select(item => (item.Fund.Id, item.OpeningBalance))),
-            FundBalanceSummary.Create(history.FundBalances.Select(item => (item.Fund.Id, item.ClosingBalance))));
+            FundBalanceSummary.Create(history.FundBalances.Select(item => (item.Fund.Id, item.ClosingBalance))),
+            history.AccountBalances.Select(item => new AccountingPeriodAccount(
+                item.Account,
+                item.OpeningBalance,
+                item.ClosingBalance,
+                accountProgressByAccount.GetValueOrDefault(item.Account.Id))).ToList(),
+            history.FundBalances.Select(item => new AccountingPeriodFund(
+                item.Fund,
+                item.OpeningBalance,
+                item.ClosingBalance,
+                fundProgressByFund.GetValueOrDefault(item.Fund.Id))).ToList());
     }
 
     /// <summary>

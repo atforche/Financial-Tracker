@@ -1,4 +1,8 @@
+using Domain.AccountGoals;
+using Domain.Accounts;
 using Domain.Accounts.Queries;
+using Domain.FundGoals;
+using Domain.Funds;
 using Domain.Funds.Queries;
 
 namespace Domain.AccountingPeriods.Queries;
@@ -18,4 +22,24 @@ public sealed record AccountingPeriodDetail(
     AccountBalanceSummary AccountOpeningBalance,
     AccountBalanceSummary AccountClosingBalance,
     FundBalanceSummary FundOpeningBalance,
-    FundBalanceSummary FundClosingBalance);
+    FundBalanceSummary FundClosingBalance,
+    IReadOnlyCollection<AccountingPeriodAccount> Accounts,
+    IReadOnlyCollection<AccountingPeriodFund> Funds);
+
+/// <summary>
+/// Represents an Account's balances and goal progress in an Accounting Period.
+/// </summary>
+public sealed record AccountingPeriodAccount(
+    Account Account,
+    decimal OpeningBalance,
+    decimal ClosingBalance,
+    AccountGoalProgress? GoalProgress);
+
+/// <summary>
+/// Represents a Fund's balances and goal progress in an Accounting Period.
+/// </summary>
+public sealed record AccountingPeriodFund(
+    Fund Fund,
+    decimal OpeningBalance,
+    decimal ClosingBalance,
+    FundGoalProgress? GoalProgress);

@@ -3,7 +3,9 @@ using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
 using Models;
 using Models.AccountingPeriods;
+using Rest.AccountGoals;
 using Rest.Accounts;
+using Rest.FundGoals;
 using Rest.Funds;
 
 namespace Rest.AccountingPeriods;
@@ -11,7 +13,12 @@ namespace Rest.AccountingPeriods;
 /// <summary>
 /// Converts between Accounting Period API models and Domain query types.
 /// </summary>
-public sealed class AccountingPeriodQueryConverter(AccountingPeriodConverter accountingPeriodConverter)
+public sealed class AccountingPeriodQueryConverter(
+    AccountingPeriodConverter accountingPeriodConverter,
+    AccountConverter accountConverter,
+    FundConverter fundConverter,
+    AccountGoalConverter accountGoalConverter,
+    FundGoalConverter fundGoalConverter)
 {
     /// <summary>
     /// Converts the provided Accounting Period query model to a Domain query.
@@ -164,6 +171,20 @@ public sealed class AccountingPeriodQueryConverter(AccountingPeriodConverter acc
         AccountClosingBalance = AccountConverter.ToModel(detail.AccountClosingBalance),
         FundOpeningBalance = FundConverter.ToModel(detail.FundOpeningBalance),
         FundClosingBalance = FundConverter.ToModel(detail.FundClosingBalance),
+        Accounts = detail.Accounts.Select(item => new AccountingPeriodAccountModel
+        {
+            Account = accountConverter.ToModel(item.Account),
+            OpeningBalance = item.OpeningBalance,
+            ClosingBalance = item.ClosingBalance,
+            GoalProgress = item.GoalProgress == null ? null : accountGoalConverter.ToModel(item.GoalProgress),
+        }).ToList(),
+        Funds = detail.Funds.Select(item => new AccountingPeriodFundModel
+        {
+            Fund = fundConverter.ToModel(item.Fund),
+            OpeningBalance = item.OpeningBalance,
+            ClosingBalance = item.ClosingBalance,
+            GoalProgress = item.GoalProgress == null ? null : fundGoalConverter.ToModel(item.GoalProgress),
+        }).ToList(),
     };
 
     /// <summary>
