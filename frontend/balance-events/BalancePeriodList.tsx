@@ -1,13 +1,19 @@
-"use client";
-
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
 import {
   formatCurrency,
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
-import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
+import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
 import Link from "next/link";
-import ListFrame from "@/framework/listframe/ListFrame";
 import SignedChange from "@/framework/view/SignedChange";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
 
@@ -21,46 +27,9 @@ interface BalancePeriod {
   readonly closingBalance: number;
 }
 
-const columns: ColumnDefinition<BalancePeriod>[] = [
-  {
-    name: "period",
-    headerContent: "Period",
-    mobilePrimary: true,
-    getBodyContent: (period) => (
-      <Link href={accountingPeriodRoutes.workspaceDetail(period.id, {})}>
-        {period.name}
-      </Link>
-    ),
-  },
-  {
-    name: "opening",
-    headerContent: "Opening",
-    alignment: "right",
-    getBodyContent: (period) => formatCurrency(period.openingBalance),
-  },
-  {
-    name: "closing",
-    headerContent: "Closing",
-    alignment: "right",
-    getBodyContent: (period) => formatCurrency(period.closingBalance),
-  },
-  {
-    name: "change",
-    headerContent: "Change",
-    alignment: "right",
-    getBodyContent: (period) => (
-      <SignedChange
-        amount={getCurrencyDifference(
-          period.closingBalance,
-          period.openingBalance,
-        )}
-      />
-    ),
-  },
-];
-
 /**
- * Lists how an account or fund's balance changed in each accounting period of a range.
+ * Lists how an account or fund's balance changed in each accounting period of a range. This is a plain table because
+ * it shares the page with a list frame, and only one list frame can own the page size.
  */
 const BalancePeriodList = function ({
   periods,
@@ -68,14 +37,50 @@ const BalancePeriodList = function ({
   readonly periods: readonly BalancePeriod[];
 }): JSX.Element {
   return (
-    <ListFrame<BalancePeriod>
-      title="Periods"
-      columns={columns}
-      getId={(period) => period.id}
-      data={periods}
-      totalCount={periods.length}
-      pageParamName="historyPeriodPage"
-    />
+    <ContentSurface>
+      <Typography variant="h5" sx={{ mb: 1 }}>
+        Periods
+      </Typography>
+      <TableContainer>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Period</TableCell>
+              <TableCell align="right">Opening</TableCell>
+              <TableCell align="right">Closing</TableCell>
+              <TableCell align="right">Change</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {periods.map((period) => (
+              <TableRow key={period.id}>
+                <TableCell>
+                  <Link
+                    href={accountingPeriodRoutes.workspaceDetail(period.id, {})}
+                  >
+                    {period.name}
+                  </Link>
+                </TableCell>
+                <TableCell align="right">
+                  {formatCurrency(period.openingBalance)}
+                </TableCell>
+                <TableCell align="right">
+                  {formatCurrency(period.closingBalance)}
+                </TableCell>
+                <TableCell align="right">
+                  <SignedChange
+                    amount={getCurrencyDifference(
+                      period.closingBalance,
+                      period.openingBalance,
+                    )}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </ContentSurface>
   );
 };
 
