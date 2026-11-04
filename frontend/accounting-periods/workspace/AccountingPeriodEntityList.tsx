@@ -73,14 +73,14 @@ const statuses = [
  * Supported tile orders within each section.
  */
 enum EntitySort {
-  Distance = "Distance",
+  Status = "Status",
   Name = "Name",
   Closing = "Closing",
   Change = "Change",
 }
 
 const sortLabels: Record<EntitySort, string> = {
-  [EntitySort.Distance]: "Distance from goal",
+  [EntitySort.Status]: "Status",
   [EntitySort.Name]: "Name",
   [EntitySort.Closing]: "Closing balance",
   [EntitySort.Change]: "Change",
@@ -289,15 +289,15 @@ const compareEntities = function (
       return second.closingBalance - first.closingBalance;
     case EntitySort.Change:
       return getChange(second) - getChange(first);
-    case EntitySort.Distance:
+    case EntitySort.Status:
     default:
       return getDistance(second) - getDistance(first);
   }
 };
 
 /**
- * Compares accounts or funds within one accounting period as tiles grouped by goal status, with problems first. Each
- * tile links to the account or fund's goal for that period.
+ * Compares accounts or funds within one accounting period as tiles, grouped by goal status with problems first
+ * unless another sort is chosen. Each tile links to the account or fund's goal for that period.
  */
 const AccountingPeriodEntityList = function ({
   entities,
@@ -308,7 +308,7 @@ const AccountingPeriodEntityList = function ({
   const updateParams = useSearchParamUpdater([]);
   const sort =
     parseEnumValue(EntitySort, searchParams.get("entitySort") ?? "") ??
-    EntitySort.Distance;
+    EntitySort.Status;
   const selectedStatus = parseEnumValue(
     PeriodEntityStatus,
     searchParams.get("status") ?? "",
@@ -326,24 +326,38 @@ const AccountingPeriodEntityList = function ({
       }
     });
   };
-  const sections = presentStatuses
+  const visible = entities
     .filter(
-      ({ status }) => selectedStatus === null || selectedStatus === status,
+      (entity) =>
+        (selectedStatus === null || entity.status === selectedStatus) &&
+        entity.name.toLowerCase().includes(search),
     )
-    .map((details) => {
-      const tiles = entities
-        .filter(
-          (entity) =>
-            entity.status === details.status &&
-            entity.name.toLowerCase().includes(search),
-        )
-        .sort(
-          (first, second) =>
-            compareEntities(first, second, sort) ||
-            first.name.localeCompare(second.name),
-        );
-      return { ...details, tiles };
-    })
+    .sort(
+      (first, second) =>
+        compareEntities(first, second, sort) ||
+        first.name.localeCompare(second.name),
+    );
+  const renderTiles = function (tiles: readonly PeriodEntity[]): JSX.Element {
+    return (
+      <ResponsiveGrid columns={{ xs: 1, sm: 2, md: 3, lg: 4 }} spacing={1.5}>
+        {tiles.map((entity) => (
+          <EntityTile
+            key={entity.id}
+            entity={entity}
+            color={
+              statuses.find(({ status }) => status === entity.status)?.color ??
+              "text.secondary"
+            }
+          />
+        ))}
+      </ResponsiveGrid>
+    );
+  };
+  const sections = presentStatuses
+    .map((details) => ({
+      ...details,
+      tiles: visible.filter((entity) => entity.status === details.status),
+    }))
     .filter(({ tiles }) => tiles.length > 0);
 
   return (
@@ -409,29 +423,28 @@ const AccountingPeriodEntityList = function ({
           ))}
         </TextField>
       </Stack>
-      {sections.length === 0 ? (
+      {visible.length === 0 ? (
         <Typography color="text.secondary">
           Nothing matches the search or status filter.
         </Typography>
       ) : null}
-      {sections.map(({ status, label, color, tiles }) => (
-        <Stack key={status} spacing={1.25}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 500, color }}>
-            {label}{" "}
-            <Typography component="span" variant="body2" color="text.secondary">
-              {tiles.length}
-            </Typography>
-          </Typography>
-          <ResponsiveGrid
-            columns={{ xs: 1, sm: 2, md: 3, lg: 4 }}
-            spacing={1.5}
-          >
-            {tiles.map((entity) => (
-              <EntityTile key={entity.id} entity={entity} color={color} />
-            ))}
-          </ResponsiveGrid>
-        </Stack>
-      ))}
+      {sort === EntitySort.Status
+        ? sections.map(({ status, label, color, tiles }) => (
+            <Stack key={status} spacing={1.25}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 500, color }}>
+                {label}{" "}
+                <Typography
+                  component="span"
+                  variant="body2"
+                  color="text.secondary"
+                >
+                  {tiles.length}
+                </Typography>
+              </Typography>
+              {renderTiles(tiles)}
+            </Stack>
+          ))
+        : renderTiles(visible)}
     </Stack>
   );
 };
