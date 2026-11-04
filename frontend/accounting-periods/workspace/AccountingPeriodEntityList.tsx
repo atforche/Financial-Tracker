@@ -37,6 +37,10 @@ interface PeriodEntity {
   readonly minimum: number | null;
   readonly maximum: number | null;
   readonly status: PeriodEntityStatus;
+  readonly contribution: {
+    readonly assigned: number;
+    readonly expected: number;
+  } | null;
 }
 
 /**
@@ -241,6 +245,12 @@ const EntityTile = function ({
       <Typography variant="caption" color="text.secondary">
         {getGoalLabel(entity)}
       </Typography>
+      {entity.contribution === null ? null : (
+        <Typography variant="caption" color="text.secondary">
+          {formatCurrency(entity.contribution.assigned)} of{" "}
+          {formatCurrency(entity.contribution.expected)} contributed
+        </Typography>
+      )}
       {distance === 0 ? null : (
         <Typography variant="caption" sx={{ color, fontWeight: 500 }}>
           {formatCurrency(distance)}{" "}

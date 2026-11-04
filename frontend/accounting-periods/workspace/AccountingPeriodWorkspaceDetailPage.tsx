@@ -172,6 +172,7 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
                   status: getEntityStatus(
                     item.goalProgress?.endingBalance.status,
                   ),
+                  contribution: null,
                 }))}
               />
             ),
@@ -197,6 +198,16 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
                   status: getEntityStatus(
                     item.goalProgress?.endingBalance.status,
                   ),
+                  contribution:
+                    item.goalProgress?.contribution === null ||
+                    item.goalProgress?.contribution === undefined
+                      ? null
+                      : {
+                          assigned:
+                            item.goalProgress.contribution.assignedAmount,
+                          expected:
+                            item.goalProgress.contribution.expectedAmount,
+                        },
                 }))}
               />
             ),
