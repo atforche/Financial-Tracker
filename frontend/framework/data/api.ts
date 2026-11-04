@@ -1868,104 +1868,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/fund-goals/balance-events/accounting-period-range": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves Fund Goal balance events in an Accounting Period range. */
-        get: {
-            parameters: {
-                query?: {
-                    "Range.Start"?: string;
-                    "Range.End"?: string;
-                    "Filter.NameSearch"?: string;
-                    "Filter.FundIds"?: string[];
-                    "Filter.AccountingPeriodIds"?: string[];
-                    "Filter.IncludeOnboarded"?: boolean;
-                    /** @description Optional event ordering. */
-                    Sort?: components["schemas"]["FundGoalBalanceEventSortModel"];
-                    Limit?: number;
-                    Offset?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CollectionModelOfFundGoalBalanceEventModel"];
-                        "application/json": components["schemas"]["CollectionModelOfFundGoalBalanceEventModel"];
-                        "text/json": components["schemas"]["CollectionModelOfFundGoalBalanceEventModel"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/fund-goals/balance-events/accounting-period-range/totals": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves posted credit and debit totals for all matching Fund Goal events. */
-        get: {
-            parameters: {
-                query?: {
-                    "Range.Start"?: string;
-                    "Range.End"?: string;
-                    "Filter.NameSearch"?: string;
-                    "Filter.FundIds"?: string[];
-                    "Filter.AccountingPeriodIds"?: string[];
-                    "Filter.IncludeOnboarded"?: boolean;
-                    /** @description Optional event ordering. */
-                    Sort?: components["schemas"]["FundGoalBalanceEventSortModel"];
-                    Limit?: number;
-                    Offset?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["BalanceEventTotalsModel"];
-                        "application/json": components["schemas"]["BalanceEventTotalsModel"];
-                        "text/json": components["schemas"]["BalanceEventTotalsModel"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/fund-goals": {
         parameters: {
             query?: never;
@@ -2185,47 +2087,6 @@ export interface paths {
                 };
             };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/fund-goals/{fundGoalId}/progress/{accountingPeriodId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves Fund Goal progress for an Accounting Period. */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    fundGoalId: string;
-                    accountingPeriodId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["FundGoalProgressModel"];
-                        "application/json": components["schemas"]["FundGoalProgressModel"];
-                        "text/json": components["schemas"]["FundGoalProgressModel"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3555,92 +3416,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/account-goals": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves Account Goals matching the provided query. */
-        get: {
-            parameters: {
-                query?: {
-                    "Filter.AccountIds"?: string[];
-                    "Filter.AccountingPeriodIds"?: string[];
-                    "Filter.IncludeOnboarded"?: boolean;
-                    /** @description Gets the optional Account Goal ordering. */
-                    Sort?: components["schemas"]["AccountGoalSortModel"];
-                    Limit?: number;
-                    Offset?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CollectionModelOfAccountGoalModel"];
-                        "application/json": components["schemas"]["CollectionModelOfAccountGoalModel"];
-                        "text/json": components["schemas"]["CollectionModelOfAccountGoalModel"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/account-goals/progress/{accountingPeriodId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves progress for all Account Goals in an Accounting Period. */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    accountingPeriodId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AccountGoalProgressResultModel"][];
-                        "application/json": components["schemas"]["AccountGoalProgressResultModel"][];
-                        "text/json": components["schemas"]["AccountGoalProgressResultModel"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/account-goals/account/{accountId}": {
         parameters: {
             query?: never;
@@ -3773,47 +3548,6 @@ export interface paths {
                 };
             };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/account-goals/{accountGoalId}/progress/{accountingPeriodId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves Account Goal progress for an Accounting Period. */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    accountGoalId: string;
-                    accountingPeriodId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AccountGoalProgressModel"];
-                        "application/json": components["schemas"]["AccountGoalProgressModel"];
-                        "text/json": components["schemas"]["AccountGoalProgressModel"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4017,18 +3751,6 @@ export interface components {
             /** @description Gets ending-balance progress, with a default minimum of zero. */
             endingBalance: components["schemas"]["AccountGoalEndingBalanceProgressModel"];
         };
-        /** @description Model pairing an Account Goal with its progress for an Accounting Period. */
-        AccountGoalProgressResultModel: {
-            /**
-             * Format: uuid
-             * @description Gets the ID of the Account Goal.
-             */
-            accountGoalId: string;
-            /** @description Gets the calculated progress for the Account Goal. */
-            progress: components["schemas"]["AccountGoalProgressModel"];
-        };
-        /** @enum {unknown} */
-        AccountGoalSortModel: AccountGoalSortModel | null;
         /** @description Model representing an Account's balances and goal progress in an Accounting Period. */
         AccountingPeriodAccountModel: {
             /** @description The Account. */
@@ -4451,16 +4173,6 @@ export interface components {
             totalCount: number;
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
-        CollectionModelOfAccountGoalModel: {
-            /** @description The collection of items. */
-            items: components["schemas"]["AccountGoalModel"][];
-            /**
-             * Format: int32
-             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
-             */
-            totalCount: number;
-        };
-        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfAccountingPeriodModel: {
             /** @description The collection of items. */
             items: components["schemas"]["AccountingPeriodModel"][];
@@ -4504,16 +4216,6 @@ export interface components {
         CollectionModelOfFundBalanceEventModel: {
             /** @description The collection of items. */
             items: components["schemas"]["FundBalanceEventModel"][];
-            /**
-             * Format: int32
-             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
-             */
-            totalCount: number;
-        };
-        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
-        CollectionModelOfFundGoalBalanceEventModel: {
-            /** @description The collection of items. */
-            items: components["schemas"]["FundGoalBalanceEventModel"][];
             /**
              * Format: int32
              * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
@@ -5281,8 +4983,6 @@ export interface components {
              */
             amount?: null | number;
         };
-        /** @enum {unknown} */
-        FundGoalBalanceEventSortModel: FundGoalBalanceEventSortModel | null;
         /** @description Model describing ending-balance progress for a Fund Goal. */
         FundGoalEndingBalanceProgressModel: {
             /**
@@ -6503,14 +6203,6 @@ export enum AccountGoalEndingBalanceStatusModel {
     WithinRange = "WithinRange",
     AboveMaximum = "AboveMaximum"
 }
-export enum AccountGoalSortModel {
-    Account = "Account",
-    AccountDescending = "AccountDescending",
-    MinimumEndingBalance = "MinimumEndingBalance",
-    MinimumEndingBalanceDescending = "MinimumEndingBalanceDescending",
-    MaximumEndingBalance = "MaximumEndingBalance",
-    MaximumEndingBalanceDescending = "MaximumEndingBalanceDescending"
-}
 export enum AccountingPeriodSortModel {
     Date = "Date",
     DateDescending = "DateDescending",
@@ -6592,22 +6284,6 @@ export enum FundBalanceEventSortModel {
     AmountDescending = "AmountDescending",
     Counterparty = "Counterparty",
     CounterpartyDescending = "CounterpartyDescending"
-}
-export enum FundGoalBalanceEventSortModel {
-    FundName = "FundName",
-    FundNameDescending = "FundNameDescending",
-    Date = "Date",
-    DateDescending = "DateDescending",
-    Type = "Type",
-    TypeDescending = "TypeDescending",
-    Amount = "Amount",
-    AmountDescending = "AmountDescending",
-    Counterparty = "Counterparty",
-    CounterpartyDescending = "CounterpartyDescending",
-    Source = "Source",
-    SourceDescending = "SourceDescending",
-    Destination = "Destination",
-    DestinationDescending = "DestinationDescending"
 }
 export enum FundGoalEndingBalanceStatusModel {
     BelowMinimum = "BelowMinimum",

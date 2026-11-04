@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Models.FundGoals;
 
 namespace Tests.Support;
 
@@ -44,6 +45,13 @@ internal sealed class TestApiClient : IDisposable
         TResponse? response = await _client.GetFromJsonAsync<TResponse>(uri, JsonOptions);
         return response ?? throw new InvalidOperationException($"No response body was returned for {uri}.");
     }
+
+    /// <summary>
+    /// Gets a Fund Goal's progress from its Accounting Period's progress.
+    /// </summary>
+    public async Task<FundGoalProgressModel> GetFundGoalProgressAsync(Guid fundGoalId, Guid accountingPeriodId) =>
+        (await GetAsync<IReadOnlyCollection<FundGoalProgressResultModel>>($"/fund-goals/progress/{accountingPeriodId}"))
+        .Single(result => result.FundGoalId == fundGoalId).Progress;
 
     /// <summary>
     /// Sends a GET request and returns the response for status-code assertions.

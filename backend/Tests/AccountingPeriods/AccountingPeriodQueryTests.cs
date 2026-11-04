@@ -170,14 +170,12 @@ public sealed class AccountingPeriodQueryTests
         using HttpResponseMessage accounts = await test.Api.GetResponseAsync($"/accounts/accounting-period-range?{reversed}");
         using HttpResponseMessage funds = await test.Api.GetResponseAsync($"/funds/accounting-period-range?{reversed}");
         using HttpResponseMessage reversedTransactions = await test.Api.GetResponseAsync($"/transactions/accounting-period-range?{reversed}");
-        using HttpResponseMessage events = await test.Api.GetResponseAsync($"/fund-goals/balance-events/accounting-period-range?{reversed}");
 
         Assert.Empty(transactions.Transactions.Items);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, missing.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, accounts.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, funds.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, reversedTransactions.StatusCode);
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, events.StatusCode);
     }
 
     /// <summary>

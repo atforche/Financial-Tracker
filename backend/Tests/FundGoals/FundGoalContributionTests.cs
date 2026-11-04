@@ -1,4 +1,3 @@
-using Models;
 using Models.AccountingPeriods;
 using Models.BalanceEvents;
 using Models.FundGoals;
@@ -48,7 +47,7 @@ public sealed class FundGoalContributionTests
 
         AccountingPeriodWithBalanceModel pendingPeriod = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}");
         await test.Transactions.PostAsync(new TransactionHandle(created.Id), cash, new DateOnly(2026, 7, 10));
-        FundGoalProgressModel progress = await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{gifts.Goal.Id}/progress/{july.Id}");
+        FundGoalProgressModel progress = await test.Api.GetFundGoalProgressAsync(gifts.Goal.Id, july.Id);
         IncomeTransactionModel transaction = await test.Api.GetAsync<IncomeTransactionModel>($"/transactions/{created.Id}");
         AccountingPeriodWithBalanceModel postedPeriod = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}");
 
@@ -198,7 +197,7 @@ public sealed class FundGoalContributionTests
 
     private static async Task AssertAssignedAsync(FinancialTrackerTestContext test, AccountingPeriodHandle period, FundHandle fund, decimal assigned)
     {
-        FundGoalProgressModel progress = await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{fund.Goal.Id}/progress/{period.Id}");
+        FundGoalProgressModel progress = await test.Api.GetFundGoalProgressAsync(fund.Goal.Id, period.Id);
         Assert.NotNull(progress.Contribution);
         Assert.Equal(assigned, progress.Contribution.AssignedAmount);
     }
@@ -214,6 +213,5 @@ public sealed class FundGoalContributionTests
     }
 
     private static async Task<IReadOnlyCollection<FundGoalBalanceEventModel>> GetGoalEventsAsync(FinancialTrackerTestContext test, AccountingPeriodHandle period) =>
-        (await test.Api.GetAsync<CollectionModel<FundGoalBalanceEventModel>>(
-            $"/fund-goals/balance-events/accounting-period-range?range.start={period.Id}&range.end={period.Id}")).Items;
+        (await test.FundGoalEvents.GetAsync(period)).Items;
 }

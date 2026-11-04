@@ -60,7 +60,7 @@ public sealed class FundGoalPeriodLifecycleTests
         FundHandle dining = await test.Funds.Create("Dining").In(july).CreateAsync();
         _ = await test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 20)).For(20m).From(groceries).To(dining).CreateAsync();
 
-        FundGoalProgressModel progress = await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{groceries.Goal.Id}/progress/{july.Id}");
+        FundGoalProgressModel progress = await test.Api.GetFundGoalProgressAsync(groceries.Goal.Id, july.Id);
         AccountingPeriodWithBalanceModel period = await test.Api.GetAsync<AccountingPeriodWithBalanceModel>($"/accounting-periods/{july.Id}");
 
         await test.AssertBalanceAsync(groceries, 40m, 20m);

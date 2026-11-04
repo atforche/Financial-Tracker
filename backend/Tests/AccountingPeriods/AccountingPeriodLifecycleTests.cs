@@ -51,8 +51,7 @@ public sealed class AccountingPeriodLifecycleTests
         FundGoalModel goal = await test.Api.GetAsync<FundGoalModel>($"/fund-goals/fund/{unassigned.Id}?accountingPeriodId={july.Id}");
         IReadOnlyCollection<FundGoalProgressResultModel> progresses = await test.Api.GetAsync<IReadOnlyCollection<FundGoalProgressResultModel>>(
             $"/fund-goals/progress/{july.Id}");
-        FundGoalProgressModel directProgress = await test.Api.GetAsync<FundGoalProgressModel>(
-            $"/fund-goals/{goal.Id}/progress/{july.Id}");
+        FundGoalProgressModel directProgress = await test.Api.GetFundGoalProgressAsync(goal.Id, july.Id);
 
         Assert.Equal("Unassigned", goal.Fund.Name);
         Assert.Null(goal.PlannedMonthlyContribution);

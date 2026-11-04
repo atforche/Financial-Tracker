@@ -14,12 +14,6 @@ public sealed class AccountGoalQueryService(
     AccountingPeriodRangeService accountingPeriodRangeService)
 {
     /// <summary>
-    /// Retrieves Account Goals matching the provided query.
-    /// </summary>
-    public Task<QueryPage<AccountGoal>> GetAsync(AccountGoalQuery query, CancellationToken cancellationToken = default) =>
-        accountGoalQueryRepository.GetAsync(query, cancellationToken);
-
-    /// <summary>
     /// Retrieves the Account Goal with the specified ID, or null when it does not exist.
     /// </summary>
     public Task<AccountGoal?> GetByIdAsync(Guid accountGoalId, CancellationToken cancellationToken = default) =>
