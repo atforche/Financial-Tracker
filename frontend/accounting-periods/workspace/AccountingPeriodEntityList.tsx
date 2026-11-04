@@ -1,23 +1,32 @@
 "use client";
 
-import { Box, MenuItem, Stack, TextField } from "@mui/material";
 import {
+  Box,
+  Button,
+  ButtonBase,
+  MenuItem,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { type JSX, useState } from "react";
+import {
+  compareCurrencyAmounts,
   formatCurrency,
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
-import { getPaginationIndex, getRowsPerPage } from "@/framework/listframe/page";
-import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import type { JSX } from "react";
 import Link from "next/link";
-import ListFrame from "@/framework/listframe/ListFrame";
 import PeriodEntityStatus from "@/accounting-periods/workspace/periodEntityStatus";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import type { Route } from "next";
 import SearchBar from "@/framework/listframe/SearchBar";
 import SignedChange from "@/framework/view/SignedChange";
-import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
+
+const collapsedTileCount = 4;
 
 /**
  * An account or fund's balances and goal status in an accounting period.
@@ -33,45 +42,48 @@ interface PeriodEntity {
   readonly status: PeriodEntityStatus;
 }
 
-const statusDetails: Record<
-  PeriodEntityStatus,
-  { readonly label: string; readonly color: string; readonly order: number }
-> = {
-  [PeriodEntityStatus.BelowMinimum]: {
+/**
+ * Statuses in the order their sections appear, with their labels and colors.
+ */
+const statuses = [
+  {
+    status: PeriodEntityStatus.BelowMinimum,
     label: "Below minimum",
     color: "error.main",
-    order: 0,
   },
-  [PeriodEntityStatus.AboveMaximum]: {
+  {
+    status: PeriodEntityStatus.AboveMaximum,
     label: "Above maximum",
     color: "warning.main",
-    order: 1,
   },
-  [PeriodEntityStatus.WithinRange]: {
+  {
+    status: PeriodEntityStatus.WithinRange,
     label: "In range",
     color: "success.main",
-    order: 2,
   },
-  [PeriodEntityStatus.NoGoal]: {
+  {
+    status: PeriodEntityStatus.NoGoal,
     label: "No goal",
     color: "text.secondary",
-    order: 3,
   },
-};
+] as const;
 
 /**
- * Supported sort orders.
+ * Supported tile orders within each section.
  */
 enum EntitySort {
+  Distance = "Distance",
   Name = "Name",
-  NameDescending = "NameDescending",
   Closing = "Closing",
-  ClosingDescending = "ClosingDescending",
   Change = "Change",
-  ChangeDescending = "ChangeDescending",
-  Status = "Status",
-  StatusDescending = "StatusDescending",
 }
+
+const sortLabels: Record<EntitySort, string> = {
+  [EntitySort.Distance]: "Distance from goal",
+  [EntitySort.Name]: "Name",
+  [EntitySort.Closing]: "Closing balance",
+  [EntitySort.Change]: "Change",
+};
 
 /**
  * Gets how much an entity's balance changed over the period.
@@ -81,14 +93,59 @@ const getChange = function (entity: PeriodEntity): number {
 };
 
 /**
+ * Gets how far an entity ended outside its goal range.
+ */
+const getDistance = function ({
+  closingBalance,
+  minimum,
+  maximum,
+  status,
+}: PeriodEntity): number {
+  if (status === PeriodEntityStatus.BelowMinimum && minimum !== null) {
+    return getCurrencyDifference(minimum, closingBalance);
+  }
+  return status === PeriodEntityStatus.AboveMaximum && maximum !== null
+    ? getCurrencyDifference(closingBalance, maximum)
+    : 0;
+};
+
+/**
+ * Describes where an entity ended relative to its goal.
+ */
+const getNote = function (entity: PeriodEntity): string {
+  const { minimum, maximum, status } = entity;
+  switch (status) {
+    case PeriodEntityStatus.BelowMinimum:
+      return `${formatCurrency(getDistance(entity))} short`;
+    case PeriodEntityStatus.AboveMaximum:
+      return `${formatCurrency(getDistance(entity))} over`;
+    case PeriodEntityStatus.WithinRange:
+      if (minimum === null) {
+        return "In range";
+      }
+      if (maximum === null) {
+        return `Minimum ${formatCurrency(minimum)}`;
+      }
+      return compareCurrencyAmounts(minimum, maximum) === 0
+        ? `Target ${formatCurrency(minimum)}`
+        : `${formatCurrency(minimum)} to ${formatCurrency(maximum)}`;
+    case PeriodEntityStatus.NoGoal:
+    default:
+      return "No goal";
+  }
+};
+
+/**
  * Shows a closing balance against its goal range on one compact scale.
  */
 const GoalRangeBar = function ({
   entity,
+  color,
 }: {
   readonly entity: PeriodEntity;
+  readonly color: string;
 }): JSX.Element | null {
-  const { minimum, maximum, closingBalance, status } = entity;
+  const { minimum, maximum, closingBalance } = entity;
   if (minimum === null) {
     return null;
   }
@@ -99,7 +156,7 @@ const GoalRangeBar = function ({
   const position = (amount: number): number =>
     ((amount - lower + padding) / (upper - lower + padding * 2)) * 100;
   return (
-    <Box sx={{ position: "relative", height: 14, minWidth: 120 }}>
+    <Box sx={{ position: "relative", height: 14 }}>
       <Box
         sx={{
           position: "absolute",
@@ -129,7 +186,7 @@ const GoalRangeBar = function ({
           borderRadius: "50%",
           border: "2px solid",
           borderColor: "background.paper",
-          bgcolor: statusDetails[status].color,
+          bgcolor: color,
           transform: "translateX(-50%)",
         }}
       />
@@ -138,170 +195,243 @@ const GoalRangeBar = function ({
 };
 
 /**
- * Compares entities for the selected sort, with worse goal statuses first by default.
+ * Links to an account or fund's goal, summarizing how it ended the period.
+ */
+const EntityTile = function ({
+  entity,
+  color,
+}: {
+  readonly entity: PeriodEntity;
+  readonly color: string;
+}): JSX.Element {
+  return (
+    <Paper
+      component={Link}
+      href={entity.href}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 0.75,
+        p: 1.5,
+        border: "1px solid",
+        borderColor: "divider",
+        borderRadius: 3,
+        color: "inherit",
+        textDecoration: "none",
+        "&:hover": { borderColor: "primary.main" },
+      }}
+    >
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{ alignItems: "baseline", justifyContent: "space-between" }}
+      >
+        <Typography variant="subtitle2" noWrap sx={{ minWidth: 0 }}>
+          {entity.name}
+        </Typography>
+        <Typography variant="caption" sx={{ whiteSpace: "nowrap" }}>
+          <SignedChange amount={getChange(entity)} />
+        </Typography>
+      </Stack>
+      <Typography variant="h6" component="p" sx={{ fontWeight: 500 }}>
+        {formatCurrency(entity.closingBalance)}
+      </Typography>
+      <GoalRangeBar entity={entity} color={color} />
+      <Typography variant="caption" color="text.secondary">
+        {getNote(entity)}
+      </Typography>
+    </Paper>
+  );
+};
+
+/**
+ * Compares entities for the selected sort.
  */
 const compareEntities = function (
   first: PeriodEntity,
   second: PeriodEntity,
   sort: EntitySort,
 ): number {
-  const direction = sort.endsWith("Descending") ? -1 : 1;
   switch (sort) {
     case EntitySort.Name:
-    case EntitySort.NameDescending:
-      return first.name.localeCompare(second.name) * direction;
+      return 0;
     case EntitySort.Closing:
-    case EntitySort.ClosingDescending:
-      return (first.closingBalance - second.closingBalance) * direction;
+      return second.closingBalance - first.closingBalance;
     case EntitySort.Change:
-    case EntitySort.ChangeDescending:
-      return (getChange(first) - getChange(second)) * direction;
-    case EntitySort.Status:
-    case EntitySort.StatusDescending:
+      return getChange(second) - getChange(first);
+    case EntitySort.Distance:
     default:
-      return (
-        (statusDetails[first.status].order -
-          statusDetails[second.status].order) *
-        direction
-      );
+      return getDistance(second) - getDistance(first);
   }
 };
 
 /**
- * Compares accounts or funds within one accounting period, linking each to its goal for that period.
+ * Compares accounts or funds within one accounting period as tiles grouped by goal status, with problems first. Each
+ * tile links to the account or fund's goal for that period.
  */
 const AccountingPeriodEntityList = function ({
-  title,
   entities,
 }: {
-  readonly title: string;
   readonly entities: readonly PeriodEntity[];
 }): JSX.Element {
   const searchParams = useSearchParams();
-  const updateParams = useSearchParamUpdater(["entityPage"]);
-  const currentSort = parseEnumValue(
-    EntitySort,
-    searchParams.get("entitySort") ?? "",
-  );
-  const status = parseEnumValue(
+  const updateParams = useSearchParamUpdater([]);
+  const [showAllInRange, setShowAllInRange] = useState(false);
+  const sort =
+    parseEnumValue(EntitySort, searchParams.get("entitySort") ?? "") ??
+    EntitySort.Distance;
+  const selectedStatus = parseEnumValue(
     PeriodEntityStatus,
     searchParams.get("status") ?? "",
   );
   const search = (searchParams.get("search") ?? "").trim().toLowerCase();
-  const filtered = entities
-    .filter(
-      (entity) =>
-        (status === null || entity.status === status) &&
-        entity.name.toLowerCase().includes(search),
-    )
-    .sort(
-      (first, second) =>
-        compareEntities(first, second, currentSort ?? EntitySort.Status) ||
-        first.name.localeCompare(second.name),
-    );
-  const pageSize = getRowsPerPage(searchParams.get("pageSize"));
-  const pageIndex = getPaginationIndex(
-    searchParams.get("entityPage"),
-    filtered.length,
-    pageSize,
+  const presentStatuses = statuses.filter(({ status }) =>
+    entities.some((entity) => entity.status === status),
   );
-  const getSortProps = createColumnSortProps(currentSort, (sort) => {
+  const setParam = function (name: string, value: string | null): void {
     updateParams((params) => {
-      if (sort === null) {
-        params.delete("entitySort");
+      if (value === null) {
+        params.delete(name);
       } else {
-        params.set("entitySort", sort);
+        params.set(name, value);
       }
     });
-  });
-  const columns: ColumnDefinition<PeriodEntity>[] = [
-    {
-      name: "name",
-      headerContent: "Name",
-      mobilePrimary: true,
-      getBodyContent: (entity) => <Link href={entity.href}>{entity.name}</Link>,
-      ...getSortProps(EntitySort.Name, EntitySort.NameDescending),
-    },
-    {
-      name: "opening",
-      headerContent: "Opening",
-      alignment: "right",
-      getBodyContent: (entity) => formatCurrency(entity.openingBalance),
-    },
-    {
-      name: "closing",
-      headerContent: "Closing",
-      alignment: "right",
-      getBodyContent: (entity) => formatCurrency(entity.closingBalance),
-      ...getSortProps(EntitySort.Closing, EntitySort.ClosingDescending),
-    },
-    {
-      name: "change",
-      headerContent: "Change",
-      alignment: "right",
-      getBodyContent: (entity) => <SignedChange amount={getChange(entity)} />,
-      ...getSortProps(EntitySort.Change, EntitySort.ChangeDescending),
-    },
-    {
-      name: "goal",
-      headerContent: "Ending balance vs. goal",
-      getBodyContent: (entity) => <GoalRangeBar entity={entity} />,
-    },
-    {
-      name: "status",
-      headerContent: "Status",
-      getBodyContent: (entity) => (
-        <Box
-          component="span"
-          sx={{ color: statusDetails[entity.status].color }}
-        >
-          {statusDetails[entity.status].label}
-        </Box>
-      ),
-      ...getSortProps(EntitySort.Status, EntitySort.StatusDescending),
-    },
-  ];
+  };
+  const sections = presentStatuses
+    .filter(
+      ({ status }) => selectedStatus === null || selectedStatus === status,
+    )
+    .map((details) => {
+      const tiles = entities
+        .filter(
+          (entity) =>
+            entity.status === details.status &&
+            entity.name.toLowerCase().includes(search),
+        )
+        .sort(
+          (first, second) =>
+            compareEntities(first, second, sort) ||
+            first.name.localeCompare(second.name),
+        );
+      const canCollapse =
+        details.status === PeriodEntityStatus.WithinRange &&
+        selectedStatus === null &&
+        search === "" &&
+        tiles.length > collapsedTileCount;
+      return { ...details, tiles, canCollapse };
+    })
+    .filter(({ tiles }) => tiles.length > 0);
+
   return (
-    <Stack spacing={2}>
-      <Stack direction="row" useFlexGap spacing={2} sx={{ flexWrap: "wrap" }}>
-        <SearchBar searchParamName="search" pageParamName="entityPage" />
+    <Stack spacing={2.5}>
+      <Stack
+        direction="row"
+        useFlexGap
+        spacing={1}
+        sx={{ alignItems: "center", flexWrap: "wrap" }}
+      >
+        {presentStatuses.map(({ status, label, color }) => (
+          <ButtonBase
+            key={status}
+            aria-pressed={selectedStatus === status}
+            onClick={() => {
+              setParam("status", selectedStatus === status ? null : status);
+            }}
+            sx={{
+              gap: 1,
+              minHeight: 40,
+              px: 1.5,
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 2,
+              bgcolor:
+                selectedStatus === status ? "action.selected" : "transparent",
+              "&:hover": { bgcolor: "action.hover" },
+            }}
+          >
+            <Box
+              sx={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                bgcolor: color,
+              }}
+            />
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              {entities
+                .filter((entity) => entity.status === status)
+                .length.toString()}{" "}
+              {label}
+            </Typography>
+          </ButtonBase>
+        ))}
+        <Box sx={{ flex: 1, minWidth: 220 }}>
+          <SearchBar searchParamName="search" />
+        </Box>
         <TextField
           select
           size="small"
-          label="Status"
-          value={status ?? "All"}
+          label="Sort by"
+          value={sort}
           onChange={(event) => {
-            updateParams((params) => {
-              if (event.target.value === "All") {
-                params.delete("status");
-              } else {
-                params.set("status", event.target.value);
-              }
-            });
+            setParam("entitySort", event.target.value);
           }}
-          sx={{ minWidth: 180 }}
+          sx={{ minWidth: 190 }}
         >
-          <MenuItem value="All">All statuses</MenuItem>
-          {Object.values(PeriodEntityStatus).map((value) => (
+          {Object.values(EntitySort).map((value) => (
             <MenuItem key={value} value={value}>
-              {statusDetails[value].label}
+              {sortLabels[value]}
             </MenuItem>
           ))}
         </TextField>
       </Stack>
-      <ListFrame<PeriodEntity>
-        title={title}
-        columns={columns}
-        getId={(entity) => entity.id}
-        data={filtered.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize)}
-        totalCount={filtered.length}
-        pageParamName="entityPage"
-        hasActiveFilters={search !== "" || status !== null}
-        filteredEmptyState={{
-          title: `No Matching ${title}`,
-          description: "Change the search or status filter.",
-        }}
-      />
+      {sections.length === 0 ? (
+        <Typography color="text.secondary">
+          Nothing matches the search or status filter.
+        </Typography>
+      ) : null}
+      {sections.map(({ status, label, color, tiles, canCollapse }) => (
+        <Stack key={status} spacing={1.25}>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ alignItems: "center", justifyContent: "space-between" }}
+          >
+            <Typography variant="subtitle1" sx={{ fontWeight: 500, color }}>
+              {label}{" "}
+              <Typography
+                component="span"
+                variant="body2"
+                color="text.secondary"
+              >
+                {tiles.length}
+              </Typography>
+            </Typography>
+            {canCollapse ? (
+              <Button
+                onClick={() => {
+                  setShowAllInRange(!showAllInRange);
+                }}
+              >
+                {showAllInRange
+                  ? "Show fewer"
+                  : `Show all ${tiles.length.toString()}`}
+              </Button>
+            ) : null}
+          </Stack>
+          <ResponsiveGrid
+            columns={{ xs: 1, sm: 2, md: 3, lg: 4 }}
+            spacing={1.5}
+          >
+            {(canCollapse && !showAllInRange
+              ? tiles.slice(0, collapsedTileCount)
+              : tiles
+            ).map((entity) => (
+              <EntityTile key={entity.id} entity={entity} color={color} />
+            ))}
+          </ResponsiveGrid>
+        </Stack>
+      ))}
     </Stack>
   );
 };

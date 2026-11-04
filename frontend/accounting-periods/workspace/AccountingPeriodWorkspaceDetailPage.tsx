@@ -1,6 +1,5 @@
 import { Box, Stack } from "@mui/material";
 import AccountingPeriodEntityList from "@/accounting-periods/workspace/AccountingPeriodEntityList";
-import AccountingPeriodGoalCard from "@/accounting-periods/workspace/AccountingPeriodGoalCard";
 import AccountingPeriodHeader from "@/accounting-periods/workspace/AccountingPeriodHeader";
 import AccountingPeriodPlanCard from "@/accounting-periods/workspace/AccountingPeriodPlanCard";
 import AccountingPeriodProgressCard from "@/accounting-periods/workspace/AccountingPeriodProgressCard";
@@ -153,67 +152,53 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
             value: "accounts",
             label: "Accounts",
             content: (
-              <Stack spacing={2}>
-                <AccountingPeriodGoalCard
-                  type="account"
-                  summary={detail.goalSummary}
-                />
-                <AccountingPeriodEntityList
-                  title="Accounts"
-                  entities={detail.accounts.map((item) => ({
-                    id: item.account.id,
-                    name: item.account.name,
-                    href: accountRoutes.workspaceDetail(item.account.id, {
-                      ...goalParams,
-                      ...(item.goalProgress === null ||
-                      item.goalProgress === undefined
-                        ? { tab: "history" }
-                        : { tab: "goal" }),
-                    }),
-                    openingBalance: item.openingBalance,
-                    closingBalance: item.closingBalance,
-                    minimum:
-                      item.goalProgress?.endingBalance.minimumBalance ?? null,
-                    maximum:
-                      item.goalProgress?.endingBalance.maximumBalance ?? null,
-                    status: getEntityStatus(
-                      item.goalProgress?.endingBalance.status,
-                    ),
-                  }))}
-                />
-              </Stack>
+              <AccountingPeriodEntityList
+                entities={detail.accounts.map((item) => ({
+                  id: item.account.id,
+                  name: item.account.name,
+                  href: accountRoutes.workspaceDetail(item.account.id, {
+                    ...goalParams,
+                    ...(item.goalProgress === null ||
+                    item.goalProgress === undefined
+                      ? { tab: "history" }
+                      : { tab: "goal" }),
+                  }),
+                  openingBalance: item.openingBalance,
+                  closingBalance: item.closingBalance,
+                  minimum:
+                    item.goalProgress?.endingBalance.minimumBalance ?? null,
+                  maximum:
+                    item.goalProgress?.endingBalance.maximumBalance ?? null,
+                  status: getEntityStatus(
+                    item.goalProgress?.endingBalance.status,
+                  ),
+                }))}
+              />
             ),
           },
           {
             value: "funds",
             label: "Funds",
             content: (
-              <Stack spacing={2}>
-                <AccountingPeriodGoalCard
-                  type="fund"
-                  summary={detail.goalSummary}
-                />
-                <AccountingPeriodEntityList
-                  title="Funds"
-                  entities={detail.funds.map((item) => ({
-                    id: item.fund.id,
-                    name: item.fund.name,
-                    href: fundRoutes.workspaceDetail(item.fund.id, {
-                      ...goalParams,
-                      tab: "goal",
-                    }),
-                    openingBalance: item.openingBalance,
-                    closingBalance: item.closingBalance,
-                    minimum:
-                      item.goalProgress?.endingBalance.minimumBalance ?? null,
-                    maximum:
-                      item.goalProgress?.endingBalance.maximumBalance ?? null,
-                    status: getEntityStatus(
-                      item.goalProgress?.endingBalance.status,
-                    ),
-                  }))}
-                />
-              </Stack>
+              <AccountingPeriodEntityList
+                entities={detail.funds.map((item) => ({
+                  id: item.fund.id,
+                  name: item.fund.name,
+                  href: fundRoutes.workspaceDetail(item.fund.id, {
+                    ...goalParams,
+                    tab: "goal",
+                  }),
+                  openingBalance: item.openingBalance,
+                  closingBalance: item.closingBalance,
+                  minimum:
+                    item.goalProgress?.endingBalance.minimumBalance ?? null,
+                  maximum:
+                    item.goalProgress?.endingBalance.maximumBalance ?? null,
+                  status: getEntityStatus(
+                    item.goalProgress?.endingBalance.status,
+                  ),
+                }))}
+              />
             ),
           },
         ]}
