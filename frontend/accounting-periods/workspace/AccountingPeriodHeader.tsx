@@ -1,12 +1,11 @@
-import { Breadcrumbs, Chip, Stack, Typography } from "@mui/material";
+import { Chip, Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodDetailActions from "@/accounting-periods/workspace/AccountingPeriodDetailActions";
 import type { AccountingPeriodSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspaceDetailPage";
 import type { JSX } from "react";
-import Link from "next/link";
 import PeriodNavigation from "@/framework/view/PeriodNavigation";
+import ReturnLink from "@/framework/view/ReturnLink";
 import type { components } from "@/framework/data/api";
-import { getReturnLinkTarget } from "@/framework/view/ReturnLink";
 import routes from "@/accounting-periods/routes";
 
 /**
@@ -28,7 +27,7 @@ const AccountingPeriodHeader = function ({
 }: AccountingPeriodHeaderProps): JSX.Element {
   const period = detail.accountingPeriod;
   const workspaceUrl = routes.workspace({});
-  // Neighbors still return to the page the user came from
+  // Neighbors keep the selected tab and filters, and still return to the page the user came from
   const getNeighborLink = function (
     neighbor: AccountingPeriod | null | undefined,
   ): { name: string; href: ReturnType<typeof routes.workspaceDetail> } | null {
@@ -36,29 +35,16 @@ const AccountingPeriodHeader = function ({
       ? null
       : {
           name: neighbor.name,
-          href: routes.workspaceDetail(neighbor.id, {
-            ...(typeof searchParams.returnUrl === "undefined"
-              ? {}
-              : { returnUrl: searchParams.returnUrl }),
-          }),
+          href: routes.workspaceDetail(neighbor.id, searchParams),
         };
   };
 
-  const parent = getReturnLinkTarget(searchParams.returnUrl) ?? {
-    href: workspaceUrl,
-    label: "Accounting Periods",
-  };
-
   return (
-    <Stack spacing={0.5}>
-      <Breadcrumbs aria-label="Breadcrumb" sx={{ typography: "body2" }}>
-        <Link href={parent.href} style={{ color: "inherit" }}>
-          {parent.label.replace(/^Back to /u, "")}
-        </Link>
-        <Typography variant="body2" color="text.primary">
-          {period.name}
-        </Typography>
-      </Breadcrumbs>
+    <Stack spacing={2}>
+      <ReturnLink
+        returnUrl={searchParams.returnUrl}
+        fallback={{ href: workspaceUrl, label: "Back to Accounting Periods" }}
+      />
       <Stack
         direction="row"
         spacing={1.5}
