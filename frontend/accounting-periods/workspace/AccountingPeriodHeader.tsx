@@ -1,11 +1,12 @@
-import { Chip, Stack, Typography } from "@mui/material";
+import { Breadcrumbs, Chip, Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodDetailActions from "@/accounting-periods/workspace/AccountingPeriodDetailActions";
 import type { AccountingPeriodSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspaceDetailPage";
 import type { JSX } from "react";
+import Link from "next/link";
 import PeriodNavigation from "@/framework/view/PeriodNavigation";
-import ReturnLink from "@/framework/view/ReturnLink";
 import type { components } from "@/framework/data/api";
+import { getReturnLinkTarget } from "@/framework/view/ReturnLink";
 import routes from "@/accounting-periods/routes";
 
 /**
@@ -43,30 +44,39 @@ const AccountingPeriodHeader = function ({
         };
   };
 
+  const parent = getReturnLinkTarget(searchParams.returnUrl) ?? {
+    href: workspaceUrl,
+    label: "Accounting Periods",
+  };
+
   return (
-    <Stack spacing={2}>
-      <ReturnLink
-        returnUrl={searchParams.returnUrl}
-        fallback={{ href: workspaceUrl, label: "Back to Accounting Periods" }}
-      />
+    <Stack spacing={0.5}>
+      <Breadcrumbs aria-label="Breadcrumb" sx={{ typography: "body2" }}>
+        <Link href={parent.href} style={{ color: "inherit" }}>
+          {parent.label.replace(/^Back to /u, "")}
+        </Link>
+        <Typography variant="body2" color="text.primary">
+          {period.name}
+        </Typography>
+      </Breadcrumbs>
       <Stack
         direction="row"
-        useFlexGap
-        spacing={2}
-        sx={{
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
+        spacing={1.5}
+        sx={{ alignItems: "center", justifyContent: "space-between" }}
       >
         <Stack
           direction="row"
           spacing={1.5}
           sx={{ alignItems: "center", minWidth: 0 }}
         >
-          <Typography variant="h4" noWrap>
-            {period.name}
-          </Typography>
+          <PeriodNavigation
+            previousPeriod={getNeighborLink(detail.previousPeriod)}
+            nextPeriod={getNeighborLink(detail.nextPeriod)}
+          >
+            <Typography variant="h4" noWrap>
+              {period.name}
+            </Typography>
+          </PeriodNavigation>
           <Chip
             label={period.isOpen ? "Open" : "Closed"}
             color={period.isOpen ? "success" : "default"}
@@ -74,22 +84,11 @@ const AccountingPeriodHeader = function ({
             variant="outlined"
           />
         </Stack>
-        <Stack
-          direction="row"
-          useFlexGap
-          spacing={1.5}
-          sx={{ flexWrap: "wrap", alignItems: "center" }}
-        >
-          <PeriodNavigation
-            previousPeriod={getNeighborLink(detail.previousPeriod)}
-            nextPeriod={getNeighborLink(detail.nextPeriod)}
-          />
-          <AccountingPeriodDetailActions
-            accountingPeriod={period}
-            redirectUrl={currentUrl}
-            deleteRedirectUrl={workspaceUrl}
-          />
-        </Stack>
+        <AccountingPeriodDetailActions
+          accountingPeriod={period}
+          redirectUrl={currentUrl}
+          deleteRedirectUrl={workspaceUrl}
+        />
       </Stack>
     </Stack>
   );
