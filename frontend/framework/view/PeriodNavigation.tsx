@@ -65,4 +65,3 @@ const PeriodNavigation = function ({
 };
 
 export default PeriodNavigation;
-export type { PeriodLink };

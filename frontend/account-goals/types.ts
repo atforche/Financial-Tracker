@@ -1,7 +1,4 @@
-import {
-  AccountGoalEndingBalanceStatusModel,
-  type components,
-} from "@/framework/data/api";
+import type { components } from "@/framework/data/api";
 
 /**
  * Type representing an Account Goal.
@@ -14,21 +11,12 @@ type AccountGoal = components["schemas"]["AccountGoalModel"];
 type AccountGoalProgress = components["schemas"]["AccountGoalProgressModel"];
 
 /**
- * An Account Goal paired with its calculated progress.
- */
-interface AccountGoalWithProgress extends AccountGoal {
-  readonly progress: AccountGoalProgress;
-}
-
-/**
  * Type representing a request to update an Account Goal.
  */
 type UpdateAccountGoalRequest = components["schemas"]["UpdateAccountGoalModel"];
 
 export {
   type AccountGoal,
-  AccountGoalEndingBalanceStatusModel as AccountGoalEndingBalanceStatus,
   type AccountGoalProgress,
-  type AccountGoalWithProgress,
   type UpdateAccountGoalRequest,
 };

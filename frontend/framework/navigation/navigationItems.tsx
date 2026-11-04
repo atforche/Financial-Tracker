@@ -2,8 +2,6 @@ import {
   AccountBalance,
   Assessment,
   CalendarMonth,
-  EmojiEvents,
-  Flag,
   GridView,
   Place,
   ReceiptLong,
@@ -11,10 +9,8 @@ import {
   Workspaces,
 } from "@mui/icons-material";
 import type { NavigationLink } from "./navigationLinkTypes";
-import accountGoalRoutes from "@/account-goals/routes";
 import accountRoutes from "@/accounts/routes";
 import accountingPeriodRoutes from "@/accounting-periods/routes";
-import fundGoalRoutes from "@/fund-goals/routes";
 import fundRoutes from "@/funds/routes";
 import transactionRoutes from "@/transactions/routes";
 
@@ -55,23 +51,6 @@ const navigationItems = function (): NavigationLink[] {
       ],
     },
     {
-      name: "Account Goals",
-      href: accountGoalRoutes.workspace({}),
-      icon: <Flag />,
-      childLinks: [
-        {
-          name: "Workspace",
-          href: accountGoalRoutes.workspace({}),
-          icon: <Workspaces />,
-        },
-        {
-          name: "Trends",
-          href: accountGoalRoutes.trends({}),
-          icon: <Timeline />,
-        },
-      ],
-    },
-    {
       name: "Funds",
       href: fundRoutes.workspace({}),
       icon: <Assessment />,
@@ -82,19 +61,6 @@ const navigationItems = function (): NavigationLink[] {
           icon: <Workspaces />,
         },
         { name: "Trends", href: fundRoutes.trends({}), icon: <Timeline /> },
-      ],
-    },
-    {
-      name: "Fund Goals",
-      href: fundGoalRoutes.workspace({}),
-      icon: <EmojiEvents />,
-      childLinks: [
-        {
-          name: "Workspace",
-          href: fundGoalRoutes.workspace({}),
-          icon: <Workspaces />,
-        },
-        { name: "Trends", href: fundGoalRoutes.trends({}), icon: <Timeline /> },
       ],
     },
     {

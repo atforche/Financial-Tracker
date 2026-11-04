@@ -25,11 +25,6 @@ const returnLabels: readonly (readonly [RegExp, string])[] = [
   [/^\/locations\/workspace\/[^/?#]+(?:\?|$)/u, "Back to Location"],
   [/^\/accounts\/workspace\/[^/?#]+(?:\?|$)/u, "Back to Account Details"],
   [/^\/funds\/workspace\/[^/?#]+(?:\?|$)/u, "Back to Fund Details"],
-  [
-    /^\/account-goals\/workspace\/[^/?#]+(?:\?|$)/u,
-    "Back to Account Goal Details",
-  ],
-  [/^\/fund-goals\/workspace\/[^/?#]+(?:\?|$)/u, "Back to Fund Goal Details"],
 ];
 
 /**

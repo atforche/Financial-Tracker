@@ -1,6 +1,10 @@
 "use client";
 
-import type { FundGoal, FundGoalProgress } from "@/fund-goals/types";
+import {
+  type FundGoal,
+  FundGoalEndingBalanceStatus,
+  type FundGoalProgress,
+} from "@/fund-goals/types";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import FundGoalDetailsButton from "@/fund-goals/FundGoalDetailsButton";
 import GoalHistory from "@/framework/goals/GoalHistory";
@@ -8,7 +12,6 @@ import type { HistoryPoint } from "@/framework/goals/GoalHistoryListFrame";
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
 import UpdateFundGoalForm from "@/fund-goals/workspace/UpdateFundGoalForm";
-import { isFundGoalSatisfied } from "@/fund-goals/trends/fundGoalProgressTrends";
 
 /**
  * Shows how one fund's goals, balance, and contributions changed across a period range, with editing for open periods.
@@ -50,7 +53,10 @@ const FundGoalTab = function ({
             ? null
             : maximumBalance - minimumBalance,
         balance: endingBalance,
-        satisfied: isFundGoalSatisfied({ fundGoal: goal, progress }),
+        satisfied:
+          progress.endingBalance.status ===
+            FundGoalEndingBalanceStatus.WithinRange &&
+          (progress.contribution?.isSatisfied ?? true),
       },
     ];
   });
