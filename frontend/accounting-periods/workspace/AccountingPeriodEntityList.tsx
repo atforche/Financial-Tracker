@@ -2,7 +2,6 @@
 
 import {
   Box,
-  Button,
   ButtonBase,
   MenuItem,
   Paper,
@@ -10,12 +9,12 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { type JSX, useState } from "react";
 import {
   compareCurrencyAmounts,
   formatCurrency,
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
+import type { JSX } from "react";
 import Link from "next/link";
 import PeriodEntityStatus from "@/accounting-periods/workspace/periodEntityStatus";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
@@ -25,8 +24,6 @@ import SignedChange from "@/framework/view/SignedChange";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
-
-const collapsedTileCount = 4;
 
 /**
  * An account or fund's balances and goal status in an accounting period.
@@ -110,29 +107,18 @@ const getDistance = function ({
 };
 
 /**
- * Describes where an entity ended relative to its goal.
+ * Describes an entity's goal for the period.
  */
-const getNote = function (entity: PeriodEntity): string {
-  const { minimum, maximum, status } = entity;
-  switch (status) {
-    case PeriodEntityStatus.BelowMinimum:
-      return `${formatCurrency(getDistance(entity))} short`;
-    case PeriodEntityStatus.AboveMaximum:
-      return `${formatCurrency(getDistance(entity))} over`;
-    case PeriodEntityStatus.WithinRange:
-      if (minimum === null) {
-        return "In range";
-      }
-      if (maximum === null) {
-        return `Minimum ${formatCurrency(minimum)}`;
-      }
-      return compareCurrencyAmounts(minimum, maximum) === 0
-        ? `Target ${formatCurrency(minimum)}`
-        : `${formatCurrency(minimum)} to ${formatCurrency(maximum)}`;
-    case PeriodEntityStatus.NoGoal:
-    default:
-      return "No goal";
+const getGoalLabel = function ({ minimum, maximum }: PeriodEntity): string {
+  if (minimum === null) {
+    return "No goal";
   }
+  if (maximum === null) {
+    return `Goal: at least ${formatCurrency(minimum)}`;
+  }
+  return compareCurrencyAmounts(minimum, maximum) === 0
+    ? `Goal: exactly ${formatCurrency(minimum)}`
+    : `Goal: ${formatCurrency(minimum)} to ${formatCurrency(maximum)}`;
 };
 
 /**
@@ -204,6 +190,11 @@ const EntityTile = function ({
   readonly entity: PeriodEntity;
   readonly color: string;
 }): JSX.Element {
+  const distance = getDistance(entity);
+  const isExactTarget =
+    entity.minimum !== null &&
+    entity.maximum !== null &&
+    compareCurrencyAmounts(entity.minimum, entity.maximum) === 0;
   return (
     <Paper
       component={Link}
@@ -221,25 +212,43 @@ const EntityTile = function ({
         "&:hover": { borderColor: "primary.main" },
       }}
     >
+      <Typography variant="subtitle2" noWrap>
+        {entity.name}
+      </Typography>
       <Stack
         direction="row"
-        spacing={1}
-        sx={{ alignItems: "baseline", justifyContent: "space-between" }}
+        spacing={2}
+        sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
       >
-        <Typography variant="subtitle2" noWrap sx={{ minWidth: 0 }}>
-          {entity.name}
-        </Typography>
-        <Typography variant="caption" sx={{ whiteSpace: "nowrap" }}>
-          <SignedChange amount={getChange(entity)} />
-        </Typography>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="caption" color="text.secondary" component="p">
+            Closing balance
+          </Typography>
+          <Typography variant="h6" component="p" sx={{ fontWeight: 500 }}>
+            {formatCurrency(entity.closingBalance)}
+          </Typography>
+        </Box>
+        <Box sx={{ textAlign: "right", whiteSpace: "nowrap" }}>
+          <Typography variant="caption" color="text.secondary" component="p">
+            This period
+          </Typography>
+          <Typography variant="body2" component="p">
+            <SignedChange amount={getChange(entity)} />
+          </Typography>
+        </Box>
       </Stack>
-      <Typography variant="h6" component="p" sx={{ fontWeight: 500 }}>
-        {formatCurrency(entity.closingBalance)}
-      </Typography>
       <GoalRangeBar entity={entity} color={color} />
       <Typography variant="caption" color="text.secondary">
-        {getNote(entity)}
+        {getGoalLabel(entity)}
       </Typography>
+      {distance === 0 ? null : (
+        <Typography variant="caption" sx={{ color, fontWeight: 500 }}>
+          {formatCurrency(distance)}{" "}
+          {entity.status === PeriodEntityStatus.BelowMinimum
+            ? `below ${isExactTarget ? "target" : "minimum"}`
+            : `above ${isExactTarget ? "target" : "maximum"}`}
+        </Typography>
+      )}
     </Paper>
   );
 };
@@ -276,7 +285,6 @@ const AccountingPeriodEntityList = function ({
 }): JSX.Element {
   const searchParams = useSearchParams();
   const updateParams = useSearchParamUpdater([]);
-  const [showAllInRange, setShowAllInRange] = useState(false);
   const sort =
     parseEnumValue(EntitySort, searchParams.get("entitySort") ?? "") ??
     EntitySort.Distance;
@@ -313,12 +321,7 @@ const AccountingPeriodEntityList = function ({
             compareEntities(first, second, sort) ||
             first.name.localeCompare(second.name),
         );
-      const canCollapse =
-        details.status === PeriodEntityStatus.WithinRange &&
-        selectedStatus === null &&
-        search === "" &&
-        tiles.length > collapsedTileCount;
-      return { ...details, tiles, canCollapse };
+      return { ...details, tiles };
     })
     .filter(({ tiles }) => tiles.length > 0);
 
@@ -390,43 +393,19 @@ const AccountingPeriodEntityList = function ({
           Nothing matches the search or status filter.
         </Typography>
       ) : null}
-      {sections.map(({ status, label, color, tiles, canCollapse }) => (
+      {sections.map(({ status, label, color, tiles }) => (
         <Stack key={status} spacing={1.25}>
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{ alignItems: "center", justifyContent: "space-between" }}
-          >
-            <Typography variant="subtitle1" sx={{ fontWeight: 500, color }}>
-              {label}{" "}
-              <Typography
-                component="span"
-                variant="body2"
-                color="text.secondary"
-              >
-                {tiles.length}
-              </Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: 500, color }}>
+            {label}{" "}
+            <Typography component="span" variant="body2" color="text.secondary">
+              {tiles.length}
             </Typography>
-            {canCollapse ? (
-              <Button
-                onClick={() => {
-                  setShowAllInRange(!showAllInRange);
-                }}
-              >
-                {showAllInRange
-                  ? "Show fewer"
-                  : `Show all ${tiles.length.toString()}`}
-              </Button>
-            ) : null}
-          </Stack>
+          </Typography>
           <ResponsiveGrid
             columns={{ xs: 1, sm: 2, md: 3, lg: 4 }}
             spacing={1.5}
           >
-            {(canCollapse && !showAllInRange
-              ? tiles.slice(0, collapsedTileCount)
-              : tiles
-            ).map((entity) => (
+            {tiles.map((entity) => (
               <EntityTile key={entity.id} entity={entity} color={color} />
             ))}
           </ResponsiveGrid>
