@@ -11,6 +11,25 @@ namespace Tests.FundGoals;
 public sealed class FundGoalEndpointTests
 {
     /// <summary>
+    /// Returns a Fund's goals and progress across a period range, oldest first.
+    /// </summary>
+    [Fact]
+    public async Task HistoryReturnsGoalsAcrossPeriodRange()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        _ = await test.Periods.Create(2026, 8).CreateAsync();
+        AccountingPeriodHandle september = await test.Periods.Create(2026, 9).CreateAsync();
+        AccountingPeriodHandle october = await test.Periods.Create(2026, 10).CreateAsync();
+        FundHandle fund = await test.Funds.Create("Vacation").In(september).CreateAsync();
+
+        IReadOnlyList<FundGoalPeriodProgressModel> history = await test.Api.GetAsync<List<FundGoalPeriodProgressModel>>(
+            $"/fund-goals/fund/{fund.Id}/history?range.start={september.Id}&range.end={october.Id}");
+
+        Assert.Equal([9, 10], history.Select(item => item.Goal.AccountingPeriod!.Month));
+        Assert.All(history, item => Assert.Equal(fund.Id, item.Goal.Fund.Id));
+    }
+
+    /// <summary>
     /// Treats SQL pattern characters in fund-name searches as literal text.
     /// </summary>
     [Theory]

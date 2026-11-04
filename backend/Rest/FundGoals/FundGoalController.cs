@@ -8,6 +8,7 @@ using Domain.FundGoals.Queries;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
+using Models.AccountingPeriods;
 using Models.BalanceEvents;
 using Models.FundGoals;
 using Rest.AccountingPeriods;
@@ -101,7 +102,7 @@ public sealed class FundGoalController(
             .Select(fundGoal => new FundGoalProgressResultModel
             {
                 FundGoalId = fundGoal.Id.Value,
-                Progress = ToModel(progressByFundGoalId[fundGoal.Id]),
+                Progress = fundGoalConverter.ToModel(progressByFundGoalId[fundGoal.Id]),
             })
             .ToList());
     }
@@ -120,6 +121,31 @@ public sealed class FundGoalController(
             accountingPeriodId,
             cancellationToken);
         return fundGoal == null ? NotFound() : Ok(fundGoalConverter.ToModel(fundGoal));
+    }
+
+    /// <summary>
+    /// Retrieves a Fund's goals and their progress across an Accounting Period range, oldest first.
+    /// </summary>
+    [HttpGet("fund/{fundId:guid}/history")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<FundGoalPeriodProgressModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<IReadOnlyCollection<FundGoalPeriodProgressModel>>> GetHistoryAsync(
+        Guid fundId,
+        [FromQuery] AccountingPeriodsInRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        AccountingPeriodRangeQueryResult<IReadOnlyCollection<FundGoalPeriodProgress>> result = await fundGoalQueryService.GetHistoryAsync(
+            fundId,
+            query.Range.Start,
+            query.Range.End,
+            cancellationToken);
+        return result.Range == null
+            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Fund Goal history."))
+            : Ok(result.Range.Select(item => new FundGoalPeriodProgressModel
+            {
+                Goal = fundGoalConverter.ToModel(item.Goal),
+                Progress = fundGoalConverter.ToModel(item.Progress),
+            }).ToList());
     }
 
     /// <summary>
@@ -154,7 +180,7 @@ public sealed class FundGoalController(
             return NotFound();
         }
         return fundGoalService.TryGetProgress(fundGoal, accountingPeriod, out FundGoalProgress? progress, out IEnumerable<ValidationError> errors)
-            ? Ok(ToModel(progress))
+            ? Ok(fundGoalConverter.ToModel(progress))
             : ValidationProblem("Unable to calculate Fund Goal progress.", errors);
     }
 
@@ -167,31 +193,6 @@ public sealed class FundGoalController(
         MinimumEndingBalance = model.MinimumEndingBalance,
         MaximumEndingBalance = model.MaximumEndingBalance,
         AllowExpectedContributionAboveMaximum = model.AllowExpectedContributionAboveMaximum,
-    };
-
-    /// <summary>
-    /// Maps the provided Fund Goal Progress to a Fund Goal Progress Model.
-    /// </summary>
-    private static FundGoalProgressModel ToModel(FundGoalProgress progress) => new()
-    {
-        Contribution = progress.Contribution == null ? null : new ContributionProgressModel
-        {
-            PlannedAmount = progress.Contribution.PlannedAmount,
-            ExpectedAmount = progress.Contribution.ExpectedAmount,
-            AmountReducedByMaximumEndingBalance = progress.Contribution.AmountReducedByMaximumEndingBalance,
-            AssignedAmount = progress.Contribution.AssignedAmount,
-            RemainingAmount = progress.Contribution.RemainingAmount,
-            IsSatisfied = progress.Contribution.IsSatisfied,
-        },
-        EndingBalance = new FundGoalEndingBalanceProgressModel
-        {
-            EndingBalance = progress.EndingBalance.EndingBalance,
-            MinimumBalance = progress.EndingBalance.MinimumBalance,
-            MaximumBalance = progress.EndingBalance.MaximumBalance,
-            AmountBelowMinimum = progress.EndingBalance.AmountBelowMinimum,
-            AmountAboveMaximum = progress.EndingBalance.AmountAboveMaximum,
-            Status = (FundGoalEndingBalanceStatusModel)progress.EndingBalance.Status,
-        },
     };
 
     /// <summary>

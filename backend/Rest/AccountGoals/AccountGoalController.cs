@@ -7,6 +7,8 @@ using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.AccountGoals;
+using Models.AccountingPeriods;
+using Rest.AccountingPeriods;
 
 namespace Rest.AccountGoals;
 
@@ -78,6 +80,31 @@ public sealed class AccountGoalController(
             accountingPeriodId,
             cancellationToken);
         return accountGoal == null ? NotFound() : Ok(accountGoalConverter.ToModel(accountGoal));
+    }
+
+    /// <summary>
+    /// Retrieves a Account's goals and their progress across an Accounting Period range, oldest first.
+    /// </summary>
+    [HttpGet("account/{accountId:guid}/history")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<AccountGoalPeriodProgressModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<IReadOnlyCollection<AccountGoalPeriodProgressModel>>> GetHistoryAsync(
+        Guid accountId,
+        [FromQuery] AccountingPeriodsInRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        AccountingPeriodRangeQueryResult<IReadOnlyCollection<AccountGoalPeriodProgress>> result = await accountGoalQueryService.GetHistoryAsync(
+            accountId,
+            query.Range.Start,
+            query.Range.End,
+            cancellationToken);
+        return result.Range == null
+            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Account Goal history."))
+            : Ok(result.Range.Select(item => new AccountGoalPeriodProgressModel
+            {
+                Goal = accountGoalConverter.ToModel(item.Goal),
+                Progress = accountGoalConverter.ToModel(item.Progress),
+            }).ToList());
     }
 
     /// <summary>

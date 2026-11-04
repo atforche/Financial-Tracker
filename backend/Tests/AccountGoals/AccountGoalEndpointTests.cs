@@ -56,6 +56,30 @@ public sealed class AccountGoalEndpointTests
     }
 
     /// <summary>
+    /// Returns an Account's goals and progress across a period range, oldest first, and rejects unknown periods.
+    /// </summary>
+    [Fact]
+    public async Task HistoryReturnsGoalsAcrossPeriodRange()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle account = await test.Accounts.Onboard("Spending").CreateAsync();
+        _ = await test.Accounts.Onboard("Other").CreateAsync();
+        _ = await test.Periods.Create(2026, 8).CreateAsync();
+        AccountingPeriodHandle september = await test.Periods.Create(2026, 9).CreateAsync();
+        AccountingPeriodHandle october = await test.Periods.Create(2026, 10).CreateAsync();
+
+        IReadOnlyList<AccountGoalPeriodProgressModel> history = await test.Api.GetAsync<List<AccountGoalPeriodProgressModel>>(
+            $"/account-goals/account/{account.Id}/history?range.start={september.Id}&range.end={october.Id}");
+
+        Assert.Equal([9, 10], history.Select(item => item.Goal.AccountingPeriod!.Month));
+        Assert.All(history, item => Assert.Equal(account.Id, item.Goal.Account.Id));
+
+        HttpResponseMessage invalid = await test.Api.GetResponseAsync(
+            $"/account-goals/account/{account.Id}/history?range.start={Guid.NewGuid()}&range.end={october.Id}");
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, invalid.StatusCode);
+    }
+
+    /// <summary>
     /// Exposes Account Goal configuration, filtering, and progress through the REST API.
     /// </summary>
     [Fact]

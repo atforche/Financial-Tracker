@@ -71,4 +71,29 @@ public sealed class FundGoalConverter
         Items = page.Items.Select(ToModel).ToList(),
         TotalCount = page.TotalCount,
     };
+
+    /// <summary>
+    /// Maps the provided Fund Goal Progress to a Fund Goal Progress Model.
+    /// </summary>
+    public FundGoalProgressModel ToModel(FundGoalProgress progress) => new()
+    {
+        Contribution = progress.Contribution == null ? null : new ContributionProgressModel
+        {
+            PlannedAmount = progress.Contribution.PlannedAmount,
+            ExpectedAmount = progress.Contribution.ExpectedAmount,
+            AmountReducedByMaximumEndingBalance = progress.Contribution.AmountReducedByMaximumEndingBalance,
+            AssignedAmount = progress.Contribution.AssignedAmount,
+            RemainingAmount = progress.Contribution.RemainingAmount,
+            IsSatisfied = progress.Contribution.IsSatisfied,
+        },
+        EndingBalance = new FundGoalEndingBalanceProgressModel
+        {
+            EndingBalance = progress.EndingBalance.EndingBalance,
+            MinimumBalance = progress.EndingBalance.MinimumBalance,
+            MaximumBalance = progress.EndingBalance.MaximumBalance,
+            AmountBelowMinimum = progress.EndingBalance.AmountBelowMinimum,
+            AmountAboveMaximum = progress.EndingBalance.AmountAboveMaximum,
+            Status = (FundGoalEndingBalanceStatusModel)progress.EndingBalance.Status,
+        },
+    };
 }
