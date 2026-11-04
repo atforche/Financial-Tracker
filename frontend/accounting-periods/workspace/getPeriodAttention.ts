@@ -1,108 +1,128 @@
+import {
+  formatCurrency,
+  formatSignedCurrency,
+  getCurrencyTotal,
+} from "@/framework/currencyHelpers";
 import type { AttentionItem } from "@/framework/view/AttentionList";
 import PeriodEntityStatus from "@/accounting-periods/workspace/periodEntityStatus";
 import type { Route } from "next";
 import type { components } from "@/framework/data/api";
-import { formatCurrency } from "@/framework/currencyHelpers";
 import routes from "@/accounting-periods/routes";
 
 const maximumListedItems = 3;
 
 /**
- * Builds one attention line for a class of problem, listing its largest items.
+ * An account or fund and how far it ended from its goal.
  */
-const describe = function (
-  title: string,
-  suffix: string,
-  entries: readonly { readonly name: string; readonly amount: number }[],
+interface GoalEntry {
+  readonly name: string;
+  readonly ending:
+    | {
+        readonly status: string;
+        readonly amountBelowMinimum: number;
+        readonly amountAboveMaximum: number;
+      }
+    | undefined;
+}
+
+/**
+ * Lists an attention line's largest items first, leaving the rest as a count.
+ */
+const summarizeItems = function (
+  items: readonly { readonly text: string; readonly size: number }[],
+  getAmount: (size: number) => string,
+): Pick<AttentionItem, "items" | "remainingItemCount"> {
+  return {
+    items: [...items]
+      .sort((first, second) => Math.abs(second.size) - Math.abs(first.size))
+      .slice(0, maximumListedItems)
+      .map(({ text, size }) => ({ text, amount: getAmount(size) })),
+    remainingItemCount: Math.max(items.length - maximumListedItems, 0),
+  };
+};
+
+/**
+ * Describes the goals of one kind that ended outside their range, linking to the table that lists them.
+ */
+const describeOutOfRange = function (
+  kind: "account" | "fund",
+  entries: readonly GoalEntry[],
   href: Route,
 ): AttentionItem[] {
-  if (entries.length === 0) {
+  const misses = entries.flatMap(({ name, ending }) => {
+    if (ending?.status === PeriodEntityStatus.BelowMinimum) {
+      return [{ text: name, size: -ending.amountBelowMinimum }];
+    }
+    return ending?.status === PeriodEntityStatus.AboveMaximum
+      ? [{ text: name, size: ending.amountAboveMaximum }]
+      : [];
+  });
+  if (misses.length === 0) {
     return [];
   }
-  const sorted = [...entries].sort((a, b) => b.amount - a.amount);
+  const belowCount = misses.filter(({ size }) => size < 0).length;
+  const aboveCount = misses.length - belowCount;
   return [
     {
-      title: `${entries.length.toString()} ${entries.length === 1 ? "goal" : "goals"} ${title}`,
-      amount: `${formatCurrency(sorted.reduce((sum, entry) => sum + entry.amount, 0))} ${suffix}`,
-      items: sorted.slice(0, maximumListedItems).map((entry) => ({
-        text: entry.name,
-        amount: formatCurrency(entry.amount),
-      })),
-      remainingItemCount: Math.max(sorted.length - maximumListedItems, 0),
-      facts: [],
+      title: `${misses.length.toString()} ${kind} ${misses.length === 1 ? "goal" : "goals"} outside range`,
+      amount: `${formatCurrency(getCurrencyTotal(misses.map(({ size }) => Math.abs(size))))} off goal`,
+      ...summarizeItems(misses, formatSignedCurrency),
+      facts: [
+        [
+          ...(belowCount > 0 ? [`${belowCount.toString()} below minimum`] : []),
+          ...(aboveCount > 0 ? [`${aboveCount.toString()} above maximum`] : []),
+        ].join(" · "),
+      ],
       href,
     },
   ];
 };
 
 /**
- * Lists what needs attention in an accounting period, with at most one line for each class of problem.
+ * Lists what needs attention in an accounting period, with Account Goals and Fund Goals kept apart so that each line
+ * links to the one table holding everything it describes.
  */
 const getPeriodAttention = function (
   detail: components["schemas"]["AccountingPeriodDetailModel"],
 ): AttentionItem[] {
   const periodId = detail.accountingPeriod.id;
-  const goals = [
-    ...detail.funds.map((item) => ({
-      name: item.fund.name,
-      tab: "funds",
-      ending: item.goalProgress?.endingBalance,
-    })),
-    ...detail.accounts.map((item) => ({
-      name: item.account.name,
-      tab: "accounts",
-      ending: item.goalProgress?.endingBalance,
-    })),
-  ];
-  const describeStatus = function (
-    status: PeriodEntityStatus,
-    title: string,
-    suffix: string,
-    getAmount: (
-      ending: NonNullable<(typeof goals)[number]["ending"]>,
-    ) => number,
-  ): AttentionItem[] {
-    const matches = goals.flatMap(({ name, tab, ending }) =>
-      ending?.status.toString() === status
-        ? [{ name, tab, amount: getAmount(ending) }]
-        : [],
-    );
-    return describe(
-      title,
-      suffix,
-      matches,
-      routes.workspaceDetail(periodId, {
-        tab: matches[0]?.tab ?? "funds",
-        status,
-      }),
-    );
-  };
+  const fundsHref = routes.workspaceDetail(periodId, { tab: "funds" });
+  const unfunded = detail.funds.flatMap((item) => {
+    const contribution = item.goalProgress?.contribution;
+    return contribution === null ||
+      contribution === undefined ||
+      contribution.isSatisfied
+      ? []
+      : [{ text: item.fund.name, size: contribution.remainingAmount }];
+  });
   return [
-    ...describeStatus(
-      PeriodEntityStatus.BelowMinimum,
-      "below minimum",
-      "short",
-      (ending) => ending.amountBelowMinimum,
+    ...describeOutOfRange(
+      "fund",
+      detail.funds.map((item) => ({
+        name: item.fund.name,
+        ending: item.goalProgress?.endingBalance,
+      })),
+      fundsHref,
     ),
-    ...describeStatus(
-      PeriodEntityStatus.AboveMaximum,
-      "above maximum",
-      "over",
-      (ending) => ending.amountAboveMaximum,
+    ...describeOutOfRange(
+      "account",
+      detail.accounts.map((item) => ({
+        name: item.account.name,
+        ending: item.goalProgress?.endingBalance,
+      })),
+      routes.workspaceDetail(periodId, { tab: "accounts" }),
     ),
-    ...describe(
-      "not fully funded",
-      "remaining",
-      detail.funds.flatMap((item) => {
-        const contribution = item.goalProgress?.contribution;
-        return contribution === null ||
-          contribution === undefined ||
-          contribution.isSatisfied
-          ? []
-          : [{ name: item.fund.name, amount: contribution.remainingAmount }];
-      }),
-      routes.workspaceDetail(periodId, { tab: "funds" }),
-    ),
+    ...(unfunded.length === 0
+      ? []
+      : [
+          {
+            title: `${unfunded.length.toString()} ${unfunded.length === 1 ? "fund goal" : "fund goals"} not fully funded`,
+            amount: `${formatCurrency(getCurrencyTotal(unfunded.map(({ size }) => size)))} remaining`,
+            ...summarizeItems(unfunded, formatCurrency),
+            facts: [],
+            href: fundsHref,
+          },
+        ]),
   ];
 };
 
