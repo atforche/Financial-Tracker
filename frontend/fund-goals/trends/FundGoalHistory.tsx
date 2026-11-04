@@ -15,11 +15,9 @@ import type { JSX } from "react";
 const FundGoalHistory = function ({
   periods,
   entries,
-  fundName,
 }: {
   readonly periods: readonly AccountingPeriod[];
   readonly entries: readonly FundGoalPeriodProgress[];
-  readonly fundName: string;
 }): JSX.Element {
   const byPeriod = new Map(
     entries.map((entry) => [entry.fundGoal.accountingPeriod?.id, entry]),
@@ -44,7 +42,6 @@ const FundGoalHistory = function ({
   });
   return (
     <GoalHistory
-      name={fundName}
       subject="fund"
       hasData={entries.length > 0}
       points={points}

@@ -1,9 +1,9 @@
 "use client";
 
+import type { JSX, ReactNode } from "react";
 import { getPaginationIndex, getRowsPerPage } from "@/framework/listframe/page";
 import { Chip } from "@mui/material";
 import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import type { JSX } from "react";
 import ListFrame from "@/framework/listframe/ListFrame";
 import createColumnSortProps from "@/framework/listframe/createColumnSortProps";
 import { formatCurrency } from "@/framework/currencyHelpers";
@@ -70,10 +70,12 @@ const GoalHistoryListFrame = function ({
   points,
   paramPrefix,
   showContribution,
+  renderActions,
 }: {
   readonly points: readonly HistoryPoint[];
   readonly paramPrefix: string;
   readonly showContribution: boolean;
+  readonly renderActions?: (point: HistoryPoint) => ReactNode;
 }): JSX.Element {
   const sortParamName = `${paramPrefix}Sort`;
   const pageParamName = `${paramPrefix}Page`;
@@ -211,9 +213,21 @@ const GoalHistoryListFrame = function ({
       ...getSortProps(HistorySort.Result, HistorySort.ResultDescending),
     },
   ];
-  const columns = showContribution
-    ? allColumns
-    : allColumns.filter((column) => column.name !== "contribution");
+  const columns = [
+    ...(showContribution
+      ? allColumns
+      : allColumns.filter((column) => column.name !== "contribution")),
+    ...(renderActions === undefined
+      ? []
+      : [
+          {
+            name: "actions",
+            headerContent: "",
+            alignment: "right" as const,
+            getBodyContent: renderActions,
+          },
+        ]),
+  ];
 
   return (
     <ListFrame<HistoryPoint>

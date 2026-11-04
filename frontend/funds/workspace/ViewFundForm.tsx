@@ -5,10 +5,10 @@ import {
   FundBalanceEventSort,
   type FundWithBalance,
 } from "@/funds/types";
+import type { JSX, ReactNode } from "react";
 import type { BalanceEventTotals } from "@/balance-events/types";
 import type { BalanceTrendDateSummary } from "@/framework/charts/balanceTrendHelpers";
 import BalanceWorkspaceView from "@/balance-events/BalanceWorkspaceView";
-import type { JSX } from "react";
 import type { Route } from "next";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import UpdateFundForm from "@/funds/workspace/UpdateFundForm";
@@ -27,6 +27,9 @@ interface ViewFundFormProps {
   readonly recentActivityBalances: readonly BalanceTrendDateSummary[];
   readonly trendsHref: Route;
   readonly addTransactionHref: string;
+  readonly historyFilter: ReactNode;
+  readonly historyPeriods?: ReactNode;
+  readonly goalContent?: ReactNode;
 }
 
 /**

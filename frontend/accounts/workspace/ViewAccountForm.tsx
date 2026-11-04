@@ -5,11 +5,11 @@ import {
   AccountBalanceEventSort,
   type AccountWithBalance,
 } from "@/accounts/types";
+import type { JSX, ReactNode } from "react";
 import AccountTypeEntryField from "@/accounts/AccountTypeEntryField";
 import type { BalanceEventTotals } from "@/balance-events/types";
 import type { BalanceTrendDateSummary } from "@/framework/charts/balanceTrendHelpers";
 import BalanceWorkspaceView from "@/balance-events/BalanceWorkspaceView";
-import type { JSX } from "react";
 import type { Route } from "next";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import UpdateAccountForm from "@/accounts/workspace/UpdateAccountForm";
@@ -29,6 +29,9 @@ interface ViewAccountFormProps {
   readonly recentActivityBalances: readonly BalanceTrendDateSummary[];
   readonly trendsHref: Route;
   readonly addTransactionHref: string;
+  readonly historyFilter: ReactNode;
+  readonly historyPeriods?: ReactNode;
+  readonly goalContent?: ReactNode;
 }
 
 /**

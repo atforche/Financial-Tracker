@@ -3,7 +3,7 @@
 import BalanceEventsFrame, {
   type WorkspaceBalanceEvent,
 } from "@/balance-events/BalanceEventsFrame";
-import { Box, Button, Stack, Tab, Tabs, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import {
   type JSX,
   type ReactNode,
@@ -24,6 +24,7 @@ import PageLayout from "@/framework/view/PageLayout";
 import RecentBalanceActivity from "@/balance-events/RecentBalanceActivity";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import type { Route } from "next";
+import UrlTabs from "@/framework/view/UrlTabs";
 import type { WorkspaceActionState } from "@/framework/forms/workspaceAction";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
@@ -55,6 +56,9 @@ interface BalanceWorkspaceViewProps<
   readonly recentActivityBalances: readonly BalanceTrendDateSummary[];
   readonly trendsHref: Route;
   readonly addTransactionHref: string;
+  readonly historyFilter: ReactNode;
+  readonly historyPeriods?: ReactNode;
+  readonly goalContent?: ReactNode;
 }
 
 /**
@@ -80,17 +84,26 @@ const BalanceWorkspaceView = function <
   recentActivityBalances,
   trendsHref,
   addTransactionHref,
+  historyFilter,
+  historyPeriods,
+  goalContent,
 }: BalanceWorkspaceViewProps<TEvent, TDeletePayload>): JSX.Element {
   const canWrite = useWriteAccess();
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
-  const [activeView, setActiveView] = useState<"transactions" | "activity">(
-    "transactions",
-  );
   const [deleteState, deleteDispatch, deletePending] = useActionState(
     deleteAction,
     {},
   );
   const entityLabel = entityName === "account" ? "Account" : "Fund";
+  const events = (
+    <BalanceEventsFrame<TEvent>
+      data={recentBalanceEvents}
+      totalCount={recentBalanceEventCount}
+      addTransactionHref={addTransactionHref}
+      sortEnum={balanceEventSort}
+      emptyDescription={emptyBalanceEventsDescription}
+    />
+  );
 
   return (
     <ConstrainedContent maxWidth={1200}>
@@ -175,65 +188,40 @@ const BalanceWorkspaceView = function <
             </ResponsiveGrid>
           </Box>
         </Frame>
-        <Box>
-          <Tabs
-            value={activeView}
-            onChange={(_, value: "transactions" | "activity") => {
-              setActiveView(value);
-            }}
-            aria-label={`${entityLabel} workspace views`}
-            sx={{ mb: 2 }}
-          >
-            <Tab
-              value="transactions"
-              label="Transactions"
-              id={`${entityName}-transactions-tab`}
-              aria-controls={`${entityName}-transactions-panel`}
-            />
-            <Tab
-              value="activity"
-              label="Recent Activity"
-              id={`${entityName}-activity-tab`}
-              aria-controls={`${entityName}-activity-panel`}
-            />
-          </Tabs>
-          <Box
-            role="tabpanel"
-            id={`${entityName}-transactions-panel`}
-            aria-labelledby={`${entityName}-transactions-tab`}
-            hidden={activeView !== "transactions"}
-          >
-            {activeView === "transactions" ? (
-              <BalanceEventsFrame<TEvent>
-                data={recentBalanceEvents}
-                totalCount={recentBalanceEventCount}
-                addTransactionHref={addTransactionHref}
-                sortEnum={balanceEventSort}
-                emptyDescription={emptyBalanceEventsDescription}
-              />
-            ) : null}
-          </Box>
-          <Box
-            role="tabpanel"
-            id={`${entityName}-activity-panel`}
-            aria-labelledby={`${entityName}-activity-tab`}
-            hidden={activeView !== "activity"}
-          >
-            {activeView === "activity" ? (
-              <RecentBalanceActivity
-                summaryFirst
-                title="Balance Activity"
-                totals={activityTotals}
-                dailyBalances={recentActivityBalances}
-                {...(activityTotals.openingBalance === null ||
-                activityTotals.openingBalance === undefined
-                  ? {}
-                  : { periodOpeningBalance: activityTotals.openingBalance })}
-                trendsHref={trendsHref}
-              />
-            ) : null}
-          </Box>
-        </Box>
+        <UrlTabs
+          label={`${entityLabel} workspace views`}
+          paramName="tab"
+          tabs={[
+            { value: "transactions", label: "Transactions", content: events },
+            {
+              value: "history",
+              label: "History",
+              content: (
+                <Stack spacing={2}>
+                  {historyFilter}
+                  <RecentBalanceActivity
+                    summaryFirst
+                    title="Balance Activity"
+                    totals={activityTotals}
+                    dailyBalances={recentActivityBalances}
+                    {...(activityTotals.openingBalance === null ||
+                    activityTotals.openingBalance === undefined
+                      ? {}
+                      : {
+                          periodOpeningBalance: activityTotals.openingBalance,
+                        })}
+                    trendsHref={trendsHref}
+                  />
+                  {historyPeriods}
+                  {events}
+                </Stack>
+              ),
+            },
+            ...(goalContent === undefined
+              ? []
+              : [{ value: "goal", label: "Goal", content: goalContent }]),
+          ]}
+        />
         {canWrite && updateDialogOpen
           ? renderUpdateForm(() => {
               setUpdateDialogOpen(false);

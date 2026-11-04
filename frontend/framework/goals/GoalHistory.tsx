@@ -15,6 +15,7 @@ import {
 import GoalHistoryListFrame, {
   type HistoryPoint,
 } from "@/framework/goals/GoalHistoryListFrame";
+import type { JSX, ReactNode } from "react";
 import { Paper, Stack, Typography } from "@mui/material";
 import {
   compareCurrencyAmounts,
@@ -22,26 +23,25 @@ import {
   formatCurrency,
 } from "@/framework/currencyHelpers";
 import ChartFrame from "@/framework/charts/ChartFrame";
-import type { JSX } from "react";
 import { useTheme } from "@mui/material/styles";
 
 /**
  * Shows how one goal's bounds, balance, and optional contributions changed across periods.
  */
 const GoalHistory = function ({
-  name,
   subject,
   hasData,
   points,
   paramPrefix,
   showContribution,
+  renderActions,
 }: {
-  readonly name: string;
   readonly subject: string;
   readonly hasData: boolean;
   readonly points: readonly HistoryPoint[];
   readonly paramPrefix: string;
   readonly showContribution: boolean;
+  readonly renderActions?: (point: HistoryPoint) => ReactNode;
 }): JSX.Element {
   const theme = useTheme();
   const amounts = points.flatMap((point) =>
@@ -81,7 +81,6 @@ const GoalHistory = function ({
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h5">{name}</Typography>
       <ChartFrame
         title="Goal Progress"
         emptyMessage={`No goal history for this ${subject} in the selected periods.`}
@@ -288,6 +287,7 @@ const GoalHistory = function ({
         points={points}
         paramPrefix={paramPrefix}
         showContribution={showContribution}
+        {...(renderActions === undefined ? {} : { renderActions })}
       />
     </Stack>
   );

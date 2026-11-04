@@ -185,7 +185,6 @@ const AccountGoalTrends = async function ({
         <AccountGoalHistory
           periods={[...selectedPeriods].reverse()}
           entries={historyEntries}
-          accountName={selectedAccount.name}
         />
       )}
     </PageLayout>

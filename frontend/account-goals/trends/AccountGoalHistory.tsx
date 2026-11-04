@@ -12,11 +12,9 @@ import type { JSX } from "react";
 const AccountGoalHistory = function ({
   periods,
   entries,
-  accountName,
 }: {
   readonly periods: readonly AccountingPeriod[];
   readonly entries: readonly AccountGoalPeriodProgress[];
-  readonly accountName: string;
 }): JSX.Element {
   const byPeriod = new Map(
     entries.map((entry) => [entry.accountGoal.accountingPeriod?.id, entry]),
@@ -41,7 +39,6 @@ const AccountGoalHistory = function ({
   });
   return (
     <GoalHistory
-      name={accountName}
       subject="account"
       hasData={entries.length > 0}
       points={points}

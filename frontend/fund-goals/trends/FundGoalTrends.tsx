@@ -183,7 +183,6 @@ const FundGoalTrends = async function ({
           entries={progressWithAccountingPeriod.filter(
             (entry) => entry.fundGoal.fund.id === selectedFund.id,
           )}
-          fundName={selectedFund.name}
         />
       )}
     </PageLayout>

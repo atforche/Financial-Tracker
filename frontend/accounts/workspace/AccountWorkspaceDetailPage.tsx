@@ -4,15 +4,23 @@ import {
   getRowsPerPage,
   normalizePageValue,
 } from "@/framework/listframe/page";
+import AccountGoalTab from "@/account-goals/AccountGoalTab";
+import { AccountType } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
+import { AccountingPeriodSort } from "@/accounting-periods/types";
 import ArrowBack from "@mui/icons-material/ArrowBack";
+import BalanceHistoryFilter from "@/balance-events/BalanceHistoryFilter";
+import BalancePeriodList from "@/balance-events/BalancePeriodList";
+import GoalPeriodRangeFilter from "@/framework/goals/GoalPeriodRangeFilter";
 import type { JSX } from "react";
 import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
 import ViewAccountForm from "@/accounts/workspace/ViewAccountForm";
 import createApiClient from "@/framework/data/createApiClient";
-import dayjs from "dayjs";
+import getDetailViewParams from "@/balance-events/getDetailViewParams";
 import { redirect } from "next/navigation";
+import resolveBalanceHistory from "@/balance-events/resolveBalanceHistory";
+import resolveGoalRange from "@/framework/goals/resolveGoalRange";
 import routes from "@/accounts/routes";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -45,10 +53,17 @@ const AccountWorkspaceDetailPage = async function ({
     currentBalanceEventPage,
     rowsPerPage,
   );
-  const recentActivityEndDate = dayjs().format("YYYY-MM-DD");
-  const recentActivityStartDate = dayjs()
-    .subtract(60, "day")
-    .format("YYYY-MM-DD");
+  const periods = unwrapApiResponse(
+    await apiClient.GET("/accounting-periods", {
+      params: {
+        query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
+      },
+    }),
+    "Failed to fetch accounting periods",
+  ).items;
+  const range = resolveBalanceHistory(resolvedSearchParams, periods);
+  const recentActivityStartDate = range.rangeStart;
+  const recentActivityEndDate = range.rangeEnd;
   const [
     accountsResponse,
     balanceEventsResponse,
@@ -106,6 +121,7 @@ const AccountWorkspaceDetailPage = async function ({
     ...workspaceSearchParams,
     ...(typeof balanceEventPage !== "undefined" ? { balanceEventPage } : {}),
     ...(typeof balanceEventSort !== "undefined" ? { balanceEventSort } : {}),
+    ...getDetailViewParams(resolvedSearchParams),
   };
   const workspaceUrl = routes.workspace(workspaceSearchParams);
 
@@ -117,6 +133,40 @@ const AccountWorkspaceDetailPage = async function ({
     accountIds: [account.id],
     returnUrl: currentUrl,
   });
+
+  const goalRange = resolveGoalRange(resolvedSearchParams, periods);
+  const goalEntries =
+    account.type !== AccountType.Standard ||
+    resolvedSearchParams.tab !== "goal" ||
+    goalRange === null
+      ? []
+      : unwrapApiResponse(
+          await apiClient.GET("/account-goals/account/{accountId}/history", {
+            params: {
+              path: { accountId },
+              query: {
+                "Range.Start": goalRange.start,
+                "Range.End": goalRange.end,
+              },
+            },
+          }),
+          "Failed to fetch account goal history",
+        );
+  const periodRange =
+    range.mode === "accounting-period" && resolvedSearchParams.tab === "history"
+      ? unwrapApiResponse(
+          await apiClient.GET("/accounts/accounting-period-range", {
+            params: {
+              query: {
+                "Range.Start": range.startAccountingPeriodId,
+                "Range.End": range.endAccountingPeriodId,
+                "Filter.Names": [account.name],
+              },
+            },
+          }),
+          "Failed to fetch account periods",
+        ).accountingPeriods
+      : null;
 
   return (
     <PageLayout>
@@ -148,6 +198,40 @@ const AccountWorkspaceDetailPage = async function ({
           returnUrl: currentUrl,
         })}
         addTransactionHref={addTransactionHref}
+        historyFilter={
+          <BalanceHistoryFilter accountingPeriods={periods} range={range} />
+        }
+        historyPeriods={
+          periodRange === null ? null : (
+            <BalancePeriodList
+              periods={periodRange.map((item) => ({
+                id: item.accountingPeriod.id,
+                name: item.accountingPeriod.name,
+                openingBalance: item.openingBalance.totalBalance,
+                closingBalance: item.closingBalance.totalBalance,
+              }))}
+            />
+          )
+        }
+        {...(account.type === AccountType.Standard
+          ? {
+              goalContent: (
+                <Stack spacing={2}>
+                  {goalRange === null ? null : (
+                    <GoalPeriodRangeFilter
+                      accountingPeriods={periods}
+                      start={goalRange.start}
+                      end={goalRange.end}
+                    />
+                  )}
+                  <AccountGoalTab
+                    entries={goalEntries}
+                    redirectUrl={currentUrl}
+                  />
+                </Stack>
+              ),
+            }
+          : {})}
       />
     </PageLayout>
   );
