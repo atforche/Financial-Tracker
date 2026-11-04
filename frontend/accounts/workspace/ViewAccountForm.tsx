@@ -14,6 +14,7 @@ import type { Route } from "next";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import UpdateAccountForm from "@/accounts/workspace/UpdateAccountForm";
 import deleteAccount from "@/accounts/workspace/deleteAccount";
+import { isDebtAccountType } from "@/accounts/helpers";
 
 /**
  * Props for the ViewAccountForm component.
@@ -48,6 +49,7 @@ const ViewAccountForm = function ({
     <BalanceWorkspaceView
       {...viewProps}
       entityName="account"
+      isIncreaseGood={!isDebtAccountType(account.type)}
       name={account.name}
       summaryFields={
         <>

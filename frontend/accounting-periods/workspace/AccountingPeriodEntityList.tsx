@@ -37,6 +37,7 @@ interface PeriodEntity {
   readonly minimum: number | null;
   readonly maximum: number | null;
   readonly status: PeriodEntityStatus;
+  readonly isIncreaseGood: boolean;
   readonly contribution: {
     readonly assigned: number;
     readonly expected: number;
@@ -237,7 +238,10 @@ const EntityTile = function ({
             This period
           </Typography>
           <Typography variant="body2" component="p">
-            <SignedChange amount={getChange(entity)} />
+            <SignedChange
+              amount={getChange(entity)}
+              isIncreaseGood={entity.isIncreaseGood}
+            />
           </Typography>
         </Box>
       </Stack>

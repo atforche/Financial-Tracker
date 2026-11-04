@@ -29,6 +29,7 @@ interface RecentBalanceActivityProps {
   readonly balanceLabel?: string;
   readonly trendsHref?: Route;
   readonly summaryFirst?: boolean;
+  readonly isIncreaseGood?: boolean;
 }
 
 /**
@@ -42,6 +43,7 @@ const RecentBalanceActivity = function ({
   balanceLabel = "Posted Balance",
   trendsHref,
   summaryFirst = false,
+  isIncreaseGood = true,
 }: RecentBalanceActivityProps): JSX.Element {
   const firstBalance = periodOpeningBalance ?? dailyBalances[0]?.totalBalance;
   const lastBalance = dailyBalances.at(-1)?.totalBalance;
@@ -66,6 +68,7 @@ const RecentBalanceActivity = function ({
             <ChangeValue
               startingValue={firstBalance}
               endingValue={lastBalance}
+              isIncreaseGood={isIncreaseGood}
             />
           )
         }

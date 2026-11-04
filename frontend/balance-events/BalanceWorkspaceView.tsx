@@ -59,6 +59,7 @@ interface BalanceWorkspaceViewProps<
   readonly historyFilter: ReactNode;
   readonly historyPeriods?: ReactNode;
   readonly goalContent?: ReactNode;
+  readonly isIncreaseGood?: boolean;
 }
 
 /**
@@ -87,6 +88,7 @@ const BalanceWorkspaceView = function <
   historyFilter,
   historyPeriods,
   goalContent,
+  isIncreaseGood = true,
 }: BalanceWorkspaceViewProps<TEvent, TDeletePayload>): JSX.Element {
   const canWrite = useWriteAccess();
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
@@ -201,6 +203,7 @@ const BalanceWorkspaceView = function <
                   {historyFilter}
                   <RecentBalanceActivity
                     summaryFirst
+                    isIncreaseGood={isIncreaseGood}
                     title="Balance Activity"
                     totals={activityTotals}
                     dailyBalances={recentActivityBalances}

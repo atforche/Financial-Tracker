@@ -18,6 +18,7 @@ import fillHeightSx from "@/framework/view/fillHeightSx";
 import fundRoutes from "@/funds/routes";
 import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import getPeriodAttention from "@/accounting-periods/workspace/getPeriodAttention";
+import { isDebtAccountType } from "@/accounts/helpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
@@ -172,6 +173,7 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
                   status: getEntityStatus(
                     item.goalProgress?.endingBalance.status,
                   ),
+                  isIncreaseGood: !isDebtAccountType(item.account.type),
                   contribution: null,
                 }))}
               />
@@ -198,6 +200,7 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
                   status: getEntityStatus(
                     item.goalProgress?.endingBalance.status,
                   ),
+                  isIncreaseGood: true,
                   contribution:
                     item.goalProgress?.contribution === null ||
                     item.goalProgress?.contribution === undefined

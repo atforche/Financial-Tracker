@@ -11,14 +11,16 @@ import type { JSX } from "react";
 interface ChangeValueProps {
   readonly startingValue: number;
   readonly endingValue?: number;
+  readonly isIncreaseGood?: boolean;
 }
 
 /**
- * Displays a currency change and its percentage with signed coloring.
+ * Displays a currency change and its percentage colored by whether it is good. By default an increase is good.
  */
 const ChangeValue = function ({
   startingValue,
   endingValue,
+  isIncreaseGood = true,
 }: ChangeValueProps): JSX.Element {
   const netChange = getCurrencyDifference(
     endingValue ?? startingValue,
@@ -30,7 +32,12 @@ const ChangeValue = function ({
   return (
     <Box
       component="span"
-      sx={{ color: netChange >= 0 ? "success.main" : "error.main" }}
+      sx={{
+        color:
+          netChange === 0 || netChange > 0 === isIncreaseGood
+            ? "success.main"
+            : "error.main",
+      }}
     >
       {formatCurrency(netChange)} ({netChange >= 0 ? "+" : ""}
       {percentChange.toFixed(2)}%)

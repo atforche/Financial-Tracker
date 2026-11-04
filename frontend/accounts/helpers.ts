@@ -76,6 +76,7 @@ const formatAccountType = function (accountType: AccountType): string {
 };
 
 export {
+  isDebtAccountType,
   isTrackedAccount,
   isTrackedAccountType,
   isPositiveChangeInBalance,
