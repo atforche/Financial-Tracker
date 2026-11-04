@@ -6,14 +6,14 @@ namespace Models.Overview;
 public enum OverviewAttentionKindModel
 {
     /// <summary>
-    /// Fund or Account Goals whose balance is below their minimum
+    /// Fund Goals whose balance is outside their range.
     /// </summary>
-    GoalsBelowMinimum,
+    FundGoalsOutOfRange,
 
     /// <summary>
-    /// Fund or Account Goals whose balance is above their maximum
+    /// Account Goals whose balance is outside their range.
     /// </summary>
-    GoalsAboveMaximum,
+    AccountGoalsOutOfRange,
 
     /// <summary>
     /// Fund Goals still short of their expected contribution

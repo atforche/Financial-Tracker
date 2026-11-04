@@ -6647,8 +6647,8 @@ export enum LocationSortModel {
     NameDescending = "NameDescending"
 }
 export enum OverviewAttentionKindModel {
-    GoalsBelowMinimum = "GoalsBelowMinimum",
-    GoalsAboveMaximum = "GoalsAboveMaximum",
+    FundGoalsOutOfRange = "FundGoalsOutOfRange",
+    AccountGoalsOutOfRange = "AccountGoalsOutOfRange",
     GoalsBehind = "GoalsBehind",
     UnpostedTransactions = "UnpostedTransactions",
     IncomeNotReceived = "IncomeNotReceived"

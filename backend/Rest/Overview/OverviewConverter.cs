@@ -70,8 +70,8 @@ public sealed class OverviewConverter(AccountingPeriodConverter accountingPeriod
     {
         Kind = group.Kind switch
         {
-            OverviewAttentionKind.GoalsBelowMinimum => OverviewAttentionKindModel.GoalsBelowMinimum,
-            OverviewAttentionKind.GoalsAboveMaximum => OverviewAttentionKindModel.GoalsAboveMaximum,
+            OverviewAttentionKind.FundGoalsOutOfRange => OverviewAttentionKindModel.FundGoalsOutOfRange,
+            OverviewAttentionKind.AccountGoalsOutOfRange => OverviewAttentionKindModel.AccountGoalsOutOfRange,
             OverviewAttentionKind.GoalsBehind => OverviewAttentionKindModel.GoalsBehind,
             OverviewAttentionKind.UnpostedTransactions => OverviewAttentionKindModel.UnpostedTransactions,
             OverviewAttentionKind.IncomeNotReceived => OverviewAttentionKindModel.IncomeNotReceived,

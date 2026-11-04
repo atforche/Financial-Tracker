@@ -101,45 +101,38 @@ const describeAttentionGroup = function (
   currentPeriodId: string | null,
   returnUrl: string,
 ): OverviewAttentionDescription {
-  const getGoalsHref = (status?: string): Route =>
+  const remainingItemCount = group.itemCount - group.topItems.length;
+  const getGoalsHref = (tab: string): Route =>
     currentPeriodId === null
       ? accountingPeriodRoutes.workspace({ returnUrl })
       : accountingPeriodRoutes.workspaceDetail(currentPeriodId, {
           returnUrl,
-          tab: "funds",
-          ...(status === undefined ? {} : { status }),
+          tab,
         });
-  const remainingItemCount = group.itemCount - group.topItems.length;
+  const describeOutOfRange = (
+    kind: string,
+    tab: string,
+  ): OverviewAttentionDescription => ({
+    title: `${group.count.toString()} ${kind} ${group.count === 1 ? "goal" : "goals"} outside range`,
+    amount: `${formatCurrency(group.amount)} off goal`,
+    items: group.topItems.map((item) => ({
+      text: item.name,
+      amount: formatSignedCurrency(item.amount),
+    })),
+    remainingItemCount,
+    facts: [],
+    href: getGoalsHref(tab),
+  });
   const oldestDate =
     typeof group.oldestDate === "string"
       ? formatShortDate(new Date(`${group.oldestDate}T00:00:00`))
       : null;
 
   switch (group.kind) {
-    case OverviewAttentionKindModel.GoalsBelowMinimum:
-      return {
-        title: `${pluralize(group.count, "goal")} below minimum`,
-        amount: `${formatCurrency(group.amount)} short`,
-        items: group.topItems.map((item) => ({
-          text: item.name,
-          amount: formatSignedCurrency(-item.amount),
-        })),
-        remainingItemCount,
-        facts: [],
-        href: getGoalsHref("BelowMinimum"),
-      };
-    case OverviewAttentionKindModel.GoalsAboveMaximum:
-      return {
-        title: `${pluralize(group.count, "goal")} above maximum`,
-        amount: `${formatCurrency(group.amount)} over`,
-        items: group.topItems.map((item) => ({
-          text: item.name,
-          amount: formatSignedCurrency(item.amount),
-        })),
-        remainingItemCount,
-        facts: [],
-        href: getGoalsHref("AboveMaximum"),
-      };
+    case OverviewAttentionKindModel.FundGoalsOutOfRange:
+      return describeOutOfRange("fund", "funds");
+    case OverviewAttentionKindModel.AccountGoalsOutOfRange:
+      return describeOutOfRange("account", "accounts");
     case OverviewAttentionKindModel.GoalsBehind:
       return {
         title: `${pluralize(group.count, "goal")} not fully funded`,
@@ -150,7 +143,7 @@ const describeAttentionGroup = function (
         })),
         remainingItemCount,
         facts: [],
-        href: getGoalsHref(),
+        href: getGoalsHref("funds"),
       };
     case OverviewAttentionKindModel.UnpostedTransactions:
       return {
