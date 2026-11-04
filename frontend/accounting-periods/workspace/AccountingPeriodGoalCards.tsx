@@ -7,9 +7,8 @@ import Link from "next/link";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import type { Route } from "next";
 import SegmentedBar from "@/framework/view/SegmentedBar";
-import accountGoalRoutes from "@/account-goals/routes";
 import type { components } from "@/framework/data/api";
-import fundGoalRoutes from "@/fund-goals/routes";
+import routes from "@/accounting-periods/routes";
 
 /**
  * Type representing counts of an accounting period's goals by their progress.
@@ -155,17 +154,14 @@ const GoalCard = function ({
 interface AccountingPeriodGoalCardsProps {
   readonly accountingPeriodId: string;
   readonly summary: GoalSummary;
-  readonly returnUrl: string;
 }
 
 /**
- * Summarizes an accounting period's Fund Goals and Account Goals as two cards linking to their workspaces filtered to
- * the period.
+ * Summarizes an accounting period's Fund Goals and Account Goals as two cards linking to the period's tables.
  */
 const AccountingPeriodGoalCards = function ({
   accountingPeriodId,
   summary,
-  returnUrl,
 }: AccountingPeriodGoalCardsProps): JSX.Element {
   const remainingContributionCount =
     summary.contributionGoalCount - summary.contributedGoalCount;
@@ -173,7 +169,7 @@ const AccountingPeriodGoalCards = function ({
     <ResponsiveGrid columns={{ xs: 1, md: 2 }}>
       <GoalCard
         title="Fund Goals"
-        href={fundGoalRoutes.workspace({ accountingPeriodId, returnUrl })}
+        href={routes.workspaceDetail(accountingPeriodId, { tab: "funds" })}
       >
         {summary.fundGoalCount === 0 ? (
           <Typography variant="body2" color="text.secondary">
@@ -210,7 +206,7 @@ const AccountingPeriodGoalCards = function ({
       </GoalCard>
       <GoalCard
         title="Account Goals"
-        href={accountGoalRoutes.workspace({ accountingPeriodId, returnUrl })}
+        href={routes.workspaceDetail(accountingPeriodId, { tab: "accounts" })}
       >
         {summary.accountGoalCount === 0 ? (
           <Typography variant="body2" color="text.secondary">

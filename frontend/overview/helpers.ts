@@ -12,7 +12,6 @@ import type { ToggleButtonSelectorOption } from "@/framework/forms/ToggleButtonS
 import accountingPeriodRoutes from "@/accounting-periods/routes";
 import { expectedIncomeSourcesId } from "@/accounting-periods/workspace/helpers";
 import { formatShortDate } from "@/framework/dateHelpers";
-import fundGoalRoutes from "@/fund-goals/routes";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import transactionRoutes from "@/transactions/routes";
 
@@ -102,12 +101,14 @@ const describeAttentionGroup = function (
   currentPeriodId: string | null,
   returnUrl: string,
 ): OverviewAttentionDescription {
-  const fundGoalsHref = fundGoalRoutes.workspace({
-    ...(currentPeriodId === null
-      ? {}
-      : { accountingPeriodId: currentPeriodId }),
-    returnUrl,
-  });
+  const getGoalsHref = (status?: string): Route =>
+    currentPeriodId === null
+      ? accountingPeriodRoutes.workspace({ returnUrl })
+      : accountingPeriodRoutes.workspaceDetail(currentPeriodId, {
+          returnUrl,
+          tab: "funds",
+          ...(status === undefined ? {} : { status }),
+        });
   const remainingItemCount = group.itemCount - group.topItems.length;
   const oldestDate =
     typeof group.oldestDate === "string"
@@ -125,7 +126,7 @@ const describeAttentionGroup = function (
         })),
         remainingItemCount,
         facts: [],
-        href: fundGoalsHref,
+        href: getGoalsHref("BelowMinimum"),
       };
     case OverviewAttentionKindModel.GoalsAboveMaximum:
       return {
@@ -137,7 +138,7 @@ const describeAttentionGroup = function (
         })),
         remainingItemCount,
         facts: [],
-        href: fundGoalsHref,
+        href: getGoalsHref("AboveMaximum"),
       };
     case OverviewAttentionKindModel.GoalsBehind:
       return {
@@ -149,7 +150,7 @@ const describeAttentionGroup = function (
         })),
         remainingItemCount,
         facts: [],
-        href: fundGoalsHref,
+        href: getGoalsHref(),
       };
     case OverviewAttentionKindModel.UnpostedTransactions:
       return {
@@ -198,4 +199,4 @@ export {
   overviewHistoryOptions,
   parseOverviewHistoryRange,
 };
-export type { OverviewAttentionGroup, OverviewSearchParams };
+export type { OverviewSearchParams };

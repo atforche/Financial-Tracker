@@ -1,18 +1,25 @@
+import { Box, Stack } from "@mui/material";
+import AccountingPeriodEntityList from "@/accounting-periods/workspace/AccountingPeriodEntityList";
 import AccountingPeriodGoalCards from "@/accounting-periods/workspace/AccountingPeriodGoalCards";
 import AccountingPeriodHeader from "@/accounting-periods/workspace/AccountingPeriodHeader";
 import AccountingPeriodPlanCard from "@/accounting-periods/workspace/AccountingPeriodPlanCard";
 import AccountingPeriodProgressCard from "@/accounting-periods/workspace/AccountingPeriodProgressCard";
+import AttentionList from "@/framework/view/AttentionList";
 import BalanceStatCards from "@/accounts/BalanceStatCards";
-import { Box } from "@mui/material";
 import ExpectedIncomeSourcesFrame from "@/accounting-periods/workspace/ExpectedIncomeSourcesFrame";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
+import PeriodEntityStatus from "@/accounting-periods/workspace/periodEntityStatus";
 import SignedChange from "@/framework/view/SignedChange";
+import UrlTabs from "@/framework/view/UrlTabs";
+import accountRoutes from "@/accounts/routes";
 import createApiClient from "@/framework/data/createApiClient";
 import { expectedIncomeSourcesId } from "@/accounting-periods/workspace/helpers";
 import fillHeightSx from "@/framework/view/fillHeightSx";
-import fundGoalRoutes from "@/fund-goals/routes";
+import fundRoutes from "@/funds/routes";
 import { getCurrencyDifference } from "@/framework/currencyHelpers";
+import getPeriodAttention from "@/accounting-periods/workspace/getPeriodAttention";
+import parseEnumValue from "@/framework/data/parseEnumValue";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -22,7 +29,19 @@ import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
  */
 interface AccountingPeriodSearchParams {
   returnUrl?: string;
+  tab?: string;
+  status?: string;
 }
+
+/**
+ * Converts a goal's ending balance status to the status shown in the period's tables.
+ */
+const getEntityStatus = function (status?: string): PeriodEntityStatus {
+  return (
+    parseEnumValue(PeriodEntityStatus, status ?? "") ??
+    PeriodEntityStatus.NoGoal
+  );
+};
 
 /**
  * Props for the AccountingPeriodWorkspaceDetailPage component.
@@ -56,6 +75,10 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
   );
   const period = detail.accountingPeriod;
   const currentUrl = routes.workspaceDetail(period.id, resolvedSearchParams);
+  const goalParams = {
+    goalStartPeriodId: period.id,
+    goalEndPeriodId: period.id,
+  };
 
   return (
     <PageLayout>
@@ -81,40 +104,111 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
         }
         changeDescription="this period"
       />
-      <Box
-        sx={{
-          display: "grid",
-          gap: 2,
-          gridTemplateColumns: { xs: "minmax(0, 1fr)", lg: "2fr 1fr" },
-        }}
-      >
-        <Box sx={fillHeightSx}>
-          <AccountingPeriodProgressCard
-            accountingPeriod={period}
-            totalSpending={detail.totalSpending}
-          />
-        </Box>
-        <Box sx={fillHeightSx}>
-          <AccountingPeriodPlanCard
-            accountingPeriod={period}
-            cappedGoalCount={detail.cappedGoalCount}
-            fundGoalsHref={fundGoalRoutes.workspace({
-              accountingPeriodId: period.id,
-              returnUrl: currentUrl,
-            })}
-          />
-        </Box>
-      </Box>
-      <Box id={expectedIncomeSourcesId}>
-        <ExpectedIncomeSourcesFrame
-          accountingPeriod={period}
-          redirectUrl={currentUrl}
-        />
-      </Box>
-      <AccountingPeriodGoalCards
-        accountingPeriodId={period.id}
-        summary={detail.goalSummary}
-        returnUrl={currentUrl}
+      <UrlTabs
+        label="Accounting period views"
+        paramName="tab"
+        tabs={[
+          {
+            value: "summary",
+            label: "Summary",
+            content: (
+              <Stack spacing={2}>
+                <AttentionList descriptions={getPeriodAttention(detail)} />
+                <Box
+                  sx={{
+                    display: "grid",
+                    gap: 2,
+                    gridTemplateColumns: {
+                      xs: "minmax(0, 1fr)",
+                      lg: "2fr 1fr",
+                    },
+                  }}
+                >
+                  <Box sx={fillHeightSx}>
+                    <AccountingPeriodProgressCard
+                      accountingPeriod={period}
+                      totalSpending={detail.totalSpending}
+                    />
+                  </Box>
+                  <Box sx={fillHeightSx}>
+                    <AccountingPeriodPlanCard
+                      accountingPeriod={period}
+                      cappedGoalCount={detail.cappedGoalCount}
+                      fundGoalsHref={routes.workspaceDetail(period.id, {
+                        tab: "funds",
+                      })}
+                    />
+                  </Box>
+                </Box>
+                <Box id={expectedIncomeSourcesId}>
+                  <ExpectedIncomeSourcesFrame
+                    accountingPeriod={period}
+                    redirectUrl={currentUrl}
+                  />
+                </Box>
+                <AccountingPeriodGoalCards
+                  accountingPeriodId={period.id}
+                  summary={detail.goalSummary}
+                />
+              </Stack>
+            ),
+          },
+          {
+            value: "accounts",
+            label: "Accounts",
+            content: (
+              <AccountingPeriodEntityList
+                title="Accounts"
+                entities={detail.accounts.map((item) => ({
+                  id: item.account.id,
+                  name: item.account.name,
+                  href: accountRoutes.workspaceDetail(item.account.id, {
+                    ...goalParams,
+                    ...(item.goalProgress === null ||
+                    item.goalProgress === undefined
+                      ? { tab: "history" }
+                      : { tab: "goal" }),
+                  }),
+                  openingBalance: item.openingBalance,
+                  closingBalance: item.closingBalance,
+                  minimum:
+                    item.goalProgress?.endingBalance.minimumBalance ?? null,
+                  maximum:
+                    item.goalProgress?.endingBalance.maximumBalance ?? null,
+                  status: getEntityStatus(
+                    item.goalProgress?.endingBalance.status,
+                  ),
+                }))}
+              />
+            ),
+          },
+          {
+            value: "funds",
+            label: "Funds",
+            content: (
+              <AccountingPeriodEntityList
+                title="Funds"
+                entities={detail.funds.map((item) => ({
+                  id: item.fund.id,
+                  name: item.fund.name,
+                  href: fundRoutes.workspaceDetail(item.fund.id, {
+                    ...goalParams,
+                    tab: "goal",
+                  }),
+                  openingBalance: item.openingBalance,
+                  closingBalance: item.closingBalance,
+                  minimum:
+                    item.goalProgress?.endingBalance.minimumBalance ?? null,
+                  maximum:
+                    item.goalProgress?.endingBalance.maximumBalance ?? null,
+                  status: getEntityStatus(
+                    item.goalProgress?.endingBalance.status,
+                  ),
+                }))}
+              />
+            ),
+          },
+        ]}
       />
     </PageLayout>
   );

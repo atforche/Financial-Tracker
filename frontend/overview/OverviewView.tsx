@@ -4,15 +4,16 @@ import OverviewAddTransactionButton, {
 } from "@/overview/OverviewAddTransactionButton";
 import {
   type OverviewSearchParams,
+  describeAttentionGroup,
   getOverviewUrl,
   parseOverviewHistoryRange,
 } from "@/overview/helpers";
+import AttentionList from "@/framework/view/AttentionList";
 import BalanceStatCards from "@/accounts/BalanceStatCards";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import ChevronRight from "@mui/icons-material/ChevronRight";
 import type { JSX } from "react";
 import Link from "next/link";
-import OverviewAttentionList from "@/overview/OverviewAttentionList";
 import { OverviewHistoryRangeModel } from "@/framework/data/api";
 import OverviewHistoryRangeSelector from "@/overview/OverviewHistoryRangeSelector";
 import OverviewPeriodCard from "@/overview/OverviewPeriodCard";
@@ -102,10 +103,14 @@ const OverviewView = async function ({
       />
       <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
         <Box sx={{ flex: 2, minWidth: 0, ...fillHeightSx }}>
-          <OverviewAttentionList
-            groups={overview.attention}
-            currentPeriodId={currentPeriod?.accountingPeriod.id ?? null}
-            returnUrl={overviewUrl}
+          <AttentionList
+            descriptions={overview.attention.map((group) =>
+              describeAttentionGroup(
+                group,
+                currentPeriod?.accountingPeriod.id ?? null,
+                overviewUrl,
+              ),
+            )}
           />
         </Box>
         <Box sx={{ flex: 1, minWidth: 0, ...fillHeightSx }}>
