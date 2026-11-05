@@ -1,6 +1,9 @@
 import { Box, Collapse, IconButton, Stack, Typography } from "@mui/material";
 import type { JSX, ReactNode } from "react";
+import ChevronRight from "@mui/icons-material/ChevronRight";
 import ExpandMore from "@mui/icons-material/ExpandMore";
+import Link from "next/link";
+import type { Route } from "next";
 
 /**
  * Represents a single row of detail information in the BreakdownSection component.
@@ -9,6 +12,7 @@ interface BreakdownDetailRow {
   readonly key: string;
   readonly label: string;
   readonly value: ReactNode;
+  readonly href?: Route;
 }
 
 /**
@@ -20,9 +24,15 @@ interface BreakdownSectionProps {
   readonly detailRows?: readonly BreakdownDetailRow[];
   readonly expanded?: boolean;
   readonly onToggle?: () => void;
+  readonly labelColor?: string;
 }
 
 const toggleSlotSize = 26;
+
+/**
+ * Space to the right of a section's value, which a neighboring row can match to line up with it.
+ */
+const breakdownValueInset = toggleSlotSize + 4;
 const noDetailRows: readonly BreakdownDetailRow[] = [];
 
 /**
@@ -34,6 +44,7 @@ const BreakdownSection = function ({
   detailRows = noDetailRows,
   expanded = false,
   onToggle,
+  labelColor,
 }: BreakdownSectionProps): JSX.Element {
   const hasDetails = detailRows.length > 0 && typeof onToggle !== "undefined";
   return (
@@ -44,7 +55,9 @@ const BreakdownSection = function ({
         alignItems="center"
         gap={1.5}
       >
-        <Typography variant="body2">{label}</Typography>
+        <Typography variant="body2" color={labelColor}>
+          {label}
+        </Typography>
         <Stack direction="row" alignItems="center" gap={0.5}>
           <Typography
             variant="body2"
@@ -87,10 +100,23 @@ const BreakdownSection = function ({
             {detailRows.map((row) => (
               <Stack
                 key={row.key}
+                {...(row.href === undefined
+                  ? {}
+                  : { component: Link, href: row.href })}
                 direction="row"
                 justifyContent="space-between"
                 alignItems="baseline"
                 gap={1.5}
+                sx={
+                  row.href === undefined
+                    ? {}
+                    : {
+                        borderRadius: 1,
+                        color: "inherit",
+                        textDecoration: "none",
+                        "&:hover": { bgcolor: "action.hover" },
+                      }
+                }
               >
                 <Typography variant="caption" color="text.secondary">
                   {row.label}
@@ -108,8 +134,15 @@ const BreakdownSection = function ({
                       width: toggleSlotSize,
                       height: toggleSlotSize,
                       flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
-                  />
+                  >
+                    {row.href === undefined ? null : (
+                      <ChevronRight fontSize="small" color="action" />
+                    )}
+                  </Box>
                 </Stack>
               </Stack>
             ))}
@@ -120,5 +153,6 @@ const BreakdownSection = function ({
   );
 };
 
+export { breakdownValueInset };
 export type { BreakdownDetailRow };
 export default BreakdownSection;

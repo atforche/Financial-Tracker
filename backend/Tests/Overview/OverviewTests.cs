@@ -257,9 +257,11 @@ public sealed class OverviewTests
         OverviewModel overview = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-10&history=ThreeMonths");
 
         OverviewAttentionGroupModel belowMinimum = Assert.Single(overview.Attention,
-            group => group.Kind == OverviewAttentionKindModel.GoalsBelowMinimum);
+            group => group.Kind == OverviewAttentionKindModel.FundGoalsOutOfRange);
         Assert.Equal(50m, belowMinimum.Amount);
-        Assert.Equal("Emergency", Assert.Single(belowMinimum.TopItems).Name);
+        OverviewAttentionItemModel emergency = Assert.Single(belowMinimum.TopItems);
+        Assert.Equal("Emergency", emergency.Name);
+        Assert.Equal(-50m, emergency.Amount);
         OverviewAttentionGroupModel behind = Assert.Single(overview.Attention,
             group => group.Kind == OverviewAttentionKindModel.GoalsBehind);
         Assert.Equal(100m, behind.Amount);
@@ -283,7 +285,7 @@ public sealed class OverviewTests
         OverviewModel overview = await test.Api.GetAsync<OverviewModel>("/overview?asOf=2026-07-10&history=ThreeMonths");
 
         OverviewAttentionGroupModel aboveMaximum = Assert.Single(overview.Attention,
-            group => group.Kind == OverviewAttentionKindModel.GoalsAboveMaximum);
+            group => group.Kind == OverviewAttentionKindModel.FundGoalsOutOfRange);
         Assert.Equal(1, aboveMaximum.Count);
         Assert.Equal(150m, aboveMaximum.Amount);
         Assert.Equal("Groceries", Assert.Single(aboveMaximum.TopItems).Name);

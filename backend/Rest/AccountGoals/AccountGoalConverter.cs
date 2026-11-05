@@ -1,7 +1,4 @@
-using Domain;
 using Domain.AccountGoals;
-using Domain.AccountGoals.Queries;
-using Models;
 using Models.AccountGoals;
 using Rest.AccountingPeriods;
 using Rest.Accounts;
@@ -16,27 +13,6 @@ public sealed class AccountGoalConverter(
     AccountingPeriodConverter accountingPeriodConverter)
 {
     /// <summary>
-    /// Converts an Account Goal query model to a Domain query.
-    /// </summary>
-    public AccountGoalQuery ToDomain(AccountGoalQueryParameterModel model) => new(
-        new AccountGoalFilter(
-            model.Filter?.AccountIds ?? [],
-            model.Filter?.AccountingPeriodIds ?? [],
-            model.Filter?.IncludeOnboarded),
-        model.Sort switch
-        {
-            AccountGoalSortModel.Account => AccountGoalSort.Account,
-            AccountGoalSortModel.AccountDescending => AccountGoalSort.AccountDescending,
-            AccountGoalSortModel.MinimumEndingBalance => AccountGoalSort.MinimumEndingBalance,
-            AccountGoalSortModel.MinimumEndingBalanceDescending => AccountGoalSort.MinimumEndingBalanceDescending,
-            AccountGoalSortModel.MaximumEndingBalance => AccountGoalSort.MaximumEndingBalance,
-            AccountGoalSortModel.MaximumEndingBalanceDescending => AccountGoalSort.MaximumEndingBalanceDescending,
-            _ => AccountGoalSort.Account,
-        },
-        model.Offset ?? 0,
-        model.Limit);
-
-    /// <summary>
     /// Converts an Account Goal to an API model.
     /// </summary>
     public AccountGoalModel ToModel(AccountGoal accountGoal) => new()
@@ -48,15 +24,6 @@ public sealed class AccountGoalConverter(
             : accountingPeriodConverter.ToModel(accountGoal.AccountingPeriod),
         MinimumEndingBalance = accountGoal.MinimumEndingBalance,
         MaximumEndingBalance = accountGoal.MaximumEndingBalance,
-    };
-
-    /// <summary>
-    /// Converts an Account Goal page to an API collection model.
-    /// </summary>
-    public CollectionModel<AccountGoalModel> ToModel(QueryPage<AccountGoal> page) => new()
-    {
-        Items = page.Items.Select(ToModel).ToList(),
-        TotalCount = page.TotalCount,
     };
 
     /// <summary>

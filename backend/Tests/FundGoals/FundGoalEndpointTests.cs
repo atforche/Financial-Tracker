@@ -1,6 +1,5 @@
 using System.Net;
 using Models;
-using Models.BalanceEvents;
 using Models.FundGoals;
 
 namespace Tests.FundGoals;
@@ -10,6 +9,25 @@ namespace Tests.FundGoals;
 /// </summary>
 public sealed class FundGoalEndpointTests
 {
+    /// <summary>
+    /// Returns a Fund's goals and progress across a period range, oldest first.
+    /// </summary>
+    [Fact]
+    public async Task HistoryReturnsGoalsAcrossPeriodRange()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        _ = await test.Periods.Create(2026, 8).CreateAsync();
+        AccountingPeriodHandle september = await test.Periods.Create(2026, 9).CreateAsync();
+        AccountingPeriodHandle october = await test.Periods.Create(2026, 10).CreateAsync();
+        FundHandle fund = await test.Funds.Create("Vacation").In(september).CreateAsync();
+
+        IReadOnlyList<FundGoalPeriodProgressModel> history = await test.Api.GetAsync<List<FundGoalPeriodProgressModel>>(
+            $"/fund-goals/fund/{fund.Id}/history?range.start={september.Id}&range.end={october.Id}");
+
+        Assert.Equal([9, 10], history.Select(item => item.Goal.AccountingPeriod!.Month));
+        Assert.All(history, item => Assert.Equal(fund.Id, item.Goal.Fund.Id));
+    }
+
     /// <summary>
     /// Treats SQL pattern characters in fund-name searches as literal text.
     /// </summary>
@@ -119,7 +137,7 @@ public sealed class FundGoalEndpointTests
             MinimumEndingBalance = null,
             MaximumEndingBalance = 200m,
         });
-        FundGoalProgressModel progress = await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{fund.Goal.Id}/progress/{july.Id}");
+        FundGoalProgressModel progress = await test.Api.GetFundGoalProgressAsync(fund.Goal.Id, july.Id);
 
         Assert.Equal(0m, updated.MinimumEndingBalance);
         Assert.Equal(200m, updated.MaximumEndingBalance);
@@ -144,9 +162,8 @@ public sealed class FundGoalEndpointTests
             MinimumEndingBalance = 100m,
             MaximumEndingBalance = 200m
         });
-        FundGoalProgressModel progress = await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{groceries.Goal.Id}/progress/{july.Id}");
+        FundGoalProgressModel progress = await test.Api.GetFundGoalProgressAsync(groceries.Goal.Id, july.Id);
         CollectionModel<FundGoalModel> goals = await test.Api.GetAsync<CollectionModel<FundGoalModel>>($"/fund-goals?filter.accountingPeriodIds={july.Id}");
-        using HttpResponseMessage missing = await test.Api.GetResponseAsync($"/fund-goals/{Guid.NewGuid()}/progress/{july.Id}");
 
         Assert.Equal(50m, updated.PlannedMonthlyContribution);
         Assert.NotNull(progress.Contribution);
@@ -154,7 +171,6 @@ public sealed class FundGoalEndpointTests
         Assert.Equal(50m, progress.Contribution.ExpectedAmount);
         Assert.Equal(0m, progress.Contribution.AmountReducedByMaximumEndingBalance);
         Assert.Contains(goals.Items, goal => goal.Id == groceries.Goal.Id);
-        Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
     }
 
     /// <summary>
@@ -226,22 +242,5 @@ public sealed class FundGoalEndpointTests
         Assert.Equal(2, goals.TotalCount);
         Assert.All(goals.Items, goal => Assert.Equal(alpha.Id, goal.Fund.Id));
         Assert.Contains(goals.Items, goal => goal.Id == alpha.Goal.Id);
-    }
-
-    /// <summary>
-    /// Returns zero balance-event totals for a goal without activity.
-    /// </summary>
-    [Fact]
-    public async Task BalanceEventTotalsAreZeroWithoutActivity()
-    {
-        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
-        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
-        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
-
-        BalanceEventTotalsModel totals = await test.Api.GetAsync<BalanceEventTotalsModel>(
-            $"/fund-goals/balance-events/accounting-period-range/totals?Range.Start={july.Id}&Range.End={july.Id}&Filter.FundIds={groceries.Id}");
-
-        Assert.Equal(0m, totals.TotalInflow);
-        Assert.Equal(0m, totals.TotalOutflow);
     }
 }

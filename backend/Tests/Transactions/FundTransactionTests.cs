@@ -1,5 +1,4 @@
 using Models.AccountingPeriods;
-using Models.FundGoals;
 
 namespace Tests.Transactions;
 
@@ -107,6 +106,6 @@ public sealed class FundTransactionTests
         await test.AssertBalanceAsync(oldDestination, 0m, 0m);
         await test.AssertBalanceAsync(newSource, -10m, -10m);
         await test.AssertBalanceAsync(newDestination, 10m, 10m);
-        Assert.Equal(10m, (await test.Api.GetAsync<FundGoalProgressModel>($"/fund-goals/{newDestination.Goal.Id}/progress/{july.Id}")).Contribution?.AssignedAmount);
+        Assert.Equal(10m, (await test.Api.GetFundGoalProgressAsync(newDestination.Goal.Id, july.Id)).Contribution?.AssignedAmount);
     }
 }

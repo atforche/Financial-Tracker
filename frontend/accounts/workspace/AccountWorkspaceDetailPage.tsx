@@ -1,18 +1,24 @@
-import { Button, Stack, Typography } from "@mui/material";
-import {
-  getPageOffset,
-  getRowsPerPage,
-  normalizePageValue,
-} from "@/framework/listframe/page";
+import { AccountBalanceEventSortModel } from "@/framework/data/api";
+import AccountDetailActions from "@/accounts/workspace/AccountDetailActions";
+import AccountGoalHistory from "@/account-goals/AccountGoalHistory";
+import { AccountType } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
-import ArrowBack from "@mui/icons-material/ArrowBack";
+import { AccountingPeriodSort } from "@/accounting-periods/types";
+import BalanceHistoryFilter from "@/balance-events/BalanceHistoryFilter";
+import BalancePeriodList from "@/balance-events/BalancePeriodList";
+import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
+import EntityHistoryLayout from "@/balance-events/EntityHistoryLayout";
+import EntityTransactionList from "@/balance-events/EntityTransactionList";
 import type { JSX } from "react";
-import Link from "next/link";
-import PageLayout from "@/framework/view/PageLayout";
-import ViewAccountForm from "@/accounts/workspace/ViewAccountForm";
+import accountingPeriodRoutes from "@/accounting-periods/routes";
+import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
-import dayjs from "dayjs";
+import { getCurrencyDifference } from "@/framework/currencyHelpers";
+import getDateSummary from "@/balance-events/getDateSummary";
+import getDetailViewParams from "@/balance-events/getDetailViewParams";
+import { isDebtAccountType } from "@/accounts/helpers";
 import { redirect } from "next/navigation";
+import resolveEntityHistory from "@/balance-events/resolveEntityHistory";
 import routes from "@/accounts/routes";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -28,7 +34,7 @@ interface AccountWorkspaceDetailPageProps {
 }
 
 /**
- * Page for viewing details of a single account within the workspace.
+ * Displays one account across a range of dates or accounting periods. Only the period view shows goals.
  */
 const AccountWorkspaceDetailPage = async function ({
   params,
@@ -36,120 +42,297 @@ const AccountWorkspaceDetailPage = async function ({
 }: AccountWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { accountId } = await params;
   const resolvedSearchParams = await searchParams;
-  const { search, accountType, balanceEventPage, balanceEventSort, pageSize } =
-    resolvedSearchParams;
+  const { search, accountType } = resolvedSearchParams;
   const apiClient = await createApiClient();
-  const currentBalanceEventPage = normalizePageValue(balanceEventPage);
-  const rowsPerPage = getRowsPerPage(pageSize);
-  const balanceEventOffset = getPageOffset(
-    currentBalanceEventPage,
-    rowsPerPage,
-  );
-  const recentActivityEndDate = dayjs().format("YYYY-MM-DD");
-  const recentActivityStartDate = dayjs()
-    .subtract(60, "day")
-    .format("YYYY-MM-DD");
-  const [
-    accountsResponse,
-    balanceEventsResponse,
-    financialInstitutionsResponse,
-    activityTotalsResponse,
-  ] = await Promise.all([
-    apiClient.GET("/accounts/with-balances"),
-    apiClient.GET("/accounts/{accountId}/balance-events", {
-      params: {
-        path: { accountId },
-        query: {
-          "Range.Start": recentActivityStartDate,
-          "Range.End": recentActivityEndDate,
-          IncludePending: true,
-          Limit: rowsPerPage,
-          Offset: balanceEventOffset,
-          ...(balanceEventSort === undefined ? {} : { Sort: balanceEventSort }),
+  const [periodsResponse, accountsResponse, institutionsResponse] =
+    await Promise.all([
+      apiClient.GET("/accounting-periods", {
+        params: {
+          query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
         },
-      },
-    }),
-    apiClient.GET("/accounts/financial-institutions"),
-    apiClient.GET("/accounts/{accountId}/balance-events/totals", {
-      params: {
-        path: { accountId },
-        query: {
-          "Range.Start": recentActivityStartDate,
-          "Range.End": recentActivityEndDate,
-        },
-      },
-    }),
-  ]);
-  const accounts = unwrapApiResponse(
+      }),
+      apiClient.GET("/accounts/with-balances"),
+      apiClient.GET("/accounts/financial-institutions"),
+    ]);
+  const periods = unwrapApiResponse(
+    periodsResponse,
+    "Failed to fetch accounting periods",
+  ).items;
+  const account = unwrapApiResponse(
     accountsResponse,
     "Failed to fetch accounts",
-  );
-  const balanceEvents = unwrapApiResponse(
-    balanceEventsResponse,
-    "Failed to fetch account balance events",
-  );
+  ).items.find((item) => item.id === accountId);
   const financialInstitutions = unwrapApiResponse(
-    financialInstitutionsResponse,
+    institutionsResponse,
     "Failed to fetch financial institutions",
-  );
-  const activityTotals = unwrapApiResponse(
-    activityTotalsResponse,
-    "Failed to fetch account activity totals",
-  );
-  const account = accounts.items.find((item) => item.id === accountId);
-
-  const workspaceSearchParams: AccountWorkspaceSearchParams = {
-    ...(typeof search !== "undefined" ? { search } : {}),
-    ...(typeof accountType !== "undefined" ? { accountType } : {}),
-  };
-  const detailSearchParams: AccountWorkspaceSearchParams = {
-    ...workspaceSearchParams,
-    ...(typeof balanceEventPage !== "undefined" ? { balanceEventPage } : {}),
-    ...(typeof balanceEventSort !== "undefined" ? { balanceEventSort } : {}),
-  };
-  const workspaceUrl = routes.workspace(workspaceSearchParams);
-
-  if (typeof account === "undefined") {
+  ).items;
+  const workspaceUrl = routes.workspace({
+    ...(search === undefined ? {} : { search }),
+    ...(accountType === undefined ? {} : { accountType }),
+  });
+  if (account === undefined) {
     redirect(workspaceUrl);
   }
-  const currentUrl = routes.workspaceDetail(account.id, detailSearchParams);
-  const addTransactionHref = transactionRoutes.workspaceCreate({
-    accountIds: [account.id],
-    returnUrl: currentUrl,
+
+  const currentUrl = routes.workspaceDetail(accountId, {
+    ...(search === undefined ? {} : { search }),
+    ...(accountType === undefined ? {} : { accountType }),
+    ...getDetailViewParams(resolvedSearchParams),
   });
+  const {
+    view,
+    dates,
+    periods: periodRange,
+  } = resolveEntityHistory(resolvedSearchParams, periods);
+  const isIncreaseGood = !isDebtAccountType(account.type);
+  // Range summaries are net balances for adding accounts together, where debt is negative. One account shows what it holds.
+  const toAccountBalance = (balance: number): number =>
+    isIncreaseGood ? balance : 0 - balance;
+  const hasGoals = account.type === AccountType.Standard;
+  const eventQuery =
+    view === "date"
+      ? { "Range.Start": dates.start, "Range.End": dates.end }
+      : { AccountingPeriodIds: [...(periodRange?.ids ?? [])] };
+
+  const [eventsResponse, totalsResponse] =
+    view === "period" && periodRange === null
+      ? [null, null]
+      : await Promise.all([
+          view === "date"
+            ? apiClient.GET("/accounts/{accountId}/balance-events", {
+                params: {
+                  path: { accountId },
+                  query: {
+                    ...eventQuery,
+                    IncludePending: true,
+                    Sort: AccountBalanceEventSortModel.DateDescending,
+                  },
+                },
+              })
+            : null,
+          apiClient.GET("/accounts/{accountId}/balance-events/totals", {
+            params: { path: { accountId }, query: eventQuery },
+          }),
+        ]);
+  const events =
+    eventsResponse === null
+      ? []
+      : unwrapApiResponse(
+          eventsResponse,
+          "Failed to fetch account balance events",
+        ).items;
+  const netTotals =
+    totalsResponse === null
+      ? null
+      : unwrapApiResponse(
+          totalsResponse,
+          "Failed to fetch account activity totals",
+        );
+  const totals =
+    netTotals === null
+      ? null
+      : {
+          ...netTotals,
+          openingBalance:
+            netTotals.openingBalance === null ||
+            netTotals.openingBalance === undefined
+              ? null
+              : toAccountBalance(netTotals.openingBalance),
+          dates: (netTotals.dates ?? []).map((item) => ({
+            ...item,
+            totalBalance: toAccountBalance(item.totalBalance),
+          })),
+        };
+
+  const [balancesResponse, goalsResponse] =
+    view === "date" || periodRange === null
+      ? [null, null]
+      : await Promise.all([
+          apiClient.GET("/accounts/accounting-period-range", {
+            params: {
+              query: {
+                "Range.Start": periodRange.start,
+                "Range.End": periodRange.end,
+                "Filter.Names": [account.name],
+              },
+            },
+          }),
+          hasGoals
+            ? apiClient.GET("/account-goals/account/{accountId}/history", {
+                params: {
+                  path: { accountId },
+                  query: {
+                    "Range.Start": periodRange.start,
+                    "Range.End": periodRange.end,
+                  },
+                },
+              })
+            : null,
+        ]);
+  const periodBalances =
+    balancesResponse === null
+      ? []
+      : unwrapApiResponse(
+          balancesResponse,
+          "Failed to fetch account periods",
+        ).accountingPeriods.map((item) => ({
+          ...item,
+          openingBalance: {
+            ...item.openingBalance,
+            totalBalance: toAccountBalance(item.openingBalance.totalBalance),
+          },
+          closingBalance: {
+            ...item.closingBalance,
+            totalBalance: toAccountBalance(item.closingBalance.totalBalance),
+          },
+        }));
+  const goalEntries =
+    goalsResponse === null
+      ? null
+      : unwrapApiResponse(
+          goalsResponse,
+          "Failed to fetch account goal history",
+        );
+  const firstPeriod = periodBalances.at(0);
+  const lastPeriod = periodBalances.at(-1);
+  const summary =
+    totals === null
+      ? null
+      : view === "date"
+        ? getDateSummary(totals, account.currentBalance.postedBalance)
+        : firstPeriod === undefined || lastPeriod === undefined
+          ? null
+          : {
+              openingBalance: firstPeriod.openingBalance.totalBalance,
+              closingBalance: lastPeriod.closingBalance.totalBalance,
+              totals,
+              ...(goalEntries === null
+                ? {}
+                : {
+                    goalsMet: {
+                      met: goalEntries.filter(
+                        ({ progress }) => progress.isSatisfied,
+                      ).length,
+                      total: goalEntries.length,
+                    },
+                  }),
+            };
 
   return (
-    <PageLayout>
-      <Stack spacing={2.5}>
-        <Link
-          href={workspaceUrl}
-          style={{ alignSelf: "flex-start", textDecoration: "none" }}
-        >
-          <Button component="span" startIcon={<ArrowBack />}>
-            Back to Workspace
-          </Button>
-        </Link>
-        <Typography variant="h4">{account.name}</Typography>
-      </Stack>
-      <ViewAccountForm
-        account={account}
-        financialInstitutions={financialInstitutions.items}
-        redirectUrl={currentUrl}
-        deleteRedirectUrl={workspaceUrl}
-        recentBalanceEvents={balanceEvents.items}
-        recentBalanceEventCount={balanceEvents.totalCount}
-        activityTotals={activityTotals}
-        recentActivityBalances={activityTotals.dates ?? []}
-        trendsHref={routes.trends({
-          mode: "date",
-          accountName: [account.name],
-          startDate: recentActivityStartDate,
-          endDate: recentActivityEndDate,
-          returnUrl: currentUrl,
-        })}
-        addTransactionHref={addTransactionHref}
-      />
-    </PageLayout>
+    <EntityHistoryLayout
+      entityName="account"
+      name={account.name}
+      subtitle={account.financialInstitution ?? null}
+      back={{ href: workspaceUrl, label: "Back to Accounts" }}
+      isIncreaseGood={isIncreaseGood}
+      actions={
+        <AccountDetailActions
+          account={account}
+          financialInstitutions={financialInstitutions}
+          addTransactionHref={transactionRoutes.workspaceCreate({
+            accountIds: [account.id],
+            returnUrl: currentUrl,
+          })}
+          trendsHref={routes.trends({
+            mode: "date",
+            accountName: [account.name],
+            returnUrl: currentUrl,
+          })}
+          redirectUrl={currentUrl}
+          deleteRedirectUrl={workspaceUrl}
+        />
+      }
+      view={view}
+      dateFilter={<BalanceHistoryFilter start={dates.start} end={dates.end} />}
+      periodFilter={
+        periodRange === null ? null : (
+          <BalanceHistoryFilter
+            start={periodRange.start}
+            end={periodRange.end}
+            accountingPeriods={periods}
+          />
+        )
+      }
+      summary={summary}
+    >
+      {view === "date" ? (
+        <BalanceTrendChart
+          chartPoints={buildBalanceTrendChartPoints({
+            mode: "Date",
+            accountingPeriods: null,
+            dates: totals?.dates ?? [],
+            ...(totals?.granularity === null ||
+            totals?.granularity === undefined
+              ? {}
+              : { granularity: totals.granularity }),
+          })}
+          title="Balance"
+          variant="surface"
+          emptyMessage="No posted balance movement is available in this range."
+          xAxisLabel="Date"
+          yAxisLabel="Posted Balance"
+        />
+      ) : goalEntries === null ? (
+        <>
+          <BalanceTrendChart
+            chartPoints={buildBalanceTrendChartPoints({
+              mode: "AccountingPeriod",
+              accountingPeriods: periodBalances.map((item) => ({
+                accountingPeriodId: item.accountingPeriod.id,
+                accountingPeriodName: item.accountingPeriod.name,
+                year: item.accountingPeriod.year,
+                month: item.accountingPeriod.month,
+                totalOpeningBalance: item.openingBalance.totalBalance,
+                totalClosingBalance: item.closingBalance.totalBalance,
+              })),
+              dates: null,
+            })}
+            title="Balance"
+            variant="surface"
+            emptyMessage="No accounting periods are available in this range."
+            xAxisLabel="Accounting Period"
+            yAxisLabel="Closing Balance"
+          />
+          <BalancePeriodList
+            isIncreaseGood={isIncreaseGood}
+            periods={periodBalances.toReversed().map((item) => ({
+              id: item.accountingPeriod.id,
+              name: item.accountingPeriod.name,
+              href: accountingPeriodRoutes.accountDetail(
+                item.accountingPeriod.id,
+                accountId,
+                { returnUrl: currentUrl },
+              ),
+              openingBalance: item.openingBalance.totalBalance,
+              closingBalance: item.closingBalance.totalBalance,
+            }))}
+          />
+        </>
+      ) : (
+        <AccountGoalHistory
+          entries={goalEntries}
+          changes={
+            new Map(
+              periodBalances.map((item) => [
+                item.accountingPeriod.id,
+                getCurrencyDifference(
+                  item.closingBalance.totalBalance,
+                  item.openingBalance.totalBalance,
+                ),
+              ]),
+            )
+          }
+          redirectUrl={currentUrl}
+        />
+      )}
+      {view === "date" ? (
+        <EntityTransactionList
+          entityName="account"
+          events={events}
+          returnUrl={currentUrl}
+        />
+      ) : null}
+    </EntityHistoryLayout>
   );
 };
 

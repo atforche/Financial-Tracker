@@ -1,12 +1,16 @@
 "use client";
 
-import { Button, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
+import {
+  compareCurrencyAmounts,
+  formatCurrency,
+  getCurrencyDifference,
+} from "@/framework/currencyHelpers";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
 import Link from "next/link";
 import PeriodProgressRow from "@/accounting-periods/PeriodProgressRow";
-import { formatCurrency } from "@/framework/currencyHelpers";
 import { formatShortDate } from "@/framework/dateHelpers";
 import routes from "@/accounting-periods/routes";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
@@ -18,6 +22,41 @@ interface ExpectedIncomeSourcesFrameProps {
   readonly accountingPeriod: AccountingPeriodWithBalance;
   readonly redirectUrl: string;
 }
+
+/**
+ * Props for the IncomeDifference component.
+ */
+interface IncomeDifferenceProps {
+  readonly received: number;
+  readonly expected: number;
+}
+
+/**
+ * Shows how far the income received is from what was expected, colored as good or bad, or nothing when they match.
+ */
+const IncomeDifference = function ({
+  received,
+  expected,
+}: IncomeDifferenceProps): JSX.Element | null {
+  const difference = getCurrencyDifference(received, expected);
+  const comparison = compareCurrencyAmounts(difference, 0);
+  if (comparison === 0) {
+    return null;
+  }
+  return (
+    <>
+      {" · "}
+      <Box
+        component="span"
+        sx={{ color: comparison > 0 ? "success.main" : "error.main" }}
+      >
+        {comparison > 0
+          ? `${formatCurrency(difference)} extra`
+          : `${formatCurrency(-difference)} short`}
+      </Box>
+    </>
+  );
+};
 
 /**
  * Shows each expected income source's tracked income received against what it expects, linking to the source.
@@ -74,12 +113,21 @@ const ExpectedIncomeSourcesFrame = function ({
                 source.id,
                 redirectUrl,
               )}
-              caption={[
-                `of ${formatCurrency(source.expectedAmount.tracked)} tracked expected`,
-                ...source.expectedDates.map((date) =>
-                  formatShortDate(new Date(`${date}T00:00:00`)),
-                ),
-              ].join(" · ")}
+              caption={
+                <>
+                  {`of ${formatCurrency(source.expectedAmount.tracked)} tracked expected`}
+                  <IncomeDifference
+                    received={source.receivedAmount.tracked}
+                    expected={source.expectedAmount.tracked}
+                  />
+                  {source.expectedDates
+                    .map(
+                      (date) =>
+                        ` · ${formatShortDate(new Date(`${date}T00:00:00`))}`,
+                    )
+                    .join("")}
+                </>
+              }
             />
           ))
         )}

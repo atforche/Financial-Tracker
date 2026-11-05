@@ -14,11 +14,6 @@ public interface IAccountGoalQueryRepository
     Task<AccountGoal?> GetByIdAsync(AccountGoalId id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves Account Goals matching the provided query.
-    /// </summary>
-    Task<QueryPage<AccountGoal>> GetAsync(AccountGoalQuery query, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Retrieves the Account Goal for the specified Account and Accounting Period, or null when it does not exist.
     /// </summary>
     Task<AccountGoal?> GetByAccountAndAccountingPeriodAsync(

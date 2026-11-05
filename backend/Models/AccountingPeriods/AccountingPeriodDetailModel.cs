@@ -1,4 +1,6 @@
+using Models.AccountGoals;
 using Models.Accounts;
+using Models.FundGoals;
 using Models.Funds;
 
 namespace Models.AccountingPeriods;
@@ -57,4 +59,66 @@ public class AccountingPeriodDetailModel
     /// Fund balances at the end of the Accounting Period.
     /// </summary>
     public required FundBalanceSummaryModel FundClosingBalance { get; init; }
+
+    /// <summary>
+    /// The Accounts in the Accounting Period with their balances and goal progress.
+    /// </summary>
+    public required IReadOnlyCollection<AccountingPeriodAccountModel> Accounts { get; init; }
+
+    /// <summary>
+    /// The Funds in the Accounting Period with their balances and goal progress.
+    /// </summary>
+    public required IReadOnlyCollection<AccountingPeriodFundModel> Funds { get; init; }
+}
+
+/// <summary>
+/// Model representing an Account's balances and goal progress in an Accounting Period.
+/// </summary>
+public class AccountingPeriodAccountModel
+{
+    /// <summary>
+    /// The Account.
+    /// </summary>
+    public required AccountModel Account { get; init; }
+
+    /// <summary>
+    /// The Account's balance at the start of the Accounting Period.
+    /// </summary>
+    public required decimal OpeningBalance { get; init; }
+
+    /// <summary>
+    /// The Account's balance at the end of the Accounting Period.
+    /// </summary>
+    public required decimal ClosingBalance { get; init; }
+
+    /// <summary>
+    /// The Account's goal progress, or null when it has no goal in the Accounting Period.
+    /// </summary>
+    public AccountGoalProgressModel? GoalProgress { get; init; }
+}
+
+/// <summary>
+/// Model representing a Fund's balances and goal progress in an Accounting Period.
+/// </summary>
+public class AccountingPeriodFundModel
+{
+    /// <summary>
+    /// The Fund.
+    /// </summary>
+    public required FundModel Fund { get; init; }
+
+    /// <summary>
+    /// The Fund's balance at the start of the Accounting Period.
+    /// </summary>
+    public required decimal OpeningBalance { get; init; }
+
+    /// <summary>
+    /// The Fund's balance at the end of the Accounting Period.
+    /// </summary>
+    public required decimal ClosingBalance { get; init; }
+
+    /// <summary>
+    /// The Fund's goal progress, or null when it has no goal in the Accounting Period.
+    /// </summary>
+    public FundGoalProgressModel? GoalProgress { get; init; }
 }

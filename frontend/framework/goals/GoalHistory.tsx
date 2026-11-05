@@ -12,9 +12,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import GoalHistoryListFrame, {
+import GoalHistoryTable, {
   type HistoryPoint,
-} from "@/framework/goals/GoalHistoryListFrame";
+} from "@/framework/goals/GoalHistoryTable";
 import { Paper, Stack, Typography } from "@mui/material";
 import {
   compareCurrencyAmounts,
@@ -29,18 +29,14 @@ import { useTheme } from "@mui/material/styles";
  * Shows how one goal's bounds, balance, and optional contributions changed across periods.
  */
 const GoalHistory = function ({
-  name,
   subject,
   hasData,
   points,
-  paramPrefix,
   showContribution,
 }: {
-  readonly name: string;
   readonly subject: string;
   readonly hasData: boolean;
   readonly points: readonly HistoryPoint[];
-  readonly paramPrefix: string;
   readonly showContribution: boolean;
 }): JSX.Element {
   const theme = useTheme();
@@ -81,9 +77,9 @@ const GoalHistory = function ({
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h5">{name}</Typography>
       <ChartFrame
         title="Goal Progress"
+        variant="surface"
         emptyMessage={`No goal history for this ${subject} in the selected periods.`}
         hasData={hasData}
         xAxisLabel="Accounting period"
@@ -284,11 +280,7 @@ const GoalHistory = function ({
           </ComposedChart>
         </ResponsiveContainer>
       </ChartFrame>
-      <GoalHistoryListFrame
-        points={points}
-        paramPrefix={paramPrefix}
-        showContribution={showContribution}
-      />
+      <GoalHistoryTable points={points} showContribution={showContribution} />
     </Stack>
   );
 };

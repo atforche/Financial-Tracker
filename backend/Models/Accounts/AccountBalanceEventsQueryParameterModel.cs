@@ -6,14 +6,14 @@ namespace Models.Accounts;
 public sealed class AccountBalanceEventsQueryParameterModel : PaginationModel
 {
     /// <summary>
-    /// Posting date range, used when AccountingPeriodId is absent.
+    /// Posting date range, used when AccountingPeriodIds is absent.
     /// </summary>
     public DateRangeModel? Range { get; init; }
 
     /// <summary>
-    /// Restricts events to transactions assigned to this Accounting Period.
+    /// Restricts events to transactions assigned to these Accounting Periods.
     /// </summary>
-    public Guid? AccountingPeriodId { get; init; }
+    public List<Guid>? AccountingPeriodIds { get; init; }
 
     /// <summary>
     /// Whether to include current pending events in addition to matching posted events.

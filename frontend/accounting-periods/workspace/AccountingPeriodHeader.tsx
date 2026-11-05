@@ -1,4 +1,4 @@
-import { Chip, Stack, Typography } from "@mui/material";
+import { Box, Chip, Stack, Typography } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodDetailActions from "@/accounting-periods/workspace/AccountingPeriodDetailActions";
 import type { AccountingPeriodSearchParams } from "@/accounting-periods/workspace/AccountingPeriodWorkspaceDetailPage";
@@ -7,6 +7,19 @@ import PeriodNavigation from "@/framework/view/PeriodNavigation";
 import ReturnLink from "@/framework/view/ReturnLink";
 import type { components } from "@/framework/data/api";
 import routes from "@/accounting-periods/routes";
+
+/**
+ * The widest period name, which reserves the title's width so the arrows beside it don't move between periods.
+ */
+const longestPeriodName = "September 2026";
+
+/**
+ * Stacks the title and its width reservation in one cell, at a size that fits beside the arrows on a phone.
+ */
+const titleSx = {
+  gridArea: "1 / 1",
+  fontSize: { xs: "1.25rem", sm: "2.125rem" },
+};
 
 /**
  * Props for the AccountingPeriodHeader component.
@@ -27,7 +40,7 @@ const AccountingPeriodHeader = function ({
 }: AccountingPeriodHeaderProps): JSX.Element {
   const period = detail.accountingPeriod;
   const workspaceUrl = routes.workspace({});
-  // Neighbors still return to the page the user came from
+  // Neighbors keep the selected tab and filters, and still return to the page the user came from
   const getNeighborLink = function (
     neighbor: AccountingPeriod | null | undefined,
   ): { name: string; href: ReturnType<typeof routes.workspaceDetail> } | null {
@@ -35,11 +48,7 @@ const AccountingPeriodHeader = function ({
       ? null
       : {
           name: neighbor.name,
-          href: routes.workspaceDetail(neighbor.id, {
-            ...(typeof searchParams.returnUrl === "undefined"
-              ? {}
-              : { returnUrl: searchParams.returnUrl }),
-          }),
+          href: routes.workspaceDetail(neighbor.id, searchParams),
         };
   };
 
@@ -51,22 +60,39 @@ const AccountingPeriodHeader = function ({
       />
       <Stack
         direction="row"
-        useFlexGap
-        spacing={2}
-        sx={{
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
+        spacing={1.5}
+        sx={{ alignItems: "center", justifyContent: "space-between" }}
       >
         <Stack
           direction="row"
           spacing={1.5}
           sx={{ alignItems: "center", minWidth: 0 }}
         >
-          <Typography variant="h4" noWrap>
-            {period.name}
-          </Typography>
+          <PeriodNavigation
+            previousPeriod={getNeighborLink(detail.previousPeriod)}
+            nextPeriod={getNeighborLink(detail.nextPeriod)}
+          >
+            <Box
+              sx={{
+                display: "grid",
+                minWidth: 0,
+                overflow: "hidden",
+                textAlign: "center",
+              }}
+            >
+              <Typography variant="h4" noWrap sx={{ ...titleSx }}>
+                {period.name}
+              </Typography>
+              <Typography
+                aria-hidden
+                component="span"
+                variant="h4"
+                sx={{ ...titleSx, visibility: "hidden", whiteSpace: "nowrap" }}
+              >
+                {longestPeriodName}
+              </Typography>
+            </Box>
+          </PeriodNavigation>
           <Chip
             label={period.isOpen ? "Open" : "Closed"}
             color={period.isOpen ? "success" : "default"}
@@ -74,22 +100,11 @@ const AccountingPeriodHeader = function ({
             variant="outlined"
           />
         </Stack>
-        <Stack
-          direction="row"
-          useFlexGap
-          spacing={1.5}
-          sx={{ flexWrap: "wrap", alignItems: "center" }}
-        >
-          <PeriodNavigation
-            previousPeriod={getNeighborLink(detail.previousPeriod)}
-            nextPeriod={getNeighborLink(detail.nextPeriod)}
-          />
-          <AccountingPeriodDetailActions
-            accountingPeriod={period}
-            redirectUrl={currentUrl}
-            deleteRedirectUrl={workspaceUrl}
-          />
-        </Stack>
+        <AccountingPeriodDetailActions
+          accountingPeriod={period}
+          redirectUrl={currentUrl}
+          deleteRedirectUrl={workspaceUrl}
+        />
       </Stack>
     </Stack>
   );

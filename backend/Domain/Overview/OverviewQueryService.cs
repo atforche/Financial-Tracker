@@ -54,15 +54,12 @@ public sealed class OverviewQueryService(
             IReadOnlyDictionary<AccountGoalId, AccountGoalProgress> accountGoalProgress = AccountGoalService.GetProgresses(accountGoals, balanceHistory);
             AccountingPeriodBalance balance = await accountingPeriodQueryService.EnrichBalanceAsync(period, balanceHistory, fundGoals, cancellationToken);
             currentPeriod = await GetCurrentPeriodAsync(balance, cancellationToken);
-            List<OverviewGoalRange> goalRanges = GetGoalRanges(fundGoals, fundGoalProgress, accountGoals, accountGoalProgress);
-            attention.Add(CreateGroup(OverviewAttentionKind.GoalsBelowMinimum, goalRanges
-                .Where(goal => goal.AmountBelowMinimum > 0)
-                .Select(goal => new OverviewAttentionItem(goal.Name, goal.AmountBelowMinimum, null))
-                .ToList()));
-            attention.Add(CreateGroup(OverviewAttentionKind.GoalsAboveMaximum, goalRanges
-                .Where(goal => goal.AmountAboveMaximum > 0)
-                .Select(goal => new OverviewAttentionItem(goal.Name, goal.AmountAboveMaximum, null))
-                .ToList()));
+            attention.Add(CreateGroup(OverviewAttentionKind.FundGoalsOutOfRange, GetOutOfRangeItems(fundGoals
+                .Select(goal => (goal.Fund.Name, fundGoalProgress.GetValueOrDefault(goal.Id)?.EndingBalance))
+                .Select(item => (item.Name, item.EndingBalance?.AmountBelowMinimum ?? 0, item.EndingBalance?.AmountAboveMaximum ?? 0)))));
+            attention.Add(CreateGroup(OverviewAttentionKind.AccountGoalsOutOfRange, GetOutOfRangeItems(accountGoals
+                .Select(goal => (goal.Account.Name, accountGoalProgress.GetValueOrDefault(goal.Id)?.EndingBalance))
+                .Select(item => (item.Name, item.EndingBalance?.AmountBelowMinimum ?? 0, item.EndingBalance?.AmountAboveMaximum ?? 0)))));
             attention.Add(GetGoalsBehind(fundGoals, fundGoalProgress));
             incomeNotReceived = GetIncomeNotReceived(balance, asOf);
         }
@@ -113,22 +110,13 @@ public sealed class OverviewQueryService(
     }
 
     /// <summary>
-    /// Gets how far each Fund and Account Goal's balance is below its minimum and above its maximum.
+    /// Gets the goals outside their range, with amounts negative below the minimum and positive above the maximum.
     /// </summary>
-    private static List<OverviewGoalRange> GetGoalRanges(
-        IReadOnlyCollection<FundGoal> fundGoals,
-        IReadOnlyDictionary<FundGoalId, FundGoalProgress> fundGoalProgress,
-        IReadOnlyCollection<AccountGoal> accountGoals,
-        IReadOnlyDictionary<AccountGoalId, AccountGoalProgress> accountGoalProgress) =>
-        fundGoals
-            .Select(goal => fundGoalProgress.GetValueOrDefault(goal.Id)?.EndingBalance is { } balance
-                ? new OverviewGoalRange(goal.Fund.Name, balance.AmountBelowMinimum, balance.AmountAboveMaximum)
-                : null)
-            .Concat(accountGoals
-                .Select(goal => accountGoalProgress.GetValueOrDefault(goal.Id)?.EndingBalance is { } balance
-                    ? new OverviewGoalRange(goal.Account.Name, balance.AmountBelowMinimum, balance.AmountAboveMaximum)
-                    : null))
-            .OfType<OverviewGoalRange>()
+    private static List<OverviewAttentionItem> GetOutOfRangeItems(
+        IEnumerable<(string Name, decimal AmountBelowMinimum, decimal AmountAboveMaximum)> goals) =>
+        goals
+            .Where(goal => goal.AmountBelowMinimum > 0 || goal.AmountAboveMaximum > 0)
+            .Select(goal => new OverviewAttentionItem(goal.Name, goal.AmountAboveMaximum - goal.AmountBelowMinimum, null))
             .ToList();
 
     /// <summary>
@@ -217,7 +205,7 @@ public sealed class OverviewQueryService(
     private static OverviewAttentionGroup? CreateGroup(OverviewAttentionKind kind, List<OverviewAttentionItem> items) =>
         items.Count == 0
             ? null
-            : new OverviewAttentionGroup(kind, items.Count, items.Sum(item => item.Amount), items.Count, GetTopItems(items), null);
+            : new OverviewAttentionGroup(kind, items.Count, items.Sum(item => Math.Abs(item.Amount)), items.Count, GetTopItems(items), null);
 
     /// <summary>
     /// Gets the items with the largest amounts.
@@ -230,7 +218,3 @@ public sealed class OverviewQueryService(
             .ToList();
 }
 
-/// <summary>
-/// How far a Fund or Account Goal's balance is below its minimum and above its maximum.
-/// </summary>
-internal sealed record OverviewGoalRange(string Name, decimal AmountBelowMinimum, decimal AmountAboveMaximum);
