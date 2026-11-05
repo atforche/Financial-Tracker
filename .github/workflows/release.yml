@@ -33,10 +33,13 @@ jobs:
         uses: crazy-max/ghaction-github-runtime@04d248b84655b509d8c44dc1d6f990c879747487 # v4.0.0
 
       # The pull request already smoke-tested this code, so the release only
-      # rebuilds (from cache) and rescans the images it is about to publish.
+      # rebuilds (from cache) the images it is about to publish. Their scan only
+      # reports to the job summary: the nightly Security Scan fails on findings,
+      # so a new advisory does not block unrelated releases.
       - name: Build and Scan Container Images
         env:
           DOCKER_BUILD_CACHE: gha
+          IMAGE_SCAN_MODE: report
         run: python -m orchestrator ci container-release
 
       - name: Resolve Registry Image Names
