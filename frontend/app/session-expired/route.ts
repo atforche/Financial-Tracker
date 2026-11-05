@@ -30,7 +30,14 @@ const GET = async function (request: NextRequest): Promise<NextResponse> {
   );
   const idToken = await getGoogleIdToken();
   if (idToken !== null && (await isTokenAccepted(idToken))) {
-    return NextResponse.redirect(new URL(callbackPath, request.nextUrl));
+    /*
+     * The location stays relative because behind the reverse proxy the request URL carries the internal
+     * address of this server, which the browser cannot reach.
+     */
+    return new NextResponse(null, {
+      status: 307,
+      headers: { Location: callbackPath },
+    });
   }
   return signOut({
     redirectTo: `/login?callbackUrl=${encodeURIComponent(callbackPath)}`,

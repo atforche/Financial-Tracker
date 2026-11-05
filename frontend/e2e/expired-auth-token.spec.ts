@@ -64,3 +64,21 @@ test("an expired provider token is rejected by the frontend session", async ({
     })
     .toBe(false);
 });
+
+test("a session the backend still accepts is sent back with a relative redirect", async ({
+  page,
+}) => {
+  await page.goto("/accounts/workspace");
+  await expect(page).toHaveURL(/\/login\?callbackUrl=/u);
+  await page.getByRole("button", { name: "Continue as Administrator" }).click();
+  await expect(page).toHaveURL((url) => url.pathname === "/accounts/workspace");
+
+  const response = await page.request.get(
+    "/session-expired?callbackUrl=%2Faccounts%2Fworkspace",
+    { maxRedirects: 0 },
+  );
+
+  // An absolute location would carry the server's internal address, which browsers cannot reach.
+  expect(response.status()).toBe(307);
+  expect(response.headers()["location"]).toBe("/accounts/workspace");
+});
