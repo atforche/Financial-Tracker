@@ -40,7 +40,8 @@ public sealed class BalanceEventQueryTests
             "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries");
         CollectionModel<FundBalanceEventModel> fundEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
             "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries&includePending=true");
-        CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.FundGoalEvents.GetAsync(july);
+        CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.Api.GetAsync<CollectionModel<FundGoalBalanceEventModel>>(
+            $"/fund-goals/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}");
         BalanceEventTotalsModel accountTotals = await test.Api.GetAsync<BalanceEventTotalsModel>(
             $"/accounts/{cash.Id}/balance-events/totals?range.start=2026-07-01&range.end=2026-07-31&includePending=true");
         BalanceEventTotalsModel fundTotals = await test.Api.GetAsync<BalanceEventTotalsModel>(

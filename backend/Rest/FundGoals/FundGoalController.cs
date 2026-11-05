@@ -1,12 +1,15 @@
 using Data;
+using Domain;
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
+using Domain.BalanceEvents;
 using Domain.FundGoals;
 using Domain.FundGoals.Queries;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.AccountingPeriods;
+using Models.BalanceEvents;
 using Models.FundGoals;
 using Rest.AccountingPeriods;
 
@@ -23,8 +26,47 @@ public sealed class FundGoalController(
     IFundGoalRepository fundGoalRepository,
     FundGoalQueryService fundGoalQueryService,
     FundGoalConverter fundGoalConverter,
-    FundGoalService fundGoalService) : ControllerBase
+    FundGoalService fundGoalService,
+    FundGoalBalanceEventQueryService fundGoalBalanceEventQueryService,
+    FundGoalBalanceEventConverter fundGoalBalanceEventConverter) : ControllerBase
 {
+    /// <summary>
+    /// Retrieves Fund Goal balance events in an Accounting Period range.
+    /// </summary>
+    [HttpGet("balance-events/accounting-period-range")]
+    public async Task<ActionResult<CollectionModel<FundGoalBalanceEventModel>>> GetBalanceEventsAsync(
+        [FromQuery] FundGoalBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>> result = await fundGoalBalanceEventQueryService.GetAsync(
+            fundGoalBalanceEventConverter.ToDomain(query),
+            cancellationToken);
+        return result.Range == null
+            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Fund Goal balance events."))
+            : Ok(fundGoalBalanceEventConverter.ToModel(result.Range));
+    }
+
+    /// <summary>
+    /// Retrieves posted credit and debit totals for all matching Fund Goal events.
+    /// </summary>
+    [HttpGet("balance-events/accounting-period-range/totals")]
+    [ProducesResponseType(typeof(BalanceEventTotalsModel), StatusCodes.Status200OK)]
+    public async Task<ActionResult<BalanceEventTotalsModel>> GetBalanceEventTotalsAsync(
+        [FromQuery] FundGoalBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>> result = await fundGoalBalanceEventQueryService.GetAsync(
+            fundGoalBalanceEventConverter.ToDomain(query) with { Offset = 0, Limit = null }, cancellationToken);
+        if (result.Range == null)
+        {
+            return UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure,
+                query.Range.Start, query.Range.End, "Unable to retrieve Fund Goal balance event totals."));
+        }
+        var totals = BalanceEventTotals.Calculate(result.Range.Items,
+            item => item.IsPosted, item => item.Type, item => item.Amount);
+        return Ok(new BalanceEventTotalsModel { TotalInflow = totals.TotalInflow, TotalOutflow = totals.TotalOutflow });
+    }
+
     /// <summary>
     /// Retrieves Fund Goals matching the provided query.
     /// </summary>

@@ -1868,6 +1868,104 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/fund-goals/balance-events/accounting-period-range": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves Fund Goal balance events in an Accounting Period range. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    "Filter.NameSearch"?: string;
+                    "Filter.FundIds"?: string[];
+                    "Filter.AccountingPeriodIds"?: string[];
+                    "Filter.IncludeOnboarded"?: boolean;
+                    /** @description Optional event ordering. */
+                    Sort?: components["schemas"]["FundGoalBalanceEventSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CollectionModelOfFundGoalBalanceEventModel"];
+                        "application/json": components["schemas"]["CollectionModelOfFundGoalBalanceEventModel"];
+                        "text/json": components["schemas"]["CollectionModelOfFundGoalBalanceEventModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/fund-goals/balance-events/accounting-period-range/totals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves posted credit and debit totals for all matching Fund Goal events. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    "Filter.NameSearch"?: string;
+                    "Filter.FundIds"?: string[];
+                    "Filter.AccountingPeriodIds"?: string[];
+                    "Filter.IncludeOnboarded"?: boolean;
+                    /** @description Optional event ordering. */
+                    Sort?: components["schemas"]["FundGoalBalanceEventSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["BalanceEventTotalsModel"];
+                        "application/json": components["schemas"]["BalanceEventTotalsModel"];
+                        "text/json": components["schemas"]["BalanceEventTotalsModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/fund-goals": {
         parameters: {
             query?: never;
@@ -4223,6 +4321,16 @@ export interface components {
             totalCount: number;
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfFundGoalBalanceEventModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["FundGoalBalanceEventModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfFundGoalModel: {
             /** @description The collection of items. */
             items: components["schemas"]["FundGoalModel"][];
@@ -4983,6 +5091,8 @@ export interface components {
              */
             amount?: null | number;
         };
+        /** @enum {unknown} */
+        FundGoalBalanceEventSortModel: FundGoalBalanceEventSortModel | null;
         /** @description Model describing ending-balance progress for a Fund Goal. */
         FundGoalEndingBalanceProgressModel: {
             /**
@@ -6284,6 +6394,22 @@ export enum FundBalanceEventSortModel {
     AmountDescending = "AmountDescending",
     Counterparty = "Counterparty",
     CounterpartyDescending = "CounterpartyDescending"
+}
+export enum FundGoalBalanceEventSortModel {
+    FundName = "FundName",
+    FundNameDescending = "FundNameDescending",
+    Date = "Date",
+    DateDescending = "DateDescending",
+    Type = "Type",
+    TypeDescending = "TypeDescending",
+    Amount = "Amount",
+    AmountDescending = "AmountDescending",
+    Counterparty = "Counterparty",
+    CounterpartyDescending = "CounterpartyDescending",
+    Source = "Source",
+    SourceDescending = "SourceDescending",
+    Destination = "Destination",
+    DestinationDescending = "DestinationDescending"
 }
 export enum FundGoalEndingBalanceStatusModel {
     BelowMinimum = "BelowMinimum",
