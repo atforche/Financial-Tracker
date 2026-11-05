@@ -24,9 +24,15 @@ interface BreakdownSectionProps {
   readonly detailRows?: readonly BreakdownDetailRow[];
   readonly expanded?: boolean;
   readonly onToggle?: () => void;
+  readonly labelColor?: string;
 }
 
 const toggleSlotSize = 26;
+
+/**
+ * Space to the right of a section's value, which a neighboring row can match to line up with it.
+ */
+const breakdownValueInset = toggleSlotSize + 4;
 const noDetailRows: readonly BreakdownDetailRow[] = [];
 
 /**
@@ -38,6 +44,7 @@ const BreakdownSection = function ({
   detailRows = noDetailRows,
   expanded = false,
   onToggle,
+  labelColor,
 }: BreakdownSectionProps): JSX.Element {
   const hasDetails = detailRows.length > 0 && typeof onToggle !== "undefined";
   return (
@@ -48,7 +55,9 @@ const BreakdownSection = function ({
         alignItems="center"
         gap={1.5}
       >
-        <Typography variant="body2">{label}</Typography>
+        <Typography variant="body2" color={labelColor}>
+          {label}
+        </Typography>
         <Stack direction="row" alignItems="center" gap={0.5}>
           <Typography
             variant="body2"
@@ -144,5 +153,6 @@ const BreakdownSection = function ({
   );
 };
 
+export { breakdownValueInset };
 export type { BreakdownDetailRow };
 export default BreakdownSection;

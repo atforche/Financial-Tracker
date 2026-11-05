@@ -14,6 +14,7 @@ import {
   formatCurrency,
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
+import GoalRangeBar from "@/accounting-periods/workspace/GoalRangeBar";
 import type { JSX } from "react";
 import Link from "next/link";
 import PeriodEntityStatus from "@/accounting-periods/workspace/periodEntityStatus";
@@ -127,65 +128,6 @@ const getGoalLabel = function ({ minimum, maximum }: PeriodEntity): string {
 };
 
 /**
- * Shows a closing balance against its goal range on one compact scale.
- */
-const GoalRangeBar = function ({
-  entity,
-  color,
-}: {
-  readonly entity: PeriodEntity;
-  readonly color: string;
-}): JSX.Element | null {
-  const { minimum, maximum, closingBalance } = entity;
-  if (minimum === null) {
-    return null;
-  }
-  const upperBound = maximum ?? minimum;
-  const lower = Math.min(closingBalance, minimum);
-  const upper = Math.max(closingBalance, upperBound);
-  const padding = Math.max(upper - lower, Math.abs(minimum), 1) * 0.15;
-  const position = (amount: number): number =>
-    ((amount - lower + padding) / (upper - lower + padding * 2)) * 100;
-  return (
-    <Box sx={{ position: "relative", height: 14 }}>
-      <Box
-        sx={{
-          position: "absolute",
-          inset: "3px 0",
-          borderRadius: 999,
-          bgcolor: "action.hover",
-        }}
-      />
-      <Box
-        sx={{
-          position: "absolute",
-          top: 3,
-          bottom: 3,
-          left: `${position(minimum)}%`,
-          width: `${(maximum === null ? 100 : position(maximum)) - position(minimum)}%`,
-          borderRadius: 999,
-          bgcolor: "success.main",
-          opacity: 0.35,
-        }}
-      />
-      <Box
-        sx={{
-          position: "absolute",
-          left: `${position(closingBalance)}%`,
-          width: 14,
-          height: 14,
-          borderRadius: "50%",
-          border: "2px solid",
-          borderColor: "background.paper",
-          bgcolor: color,
-          transform: "translateX(-50%)",
-        }}
-      />
-    </Box>
-  );
-};
-
-/**
  * Links to an account or fund's goal, summarizing how it ended the period.
  */
 const EntityTile = function ({
@@ -245,7 +187,12 @@ const EntityTile = function ({
           </Typography>
         </Box>
       </Stack>
-      <GoalRangeBar entity={entity} color={color} />
+      <GoalRangeBar
+        minimum={entity.minimum}
+        maximum={entity.maximum}
+        balance={entity.closingBalance}
+        color={color}
+      />
       <Typography variant="caption" color="text.secondary">
         {getGoalLabel(entity)}
       </Typography>

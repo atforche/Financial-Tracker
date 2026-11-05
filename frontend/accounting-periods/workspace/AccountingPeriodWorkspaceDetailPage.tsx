@@ -148,10 +148,11 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
                                 id: item.fund.id,
                                 name: item.fund.name,
                                 amount,
-                                href: fundRoutes.workspaceDetail(item.fund.id, {
-                                  ...goalParams,
-                                  tab: "goal",
-                                }),
+                                href: routes.fundDetail(
+                                  period.id,
+                                  item.fund.id,
+                                  {},
+                                ),
                               },
                             ]
                           : [];

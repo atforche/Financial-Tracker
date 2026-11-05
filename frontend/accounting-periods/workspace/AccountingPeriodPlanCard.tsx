@@ -1,5 +1,8 @@
 "use client";
 
+import BreakdownSection, {
+  breakdownValueInset,
+} from "@/framework/view/BreakdownSection";
 import { Divider, Stack, Typography } from "@mui/material";
 import { type JSX, useState } from "react";
 import {
@@ -9,7 +12,6 @@ import {
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
-import BreakdownSection from "@/framework/view/BreakdownSection";
 import ContentSurface from "@/framework/view/ContentSurface";
 import type { Route } from "next";
 import SignedChange from "@/framework/view/SignedChange";
@@ -21,6 +23,7 @@ interface PlanRowProps {
   readonly label: string;
   readonly value: JSX.Element | string;
   readonly isTotal?: boolean;
+  readonly valueInset?: number;
 }
 
 /**
@@ -30,6 +33,7 @@ const PlanRow = function ({
   label,
   value,
   isTotal = false,
+  valueInset = 0,
 }: PlanRowProps): JSX.Element {
   return (
     <Stack
@@ -41,7 +45,10 @@ const PlanRow = function ({
       }}
     >
       <Typography variant={isTotal ? "subtitle2" : "body2"}>{label}</Typography>
-      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+      <Typography
+        variant="body2"
+        sx={{ fontWeight: 500, pr: `${valueInset.toString()}px` }}
+      >
         {value}
       </Typography>
     </Stack>
@@ -80,24 +87,31 @@ const AccountingPeriodPlanCard = function ({
     accountingPeriod.plannedGoalContributions,
     accountingPeriod.expectedGoalContributions,
   );
+  const hasUnused = compareCurrencyAmounts(totalUnused, 0) !== 0;
+  // The unused contributions row keeps a chevron beside its amount, so the other amounts line up with it
+  const valueInset = hasUnused ? breakdownValueInset : 0;
   return (
     <ContentSurface>
       <Stack spacing={1.5}>
         <Typography variant="h5">Plan</Typography>
         <PlanRow
+          valueInset={valueInset}
           label="Expected income"
           value={formatCurrency(expectedIncome.total)}
         />
         <PlanRow
+          valueInset={valueInset}
           label="Expected tracked income"
           value={formatCurrency(expectedIncome.tracked)}
         />
         <Divider />
         <PlanRow
+          valueInset={valueInset}
           label="Planned goal contributions"
           value={formatCurrency(accountingPeriod.plannedGoalContributions)}
         />
         <PlanRow
+          valueInset={valueInset}
           label="Planned left to spend"
           value={
             <SignedChange
@@ -109,7 +123,7 @@ const AccountingPeriodPlanCard = function ({
           }
           isTotal
         />
-        {compareCurrencyAmounts(totalUnused, 0) === 0 ? null : (
+        {!hasUnused ? null : (
           <>
             <Divider />
             <BreakdownSection
