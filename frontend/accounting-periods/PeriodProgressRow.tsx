@@ -15,6 +15,7 @@ import {
   getCurrencyDifference,
   getCurrencyTotal,
 } from "@/framework/currencyHelpers";
+import ChevronRight from "@mui/icons-material/ChevronRight";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import Link from "next/link";
 import type { Route } from "next";
@@ -168,7 +169,16 @@ const PeriodProgressRow = function ({
                   transition: "transform 0.3s ease-in-out",
                 }}
               />
-            ) : null}
+            ) : (
+              <ChevronRight
+                fontSize="small"
+                sx={{
+                  ml: 0.5,
+                  verticalAlign: "middle",
+                  color: "text.secondary",
+                }}
+              />
+            )}
           </Typography>
         </Stack>
         <SegmentedBar
