@@ -1,4 +1,7 @@
+"use client";
+
 import { Divider, Stack, Typography } from "@mui/material";
+import { type JSX, useState } from "react";
 import {
   compareCurrencyAmounts,
   formatCurrency,
@@ -6,9 +9,8 @@ import {
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
+import BreakdownSection from "@/framework/view/BreakdownSection";
 import ContentSurface from "@/framework/view/ContentSurface";
-import type { JSX } from "react";
-import Link from "next/link";
 import type { Route } from "next";
 import SignedChange from "@/framework/view/SignedChange";
 
@@ -47,27 +49,36 @@ const PlanRow = function ({
 };
 
 /**
+ * A fund's planned contribution that its maximum ending balance is projected to leave unused.
+ */
+interface UnusedContribution {
+  readonly id: string;
+  readonly name: string;
+  readonly amount: number;
+  readonly href: Route;
+}
+
+/**
  * Props for the AccountingPeriodPlanCard component.
  */
 interface AccountingPeriodPlanCardProps {
   readonly accountingPeriod: AccountingPeriodWithBalance;
-  readonly cappedGoalCount: number;
-  readonly fundGoalsHref: Route;
+  readonly unusedContributions: readonly UnusedContribution[];
 }
 
 /**
- * Summarizes the income an accounting period expects and how much of it its goals plan to take, including how much
- * maximum ending balances reduce what the goals are expected to take.
+ * Summarizes the income an accounting period expects and how much of it its goals plan to take, noting any planned
+ * contributions that funds at their maximum ending balances are projected not to use.
  */
 const AccountingPeriodPlanCard = function ({
   accountingPeriod,
-  cappedGoalCount,
-  fundGoalsHref,
+  unusedContributions,
 }: AccountingPeriodPlanCardProps): JSX.Element {
   const { expectedIncome } = accountingPeriod;
-  const maximumReduction = getCurrencyDifference(
-    accountingPeriod.expectedGoalContributions,
+  const [expanded, setExpanded] = useState(false);
+  const totalUnused = getCurrencyDifference(
     accountingPeriod.plannedGoalContributions,
+    accountingPeriod.expectedGoalContributions,
   );
   return (
     <ContentSurface>
@@ -98,46 +109,25 @@ const AccountingPeriodPlanCard = function ({
           }
           isTotal
         />
-        <Divider />
-        {compareCurrencyAmounts(maximumReduction, 0) === 0 ? null : (
-          <Stack spacing={0.25}>
-            <PlanRow
-              label="Reduced by maximum balances"
-              value={formatSignedCurrency(maximumReduction)}
+        {compareCurrencyAmounts(totalUnused, 0) === 0 ? null : (
+          <>
+            <Divider />
+            <BreakdownSection
+              label="Projected unused contributions"
+              value={formatSignedCurrency(totalUnused)}
+              detailRows={unusedContributions.map((fund) => ({
+                key: fund.id,
+                label: fund.name,
+                value: formatCurrency(fund.amount),
+                href: fund.href,
+              }))}
+              expanded={expanded}
+              onToggle={() => {
+                setExpanded(!expanded);
+              }}
             />
-            <Typography variant="caption" color="text.secondary">
-              <Typography component="span" variant="inherit" color="primary">
-                <Link
-                  href={fundGoalsHref}
-                  style={{ color: "inherit", textDecoration: "none" }}
-                >
-                  {cappedGoalCount === 1
-                    ? "1 goal is"
-                    : `${cappedGoalCount.toString()} goals are`}
-                </Link>
-              </Typography>{" "}
-              {cappedGoalCount === 1
-                ? "near its maximum balance"
-                : "near their maximum balances"}
-            </Typography>
-          </Stack>
+          </>
         )}
-        <PlanRow
-          label="Expected goal contributions"
-          value={formatCurrency(accountingPeriod.expectedGoalContributions)}
-        />
-        <PlanRow
-          label="Expected left to spend"
-          value={
-            <SignedChange
-              amount={getCurrencyDifference(
-                expectedIncome.tracked,
-                accountingPeriod.expectedGoalContributions,
-              )}
-            />
-          }
-          isTotal
-        />
       </Stack>
     </ContentSurface>
   );

@@ -1,4 +1,8 @@
 import { Box, Stack } from "@mui/material";
+import {
+  compareCurrencyAmounts,
+  getCurrencyDifference,
+} from "@/framework/currencyHelpers";
 import AccountingPeriodEntityList from "@/accounting-periods/workspace/AccountingPeriodEntityList";
 import AccountingPeriodHeader from "@/accounting-periods/workspace/AccountingPeriodHeader";
 import AccountingPeriodPlanCard from "@/accounting-periods/workspace/AccountingPeriodPlanCard";
@@ -16,7 +20,6 @@ import createApiClient from "@/framework/data/createApiClient";
 import { expectedIncomeSourcesId } from "@/accounting-periods/workspace/helpers";
 import fillHeightSx from "@/framework/view/fillHeightSx";
 import fundRoutes from "@/funds/routes";
-import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import getPeriodAttention from "@/accounting-periods/workspace/getPeriodAttention";
 import { isDebtAccountType } from "@/accounts/helpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
@@ -135,9 +138,23 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
                   <Box sx={fillHeightSx}>
                     <AccountingPeriodPlanCard
                       accountingPeriod={period}
-                      cappedGoalCount={detail.cappedGoalCount}
-                      fundGoalsHref={routes.workspaceDetail(period.id, {
-                        tab: "funds",
+                      unusedContributions={detail.funds.flatMap((item) => {
+                        const amount =
+                          item.goalProgress?.contribution
+                            ?.amountReducedByMaximumEndingBalance ?? 0;
+                        return compareCurrencyAmounts(amount, 0) > 0
+                          ? [
+                              {
+                                id: item.fund.id,
+                                name: item.fund.name,
+                                amount,
+                                href: fundRoutes.workspaceDetail(item.fund.id, {
+                                  ...goalParams,
+                                  tab: "goal",
+                                }),
+                              },
+                            ]
+                          : [];
                       })}
                     />
                   </Box>
