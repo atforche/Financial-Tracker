@@ -82,9 +82,19 @@ jobs:
           FRONTEND_IMAGE: ${{ steps.images.outputs.frontend }}
           MIGRATOR_IMAGE: ${{ steps.images.outputs.migrator }}
         run: |
-          backend_reference="$(docker image inspect --format='{{index .RepoDigests 0}}' "${BACKEND_IMAGE}:sha-${GITHUB_SHA}")"
-          frontend_reference="$(docker image inspect --format='{{index .RepoDigests 0}}' "${FRONTEND_IMAGE}:sha-${GITHUB_SHA}")"
-          migrator_reference="$(docker image inspect --format='{{index .RepoDigests 0}}' "${MIGRATOR_IMAGE}:sha-${GITHUB_SHA}")"
+          # An image can have digests for several repositories, so select the published one.
+          resolve_reference() {
+            local reference
+            reference="$(docker image inspect --format='{{range .RepoDigests}}{{println .}}{{end}}' "$1:sha-${GITHUB_SHA}" | grep -F "$1@" | head -n 1)"
+            if [[ -z "${reference}" ]]; then
+              echo "No registry digest found for $1." >&2
+              return 1
+            fi
+            echo "${reference}"
+          }
+          backend_reference="$(resolve_reference "${BACKEND_IMAGE}")"
+          frontend_reference="$(resolve_reference "${FRONTEND_IMAGE}")"
+          migrator_reference="$(resolve_reference "${MIGRATOR_IMAGE}")"
           jq --null-input \
             --arg commit "${GITHUB_SHA}" \
             --arg backendImage "${backend_reference}" \

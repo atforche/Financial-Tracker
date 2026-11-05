@@ -7,7 +7,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-IMAGE_DIGEST_PATTERN = re.compile(r"^.+@sha256:[0-9a-f]{64}$")
+IMAGE_DIGEST_PATTERN = re.compile(r"^ghcr\.io/.+@sha256:[0-9a-f]{64}$")
 
 
 @dataclass(frozen=True)
@@ -43,6 +43,6 @@ class ReleaseManifest:
             for image in image_references
         ):
             raise ValueError(
-                "Release manifest images must be immutable sha256 digest references"
+                "Release manifest images must be immutable sha256 digest references in ghcr.io"
             )
         return cls(commit, *image_references)
