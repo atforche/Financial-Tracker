@@ -1,22 +1,10 @@
-import { Button, Chip, Stack, Typography } from "@mui/material";
-import {
-  formatCurrency,
-  getCurrencyDifference,
-} from "@/framework/currencyHelpers";
-import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import { FundGoalBalanceEventSortModel } from "@/framework/data/api";
 import type { JSX } from "react";
-import PageLayout from "@/framework/view/PageLayout";
+import PeriodEntityLayout from "@/accounting-periods/workspace/PeriodEntityLayout";
+import PeriodEntityTransactions from "@/accounting-periods/workspace/PeriodEntityTransactions";
 import PeriodFundGoalCard from "@/accounting-periods/workspace/PeriodFundGoalCard";
-import PeriodFundTransactions from "@/accounting-periods/workspace/PeriodFundTransactions";
-import PeriodNavigation from "@/framework/view/PeriodNavigation";
-import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import ReturnLink from "@/framework/view/ReturnLink";
-import SignedChange from "@/framework/view/SignedChange";
-import StatCard from "@/framework/view/StatCard";
-import { buildDateChartPoints } from "@/framework/charts/balanceTrendHelpers";
-import createApiClient from "@/framework/data/createApiClient";
 import fundRoutes from "@/funds/routes";
+import getPeriodEntityDetail from "@/accounting-periods/workspace/getPeriodEntityDetail";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 import transactionRoutes from "@/transactions/routes";
@@ -27,6 +15,7 @@ import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
  */
 interface PeriodFundSearchParams {
   returnUrl?: string;
+  periodTab?: string;
 }
 
 /**
@@ -46,20 +35,13 @@ const PeriodFundDetailPage = async function ({
 }: PeriodFundDetailPageProps): Promise<JSX.Element> {
   const { accountingPeriodId, fundId } = await params;
   const resolvedSearchParams = await searchParams;
-  const apiClient = await createApiClient();
-  const detailResponse = await apiClient.GET(
-    "/accounting-periods/{accountingPeriodId}/detail",
-    { params: { path: { accountingPeriodId } } },
-  );
-  if (detailResponse.response.status === 404) {
-    redirect(routes.workspace({}));
-  }
-  const detail = unwrapApiResponse(
-    detailResponse,
-    "Failed to fetch accounting period",
-  );
+  const { apiClient, detail } = await getPeriodEntityDetail(accountingPeriodId);
   const period = detail.accountingPeriod;
-  const periodUrl = routes.workspaceDetail(period.id, {});
+  const { returnUrl, periodTab } = resolvedSearchParams;
+  const periodUrl = routes.workspaceDetail(
+    period.id,
+    periodTab === undefined ? {} : { tab: periodTab },
+  );
   const item = detail.funds.find(({ fund }) => fund.id === fundId);
   if (item === undefined) {
     redirect(periodUrl);
@@ -110,8 +92,8 @@ const PeriodFundDetailPage = async function ({
     "Failed to fetch fund daily balances",
   );
   const currentUrl = routes.fundDetail(period.id, fundId, resolvedSearchParams);
-  const { returnUrl } = resolvedSearchParams;
-  const neighborParams = returnUrl === undefined ? {} : { returnUrl };
+  // A return link belongs to the period it was opened from, so a neighbor goes back to its own period instead
+  const neighborParams = periodTab === undefined ? {} : { periodTab };
   const getNeighborLink = function (
     neighbor: typeof detail.previousPeriod,
   ): { name: string; href: ReturnType<typeof routes.fundDetail> } | null {
@@ -122,86 +104,21 @@ const PeriodFundDetailPage = async function ({
           href: routes.fundDetail(neighbor.id, fundId, neighborParams),
         };
   };
-  const opening = item.openingBalance;
-  const closing = item.closingBalance;
 
   return (
-    <PageLayout>
-      <Stack spacing={2}>
-        <ReturnLink
-          returnUrl={returnUrl}
-          fallback={{ href: periodUrl, label: `Back to ${period.name}` }}
-        />
-        <Stack spacing={0.5}>
-          <Typography variant="h4" noWrap>
-            {item.fund.name}
-          </Typography>
-          <Stack
-            direction="row"
-            useFlexGap
-            spacing={1}
-            sx={{ alignItems: "center", flexWrap: "wrap", ml: -1 }}
-          >
-            <PeriodNavigation
-              previousPeriod={getNeighborLink(detail.previousPeriod)}
-              nextPeriod={getNeighborLink(detail.nextPeriod)}
-            >
-              {/* Wide enough for the longest period name so the arrows stay in place between periods */}
-              <Typography
-                variant="subtitle1"
-                noWrap
-                sx={{ width: "9.5rem", textAlign: "center" }}
-              >
-                {period.name}
-              </Typography>
-            </PeriodNavigation>
-            <Chip
-              label={period.isOpen ? "Open" : "Closed"}
-              color={period.isOpen ? "success" : "default"}
-              size="small"
-              variant="outlined"
-            />
-            <Button
-              size="small"
-              href={fundRoutes.workspaceDetail(fundId, {})}
-              sx={{ whiteSpace: "nowrap" }}
-            >
-              All Periods
-            </Button>
-          </Stack>
-        </Stack>
-      </Stack>
-      <Stack spacing={2}>
-        <ResponsiveGrid columns={{ xs: 1, sm: 2, lg: 4 }} spacing={2}>
-          <StatCard
-            label="Opening balance"
-            value={formatCurrency(opening)}
-            caption="at the start of the period"
-          />
-          <StatCard
-            label="Total inflow"
-            value={formatCurrency(totals.totalInflow)}
-            caption="posted this period"
-          />
-          <StatCard
-            label="Total outflow"
-            value={formatCurrency(totals.totalOutflow)}
-            caption="posted this period"
-          />
-          <StatCard
-            label="Closing balance"
-            value={formatCurrency(closing)}
-            caption={
-              <>
-                <SignedChange
-                  amount={getCurrencyDifference(closing, opening)}
-                />{" "}
-                this period
-              </>
-            }
-          />
-        </ResponsiveGrid>
-        {goal === null ||
+    <PeriodEntityLayout
+      name={item.fund.name}
+      period={period}
+      previousPeriod={getNeighborLink(detail.previousPeriod)}
+      nextPeriod={getNeighborLink(detail.nextPeriod)}
+      periodHref={periodUrl}
+      returnUrl={returnUrl}
+      allPeriodsHref={fundRoutes.workspaceDetail(fundId, {})}
+      openingBalance={item.openingBalance}
+      closingBalance={item.closingBalance}
+      totals={totals}
+      goalCard={
+        goal === null ||
         item.goalProgress === null ||
         item.goalProgress === undefined ? null : (
           <PeriodFundGoalCard
@@ -210,16 +127,13 @@ const PeriodFundDetailPage = async function ({
             accountingPeriod={period}
             redirectUrl={currentUrl}
           />
-        )}
-        <BalanceTrendChart
-          chartPoints={buildDateChartPoints(balanceDates.dates)}
-          title="Accounting Period Balance"
-          variant="surface"
-          emptyMessage="No posted balance movement is available in this period."
-          xAxisLabel="Date"
-          yAxisLabel="Fund Balance"
-        />
-        <PeriodFundTransactions
+        )
+      }
+      dailyBalances={balanceDates.dates}
+      balanceLabel="Fund Balance"
+      transactions={
+        <PeriodEntityTransactions
+          entityName="fund"
           events={events.items}
           addTransactionHref={transactionRoutes.workspaceCreate({
             accountingPeriodIds: [period.id],
@@ -228,8 +142,8 @@ const PeriodFundDetailPage = async function ({
           })}
           returnUrl={currentUrl}
         />
-      </Stack>
-    </PageLayout>
+      }
+    />
   );
 };
 

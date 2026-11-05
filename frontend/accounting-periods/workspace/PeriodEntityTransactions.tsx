@@ -3,7 +3,6 @@
 import { Button, Stack, Typography } from "@mui/material";
 import { BalanceEventType } from "@/balance-events/types";
 import ContentSurface from "@/framework/view/ContentSurface";
-import type { FundGoalBalanceEvent } from "@/fund-goals/types";
 import type { JSX } from "react";
 import Link from "next/link";
 import RowList from "@/framework/view/RowList";
@@ -14,22 +13,39 @@ import routes from "@/transactions/routes";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
- * Props for the PeriodFundTransactions component.
+ * Balance event fields needed to list a transaction's effect on an account or fund.
  */
-interface PeriodFundTransactionsProps {
-  readonly events: readonly FundGoalBalanceEvent[];
+interface PeriodEntityEvent {
+  readonly transactionId: string;
+  readonly transactionDate: string;
+  readonly eventDate?: string | null;
+  readonly description: string;
+  readonly type: BalanceEventType;
+  readonly amount: number;
+  readonly isPosted: boolean;
+  readonly source: { readonly displayName: string };
+  readonly destinations: readonly { readonly displayName: string }[];
+}
+
+/**
+ * Props for the PeriodEntityTransactions component.
+ */
+interface PeriodEntityTransactionsProps {
+  readonly entityName: "account" | "fund";
+  readonly events: readonly PeriodEntityEvent[];
   readonly addTransactionHref: string;
   readonly returnUrl: string;
 }
 
 /**
- * Lists how transactions affected a fund in an accounting period.
+ * Lists how transactions affected an account or fund in an accounting period.
  */
-const PeriodFundTransactions = function ({
+const PeriodEntityTransactions = function ({
+  entityName,
   events,
   addTransactionHref,
   returnUrl,
-}: PeriodFundTransactionsProps): JSX.Element {
+}: PeriodEntityTransactionsProps): JSX.Element {
   const canWrite = useWriteAccess();
   return (
     <ContentSurface>
@@ -52,7 +68,7 @@ const PeriodFundTransactions = function ({
         </Stack>
         {events.length === 0 ? (
           <Typography variant="body2" color="text.secondary">
-            No transactions affected this fund in this period.
+            No transactions affected this {entityName} in this period.
           </Typography>
         ) : (
           <RowList
@@ -84,4 +100,4 @@ const PeriodFundTransactions = function ({
   );
 };
 
-export default PeriodFundTransactions;
+export default PeriodEntityTransactions;

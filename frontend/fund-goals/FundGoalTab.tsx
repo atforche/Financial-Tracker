@@ -1,17 +1,18 @@
 "use client";
 
+import { Button, Stack } from "@mui/material";
 import {
   type FundGoal,
   FundGoalEndingBalanceStatus,
   type FundGoalProgress,
 } from "@/fund-goals/types";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
-import FundGoalDetailsButton from "@/fund-goals/FundGoalDetailsButton";
 import GoalHistory from "@/framework/goals/GoalHistory";
 import type { HistoryPoint } from "@/framework/goals/GoalHistoryListFrame";
 import type { JSX } from "react";
-import { Stack } from "@mui/material";
+import Link from "next/link";
 import UpdateFundGoalForm from "@/fund-goals/workspace/UpdateFundGoalForm";
+import accountingPeriodRoutes from "@/accounting-periods/routes";
 
 /**
  * Shows how one fund's goals, balance, and contributions changed across a period range, with editing for open periods.
@@ -76,10 +77,16 @@ const FundGoalTab = function ({
             spacing={1}
             sx={{ justifyContent: "flex-end" }}
           >
-            <FundGoalDetailsButton
-              goal={entry.goal}
-              progress={entry.progress}
-            />
+            <Button
+              component={Link}
+              href={accountingPeriodRoutes.fundDetail(
+                point.periodId,
+                entry.goal.fund.id,
+                { returnUrl: redirectUrl },
+              )}
+            >
+              Details
+            </Button>
             {period === undefined ? null : (
               <UpdateFundGoalForm
                 fundGoal={entry.goal}

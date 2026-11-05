@@ -2,20 +2,21 @@
 
 import {
   Box,
-  ButtonBase,
+  Button,
+  Menu,
   MenuItem,
   Paper,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
+import { type JSX, useState } from "react";
 import {
   compareCurrencyAmounts,
   formatCurrency,
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
+import ExpandMore from "@mui/icons-material/ExpandMore";
 import GoalRangeBar from "@/accounting-periods/workspace/GoalRangeBar";
-import type { JSX } from "react";
 import Link from "next/link";
 import PeriodEntityStatus from "@/accounting-periods/workspace/periodEntityStatus";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
@@ -247,6 +248,59 @@ const compareEntities = function (
 };
 
 /**
+ * Searches and sorts the accounts or funds an AccountingPeriodEntityList shows, through the URL that it reads.
+ */
+const AccountingPeriodEntityControls = function (): JSX.Element {
+  const searchParams = useSearchParams();
+  const updateParams = useSearchParamUpdater([]);
+  const [sortAnchor, setSortAnchor] = useState<HTMLElement | null>(null);
+  const sort =
+    parseEnumValue(EntitySort, searchParams.get("entitySort") ?? "") ??
+    EntitySort.Status;
+  return (
+    <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+      <Box
+        sx={{ flex: { xs: 1, sm: "none" }, width: { sm: 220 }, minWidth: 0 }}
+      >
+        <SearchBar searchParamName="search" />
+      </Box>
+      <Button
+        color="inherit"
+        endIcon={<ExpandMore />}
+        onClick={(event) => {
+          setSortAnchor(event.currentTarget);
+        }}
+        sx={{ flexShrink: 0, textTransform: "none" }}
+      >
+        Sort: {sortLabels[sort]}
+      </Button>
+      <Menu
+        anchorEl={sortAnchor}
+        open={sortAnchor !== null}
+        onClose={() => {
+          setSortAnchor(null);
+        }}
+      >
+        {Object.values(EntitySort).map((value) => (
+          <MenuItem
+            key={value}
+            selected={value === sort}
+            onClick={() => {
+              updateParams((params) => {
+                params.set("entitySort", value);
+              });
+              setSortAnchor(null);
+            }}
+          >
+            {sortLabels[value]}
+          </MenuItem>
+        ))}
+      </Menu>
+    </Stack>
+  );
+};
+
+/**
  * Compares accounts or funds within one accounting period as tiles, grouped by goal status with problems first
  * unless another sort is chosen. Each tile links to the account or fund's goal for that period.
  */
@@ -256,33 +310,12 @@ const AccountingPeriodEntityList = function ({
   readonly entities: readonly PeriodEntity[];
 }): JSX.Element {
   const searchParams = useSearchParams();
-  const updateParams = useSearchParamUpdater([]);
   const sort =
     parseEnumValue(EntitySort, searchParams.get("entitySort") ?? "") ??
     EntitySort.Status;
-  const selectedStatus = parseEnumValue(
-    PeriodEntityStatus,
-    searchParams.get("status") ?? "",
-  );
   const search = (searchParams.get("search") ?? "").trim().toLowerCase();
-  const presentStatuses = statuses.filter(({ status }) =>
-    entities.some((entity) => entity.status === status),
-  );
-  const setParam = function (name: string, value: string | null): void {
-    updateParams((params) => {
-      if (value === null) {
-        params.delete(name);
-      } else {
-        params.set(name, value);
-      }
-    });
-  };
   const visible = entities
-    .filter(
-      (entity) =>
-        (selectedStatus === null || entity.status === selectedStatus) &&
-        entity.name.toLowerCase().includes(search),
-    )
+    .filter((entity) => entity.name.toLowerCase().includes(search))
     .sort(
       (first, second) =>
         compareEntities(first, second, sort) ||
@@ -304,7 +337,7 @@ const AccountingPeriodEntityList = function ({
       </ResponsiveGrid>
     );
   };
-  const sections = presentStatuses
+  const sections = statuses
     .map((details) => ({
       ...details,
       tiles: visible.filter((entity) => entity.status === details.status),
@@ -313,70 +346,9 @@ const AccountingPeriodEntityList = function ({
 
   return (
     <Stack spacing={2.5}>
-      <Stack
-        direction="row"
-        useFlexGap
-        spacing={1}
-        sx={{ alignItems: "center", flexWrap: "wrap" }}
-      >
-        {presentStatuses.map(({ status, label, color }) => (
-          <ButtonBase
-            key={status}
-            aria-pressed={selectedStatus === status}
-            onClick={() => {
-              setParam("status", selectedStatus === status ? null : status);
-            }}
-            sx={{
-              gap: 1,
-              minHeight: 40,
-              px: 1.5,
-              border: "1px solid",
-              borderColor: "divider",
-              borderRadius: 2,
-              bgcolor:
-                selectedStatus === status ? "action.selected" : "transparent",
-              "&:hover": { bgcolor: "action.hover" },
-            }}
-          >
-            <Box
-              sx={{
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                bgcolor: color,
-              }}
-            />
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              {entities
-                .filter((entity) => entity.status === status)
-                .length.toString()}{" "}
-              {label}
-            </Typography>
-          </ButtonBase>
-        ))}
-        <Box sx={{ flex: 1, minWidth: 220 }}>
-          <SearchBar searchParamName="search" />
-        </Box>
-        <TextField
-          select
-          size="small"
-          label="Sort by"
-          value={sort}
-          onChange={(event) => {
-            setParam("entitySort", event.target.value);
-          }}
-          sx={{ minWidth: 190 }}
-        >
-          {Object.values(EntitySort).map((value) => (
-            <MenuItem key={value} value={value}>
-              {sortLabels[value]}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Stack>
       {visible.length === 0 ? (
         <Typography color="text.secondary">
-          Nothing matches the search or status filter.
+          Nothing matches the search.
         </Typography>
       ) : null}
       {sort === EntitySort.Status
@@ -400,4 +372,5 @@ const AccountingPeriodEntityList = function ({
   );
 };
 
+export { AccountingPeriodEntityControls };
 export default AccountingPeriodEntityList;

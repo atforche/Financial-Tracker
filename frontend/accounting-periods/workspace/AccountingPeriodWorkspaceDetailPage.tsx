@@ -1,9 +1,11 @@
+import AccountingPeriodEntityList, {
+  AccountingPeriodEntityControls,
+} from "@/accounting-periods/workspace/AccountingPeriodEntityList";
 import { Box, Stack } from "@mui/material";
 import {
   compareCurrencyAmounts,
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
-import AccountingPeriodEntityList from "@/accounting-periods/workspace/AccountingPeriodEntityList";
 import AccountingPeriodHeader from "@/accounting-periods/workspace/AccountingPeriodHeader";
 import AccountingPeriodPlanCard from "@/accounting-periods/workspace/AccountingPeriodPlanCard";
 import AccountingPeriodProgressCard from "@/accounting-periods/workspace/AccountingPeriodProgressCard";
@@ -15,11 +17,9 @@ import PageLayout from "@/framework/view/PageLayout";
 import PeriodEntityStatus from "@/accounting-periods/workspace/periodEntityStatus";
 import SignedChange from "@/framework/view/SignedChange";
 import UrlTabs from "@/framework/view/UrlTabs";
-import accountRoutes from "@/accounts/routes";
 import createApiClient from "@/framework/data/createApiClient";
 import { expectedIncomeSourcesId } from "@/accounting-periods/workspace/helpers";
 import fillHeightSx from "@/framework/view/fillHeightSx";
-import fundRoutes from "@/funds/routes";
 import getPeriodAttention from "@/accounting-periods/workspace/getPeriodAttention";
 import { isDebtAccountType } from "@/accounts/helpers";
 import parseEnumValue from "@/framework/data/parseEnumValue";
@@ -33,7 +33,6 @@ import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 interface AccountingPeriodSearchParams {
   returnUrl?: string;
   tab?: string;
-  status?: string;
 }
 
 /**
@@ -78,10 +77,6 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
   );
   const period = detail.accountingPeriod;
   const currentUrl = routes.workspaceDetail(period.id, resolvedSearchParams);
-  const goalParams = {
-    goalStartPeriodId: period.id,
-    goalEndPeriodId: period.id,
-  };
 
   return (
     <PageLayout>
@@ -172,17 +167,14 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
           {
             value: "accounts",
             label: "Accounts",
+            controls: <AccountingPeriodEntityControls />,
             content: (
               <AccountingPeriodEntityList
                 entities={detail.accounts.map((item) => ({
                   id: item.account.id,
                   name: item.account.name,
-                  href: accountRoutes.workspaceDetail(item.account.id, {
-                    ...goalParams,
-                    ...(item.goalProgress === null ||
-                    item.goalProgress === undefined
-                      ? { tab: "history" }
-                      : { tab: "goal" }),
+                  href: routes.accountDetail(period.id, item.account.id, {
+                    periodTab: "accounts",
                   }),
                   openingBalance: item.openingBalance,
                   closingBalance: item.closingBalance,
@@ -202,14 +194,14 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
           {
             value: "funds",
             label: "Funds",
+            controls: <AccountingPeriodEntityControls />,
             content: (
               <AccountingPeriodEntityList
                 entities={detail.funds.map((item) => ({
                   id: item.fund.id,
                   name: item.fund.name,
-                  href: fundRoutes.workspaceDetail(item.fund.id, {
-                    ...goalParams,
-                    tab: "goal",
+                  href: routes.fundDetail(period.id, item.fund.id, {
+                    periodTab: "funds",
                   }),
                   openingBalance: item.openingBalance,
                   closingBalance: item.closingBalance,
