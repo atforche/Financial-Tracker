@@ -233,8 +233,9 @@ release, deployment, and backups:
 - [`Security Scan`](.github/workflows/security-scan.yml) scans dependencies and
   container images nightly, so newly published vulnerabilities surface without
   blocking unrelated pull requests.
-- [`Release`](.github/workflows/release.yml) builds, scans, and publishes
-  immutable container images when `main` changes.
+- [`Release`](.github/workflows/release.yml) builds and publishes immutable
+  container images when `main` changes. Its image scan is report-only: findings
+  appear in the job summary without blocking the release.
 - [`Backup Production`](.github/workflows/backup-production.yml) creates and
   verifies scheduled encrypted backups.
 

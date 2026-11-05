@@ -24,18 +24,23 @@ RUN dotnet publish Rest/Rest.csproj --configuration Release --no-restore \
     && dotnet publish Migrator/Migrator.csproj --configuration Release --no-restore \
         -p:RunAnalyzers=false
 
-FROM ${DOTNET_RUNTIME_IMAGE} AS migrator
+FROM ${DOTNET_RUNTIME_IMAGE} AS runtime
+# Passed by the build so this layer is rebuilt daily with current security updates.
+ARG OS_PACKAGES_DATE
+RUN echo "OS packages as of ${OS_PACKAGES_DATE}" \
+    && apt-get update \
+    && apt-get upgrade --yes \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM runtime AS migrator
 WORKDIR /migrator
 COPY --from=build --chown=$APP_UID /backend/.artifacts/publish/Migrator .
 USER $APP_UID
 ENTRYPOINT ["dotnet", "./Migrator.dll"]
 
-FROM ${DOTNET_RUNTIME_IMAGE} AS backend
+FROM runtime AS backend
 WORKDIR /backend
-# Passed by the build so this layer is rebuilt daily with current security updates.
-ARG OS_PACKAGES_DATE
-RUN echo "OS packages as of ${OS_PACKAGES_DATE}" \
-    && apt-get update \
+RUN apt-get update \
     && apt-get install --yes --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=build --chown=$APP_UID /backend/.artifacts/publish/Rest ./Rest
