@@ -176,6 +176,25 @@ def test_release_manifest_rejects_mutable_images(tmp_path: Path):
         ReleaseManifest.read(manifest_path)
 
 
+def test_release_manifest_rejects_images_outside_registry(tmp_path: Path):
+    manifest_path = tmp_path / "release-manifest.json"
+    digest = "a" * 64
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "commit": "abc123",
+                "backendImage": f"financial-tracker-backend@sha256:{digest}",
+                "frontendImage": f"ghcr.io/example/frontend@sha256:{digest}",
+                "migratorImage": f"ghcr.io/example/migrator@sha256:{digest}",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="in ghcr.io"):
+        ReleaseManifest.read(manifest_path)
+
+
 def test_apply_migrations_passes_bootstrap_email(monkeypatch, tmp_path: Path):
     instance_path = tmp_path / "instance"
     database_path = instance_path / "data" / "database.db"
