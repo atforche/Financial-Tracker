@@ -2301,8 +2301,8 @@ export interface paths {
                 query?: {
                     "Range.Start"?: string;
                     "Range.End"?: string;
-                    /** @description Restricts events to transactions assigned to this Accounting Period. */
-                    AccountingPeriodId?: string;
+                    /** @description Restricts events to transactions assigned to these Accounting Periods. */
+                    AccountingPeriodIds?: string[];
                     /** @description Whether to include current pending events in addition to matching posted events. */
                     IncludePending?: boolean;
                     /** @description Sort order to apply to the results. */
@@ -2363,8 +2363,8 @@ export interface paths {
                 query?: {
                     "Range.Start"?: string;
                     "Range.End"?: string;
-                    /** @description Restricts events to transactions assigned to this Accounting Period. */
-                    AccountingPeriodId?: string;
+                    /** @description Restricts events to transactions assigned to these Accounting Periods. */
+                    AccountingPeriodIds?: string[];
                     /** @description Whether to include current pending events in addition to matching posted events. */
                     IncludePending?: boolean;
                     /** @description Sort order to apply to the results. */

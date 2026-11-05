@@ -1,93 +1,58 @@
 "use client";
 
-import {
-  type TrendRangeMode,
-  getDefaultTrendDateRange,
-  getTrendRangeModeOptions,
-  maximumTrendRangeYears,
-  setTrendRangeMode,
-} from "@/framework/routes/trendRange";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
-import type { BalanceHistoryRange } from "@/balance-events/resolveBalanceHistory";
 import DateRangeFilter from "@/framework/forms/DateRangeFilter";
 import type { JSX } from "react";
-import { Stack } from "@mui/material";
-import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
+import { maximumTrendRangeYears } from "@/framework/routes/trendRange";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
- * Props for the BalanceHistoryFilter component.
+ * Props for the BalanceHistoryFilter component. Accounting periods are provided for a period range only.
  */
 interface BalanceHistoryFilterProps {
-  readonly accountingPeriods: readonly AccountingPeriod[];
-  readonly range: BalanceHistoryRange;
+  readonly start: string;
+  readonly end: string;
+  readonly accountingPeriods?: readonly AccountingPeriod[];
 }
 
 /**
- * Chooses the dates or accounting periods shown by an account or fund's history.
+ * Chooses the dates or accounting periods shown by one view of an account or fund page.
  */
 const BalanceHistoryFilter = function ({
+  start,
+  end,
   accountingPeriods,
-  range,
 }: BalanceHistoryFilterProps): JSX.Element {
-  const updateParams = useSearchParamUpdater(["balanceEventPage"]);
-  const defaultDates = getDefaultTrendDateRange();
-  const newest = accountingPeriods[0]?.id ?? null;
-  const oldest = accountingPeriods.at(-1)?.id ?? null;
+  const updateParams = useSearchParamUpdater([]);
   const setRange = function (
-    start: [string, string],
-    end: [string, string],
+    startName: string,
+    endName: string,
+    range: { readonly start: string; readonly end: string },
   ): void {
     updateParams((params) => {
-      params.set(...start);
-      params.set(...end);
+      params.set(startName, range.start);
+      params.set(endName, range.end);
     });
   };
 
-  return (
-    <Stack
-      direction="row"
-      useFlexGap
-      spacing={2}
-      sx={{ alignItems: "center", flexWrap: "wrap" }}
-    >
-      <ToggleButtonSelector<TrendRangeMode>
-        value={range.mode}
-        onChange={(mode) => {
-          updateParams((params) => {
-            setTrendRangeMode(params, mode, {
-              defaultStartAccountingPeriodId: oldest,
-              defaultEndAccountingPeriodId: newest,
-              defaultStartDate: defaultDates.start,
-              defaultEndDate: defaultDates.end,
-            });
-          });
-        }}
-        options={getTrendRangeModeOptions(newest !== null)}
-      />
-      {range.mode === "date" ? (
-        <DateRangeFilter
-          value={{ start: range.startDate, end: range.endDate }}
-          onChange={({ start, end }) => {
-            setRange(["startDate", start], ["endDate", end]);
-          }}
-          maxYears={maximumTrendRangeYears}
-        />
-      ) : (
-        <AccountingPeriodRangeFilter
-          accountingPeriods={accountingPeriods}
-          startValue={range.startAccountingPeriodId}
-          endValue={range.endAccountingPeriodId}
-          onChange={({ start, end }) => {
-            setRange(
-              ["startAccountingPeriodId", start],
-              ["endAccountingPeriodId", end],
-            );
-          }}
-        />
-      )}
-    </Stack>
+  return accountingPeriods === undefined ? (
+    <DateRangeFilter
+      value={{ start, end }}
+      onChange={(range) => {
+        setRange("startDate", "endDate", range);
+      }}
+      maxYears={maximumTrendRangeYears}
+    />
+  ) : (
+    <AccountingPeriodRangeFilter
+      accountingPeriods={accountingPeriods}
+      startValue={start}
+      endValue={end}
+      onChange={(range) => {
+        setRange("startAccountingPeriodId", "endAccountingPeriodId", range);
+      }}
+    />
   );
 };
 

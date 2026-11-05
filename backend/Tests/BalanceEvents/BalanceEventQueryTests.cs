@@ -33,9 +33,9 @@ public sealed class BalanceEventQueryTests
         CollectionModel<AccountBalanceEventModel> accountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
             $"/accounts/{cash.Id}/balance-events?range.start=2026-07-01&range.end=2026-07-31&includePending=true");
         CollectionModel<AccountBalanceEventModel> defaultPeriodAccountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?accountingPeriodId={july.Id}");
+            $"/accounts/{cash.Id}/balance-events?accountingPeriodIds={july.Id}");
         CollectionModel<AccountBalanceEventModel> periodAccountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?accountingPeriodId={july.Id}&includePending=true");
+            $"/accounts/{cash.Id}/balance-events?accountingPeriodIds={july.Id}&includePending=true");
         CollectionModel<FundBalanceEventModel> defaultFundEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
             "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries");
         CollectionModel<FundBalanceEventModel> fundEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
@@ -187,7 +187,7 @@ public sealed class BalanceEventQueryTests
         _ = await test.Transactions.Spending().In(august).On(new DateOnly(2026, 7, 15)).For(20m).From(cash).To("August", augustFund).CreateAsync();
 
         CollectionModel<AccountBalanceEventModel> events = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?accountingPeriodId={july.Id}&includePending=true");
+            $"/accounts/{cash.Id}/balance-events?accountingPeriodIds={july.Id}&includePending=true");
 
         Assert.Equal(1, events.TotalCount);
         Assert.Equal(julyTransaction.Id, Assert.Single(events.Items).TransactionId);
@@ -329,5 +329,35 @@ public sealed class BalanceEventQueryTests
         Assert.Equal(60m, posted.NewTotals?.AmountAssigned);
         Assert.True(posted.IsPosted);
         Assert.Contains(postedDetail.Destinations.Single().FundGoals, goal => goal.Fund.Id == unassigned.Id);
+    }
+
+    /// <summary>
+    /// Account balance events and totals can cover several Accounting Periods, excluding Transactions in any other Period.
+    /// </summary>
+    [Fact]
+    public async Task AccountEventsCoverSeveralAccountingPeriods()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        AccountingPeriodHandle september = await test.Periods.Create(2026, 9).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        TransactionHandle first = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(10m).From(cash).To("Market", groceries).CreateAsync();
+        TransactionHandle second = await test.Transactions.Spending().In(august).On(new DateOnly(2026, 8, 15)).For(20m).From(cash).To("Market", groceries).CreateAsync();
+        TransactionHandle excluded = await test.Transactions.Spending().In(september).On(new DateOnly(2026, 9, 15)).For(40m).From(cash).To("Market", groceries).CreateAsync();
+        await test.Transactions.PostAsync(first, cash, new DateOnly(2026, 7, 15));
+        await test.Transactions.PostAsync(second, cash, new DateOnly(2026, 8, 15));
+        await test.Transactions.PostAsync(excluded, cash, new DateOnly(2026, 9, 15));
+        string periods = $"accountingPeriodIds={july.Id}&accountingPeriodIds={august.Id}";
+
+        CollectionModel<AccountBalanceEventModel> events = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
+            $"/accounts/{cash.Id}/balance-events?{periods}");
+        BalanceEventTotalsModel totals = await test.Api.GetAsync<BalanceEventTotalsModel>(
+            $"/accounts/{cash.Id}/balance-events/totals?{periods}");
+
+        Assert.Equal(2, events.TotalCount);
+        Assert.DoesNotContain(events.Items, item => item.TransactionId == excluded.Id);
+        Assert.Equal(30m, totals.TotalOutflow);
     }
 }

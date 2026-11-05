@@ -1,25 +1,24 @@
-import type { GoalRangeSearchParams } from "@/framework/goals/resolveGoalRange";
-import type { TrendRangeSearchParams } from "@/framework/routes/trendRange";
-
 /**
  * Search parameters choosing what an account or fund page shows.
  */
-type DetailViewParams = TrendRangeSearchParams &
-  GoalRangeSearchParams & { tab?: string };
+interface DetailViewParams {
+  tab?: string;
+  startDate?: string;
+  endDate?: string;
+  startAccountingPeriodId?: string;
+  endAccountingPeriodId?: string;
+}
 
 const detailViewParamNames = [
   "tab",
-  "mode",
   "startDate",
   "endDate",
   "startAccountingPeriodId",
   "endAccountingPeriodId",
-  "goalStartPeriodId",
-  "goalEndPeriodId",
 ] as const;
 
 /**
- * Keeps the selected tab and ranges, so saving a goal returns to the same view.
+ * Keeps the selected view and ranges, so saving a change returns to the same view.
  */
 const getDetailViewParams = function (
   params: DetailViewParams,
@@ -31,4 +30,5 @@ const getDetailViewParams = function (
   );
 };
 
+export type { DetailViewParams };
 export default getDetailViewParams;

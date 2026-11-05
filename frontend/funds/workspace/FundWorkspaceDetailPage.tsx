@@ -1,25 +1,27 @@
-import {
-  getPageOffset,
-  getRowsPerPage,
-  normalizePageValue,
-} from "@/framework/listframe/page";
+import type {
+  FundBalanceEvent,
+  FundsInAccountingPeriodRange,
+} from "@/funds/types";
+import type { FundGoal, FundGoalProgress } from "@/fund-goals/types";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
+import type { BalanceEventTotals } from "@/balance-events/types";
 import BalanceHistoryFilter from "@/balance-events/BalanceHistoryFilter";
-import BalancePeriodList from "@/balance-events/BalancePeriodList";
-import { FundBalanceEventSort } from "@/funds/types";
-import FundGoalTab from "@/fund-goals/FundGoalTab";
-import FundWorkspacePageHeader from "@/funds/workspace/FundWorkspacePageHeader";
+import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
+import EntityHistoryLayout from "@/balance-events/EntityHistoryLayout";
+import EntityTransactionList from "@/balance-events/EntityTransactionList";
+import { FundBalanceEventSortModel } from "@/framework/data/api";
+import FundDetailActions from "@/funds/workspace/FundDetailActions";
+import FundGoalHistory from "@/fund-goals/FundGoalHistory";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
-import GoalPeriodRangeFilter from "@/framework/goals/GoalPeriodRangeFilter";
 import type { JSX } from "react";
-import PageLayout from "@/framework/view/PageLayout";
-import { Stack } from "@mui/material";
-import ViewFundForm from "@/funds/workspace/ViewFundForm";
+import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
+import { getCurrencyDifference } from "@/framework/currencyHelpers";
+import getDateSummary from "@/balance-events/getDateSummary";
 import getDetailViewParams from "@/balance-events/getDetailViewParams";
+import isFundGoalMet from "@/fund-goals/isFundGoalMet";
 import { redirect } from "next/navigation";
-import resolveBalanceHistory from "@/balance-events/resolveBalanceHistory";
-import resolveGoalRange from "@/framework/goals/resolveGoalRange";
+import resolveEntityHistory from "@/balance-events/resolveEntityHistory";
 import routes from "@/funds/routes";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -33,7 +35,109 @@ interface FundWorkspaceDetailPageProps {
 }
 
 /**
- * Page for viewing details of a single fund within the workspace.
+ * The API client used to fetch a fund's activity.
+ */
+type ApiClient = Awaited<ReturnType<typeof createApiClient>>;
+
+/**
+ * A fund's activity across a date range.
+ */
+interface DateActivity {
+  readonly events: FundBalanceEvent[];
+  readonly totals: BalanceEventTotals;
+}
+
+/**
+ * A fund's totals, balances, and goals across an accounting period range.
+ */
+interface PeriodActivity {
+  readonly totals: Pick<BalanceEventTotals, "totalInflow" | "totalOutflow">;
+  readonly balances: FundsInAccountingPeriodRange["accountingPeriods"];
+  readonly entries: readonly {
+    readonly goal: FundGoal;
+    readonly progress: FundGoalProgress;
+  }[];
+}
+
+/**
+ * Fetches a fund's activity across a date range.
+ */
+const getDateActivity = async function (
+  apiClient: ApiClient,
+  fundName: string,
+  dates: { readonly start: string; readonly end: string },
+): Promise<DateActivity> {
+  const query = {
+    "Range.Start": dates.start,
+    "Range.End": dates.end,
+    "Filter.Names": [fundName],
+  };
+  const [eventsResponse, totalsResponse] = await Promise.all([
+    apiClient.GET("/funds/balance-events/date-range", {
+      params: {
+        query: {
+          ...query,
+          IncludePending: true,
+          Sort: FundBalanceEventSortModel.DateDescending,
+        },
+      },
+    }),
+    apiClient.GET("/funds/balance-events/date-range/totals", {
+      params: { query },
+    }),
+  ]);
+  return {
+    events: unwrapApiResponse(
+      eventsResponse,
+      "Failed to fetch fund balance events",
+    ).items,
+    totals: unwrapApiResponse(
+      totalsResponse,
+      "Failed to fetch fund activity totals",
+    ),
+  };
+};
+
+/**
+ * Fetches a fund's totals, balances, and goals across an accounting period range.
+ */
+const getPeriodActivity = async function (
+  apiClient: ApiClient,
+  fund: { readonly id: string; readonly name: string },
+  periods: { readonly start: string; readonly end: string },
+): Promise<PeriodActivity> {
+  const range = { "Range.Start": periods.start, "Range.End": periods.end };
+  const eventQuery = { ...range, "Filter.FundIds": [fund.id] };
+  const [totalsResponse, balancesResponse, goalsResponse] = await Promise.all([
+    apiClient.GET("/fund-goals/balance-events/accounting-period-range/totals", {
+      params: { query: eventQuery },
+    }),
+    apiClient.GET("/funds/accounting-period-range", {
+      params: { query: { ...range, "Filter.Names": [fund.name] } },
+    }),
+    apiClient.GET("/fund-goals/fund/{fundId}/history", {
+      params: { path: { fundId: fund.id }, query: range },
+    }),
+  ]);
+  const entries = unwrapApiResponse(
+    goalsResponse,
+    "Failed to fetch fund goal history",
+  );
+  return {
+    totals: unwrapApiResponse(
+      totalsResponse,
+      "Failed to fetch fund activity totals",
+    ),
+    balances: unwrapApiResponse(
+      balancesResponse,
+      "Failed to fetch fund periods",
+    ).accountingPeriods,
+    entries,
+  };
+};
+
+/**
+ * Displays one fund across a range of dates or accounting periods. Only the period view shows goals.
  */
 const FundWorkspaceDetailPage = async function ({
   params,
@@ -41,188 +145,144 @@ const FundWorkspaceDetailPage = async function ({
 }: FundWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { fundId } = await params;
   const resolvedSearchParams = await searchParams;
-  const { search, balanceEventPage, balanceEventSort, pageSize } =
-    resolvedSearchParams;
+  const { search } = resolvedSearchParams;
   const apiClient = await createApiClient();
-  const currentBalanceEventPage = normalizePageValue(balanceEventPage);
-  const rowsPerPage = getRowsPerPage(pageSize);
-  const balanceEventOffset = getPageOffset(
-    currentBalanceEventPage,
-    rowsPerPage,
-  );
-  const periods = unwrapApiResponse(
-    await apiClient.GET("/accounting-periods", {
+  const [periodsResponse, fundsResponse] = await Promise.all([
+    apiClient.GET("/accounting-periods", {
       params: {
         query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
       },
     }),
+    apiClient.GET("/funds/with-balances"),
+  ]);
+  const periods = unwrapApiResponse(
+    periodsResponse,
     "Failed to fetch accounting periods",
   ).items;
-  const range = resolveBalanceHistory(resolvedSearchParams, periods);
-  const recentActivityStartDate = range.rangeStart;
-  const recentActivityEndDate = range.rangeEnd;
-  const fundsResponse = await apiClient.GET("/funds/with-balances");
-  const funds = unwrapApiResponse(fundsResponse, "Failed to fetch funds");
-  const fund = funds.items.find((item) => item.id === fundId);
-
-  const workspaceSearchParams: FundWorkspaceSearchParams = {
-    ...(typeof search !== "undefined" ? { search } : {}),
-  };
-  const detailSearchParams: FundWorkspaceSearchParams = {
-    ...workspaceSearchParams,
-    ...(typeof balanceEventPage !== "undefined" ? { balanceEventPage } : {}),
-    ...(typeof balanceEventSort !== "undefined" ? { balanceEventSort } : {}),
-    ...getDetailViewParams(resolvedSearchParams),
-  };
-  const workspaceUrl = routes.workspace(workspaceSearchParams);
-
-  if (typeof fund === "undefined") {
+  const fund = unwrapApiResponse(
+    fundsResponse,
+    "Failed to fetch funds",
+  ).items.find((item) => item.id === fundId);
+  const workspaceParams = search === undefined ? {} : { search };
+  const workspaceUrl = routes.workspace(workspaceParams);
+  if (fund === undefined) {
     redirect(workspaceUrl);
   }
 
-  const [balanceEventsResponse, activityTotalsResponse] = await Promise.all([
-    apiClient.GET("/funds/balance-events/date-range", {
-      params: {
-        query: {
-          "Range.Start": recentActivityStartDate,
-          "Range.End": recentActivityEndDate,
-          "Filter.Names": [fund.name],
-          IncludePending: true,
-          Sort: balanceEventSort ?? FundBalanceEventSort.DateDescending,
-          Limit: rowsPerPage,
-          Offset: balanceEventOffset,
-        },
-      },
-    }),
-    apiClient.GET("/funds/balance-events/date-range/totals", {
-      params: {
-        query: {
-          "Range.Start": recentActivityStartDate,
-          "Range.End": recentActivityEndDate,
-          "Filter.Names": [fund.name],
-        },
-      },
-    }),
-  ]);
-  const balanceEvents = unwrapApiResponse(
-    balanceEventsResponse,
-    "Failed to fetch fund balance events",
-  );
-  const activityTotals = unwrapApiResponse(
-    activityTotalsResponse,
-    "Failed to fetch fund activity totals",
-  );
-
-  const currentUrl = routes.workspaceDetail(fund.id, detailSearchParams);
-  const addTransactionHref = transactionRoutes.workspaceCreate({
-    fundIds: [fund.id],
-    returnUrl: currentUrl,
+  const currentUrl = routes.workspaceDetail(fundId, {
+    ...workspaceParams,
+    ...getDetailViewParams(resolvedSearchParams),
   });
-
-  const goalRange = resolveGoalRange(resolvedSearchParams, periods);
-  const goalEntries =
-    resolvedSearchParams.tab !== "goal" || goalRange === null
-      ? []
-      : unwrapApiResponse(
-          await apiClient.GET("/fund-goals/fund/{fundId}/history", {
-            params: {
-              path: { fundId },
-              query: {
-                "Range.Start": goalRange.start,
-                "Range.End": goalRange.end,
-              },
-            },
-          }),
-          "Failed to fetch fund goal history",
-        );
-  const openPeriods = await Promise.all(
-    goalEntries.flatMap(({ goal }) =>
-      goal.accountingPeriod?.isOpen === true
-        ? [
-            apiClient
-              .GET("/accounting-periods/{accountingPeriodId}", {
-                params: {
-                  path: { accountingPeriodId: goal.accountingPeriod.id },
-                },
-              })
-              .then((response) =>
-                unwrapApiResponse(
-                  response,
-                  "Failed to fetch accounting period",
-                ),
-              ),
-          ]
-        : [],
-    ),
-  );
-  const periodRange =
-    range.mode === "accounting-period" && resolvedSearchParams.tab === "history"
-      ? unwrapApiResponse(
-          await apiClient.GET("/funds/accounting-period-range", {
-            params: {
-              query: {
-                "Range.Start": range.startAccountingPeriodId,
-                "Range.End": range.endAccountingPeriodId,
-                "Filter.Names": [fund.name],
-              },
-            },
-          }),
-          "Failed to fetch fund periods",
-        ).accountingPeriods
+  const {
+    view,
+    dates,
+    periods: periodRange,
+  } = resolveEntityHistory(resolvedSearchParams, periods);
+  const dateActivity =
+    view === "date" ? await getDateActivity(apiClient, fund.name, dates) : null;
+  const periodActivity =
+    view === "period" && periodRange !== null
+      ? await getPeriodActivity(apiClient, fund, periodRange)
       : null;
+  const firstPeriod = periodActivity?.balances.at(0);
+  const lastPeriod = periodActivity?.balances.at(-1);
+  const summary =
+    dateActivity !== null
+      ? getDateSummary(dateActivity.totals, fund.currentBalance.postedBalance)
+      : periodActivity === null ||
+          firstPeriod === undefined ||
+          lastPeriod === undefined
+        ? null
+        : {
+            openingBalance: firstPeriod.openingBalance.totalBalance,
+            closingBalance: lastPeriod.closingBalance.totalBalance,
+            totals: periodActivity.totals,
+            goalsMet: {
+              met: periodActivity.entries.filter(({ progress }) =>
+                isFundGoalMet(progress),
+              ).length,
+              total: periodActivity.entries.length,
+            },
+          };
 
   return (
-    <PageLayout>
-      <FundWorkspacePageHeader backHref={workspaceUrl} title={fund.name} />
-      <ViewFundForm
-        fund={fund}
-        redirectUrl={currentUrl}
-        deleteRedirectUrl={workspaceUrl}
-        recentBalanceEvents={balanceEvents.items}
-        recentBalanceEventCount={balanceEvents.totalCount}
-        activityTotals={activityTotals}
-        recentActivityBalances={activityTotals.dates ?? []}
-        trendsHref={routes.trends({
-          mode: "date",
-          fundName: [fund.name],
-          startDate: recentActivityStartDate,
-          endDate: recentActivityEndDate,
-          returnUrl: currentUrl,
-        })}
-        addTransactionHref={addTransactionHref}
-        historyFilter={
-          <BalanceHistoryFilter accountingPeriods={periods} range={range} />
-        }
-        historyPeriods={
-          periodRange === null ? null : (
-            <BalancePeriodList
-              periods={periodRange.map((item) => ({
-                id: item.accountingPeriod.id,
-                name: item.accountingPeriod.name,
-                openingBalance: item.openingBalance.totalBalance,
-                closingBalance: item.closingBalance.totalBalance,
-              }))}
-            />
-          )
-        }
-        goalContent={
-          <Stack spacing={2}>
-            {goalRange === null ? null : (
-              <GoalPeriodRangeFilter
-                accountingPeriods={periods}
-                start={goalRange.start}
-                end={goalRange.end}
-              />
-            )}
-            <FundGoalTab
-              entries={goalEntries}
-              openPeriods={openPeriods}
-              redirectUrl={currentUrl}
-            />
-          </Stack>
-        }
-      />
-    </PageLayout>
+    <EntityHistoryLayout
+      entityName="fund"
+      name={fund.name}
+      subtitle={fund.description === "" ? null : fund.description}
+      back={{ href: workspaceUrl, label: "Back to Funds" }}
+      actions={
+        <FundDetailActions
+          fund={fund}
+          addTransactionHref={transactionRoutes.workspaceCreate({
+            fundIds: [fund.id],
+            returnUrl: currentUrl,
+          })}
+          trendsHref={routes.trends({
+            mode: "date",
+            fundName: [fund.name],
+            returnUrl: currentUrl,
+          })}
+          redirectUrl={currentUrl}
+          deleteRedirectUrl={workspaceUrl}
+        />
+      }
+      view={view}
+      dateFilter={<BalanceHistoryFilter start={dates.start} end={dates.end} />}
+      periodFilter={
+        periodRange === null ? null : (
+          <BalanceHistoryFilter
+            start={periodRange.start}
+            end={periodRange.end}
+            accountingPeriods={periods}
+          />
+        )
+      }
+      summary={summary}
+    >
+      {dateActivity === null ? null : (
+        <BalanceTrendChart
+          chartPoints={buildBalanceTrendChartPoints({
+            mode: "Date",
+            accountingPeriods: null,
+            dates: dateActivity.totals.dates ?? [],
+            ...(dateActivity.totals.granularity === null ||
+            dateActivity.totals.granularity === undefined
+              ? {}
+              : { granularity: dateActivity.totals.granularity }),
+          })}
+          title="Balance"
+          variant="surface"
+          emptyMessage="No posted balance movement is available in this range."
+          xAxisLabel="Date"
+          yAxisLabel="Fund Balance"
+        />
+      )}
+      {periodActivity === null ? null : (
+        <FundGoalHistory
+          entries={periodActivity.entries}
+          changes={
+            new Map(
+              periodActivity.balances.map((item) => [
+                item.accountingPeriod.id,
+                getCurrencyDifference(
+                  item.closingBalance.totalBalance,
+                  item.openingBalance.totalBalance,
+                ),
+              ]),
+            )
+          }
+          redirectUrl={currentUrl}
+        />
+      )}
+      {dateActivity === null ? null : (
+        <EntityTransactionList
+          entityName="fund"
+          events={dateActivity.events}
+          returnUrl={currentUrl}
+        />
+      )}
+    </EntityHistoryLayout>
   );
 };
 

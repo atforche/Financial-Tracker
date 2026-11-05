@@ -1,38 +1,21 @@
 "use client";
 
 import { Button, Stack, Typography } from "@mui/material";
-import { BalanceEventType } from "@/balance-events/types";
+import getTransactionRow, {
+  type EntityEvent,
+} from "@/balance-events/getTransactionRow";
 import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
 import Link from "next/link";
 import RowList from "@/framework/view/RowList";
-import { formatBalanceEventCounterparty } from "@/balance-events/helpers";
-import { formatShortDate } from "@/framework/dateHelpers";
-import { formatSignedCurrency } from "@/framework/currencyHelpers";
-import routes from "@/transactions/routes";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
-
-/**
- * Balance event fields needed to list a transaction's effect on an account or fund.
- */
-interface PeriodEntityEvent {
-  readonly transactionId: string;
-  readonly transactionDate: string;
-  readonly eventDate?: string | null;
-  readonly description: string;
-  readonly type: BalanceEventType;
-  readonly amount: number;
-  readonly isPosted: boolean;
-  readonly source: { readonly displayName: string };
-  readonly destinations: readonly { readonly displayName: string }[];
-}
 
 /**
  * Props for the PeriodEntityTransactions component.
  */
 interface PeriodEntityTransactionsProps {
   readonly entityName: "account" | "fund";
-  readonly events: readonly PeriodEntityEvent[];
+  readonly events: readonly EntityEvent[];
   readonly addTransactionHref: string;
   readonly returnUrl: string;
 }
@@ -72,27 +55,10 @@ const PeriodEntityTransactions = function ({
           </Typography>
         ) : (
           <RowList
-            rows={events.map((event) => {
-              const isCredit = event.type === BalanceEventType.Credit;
-              return {
-                key: `${event.transactionId}-${event.type}-${event.amount.toString()}-${event.eventDate ?? ""}`,
-                href: routes.workspaceDetail(event.transactionId, {
-                  returnUrl,
-                }),
-                leading: formatShortDate(
-                  new Date(
-                    `${event.eventDate ?? event.transactionDate}T00:00:00`,
-                  ),
-                ),
-                title: event.description,
-                detail: formatBalanceEventCounterparty(event),
-                value: formatSignedCurrency(
-                  isCredit ? event.amount : -event.amount,
-                ),
-                ...(isCredit ? { valueColor: "success.main" } : {}),
-                ...(event.isPosted ? {} : { tag: "Pending" }),
-              };
-            })}
+            rows={events.map((event) => ({
+              ...getTransactionRow(event, returnUrl),
+              ...(event.isPosted ? {} : { tag: "Pending" }),
+            }))}
           />
         )}
       </Stack>

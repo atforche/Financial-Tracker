@@ -34,6 +34,7 @@ const getDefaultTrendDateRange = function (
  */
 const getDefaultTrendAccountingPeriodRange = function (
   accountingPeriods: readonly { readonly id: string }[],
+  periodCount: number = defaultTrendAccountingPeriodCount,
 ): TrendRange | null {
   const [end] = accountingPeriods;
   if (typeof end === "undefined") {
@@ -41,10 +42,7 @@ const getDefaultTrendAccountingPeriodRange = function (
   }
   const start =
     accountingPeriods[
-      Math.min(
-        defaultTrendAccountingPeriodCount - 1,
-        accountingPeriods.length - 1,
-      )
+      Math.min(periodCount - 1, accountingPeriods.length - 1)
     ] ?? end;
   return { start: start.id, end: end.id };
 };
@@ -250,9 +248,7 @@ const setTrendRangeMode = function (
 };
 
 export {
-  type ResolvedTrendRange,
   type TrendRangeMode,
-  type TrendRangeSearchParams,
   getDefaultTrendAccountingPeriodRange,
   getDefaultTrendDateRange,
   getTrendRangeModeOptions,

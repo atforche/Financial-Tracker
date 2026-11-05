@@ -12,10 +12,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import GoalHistoryListFrame, {
+import GoalHistoryTable, {
   type HistoryPoint,
-} from "@/framework/goals/GoalHistoryListFrame";
-import type { JSX, ReactNode } from "react";
+} from "@/framework/goals/GoalHistoryTable";
 import { Paper, Stack, Typography } from "@mui/material";
 import {
   compareCurrencyAmounts,
@@ -23,6 +22,7 @@ import {
   formatCurrency,
 } from "@/framework/currencyHelpers";
 import ChartFrame from "@/framework/charts/ChartFrame";
+import type { JSX } from "react";
 import { useTheme } from "@mui/material/styles";
 
 /**
@@ -32,16 +32,12 @@ const GoalHistory = function ({
   subject,
   hasData,
   points,
-  paramPrefix,
   showContribution,
-  renderActions,
 }: {
   readonly subject: string;
   readonly hasData: boolean;
   readonly points: readonly HistoryPoint[];
-  readonly paramPrefix: string;
   readonly showContribution: boolean;
-  readonly renderActions?: (point: HistoryPoint) => ReactNode;
 }): JSX.Element {
   const theme = useTheme();
   const amounts = points.flatMap((point) =>
@@ -83,6 +79,7 @@ const GoalHistory = function ({
     <Stack spacing={2}>
       <ChartFrame
         title="Goal Progress"
+        variant="surface"
         emptyMessage={`No goal history for this ${subject} in the selected periods.`}
         hasData={hasData}
         xAxisLabel="Accounting period"
@@ -283,12 +280,7 @@ const GoalHistory = function ({
           </ComposedChart>
         </ResponsiveContainer>
       </ChartFrame>
-      <GoalHistoryListFrame
-        points={points}
-        paramPrefix={paramPrefix}
-        showContribution={showContribution}
-        {...(renderActions === undefined ? {} : { renderActions })}
-      />
+      <GoalHistoryTable points={points} showContribution={showContribution} />
     </Stack>
   );
 };

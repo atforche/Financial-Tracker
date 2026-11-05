@@ -4,6 +4,7 @@ import PeriodAccountGoalCard from "@/accounting-periods/workspace/PeriodAccountG
 import PeriodEntityLayout from "@/accounting-periods/workspace/PeriodEntityLayout";
 import PeriodEntityTransactions from "@/accounting-periods/workspace/PeriodEntityTransactions";
 import accountRoutes from "@/accounts/routes";
+import { periodTab as entityPeriodTab } from "@/balance-events/resolveEntityHistory";
 import getPeriodEntityDetail from "@/accounting-periods/workspace/getPeriodEntityDetail";
 import { isDebtAccountType } from "@/accounts/helpers";
 import { redirect } from "next/navigation";
@@ -59,7 +60,7 @@ const PeriodAccountDetailPage = async function ({
         params: {
           path: { accountId },
           query: {
-            AccountingPeriodId: period.id,
+            AccountingPeriodIds: [period.id],
             IncludePending: true,
             Sort: AccountBalanceEventSortModel.DateDescending,
           },
@@ -68,7 +69,7 @@ const PeriodAccountDetailPage = async function ({
       apiClient.GET("/accounts/{accountId}/balance-events/totals", {
         params: {
           path: { accountId },
-          query: { AccountingPeriodId: period.id },
+          query: { AccountingPeriodIds: [period.id] },
         },
       }),
       apiClient.GET(
@@ -118,7 +119,9 @@ const PeriodAccountDetailPage = async function ({
       nextPeriod={getNeighborLink(detail.nextPeriod)}
       periodHref={periodUrl}
       returnUrl={returnUrl}
-      allPeriodsHref={accountRoutes.workspaceDetail(accountId, {})}
+      allPeriodsHref={accountRoutes.workspaceDetail(accountId, {
+        tab: entityPeriodTab,
+      })}
       openingBalance={item.openingBalance}
       closingBalance={item.closingBalance}
       totals={totals}

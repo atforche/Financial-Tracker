@@ -99,7 +99,7 @@ public sealed class AccountController(
             item => item.EventDate, item => item.EventDateSequence,
             item => item.PreviousBalance?.PostedBalance, item => item.NewBalance?.PostedBalance);
         BalanceGranularity? granularity = null;
-        if (query.AccountingPeriodId == null && query.Range?.Start is DateOnly start && query.Range.End is DateOnly end)
+        if (query.AccountingPeriodIds == null && query.Range?.Start is DateOnly start && query.Range.End is DateOnly end)
         {
             AccountDateRange range = await accountQueryService.GetDateRangeAsync(new AccountDateRangeQuery(
                 start, end, new AccountFilter(null, [account.Name], []), AccountRangeSort.Name, 0, null), cancellationToken);

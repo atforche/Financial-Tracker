@@ -60,13 +60,14 @@ public sealed class AccountBalanceEventQueryService(
         {
             return new QueryPage<AccountBalanceEvent>([], 0);
         }
-        IReadOnlyCollection<Transaction> recentTransactions = query.AccountingPeriodId is Guid periodId
-            ? await transactionQueryRepository.GetForAccountAsync(accountId, null, null, new AccountingPeriodId(periodId), cancellationToken)
+        IReadOnlyCollection<AccountingPeriodId>? requestedPeriodIds = query.AccountingPeriodIds?.Select(id => new AccountingPeriodId(id)).ToList();
+        IReadOnlyCollection<Transaction> recentTransactions = requestedPeriodIds != null
+            ? await transactionQueryRepository.GetForAccountAsync(accountId, null, null, requestedPeriodIds, cancellationToken)
             : await transactionQueryRepository.GetForAccountPostingsAsync(accountId, query.Start, query.End, cancellationToken);
         IReadOnlyCollection<Transaction> pendingTransactions = query.IncludePending
             ? await transactionQueryRepository.GetPendingForAccountsAsync(
                 [accountId],
-                query.AccountingPeriodId is Guid pendingPeriodId ? new AccountingPeriodId(pendingPeriodId) : null,
+                requestedPeriodIds,
                 cancellationToken)
             : [];
         IReadOnlyCollection<Transaction> transactions = recentTransactions.Concat(pendingTransactions).DistinctBy(transaction => transaction.Id).ToList();
@@ -82,9 +83,9 @@ public sealed class AccountBalanceEventQueryService(
             query.Sort,
             query.Offset,
             query.Limit,
-            query.AccountingPeriodId == null ? query.Start : null,
-            query.AccountingPeriodId == null ? query.End : null,
-            query.AccountingPeriodId == null,
+            requestedPeriodIds == null ? query.Start : null,
+            requestedPeriodIds == null ? query.End : null,
+            requestedPeriodIds == null,
             query.IncludePending);
     }
 

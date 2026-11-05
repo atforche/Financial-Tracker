@@ -3,6 +3,7 @@ import type { JSX } from "react";
 import PeriodEntityLayout from "@/accounting-periods/workspace/PeriodEntityLayout";
 import PeriodEntityTransactions from "@/accounting-periods/workspace/PeriodEntityTransactions";
 import PeriodFundGoalCard from "@/accounting-periods/workspace/PeriodFundGoalCard";
+import { periodTab as entityPeriodTab } from "@/balance-events/resolveEntityHistory";
 import fundRoutes from "@/funds/routes";
 import getPeriodEntityDetail from "@/accounting-periods/workspace/getPeriodEntityDetail";
 import { redirect } from "next/navigation";
@@ -113,7 +114,9 @@ const PeriodFundDetailPage = async function ({
       nextPeriod={getNeighborLink(detail.nextPeriod)}
       periodHref={periodUrl}
       returnUrl={returnUrl}
-      allPeriodsHref={fundRoutes.workspaceDetail(fundId, {})}
+      allPeriodsHref={fundRoutes.workspaceDetail(fundId, {
+        tab: entityPeriodTab,
+      })}
       openingBalance={item.openingBalance}
       closingBalance={item.closingBalance}
       totals={totals}

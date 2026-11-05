@@ -1,4 +1,7 @@
+"use client";
+
 import {
+  Box,
   Table,
   TableBody,
   TableCell,
@@ -11,11 +14,13 @@ import {
   formatCurrency,
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
+import { linkedRowSx, rowLinkSx } from "@/framework/view/linkedRowSx";
+import ChevronRight from "@mui/icons-material/ChevronRight";
 import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
 import Link from "next/link";
+import type { Route } from "next";
 import SignedChange from "@/framework/view/SignedChange";
-import accountingPeriodRoutes from "@/accounting-periods/routes";
 
 /**
  * One accounting period's balances for an account or fund.
@@ -23,18 +28,20 @@ import accountingPeriodRoutes from "@/accounting-periods/routes";
 interface BalancePeriod {
   readonly id: string;
   readonly name: string;
+  readonly href: Route;
   readonly openingBalance: number;
   readonly closingBalance: number;
 }
 
 /**
- * Lists how an account or fund's balance changed in each accounting period of a range. This is a plain table because
- * it shares the page with a list frame, and only one list frame can own the page size.
+ * Lists how an account's balance changed in each accounting period of a range, for accounts without goals.
  */
 const BalancePeriodList = function ({
   periods,
+  isIncreaseGood = true,
 }: {
   readonly periods: readonly BalancePeriod[];
+  readonly isIncreaseGood?: boolean;
 }): JSX.Element {
   return (
     <ContentSurface>
@@ -49,17 +56,16 @@ const BalancePeriodList = function ({
               <TableCell align="right">Opening</TableCell>
               <TableCell align="right">Closing</TableCell>
               <TableCell align="right">Change</TableCell>
+              <TableCell />
             </TableRow>
           </TableHead>
           <TableBody>
             {periods.map((period) => (
-              <TableRow key={period.id}>
+              <TableRow key={period.id} sx={linkedRowSx}>
                 <TableCell>
-                  <Link
-                    href={accountingPeriodRoutes.workspaceDetail(period.id, {})}
-                  >
+                  <Box component={Link} href={period.href} sx={rowLinkSx}>
                     {period.name}
-                  </Link>
+                  </Box>
                 </TableCell>
                 <TableCell align="right">
                   {formatCurrency(period.openingBalance)}
@@ -73,6 +79,17 @@ const BalancePeriodList = function ({
                       period.closingBalance,
                       period.openingBalance,
                     )}
+                    isIncreaseGood={isIncreaseGood}
+                  />
+                </TableCell>
+                <TableCell align="right">
+                  <ChevronRight
+                    fontSize="small"
+                    sx={{
+                      color: "text.secondary",
+                      display: "block",
+                      ml: "auto",
+                    }}
                   />
                 </TableCell>
               </TableRow>

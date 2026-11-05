@@ -7,7 +7,7 @@ public sealed record AccountBalanceEventAccountQuery(
     Guid AccountId,
     DateOnly? Start,
     DateOnly? End,
-    Guid? AccountingPeriodId,
+    IReadOnlyCollection<Guid>? AccountingPeriodIds,
     bool IncludePending,
     AccountBalanceEventSort Sort,
     int Offset,
