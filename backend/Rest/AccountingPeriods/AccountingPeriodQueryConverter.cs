@@ -161,18 +161,6 @@ public sealed class AccountingPeriodQueryConverter(
     public AccountingPeriodDetailModel ToModel(AccountingPeriodDetail detail) => new()
     {
         AccountingPeriod = ToModel(detail.Balance),
-        CappedGoalCount = detail.CappedGoalCount,
-        GoalSummary = new AccountingPeriodGoalSummaryModel
-        {
-            FundGoalCount = detail.GoalSummary.FundGoalCount,
-            ContributionGoalCount = detail.GoalSummary.ContributionGoalCount,
-            ContributedGoalCount = detail.GoalSummary.ContributedGoalCount,
-            FundGoalsBelowMinimumCount = detail.GoalSummary.FundGoalsBelowMinimumCount,
-            FundGoalsAboveMaximumCount = detail.GoalSummary.FundGoalsAboveMaximumCount,
-            AccountGoalCount = detail.GoalSummary.AccountGoalCount,
-            AccountGoalsBelowMinimumCount = detail.GoalSummary.AccountGoalsBelowMinimumCount,
-            AccountGoalsAboveMaximumCount = detail.GoalSummary.AccountGoalsAboveMaximumCount,
-        },
         PreviousPeriod = detail.PreviousPeriod == null ? null : ToModel(detail.PreviousPeriod),
         NextPeriod = detail.NextPeriod == null ? null : ToModel(detail.NextPeriod),
         TotalSpending = detail.TotalSpending,

@@ -3762,13 +3762,6 @@ export interface components {
         AccountingPeriodDetailModel: {
             /** @description The Accounting Period with its balance and totals. */
             accountingPeriod: components["schemas"]["AccountingPeriodWithBalanceModel"];
-            /**
-             * Format: int32
-             * @description The number of Fund Goals whose expected contribution is less than planned because of their maximum ending balance.
-             */
-            cappedGoalCount: number;
-            /** @description Counts of the Accounting Period's Fund Goals and Account Goals by their progress. */
-            goalSummary: components["schemas"]["AccountingPeriodGoalSummaryModel"];
             previousPeriod: null | components["schemas"]["AccountingPeriodModel"];
             nextPeriod: null | components["schemas"]["AccountingPeriodModel"];
             /**
@@ -3804,49 +3797,6 @@ export interface components {
              */
             closingBalance: number;
             goalProgress?: null | components["schemas"]["FundGoalProgressModel"];
-        };
-        /** @description Model representing counts of an Accounting Period's Fund Goals and Account Goals by their progress. */
-        AccountingPeriodGoalSummaryModel: {
-            /**
-             * Format: int32
-             * @description The number of Fund Goals.
-             */
-            fundGoalCount: number;
-            /**
-             * Format: int32
-             * @description The number of Fund Goals with a planned contribution.
-             */
-            contributionGoalCount: number;
-            /**
-             * Format: int32
-             * @description The number of Fund Goals whose expected contribution has been assigned.
-             */
-            contributedGoalCount: number;
-            /**
-             * Format: int32
-             * @description The number of Fund Goals whose ending balance is below their minimum.
-             */
-            fundGoalsBelowMinimumCount: number;
-            /**
-             * Format: int32
-             * @description The number of Fund Goals whose ending balance is above their maximum.
-             */
-            fundGoalsAboveMaximumCount: number;
-            /**
-             * Format: int32
-             * @description The number of Account Goals.
-             */
-            accountGoalCount: number;
-            /**
-             * Format: int32
-             * @description The number of Account Goals whose ending balance is below their minimum.
-             */
-            accountGoalsBelowMinimumCount: number;
-            /**
-             * Format: int32
-             * @description The number of Account Goals whose ending balance is above their maximum.
-             */
-            accountGoalsAboveMaximumCount: number;
         };
         /** @description Model representing an Accounting Period */
         AccountingPeriodModel: {

@@ -33,7 +33,7 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
     }
 
     /// <inheritdoc/>
-    public async Task<QueryPage<StoredAccountingPeriodBalance>> GetBalancesAsync(
+    public async Task<QueryPage<AccountingPeriod>> GetBalancesAsync(
         AccountingPeriodBalanceQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -61,8 +61,9 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
             _ => balances.OrderByDescending(item => item.AccountingPeriod.Year).ThenByDescending(item => item.AccountingPeriod.Month).ThenBy(item => item.AccountingPeriod.Id),
         };
         int totalCount = await balances.CountAsync(cancellationToken);
-        List<AccountingPeriodBalanceRow> rows = await balances.Skip(query.Offset).Take(query.Limit ?? int.MaxValue).ToListAsync(cancellationToken);
-        return new QueryPage<StoredAccountingPeriodBalance>(rows.Select(row => row.ToStoredBalance()).ToList(), totalCount);
+        List<AccountingPeriod> periods = await balances.Skip(query.Offset).Take(query.Limit ?? int.MaxValue)
+            .Select(row => row.AccountingPeriod).ToListAsync(cancellationToken);
+        return new QueryPage<AccountingPeriod>(periods, totalCount);
     }
 
     /// <inheritdoc/>
@@ -120,12 +121,11 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
             .ToListAsync(cancellationToken);
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<StoredAccountingPeriodBalance>> GetRangeBalancesAsync(
+    public async Task<IReadOnlyCollection<AccountingPeriod>> GetRangeBalancesAsync(
         int startIndex,
         int endIndex,
-        CancellationToken cancellationToken = default)
-    {
-        List<AccountingPeriodBalanceRow> rows = await databaseContext.AccountingPeriodBalanceHistories.AsNoTracking()
+        CancellationToken cancellationToken = default) =>
+        await databaseContext.AccountingPeriodBalanceHistories.AsNoTracking()
             .AsSplitQuery()
             .Include(history => history.AccountingPeriod)
             .ThenInclude(accountingPeriod => accountingPeriod.ExpectedIncomeSources)
@@ -133,14 +133,7 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
                 && ((history.AccountingPeriod.Year * 12) + history.AccountingPeriod.Month) <= endIndex)
             .OrderBy(history => history.AccountingPeriod.Year)
             .ThenBy(history => history.AccountingPeriod.Month)
-            .Select(history => new AccountingPeriodBalanceRow
-            {
-                AccountingPeriod = history.AccountingPeriod,
-                OpeningBalance = history.OpeningBalance,
-                ClosingBalance = history.ClosingBalance,
-            }).ToListAsync(cancellationToken);
-        return rows.Select(row => row.ToStoredBalance()).ToList();
-    }
+            .Select(history => history.AccountingPeriod).ToListAsync(cancellationToken);
 
     /// <inheritdoc/>
     public async Task<ILookup<Guid, FinancialRangeIncomeFact>> GetIncomeFactsByAccountingPeriodAsync(
@@ -285,7 +278,5 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
         public required AccountingPeriod AccountingPeriod { get; init; }
         public decimal OpeningBalance { get; init; }
         public decimal ClosingBalance { get; init; }
-
-        public StoredAccountingPeriodBalance ToStoredBalance() => new(AccountingPeriod, OpeningBalance, ClosingBalance);
     }
 }

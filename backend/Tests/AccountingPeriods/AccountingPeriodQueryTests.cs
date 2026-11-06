@@ -234,14 +234,6 @@ public sealed class AccountingPeriodQueryTests
         Assert.Equal(20m, detail.TotalSpending);
         Assert.Equal(75m, detail.AccountingPeriod.PlannedGoalContributions);
         Assert.Equal(25m, detail.AccountingPeriod.ExpectedGoalContributions);
-        Assert.Equal(1, detail.CappedGoalCount);
-        Assert.Equal(4, detail.GoalSummary.FundGoalCount);
-        Assert.Equal(2, detail.GoalSummary.ContributionGoalCount);
-        Assert.Equal(1, detail.GoalSummary.ContributedGoalCount);
-        Assert.Equal(0, detail.GoalSummary.FundGoalsBelowMinimumCount);
-        Assert.Equal(0, detail.GoalSummary.FundGoalsAboveMaximumCount);
-        Assert.Equal(1, detail.GoalSummary.AccountGoalCount);
-        Assert.Equal(0, detail.GoalSummary.AccountGoalsBelowMinimumCount);
         Assert.Equal(100m, detail.AccountOpeningBalance.TotalBalance);
         Assert.Equal(140m, detail.AccountClosingBalance.TotalBalance);
         Assert.Equal(100m, detail.FundOpeningBalance.TotalBalance);
