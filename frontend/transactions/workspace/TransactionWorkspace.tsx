@@ -65,7 +65,7 @@ const TransactionWorkspace = async function ({
       Array.isArray(value) ? value.length > 0 : typeof value !== "undefined",
     ) || normalizeFullyPosted(resolvedSearchParams.fullyPosted) !== null;
   const {
-    allAccountingPeriods,
+    accountingPeriods,
     accounts,
     funds,
     locations,
@@ -79,7 +79,7 @@ const TransactionWorkspace = async function ({
       <PageLayout>
         <ReturnLink returnUrl={resolvedSearchParams.returnUrl} />
         <TransactionWorkspaceFilter
-          accountingPeriods={allAccountingPeriods}
+          accountingPeriods={accountingPeriods}
           accounts={accounts}
           funds={funds}
           locations={locations}

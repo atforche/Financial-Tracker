@@ -7,6 +7,7 @@ import PageLayout from "@/framework/view/PageLayout";
 import TransactionWorkspacePageHeader from "@/transactions/workspace/TransactionWorkspacePageHeader";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import UpdateTransactionForm from "@/transactions/workspace/UpdateTransactionForm";
+import getAccountingPeriodBalance from "@/accounting-periods/workspace/getAccountingPeriodBalance";
 import getTransactionPageBackLink from "@/transactions/workspace/getTransactionPageBackLink";
 import { redirect } from "next/navigation";
 import routes from "@/transactions/routes";
@@ -49,10 +50,11 @@ const TransactionWorkspaceEditPage = async function ({
     redirect(back.href);
   }
 
+  // A transaction in a closed period can still be opened, so its period may not be among the open ones
   const transactionAccountingPeriod =
-    referenceData.allAccountingPeriods.find(
+    referenceData.openAccountingPeriods.find(
       (period) => period.id === transaction.accountingPeriodId,
-    ) ?? null;
+    ) ?? (await getAccountingPeriodBalance(transaction.accountingPeriodId));
 
   if (transactionAccountingPeriod === null) {
     throw new Error("Failed to find the transaction accounting period");
