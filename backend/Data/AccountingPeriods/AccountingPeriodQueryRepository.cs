@@ -83,6 +83,18 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
             .ToListAsync(cancellationToken);
 
     /// <inheritdoc/>
+    public async Task<(AccountingPeriod? First, AccountingPeriod? Latest)> GetBoundsAsync(CancellationToken cancellationToken = default)
+    {
+        AccountingPeriod? first = await databaseContext.AccountingPeriods.AsNoTracking()
+            .OrderBy(period => period.Year).ThenBy(period => period.Month)
+            .FirstOrDefaultAsync(cancellationToken);
+        AccountingPeriod? latest = await databaseContext.AccountingPeriods.AsNoTracking()
+            .OrderByDescending(period => period.Year).ThenByDescending(period => period.Month)
+            .FirstOrDefaultAsync(cancellationToken);
+        return (first, latest);
+    }
+
+    /// <inheritdoc/>
     public async Task<(AccountingPeriod? Previous, AccountingPeriod? Next)> GetAdjacentAsync(
         AccountingPeriod accountingPeriod,
         CancellationToken cancellationToken = default)

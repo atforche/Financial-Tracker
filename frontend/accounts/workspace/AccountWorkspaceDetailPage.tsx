@@ -44,16 +44,14 @@ const AccountWorkspaceDetailPage = async function ({
   const resolvedSearchParams = await searchParams;
   const { search, accountType } = resolvedSearchParams;
   const apiClient = await createApiClient();
-  const [periodsResponse, accountsResponse, institutionsResponse] =
-    await Promise.all([
-      apiClient.GET("/accounting-periods", {
-        params: {
-          query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
-        },
-      }),
-      apiClient.GET("/accounts/with-balances"),
-      apiClient.GET("/accounts/financial-institutions"),
-    ]);
+  const [periodsResponse, accountsResponse] = await Promise.all([
+    apiClient.GET("/accounting-periods", {
+      params: {
+        query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
+      },
+    }),
+    apiClient.GET("/accounts/with-balances"),
+  ]);
   const periods = unwrapApiResponse(
     periodsResponse,
     "Failed to fetch accounting periods",
@@ -62,10 +60,6 @@ const AccountWorkspaceDetailPage = async function ({
     accountsResponse,
     "Failed to fetch accounts",
   ).items.find((item) => item.id === accountId);
-  const financialInstitutions = unwrapApiResponse(
-    institutionsResponse,
-    "Failed to fetch financial institutions",
-  ).items;
   const workspaceUrl = routes.workspace({
     ...(search === undefined ? {} : { search }),
     ...(accountType === undefined ? {} : { accountType }),
@@ -229,7 +223,6 @@ const AccountWorkspaceDetailPage = async function ({
       actions={
         <AccountDetailActions
           account={account}
-          financialInstitutions={financialInstitutions}
           addTransactionHref={transactionRoutes.workspaceCreate({
             accountIds: [account.id],
             returnUrl: currentUrl,

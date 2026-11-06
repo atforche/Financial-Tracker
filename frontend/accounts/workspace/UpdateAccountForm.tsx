@@ -13,6 +13,7 @@ import CreatableComboBoxEntryField from "@/framework/forms/CreatableComboBoxEntr
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import StringEntryField from "@/framework/forms/StringEntryField";
+import getFinancialInstitutions from "@/accounts/workspace/getFinancialInstitutions";
 import updateAccount from "@/accounts/workspace/updateAccount";
 import { useRouter } from "next/navigation";
 
@@ -21,7 +22,6 @@ import { useRouter } from "next/navigation";
  */
 interface UpdateAccountFormProps {
   readonly account: Account;
-  readonly financialInstitutions: readonly string[];
   readonly redirectUrl: string;
   readonly onClose: () => void;
 }
@@ -31,11 +31,18 @@ interface UpdateAccountFormProps {
  */
 const UpdateAccountForm = function ({
   account,
-  financialInstitutions,
   redirectUrl,
   onClose,
 }: UpdateAccountFormProps): JSX.Element {
   const router = useRouter();
+  const [financialInstitutions, setFinancialInstitutions] = useState<
+    readonly string[]
+  >([]);
+  useEffect(() => {
+    startTransition(async () => {
+      setFinancialInstitutions(await getFinancialInstitutions());
+    });
+  }, []);
   const [name, setName] = useState<string>(account.name);
   const [financialInstitution, setFinancialInstitution] = useState<
     string | null

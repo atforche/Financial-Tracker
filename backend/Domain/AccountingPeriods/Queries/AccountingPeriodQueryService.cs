@@ -24,6 +24,12 @@ public sealed class AccountingPeriodQueryService(
         accountingPeriodQueryRepository.GetAsync(query, cancellationToken);
 
     /// <summary>
+    /// Retrieves the earliest and latest Accounting Periods, when any exist.
+    /// </summary>
+    public Task<(AccountingPeriod? First, AccountingPeriod? Latest)> GetBoundsAsync(CancellationToken cancellationToken = default) =>
+        accountingPeriodQueryRepository.GetBoundsAsync(cancellationToken);
+
+    /// <summary>
     /// Retrieves Accounting Periods and their balances.
     /// </summary>
     public async Task<QueryPage<AccountingPeriodBalance>> GetWithBalancesAsync(

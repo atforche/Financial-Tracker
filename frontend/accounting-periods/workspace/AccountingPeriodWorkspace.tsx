@@ -1,9 +1,6 @@
-import {
-  AccountingPeriodSort,
-  AccountingPeriodWithBalanceSort,
-} from "@/accounting-periods/types";
 import { Stack, Typography } from "@mui/material";
 import AccountingPeriodCard from "@/accounting-periods/workspace/AccountingPeriodCard";
+import { AccountingPeriodWithBalanceSort } from "@/accounting-periods/types";
 import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/workspace/helpers";
 import AccountingPeriodWorkspaceActions from "@/accounting-periods/workspace/AccountingPeriodWorkspaceActions";
 import AccountingPeriodYearSelector from "@/accounting-periods/workspace/AccountingPeriodYearSelector";
@@ -40,26 +37,10 @@ const AccountingPeriodWorkspace = async function ({
 }: AccountingPeriodWorkspaceProps): Promise<JSX.Element> {
   const apiClient = await createApiClient();
   const { year, action, returnUrl } = await searchParams;
-  const [firstResponse, latestResponse] = await Promise.all([
-    apiClient.GET("/accounting-periods", {
-      params: { query: { Sort: AccountingPeriodSort.Date, Limit: 1 } },
-    }),
-    apiClient.GET("/accounting-periods", {
-      params: {
-        query: { Sort: AccountingPeriodSort.DateDescending, Limit: 1 },
-      },
-    }),
-  ]);
-  const firstPeriod =
-    unwrapApiResponse(
-      firstResponse,
-      "Failed to fetch the first accounting period",
-    ).items[0] ?? null;
-  const latestPeriod =
-    unwrapApiResponse(
-      latestResponse,
-      "Failed to fetch the latest accounting period",
-    ).items[0] ?? null;
+  const { first: firstPeriod, latest: latestPeriod } = unwrapApiResponse(
+    await apiClient.GET("/accounting-periods/bounds"),
+    "Failed to fetch the accounting period bounds",
+  );
   // Every year from the first period to the latest, newest first; an unknown year falls back to the latest
   const years =
     firstPeriod === null || latestPeriod === null

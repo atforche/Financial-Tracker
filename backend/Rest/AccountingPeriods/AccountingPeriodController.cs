@@ -35,6 +35,14 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
             cancellationToken)));
 
     /// <summary>
+    /// Retrieves the earliest and latest Accounting Periods
+    /// </summary>
+    [HttpGet("bounds")]
+    [ProducesResponseType(typeof(AccountingPeriodBoundsModel), StatusCodes.Status200OK)]
+    public async Task<ActionResult<AccountingPeriodBoundsModel>> GetBoundsAsync(CancellationToken cancellationToken) =>
+        Ok(accountingPeriodQueryConverter.ToModel(await accountingPeriodQueryService.GetBoundsAsync(cancellationToken)));
+
+    /// <summary>
     /// Retrieves snapshot data for the current Accounting Period.
     /// </summary>
     [HttpGet("with-balances")]

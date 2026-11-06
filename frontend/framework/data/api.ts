@@ -2901,6 +2901,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/accounting-periods/bounds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves the earliest and latest Accounting Periods */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountingPeriodBoundsModel"];
+                        "application/json": components["schemas"]["AccountingPeriodBoundsModel"];
+                        "text/json": components["schemas"]["AccountingPeriodBoundsModel"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/accounting-periods/with-balances": {
         parameters: {
             query?: never;
@@ -3864,6 +3902,11 @@ export interface components {
              */
             closingBalance: number;
             goalProgress?: null | components["schemas"]["AccountGoalProgressModel"];
+        };
+        /** @description Model representing the earliest and latest Accounting Periods */
+        AccountingPeriodBoundsModel: {
+            first: null | components["schemas"]["AccountingPeriodModel"];
+            latest: null | components["schemas"]["AccountingPeriodModel"];
         };
         /** @description Model representing everything shown for a single Accounting Period. */
         AccountingPeriodDetailModel: {

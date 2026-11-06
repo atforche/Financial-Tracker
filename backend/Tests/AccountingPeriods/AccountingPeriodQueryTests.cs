@@ -39,6 +39,26 @@ public sealed class AccountingPeriodQueryTests
     }
 
     /// <summary>
+    /// Returns the earliest and latest periods across years, or neither before any exist.
+    /// </summary>
+    [Fact]
+    public async Task BoundsReturnEarliestAndLatestPeriods()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodBoundsModel empty = await test.Api.GetAsync<AccountingPeriodBoundsModel>("/accounting-periods/bounds");
+        AccountingPeriodHandle december = await test.Periods.Create(2025, 12).CreateAsync();
+        _ = await test.Periods.Create(2026, 1).CreateAsync();
+        AccountingPeriodHandle february = await test.Periods.Create(2026, 2).CreateAsync();
+
+        AccountingPeriodBoundsModel bounds = await test.Api.GetAsync<AccountingPeriodBoundsModel>("/accounting-periods/bounds");
+
+        Assert.Null(empty.First);
+        Assert.Null(empty.Latest);
+        Assert.Equal(december.Id, bounds.First?.Id);
+        Assert.Equal(february.Id, bounds.Latest?.Id);
+    }
+
+    /// <summary>
     /// Returns the periods in a range in date order, each with its own expected income.
     /// </summary>
     [Fact]

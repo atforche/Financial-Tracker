@@ -58,6 +58,15 @@ public sealed class AccountingPeriodQueryConverter(
     public AccountingPeriodModel ToModel(AccountingPeriod accountingPeriod) => accountingPeriodConverter.ToModel(accountingPeriod);
 
     /// <summary>
+    /// Converts the provided earliest and latest Accounting Periods to an API model.
+    /// </summary>
+    public AccountingPeriodBoundsModel ToModel((AccountingPeriod? First, AccountingPeriod? Latest) bounds) => new()
+    {
+        First = bounds.First == null ? null : ToModel(bounds.First),
+        Latest = bounds.Latest == null ? null : ToModel(bounds.Latest),
+    };
+
+    /// <summary>
     /// Converts the provided Accounting Period page to a collection model.
     /// </summary>
     public CollectionModel<AccountingPeriodModel> ToModel(QueryPage<AccountingPeriod> page) => new()

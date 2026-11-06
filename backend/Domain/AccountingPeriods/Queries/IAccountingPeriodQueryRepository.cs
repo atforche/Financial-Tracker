@@ -32,6 +32,11 @@ public interface IAccountingPeriodQueryRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves the earliest and latest Accounting Periods, when any exist.
+    /// </summary>
+    Task<(AccountingPeriod? First, AccountingPeriod? Latest)> GetBoundsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves Accounting Periods with the provided IDs.
     /// </summary>
     Task<IReadOnlyCollection<AccountingPeriod>> GetByIdsAsync(
