@@ -224,6 +224,7 @@ const AccountWorkspaceDetailPage = async function ({
       name={account.name}
       subtitle={account.financialInstitution ?? null}
       back={{ href: workspaceUrl, label: "Back to Accounts" }}
+      returnUrl={resolvedSearchParams.returnUrl}
       isIncreaseGood={isIncreaseGood}
       actions={
         <AccountDetailActions

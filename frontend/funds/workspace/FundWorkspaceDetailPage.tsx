@@ -211,6 +211,7 @@ const FundWorkspaceDetailPage = async function ({
       name={fund.name}
       subtitle={fund.description === "" ? null : fund.description}
       back={{ href: workspaceUrl, label: "Back to Funds" }}
+      returnUrl={resolvedSearchParams.returnUrl}
       actions={
         <FundDetailActions
           fund={fund}

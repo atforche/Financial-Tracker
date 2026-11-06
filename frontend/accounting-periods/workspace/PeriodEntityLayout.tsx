@@ -10,6 +10,7 @@ import {
 } from "@/framework/currencyHelpers";
 import type { BalanceEventTotals } from "@/balance-events/types";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
+import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
 import PeriodNavigation from "@/framework/view/PeriodNavigation";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
@@ -104,13 +105,15 @@ const PeriodEntityLayout = function ({
               size="small"
               variant="outlined"
             />
-            <Button
-              size="small"
-              href={allPeriodsHref}
-              sx={{ whiteSpace: "nowrap" }}
-            >
-              All Periods
-            </Button>
+            <Link href={allPeriodsHref} style={{ textDecoration: "none" }}>
+              <Button
+                component="span"
+                size="small"
+                sx={{ whiteSpace: "nowrap" }}
+              >
+                All Periods
+              </Button>
+            </Link>
           </Stack>
         </Stack>
       </Stack>

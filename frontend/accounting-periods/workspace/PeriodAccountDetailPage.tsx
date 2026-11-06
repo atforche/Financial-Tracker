@@ -121,6 +121,7 @@ const PeriodAccountDetailPage = async function ({
       returnUrl={returnUrl}
       allPeriodsHref={accountRoutes.workspaceDetail(accountId, {
         tab: entityPeriodTab,
+        returnUrl: currentUrl,
       })}
       openingBalance={item.openingBalance}
       closingBalance={item.closingBalance}
