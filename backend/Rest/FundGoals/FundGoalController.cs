@@ -39,7 +39,7 @@ public sealed class FundGoalController(
         [FromQuery] FundGoalBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>> result = await fundGoalBalanceEventQueryService.GetAsync(
+        AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>> result = await fundGoalBalanceEventQueryService.GetForTotalsAsync(
             fundGoalBalanceEventConverter.ToDomain(query) with { Offset = 0, Limit = null }, cancellationToken);
         if (result.Range == null)
         {

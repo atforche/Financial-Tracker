@@ -70,9 +70,27 @@ public sealed class FundGoalBalanceEventQueryService(
     /// <summary>
     /// Retrieves Fund Goal balance events in the requested Accounting Period range.
     /// </summary>
-    public async Task<AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>>> GetAsync(
+    public Task<AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>>> GetAsync(
         FundGoalBalanceEventAccountingPeriodRangeQuery query,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) =>
+        GetAsync(query, true, cancellationToken);
+
+    /// <summary>
+    /// Retrieves Fund Goal balance events for totaling, leaving out the remaining contribution amounts, which cost a
+    /// balance lookup per Fund and period.
+    /// </summary>
+    public Task<AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>>> GetForTotalsAsync(
+        FundGoalBalanceEventAccountingPeriodRangeQuery query,
+        CancellationToken cancellationToken = default) =>
+        GetAsync(query, false, cancellationToken);
+
+    /// <summary>
+    /// Retrieves Fund Goal balance events in an Accounting Period range, narrowing to any requested Funds in the query.
+    /// </summary>
+    private async Task<AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>>> GetAsync(
+        FundGoalBalanceEventAccountingPeriodRangeQuery query,
+        bool includeRemainingAmounts,
+        CancellationToken cancellationToken)
     {
         AccountingPeriodRangeResolution resolution = await accountingPeriodRangeService.ResolveAsync(
             query.StartId,
@@ -85,7 +103,10 @@ public sealed class FundGoalBalanceEventQueryService(
 
         IReadOnlyCollection<AccountingPeriod> periods = resolution.AccountingPeriods;
         IReadOnlyCollection<AccountingPeriodId> periodIds = periods.Select(period => period.Id).ToList();
-        IReadOnlyCollection<Transaction> transactions = await transactionQueryRepository.GetAsync(periodIds, cancellationToken);
+        var fundIds = query.Filter.FundIds.Select(id => new FundId(id)).ToList();
+        IReadOnlyCollection<Transaction> transactions = fundIds.Count == 0
+            ? await transactionQueryRepository.GetAsync(periodIds, cancellationToken)
+            : await transactionQueryRepository.GetForFundsAsync(periodIds, fundIds, cancellationToken);
         QueryPage<FundGoalBalanceEvent> page = await GetAsync(
             transactions,
             periods,
@@ -93,7 +114,8 @@ public sealed class FundGoalBalanceEventQueryService(
             query.Sort,
             query.Offset,
             query.Limit,
-            cancellationToken);
+            cancellationToken,
+            includeRemainingAmounts: includeRemainingAmounts);
         return new AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>>(page, AccountingPeriodRangeQueryFailure.None);
     }
 
@@ -132,7 +154,8 @@ public sealed class FundGoalBalanceEventQueryService(
         int offset,
         int? limit,
         CancellationToken cancellationToken,
-        (FundGoal? Goal, AccountingPeriodBalanceHistory History)? loaded = null)
+        (FundGoal? Goal, AccountingPeriodBalanceHistory History)? loaded = null,
+        bool includeRemainingAmounts = true)
     {
         var periods = accountingPeriods.ToDictionary(period => period.Id);
         IReadOnlyCollection<FundId> fundIds = transactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null))
@@ -148,7 +171,10 @@ public sealed class FundGoalBalanceEventQueryService(
         IReadOnlyCollection<FundGoalBalanceEvent> events = transactions
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFundAndPeriod))
             .Where(balanceEvent => filter.FundIds.Count == 0 || filter.FundIds.Contains(balanceEvent.Fund.Id.Value)).ToList();
-        events = AddRemainingAmountToAssignToExpectedContribution(events, loaded);
+        if (includeRemainingAmounts)
+        {
+            events = AddRemainingAmountToAssignToExpectedContribution(events, loaded);
+        }
         var allItems = Sort(events, sort).ToList();
         return new QueryPage<FundGoalBalanceEvent>(
             allItems.Skip(offset).Take(limit ?? int.MaxValue).ToList(),
