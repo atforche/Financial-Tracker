@@ -96,6 +96,7 @@ const PeriodFundDetailPage = async function ({
             fundIds: [fundId],
             returnUrl: currentUrl,
           })}
+          isOpen={period.isOpen}
           returnUrl={currentUrl}
         />
       }

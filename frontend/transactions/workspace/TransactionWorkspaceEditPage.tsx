@@ -7,11 +7,9 @@ import PageLayout from "@/framework/view/PageLayout";
 import TransactionWorkspacePageHeader from "@/transactions/workspace/TransactionWorkspacePageHeader";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import UpdateTransactionForm from "@/transactions/workspace/UpdateTransactionForm";
-import createApiClient from "@/framework/data/createApiClient";
 import getTransactionPageBackLink from "@/transactions/workspace/getTransactionPageBackLink";
 import { redirect } from "next/navigation";
 import routes from "@/transactions/routes";
-import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Props for the TransactionWorkspaceEditPage component.
@@ -51,21 +49,15 @@ const TransactionWorkspaceEditPage = async function ({
     redirect(back.href);
   }
 
-  // A transaction in a closed period can still be opened, so its period may not be among the open ones
-  const transactionAccountingPeriod =
-    referenceData.openAccountingPeriods.find(
-      (period) => period.id === transaction.accountingPeriodId,
-    ) ??
-    unwrapApiResponse(
-      await (
-        await createApiClient()
-      ).GET("/accounting-periods/{accountingPeriodId}", {
-        params: {
-          path: { accountingPeriodId: transaction.accountingPeriodId },
-        },
-      }),
-      "Failed to fetch the transaction accounting period",
+  // Closed periods can't be changed, so their transactions can only be viewed
+  const transactionAccountingPeriod = referenceData.openAccountingPeriods.find(
+    (period) => period.id === transaction.accountingPeriodId,
+  );
+  if (transactionAccountingPeriod === undefined) {
+    redirect(
+      routes.workspaceDetail(transactionId, selectedWorkspaceSearchParams),
     );
+  }
 
   return (
     <PageLayout>

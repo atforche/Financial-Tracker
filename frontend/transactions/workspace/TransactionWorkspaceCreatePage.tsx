@@ -6,6 +6,7 @@ import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/
 import getTransactionPageBackLink from "@/transactions/workspace/getTransactionPageBackLink";
 import { getTransactionWorkspaceReferenceData } from "@/transactions/workspace/getTransactionWorkspaceData";
 import routes from "@/transactions/routes";
+import { toRepeatedSearchParams } from "@/framework/routes/helpers";
 
 /**
  * Props for the TransactionWorkspaceCreatePage component.
@@ -33,6 +34,9 @@ const TransactionWorkspaceCreatePage = async function ({
     locations,
   } = await getTransactionWorkspaceReferenceData();
 
+  const linkedPeriodIds = toRepeatedSearchParams(
+    workspaceSearchParams.accountingPeriodIds,
+  );
   const workspaceUrl = routes.workspace(workspaceSearchParams);
   const back = getTransactionPageBackLink(returnUrl, workspaceUrl);
 
@@ -51,6 +55,9 @@ const TransactionWorkspaceCreatePage = async function ({
         expectedIncomeSources={expectedIncomeSources}
         locations={locations}
         redirectUrl={workspaceUrl}
+        linkedAccountingPeriodId={
+          linkedPeriodIds.length === 1 ? (linkedPeriodIds[0] ?? null) : null
+        }
       />
     </PageLayout>
   );

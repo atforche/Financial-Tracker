@@ -61,6 +61,10 @@ const PeriodEntityLayout = function ({
   transactions,
 }: PeriodEntityLayoutProps): JSX.Element {
   const period = detail.accountingPeriod;
+  // Coming from the period's own page keeps its search and sort, and can still name the period
+  const returnsToPeriod =
+    returnUrl?.split("?")[0] === periodHref.split("?")[0] &&
+    returnUrl !== undefined;
   const getNeighborLink = (
     neighbor: typeof detail.previousPeriod,
   ): { name: string; href: Route } | null =>
@@ -71,8 +75,11 @@ const PeriodEntityLayout = function ({
     <PageLayout>
       <Stack spacing={2}>
         <ReturnLink
-          returnUrl={returnUrl}
-          fallback={{ href: periodHref, label: `Back to ${period.name}` }}
+          returnUrl={returnsToPeriod ? undefined : returnUrl}
+          fallback={{
+            href: returnsToPeriod ? returnUrl : periodHref,
+            label: `Back to ${period.name}`,
+          }}
         />
         <Stack spacing={0.5}>
           <Typography variant="h4" noWrap>

@@ -15,6 +15,7 @@ import {
 } from "@/transactions/types";
 import { Button, Stack } from "@mui/material";
 import {
+  CanUnpostContext,
   PostingDateReporterContext,
   useTransactionPostingPreviews,
 } from "@/transactions/workspace/useTransactionPostingPreviews";
@@ -395,57 +396,59 @@ const ViewTransactionForm = function ({
   }
 
   return (
-    <PostingDateReporterContext.Provider value={reportPostingDate}>
-      <TransactionForm
-        readOnly
-        accountingPeriods={[]}
-        accountingPeriod={transactionAccountingPeriod}
-        setAccountingPeriod={null}
-        date={dayjs(transaction.date)}
-        setDate={null}
-        defaultDate={null}
-        description={transaction.description}
-        setDescription={null}
-        headerContent={
-          !canWrite ? undefined : (
-            <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-              <Button component={Link} href={editUrl} variant="contained">
-                Edit
-              </Button>
-              {postedAccountCount > 0 ? (
-                <UnpostTransactionForm
-                  transaction={transaction}
-                  redirectUrl={currentUrl}
-                  label={postedAccountCount > 1 ? "Unpost All" : "Unpost"}
-                />
-              ) : (
-                <DeleteTransactionForm
-                  transaction={transaction}
-                  redirectUrl={deleteRedirectUrl}
-                />
-              )}
-            </Stack>
-          )
-        }
-        sourceContent={
-          sourceContent ?? (
-            <FundTransactionSourceFrame
-              readOnly
-              funds={emptyFunds}
-              fund={null}
-              setFund={null}
-              amount={null}
-              setAmount={null}
-            />
-          )
-        }
-        destinationContent={destinationContent}
-        sourceAmount={sourceAmount}
-        destinationAmount={destinationAmount}
-        destinationCount={destinationContent.length}
-        showSummary={transaction.transactionType === TransactionType.Income}
-      />
-    </PostingDateReporterContext.Provider>
+    <CanUnpostContext.Provider value={transactionAccountingPeriod.isOpen}>
+      <PostingDateReporterContext.Provider value={reportPostingDate}>
+        <TransactionForm
+          readOnly
+          accountingPeriods={[]}
+          accountingPeriod={transactionAccountingPeriod}
+          setAccountingPeriod={null}
+          date={dayjs(transaction.date)}
+          setDate={null}
+          defaultDate={null}
+          description={transaction.description}
+          setDescription={null}
+          headerContent={
+            !canWrite || !transactionAccountingPeriod.isOpen ? undefined : (
+              <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
+                <Button component={Link} href={editUrl} variant="contained">
+                  Edit
+                </Button>
+                {postedAccountCount > 0 ? (
+                  <UnpostTransactionForm
+                    transaction={transaction}
+                    redirectUrl={currentUrl}
+                    label={postedAccountCount > 1 ? "Unpost All" : "Unpost"}
+                  />
+                ) : (
+                  <DeleteTransactionForm
+                    transaction={transaction}
+                    redirectUrl={deleteRedirectUrl}
+                  />
+                )}
+              </Stack>
+            )
+          }
+          sourceContent={
+            sourceContent ?? (
+              <FundTransactionSourceFrame
+                readOnly
+                funds={emptyFunds}
+                fund={null}
+                setFund={null}
+                amount={null}
+                setAmount={null}
+              />
+            )
+          }
+          destinationContent={destinationContent}
+          sourceAmount={sourceAmount}
+          destinationAmount={destinationAmount}
+          destinationCount={destinationContent.length}
+          showSummary={transaction.transactionType === TransactionType.Income}
+        />
+      </PostingDateReporterContext.Provider>
+    </CanUnpostContext.Provider>
   );
 };
 

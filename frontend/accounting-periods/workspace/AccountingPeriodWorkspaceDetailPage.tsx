@@ -113,7 +113,12 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
                   }
                   changeDescription="this period"
                 />
-                <AttentionList descriptions={getPeriodAttention(detail)} />
+                <AttentionList
+                  descriptions={getPeriodAttention(
+                    detail,
+                    resolvedSearchParams.returnUrl,
+                  )}
+                />
                 <Box
                   sx={{
                     display: "grid",
@@ -175,6 +180,7 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
                   name: item.account.name,
                   href: routes.accountDetail(period.id, item.account.id, {
                     periodTab: "accounts",
+                    returnUrl: currentUrl,
                   }),
                   openingBalance: item.openingBalance,
                   closingBalance: item.closingBalance,
@@ -202,6 +208,7 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
                   name: item.fund.name,
                   href: routes.fundDetail(period.id, item.fund.id, {
                     periodTab: "funds",
+                    returnUrl: currentUrl,
                   }),
                   openingBalance: item.openingBalance,
                   closingBalance: item.closingBalance,

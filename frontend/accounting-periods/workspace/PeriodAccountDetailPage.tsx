@@ -104,6 +104,7 @@ const PeriodAccountDetailPage = async function ({
             accountingPeriodIds: [period.id],
             returnUrl: currentUrl,
           })}
+          isOpen={period.isOpen}
           returnUrl={currentUrl}
         />
       }

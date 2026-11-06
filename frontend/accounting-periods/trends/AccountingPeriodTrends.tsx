@@ -13,7 +13,7 @@ import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import SignedChange from "@/framework/view/SignedChange";
 import createApiClient from "@/framework/data/createApiClient";
 import { getCurrencyDifference } from "@/framework/currencyHelpers";
-import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
+import { resolveTrendRange } from "@/framework/routes/trendRange";
 import routes from "@/accounting-periods/routes";
 import { sumProgress } from "@/accounting-periods/trends/helpers";
 import transactionRoutes from "@/transactions/routes";
@@ -52,10 +52,23 @@ const AccountingPeriodTrends = async function ({
     "Failed to fetch accounting periods",
   ).items;
 
-  // Accounting periods are sorted newest first, so the range runs from the end's index to the start's
-  const defaultRange = getDefaultTrendAccountingPeriodRange(accountingPeriods);
-  const start = startAccountingPeriodId ?? defaultRange?.start ?? "";
-  const end = endAccountingPeriodId ?? defaultRange?.end ?? "";
+  const selectedRange = resolveTrendRange(
+    {
+      mode: "accounting-period",
+      ...(startAccountingPeriodId === undefined
+        ? {}
+        : { startAccountingPeriodId }),
+      ...(endAccountingPeriodId === undefined ? {} : { endAccountingPeriodId }),
+    },
+    accountingPeriods,
+  );
+  const [start, end] =
+    selectedRange.mode === "accounting-period"
+      ? [
+          selectedRange.startAccountingPeriodId,
+          selectedRange.endAccountingPeriodId,
+        ]
+      : ["", ""];
   const startIndex = accountingPeriods.findIndex(({ id }) => id === start);
   const endIndex = accountingPeriods.findIndex(({ id }) => id === end);
   const selectedIds =

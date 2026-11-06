@@ -100,6 +100,6 @@ const ReturnLink = function ({
   );
 };
 
-export { getReturnLinkTarget };
+export { getReturnLinkTarget, isInternalUrl };
 export type { ReturnLinkTarget };
 export default ReturnLink;
