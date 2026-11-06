@@ -91,45 +91,40 @@ const AccountWorkspaceDetailPage = async function ({
   const toAccountBalance = (balance: number): number =>
     isIncreaseGood ? balance : 0 - balance;
   const hasGoals = account.type === AccountType.Standard;
-  const eventQuery =
+  const dateActivity =
     view === "date"
-      ? { "Range.Start": dates.start, "Range.End": dates.end }
-      : { AccountingPeriodIds: [...(periodRange?.ids ?? [])] };
-
-  const [eventsResponse, totalsResponse] =
-    view === "period" && periodRange === null
-      ? [null, null]
-      : await Promise.all([
-          view === "date"
-            ? apiClient.GET("/accounts/{accountId}/balance-events", {
-                params: {
-                  path: { accountId },
-                  query: {
-                    ...eventQuery,
-                    IncludePending: true,
-                    Sort: AccountBalanceEventSortModel.DateDescending,
-                  },
+      ? unwrapApiResponse(
+          await apiClient.GET(
+            "/accounts/{accountId}/balance-events/with-totals",
+            {
+              params: {
+                path: { accountId },
+                query: {
+                  "Range.Start": dates.start,
+                  "Range.End": dates.end,
+                  IncludePending: true,
+                  Sort: AccountBalanceEventSortModel.DateDescending,
                 },
-              })
-            : null,
-          apiClient.GET("/accounts/{accountId}/balance-events/totals", {
-            params: { path: { accountId }, query: eventQuery },
-          }),
-        ]);
-  const events =
-    eventsResponse === null
-      ? []
-      : unwrapApiResponse(
-          eventsResponse,
-          "Failed to fetch account balance events",
-        ).items;
+              },
+            },
+          ),
+          "Failed to fetch account activity",
+        )
+      : null;
+  const events = dateActivity?.events ?? [];
   const netTotals =
-    totalsResponse === null
+    dateActivity?.totals ??
+    (periodRange === null
       ? null
       : unwrapApiResponse(
-          totalsResponse,
+          await apiClient.GET("/accounts/{accountId}/balance-events/totals", {
+            params: {
+              path: { accountId },
+              query: { AccountingPeriodIds: [...periodRange.ids] },
+            },
+          }),
           "Failed to fetch account activity totals",
-        );
+        ));
   const totals =
     netTotals === null
       ? null

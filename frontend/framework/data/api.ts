@@ -1466,6 +1466,67 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/funds/balance-events/date-range/with-totals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves Fund Balance Events in a date range together with their posted totals. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    /** @description Whether to include current pending events in addition to matching posted events. */
+                    IncludePending?: boolean;
+                    "Filter.NameSearch"?: string;
+                    "Filter.Names"?: string[];
+                    "Filter.Ids"?: string[];
+                    /** @description Sort order to apply to the results. */
+                    Sort?: components["schemas"]["FundBalanceEventSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["FundBalanceEventsWithTotalsModel"];
+                        "application/json": components["schemas"]["FundBalanceEventsWithTotalsModel"];
+                        "text/json": components["schemas"]["FundBalanceEventsWithTotalsModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/funds/with-balances": {
         parameters: {
             query?: never;
@@ -2290,6 +2351,79 @@ export interface paths {
                         "text/plain": components["schemas"]["BalanceEventTotalsModel"];
                         "application/json": components["schemas"]["BalanceEventTotalsModel"];
                         "text/json": components["schemas"]["BalanceEventTotalsModel"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/{accountId}/balance-events/with-totals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves balance events for the specified Account together with their posted totals. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    /** @description Restricts events to transactions assigned to these Accounting Periods. */
+                    AccountingPeriodIds?: string[];
+                    /** @description Whether to include current pending events in addition to matching posted events. */
+                    IncludePending?: boolean;
+                    /** @description Sort order to apply to the results. */
+                    Sort?: components["schemas"]["AccountBalanceEventSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path: {
+                    accountId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AccountBalanceEventsWithTotalsModel"];
+                        "application/json": components["schemas"]["AccountBalanceEventsWithTotalsModel"];
+                        "text/json": components["schemas"]["AccountBalanceEventsWithTotalsModel"];
                     };
                 };
                 /** @description Not Found */
@@ -3765,6 +3899,13 @@ export interface components {
         };
         /** @enum {unknown} */
         AccountBalanceEventSortModel: AccountBalanceEventSortModel | null;
+        /** @description Model representing an Account's balance events and their totals */
+        AccountBalanceEventsWithTotalsModel: {
+            /** @description Matching balance events */
+            events: components["schemas"]["AccountBalanceEventModel"][];
+            /** @description Totals of the matching posted balance events */
+            totals: components["schemas"]["BalanceEventTotalsModel"];
+        };
         /** @description Model representing an Account Balance */
         AccountBalanceModel: {
             /**
@@ -5027,6 +5168,13 @@ export interface components {
         };
         /** @enum {unknown} */
         FundBalanceEventSortModel: FundBalanceEventSortModel | null;
+        /** @description Model representing a Fund's balance events and their totals */
+        FundBalanceEventsWithTotalsModel: {
+            /** @description Matching balance events */
+            events: components["schemas"]["FundBalanceEventModel"][];
+            /** @description Totals of the matching posted balance events */
+            totals: components["schemas"]["BalanceEventTotalsModel"];
+        };
         /** @description Model representing an Fund Balance */
         FundBalanceModel: {
             /**

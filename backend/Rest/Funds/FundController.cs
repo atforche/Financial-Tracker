@@ -57,9 +57,44 @@ public sealed class FundController(
         }
         QueryPage<FundBalanceEvent> events = await fundBalanceEventQueryService.GetAsync(
             fundBalanceEventConverter.ToDomain(query) with { Offset = 0, Limit = null }, cancellationToken);
-        var totals = BalanceEventTotals.Calculate(events.Items,
+        return Ok(await GetTotalsAsync(query, events.Items, cancellationToken));
+    }
+
+    /// <summary>
+    /// Retrieves Fund Balance Events in a date range together with their posted totals.
+    /// </summary>
+    [HttpGet("balance-events/date-range/with-totals")]
+    [ProducesResponseType(typeof(FundBalanceEventsWithTotalsModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<FundBalanceEventsWithTotalsModel>> GetBalanceEventsWithTotalsAsync(
+        [FromQuery] FundBalanceEventsInDateRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        if (DateRangeValidationProblem.Validate(query.Range.Start, query.Range.End, "Unable to retrieve Fund totals.") is ValidationProblemDetails problem)
+        {
+            return UnprocessableEntity(problem);
+        }
+        QueryPage<FundBalanceEvent> events = await fundBalanceEventQueryService.GetAsync(
+            fundBalanceEventConverter.ToDomain(query) with { Offset = 0, Limit = null }, cancellationToken);
+        return Ok(new FundBalanceEventsWithTotalsModel
+        {
+            Events = events.Items.Select(fundBalanceEventConverter.ToModel).ToList(),
+            Totals = await GetTotalsAsync(query, events.Items, cancellationToken),
+        });
+    }
+
+    /// <summary>
+    /// Calculates the totals of the posted events among the provided Fund events.
+    /// </summary>
+    private async Task<BalanceEventTotalsModel> GetTotalsAsync(
+        FundBalanceEventsInDateRangeQueryParameterModel query,
+        IReadOnlyCollection<FundBalanceEvent> allEvents,
+        CancellationToken cancellationToken)
+    {
+        var events = allEvents.Where(item => item.IsPosted).ToList();
+        var totals = BalanceEventTotals.Calculate(events,
             item => item.IsPosted, item => item.Type, item => item.Amount);
-        (decimal? openingBalance, IReadOnlyCollection<(DateOnly Date, decimal Balance)> dates) = BalanceEventTotals.BuildDateBalances(events.Items,
+        (decimal? openingBalance, IReadOnlyCollection<(DateOnly Date, decimal Balance)> dates) = BalanceEventTotals.BuildDateBalances(events,
             item => item.EventDate, item => item.EventDateSequence,
             item => item.PreviousBalance?.PostedBalance, item => item.NewBalance?.PostedBalance);
         BalanceGranularity? granularity = null;
@@ -72,7 +107,7 @@ public sealed class FundController(
             dates = range.Dates.Select(item => (item.Date, item.Balance.TotalBalance)).ToList();
             granularity = range.Granularity;
         }
-        return Ok(new BalanceEventTotalsModel
+        return new BalanceEventTotalsModel
         {
             TotalInflow = totals.TotalInflow,
             TotalOutflow = totals.TotalOutflow,
@@ -83,7 +118,7 @@ public sealed class FundController(
                 TotalBalance = item.Balance,
             }).ToList(),
             Granularity = granularity == null ? null : BalanceGranularityConverter.ToModel(granularity.Value),
-        });
+        };
     }
 
     /// <summary>

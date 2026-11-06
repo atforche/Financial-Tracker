@@ -17,6 +17,33 @@ namespace Tests.BalanceEvents;
 public sealed class BalanceEventQueryTests
 {
     /// <summary>
+    /// Returns pending events with the list while keeping them out of the totals, for accounts and funds alike.
+    /// </summary>
+    [Fact]
+    public async Task EventsWithTotalsListPendingButTotalOnlyPosted()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(40m).From("Employer").To(cash, groceries).CreateAsync();
+        await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
+        _ = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(10m).From(cash).To("Market", groceries).CreateAsync();
+
+        AccountBalanceEventsWithTotalsModel account = await test.Api.GetAsync<AccountBalanceEventsWithTotalsModel>(
+            $"/accounts/{cash.Id}/balance-events/with-totals?range.start=2026-07-01&range.end=2026-07-31&includePending=true");
+        FundBalanceEventsWithTotalsModel fund = await test.Api.GetAsync<FundBalanceEventsWithTotalsModel>(
+            $"/funds/balance-events/date-range/with-totals?range.start=2026-07-01&range.end=2026-07-31&filter.ids={groceries.Id}&includePending=true");
+
+        Assert.Equal(2, account.Events.Count);
+        Assert.Equal(40m, account.Totals.TotalInflow);
+        Assert.Equal(0m, account.Totals.TotalOutflow);
+        Assert.Equal(2, fund.Events.Count);
+        Assert.Equal(40m, fund.Totals.TotalInflow);
+        Assert.Equal(0m, fund.Totals.TotalOutflow);
+    }
+
+    /// <summary>
     /// Pending events are opt-in, expose their counterparties without balances, and stay out of posted totals and chart points.
     /// </summary>
     [Fact]

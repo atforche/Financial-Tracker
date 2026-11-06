@@ -84,7 +84,10 @@ public sealed class FundBalanceEventQueryService(
         var periods = accountingPeriods.ToDictionary(period => period.Id);
         IReadOnlyCollection<FundId> fundIds = transactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null)).Distinct().ToList();
         var funds = (await repository.GetFundsAsync(fundIds, cancellationToken)).ToDictionary(fund => fund.Id);
-        IReadOnlyCollection<FundBalanceHistory> histories = await repository.GetFundHistoriesAsync(fundIds, cancellationToken);
+        IReadOnlyCollection<FundId> reportedFundIds = filter.Ids.Count == 0
+            ? fundIds
+            : fundIds.Where(id => filter.Ids.Contains(id.Value)).ToList();
+        IReadOnlyCollection<FundBalanceHistory> histories = await repository.GetFundHistoriesAsync(reportedFundIds, cancellationToken);
         var historiesByFund = histories
             .GroupBy(history => history.Fund.Id)
             .ToDictionary(group => group.Key, group => group.ToList());

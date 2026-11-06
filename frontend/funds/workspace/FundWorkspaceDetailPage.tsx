@@ -66,38 +66,24 @@ interface PeriodActivity {
  */
 const getDateActivity = async function (
   apiClient: ApiClient,
-  fundName: string,
+  fundId: string,
   dates: { readonly start: string; readonly end: string },
 ): Promise<DateActivity> {
-  const query = {
-    "Range.Start": dates.start,
-    "Range.End": dates.end,
-    "Filter.Names": [fundName],
-  };
-  const [eventsResponse, totalsResponse] = await Promise.all([
-    apiClient.GET("/funds/balance-events/date-range", {
+  const { events, totals } = unwrapApiResponse(
+    await apiClient.GET("/funds/balance-events/date-range/with-totals", {
       params: {
         query: {
-          ...query,
+          "Range.Start": dates.start,
+          "Range.End": dates.end,
+          "Filter.Ids": [fundId],
           IncludePending: true,
           Sort: FundBalanceEventSortModel.DateDescending,
         },
       },
     }),
-    apiClient.GET("/funds/balance-events/date-range/totals", {
-      params: { query },
-    }),
-  ]);
-  return {
-    events: unwrapApiResponse(
-      eventsResponse,
-      "Failed to fetch fund balance events",
-    ).items,
-    totals: unwrapApiResponse(
-      totalsResponse,
-      "Failed to fetch fund activity totals",
-    ),
-  };
+    "Failed to fetch fund activity",
+  );
+  return { events, totals };
 };
 
 /**
@@ -187,7 +173,7 @@ const FundWorkspaceDetailPage = async function ({
     periods: periodRange,
   } = resolveEntityHistory(resolvedSearchParams, periods);
   const dateActivity =
-    view === "date" ? await getDateActivity(apiClient, fund.name, dates) : null;
+    view === "date" ? await getDateActivity(apiClient, fundId, dates) : null;
   const periodActivity =
     view === "period" && periodRange !== null
       ? await getPeriodActivity(apiClient, fund, periodRange)
