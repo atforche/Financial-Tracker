@@ -33,9 +33,9 @@ public sealed class FundController(
     /// Retrieves Fund Balance Events in a date range together with their posted totals.
     /// </summary>
     [HttpGet("balance-events/date-range/with-totals")]
-    [ProducesResponseType(typeof(FundBalanceEventsWithTotalsModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(BalanceEventsWithTotalsModel<FundBalanceEventModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<FundBalanceEventsWithTotalsModel>> GetBalanceEventsWithTotalsAsync(
+    public async Task<ActionResult<BalanceEventsWithTotalsModel<FundBalanceEventModel>>> GetBalanceEventsWithTotalsAsync(
         [FromQuery] FundBalanceEventsInDateRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
@@ -43,13 +43,13 @@ public sealed class FundController(
         {
             return UnprocessableEntity(problem);
         }
-        QueryPage<FundBalanceEvent> events = await fundBalanceEventQueryService.GetAsync(
-            fundBalanceEventConverter.ToDomain(query) with { Offset = 0, Limit = null }, cancellationToken);
-        return Ok(new FundBalanceEventsWithTotalsModel
+        FundBalanceEventQuery eventQuery = fundBalanceEventConverter.ToDomain(query) with { Offset = 0, Limit = null };
+        QueryPage<FundBalanceEvent> events = await fundBalanceEventQueryService.GetAsync(eventQuery, cancellationToken);
+        return Ok(new BalanceEventsWithTotalsModel<FundBalanceEventModel>
         {
             Events = events.Items.Skip(query.Offset ?? 0).Take(query.Limit ?? int.MaxValue).Select(fundBalanceEventConverter.ToModel).ToList(),
             TotalCount = events.TotalCount,
-            Totals = await GetTotalsAsync(query, events.Items, cancellationToken),
+            Totals = await GetTotalsAsync(eventQuery, events.Items, cancellationToken),
         });
     }
 
@@ -57,24 +57,28 @@ public sealed class FundController(
     /// Calculates the posted totals of the provided Fund events.
     /// </summary>
     private async Task<BalanceEventTotalsModel> GetTotalsAsync(
-        FundBalanceEventsInDateRangeQueryParameterModel query,
+        FundBalanceEventQuery query,
         IReadOnlyCollection<FundBalanceEvent> events,
         CancellationToken cancellationToken)
     {
         var totals = BalanceEventTotals.Calculate(events,
             item => item.IsPosted, item => item.Type, item => item.Amount);
-        (decimal? openingBalance, IReadOnlyCollection<(DateOnly Date, decimal Balance)> dates) = BalanceEventTotals.BuildDateBalances(events,
-            item => item.EventDate, item => item.EventDateSequence,
-            item => item.PreviousBalance?.PostedBalance, item => item.NewBalance?.PostedBalance);
+        decimal? openingBalance;
+        IReadOnlyCollection<(DateOnly Date, decimal Balance)> dates;
         BalanceGranularity? granularity = null;
-        if (query.Range.Start is DateOnly start && query.Range.End is DateOnly end)
+        if (query.Start is DateOnly start && query.End is DateOnly end)
         {
-            FundBalanceEventQuery eventQuery = fundBalanceEventConverter.ToDomain(query);
             FundDateRange range = await fundQueryService.GetDateRangeAsync(new FundDateRangeQuery(
-                start, end, eventQuery.Filter, FundRangeSort.Name, 0, null), cancellationToken);
+                start, end, query.Filter, FundRangeSort.Name, 0, null), cancellationToken);
             openingBalance = range.OpeningBalance?.TotalBalance;
             dates = range.Dates.Select(item => (item.Date, item.Balance.TotalBalance)).ToList();
             granularity = range.Granularity;
+        }
+        else
+        {
+            (openingBalance, dates) = BalanceEventTotals.BuildDateBalances(events,
+                item => item.EventDate, item => item.EventDateSequence,
+                item => item.PreviousBalance?.PostedBalance, item => item.NewBalance?.PostedBalance);
         }
         return new BalanceEventTotalsModel
         {

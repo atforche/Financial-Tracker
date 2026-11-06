@@ -1,16 +1,14 @@
-using Models.BalanceEvents;
-
-namespace Models.Accounts;
+namespace Models.BalanceEvents;
 
 /// <summary>
-/// Model representing an Account's balance events and their totals
+/// Model representing balance events and their totals
 /// </summary>
-public sealed class AccountBalanceEventsWithTotalsModel
+public sealed class BalanceEventsWithTotalsModel<TEvent>
 {
     /// <summary>
     /// Matching balance events
     /// </summary>
-    public required IReadOnlyCollection<AccountBalanceEventModel> Events { get; init; }
+    public required IReadOnlyCollection<TEvent> Events { get; init; }
 
     /// <summary>
     /// Number of matching balance events before pagination

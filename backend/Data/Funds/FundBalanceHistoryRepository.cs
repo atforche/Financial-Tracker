@@ -37,15 +37,6 @@ public class FundBalanceHistoryRepository(DatabaseContext databaseContext) : IFu
             .ToList();
 
     /// <inheritdoc/>
-    public FundBalanceHistory GetEarliestByTransactionId(FundId fundId, TransactionId transactionId) =>
-        MergeWithTracked(
-            databaseContext.FundBalanceHistories.Where(history => history.Fund.Id == fundId && history.TransactionId == transactionId),
-            history => history.Fund.Id == fundId && history.TransactionId == transactionId)
-            .OrderBy(history => history.Date)
-            .ThenBy(history => history.Sequence)
-            .First();
-
-    /// <inheritdoc/>
     public FundBalanceHistory? GetLatestHistoryEarlierThan(FundId fundId, DateOnly historyDate, int sequenceNumber) =>
         MergeWithTracked(
             databaseContext.FundBalanceHistories.Where(history => history.Fund.Id == fundId &&

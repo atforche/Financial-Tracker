@@ -43,11 +43,6 @@ public interface IAccountingPeriodRepository
     AccountingPeriod? GetNextAccountingPeriod(AccountingPeriodId id);
 
     /// <summary>
-    /// Gets the previous Accounting Period for the Accounting Period with the specified ID
-    /// </summary>
-    AccountingPeriod? GetPreviousAccountingPeriod(AccountingPeriodId id);
-
-    /// <summary>
     /// Adds the provided Accounting Period to the repository
     /// </summary>
     void Add(AccountingPeriod accountingPeriod);

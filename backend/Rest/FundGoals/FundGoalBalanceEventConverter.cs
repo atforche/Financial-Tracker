@@ -1,8 +1,6 @@
-using Domain;
 using Domain.BalanceEvents;
 using Domain.FundGoals;
 using Domain.FundGoals.Queries;
-using Models;
 using Models.AccountingPeriods;
 using Models.BalanceEvents;
 using Models.FundGoals;
@@ -21,46 +19,12 @@ public sealed class FundGoalBalanceEventConverter
     public FundGoalBalanceEventAccountingPeriodRangeQuery ToDomain(FundGoalBalanceEventsInAccountingPeriodRangeQueryParameterModel model) => new(
         model.Range.Start,
         model.Range.End,
-        ToDomain(model.Filter),
-        ToDomain(model.Sort),
-        model.Offset ?? 0,
-        model.Limit);
+        ToDomain(model.Filter));
 
     /// <summary>
     /// Converts an API Fund Goal filter to a Domain event filter.
     /// </summary>
     private static FundGoalBalanceEventFilter ToDomain(FundGoalFilterModel? filter) => new(filter?.FundIds ?? []);
-
-    /// <summary>
-    /// Converts an API sort to a Domain sort.
-    /// </summary>
-    private static FundGoalBalanceEventSort ToDomain(FundGoalBalanceEventSortModel? sort) => sort switch
-    {
-        FundGoalBalanceEventSortModel.FundName => FundGoalBalanceEventSort.FundName,
-        FundGoalBalanceEventSortModel.FundNameDescending => FundGoalBalanceEventSort.FundNameDescending,
-        FundGoalBalanceEventSortModel.Date => FundGoalBalanceEventSort.Date,
-        FundGoalBalanceEventSortModel.DateDescending => FundGoalBalanceEventSort.DateDescending,
-        FundGoalBalanceEventSortModel.Type => FundGoalBalanceEventSort.Type,
-        FundGoalBalanceEventSortModel.TypeDescending => FundGoalBalanceEventSort.TypeDescending,
-        FundGoalBalanceEventSortModel.Amount => FundGoalBalanceEventSort.Amount,
-        FundGoalBalanceEventSortModel.AmountDescending => FundGoalBalanceEventSort.AmountDescending,
-        FundGoalBalanceEventSortModel.Counterparty => FundGoalBalanceEventSort.Counterparty,
-        FundGoalBalanceEventSortModel.CounterpartyDescending => FundGoalBalanceEventSort.CounterpartyDescending,
-        FundGoalBalanceEventSortModel.Source => FundGoalBalanceEventSort.Source,
-        FundGoalBalanceEventSortModel.SourceDescending => FundGoalBalanceEventSort.SourceDescending,
-        FundGoalBalanceEventSortModel.Destination => FundGoalBalanceEventSort.Destination,
-        FundGoalBalanceEventSortModel.DestinationDescending => FundGoalBalanceEventSort.DestinationDescending,
-        _ => FundGoalBalanceEventSort.DateDescending,
-    };
-
-    /// <summary>
-    /// Converts a Domain page to an API collection.
-    /// </summary>
-    public CollectionModel<FundGoalBalanceEventModel> ToModel(QueryPage<FundGoalBalanceEvent> page) => new()
-    {
-        Items = page.Items.Select(ToModel).ToList(),
-        TotalCount = page.TotalCount,
-    };
 
     /// <summary>
     /// Converts a Domain Fund Goal balance event to an API model.

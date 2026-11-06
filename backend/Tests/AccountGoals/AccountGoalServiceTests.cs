@@ -174,9 +174,6 @@ public sealed class AccountGoalServiceTests
         public AccountingPeriod? GetNextAccountingPeriod(AccountingPeriodId id) =>
             periods.SingleOrDefault(period => period.PeriodStartDate == GetById(id).PeriodStartDate.AddMonths(1));
 
-        public AccountingPeriod? GetPreviousAccountingPeriod(AccountingPeriodId id) =>
-            periods.SingleOrDefault(period => period.PeriodStartDate == GetById(id).PeriodStartDate.AddMonths(-1));
-
         public void Add(AccountingPeriod accountingPeriod) => throw new NotSupportedException();
 
         public void Delete(AccountingPeriod accountingPeriod) => throw new NotSupportedException();

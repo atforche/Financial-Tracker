@@ -33,11 +33,6 @@ public interface IAccountBalanceHistoryRepository
     IReadOnlyCollection<AccountBalanceHistory> GetAllByTransactionIdAndAccountId(TransactionId transactionId, AccountId accountId);
 
     /// <summary>
-    /// Gets the earliest Account Balance History entry for the specified Transaction ID
-    /// </summary>
-    AccountBalanceHistory GetEarliestByTransactionId(AccountId accountId, TransactionId transactionId);
-
-    /// <summary>
     /// Gets the latest Account Balance History entry earlier than the specified date and sequence number
     /// </summary>
     AccountBalanceHistory? GetLatestHistoryEarlierThan(AccountId accountId, DateOnly historyDate, int sequenceNumber);

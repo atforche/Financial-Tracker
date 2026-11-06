@@ -116,7 +116,7 @@ public sealed class FundGoalContributionTests
         _ = await test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 12)).For(20m).From(groceries).To(reserve).CreateAsync();
 
         await AssertAssignedAsync(test, july, groceries, 0m);
-        FundGoalBalanceEventModel transferEvent = Assert.Single(await GetGoalEventsAsync(test, july),
+        FundGoalBalanceEventModel transferEvent = Assert.Single(await test.Api.GetFundGoalEventsAsync(july, groceries),
             item => item.Fund.Id == groceries.Id && item.Type == BalanceEventTypeModel.Debit && item.Source.DisplayName == groceries.Name);
         Assert.Equal(-20m, transferEvent.NewTotals?.AmountAssigned);
         Assert.Equal(0m, transferEvent.NewTotals?.AmountAssignedToExpectedContribution);
@@ -127,7 +127,7 @@ public sealed class FundGoalContributionTests
 
         await test.Transactions.PostAsync(spending, cash, new DateOnly(2026, 7, 11));
         await AssertAssignedAsync(test, july, groceries, 100m);
-        FundGoalBalanceEventModel spendingEvent = Assert.Single(await GetGoalEventsAsync(test, july),
+        FundGoalBalanceEventModel spendingEvent = Assert.Single(await test.Api.GetFundGoalEventsAsync(july, groceries),
             item => item.Fund.Id == groceries.Id && item.Type == BalanceEventTypeModel.Debit && item.Source.DisplayName == "Cash");
         Assert.Equal(30m, spendingEvent.NewTotals?.AmountSpent);
 
@@ -204,14 +204,11 @@ public sealed class FundGoalContributionTests
 
     private static async Task AssertContributionTotalAsync(FinancialTrackerTestContext test, AccountingPeriodHandle period, FundHandle fund, decimal expected)
     {
-        FundGoalBalanceEventModel latest = (await GetGoalEventsAsync(test, period))
+        FundGoalBalanceEventModel latest = (await test.Api.GetFundGoalEventsAsync(period, fund))
             .Where(item => item.Fund.Id == fund.Id)
             .OrderBy(item => item.TransactionDate)
             .ThenBy(item => item.TransactionSequence)
             .Last();
         Assert.Equal(expected, latest.NewTotals?.AmountAssignedToExpectedContribution);
     }
-
-    private static async Task<IReadOnlyCollection<FundGoalBalanceEventModel>> GetGoalEventsAsync(FinancialTrackerTestContext test, AccountingPeriodHandle period) =>
-        (await test.FundGoalEvents.GetAsync(period)).Items;
 }

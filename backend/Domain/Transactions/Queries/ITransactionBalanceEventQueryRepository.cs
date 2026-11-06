@@ -20,14 +20,6 @@ public interface ITransactionBalanceEventQueryRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves Transactions in the provided date range.
-    /// </summary>
-    Task<IReadOnlyCollection<Transaction>> GetAsync(
-        DateOnly? startDate,
-        DateOnly? endDate,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Retrieves Transactions with Account postings in the supplied posting-date range.
     /// </summary>
     Task<IReadOnlyCollection<Transaction>> GetForAccountPostingsAsync(

@@ -1,8 +1,6 @@
-using Domain;
 using Domain.BalanceEvents;
 using Domain.Funds;
 using Domain.Funds.Queries;
-using Models;
 using Models.AccountingPeriods;
 using Models.BalanceEvents;
 using Models.Funds;
@@ -49,15 +47,6 @@ public sealed class FundBalanceEventConverter
         FundBalanceEventSortModel.Counterparty => FundBalanceEventSort.Counterparty,
         FundBalanceEventSortModel.CounterpartyDescending => FundBalanceEventSort.CounterpartyDescending,
         _ => FundBalanceEventSort.DateDescending,
-    };
-
-    /// <summary>
-    /// Converts a Domain page to an API collection.
-    /// </summary>
-    public CollectionModel<FundBalanceEventModel> ToModel(QueryPage<FundBalanceEvent> page) => new()
-    {
-        Items = page.Items.Select(ToModel).ToList(),
-        TotalCount = page.TotalCount,
     };
 
     /// <summary>

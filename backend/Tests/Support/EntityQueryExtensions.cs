@@ -18,7 +18,7 @@ internal static class EntityQueryExtensions
     /// </summary>
     public static async Task<CollectionModel<AccountBalanceEventModel>> GetAccountEventsAsync(this TestApiClient api, string uri)
     {
-        AccountBalanceEventsWithTotalsModel model = await api.GetAsync<AccountBalanceEventsWithTotalsModel>(uri);
+        BalanceEventsWithTotalsModel<AccountBalanceEventModel> model = await api.GetAsync<BalanceEventsWithTotalsModel<AccountBalanceEventModel>>(uri);
         return new CollectionModel<AccountBalanceEventModel> { Items = model.Events, TotalCount = model.TotalCount };
     }
 
@@ -27,7 +27,7 @@ internal static class EntityQueryExtensions
     /// </summary>
     public static async Task<CollectionModel<FundBalanceEventModel>> GetFundEventsAsync(this TestApiClient api, string uri)
     {
-        FundBalanceEventsWithTotalsModel model = await api.GetAsync<FundBalanceEventsWithTotalsModel>(uri);
+        BalanceEventsWithTotalsModel<FundBalanceEventModel> model = await api.GetAsync<BalanceEventsWithTotalsModel<FundBalanceEventModel>>(uri);
         return new CollectionModel<FundBalanceEventModel> { Items = model.Events, TotalCount = model.TotalCount };
     }
 
@@ -35,7 +35,13 @@ internal static class EntityQueryExtensions
     /// Gets the Fund totals at the provided with-totals URI.
     /// </summary>
     public static async Task<BalanceEventTotalsModel> GetFundTotalsAsync(this TestApiClient api, string uri) =>
-        (await api.GetAsync<FundBalanceEventsWithTotalsModel>(uri)).Totals;
+        (await api.GetAsync<BalanceEventsWithTotalsModel<FundBalanceEventModel>>(uri)).Totals;
+
+    /// <summary>
+    /// Gets a Fund's goal balance events in an Accounting Period, newest first.
+    /// </summary>
+    public static async Task<IReadOnlyCollection<FundGoalBalanceEventModel>> GetFundGoalEventsAsync(this TestApiClient api, AccountingPeriodHandle period, FundHandle fund) =>
+        (await api.GetAsync<PeriodFundDetailModel>($"/accounting-periods/{period.Id}/funds/{fund.Id}")).Events;
 
     /// <summary>
     /// Gets a Fund's goal for an Accounting Period, or its only goal when no period is provided.

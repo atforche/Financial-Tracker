@@ -1390,9 +1390,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["FundBalanceEventsWithTotalsModel"];
-                        "application/json": components["schemas"]["FundBalanceEventsWithTotalsModel"];
-                        "text/json": components["schemas"]["FundBalanceEventsWithTotalsModel"];
+                        "text/plain": components["schemas"]["BalanceEventsWithTotalsModelOfFundBalanceEventModel"];
+                        "application/json": components["schemas"]["BalanceEventsWithTotalsModelOfFundBalanceEventModel"];
+                        "text/json": components["schemas"]["BalanceEventsWithTotalsModelOfFundBalanceEventModel"];
                     };
                 };
                 /** @description Unprocessable Entity */
@@ -1788,10 +1788,6 @@ export interface paths {
                     "Filter.FundIds"?: string[];
                     "Filter.AccountingPeriodIds"?: string[];
                     "Filter.IncludeOnboarded"?: boolean;
-                    /** @description Optional event ordering. */
-                    Sort?: components["schemas"]["FundGoalBalanceEventSortModel"];
-                    Limit?: number;
-                    Offset?: number;
                 };
                 header?: never;
                 path?: never;
@@ -2157,9 +2153,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["AccountBalanceEventsWithTotalsModel"];
-                        "application/json": components["schemas"]["AccountBalanceEventsWithTotalsModel"];
-                        "text/json": components["schemas"]["AccountBalanceEventsWithTotalsModel"];
+                        "text/plain": components["schemas"]["BalanceEventsWithTotalsModelOfAccountBalanceEventModel"];
+                        "application/json": components["schemas"]["BalanceEventsWithTotalsModelOfAccountBalanceEventModel"];
+                        "text/json": components["schemas"]["BalanceEventsWithTotalsModelOfAccountBalanceEventModel"];
                     };
                 };
                 /** @description Not Found */
@@ -3593,18 +3589,6 @@ export interface components {
         };
         /** @enum {unknown} */
         AccountBalanceEventSortModel: AccountBalanceEventSortModel | null;
-        /** @description Model representing an Account's balance events and their totals */
-        AccountBalanceEventsWithTotalsModel: {
-            /** @description Matching balance events */
-            events: components["schemas"]["AccountBalanceEventModel"][];
-            /**
-             * Format: int32
-             * @description Number of matching balance events before pagination
-             */
-            totalCount: number;
-            /** @description Totals of the matching posted balance events */
-            totals: components["schemas"]["BalanceEventTotalsModel"];
-        };
         /** @description Model representing an Account Balance */
         AccountBalanceModel: {
             /**
@@ -4064,6 +4048,30 @@ export interface components {
              * @description Posted balance after the last matching event on this date.
              */
             totalBalance: number;
+        };
+        /** @description Model representing balance events and their totals */
+        BalanceEventsWithTotalsModelOfAccountBalanceEventModel: {
+            /** @description Matching balance events */
+            events: components["schemas"]["AccountBalanceEventModel"][];
+            /**
+             * Format: int32
+             * @description Number of matching balance events before pagination
+             */
+            totalCount: number;
+            /** @description Totals of the matching posted balance events */
+            totals: components["schemas"]["BalanceEventTotalsModel"];
+        };
+        /** @description Model representing balance events and their totals */
+        BalanceEventsWithTotalsModelOfFundBalanceEventModel: {
+            /** @description Matching balance events */
+            events: components["schemas"]["FundBalanceEventModel"][];
+            /**
+             * Format: int32
+             * @description Number of matching balance events before pagination
+             */
+            totalCount: number;
+            /** @description Totals of the matching posted balance events */
+            totals: components["schemas"]["BalanceEventTotalsModel"];
         };
         /** @description Totals of posted balance events in the requested range. */
         BalanceEventTotalsModel: {
@@ -4787,18 +4795,6 @@ export interface components {
         };
         /** @enum {unknown} */
         FundBalanceEventSortModel: FundBalanceEventSortModel | null;
-        /** @description Model representing a Fund's balance events and their totals */
-        FundBalanceEventsWithTotalsModel: {
-            /** @description Matching balance events */
-            events: components["schemas"]["FundBalanceEventModel"][];
-            /**
-             * Format: int32
-             * @description Number of matching balance events before pagination
-             */
-            totalCount: number;
-            /** @description Totals of the matching posted balance events */
-            totals: components["schemas"]["BalanceEventTotalsModel"];
-        };
         /** @description Model representing an Fund Balance */
         FundBalanceModel: {
             /**
@@ -4916,8 +4912,6 @@ export interface components {
              */
             amount?: null | number;
         };
-        /** @enum {unknown} */
-        FundGoalBalanceEventSortModel: FundGoalBalanceEventSortModel | null;
         /** @description Model describing ending-balance progress for a Fund Goal. */
         FundGoalEndingBalanceProgressModel: {
             /**
@@ -6267,22 +6261,6 @@ export enum FundBalanceEventSortModel {
     AmountDescending = "AmountDescending",
     Counterparty = "Counterparty",
     CounterpartyDescending = "CounterpartyDescending"
-}
-export enum FundGoalBalanceEventSortModel {
-    FundName = "FundName",
-    FundNameDescending = "FundNameDescending",
-    Date = "Date",
-    DateDescending = "DateDescending",
-    Type = "Type",
-    TypeDescending = "TypeDescending",
-    Amount = "Amount",
-    AmountDescending = "AmountDescending",
-    Counterparty = "Counterparty",
-    CounterpartyDescending = "CounterpartyDescending",
-    Source = "Source",
-    SourceDescending = "SourceDescending",
-    Destination = "Destination",
-    DestinationDescending = "DestinationDescending"
 }
 export enum FundGoalEndingBalanceStatusModel {
     BelowMinimum = "BelowMinimum",

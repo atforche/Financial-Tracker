@@ -30,9 +30,9 @@ public sealed class BalanceEventQueryTests
         await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
         _ = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(10m).From(cash).To("Market", groceries).CreateAsync();
 
-        AccountBalanceEventsWithTotalsModel account = await test.Api.GetAsync<AccountBalanceEventsWithTotalsModel>(
+        BalanceEventsWithTotalsModel<AccountBalanceEventModel> account = await test.Api.GetAsync<BalanceEventsWithTotalsModel<AccountBalanceEventModel>>(
             $"/accounts/{cash.Id}/balance-events/with-totals?range.start=2026-07-01&range.end=2026-07-31&includePending=true");
-        FundBalanceEventsWithTotalsModel fund = await test.Api.GetAsync<FundBalanceEventsWithTotalsModel>(
+        BalanceEventsWithTotalsModel<FundBalanceEventModel> fund = await test.Api.GetAsync<BalanceEventsWithTotalsModel<FundBalanceEventModel>>(
             $"/funds/balance-events/date-range/with-totals?range.start=2026-07-01&range.end=2026-07-31&filter.ids={groceries.Id}&includePending=true");
 
         Assert.Equal(2, account.Events.Count);
@@ -67,7 +67,7 @@ public sealed class BalanceEventQueryTests
             "/funds/balance-events/date-range/with-totals?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries");
         CollectionModel<FundBalanceEventModel> fundEvents = await test.Api.GetFundEventsAsync(
             "/funds/balance-events/date-range/with-totals?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries&includePending=true");
-        CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.FundGoalEvents.GetAsync(july);
+        IReadOnlyCollection<FundGoalBalanceEventModel> goalEvents = await test.Api.GetFundGoalEventsAsync(july, groceries);
         BalanceEventTotalsModel accountTotals = await test.Api.GetAsync<BalanceEventTotalsModel>(
             $"/accounts/{cash.Id}/balance-events/totals?range.start=2026-07-01&range.end=2026-07-31&includePending=true");
         BalanceEventTotalsModel fundTotals = await test.Api.GetFundTotalsAsync(
@@ -90,7 +90,7 @@ public sealed class BalanceEventQueryTests
         Assert.Equal(transaction.Id, fundEvent.TransactionId);
         Assert.False(fundEvent.IsPosted);
         Assert.Null(fundEvent.EventDate);
-        FundGoalBalanceEventModel goalEvent = Assert.Single(goalEvents.Items, item => item.TransactionId == transaction.Id);
+        FundGoalBalanceEventModel goalEvent = Assert.Single(goalEvents, item => item.TransactionId == transaction.Id);
         Assert.False(goalEvent.IsPosted);
         Assert.Equal("Cash", goalEvent.Source.DisplayName);
         Assert.Equal("Market", Assert.Single(goalEvent.Destinations).DisplayName);
@@ -238,25 +238,22 @@ public sealed class BalanceEventQueryTests
 
         CollectionModel<AccountBalanceEventModel> accounts = await test.Api.GetAccountEventsAsync($"{accountUri}&sort=Date");
         CollectionModel<FundBalanceEventModel> funds = await test.Api.GetFundEventsAsync($"{fundUri}&sort=Date");
-        CollectionModel<FundGoalBalanceEventModel> goals = await test.FundGoalEvents.GetAsync(july, FundGoalBalanceEventSortModel.Date);
+        IReadOnlyCollection<FundGoalBalanceEventModel> goals = await test.Api.GetFundGoalEventsAsync(july, groceries);
         Assert.Equal([earlier.Id, later.Id], accounts.Items.Select(item => item.TransactionId));
         Assert.Equal([earlier.Id, later.Id], funds.Items.Select(item => item.TransactionId));
-        Assert.Equal([earlier.Id, later.Id], goals.Items.Select(item => item.TransactionId));
+        Assert.Equal([later.Id, earlier.Id], goals.Select(item => item.TransactionId));
         Assert.All(accounts.Items, item => Assert.True(item.IsPosted));
         Assert.All(funds.Items, item => Assert.True(item.IsPosted));
-        Assert.All(goals.Items, item => Assert.True(item.IsPosted));
+        Assert.All(goals, item => Assert.True(item.IsPosted));
 
         accounts = await test.Api.GetAccountEventsAsync($"{accountUri}&sort=DateDescending&limit=1");
         funds = await test.Api.GetFundEventsAsync($"{fundUri}&sort=DateDescending&limit=1");
-        goals = await test.FundGoalEvents.GetAsync(july, FundGoalBalanceEventSortModel.DateDescending, 1);
         using HttpResponseMessage missing = await test.Api.GetResponseAsync(
             $"/accounts/{Guid.NewGuid()}/balance-events/with-totals?range.start=2026-07-01&range.end=2026-07-31");
         Assert.Equal(2, accounts.TotalCount);
         Assert.Equal(later.Id, Assert.Single(accounts.Items).TransactionId);
         Assert.Equal(2, funds.TotalCount);
         Assert.Equal(later.Id, Assert.Single(funds.Items).TransactionId);
-        Assert.Equal(2, goals.TotalCount);
-        Assert.Equal(later.Id, Assert.Single(goals.Items).TransactionId);
         Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
     }
 
@@ -275,9 +272,9 @@ public sealed class BalanceEventQueryTests
         await test.Transactions.PostAsync(earlier, cash, new DateOnly(2026, 7, 10));
         await test.Transactions.PostAsync(later, cash, new DateOnly(2026, 7, 16));
 
-        CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.FundGoalEvents.GetAsync(july);
+        IReadOnlyCollection<FundGoalBalanceEventModel> goalEvents = await test.Api.GetFundGoalEventsAsync(july, groceries);
 
-        FundGoalBalanceEventModel laterEvent = Assert.Single(goalEvents.Items, item => item.TransactionId == later.Id);
+        FundGoalBalanceEventModel laterEvent = Assert.Single(goalEvents, item => item.TransactionId == later.Id);
         Assert.True(laterEvent.IsPosted);
         Assert.Equal(new DateOnly(2026, 7, 16), laterEvent.EventDate);
         Assert.Equal(25m, laterEvent.PreviousTotals?.AmountSpent);
@@ -299,10 +296,10 @@ public sealed class BalanceEventQueryTests
 
         CollectionModel<FundBalanceEventModel> fundEvents = await test.Api.GetFundEventsAsync(
             "/funds/balance-events/date-range/with-totals?range.start=2026-07-01&range.end=2026-07-31");
-        CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.FundGoalEvents.GetAsync(july);
+        IReadOnlyCollection<FundGoalBalanceEventModel> goalEvents = await test.Api.GetFundGoalEventsAsync(july, groceries);
 
         FundBalanceEventModel fund = Assert.Single(fundEvents.Items, item => item.TransactionId == transaction.Id && item.Fund.Id == groceries.Id);
-        FundGoalBalanceEventModel goal = Assert.Single(goalEvents.Items, item => item.TransactionId == transaction.Id && item.Fund.Id == groceries.Id);
+        FundGoalBalanceEventModel goal = Assert.Single(goalEvents, item => item.TransactionId == transaction.Id && item.Fund.Id == groceries.Id);
         Assert.Equal("Groceries", fund.Source.DisplayName);
         Assert.Equal("Dining", Assert.Single(fund.Destinations).DisplayName);
         Assert.Equal("Groceries", goal.Source.DisplayName);
@@ -341,11 +338,11 @@ public sealed class BalanceEventQueryTests
             }],
         });
 
-        FundGoalBalanceEventModel pending = Assert.Single((await test.FundGoalEvents.GetAsync(july)).Items,
+        FundGoalBalanceEventModel pending = Assert.Single(await test.Api.GetFundGoalEventsAsync(july, unassigned),
             item => item.TransactionId == created.Id && item.Fund.Id == unassigned.Id);
         IncomeTransactionModel pendingDetail = await test.Api.GetAsync<IncomeTransactionModel>($"/transactions/{created.Id}");
         await test.Transactions.PostAsync(new TransactionHandle(created.Id), cash, new DateOnly(2026, 7, 15));
-        FundGoalBalanceEventModel posted = Assert.Single((await test.FundGoalEvents.GetAsync(july)).Items,
+        FundGoalBalanceEventModel posted = Assert.Single(await test.Api.GetFundGoalEventsAsync(july, unassigned),
             item => item.TransactionId == created.Id && item.Fund.Id == unassigned.Id);
         IncomeTransactionModel postedDetail = await test.Api.GetAsync<IncomeTransactionModel>($"/transactions/{created.Id}");
 

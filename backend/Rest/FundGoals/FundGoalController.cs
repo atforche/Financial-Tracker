@@ -1,5 +1,4 @@
 using Data;
-using Domain;
 using Domain.AccountingPeriods;
 using Domain.AccountingPeriods.Queries;
 using Domain.BalanceEvents;
@@ -39,14 +38,14 @@ public sealed class FundGoalController(
         [FromQuery] FundGoalBalanceEventsInAccountingPeriodRangeQueryParameterModel query,
         CancellationToken cancellationToken)
     {
-        AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>> result = await fundGoalBalanceEventQueryService.GetForTotalsAsync(
-            fundGoalBalanceEventConverter.ToDomain(query) with { Offset = 0, Limit = null }, cancellationToken);
+        AccountingPeriodRangeQueryResult<IReadOnlyCollection<FundGoalBalanceEvent>> result = await fundGoalBalanceEventQueryService.GetForTotalsAsync(
+            fundGoalBalanceEventConverter.ToDomain(query), cancellationToken);
         if (result.Range == null)
         {
             return UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure,
                 query.Range.Start, query.Range.End, "Unable to retrieve Fund Goal balance event totals."));
         }
-        var totals = BalanceEventTotals.Calculate(result.Range.Items,
+        var totals = BalanceEventTotals.Calculate(result.Range,
             item => item.IsPosted, item => item.Type, item => item.Amount);
         return Ok(new BalanceEventTotalsModel { TotalInflow = totals.TotalInflow, TotalOutflow = totals.TotalOutflow });
     }

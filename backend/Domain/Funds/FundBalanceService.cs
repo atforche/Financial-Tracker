@@ -20,14 +20,6 @@ public sealed class FundBalanceService(
     }
 
     /// <summary>
-    /// Gets the posted Fund Balances after the provided Transaction.
-    /// </summary>
-    public IEnumerable<FundBalance> GetNewBalanceForTransaction(Transaction transaction) =>
-        transaction.GetAllAffectedFundIds(null).Select(fundId => fundBalanceHistoryRepository.GetAllByTransactionId(transaction.Id)
-            .Where(item => item.Fund.Id == fundId).OrderByDescending(item => item.Date).ThenByDescending(item => item.Sequence)
-            .First().ToFundBalance());
-
-    /// <summary>
     /// Rebuilds posted histories for a newly added Transaction.
     /// </summary>
     internal void AddTransaction(Transaction transaction) => SynchronizePostedHistories(transaction);

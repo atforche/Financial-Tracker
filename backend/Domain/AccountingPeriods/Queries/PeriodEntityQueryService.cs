@@ -49,10 +49,8 @@ public sealed class PeriodEntityQueryService(
             : AccountGoalService.GetProgresses([goal], history).GetValueOrDefault(goal.Id);
         (AccountingPeriod? previous, AccountingPeriod? next) = await accountingPeriodQueryRepository.GetAdjacentAsync(period, cancellationToken);
         IReadOnlyCollection<AccountBalanceHistory> dailyHistories = await accountBalanceEventQueryRepository.GetPeriodHistoriesAsync(id, periodId, cancellationToken);
-        QueryPage<AccountBalanceEvent> events = await accountBalanceEventQueryService.GetAsync(
-            new AccountBalanceEventAccountQuery(accountId, null, null, [accountingPeriodId], true, AccountBalanceEventSort.DateDescending, 0, null),
-            cancellationToken);
-        var totals = BalanceEventTotals.Calculate(events.Items, item => item.IsPosted, item => item.Type, item => item.Amount);
+        IReadOnlyCollection<AccountBalanceEvent> events = await accountBalanceEventQueryService.GetForAccountAsync(period, balance.Account, cancellationToken);
+        var totals = BalanceEventTotals.Calculate(events, item => item.IsPosted, item => item.Type, item => item.Amount);
         return new PeriodAccountDetail(
             period,
             previous,
@@ -63,7 +61,7 @@ public sealed class PeriodEntityQueryService(
             totals.TotalOutflow,
             PeriodBalanceDateSeries.Build(period, balance.OpeningBalance,
                 dailyHistories.Select(item => (item.Date, item.Sequence, item.AccountingPeriodBalanceChange))),
-            events.Items);
+            events);
     }
 
     /// <summary>

@@ -112,48 +112,6 @@ public sealed class FundGoalService(
     }
 
     /// <summary>
-    /// Calculates progress for a Fund Goal in the provided Accounting Period.
-    /// </summary>
-    public bool TryGetProgress(
-        FundGoal fundGoal,
-        AccountingPeriod accountingPeriod,
-        [NotNullWhen(true)] out FundGoalProgress? progress,
-        out IEnumerable<ValidationError> exceptions)
-    {
-        progress = null;
-        exceptions = [];
-        if (fundGoal.AccountingPeriod?.Id != accountingPeriod.Id)
-        {
-            exceptions = [new ValidationError(
-                new ValidationErrorPath(nameof(accountingPeriod)),
-                "The Fund Goal does not apply to the provided Accounting Period.")];
-            return false;
-        }
-        AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository
-            .GetForAccountingPeriod(accountingPeriod.Id);
-        AccountingPeriodFundBalanceHistory? fundBalanceHistory = balanceHistory.FundBalances.SingleOrDefault(
-            balance => balance.Fund.Id == fundGoal.Fund.Id);
-        AccountingPeriodFundGoalTotals? totals = balanceHistory.FundGoalTotals.SingleOrDefault(
-            totals => totals.Fund.Id == fundGoal.Fund.Id);
-        if (fundBalanceHistory == null || totals == null)
-        {
-            exceptions = [new ValidationError(
-                new ValidationErrorPath(nameof(accountingPeriod)),
-                "The Fund Goal does not apply to the provided Accounting Period.")];
-            return false;
-        }
-
-        progress = FundGoalProgressService.Calculate(
-            totals.AmountAssignedToExpectedContribution,
-            fundBalanceHistory.ClosingBalance,
-            fundGoal.PlannedMonthlyContribution,
-            fundGoal.MinimumEndingBalance,
-            fundGoal.MaximumEndingBalance,
-            fundGoal.AllowExpectedContributionAboveMaximum);
-        return true;
-    }
-
-    /// <summary>
     /// Calculates progress for Fund Goals in the same Accounting Period using one balance-history lookup.
     /// </summary>
     public IReadOnlyDictionary<FundGoalId, FundGoalProgress> GetProgresses(
