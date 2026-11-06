@@ -222,6 +222,8 @@ const AccountingPeriodWorkspaceDetailPage = async function ({
                             item.goalProgress.contribution.assignedAmount,
                           expected:
                             item.goalProgress.contribution.expectedAmount,
+                          isSatisfied:
+                            item.goalProgress.contribution.isSatisfied,
                         },
                 }))}
               />

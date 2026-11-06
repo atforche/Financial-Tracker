@@ -135,7 +135,7 @@ const describeAttentionGroup = function (
       return describeOutOfRange("account", "accounts");
     case OverviewAttentionKindModel.GoalsBehind:
       return {
-        title: `${pluralize(group.count, "goal")} not fully funded`,
+        title: `${pluralize(group.count, "fund goal")} not fully funded`,
         amount: `${formatCurrency(group.amount)} remaining`,
         items: group.topItems.map((item) => ({
           text: item.name,
