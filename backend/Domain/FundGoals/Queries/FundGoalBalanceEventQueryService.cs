@@ -98,6 +98,30 @@ public sealed class FundGoalBalanceEventQueryService(
     }
 
     /// <summary>
+    /// Retrieves one Fund's goal balance events in an Accounting Period, newest first, from its already loaded goal and
+    /// period balances.
+    /// </summary>
+    public async Task<IReadOnlyCollection<FundGoalBalanceEvent>> GetForFundAsync(
+        AccountingPeriod accountingPeriod,
+        FundId fundId,
+        FundGoal? fundGoal,
+        AccountingPeriodBalanceHistory balanceHistory,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyCollection<Transaction> transactions = await transactionQueryRepository.GetForFundsAsync([accountingPeriod.Id], [fundId], cancellationToken);
+        QueryPage<FundGoalBalanceEvent> page = await GetAsync(
+            transactions,
+            [accountingPeriod],
+            new FundGoalBalanceEventFilter([fundId.Value]),
+            FundGoalBalanceEventSort.DateDescending,
+            0,
+            null,
+            cancellationToken,
+            (fundGoal, balanceHistory));
+        return page.Items;
+    }
+
+    /// <summary>
     /// Interprets and pages Fund Goal balance events from the provided facts.
     /// </summary>
     private async Task<QueryPage<FundGoalBalanceEvent>> GetAsync(
@@ -107,20 +131,24 @@ public sealed class FundGoalBalanceEventQueryService(
         FundGoalBalanceEventSort sort,
         int offset,
         int? limit,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        (FundGoal? Goal, AccountingPeriodBalanceHistory History)? loaded = null)
     {
         var periods = accountingPeriods.ToDictionary(period => period.Id);
         IReadOnlyCollection<FundId> fundIds = transactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null))
             .Distinct().ToList();
         var funds = (await repository.GetFundsAsync(fundIds, cancellationToken)).ToDictionary(fund => fund.Id);
-        IReadOnlyCollection<FundGoalTotalsHistory> histories = await repository.GetFundGoalHistoriesAsync(fundIds, cancellationToken);
+        IReadOnlyCollection<FundId> reportedFundIds = filter.FundIds.Count == 0
+            ? fundIds
+            : fundIds.Where(id => filter.FundIds.Contains(id.Value)).ToList();
+        IReadOnlyCollection<FundGoalTotalsHistory> histories = await repository.GetFundGoalHistoriesAsync(reportedFundIds, cancellationToken);
         Dictionary<(FundId FundId, AccountingPeriodId PeriodId), List<FundGoalTotalsHistory>> historiesByFundAndPeriod = histories
             .GroupBy(history => (history.FundId, history.AccountingPeriodId))
             .ToDictionary(group => group.Key, group => group.ToList());
         IReadOnlyCollection<FundGoalBalanceEvent> events = transactions
             .SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], funds, historiesByFundAndPeriod))
             .Where(balanceEvent => filter.FundIds.Count == 0 || filter.FundIds.Contains(balanceEvent.Fund.Id.Value)).ToList();
-        events = AddRemainingAmountToAssignToExpectedContribution(events);
+        events = AddRemainingAmountToAssignToExpectedContribution(events, loaded);
         var allItems = Sort(events, sort).ToList();
         return new QueryPage<FundGoalBalanceEvent>(
             allItems.Skip(offset).Take(limit ?? int.MaxValue).ToList(),
@@ -130,7 +158,9 @@ public sealed class FundGoalBalanceEventQueryService(
     /// <summary>
     /// Enriches each event's historical totals with the remaining expected monthly contribution amounts.
     /// </summary>
-    private List<FundGoalBalanceEvent> AddRemainingAmountToAssignToExpectedContribution(IReadOnlyCollection<FundGoalBalanceEvent> events)
+    private List<FundGoalBalanceEvent> AddRemainingAmountToAssignToExpectedContribution(
+        IReadOnlyCollection<FundGoalBalanceEvent> events,
+        (FundGoal? Goal, AccountingPeriodBalanceHistory History)? loaded = null)
     {
         var remainingByFundAndPeriod = new Dictionary<(FundId FundId, AccountingPeriodId PeriodId), decimal>();
 
@@ -142,17 +172,17 @@ public sealed class FundGoalBalanceEventQueryService(
                 return expectedAmount;
             }
 
-            FundGoal? fundGoal = fundGoalRepository.GetByFundAndAccountingPeriod(
-                balanceEvent.Fund.Id,
-                balanceEvent.AccountingPeriod.Id);
+            FundGoal? fundGoal = loaded != null
+                ? loaded.Value.Goal
+                : fundGoalRepository.GetByFundAndAccountingPeriod(balanceEvent.Fund.Id, balanceEvent.AccountingPeriod.Id);
             if (fundGoal == null)
             {
                 remainingByFundAndPeriod[key] = 0;
                 return 0;
             }
 
-            AccountingPeriodBalanceHistory history = accountingPeriodBalanceHistoryRepository
-                .GetForAccountingPeriod(balanceEvent.AccountingPeriod.Id);
+            AccountingPeriodBalanceHistory history = loaded?.History
+                ?? accountingPeriodBalanceHistoryRepository.GetForAccountingPeriod(balanceEvent.AccountingPeriod.Id);
             decimal currentEndingBalance = history.FundBalances
                 .SingleOrDefault(balance => balance.Fund.Id == balanceEvent.Fund.Id)
                 ?.ClosingBalance ?? 0;

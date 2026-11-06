@@ -3,6 +3,7 @@ using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
+using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Queries;
 using Domain.Transactions.Refunds;
@@ -85,15 +86,50 @@ public sealed class TransactionBalanceEventQueryRepository(DatabaseContext datab
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<Transaction>> GetForFundPostingsAsync(
         DateOnly? startDate, DateOnly? endDate,
+        IReadOnlyCollection<FundId>? fundIds,
         CancellationToken cancellationToken = default)
     {
         IQueryable<TransactionId> ids = databaseContext.FundBalanceHistories
             .Where(history => (startDate == null || history.Date >= startDate)
-                && (endDate == null || history.Date <= endDate))
+                && (endDate == null || history.Date <= endDate)
+                && (fundIds == null || fundIds.Contains(history.Fund.Id)))
             .Select(history => history.TransactionId).Distinct();
         return await databaseContext.Transactions.AsNoTracking().AsSplitQuery()
             .Where(transaction => ids.Contains(transaction.Id))
             .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyCollection<Transaction>> GetForFundsAsync(
+        IReadOnlyCollection<AccountingPeriodId> accountingPeriodIds,
+        IReadOnlyCollection<FundId> fundIds,
+        CancellationToken cancellationToken = default)
+    {
+        List<SpendingTransaction> spendingTransactions = await databaseContext.Transactions
+            .OfType<SpendingTransaction>().AsNoTracking().AsSplitQuery()
+            .Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId))
+            .Where(transaction => transaction.Destinations.Any(destination =>
+                destination.FundAssignments.Any(amount => fundIds.Contains(amount.FundId))))
+            .ToListAsync(cancellationToken);
+        List<IncomeTransaction> incomeTransactions = await databaseContext.Transactions
+            .OfType<IncomeTransaction>().AsNoTracking().AsSplitQuery()
+            .Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId))
+            .Where(transaction => transaction.Destinations.Any(destination =>
+                destination.FundAssignments.Any(amount => fundIds.Contains(amount.FundId))))
+            .ToListAsync(cancellationToken);
+        List<RefundTransaction> refundTransactions = await databaseContext.Transactions
+            .OfType<RefundTransaction>().AsNoTracking().AsSplitQuery()
+            .Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId))
+            .Where(transaction => transaction.Sources.Any(source =>
+                source.FundAssignments.Any(amount => fundIds.Contains(amount.FundId))))
+            .ToListAsync(cancellationToken);
+        List<FundTransaction> fundTransactions = await databaseContext.Transactions
+            .OfType<FundTransaction>().AsNoTracking().AsSplitQuery()
+            .Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId))
+            .Where(transaction => fundIds.Contains(transaction.Source.Fund.Id)
+                || transaction.Destinations.Any(destination => fundIds.Contains(destination.Fund.Id)))
+            .ToListAsync(cancellationToken);
+        return spendingTransactions.Concat<Transaction>(incomeTransactions).Concat(refundTransactions).Concat(fundTransactions).ToList();
     }
 
     /// <inheritdoc/>

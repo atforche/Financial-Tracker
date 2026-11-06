@@ -10,7 +10,7 @@ using Domain.Funds.Queries;
 namespace Domain.AccountingPeriods.Queries;
 
 /// <summary>
-/// Service for querying one Account or Fund within one Accounting Period.
+/// Service for querying one Account or Fund within one Accounting Period, loading the period's balances only once.
 /// </summary>
 public sealed class PeriodEntityQueryService(
     IAccountingPeriodQueryRepository accountingPeriodQueryRepository,
@@ -93,11 +93,7 @@ public sealed class PeriodEntityQueryService(
             : FundGoalService.GetProgresses([goal], history).GetValueOrDefault(goal.Id);
         (AccountingPeriod? previous, AccountingPeriod? next) = await accountingPeriodQueryRepository.GetAdjacentAsync(period, cancellationToken);
         IReadOnlyCollection<FundBalanceHistory> dailyHistories = await fundBalanceEventQueryRepository.GetPeriodHistoriesAsync(id, periodId, cancellationToken);
-        AccountingPeriodRangeQueryResult<QueryPage<FundGoalBalanceEvent>> events = await fundGoalBalanceEventQueryService.GetAsync(
-            new FundGoalBalanceEventAccountingPeriodRangeQuery(
-                accountingPeriodId, accountingPeriodId, new FundGoalBalanceEventFilter([fundId]), FundGoalBalanceEventSort.DateDescending, 0, null),
-            cancellationToken);
-        IReadOnlyCollection<FundGoalBalanceEvent> items = events.Range?.Items ?? [];
+        IReadOnlyCollection<FundGoalBalanceEvent> items = await fundGoalBalanceEventQueryService.GetForFundAsync(period, id, goal, history, cancellationToken);
         var totals = BalanceEventTotals.Calculate(items, item => item.IsPosted, item => item.Type, item => item.Amount);
         return new PeriodFundDetail(
             period,

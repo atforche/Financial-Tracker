@@ -53,9 +53,12 @@ public sealed class FundBalanceEventQueryService(
         FundBalanceEventQuery query,
         CancellationToken cancellationToken = default)
     {
-        IReadOnlyCollection<Transaction> postedTransactions = await transactionQueryRepository.GetForFundPostingsAsync(query.Start, query.End, cancellationToken);
+        IReadOnlyCollection<FundId>? requestedFundIds = query.Filter.Ids.Count == 0
+            ? null
+            : query.Filter.Ids.Select(id => new FundId(id)).ToList();
+        IReadOnlyCollection<Transaction> postedTransactions = await transactionQueryRepository.GetForFundPostingsAsync(query.Start, query.End, requestedFundIds, cancellationToken);
         IReadOnlyCollection<Transaction> pendingTransactions = query.IncludePending
-            ? await transactionQueryRepository.GetPendingForFundsAsync(null, cancellationToken)
+            ? await transactionQueryRepository.GetPendingForFundsAsync(requestedFundIds, cancellationToken)
             : [];
         IReadOnlyCollection<Transaction> transactions = postedTransactions.Concat(pendingTransactions)
             .DistinctBy(transaction => transaction.Id).ToList();
