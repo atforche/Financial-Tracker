@@ -27,7 +27,7 @@ public record EntityId : IComparable<EntityId>, IComparable
     {
         if (Value == Guid.Empty)
         {
-            throw new InvalidOperationException();
+            throw new EmptyEntityIdException();
         }
     }
 

@@ -327,4 +327,37 @@ public sealed class AccountingPeriodQueryTests
         Assert.Equal("Side job", sideJob.Name);
         Assert.Equal(0m, sideJob.ReceivedAmount.Total);
     }
+
+    /// <summary>
+    /// An all-zero ID can't name anything, so every route reports it as not found instead of failing.
+    /// </summary>
+    [Theory]
+    [InlineData("/accounting-periods/00000000-0000-0000-0000-000000000000")]
+    [InlineData("/accounting-periods/00000000-0000-0000-0000-000000000000/detail")]
+    [InlineData("/accounts/with-balances?filter.ids=00000000-0000-0000-0000-000000000000")]
+    [InlineData("/funds/with-balances?filter.ids=00000000-0000-0000-0000-000000000000")]
+    public async Task EmptyEntityIdsAreNotFound(string route)
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+
+        using HttpResponseMessage response = await test.Api.GetResponseAsync(route);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    /// <summary>
+    /// An all-zero Account or Fund in a real Accounting Period is not found.
+    /// </summary>
+    [Fact]
+    public async Task EmptyEntityIdsInAPeriodAreNotFound()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+
+        using HttpResponseMessage account = await test.Api.GetResponseAsync($"/accounting-periods/{july.Id}/accounts/{Guid.Empty}");
+        using HttpResponseMessage fund = await test.Api.GetResponseAsync($"/accounting-periods/{july.Id}/funds/{Guid.Empty}");
+
+        Assert.Equal(HttpStatusCode.NotFound, account.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, fund.StatusCode);
+    }
 }

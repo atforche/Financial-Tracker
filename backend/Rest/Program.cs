@@ -121,7 +121,7 @@ _ = builder.Services.AddRateLimiter(options =>
 });
 
 // Configure the JSON serializer to serialize enums as their string values
-_ = builder.Services.AddControllers().AddJsonOptions(options =>
+_ = builder.Services.AddControllers(options => options.Filters.Add<Rest.EmptyEntityIdExceptionFilter>()).AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
