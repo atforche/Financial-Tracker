@@ -180,20 +180,30 @@ public sealed class AccountingPeriodQueryConverter(
         AccountClosingBalance = AccountConverter.ToModel(detail.AccountClosingBalance),
         FundOpeningBalance = FundConverter.ToModel(detail.FundOpeningBalance),
         FundClosingBalance = FundConverter.ToModel(detail.FundClosingBalance),
-        Accounts = detail.Accounts.Select(item => new AccountingPeriodAccountModel
-        {
-            Account = accountConverter.ToModel(item.Account),
-            OpeningBalance = item.OpeningBalance,
-            ClosingBalance = item.ClosingBalance,
-            GoalProgress = item.GoalProgress == null ? null : accountGoalConverter.ToModel(item.GoalProgress),
-        }).ToList(),
-        Funds = detail.Funds.Select(item => new AccountingPeriodFundModel
-        {
-            Fund = fundConverter.ToModel(item.Fund),
-            OpeningBalance = item.OpeningBalance,
-            ClosingBalance = item.ClosingBalance,
-            GoalProgress = item.GoalProgress == null ? null : fundGoalConverter.ToModel(item.GoalProgress),
-        }).ToList(),
+        Accounts = detail.Accounts.Select(ToModel).ToList(),
+        Funds = detail.Funds.Select(ToModel).ToList(),
+    };
+
+    /// <summary>
+    /// Converts an Account's balances and goal progress in an Accounting Period to an API model.
+    /// </summary>
+    public AccountingPeriodAccountModel ToModel(AccountingPeriodAccount item) => new()
+    {
+        Account = accountConverter.ToModel(item.Account),
+        OpeningBalance = item.OpeningBalance,
+        ClosingBalance = item.ClosingBalance,
+        GoalProgress = item.GoalProgress == null ? null : accountGoalConverter.ToModel(item.GoalProgress),
+    };
+
+    /// <summary>
+    /// Converts a Fund's balances and goal progress in an Accounting Period to an API model.
+    /// </summary>
+    public AccountingPeriodFundModel ToModel(AccountingPeriodFund item) => new()
+    {
+        Fund = fundConverter.ToModel(item.Fund),
+        OpeningBalance = item.OpeningBalance,
+        ClosingBalance = item.ClosingBalance,
+        GoalProgress = item.GoalProgress == null ? null : fundGoalConverter.ToModel(item.GoalProgress),
     };
 
     /// <summary>

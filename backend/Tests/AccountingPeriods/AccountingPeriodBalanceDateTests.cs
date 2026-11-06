@@ -1,3 +1,4 @@
+using Models.AccountingPeriods;
 using Models.BalanceEvents;
 
 namespace Tests.AccountingPeriods;
@@ -72,11 +73,11 @@ public sealed class AccountingPeriodBalanceDateTests
     private static decimal BalanceOn(PeriodBalanceDateRangeModel range, int month, int day) =>
         Assert.Single(range.Dates, item => item.Date == new DateOnly(2026, month, day)).TotalBalance;
 
-    private static Task<PeriodBalanceDateRangeModel> GetAccountDatesAsync(
+    private static async Task<PeriodBalanceDateRangeModel> GetAccountDatesAsync(
         FinancialTrackerTestContext test, AccountHandle account, AccountingPeriodHandle period) =>
-        test.Api.GetAsync<PeriodBalanceDateRangeModel>($"/accounts/{account.Id}/accounting-periods/{period.Id}/balance-dates");
+        (await test.Api.GetAsync<PeriodAccountDetailModel>($"/accounting-periods/{period.Id}/accounts/{account.Id}")).DailyBalances;
 
-    private static Task<PeriodBalanceDateRangeModel> GetFundDatesAsync(
+    private static async Task<PeriodBalanceDateRangeModel> GetFundDatesAsync(
         FinancialTrackerTestContext test, FundHandle fund, AccountingPeriodHandle period) =>
-        test.Api.GetAsync<PeriodBalanceDateRangeModel>($"/funds/{fund.Id}/accounting-periods/{period.Id}/balance-dates");
+        (await test.Api.GetAsync<PeriodFundDetailModel>($"/accounting-periods/{period.Id}/funds/{fund.Id}")).DailyBalances;
 }

@@ -31,6 +31,7 @@ public static class ServiceManager
 
         _ = serviceCollection.AddScoped<AccountingPeriodConverter>();
         _ = serviceCollection.AddScoped<AccountingPeriodQueryConverter>();
+        _ = serviceCollection.AddScoped<PeriodEntityConverter>();
 
         _ = serviceCollection.AddScoped<AccountGoalConverter>();
 

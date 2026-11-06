@@ -30,27 +30,6 @@ public sealed class AccountController(
     AccountBalanceEventConverter accountBalanceEventConverter) : ControllerBase
 {
     /// <summary>
-    /// Retrieves daily posted Account balances scoped to one Accounting Period.
-    /// </summary>
-    [HttpGet("{accountId}/accounting-periods/{accountingPeriodId}/balance-dates")]
-    [ProducesResponseType(typeof(PeriodBalanceDateRangeModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<PeriodBalanceDateRangeModel>> GetPeriodBalanceDatesAsync(
-        Guid accountId, Guid accountingPeriodId, CancellationToken cancellationToken)
-    {
-        PeriodBalanceDateRange? range = await accountQueryService.GetPeriodBalanceDatesAsync(accountId, accountingPeriodId, cancellationToken);
-        return range == null ? NotFound() : Ok(new PeriodBalanceDateRangeModel
-        {
-            OpeningBalance = range.OpeningBalance,
-            Dates = range.Dates.Select(item => new PeriodBalanceDateModel
-            {
-                Date = item.Date,
-                TotalBalance = item.Balance,
-            }).ToList(),
-        });
-    }
-
-    /// <summary>
     /// Retrieves balance events for the specified Account.
     /// </summary>
     [HttpGet("{accountId}/balance-events")]

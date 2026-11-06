@@ -39,6 +39,41 @@ public sealed class AccountingPeriodQueryTests
     }
 
     /// <summary>
+    /// Returns an account's and a fund's period detail with their totals and events, or 404 when either side is missing.
+    /// </summary>
+    [Fact]
+    public async Task EntityDetailReturnsBalancesTotalsAndEvents()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(40m).From("Employer").To(cash, groceries).CreateAsync();
+        TransactionHandle spending = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(10m).From(cash).To("Market", groceries).CreateAsync();
+        await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
+        await test.Transactions.PostAsync(spending, cash, new DateOnly(2026, 7, 15));
+
+        PeriodAccountDetailModel account = await test.Api.GetAsync<PeriodAccountDetailModel>($"/accounting-periods/{july.Id}/accounts/{cash.Id}");
+        PeriodFundDetailModel fund = await test.Api.GetAsync<PeriodFundDetailModel>($"/accounting-periods/{july.Id}/funds/{groceries.Id}");
+        using HttpResponseMessage missingFund = await test.Api.GetResponseAsync($"/accounting-periods/{july.Id}/funds/{Guid.NewGuid()}");
+        using HttpResponseMessage missingPeriod = await test.Api.GetResponseAsync($"/accounting-periods/{Guid.NewGuid()}/accounts/{cash.Id}");
+
+        Assert.Equal(august.Id, account.NextPeriod?.Id);
+        Assert.Equal(100m, account.Account.OpeningBalance);
+        Assert.Equal(130m, account.Account.ClosingBalance);
+        Assert.Equal(40m, account.TotalInflow);
+        Assert.Equal(10m, account.TotalOutflow);
+        Assert.NotEmpty(account.Events);
+        Assert.Equal(30m, fund.Fund.ClosingBalance);
+        Assert.Equal(40m, fund.TotalInflow);
+        Assert.Equal(10m, fund.TotalOutflow);
+        Assert.NotEmpty(fund.Events);
+        Assert.Equal(HttpStatusCode.NotFound, missingFund.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, missingPeriod.StatusCode);
+    }
+
+    /// <summary>
     /// Limits both period lists to open or closed periods.
     /// </summary>
     [Fact]

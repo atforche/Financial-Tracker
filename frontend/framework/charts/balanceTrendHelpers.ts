@@ -175,4 +175,4 @@ export {
   buildDateChartPoints,
   getBalanceTrendTooltipPoint,
 };
-export type { BalanceTrendChartPoint, BalanceTrendDateSummary };
+export type { BalanceTrendChartPoint };

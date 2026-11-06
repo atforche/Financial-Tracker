@@ -1355,58 +1355,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/funds/{fundId}/accounting-periods/{accountingPeriodId}/balance-dates": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves daily posted Fund balances scoped to one Accounting Period. */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    fundId: string;
-                    accountingPeriodId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PeriodBalanceDateRangeModel"];
-                        "application/json": components["schemas"]["PeriodBalanceDateRangeModel"];
-                        "text/json": components["schemas"]["PeriodBalanceDateRangeModel"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/funds/balance-events/date-range": {
         parameters: {
             query?: never;
@@ -2236,58 +2184,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/accounts/{accountId}/accounting-periods/{accountingPeriodId}/balance-dates": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves daily posted Account balances scoped to one Accounting Period. */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    accountId: string;
-                    accountingPeriodId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["PeriodBalanceDateRangeModel"];
-                        "application/json": components["schemas"]["PeriodBalanceDateRangeModel"];
-                        "text/json": components["schemas"]["PeriodBalanceDateRangeModel"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/accounts/{accountId}/balance-events": {
         parameters: {
             query?: never;
@@ -2896,6 +2792,110 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounting-periods/{accountingPeriodId}/accounts/{accountId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves everything shown for one Account in an Accounting Period */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountingPeriodId: string;
+                    accountId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PeriodAccountDetailModel"];
+                        "application/json": components["schemas"]["PeriodAccountDetailModel"];
+                        "text/json": components["schemas"]["PeriodAccountDetailModel"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounting-periods/{accountingPeriodId}/funds/{fundId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves everything shown for one Fund in an Accounting Period */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    accountingPeriodId: string;
+                    fundId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PeriodFundDetailModel"];
+                        "application/json": components["schemas"]["PeriodFundDetailModel"];
+                        "text/json": components["schemas"]["PeriodFundDetailModel"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -5653,6 +5653,30 @@ export interface components {
              */
             netWorthChange: number;
         };
+        /** @description Model representing everything shown for one Account in one Accounting Period */
+        PeriodAccountDetailModel: {
+            /** @description Account's balances and goal progress in the Accounting Period */
+            account: components["schemas"]["AccountingPeriodAccountModel"];
+            goal: null | components["schemas"]["AccountGoalModel"];
+            /** @description Account's balance events in the Accounting Period, newest first */
+            events: components["schemas"]["AccountBalanceEventModel"][];
+            /** @description Accounting Period being shown */
+            accountingPeriod: components["schemas"]["AccountingPeriodModel"];
+            previousPeriod: null | components["schemas"]["AccountingPeriodModel"];
+            nextPeriod: null | components["schemas"]["AccountingPeriodModel"];
+            /**
+             * Format: double
+             * @description Total posted inflow during the Accounting Period
+             */
+            totalInflow: number;
+            /**
+             * Format: double
+             * @description Total posted outflow during the Accounting Period
+             */
+            totalOutflow: number;
+            /** @description Daily posted balances during the Accounting Period */
+            dailyBalances: components["schemas"]["PeriodBalanceDateRangeModel"];
+        };
         /** @description Posted balance at the end of a calendar day, scoped to an Accounting Period. */
         PeriodBalanceDateModel: {
             /**
@@ -5675,6 +5699,30 @@ export interface components {
             openingBalance: number;
             /** @description One balance per day across the calendar month, extended to include any earlier or later posted movements assigned to this Accounting Period. */
             dates: components["schemas"]["PeriodBalanceDateModel"][];
+        };
+        /** @description Model representing everything shown for one Fund in one Accounting Period */
+        PeriodFundDetailModel: {
+            /** @description Fund's balances and goal progress in the Accounting Period */
+            fund: components["schemas"]["AccountingPeriodFundModel"];
+            goal: null | components["schemas"]["FundGoalModel"];
+            /** @description Fund's balance events in the Accounting Period, newest first */
+            events: components["schemas"]["FundGoalBalanceEventModel"][];
+            /** @description Accounting Period being shown */
+            accountingPeriod: components["schemas"]["AccountingPeriodModel"];
+            previousPeriod: null | components["schemas"]["AccountingPeriodModel"];
+            nextPeriod: null | components["schemas"]["AccountingPeriodModel"];
+            /**
+             * Format: double
+             * @description Total posted inflow during the Accounting Period
+             */
+            totalInflow: number;
+            /**
+             * Format: double
+             * @description Total posted outflow during the Accounting Period
+             */
+            totalOutflow: number;
+            /** @description Daily posted balances during the Accounting Period */
+            dailyBalances: components["schemas"]["PeriodBalanceDateRangeModel"];
         };
         /** @description Model representing a request to post a Transaction */
         PostTransactionModel: {
