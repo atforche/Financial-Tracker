@@ -10,7 +10,7 @@ using Domain.Funds.Queries;
 namespace Domain.AccountingPeriods.Queries;
 
 /// <summary>
-/// Service for querying one Account or Fund within one Accounting Period, loading the period's balances only once.
+/// Service for querying one Account or Fund within one Accounting Period.
 /// </summary>
 public sealed class PeriodEntityQueryService(
     IAccountingPeriodQueryRepository accountingPeriodQueryRepository,

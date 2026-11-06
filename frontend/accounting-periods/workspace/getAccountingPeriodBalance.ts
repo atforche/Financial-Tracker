@@ -4,7 +4,7 @@ import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import createApiClient from "@/framework/data/createApiClient";
 
 /**
- * Loads an accounting period's balance for a form that can do without it, or null when it can't be loaded.
+ * Loads an accounting period's balance for a form that can do without it, leaving the form to carry on when it fails.
  */
 const getAccountingPeriodBalance = async function (
   accountingPeriodId: string,

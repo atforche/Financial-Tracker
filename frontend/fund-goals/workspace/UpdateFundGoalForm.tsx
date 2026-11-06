@@ -93,6 +93,7 @@ const UpdateFundGoalForm = function ({
         variant="contained"
         onClick={() => {
           setOpen(true);
+          setAccountingPeriod(null);
           startTransition(async () => {
             setAccountingPeriod(
               await getAccountingPeriodBalance(accountingPeriodId),

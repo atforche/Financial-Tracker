@@ -22,6 +22,7 @@ import createApiClient from "@/framework/data/createApiClient";
 import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import getDateSummary from "@/balance-events/getDateSummary";
 import getDetailViewParams from "@/balance-events/getDetailViewParams";
+import isEntityId from "@/framework/data/isEntityId";
 import isFundGoalMet from "@/fund-goals/isFundGoalMet";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
@@ -134,6 +135,11 @@ const FundWorkspaceDetailPage = async function ({
   const { fundId } = await params;
   const resolvedSearchParams = await searchParams;
   const { search } = resolvedSearchParams;
+  const workspaceParams = search === undefined ? {} : { search };
+  const workspaceUrl = routes.workspace(workspaceParams);
+  if (!isEntityId(fundId)) {
+    redirect(workspaceUrl);
+  }
   const apiClient = await createApiClient();
   // Only the By Period view needs every period, for its range picker and default range
   const [periodsResponse, fundsResponse] = await Promise.all([
@@ -157,8 +163,6 @@ const FundWorkspaceDetailPage = async function ({
     fundsResponse,
     "Failed to fetch funds",
   ).items;
-  const workspaceParams = search === undefined ? {} : { search };
-  const workspaceUrl = routes.workspace(workspaceParams);
   if (fund === undefined) {
     redirect(workspaceUrl);
   }

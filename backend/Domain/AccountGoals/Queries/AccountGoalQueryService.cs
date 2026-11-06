@@ -20,18 +20,6 @@ public sealed class AccountGoalQueryService(
         accountGoalQueryRepository.GetByIdAsync(new AccountGoalId(accountGoalId), cancellationToken);
 
     /// <summary>
-    /// Retrieves the Account Goal for the specified Account and Accounting Period, or null when it does not exist.
-    /// </summary>
-    public Task<AccountGoal?> GetByAccountAndAccountingPeriodAsync(
-        Guid accountId,
-        Guid? accountingPeriodId,
-        CancellationToken cancellationToken = default) =>
-        accountGoalQueryRepository.GetByAccountAndAccountingPeriodAsync(
-            new AccountId(accountId),
-            accountingPeriodId == null ? null : new AccountingPeriodId(accountingPeriodId.Value),
-            cancellationToken);
-
-    /// <summary>
     /// Retrieves the account's goals and their progress across an Accounting Period range, oldest first.
     /// </summary>
     public async Task<AccountingPeriodRangeQueryResult<IReadOnlyCollection<AccountGoalPeriodProgress>>> GetHistoryAsync(

@@ -26,8 +26,8 @@ public sealed class FundGoalPeriodLifecycleTests
         });
         AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
 
-        FundGoalModel original = await test.Api.GetAsync<FundGoalModel>($"/fund-goals/fund/{groceries.Id}?accountingPeriodId={july.Id}");
-        FundGoalModel copied = await test.Api.GetAsync<FundGoalModel>($"/fund-goals/fund/{groceries.Id}?accountingPeriodId={august.Id}");
+        FundGoalModel original = await test.Api.GetFundGoalAsync(groceries.Id, july.Id);
+        FundGoalModel copied = await test.Api.GetFundGoalAsync(groceries.Id, august.Id);
         IReadOnlyCollection<FundGoalProgressResultModel> progresses = await test.Api.GetAsync<IReadOnlyCollection<FundGoalProgressResultModel>>(
             $"/fund-goals/progress/{august.Id}");
         using HttpResponseMessage missing = await test.Api.GetResponseAsync($"/fund-goals/progress/{Guid.NewGuid()}");

@@ -1355,117 +1355,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/funds/balance-events/date-range": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves Fund Balance Events in a date range. */
-        get: {
-            parameters: {
-                query?: {
-                    "Range.Start"?: string;
-                    "Range.End"?: string;
-                    /** @description Whether to include current pending events in addition to matching posted events. */
-                    IncludePending?: boolean;
-                    "Filter.NameSearch"?: string;
-                    "Filter.Names"?: string[];
-                    "Filter.Ids"?: string[];
-                    /** @description Sort order to apply to the results. */
-                    Sort?: components["schemas"]["FundBalanceEventSortModel"];
-                    Limit?: number;
-                    Offset?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CollectionModelOfFundBalanceEventModel"];
-                        "application/json": components["schemas"]["CollectionModelOfFundBalanceEventModel"];
-                        "text/json": components["schemas"]["CollectionModelOfFundBalanceEventModel"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/funds/balance-events/date-range/totals": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves posted credit and debit totals for all matching Fund events. */
-        get: {
-            parameters: {
-                query?: {
-                    "Range.Start"?: string;
-                    "Range.End"?: string;
-                    /** @description Whether to include current pending events in addition to matching posted events. */
-                    IncludePending?: boolean;
-                    "Filter.NameSearch"?: string;
-                    "Filter.Names"?: string[];
-                    "Filter.Ids"?: string[];
-                    /** @description Sort order to apply to the results. */
-                    Sort?: components["schemas"]["FundBalanceEventSortModel"];
-                    Limit?: number;
-                    Offset?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["BalanceEventTotalsModel"];
-                        "application/json": components["schemas"]["BalanceEventTotalsModel"];
-                        "text/json": components["schemas"]["BalanceEventTotalsModel"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ValidationProblemDetails"];
-                        "application/json": components["schemas"]["ValidationProblemDetails"];
-                        "text/json": components["schemas"]["ValidationProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/funds/balance-events/date-range/with-totals": {
         parameters: {
             query?: never;
@@ -1882,55 +1771,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/fund-goals/balance-events/accounting-period-range": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves Fund Goal balance events in an Accounting Period range. */
-        get: {
-            parameters: {
-                query?: {
-                    "Range.Start"?: string;
-                    "Range.End"?: string;
-                    "Filter.NameSearch"?: string;
-                    "Filter.FundIds"?: string[];
-                    "Filter.AccountingPeriodIds"?: string[];
-                    "Filter.IncludeOnboarded"?: boolean;
-                    /** @description Optional event ordering. */
-                    Sort?: components["schemas"]["FundGoalBalanceEventSortModel"];
-                    Limit?: number;
-                    Offset?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CollectionModelOfFundGoalBalanceEventModel"];
-                        "application/json": components["schemas"]["CollectionModelOfFundGoalBalanceEventModel"];
-                        "text/json": components["schemas"]["CollectionModelOfFundGoalBalanceEventModel"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/fund-goals/balance-events/accounting-period-range/totals": {
         parameters: {
             query?: never;
@@ -2055,48 +1895,6 @@ export interface paths {
                         "text/plain": components["schemas"]["FundGoalProgressResultModel"][];
                         "application/json": components["schemas"]["FundGoalProgressResultModel"][];
                         "text/json": components["schemas"]["FundGoalProgressResultModel"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/fund-goals/fund/{fundId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves the Fund Goal associated with a Fund and Accounting Period, or its onboarded Fund Goal when the Accounting Period ID is null. */
-        get: {
-            parameters: {
-                query?: {
-                    accountingPeriodId?: string;
-                };
-                header?: never;
-                path: {
-                    fundId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["FundGoalModel"];
-                        "application/json": components["schemas"]["FundGoalModel"];
-                        "text/json": components["schemas"]["FundGoalModel"];
                     };
                 };
             };
@@ -2244,68 +2042,6 @@ export interface paths {
                 };
             };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/accounts/{accountId}/balance-events": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves balance events for the specified Account. */
-        get: {
-            parameters: {
-                query?: {
-                    "Range.Start"?: string;
-                    "Range.End"?: string;
-                    /** @description Restricts events to transactions assigned to these Accounting Periods. */
-                    AccountingPeriodIds?: string[];
-                    /** @description Whether to include current pending events in addition to matching posted events. */
-                    IncludePending?: boolean;
-                    /** @description Sort order to apply to the results. */
-                    Sort?: components["schemas"]["AccountBalanceEventSortModel"];
-                    Limit?: number;
-                    Offset?: number;
-                };
-                header?: never;
-                path: {
-                    accountId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CollectionModelOfAccountBalanceEventModel"];
-                        "application/json": components["schemas"]["CollectionModelOfAccountBalanceEventModel"];
-                        "text/json": components["schemas"]["CollectionModelOfAccountBalanceEventModel"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ProblemDetails"];
-                        "application/json": components["schemas"]["ProblemDetails"];
-                        "text/json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3696,48 +3432,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/account-goals/account/{accountId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Retrieves the Account Goal associated with an Account and Accounting Period, or its onboarding goal when the period ID is null. */
-        get: {
-            parameters: {
-                query?: {
-                    accountingPeriodId?: string;
-                };
-                header?: never;
-                path: {
-                    accountId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AccountGoalModel"];
-                        "application/json": components["schemas"]["AccountGoalModel"];
-                        "text/json": components["schemas"]["AccountGoalModel"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/account-goals/account/{accountId}/history": {
         parameters: {
             query?: never;
@@ -3903,6 +3597,11 @@ export interface components {
         AccountBalanceEventsWithTotalsModel: {
             /** @description Matching balance events */
             events: components["schemas"]["AccountBalanceEventModel"][];
+            /**
+             * Format: int32
+             * @description Number of matching balance events before pagination
+             */
+            totalCount: number;
             /** @description Totals of the matching posted balance events */
             totals: components["schemas"]["BalanceEventTotalsModel"];
         };
@@ -4455,16 +4154,6 @@ export interface components {
             role?: null | components["schemas"]["UserRoleModel"];
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
-        CollectionModelOfAccountBalanceEventModel: {
-            /** @description The collection of items. */
-            items: components["schemas"]["AccountBalanceEventModel"][];
-            /**
-             * Format: int32
-             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
-             */
-            totalCount: number;
-        };
-        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfAccountingPeriodModel: {
             /** @description The collection of items. */
             items: components["schemas"]["AccountingPeriodModel"][];
@@ -4498,26 +4187,6 @@ export interface components {
         CollectionModelOfAccountWithBalanceRangeModel: {
             /** @description The collection of items. */
             items: components["schemas"]["AccountWithBalanceRangeModel"][];
-            /**
-             * Format: int32
-             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
-             */
-            totalCount: number;
-        };
-        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
-        CollectionModelOfFundBalanceEventModel: {
-            /** @description The collection of items. */
-            items: components["schemas"]["FundBalanceEventModel"][];
-            /**
-             * Format: int32
-             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
-             */
-            totalCount: number;
-        };
-        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
-        CollectionModelOfFundGoalBalanceEventModel: {
-            /** @description The collection of items. */
-            items: components["schemas"]["FundGoalBalanceEventModel"][];
             /**
              * Format: int32
              * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
@@ -5172,6 +4841,11 @@ export interface components {
         FundBalanceEventsWithTotalsModel: {
             /** @description Matching balance events */
             events: components["schemas"]["FundBalanceEventModel"][];
+            /**
+             * Format: int32
+             * @description Number of matching balance events before pagination
+             */
+            totalCount: number;
             /** @description Totals of the matching posted balance events */
             totals: components["schemas"]["BalanceEventTotalsModel"];
         };

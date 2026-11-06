@@ -22,22 +22,6 @@ public sealed class AccountGoalController(
     AccountGoalConverter accountGoalConverter) : ControllerBase
 {
     /// <summary>
-    /// Retrieves the Account Goal associated with an Account and Accounting Period, or its onboarding goal when the period ID is null.
-    /// </summary>
-    [HttpGet("account/{accountId:guid}")]
-    public async Task<ActionResult<AccountGoalModel>> GetByAccountAsync(
-        Guid accountId,
-        [FromQuery] Guid? accountingPeriodId,
-        CancellationToken cancellationToken)
-    {
-        AccountGoal? accountGoal = await accountGoalQueryService.GetByAccountAndAccountingPeriodAsync(
-            accountId,
-            accountingPeriodId,
-            cancellationToken);
-        return accountGoal == null ? NotFound() : Ok(accountGoalConverter.ToModel(accountGoal));
-    }
-
-    /// <summary>
     /// Retrieves a Account's goals and their progress across an Accounting Period range, oldest first.
     /// </summary>
     [HttpGet("account/{accountId:guid}/history")]

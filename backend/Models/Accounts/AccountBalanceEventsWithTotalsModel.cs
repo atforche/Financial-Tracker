@@ -13,6 +13,11 @@ public sealed class AccountBalanceEventsWithTotalsModel
     public required IReadOnlyCollection<AccountBalanceEventModel> Events { get; init; }
 
     /// <summary>
+    /// Number of matching balance events before pagination
+    /// </summary>
+    public required int TotalCount { get; init; }
+
+    /// <summary>
     /// Totals of the matching posted balance events
     /// </summary>
     public required BalanceEventTotalsModel Totals { get; init; }

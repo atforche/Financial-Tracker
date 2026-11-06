@@ -20,6 +20,7 @@ import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import getDateSummary from "@/balance-events/getDateSummary";
 import getDetailViewParams from "@/balance-events/getDetailViewParams";
 import { isDebtAccountType } from "@/accounts/helpers";
+import isEntityId from "@/framework/data/isEntityId";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
 import transactionRoutes from "@/transactions/routes";
@@ -45,6 +46,13 @@ const AccountWorkspaceDetailPage = async function ({
   const { accountId } = await params;
   const resolvedSearchParams = await searchParams;
   const { search, accountType } = resolvedSearchParams;
+  const workspaceUrl = routes.workspace({
+    ...(search === undefined ? {} : { search }),
+    ...(accountType === undefined ? {} : { accountType }),
+  });
+  if (!isEntityId(accountId)) {
+    redirect(workspaceUrl);
+  }
   const apiClient = await createApiClient();
   // Only the By Period view needs every period, for its range picker and default range
   const [periodsResponse, accountsResponse] = await Promise.all([
@@ -68,10 +76,6 @@ const AccountWorkspaceDetailPage = async function ({
     accountsResponse,
     "Failed to fetch accounts",
   ).items;
-  const workspaceUrl = routes.workspace({
-    ...(search === undefined ? {} : { search }),
-    ...(accountType === undefined ? {} : { accountType }),
-  });
   if (account === undefined) {
     redirect(workspaceUrl);
   }

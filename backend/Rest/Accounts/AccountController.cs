@@ -30,26 +30,6 @@ public sealed class AccountController(
     AccountBalanceEventConverter accountBalanceEventConverter) : ControllerBase
 {
     /// <summary>
-    /// Retrieves balance events for the specified Account.
-    /// </summary>
-    [HttpGet("{accountId}/balance-events")]
-    [ProducesResponseType(typeof(CollectionModel<AccountBalanceEventModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<CollectionModel<AccountBalanceEventModel>>> GetBalanceEventsAsync(
-        Guid accountId,
-        [FromQuery] AccountBalanceEventsQueryParameterModel query,
-        CancellationToken cancellationToken)
-    {
-        if (await accountQueryService.GetByIdAsync(accountId, cancellationToken) == null)
-        {
-            return NotFound();
-        }
-        return Ok(accountBalanceEventConverter.ToModel(await accountBalanceEventQueryService.GetAsync(
-            accountBalanceEventConverter.ToDomain(accountId, query),
-            cancellationToken)));
-    }
-
-    /// <summary>
     /// Retrieves posted credit and debit totals for all matching Account events.
     /// </summary>
     [HttpGet("{accountId}/balance-events/totals")]
@@ -100,21 +80,21 @@ public sealed class AccountController(
             accountBalanceEventConverter.ToDomain(accountId, query) with { Offset = 0, Limit = null }, cancellationToken);
         return Ok(new AccountBalanceEventsWithTotalsModel
         {
-            Events = events.Items.Select(accountBalanceEventConverter.ToModel).ToList(),
+            Events = events.Items.Skip(query.Offset ?? 0).Take(query.Limit ?? int.MaxValue).Select(accountBalanceEventConverter.ToModel).ToList(),
+            TotalCount = events.TotalCount,
             Totals = await GetTotalsAsync(account, query, events.Items, cancellationToken),
         });
     }
 
     /// <summary>
-    /// Calculates the totals of the posted events among the provided Account events.
+    /// Calculates the posted totals of the provided Account events.
     /// </summary>
     private async Task<BalanceEventTotalsModel> GetTotalsAsync(
         Account account,
         AccountBalanceEventsQueryParameterModel query,
-        IReadOnlyCollection<AccountBalanceEvent> allEvents,
+        IReadOnlyCollection<AccountBalanceEvent> events,
         CancellationToken cancellationToken)
     {
-        var events = allEvents.Where(item => item.IsPosted).ToList();
         var totals = BalanceEventTotals.Calculate(events,
             item => item.IsPosted, item => item.Type, item => item.Amount);
         (decimal? openingBalance, IReadOnlyCollection<(DateOnly Date, decimal Balance)> dates) = BalanceEventTotals.BuildDateBalances(events,

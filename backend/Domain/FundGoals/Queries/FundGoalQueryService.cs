@@ -26,18 +26,6 @@ public sealed class FundGoalQueryService(
         fundGoalQueryRepository.GetByIdAsync(new FundGoalId(fundGoalId), cancellationToken);
 
     /// <summary>
-    /// Retrieves the Fund Goal for the specified Fund and Accounting Period, or null when it does not exist.
-    /// </summary>
-    public Task<FundGoal?> GetByFundAndAccountingPeriodAsync(
-        Guid fundId,
-        Guid? accountingPeriodId,
-        CancellationToken cancellationToken = default) =>
-        fundGoalQueryRepository.GetByFundAndAccountingPeriodAsync(
-            new FundId(fundId),
-            accountingPeriodId == null ? null : new AccountingPeriodId(accountingPeriodId.Value),
-            cancellationToken);
-
-    /// <summary>
     /// Retrieves the fund's goals and their progress across an Accounting Period range, oldest first.
     /// </summary>
     public async Task<AccountingPeriodRangeQueryResult<IReadOnlyCollection<FundGoalPeriodProgress>>> GetHistoryAsync(

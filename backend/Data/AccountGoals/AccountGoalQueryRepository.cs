@@ -1,7 +1,5 @@
 using Domain.AccountGoals;
 using Domain.AccountGoals.Queries;
-using Domain.AccountingPeriods;
-using Domain.Accounts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data.AccountGoals;
@@ -15,13 +13,4 @@ public sealed class AccountGoalQueryRepository(DatabaseContext databaseContext) 
     public Task<AccountGoal?> GetByIdAsync(AccountGoalId id, CancellationToken cancellationToken = default) =>
         databaseContext.AccountGoals.AsNoTracking().SingleOrDefaultAsync(accountGoal => accountGoal.Id == id, cancellationToken);
 
-    /// <inheritdoc/>
-    public Task<AccountGoal?> GetByAccountAndAccountingPeriodAsync(
-        AccountId accountId,
-        AccountingPeriodId? accountingPeriodId,
-        CancellationToken cancellationToken = default) =>
-        databaseContext.AccountGoals.AsNoTracking().SingleOrDefaultAsync(accountGoal =>
-            accountGoal.Account.Id == accountId && (accountGoal.AccountingPeriod == null
-                ? accountingPeriodId == null
-                : accountGoal.AccountingPeriod.Id == accountingPeriodId), cancellationToken);
 }

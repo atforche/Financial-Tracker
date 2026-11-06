@@ -26,7 +26,7 @@ internal sealed class FundQueries(TestApiClient apiClient)
     {
         CollectionModel<FundWithBalanceModel> response = await apiClient.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
         FundWithBalanceModel model = response.Items.Single(item => item.Name == "Unassigned");
-        FundGoalModel goal = await apiClient.GetAsync<FundGoalModel>($"/fund-goals/fund/{model.Id}?accountingPeriodId={period.Id}");
+        FundGoalModel goal = await apiClient.GetFundGoalAsync(model.Id, period.Id);
         return new FundHandle(model.Id, model.Name, new FundGoalHandle(goal.Id, model.Id));
     }
 }

@@ -3,8 +3,8 @@ import PeriodEntityLayout from "@/accounting-periods/workspace/PeriodEntityLayou
 import PeriodEntityTransactions from "@/accounting-periods/workspace/PeriodEntityTransactions";
 import PeriodFundGoalCard from "@/accounting-periods/workspace/PeriodFundGoalCard";
 import createApiClient from "@/framework/data/createApiClient";
-import { periodTab as entityPeriodTab } from "@/balance-events/resolveEntityHistory";
 import fundRoutes from "@/funds/routes";
+import { getAllPeriodsHref } from "@/accounting-periods/workspace/helpers";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 import transactionRoutes from "@/transactions/routes";
@@ -67,10 +67,11 @@ const PeriodFundDetailPage = async function ({
       getPeriodHref={(id) => routes.fundDetail(id, fundId, neighborParams)}
       periodHref={periodUrl}
       returnUrl={returnUrl}
-      allPeriodsHref={fundRoutes.workspaceDetail(fundId, {
-        tab: entityPeriodTab,
-        returnUrl: currentUrl,
-      })}
+      allPeriodsHref={getAllPeriodsHref(
+        (entityParams) => fundRoutes.workspaceDetail(fundId, entityParams),
+        returnUrl,
+        currentUrl,
+      )}
       openingBalance={item.openingBalance}
       closingBalance={item.closingBalance}
       goalCard={

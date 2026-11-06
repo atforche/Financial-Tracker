@@ -30,37 +30,6 @@ public sealed class FundController(
     FundBalanceEventConverter fundBalanceEventConverter) : ControllerBase
 {
     /// <summary>
-    /// Retrieves Fund Balance Events in a date range.
-    /// </summary>
-    [HttpGet("balance-events/date-range")]
-    [ProducesResponseType(typeof(CollectionModel<FundBalanceEventModel>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<CollectionModel<FundBalanceEventModel>>> GetBalanceEventsAsync(
-        [FromQuery] FundBalanceEventsInDateRangeQueryParameterModel query,
-        CancellationToken cancellationToken) =>
-        Ok(fundBalanceEventConverter.ToModel(await fundBalanceEventQueryService.GetAsync(
-            fundBalanceEventConverter.ToDomain(query),
-            cancellationToken)));
-
-    /// <summary>
-    /// Retrieves posted credit and debit totals for all matching Fund events.
-    /// </summary>
-    [HttpGet("balance-events/date-range/totals")]
-    [ProducesResponseType(typeof(BalanceEventTotalsModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<ActionResult<BalanceEventTotalsModel>> GetBalanceEventTotalsAsync(
-        [FromQuery] FundBalanceEventsInDateRangeQueryParameterModel query,
-        CancellationToken cancellationToken)
-    {
-        if (DateRangeValidationProblem.Validate(query.Range.Start, query.Range.End, "Unable to retrieve Fund totals.") is ValidationProblemDetails problem)
-        {
-            return UnprocessableEntity(problem);
-        }
-        QueryPage<FundBalanceEvent> events = await fundBalanceEventQueryService.GetAsync(
-            fundBalanceEventConverter.ToDomain(query) with { Offset = 0, Limit = null }, cancellationToken);
-        return Ok(await GetTotalsAsync(query, events.Items, cancellationToken));
-    }
-
-    /// <summary>
     /// Retrieves Fund Balance Events in a date range together with their posted totals.
     /// </summary>
     [HttpGet("balance-events/date-range/with-totals")]
@@ -78,20 +47,20 @@ public sealed class FundController(
             fundBalanceEventConverter.ToDomain(query) with { Offset = 0, Limit = null }, cancellationToken);
         return Ok(new FundBalanceEventsWithTotalsModel
         {
-            Events = events.Items.Select(fundBalanceEventConverter.ToModel).ToList(),
+            Events = events.Items.Skip(query.Offset ?? 0).Take(query.Limit ?? int.MaxValue).Select(fundBalanceEventConverter.ToModel).ToList(),
+            TotalCount = events.TotalCount,
             Totals = await GetTotalsAsync(query, events.Items, cancellationToken),
         });
     }
 
     /// <summary>
-    /// Calculates the totals of the posted events among the provided Fund events.
+    /// Calculates the posted totals of the provided Fund events.
     /// </summary>
     private async Task<BalanceEventTotalsModel> GetTotalsAsync(
         FundBalanceEventsInDateRangeQueryParameterModel query,
-        IReadOnlyCollection<FundBalanceEvent> allEvents,
+        IReadOnlyCollection<FundBalanceEvent> events,
         CancellationToken cancellationToken)
     {
-        var events = allEvents.Where(item => item.IsPosted).ToList();
         var totals = BalanceEventTotals.Calculate(events,
             item => item.IsPosted, item => item.Type, item => item.Amount);
         (decimal? openingBalance, IReadOnlyCollection<(DateOnly Date, decimal Balance)> dates) = BalanceEventTotals.BuildDateBalances(events,

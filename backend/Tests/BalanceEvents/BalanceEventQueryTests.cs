@@ -55,24 +55,23 @@ public sealed class BalanceEventQueryTests
         FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
         TransactionHandle transaction = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(10m).From(cash).To("Market", groceries).CreateAsync();
 
-        CollectionModel<AccountBalanceEventModel> defaultAccountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?range.start=2026-07-01&range.end=2026-07-31");
-        CollectionModel<AccountBalanceEventModel> accountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?range.start=2026-07-01&range.end=2026-07-31&includePending=true");
-        CollectionModel<AccountBalanceEventModel> defaultPeriodAccountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?accountingPeriodIds={july.Id}");
-        CollectionModel<AccountBalanceEventModel> periodAccountEvents = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?accountingPeriodIds={july.Id}&includePending=true");
-        CollectionModel<FundBalanceEventModel> defaultFundEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
-            "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries");
-        CollectionModel<FundBalanceEventModel> fundEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
-            "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries&includePending=true");
-        CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.Api.GetAsync<CollectionModel<FundGoalBalanceEventModel>>(
-            $"/fund-goals/balance-events/accounting-period-range?range.start={july.Id}&range.end={july.Id}");
+        CollectionModel<AccountBalanceEventModel> defaultAccountEvents = await test.Api.GetAccountEventsAsync(
+            $"/accounts/{cash.Id}/balance-events/with-totals?range.start=2026-07-01&range.end=2026-07-31");
+        CollectionModel<AccountBalanceEventModel> accountEvents = await test.Api.GetAccountEventsAsync(
+            $"/accounts/{cash.Id}/balance-events/with-totals?range.start=2026-07-01&range.end=2026-07-31&includePending=true");
+        CollectionModel<AccountBalanceEventModel> defaultPeriodAccountEvents = await test.Api.GetAccountEventsAsync(
+            $"/accounts/{cash.Id}/balance-events/with-totals?accountingPeriodIds={july.Id}");
+        CollectionModel<AccountBalanceEventModel> periodAccountEvents = await test.Api.GetAccountEventsAsync(
+            $"/accounts/{cash.Id}/balance-events/with-totals?accountingPeriodIds={july.Id}&includePending=true");
+        CollectionModel<FundBalanceEventModel> defaultFundEvents = await test.Api.GetFundEventsAsync(
+            "/funds/balance-events/date-range/with-totals?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries");
+        CollectionModel<FundBalanceEventModel> fundEvents = await test.Api.GetFundEventsAsync(
+            "/funds/balance-events/date-range/with-totals?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries&includePending=true");
+        CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.FundGoalEvents.GetAsync(july);
         BalanceEventTotalsModel accountTotals = await test.Api.GetAsync<BalanceEventTotalsModel>(
             $"/accounts/{cash.Id}/balance-events/totals?range.start=2026-07-01&range.end=2026-07-31&includePending=true");
-        BalanceEventTotalsModel fundTotals = await test.Api.GetAsync<BalanceEventTotalsModel>(
-            "/funds/balance-events/date-range/totals?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries&includePending=true");
+        BalanceEventTotalsModel fundTotals = await test.Api.GetFundTotalsAsync(
+            "/funds/balance-events/date-range/with-totals?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries&includePending=true");
 
         Assert.Empty(defaultAccountEvents.Items);
         Assert.Empty(defaultPeriodAccountEvents.Items);
@@ -117,10 +116,10 @@ public sealed class BalanceEventQueryTests
 
         BalanceEventTotalsModel totals = await test.Api.GetAsync<BalanceEventTotalsModel>(
             $"/accounts/{cash.Id}/balance-events/totals?range.start=2026-07-01&range.end=2026-07-31");
-        BalanceEventTotalsModel fundTotals = await test.Api.GetAsync<BalanceEventTotalsModel>(
-            "/funds/balance-events/date-range/totals?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries");
-        CollectionModel<AccountBalanceEventModel> events = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?range.start=2026-07-01&range.end=2026-07-31");
+        BalanceEventTotalsModel fundTotals = await test.Api.GetFundTotalsAsync(
+            "/funds/balance-events/date-range/with-totals?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries");
+        CollectionModel<AccountBalanceEventModel> events = await test.Api.GetAccountEventsAsync(
+            $"/accounts/{cash.Id}/balance-events/with-totals?range.start=2026-07-01&range.end=2026-07-31");
 
         Assert.Empty(events.Items);
         Assert.Equal(0m, totals.TotalOutflow);
@@ -132,10 +131,10 @@ public sealed class BalanceEventQueryTests
 
         totals = await test.Api.GetAsync<BalanceEventTotalsModel>(
             $"/accounts/{cash.Id}/balance-events/totals?range.start=2026-08-01&range.end=2026-08-31");
-        fundTotals = await test.Api.GetAsync<BalanceEventTotalsModel>(
-            "/funds/balance-events/date-range/totals?range.start=2026-08-01&range.end=2026-08-31&filter.names=Groceries");
-        events = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?range.start=2026-08-01&range.end=2026-08-31");
+        fundTotals = await test.Api.GetFundTotalsAsync(
+            "/funds/balance-events/date-range/with-totals?range.start=2026-08-01&range.end=2026-08-31&filter.names=Groceries");
+        events = await test.Api.GetAccountEventsAsync(
+            $"/accounts/{cash.Id}/balance-events/with-totals?range.start=2026-08-01&range.end=2026-08-31");
 
         Assert.Equal(transaction.Id, Assert.Single(events.Items).TransactionId);
         Assert.Equal(10m, totals.TotalOutflow);
@@ -160,12 +159,12 @@ public sealed class BalanceEventQueryTests
         await test.Transactions.PostAsync(transaction, cash, new DateOnly(2026, 7, 20));
         await test.Transactions.PostAsync(transaction, savings, new DateOnly(2026, 8, 2));
 
-        CollectionModel<FundBalanceEventModel> julyEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
-            "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries");
-        CollectionModel<FundBalanceEventModel> augustEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
-            "/funds/balance-events/date-range?range.start=2026-08-01&range.end=2026-08-31&filter.names=Groceries");
-        BalanceEventTotalsModel augustTotals = await test.Api.GetAsync<BalanceEventTotalsModel>(
-            "/funds/balance-events/date-range/totals?range.start=2026-08-01&range.end=2026-08-31&filter.names=Groceries");
+        CollectionModel<FundBalanceEventModel> julyEvents = await test.Api.GetFundEventsAsync(
+            "/funds/balance-events/date-range/with-totals?range.start=2026-07-01&range.end=2026-07-31&filter.names=Groceries");
+        CollectionModel<FundBalanceEventModel> augustEvents = await test.Api.GetFundEventsAsync(
+            "/funds/balance-events/date-range/with-totals?range.start=2026-08-01&range.end=2026-08-31&filter.names=Groceries");
+        BalanceEventTotalsModel augustTotals = await test.Api.GetFundTotalsAsync(
+            "/funds/balance-events/date-range/with-totals?range.start=2026-08-01&range.end=2026-08-31&filter.names=Groceries");
 
         Assert.Equal(10m, Assert.Single(julyEvents.Items).Amount);
         FundBalanceEventModel augustEvent = Assert.Single(augustEvents.Items);
@@ -190,8 +189,8 @@ public sealed class BalanceEventQueryTests
         await test.Transactions.PostAsync(groceryPurchase, cash, new DateOnly(2026, 7, 1));
         await test.Transactions.PostAsync(travelPurchase, cash, new DateOnly(2026, 7, 2));
 
-        BalanceEventTotalsModel totals = await test.Api.GetAsync<BalanceEventTotalsModel>(
-            "/funds/balance-events/date-range/totals?range.start=2026-07-01&range.end=2026-07-03&filter.names=Groceries&filter.names=Travel");
+        BalanceEventTotalsModel totals = await test.Api.GetFundTotalsAsync(
+            "/funds/balance-events/date-range/with-totals?range.start=2026-07-01&range.end=2026-07-03&filter.names=Groceries&filter.names=Travel");
 
         Assert.Equal(30m, totals.TotalOutflow);
         Assert.Equal(0m, totals.OpeningBalance);
@@ -213,8 +212,8 @@ public sealed class BalanceEventQueryTests
         TransactionHandle julyTransaction = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 8, 15)).For(10m).From(cash).To("July", julyFund).CreateAsync();
         _ = await test.Transactions.Spending().In(august).On(new DateOnly(2026, 7, 15)).For(20m).From(cash).To("August", augustFund).CreateAsync();
 
-        CollectionModel<AccountBalanceEventModel> events = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?accountingPeriodIds={july.Id}&includePending=true");
+        CollectionModel<AccountBalanceEventModel> events = await test.Api.GetAccountEventsAsync(
+            $"/accounts/{cash.Id}/balance-events/with-totals?accountingPeriodIds={july.Id}&includePending=true");
 
         Assert.Equal(1, events.TotalCount);
         Assert.Equal(julyTransaction.Id, Assert.Single(events.Items).TransactionId);
@@ -234,11 +233,11 @@ public sealed class BalanceEventQueryTests
         TransactionHandle later = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 20)).For(20m).From(cash).To("Second", groceries).CreateAsync();
         await test.Transactions.PostAsync(earlier, cash, new DateOnly(2026, 7, 10));
         await test.Transactions.PostAsync(later, cash, new DateOnly(2026, 7, 20));
-        string accountUri = $"/accounts/{cash.Id}/balance-events?range.start=2026-07-01&range.end=2026-07-31";
-        const string fundUri = "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31";
+        string accountUri = $"/accounts/{cash.Id}/balance-events/with-totals?range.start=2026-07-01&range.end=2026-07-31";
+        const string fundUri = "/funds/balance-events/date-range/with-totals?range.start=2026-07-01&range.end=2026-07-31";
 
-        CollectionModel<AccountBalanceEventModel> accounts = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>($"{accountUri}&sort=Date");
-        CollectionModel<FundBalanceEventModel> funds = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>($"{fundUri}&sort=Date");
+        CollectionModel<AccountBalanceEventModel> accounts = await test.Api.GetAccountEventsAsync($"{accountUri}&sort=Date");
+        CollectionModel<FundBalanceEventModel> funds = await test.Api.GetFundEventsAsync($"{fundUri}&sort=Date");
         CollectionModel<FundGoalBalanceEventModel> goals = await test.FundGoalEvents.GetAsync(july, FundGoalBalanceEventSortModel.Date);
         Assert.Equal([earlier.Id, later.Id], accounts.Items.Select(item => item.TransactionId));
         Assert.Equal([earlier.Id, later.Id], funds.Items.Select(item => item.TransactionId));
@@ -247,11 +246,11 @@ public sealed class BalanceEventQueryTests
         Assert.All(funds.Items, item => Assert.True(item.IsPosted));
         Assert.All(goals.Items, item => Assert.True(item.IsPosted));
 
-        accounts = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>($"{accountUri}&sort=DateDescending&limit=1");
-        funds = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>($"{fundUri}&sort=DateDescending&limit=1");
+        accounts = await test.Api.GetAccountEventsAsync($"{accountUri}&sort=DateDescending&limit=1");
+        funds = await test.Api.GetFundEventsAsync($"{fundUri}&sort=DateDescending&limit=1");
         goals = await test.FundGoalEvents.GetAsync(july, FundGoalBalanceEventSortModel.DateDescending, 1);
         using HttpResponseMessage missing = await test.Api.GetResponseAsync(
-            $"/accounts/{Guid.NewGuid()}/balance-events?range.start=2026-07-01&range.end=2026-07-31");
+            $"/accounts/{Guid.NewGuid()}/balance-events/with-totals?range.start=2026-07-01&range.end=2026-07-31");
         Assert.Equal(2, accounts.TotalCount);
         Assert.Equal(later.Id, Assert.Single(accounts.Items).TransactionId);
         Assert.Equal(2, funds.TotalCount);
@@ -298,8 +297,8 @@ public sealed class BalanceEventQueryTests
         FundHandle dining = await test.Funds.Create("Dining").In(july).CreateAsync();
         TransactionHandle transaction = await test.Transactions.Fund().In(july).On(new DateOnly(2026, 7, 15)).For(25m).From(groceries).To(dining).CreateAsync();
 
-        CollectionModel<FundBalanceEventModel> fundEvents = await test.Api.GetAsync<CollectionModel<FundBalanceEventModel>>(
-            "/funds/balance-events/date-range?range.start=2026-07-01&range.end=2026-07-31");
+        CollectionModel<FundBalanceEventModel> fundEvents = await test.Api.GetFundEventsAsync(
+            "/funds/balance-events/date-range/with-totals?range.start=2026-07-01&range.end=2026-07-31");
         CollectionModel<FundGoalBalanceEventModel> goalEvents = await test.FundGoalEvents.GetAsync(july);
 
         FundBalanceEventModel fund = Assert.Single(fundEvents.Items, item => item.TransactionId == transaction.Id && item.Fund.Id == groceries.Id);
@@ -378,8 +377,8 @@ public sealed class BalanceEventQueryTests
         await test.Transactions.PostAsync(excluded, cash, new DateOnly(2026, 9, 15));
         string periods = $"accountingPeriodIds={july.Id}&accountingPeriodIds={august.Id}";
 
-        CollectionModel<AccountBalanceEventModel> events = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?{periods}");
+        CollectionModel<AccountBalanceEventModel> events = await test.Api.GetAccountEventsAsync(
+            $"/accounts/{cash.Id}/balance-events/with-totals?{periods}");
         BalanceEventTotalsModel totals = await test.Api.GetAsync<BalanceEventTotalsModel>(
             $"/accounts/{cash.Id}/balance-events/totals?{periods}");
 

@@ -7,10 +7,11 @@ import PageLayout from "@/framework/view/PageLayout";
 import TransactionWorkspacePageHeader from "@/transactions/workspace/TransactionWorkspacePageHeader";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
 import UpdateTransactionForm from "@/transactions/workspace/UpdateTransactionForm";
-import getAccountingPeriodBalance from "@/accounting-periods/workspace/getAccountingPeriodBalance";
+import createApiClient from "@/framework/data/createApiClient";
 import getTransactionPageBackLink from "@/transactions/workspace/getTransactionPageBackLink";
 import { redirect } from "next/navigation";
 import routes from "@/transactions/routes";
+import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
  * Props for the TransactionWorkspaceEditPage component.
@@ -54,11 +55,17 @@ const TransactionWorkspaceEditPage = async function ({
   const transactionAccountingPeriod =
     referenceData.openAccountingPeriods.find(
       (period) => period.id === transaction.accountingPeriodId,
-    ) ?? (await getAccountingPeriodBalance(transaction.accountingPeriodId));
-
-  if (transactionAccountingPeriod === null) {
-    throw new Error("Failed to find the transaction accounting period");
-  }
+    ) ??
+    unwrapApiResponse(
+      await (
+        await createApiClient()
+      ).GET("/accounting-periods/{accountingPeriodId}", {
+        params: {
+          path: { accountingPeriodId: transaction.accountingPeriodId },
+        },
+      }),
+      "Failed to fetch the transaction accounting period",
+    );
 
   return (
     <PageLayout>

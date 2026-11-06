@@ -48,7 +48,7 @@ internal sealed class FundBuilder(TestApiClient apiClient, string name)
             MinimumEndingBalance = _minimumEndingBalance,
             MaximumEndingBalance = _maximumEndingBalance
         });
-        FundGoalModel fundGoal = await apiClient.GetAsync<FundGoalModel>($"/fund-goals/fund/{model.Id}?accountingPeriodId={period.Id}");
+        FundGoalModel fundGoal = await apiClient.GetFundGoalAsync(model.Id, period.Id);
         return new FundHandle(model.Id, model.Name, new FundGoalHandle(fundGoal.Id, model.Id));
     }
 }

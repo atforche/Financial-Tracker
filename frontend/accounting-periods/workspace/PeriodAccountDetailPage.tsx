@@ -4,7 +4,7 @@ import PeriodEntityLayout from "@/accounting-periods/workspace/PeriodEntityLayou
 import PeriodEntityTransactions from "@/accounting-periods/workspace/PeriodEntityTransactions";
 import accountRoutes from "@/accounts/routes";
 import createApiClient from "@/framework/data/createApiClient";
-import { periodTab as entityPeriodTab } from "@/balance-events/resolveEntityHistory";
+import { getAllPeriodsHref } from "@/accounting-periods/workspace/helpers";
 import { isDebtAccountType } from "@/accounts/helpers";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
@@ -74,10 +74,12 @@ const PeriodAccountDetailPage = async function ({
       }
       periodHref={periodUrl}
       returnUrl={returnUrl}
-      allPeriodsHref={accountRoutes.workspaceDetail(accountId, {
-        tab: entityPeriodTab,
-        returnUrl: currentUrl,
-      })}
+      allPeriodsHref={getAllPeriodsHref(
+        (entityParams) =>
+          accountRoutes.workspaceDetail(accountId, entityParams),
+        returnUrl,
+        currentUrl,
+      )}
       openingBalance={item.openingBalance}
       closingBalance={item.closingBalance}
       isIncreaseGood={!isDebtAccountType(item.account.type)}
