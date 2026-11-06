@@ -2,6 +2,7 @@ import ExpectedIncomeSourceDetails from "@/accounting-periods/workspace/Expected
 import ExpectedIncomeSourceForm from "@/accounting-periods/workspace/ExpectedIncomeSourceForm";
 import type { JSX } from "react";
 import createApiClient from "@/framework/data/createApiClient";
+import { isInternalUrl } from "@/framework/view/ReturnLink";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -31,7 +32,9 @@ const ExpectedIncomeSourcePage = async function ({
   returnUrl,
 }: ExpectedIncomeSourcePageProps): Promise<JSX.Element> {
   const apiClient = await createApiClient();
-  const backHref = returnUrl ?? routes.workspaceDetail(accountingPeriodId, {});
+  const backHref = isInternalUrl(returnUrl)
+    ? returnUrl
+    : routes.workspaceDetail(accountingPeriodId, {});
   if (sourceId === undefined) {
     const response = await apiClient.GET(
       "/accounting-periods/expected-income-sources",

@@ -37,16 +37,6 @@ public sealed class FundGoalQueryRepository(DatabaseContext databaseContext) : I
         return new QueryPage<FundGoal>(items, totalCount);
     }
 
-    /// <inheritdoc/>
-    public Task<FundGoal?> GetByFundAndAccountingPeriodAsync(
-        FundId fundId,
-        AccountingPeriodId? accountingPeriodId,
-        CancellationToken cancellationToken = default) =>
-        databaseContext.FundGoals.AsNoTracking().SingleOrDefaultAsync(fundGoal =>
-            fundGoal.Fund.Id == fundId && (fundGoal.AccountingPeriod == null
-                ? accountingPeriodId == null
-                : fundGoal.AccountingPeriod.Id == accountingPeriodId), cancellationToken);
-
     /// <summary>
     /// Applies the provided filter to the queryable collection of Fund Goals.
     /// </summary>

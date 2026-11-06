@@ -245,5 +245,6 @@ public sealed class AccountConverter
     private static AccountFilter ToDomain(AccountFilterModel? model) => new(
         model?.NameSearch,
         model?.Names ?? [],
-        model?.Types?.Select(type => (AccountType)type).ToList() ?? []);
+        model?.Types?.Select(type => (AccountType)type).ToList() ?? [],
+        model?.Ids ?? []);
 }

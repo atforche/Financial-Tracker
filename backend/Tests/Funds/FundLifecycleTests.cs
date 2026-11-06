@@ -96,14 +96,14 @@ public sealed class FundLifecycleTests
         AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
         FundHandle fund = await test.Funds.Create("Travel").In(july).CreateAsync();
         string rangeUri = $"/funds/accounting-period-range?range.start={july.Id}&range.end={august.Id}";
-        FundGoalModel augustGoal = await test.Api.GetAsync<FundGoalModel>($"/fund-goals/fund/{fund.Id}?accountingPeriodId={august.Id}");
+        FundGoalModel augustGoal = await test.Api.GetFundGoalAsync(fund.Id, august.Id);
 
         Assert.Contains((await test.Api.GetAsync<FundsInAccountingPeriodRangeModel>(rangeUri)).Funds.Items, item => item.Id == fund.Id);
         Assert.NotEqual(fund.Goal.Id, augustGoal.Id);
 
         await test.Api.DeleteAsync($"/funds/{fund.Id}");
-        using HttpResponseMessage missingJulyGoal = await test.Api.GetResponseAsync($"/fund-goals/fund/{fund.Id}?accountingPeriodId={july.Id}");
-        using HttpResponseMessage missingAugustGoal = await test.Api.GetResponseAsync($"/fund-goals/fund/{fund.Id}?accountingPeriodId={august.Id}");
+        using HttpResponseMessage missingJulyGoal = await test.Api.GetResponseAsync($"/accounting-periods/{july.Id}/funds/{fund.Id}");
+        using HttpResponseMessage missingAugustGoal = await test.Api.GetResponseAsync($"/accounting-periods/{august.Id}/funds/{fund.Id}");
 
         Assert.DoesNotContain((await test.Api.GetAsync<FundsInAccountingPeriodRangeModel>(rangeUri)).Funds.Items, item => item.Id == fund.Id);
         Assert.Equal(HttpStatusCode.NotFound, missingJulyGoal.StatusCode);

@@ -217,5 +217,6 @@ public sealed class FundConverter
     /// </summary>
     private static FundFilter ToDomain(FundFilterModel? model) => new(
         model?.NameSearch,
-        model?.Names ?? []);
+        model?.Names ?? [],
+        model?.Ids ?? []);
 }

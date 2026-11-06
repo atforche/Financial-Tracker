@@ -1,3 +1,6 @@
+import resolveEntityHistory, {
+  periodTab,
+} from "@/balance-events/resolveEntityHistory";
 import { AccountBalanceEventSortModel } from "@/framework/data/api";
 import AccountDetailActions from "@/accounts/workspace/AccountDetailActions";
 import AccountGoalHistory from "@/account-goals/AccountGoalHistory";
@@ -17,8 +20,8 @@ import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import getDateSummary from "@/balance-events/getDateSummary";
 import getDetailViewParams from "@/balance-events/getDetailViewParams";
 import { isDebtAccountType } from "@/accounts/helpers";
+import isEntityId from "@/framework/data/isEntityId";
 import { redirect } from "next/navigation";
-import resolveEntityHistory from "@/balance-events/resolveEntityHistory";
 import routes from "@/accounts/routes";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -43,33 +46,36 @@ const AccountWorkspaceDetailPage = async function ({
   const { accountId } = await params;
   const resolvedSearchParams = await searchParams;
   const { search, accountType } = resolvedSearchParams;
-  const apiClient = await createApiClient();
-  const [periodsResponse, accountsResponse, institutionsResponse] =
-    await Promise.all([
-      apiClient.GET("/accounting-periods", {
-        params: {
-          query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
-        },
-      }),
-      apiClient.GET("/accounts/with-balances"),
-      apiClient.GET("/accounts/financial-institutions"),
-    ]);
-  const periods = unwrapApiResponse(
-    periodsResponse,
-    "Failed to fetch accounting periods",
-  ).items;
-  const account = unwrapApiResponse(
-    accountsResponse,
-    "Failed to fetch accounts",
-  ).items.find((item) => item.id === accountId);
-  const financialInstitutions = unwrapApiResponse(
-    institutionsResponse,
-    "Failed to fetch financial institutions",
-  ).items;
   const workspaceUrl = routes.workspace({
     ...(search === undefined ? {} : { search }),
     ...(accountType === undefined ? {} : { accountType }),
   });
+  if (!isEntityId(accountId)) {
+    redirect(workspaceUrl);
+  }
+  const apiClient = await createApiClient();
+  // Only the By Period view needs every period, for its range picker and default range
+  const [periodsResponse, accountsResponse] = await Promise.all([
+    resolvedSearchParams.tab === periodTab
+      ? apiClient.GET("/accounting-periods", {
+          params: {
+            query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
+          },
+        })
+      : null,
+    apiClient.GET("/accounts/with-balances", {
+      params: { query: { "Filter.Ids": [accountId] } },
+    }),
+  ]);
+  const periods =
+    periodsResponse === null
+      ? []
+      : unwrapApiResponse(periodsResponse, "Failed to fetch accounting periods")
+          .items;
+  const [account] = unwrapApiResponse(
+    accountsResponse,
+    "Failed to fetch accounts",
+  ).items;
   if (account === undefined) {
     redirect(workspaceUrl);
   }
@@ -89,45 +95,40 @@ const AccountWorkspaceDetailPage = async function ({
   const toAccountBalance = (balance: number): number =>
     isIncreaseGood ? balance : 0 - balance;
   const hasGoals = account.type === AccountType.Standard;
-  const eventQuery =
+  const dateActivity =
     view === "date"
-      ? { "Range.Start": dates.start, "Range.End": dates.end }
-      : { AccountingPeriodIds: [...(periodRange?.ids ?? [])] };
-
-  const [eventsResponse, totalsResponse] =
-    view === "period" && periodRange === null
-      ? [null, null]
-      : await Promise.all([
-          view === "date"
-            ? apiClient.GET("/accounts/{accountId}/balance-events", {
-                params: {
-                  path: { accountId },
-                  query: {
-                    ...eventQuery,
-                    IncludePending: true,
-                    Sort: AccountBalanceEventSortModel.DateDescending,
-                  },
+      ? unwrapApiResponse(
+          await apiClient.GET(
+            "/accounts/{accountId}/balance-events/with-totals",
+            {
+              params: {
+                path: { accountId },
+                query: {
+                  "Range.Start": dates.start,
+                  "Range.End": dates.end,
+                  IncludePending: true,
+                  Sort: AccountBalanceEventSortModel.DateDescending,
                 },
-              })
-            : null,
-          apiClient.GET("/accounts/{accountId}/balance-events/totals", {
-            params: { path: { accountId }, query: eventQuery },
-          }),
-        ]);
-  const events =
-    eventsResponse === null
-      ? []
-      : unwrapApiResponse(
-          eventsResponse,
-          "Failed to fetch account balance events",
-        ).items;
+              },
+            },
+          ),
+          "Failed to fetch account activity",
+        )
+      : null;
+  const events = dateActivity?.events ?? [];
   const netTotals =
-    totalsResponse === null
+    dateActivity?.totals ??
+    (periodRange === null
       ? null
       : unwrapApiResponse(
-          totalsResponse,
+          await apiClient.GET("/accounts/{accountId}/balance-events/totals", {
+            params: {
+              path: { accountId },
+              query: { AccountingPeriodIds: [...periodRange.ids] },
+            },
+          }),
           "Failed to fetch account activity totals",
-        );
+        ));
   const totals =
     netTotals === null
       ? null
@@ -153,7 +154,7 @@ const AccountWorkspaceDetailPage = async function ({
               query: {
                 "Range.Start": periodRange.start,
                 "Range.End": periodRange.end,
-                "Filter.Names": [account.name],
+                "Filter.Ids": [accountId],
               },
             },
           }),
@@ -224,11 +225,11 @@ const AccountWorkspaceDetailPage = async function ({
       name={account.name}
       subtitle={account.financialInstitution ?? null}
       back={{ href: workspaceUrl, label: "Back to Accounts" }}
+      returnUrl={resolvedSearchParams.returnUrl}
       isIncreaseGood={isIncreaseGood}
       actions={
         <AccountDetailActions
           account={account}
-          financialInstitutions={financialInstitutions}
           addTransactionHref={transactionRoutes.workspaceCreate({
             accountIds: [account.id],
             returnUrl: currentUrl,

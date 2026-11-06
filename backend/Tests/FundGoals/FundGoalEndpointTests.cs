@@ -125,7 +125,7 @@ public sealed class FundGoalEndpointTests
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
         FundHandle fund = await test.Funds.Create("Reserve").In(july).CreateAsync();
-        FundGoalModel created = await test.Api.GetAsync<FundGoalModel>($"/fund-goals/fund/{fund.Id}?accountingPeriodId={july.Id}");
+        FundGoalModel created = await test.Api.GetFundGoalAsync(fund.Id, july.Id);
         Assert.Equal(0m, created.MinimumEndingBalance);
 
         _ = await test.Api.PostAsync<UpdateFundGoalModel, FundGoalModel>($"/fund-goals/{fund.Goal.Id}", new UpdateFundGoalModel
@@ -216,13 +216,11 @@ public sealed class FundGoalEndpointTests
         });
         using HttpResponseMessage closedPeriod = await test.Api.PostResponseAsync($"/fund-goals/{closed.Goal.Id}", new UpdateFundGoalModel { PlannedMonthlyContribution = 50m });
         using HttpResponseMessage missingUpdate = await test.Api.PostResponseAsync($"/fund-goals/{Guid.NewGuid()}", new UpdateFundGoalModel());
-        using HttpResponseMessage missingFund = await test.Api.GetResponseAsync($"/fund-goals/fund/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, negative.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, inverted.StatusCode);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, closedPeriod.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, missingUpdate.StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, missingFund.StatusCode);
     }
 
     /// <summary>

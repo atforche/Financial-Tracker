@@ -84,9 +84,15 @@ const describeOutOfRange = function (
  */
 const getPeriodAttention = function (
   detail: components["schemas"]["AccountingPeriodDetailModel"],
+  returnUrl: string | undefined,
 ): AttentionItem[] {
   const periodId = detail.accountingPeriod.id;
-  const fundsHref = routes.workspaceDetail(periodId, { tab: "funds" });
+  const getTabHref = (tab: string): Route =>
+    routes.workspaceDetail(periodId, {
+      tab,
+      ...(returnUrl === undefined ? {} : { returnUrl }),
+    });
+  const fundsHref = getTabHref("funds");
   const unfunded = detail.funds.flatMap((item) => {
     const contribution = item.goalProgress?.contribution;
     return contribution === null ||
@@ -110,7 +116,7 @@ const getPeriodAttention = function (
         name: item.account.name,
         ending: item.goalProgress?.endingBalance,
       })),
-      routes.workspaceDetail(periodId, { tab: "accounts" }),
+      getTabHref("accounts"),
     ),
     ...(unfunded.length === 0
       ? []

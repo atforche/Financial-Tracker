@@ -23,10 +23,11 @@ interface EntityEvent {
 }
 
 /**
- * Builds the list row for a balance event.
+ * Builds the list row for a balance event. Identical events can share every field, so the row's index keeps its key unique.
  */
 const getTransactionRow = function (
   event: EntityEvent,
+  index: number,
   returnUrl: string,
 ): {
   readonly key: string;
@@ -39,7 +40,7 @@ const getTransactionRow = function (
 } {
   const isCredit = event.type === BalanceEventType.Credit;
   return {
-    key: `${event.transactionId}-${event.type}-${event.amount.toString()}-${event.eventDate ?? ""}`,
+    key: `${event.transactionId}-${index.toString()}`,
     href: routes.workspaceDetail(event.transactionId, { returnUrl }),
     leading: formatShortDate(
       new Date(`${event.eventDate ?? event.transactionDate}T00:00:00`),

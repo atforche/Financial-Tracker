@@ -34,6 +34,7 @@ interface CreateTransactionFormProps {
   readonly expectedIncomeSources: ExpectedIncomeSourcesByPeriod;
   readonly locations: Location[];
   readonly redirectUrl: string;
+  readonly linkedAccountingPeriodId: string | null;
 }
 
 /**
@@ -47,16 +48,18 @@ const CreateTransactionForm = function ({
   expectedIncomeSources,
   locations,
   redirectUrl,
+  linkedAccountingPeriodId,
 }: CreateTransactionFormProps): JSX.Element | null {
   const canWrite = useWriteAccess();
   type TransactionFormKind =
     "spending" | "refund" | "income" | "account" | "fund";
   const [transactionType, setTransactionType] =
     useState<TransactionFormKind>("spending");
+  const initialAccountingPeriod =
+    accountingPeriods.find(({ id }) => id === linkedAccountingPeriodId) ??
+    getDefaultAccountingPeriod(accountingPeriods);
   const [accountingPeriod, setAccountingPeriod] =
-    useState<AccountingPeriod | null>(
-      getDefaultAccountingPeriod(accountingPeriods),
-    );
+    useState<AccountingPeriod | null>(initialAccountingPeriod);
   const [date, setDate] = useState<Dayjs | null>(null);
   const [description, setDescription] = useState("");
   const details: TransactionDetails = {
@@ -67,7 +70,7 @@ const CreateTransactionForm = function ({
     description,
     setDescription,
     reset: (): void => {
-      setAccountingPeriod(getDefaultAccountingPeriod(accountingPeriods));
+      setAccountingPeriod(initialAccountingPeriod);
       setDate(null);
       setDescription("");
     },

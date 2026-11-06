@@ -1,3 +1,4 @@
+using Domain.AccountingPeriods;
 using Domain.Funds;
 
 namespace Domain.FundGoals.Queries;
@@ -15,9 +16,10 @@ public interface IFundGoalBalanceEventQueryRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves ordered Fund Goal totals histories for the provided Funds.
+    /// Retrieves ordered Fund Goal totals histories for the provided Funds, optionally narrowed to Accounting Periods.
     /// </summary>
     Task<IReadOnlyCollection<FundGoalTotalsHistory>> GetFundGoalHistoriesAsync(
         IReadOnlyCollection<FundId> ids,
+        IReadOnlyCollection<AccountingPeriodId>? accountingPeriodIds,
         CancellationToken cancellationToken = default);
 }

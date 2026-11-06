@@ -19,6 +19,10 @@ const returnLabels: readonly (readonly [RegExp, string])[] = [
     "Back to Expected Income Source",
   ],
   [
+    /^\/accounting-periods\/workspace\/[^/?#]+\/(?:accounts|funds)\/[^/?#]+(?:\?|$)/u,
+    "Back to Accounting Period",
+  ],
+  [
     /^\/accounting-periods\/workspace\/[^/?#]+(?:\?|$)/u,
     "Back to Accounting Period",
   ],
@@ -96,6 +100,6 @@ const ReturnLink = function ({
   );
 };
 
-export { getReturnLinkTarget };
+export { getReturnLinkTarget, isInternalUrl };
 export type { ReturnLinkTarget };
 export default ReturnLink;

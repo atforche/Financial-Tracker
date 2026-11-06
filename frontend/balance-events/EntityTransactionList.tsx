@@ -82,7 +82,7 @@ const EntityTransactionList = function ({
   const getRows = (
     items: readonly EntityEvent[],
   ): ReturnType<typeof getTransactionRow>[] =>
-    items.map((event) => getTransactionRow(event, returnUrl));
+    items.map((event, index) => getTransactionRow(event, index, returnUrl));
 
   return (
     <ContentSurface>
@@ -128,6 +128,7 @@ const EntityTransactionList = function ({
             <Box key={month.key}>
               <ButtonBase
                 aria-expanded={isOpen}
+                disabled={term !== ""}
                 onClick={() => {
                   toggleMonth(month.key);
                 }}

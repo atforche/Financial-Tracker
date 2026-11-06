@@ -24,11 +24,6 @@ public interface IFundBalanceHistoryRepository
     IReadOnlyCollection<FundBalanceHistory> GetAllByTransactionId(TransactionId transactionId);
 
     /// <summary>
-    /// Gets the earliest Fund Balance History entry for the specified Transaction ID
-    /// </summary>
-    FundBalanceHistory GetEarliestByTransactionId(FundId fundId, TransactionId transactionId);
-
-    /// <summary>
     /// Gets the latest Fund Balance History entry earlier than the specified date and sequence number
     /// </summary>
     FundBalanceHistory? GetLatestHistoryEarlierThan(FundId fundId, DateOnly historyDate, int sequenceNumber);

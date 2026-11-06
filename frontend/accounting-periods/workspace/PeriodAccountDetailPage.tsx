@@ -1,11 +1,10 @@
-import { AccountBalanceEventSortModel } from "@/framework/data/api";
 import type { JSX } from "react";
 import PeriodAccountGoalCard from "@/accounting-periods/workspace/PeriodAccountGoalCard";
 import PeriodEntityLayout from "@/accounting-periods/workspace/PeriodEntityLayout";
 import PeriodEntityTransactions from "@/accounting-periods/workspace/PeriodEntityTransactions";
 import accountRoutes from "@/accounts/routes";
-import { periodTab as entityPeriodTab } from "@/balance-events/resolveEntityHistory";
-import getPeriodEntityDetail from "@/accounting-periods/workspace/getPeriodEntityDetail";
+import createApiClient from "@/framework/data/createApiClient";
+import { getAllPeriodsHref } from "@/accounting-periods/workspace/helpers";
 import { isDebtAccountType } from "@/accounts/helpers";
 import { redirect } from "next/navigation";
 import routes from "@/accounting-periods/routes";
@@ -37,62 +36,27 @@ const PeriodAccountDetailPage = async function ({
 }: PeriodAccountDetailPageProps): Promise<JSX.Element> {
   const { accountingPeriodId, accountId } = await params;
   const resolvedSearchParams = await searchParams;
-  const { apiClient, detail } = await getPeriodEntityDetail(accountingPeriodId);
-  const period = detail.accountingPeriod;
   const { returnUrl, periodTab } = resolvedSearchParams;
   const periodUrl = routes.workspaceDetail(
-    period.id,
+    accountingPeriodId,
     periodTab === undefined ? {} : { tab: periodTab },
   );
-  const item = detail.accounts.find(({ account }) => account.id === accountId);
-  if (item === undefined) {
+  const apiClient = await createApiClient();
+  const detailResponse = await apiClient.GET(
+    "/accounting-periods/{accountingPeriodId}/accounts/{accountId}",
+    { params: { path: { accountingPeriodId, accountId } } },
+  );
+  // The period's page handles a missing period, so a missing account only needs to get back to it
+  if (detailResponse.response.status === 404) {
     redirect(periodUrl);
   }
-  const [goalResponse, eventsResponse, totalsResponse, balanceDatesResponse] =
-    await Promise.all([
-      apiClient.GET("/account-goals/account/{accountId}", {
-        params: {
-          path: { accountId },
-          query: { accountingPeriodId: period.id },
-        },
-      }),
-      apiClient.GET("/accounts/{accountId}/balance-events", {
-        params: {
-          path: { accountId },
-          query: {
-            AccountingPeriodIds: [period.id],
-            IncludePending: true,
-            Sort: AccountBalanceEventSortModel.DateDescending,
-          },
-        },
-      }),
-      apiClient.GET("/accounts/{accountId}/balance-events/totals", {
-        params: {
-          path: { accountId },
-          query: { AccountingPeriodIds: [period.id] },
-        },
-      }),
-      apiClient.GET(
-        "/accounts/{accountId}/accounting-periods/{accountingPeriodId}/balance-dates",
-        { params: { path: { accountId, accountingPeriodId: period.id } } },
-      ),
-    ]);
-  const goal =
-    goalResponse.response.status === 404
-      ? null
-      : unwrapApiResponse(goalResponse, "Failed to fetch the account goal");
-  const events = unwrapApiResponse(
-    eventsResponse,
-    "Failed to fetch account balance events",
+  const detail = unwrapApiResponse(
+    detailResponse,
+    "Failed to fetch the account in the accounting period",
   );
-  const totals = unwrapApiResponse(
-    totalsResponse,
-    "Failed to fetch account activity totals",
-  );
-  const balanceDates = unwrapApiResponse(
-    balanceDatesResponse,
-    "Failed to fetch account daily balances",
-  );
+  const period = detail.accountingPeriod;
+  const item = detail.account;
+  const { goal } = detail;
   const currentUrl = routes.accountDetail(
     period.id,
     accountId,
@@ -100,31 +64,24 @@ const PeriodAccountDetailPage = async function ({
   );
   // A return link belongs to the period it was opened from, so a neighbor goes back to its own period instead
   const neighborParams = periodTab === undefined ? {} : { periodTab };
-  const getNeighborLink = function (
-    neighbor: typeof detail.previousPeriod,
-  ): { name: string; href: ReturnType<typeof routes.accountDetail> } | null {
-    return neighbor === null
-      ? null
-      : {
-          name: neighbor.name,
-          href: routes.accountDetail(neighbor.id, accountId, neighborParams),
-        };
-  };
 
   return (
     <PeriodEntityLayout
       name={item.account.name}
-      period={period}
-      previousPeriod={getNeighborLink(detail.previousPeriod)}
-      nextPeriod={getNeighborLink(detail.nextPeriod)}
+      detail={detail}
+      getPeriodHref={(id) =>
+        routes.accountDetail(id, accountId, neighborParams)
+      }
       periodHref={periodUrl}
       returnUrl={returnUrl}
-      allPeriodsHref={accountRoutes.workspaceDetail(accountId, {
-        tab: entityPeriodTab,
-      })}
+      allPeriodsHref={getAllPeriodsHref(
+        (entityParams) =>
+          accountRoutes.workspaceDetail(accountId, entityParams),
+        returnUrl,
+        currentUrl,
+      )}
       openingBalance={item.openingBalance}
       closingBalance={item.closingBalance}
-      totals={totals}
       isIncreaseGood={!isDebtAccountType(item.account.type)}
       goalCard={
         goal === null ||
@@ -138,16 +95,16 @@ const PeriodAccountDetailPage = async function ({
           />
         )
       }
-      dailyBalances={balanceDates.dates}
       balanceLabel="Account Balance"
       transactions={
         <PeriodEntityTransactions
           entityName="account"
-          events={events.items}
+          events={detail.events}
           addTransactionHref={transactionRoutes.workspaceCreate({
             accountingPeriodIds: [period.id],
             returnUrl: currentUrl,
           })}
+          isOpen={period.isOpen}
           returnUrl={currentUrl}
         />
       }

@@ -31,8 +31,8 @@ const AccountWorkspace = async function ({
     toRepeatedSearchParams(accountType),
   );
 
-  const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
-    params: { query: { Limit: 500 } },
+  const openAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
+    params: { query: { "Filter.IsOpen": true } },
   });
   const accountsPromise = apiClient.GET("/accounts/with-balances", {
     params: {
@@ -49,18 +49,18 @@ const AccountWorkspace = async function ({
   );
 
   const [
-    accountingPeriodsResponse,
+    openAccountingPeriodsResponse,
     accountsResponse,
     financialInstitutionsResponse,
   ] = await Promise.all([
-    accountingPeriodsPromise,
+    openAccountingPeriodsPromise,
     accountsPromise,
     financialInstitutionsPromise,
   ]);
-  const accountingPeriods = unwrapApiResponse(
-    accountingPeriodsResponse,
+  const openAccountingPeriods = unwrapApiResponse(
+    openAccountingPeriodsResponse,
     "Failed to fetch accounting periods",
-  );
+  ).items;
   const accounts = unwrapApiResponse(
     accountsResponse,
     "Failed to fetch accounts",
@@ -75,10 +75,13 @@ const AccountWorkspace = async function ({
         currentAccountTypes.includes(account.type),
       )
     : accounts.items;
-  const isInOnboardingMode = accountingPeriods.items.length === 0;
-  const openAccountingPeriods = accountingPeriods.items.filter(
-    (period) => period.isOpen,
-  );
+  // Only without an open period can there be no periods at all, so only then is the extra request needed
+  const isInOnboardingMode =
+    openAccountingPeriods.length === 0 &&
+    unwrapApiResponse(
+      await apiClient.GET("/accounting-periods/bounds"),
+      "Failed to fetch the accounting period bounds",
+    ).latest === null;
 
   return (
     <PageLayout>

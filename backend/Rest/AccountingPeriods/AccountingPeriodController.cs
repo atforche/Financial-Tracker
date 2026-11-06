@@ -19,6 +19,8 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
     AccountingPeriodConverter accountingPeriodConverter,
     AccountingPeriodQueryConverter accountingPeriodQueryConverter,
     AccountingPeriodQueryService accountingPeriodQueryService,
+    PeriodEntityQueryService periodEntityQueryService,
+    PeriodEntityConverter periodEntityConverter,
     AccountingPeriodService accountingPeriodService,
     IAccountingPeriodRepository accountingPeriodRepository) : ControllerBase
 {
@@ -33,6 +35,44 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         Ok(accountingPeriodQueryConverter.ToModel(await accountingPeriodQueryService.GetAsync(
             accountingPeriodQueryConverter.ToDomain(queryParameters),
             cancellationToken)));
+
+    /// <summary>
+    /// Retrieves everything shown for one Account in an Accounting Period
+    /// </summary>
+    [HttpGet("{accountingPeriodId:guid}/accounts/{accountId:guid}")]
+    [ProducesResponseType(typeof(PeriodAccountDetailModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PeriodAccountDetailModel>> GetAccountDetailAsync(
+        Guid accountingPeriodId,
+        Guid accountId,
+        CancellationToken cancellationToken)
+    {
+        PeriodAccountDetail? detail = await periodEntityQueryService.GetAccountAsync(accountingPeriodId, accountId, cancellationToken);
+        return detail == null ? NotFound() : Ok(periodEntityConverter.ToModel(detail));
+    }
+
+    /// <summary>
+    /// Retrieves everything shown for one Fund in an Accounting Period
+    /// </summary>
+    [HttpGet("{accountingPeriodId:guid}/funds/{fundId:guid}")]
+    [ProducesResponseType(typeof(PeriodFundDetailModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PeriodFundDetailModel>> GetFundDetailAsync(
+        Guid accountingPeriodId,
+        Guid fundId,
+        CancellationToken cancellationToken)
+    {
+        PeriodFundDetail? detail = await periodEntityQueryService.GetFundAsync(accountingPeriodId, fundId, cancellationToken);
+        return detail == null ? NotFound() : Ok(periodEntityConverter.ToModel(detail));
+    }
+
+    /// <summary>
+    /// Retrieves the earliest and latest Accounting Periods
+    /// </summary>
+    [HttpGet("bounds")]
+    [ProducesResponseType(typeof(AccountingPeriodBoundsModel), StatusCodes.Status200OK)]
+    public async Task<ActionResult<AccountingPeriodBoundsModel>> GetBoundsAsync(CancellationToken cancellationToken) =>
+        Ok(accountingPeriodQueryConverter.ToModel(await accountingPeriodQueryService.GetBoundsAsync(cancellationToken)));
 
     /// <summary>
     /// Retrieves snapshot data for the current Accounting Period.

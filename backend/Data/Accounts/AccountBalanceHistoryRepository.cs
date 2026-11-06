@@ -45,15 +45,6 @@ public class AccountBalanceHistoryRepository(DatabaseContext databaseContext) : 
             .ToList();
 
     /// <inheritdoc/>
-    public AccountBalanceHistory GetEarliestByTransactionId(AccountId accountId, TransactionId transactionId) =>
-        MergeWithTracked(
-            databaseContext.AccountBalanceHistories.Where(history => history.Account.Id == accountId && history.TransactionId == transactionId),
-            history => history.Account.Id == accountId && history.TransactionId == transactionId)
-            .OrderBy(history => history.Date)
-            .ThenBy(history => history.Sequence)
-            .First();
-
-    /// <inheritdoc/>
     public AccountBalanceHistory? GetLatestHistoryEarlierThan(AccountId accountId, DateOnly historyDate, int sequenceNumber) =>
         MergeWithTracked(
             databaseContext.AccountBalanceHistories.Where(history => history.Account.Id == accountId &&

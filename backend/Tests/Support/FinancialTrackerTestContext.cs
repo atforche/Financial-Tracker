@@ -54,11 +54,6 @@ internal sealed class FinancialTrackerTestContext : IAsyncDisposable
     public FundQueries FundQueries => new(ApiClient);
 
     /// <summary>
-    /// Gets Fund Goal balance event queries.
-    /// </summary>
-    public FundGoalEventQueries FundGoalEvents => new(_factory);
-
-    /// <summary>
     /// Gets Account Goal queries.
     /// </summary>
     public AccountGoalQueries AccountGoalQueries => new(_factory);

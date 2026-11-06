@@ -45,6 +45,6 @@ public sealed class CoreValueObjectTests
         Assert.True(second >= none!);
         Assert.Equal(1, first.CompareTo(null));
         _ = Assert.Throws<ArgumentException>(() => first.CompareTo("not an ID"));
-        _ = Assert.Throws<InvalidOperationException>(() => new EntityId(Guid.Empty));
+        _ = Assert.Throws<EmptyEntityIdException>(() => new EntityId(Guid.Empty));
     }
 }

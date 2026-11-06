@@ -3,6 +3,9 @@ import {
   getCurrencyTotal,
 } from "@/framework/currencyHelpers";
 import type { ExpectedIncomeSourceRequest } from "@/accounting-periods/types";
+import type { Route } from "next";
+import { isInternalUrl } from "@/framework/view/ReturnLink";
+import { periodTab } from "@/balance-events/resolveEntityHistory";
 
 /**
  * Type representing the possible actions that can be performed in the Accounting Period workspace.
@@ -38,5 +41,20 @@ const getPaymentAmounts = function (source: ExpectedIncomeSourceRequest): {
   };
 };
 
+/**
+ * Gets the link from a period's account or fund page to all of its periods. Arriving from that page goes back to it as
+ * it was left, so moving between the two doesn't nest return links.
+ */
+const getAllPeriodsHref = function (
+  getEntityHref: (searchParams: { tab?: string; returnUrl?: string }) => Route,
+  returnUrl: string | undefined,
+  currentUrl: string,
+): Route {
+  return isInternalUrl(returnUrl) &&
+    returnUrl.split("?")[0] === getEntityHref({})
+    ? returnUrl
+    : getEntityHref({ tab: periodTab, returnUrl: currentUrl });
+};
+
 export type { AccountingPeriodWorkspaceAction };
-export { expectedIncomeSourcesId, getPaymentAmounts };
+export { expectedIncomeSourcesId, getAllPeriodsHref, getPaymentAmounts };

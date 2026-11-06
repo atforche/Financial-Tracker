@@ -8,9 +8,14 @@ import type {
 } from "@/accounts/types";
 import { Button, Chip, Stack, Typography } from "@mui/material";
 import {
+  CanUnpostContext,
+  usePostingDateReporter,
+} from "@/transactions/workspace/useTransactionPostingPreviews";
+import {
   type JSX,
   startTransition,
   useActionState,
+  useContext,
   useEffect,
   useState,
 } from "react";
@@ -29,7 +34,6 @@ import { getSelectedTransactionAccountDraft } from "@/transactions/workspace/acc
 import { isNotNullOrUndefined } from "@/framework/nullHelpers";
 import postTransaction from "@/transactions/workspace/postTransaction";
 import { useFrameHeaderSlot } from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
-import { usePostingDateReporter } from "@/transactions/workspace/useTransactionPostingPreviews";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
@@ -136,9 +140,11 @@ const AccountBalanceEventFrame = function ({
     selectedAccount !== null || readOnlyAccount !== null;
   let helperContent = null;
   const headerSlot = useFrameHeaderSlot();
+  const canUnpost = useContext(CanUnpostContext);
   const unpostAction =
     postedDate !== null &&
     canWrite &&
+    canUnpost &&
     setAccount === null &&
     transaction !== null &&
     headerSlot !== null &&

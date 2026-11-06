@@ -1,6 +1,3 @@
-using Domain.AccountingPeriods;
-using Domain.Accounts;
-
 namespace Domain.AccountGoals.Queries;
 
 /// <summary>
@@ -12,12 +9,4 @@ public interface IAccountGoalQueryRepository
     /// Retrieves the Account Goal with the specified ID, or null when it does not exist.
     /// </summary>
     Task<AccountGoal?> GetByIdAsync(AccountGoalId id, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves the Account Goal for the specified Account and Accounting Period, or null when it does not exist.
-    /// </summary>
-    Task<AccountGoal?> GetByAccountAndAccountingPeriodAsync(
-        AccountId accountId,
-        AccountingPeriodId? accountingPeriodId,
-        CancellationToken cancellationToken = default);
 }

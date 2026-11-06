@@ -30,47 +30,6 @@ public sealed class AccountController(
     AccountBalanceEventConverter accountBalanceEventConverter) : ControllerBase
 {
     /// <summary>
-    /// Retrieves daily posted Account balances scoped to one Accounting Period.
-    /// </summary>
-    [HttpGet("{accountId}/accounting-periods/{accountingPeriodId}/balance-dates")]
-    [ProducesResponseType(typeof(PeriodBalanceDateRangeModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<PeriodBalanceDateRangeModel>> GetPeriodBalanceDatesAsync(
-        Guid accountId, Guid accountingPeriodId, CancellationToken cancellationToken)
-    {
-        PeriodBalanceDateRange? range = await accountQueryService.GetPeriodBalanceDatesAsync(accountId, accountingPeriodId, cancellationToken);
-        return range == null ? NotFound() : Ok(new PeriodBalanceDateRangeModel
-        {
-            OpeningBalance = range.OpeningBalance,
-            Dates = range.Dates.Select(item => new PeriodBalanceDateModel
-            {
-                Date = item.Date,
-                TotalBalance = item.Balance,
-            }).ToList(),
-        });
-    }
-
-    /// <summary>
-    /// Retrieves balance events for the specified Account.
-    /// </summary>
-    [HttpGet("{accountId}/balance-events")]
-    [ProducesResponseType(typeof(CollectionModel<AccountBalanceEventModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<CollectionModel<AccountBalanceEventModel>>> GetBalanceEventsAsync(
-        Guid accountId,
-        [FromQuery] AccountBalanceEventsQueryParameterModel query,
-        CancellationToken cancellationToken)
-    {
-        if (await accountQueryService.GetByIdAsync(accountId, cancellationToken) == null)
-        {
-            return NotFound();
-        }
-        return Ok(accountBalanceEventConverter.ToModel(await accountBalanceEventQueryService.GetAsync(
-            accountBalanceEventConverter.ToDomain(accountId, query),
-            cancellationToken)));
-    }
-
-    /// <summary>
     /// Retrieves posted credit and debit totals for all matching Account events.
     /// </summary>
     [HttpGet("{accountId}/balance-events/totals")]
@@ -93,21 +52,69 @@ public sealed class AccountController(
         }
         QueryPage<AccountBalanceEvent> events = await accountBalanceEventQueryService.GetAsync(
             accountBalanceEventConverter.ToDomain(accountId, query) with { Offset = 0, Limit = null }, cancellationToken);
-        var totals = BalanceEventTotals.Calculate(events.Items,
+        return Ok(await GetTotalsAsync(account, query, events.Items, cancellationToken));
+    }
+
+    /// <summary>
+    /// Retrieves balance events for the specified Account together with their posted totals.
+    /// </summary>
+    [HttpGet("{accountId}/balance-events/with-totals")]
+    [ProducesResponseType(typeof(BalanceEventsWithTotalsModel<AccountBalanceEventModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<BalanceEventsWithTotalsModel<AccountBalanceEventModel>>> GetBalanceEventsWithTotalsAsync(
+        Guid accountId,
+        [FromQuery] AccountBalanceEventsQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        if (DateRangeValidationProblem.Validate(query.Range?.Start, query.Range?.End, "Unable to retrieve Account totals.") is ValidationProblemDetails problem)
+        {
+            return UnprocessableEntity(problem);
+        }
+        Account? account = await accountQueryService.GetByIdAsync(accountId, cancellationToken);
+        if (account == null)
+        {
+            return NotFound();
+        }
+        QueryPage<AccountBalanceEvent> events = await accountBalanceEventQueryService.GetAsync(
+            accountBalanceEventConverter.ToDomain(accountId, query) with { Offset = 0, Limit = null }, cancellationToken);
+        return Ok(new BalanceEventsWithTotalsModel<AccountBalanceEventModel>
+        {
+            Events = events.Items.Skip(query.Offset ?? 0).Take(query.Limit ?? int.MaxValue).Select(accountBalanceEventConverter.ToModel).ToList(),
+            TotalCount = events.TotalCount,
+            Totals = await GetTotalsAsync(account, query, events.Items, cancellationToken),
+        });
+    }
+
+    /// <summary>
+    /// Calculates the posted totals of the provided Account events.
+    /// </summary>
+    private async Task<BalanceEventTotalsModel> GetTotalsAsync(
+        Account account,
+        AccountBalanceEventsQueryParameterModel query,
+        IReadOnlyCollection<AccountBalanceEvent> events,
+        CancellationToken cancellationToken)
+    {
+        var totals = BalanceEventTotals.Calculate(events,
             item => item.IsPosted, item => item.Type, item => item.Amount);
-        (decimal? openingBalance, IReadOnlyCollection<(DateOnly Date, decimal Balance)> dates) = BalanceEventTotals.BuildDateBalances(events.Items,
-            item => item.EventDate, item => item.EventDateSequence,
-            item => item.PreviousBalance?.PostedBalance, item => item.NewBalance?.PostedBalance);
+        decimal? openingBalance;
+        IReadOnlyCollection<(DateOnly Date, decimal Balance)> dates;
         BalanceGranularity? granularity = null;
         if (query.AccountingPeriodIds == null && query.Range?.Start is DateOnly start && query.Range.End is DateOnly end)
         {
             AccountDateRange range = await accountQueryService.GetDateRangeAsync(new AccountDateRangeQuery(
-                start, end, new AccountFilter(null, [account.Name], []), AccountRangeSort.Name, 0, null), cancellationToken);
+                start, end, new AccountFilter(null, [], [], [account.Id.Value]), AccountRangeSort.Name, 0, null), cancellationToken);
             openingBalance = range.OpeningBalance?.TotalBalance;
             dates = range.Dates.Select(item => (item.Date, item.Balance.TotalBalance)).ToList();
             granularity = range.Granularity;
         }
-        return Ok(new BalanceEventTotalsModel
+        else
+        {
+            (openingBalance, dates) = BalanceEventTotals.BuildDateBalances(events,
+                item => item.EventDate, item => item.EventDateSequence,
+                item => item.PreviousBalance?.PostedBalance, item => item.NewBalance?.PostedBalance);
+        }
+        return new BalanceEventTotalsModel
         {
             TotalInflow = totals.TotalInflow,
             TotalOutflow = totals.TotalOutflow,
@@ -118,7 +125,7 @@ public sealed class AccountController(
                 TotalBalance = item.Balance,
             }).ToList(),
             Granularity = granularity == null ? null : BalanceGranularityConverter.ToModel(granularity.Value),
-        });
+        };
     }
 
     /// <summary>
