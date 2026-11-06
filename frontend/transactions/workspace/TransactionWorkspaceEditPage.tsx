@@ -49,13 +49,14 @@ const TransactionWorkspaceEditPage = async function ({
     redirect(back.href);
   }
 
-  const transactionAccountingPeriod =
-    referenceData.allAccountingPeriods.find(
-      (period) => period.id === transaction.accountingPeriodId,
-    ) ?? null;
-
-  if (transactionAccountingPeriod === null) {
-    throw new Error("Failed to find the transaction accounting period");
+  // Closed periods can't be changed, so their transactions can only be viewed
+  const transactionAccountingPeriod = referenceData.openAccountingPeriods.find(
+    (period) => period.id === transaction.accountingPeriodId,
+  );
+  if (transactionAccountingPeriod === undefined) {
+    redirect(
+      routes.workspaceDetail(transactionId, selectedWorkspaceSearchParams),
+    );
   }
 
   return (

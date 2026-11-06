@@ -90,6 +90,32 @@ public sealed class AccountBalanceEventQueryService(
     }
 
     /// <summary>
+    /// Retrieves one Account's balance events in an Accounting Period, newest first, from the already loaded Account and
+    /// period.
+    /// </summary>
+    public async Task<IReadOnlyCollection<AccountBalanceEvent>> GetForAccountAsync(
+        AccountingPeriod accountingPeriod,
+        Account account,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyCollection<Transaction> transactions = await transactionQueryRepository.GetForAccountAsync(account.Id, null, null, [accountingPeriod.Id], cancellationToken);
+        IReadOnlyCollection<AccountBalanceHistory> histories = await repository.GetAccountHistoriesAsync([account.Id], cancellationToken);
+        return GetAccountEvents(
+            transactions,
+            [],
+            new Dictionary<AccountingPeriodId, AccountingPeriod> { [accountingPeriod.Id] = accountingPeriod },
+            account,
+            histories.OrderBy(history => history.Date).ThenBy(history => history.Sequence).ToList(),
+            AccountBalanceEventSort.DateDescending,
+            0,
+            null,
+            null,
+            null,
+            false,
+            true).Items;
+    }
+
+    /// <summary>
     /// Builds a recent posted ledger and the current pending projection for one Account.
     /// </summary>
     private static QueryPage<AccountBalanceEvent> GetAccountEvents(
@@ -119,45 +145,6 @@ public sealed class AccountBalanceEventQueryService(
                     && (!filterByPostingDate || item.EventDate.HasValue)
                     && (postingStart == null || item.EventDate >= postingStart)
                     && (postingEnd == null || item.EventDate <= postingEnd))), sort).ToList();
-        return new QueryPage<AccountBalanceEvent>(
-            allItems.Skip(offset).Take(limit ?? int.MaxValue).ToList(),
-            allItems.Count);
-    }
-
-    /// <summary>
-    /// Retrieves Account balance events matching the provided query.
-    /// </summary>
-    public async Task<QueryPage<AccountBalanceEvent>> GetAsync(AccountBalanceEventQuery query, CancellationToken cancellationToken = default)
-    {
-        IReadOnlyCollection<Transaction> transactions = await transactionQueryRepository.GetAsync(query.Start, query.End, cancellationToken);
-        IReadOnlyCollection<AccountingPeriodId> periodIds = transactions.Select(transaction => transaction.AccountingPeriodId).Distinct().ToList();
-        IReadOnlyCollection<AccountingPeriod> periods = await accountingPeriodRepository.GetByIdsAsync(periodIds, cancellationToken);
-        return await GetAsync(transactions, periods, query.Filter, query.Sort, query.Offset, query.Limit, null, cancellationToken);
-    }
-
-    /// <summary>
-    /// Interprets and pages Account balance events from the provided facts.
-    /// </summary>
-    private async Task<QueryPage<AccountBalanceEvent>> GetAsync(
-        IReadOnlyCollection<Transaction> transactions,
-        IReadOnlyCollection<AccountingPeriod> accountingPeriods,
-        AccountFilter filter,
-        AccountBalanceEventSort sort,
-        int offset,
-        int? limit,
-        AccountId? accountId,
-        CancellationToken cancellationToken)
-    {
-        var periods = accountingPeriods.ToDictionary(period => period.Id);
-        IReadOnlyCollection<AccountId> accountIds = transactions.SelectMany(transaction => transaction.GetAllAffectedAccountIds()).Distinct().ToList();
-        IReadOnlyCollection<AccountBalanceHistory> histories = await repository.GetAccountHistoriesAsync(accountIds, cancellationToken);
-        var historiesByAccount = histories
-            .GroupBy(history => history.Account.Id)
-            .ToDictionary(group => group.Key, group => group.ToList());
-        IEnumerable<AccountBalanceEvent> events = transactions.SelectMany(transaction => GetEvents(transaction, periods[transaction.AccountingPeriodId], historiesByAccount))
-            .Where(balanceEvent => Matches(balanceEvent.Account, filter))
-            .Where(balanceEvent => accountId == null || balanceEvent.Account.Id == accountId);
-        var allItems = Sort(events, sort).ToList();
         return new QueryPage<AccountBalanceEvent>(
             allItems.Skip(offset).Take(limit ?? int.MaxValue).ToList(),
             allItems.Count);
@@ -350,16 +337,6 @@ public sealed class AccountBalanceEventQueryService(
     private static AccountBalance ToBalance(Account account, AccountBalanceHistory? history, decimal fallback = 0) => new(
         account,
         history?.PostedBalance ?? fallback);
-
-    /// <summary>
-    /// Determines whether an Account matches the provided query criteria.
-    /// </summary>
-    private static bool Matches(Account account, AccountFilter filter) =>
-        (string.IsNullOrWhiteSpace(filter.NameSearch)
-            || account.Name.Contains(filter.NameSearch, StringComparison.OrdinalIgnoreCase)
-            || (account.FinancialInstitution?.Contains(filter.NameSearch, StringComparison.OrdinalIgnoreCase) ?? false))
-        && (filter.Names.Count == 0 || filter.Names.Contains(account.Name))
-        && (filter.Types.Count == 0 || filter.Types.Contains(account.Type));
 
     /// <summary>
     /// Sorts a collection of Account balance events by the provided sort order.

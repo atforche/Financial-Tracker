@@ -32,6 +32,7 @@ interface EntityHistoryLayoutProps {
   readonly name: string;
   readonly subtitle: string | null;
   readonly back: { readonly href: Route; readonly label: string };
+  readonly returnUrl: string | undefined;
   readonly isIncreaseGood?: boolean;
   readonly actions: ReactNode;
   readonly view: "date" | "period";
@@ -49,6 +50,7 @@ const EntityHistoryLayout = function ({
   name,
   subtitle,
   back,
+  returnUrl,
   isIncreaseGood = true,
   actions,
   view,
@@ -115,7 +117,7 @@ const EntityHistoryLayout = function ({
   return (
     <PageLayout>
       <Stack spacing={2}>
-        <ReturnLink returnUrl={undefined} fallback={back} />
+        <ReturnLink returnUrl={returnUrl} fallback={back} />
         <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={2}

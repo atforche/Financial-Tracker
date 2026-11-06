@@ -58,6 +58,15 @@ public sealed class AccountingPeriodQueryConverter(
     public AccountingPeriodModel ToModel(AccountingPeriod accountingPeriod) => accountingPeriodConverter.ToModel(accountingPeriod);
 
     /// <summary>
+    /// Converts the provided earliest and latest Accounting Periods to an API model.
+    /// </summary>
+    public AccountingPeriodBoundsModel ToModel((AccountingPeriod? First, AccountingPeriod? Latest) bounds) => new()
+    {
+        First = bounds.First == null ? null : ToModel(bounds.First),
+        Latest = bounds.Latest == null ? null : ToModel(bounds.Latest),
+    };
+
+    /// <summary>
     /// Converts the provided Accounting Period page to a collection model.
     /// </summary>
     public CollectionModel<AccountingPeriodModel> ToModel(QueryPage<AccountingPeriod> page) => new()
@@ -152,18 +161,6 @@ public sealed class AccountingPeriodQueryConverter(
     public AccountingPeriodDetailModel ToModel(AccountingPeriodDetail detail) => new()
     {
         AccountingPeriod = ToModel(detail.Balance),
-        CappedGoalCount = detail.CappedGoalCount,
-        GoalSummary = new AccountingPeriodGoalSummaryModel
-        {
-            FundGoalCount = detail.GoalSummary.FundGoalCount,
-            ContributionGoalCount = detail.GoalSummary.ContributionGoalCount,
-            ContributedGoalCount = detail.GoalSummary.ContributedGoalCount,
-            FundGoalsBelowMinimumCount = detail.GoalSummary.FundGoalsBelowMinimumCount,
-            FundGoalsAboveMaximumCount = detail.GoalSummary.FundGoalsAboveMaximumCount,
-            AccountGoalCount = detail.GoalSummary.AccountGoalCount,
-            AccountGoalsBelowMinimumCount = detail.GoalSummary.AccountGoalsBelowMinimumCount,
-            AccountGoalsAboveMaximumCount = detail.GoalSummary.AccountGoalsAboveMaximumCount,
-        },
         PreviousPeriod = detail.PreviousPeriod == null ? null : ToModel(detail.PreviousPeriod),
         NextPeriod = detail.NextPeriod == null ? null : ToModel(detail.NextPeriod),
         TotalSpending = detail.TotalSpending,
@@ -171,20 +168,30 @@ public sealed class AccountingPeriodQueryConverter(
         AccountClosingBalance = AccountConverter.ToModel(detail.AccountClosingBalance),
         FundOpeningBalance = FundConverter.ToModel(detail.FundOpeningBalance),
         FundClosingBalance = FundConverter.ToModel(detail.FundClosingBalance),
-        Accounts = detail.Accounts.Select(item => new AccountingPeriodAccountModel
-        {
-            Account = accountConverter.ToModel(item.Account),
-            OpeningBalance = item.OpeningBalance,
-            ClosingBalance = item.ClosingBalance,
-            GoalProgress = item.GoalProgress == null ? null : accountGoalConverter.ToModel(item.GoalProgress),
-        }).ToList(),
-        Funds = detail.Funds.Select(item => new AccountingPeriodFundModel
-        {
-            Fund = fundConverter.ToModel(item.Fund),
-            OpeningBalance = item.OpeningBalance,
-            ClosingBalance = item.ClosingBalance,
-            GoalProgress = item.GoalProgress == null ? null : fundGoalConverter.ToModel(item.GoalProgress),
-        }).ToList(),
+        Accounts = detail.Accounts.Select(ToModel).ToList(),
+        Funds = detail.Funds.Select(ToModel).ToList(),
+    };
+
+    /// <summary>
+    /// Converts an Account's balances and goal progress in an Accounting Period to an API model.
+    /// </summary>
+    public AccountingPeriodAccountModel ToModel(AccountingPeriodAccount item) => new()
+    {
+        Account = accountConverter.ToModel(item.Account),
+        OpeningBalance = item.OpeningBalance,
+        ClosingBalance = item.ClosingBalance,
+        GoalProgress = item.GoalProgress == null ? null : accountGoalConverter.ToModel(item.GoalProgress),
+    };
+
+    /// <summary>
+    /// Converts a Fund's balances and goal progress in an Accounting Period to an API model.
+    /// </summary>
+    public AccountingPeriodFundModel ToModel(AccountingPeriodFund item) => new()
+    {
+        Fund = fundConverter.ToModel(item.Fund),
+        OpeningBalance = item.OpeningBalance,
+        ClosingBalance = item.ClosingBalance,
+        GoalProgress = item.GoalProgress == null ? null : fundGoalConverter.ToModel(item.GoalProgress),
     };
 
     /// <summary>
@@ -201,7 +208,8 @@ public sealed class AccountingPeriodQueryConverter(
     /// </summary>
     private static AccountingPeriodFilter ToDomain(AccountingPeriodFilterModel? model) => new(
         model?.Years ?? [],
-        model?.Months ?? []);
+        model?.Months ?? [],
+        model?.IsOpen);
 
     private static IncomeAmountModel ToExpectedIncomeAmountModel(IReadOnlyCollection<ExpectedIncomeSource> sources) => new()
     {

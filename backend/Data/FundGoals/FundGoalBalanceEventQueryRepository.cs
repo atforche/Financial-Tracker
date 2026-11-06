@@ -1,3 +1,4 @@
+using Domain.AccountingPeriods;
 using Domain.FundGoals;
 using Domain.FundGoals.Queries;
 using Domain.Funds;
@@ -21,9 +22,11 @@ public sealed class FundGoalBalanceEventQueryRepository(DatabaseContext database
     /// <inheritdoc/>
     public async Task<IReadOnlyCollection<FundGoalTotalsHistory>> GetFundGoalHistoriesAsync(
         IReadOnlyCollection<FundId> ids,
+        IReadOnlyCollection<AccountingPeriodId>? accountingPeriodIds,
         CancellationToken cancellationToken = default) =>
         await databaseContext.FundGoalTotalsHistories.AsNoTracking()
-            .Where(history => ids.Contains(history.FundId))
+            .Where(history => ids.Contains(history.FundId)
+                && (accountingPeriodIds == null || accountingPeriodIds.Contains(history.AccountingPeriodId)))
             .OrderBy(history => history.Date).ThenBy(history => history.Sequence)
             .ToListAsync(cancellationToken);
 }

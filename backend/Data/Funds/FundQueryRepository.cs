@@ -235,6 +235,11 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
         {
             query = query.Where(fund => filter.Names.Contains(fund.Name));
         }
+        if (filter.Ids.Count > 0)
+        {
+            var ids = filter.Ids.Select(id => new FundId(id)).ToList();
+            query = query.Where(fund => ids.Contains(fund.Id));
+        }
         return query;
     }
 

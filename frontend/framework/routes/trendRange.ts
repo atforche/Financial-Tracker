@@ -128,20 +128,25 @@ const resolveTrendRange = function (
     params.mode === "accounting-period" &&
     defaultAccountingPeriodRange !== null
   ) {
-    const { startAccountingPeriodId = "", endAccountingPeriodId = "" } = params;
-    const startIndex = accountingPeriods.findIndex(
-      (period) => period.id === startAccountingPeriodId,
+    const resolvePeriod = (
+      id: string | undefined,
+      fallback: string,
+    ): { id: string; index: number } => {
+      const known = accountingPeriods.findIndex((period) => period.id === id);
+      const index =
+        known === -1
+          ? accountingPeriods.findIndex((period) => period.id === fallback)
+          : known;
+      return { id: accountingPeriods[index]?.id ?? fallback, index };
+    };
+    const { id: startAccountingPeriodId, index: startIndex } = resolvePeriod(
+      params.startAccountingPeriodId,
+      defaultAccountingPeriodRange.start,
     );
-    const endIndex = accountingPeriods.findIndex(
-      (period) => period.id === endAccountingPeriodId,
+    const { id: endAccountingPeriodId, index: endIndex } = resolvePeriod(
+      params.endAccountingPeriodId,
+      defaultAccountingPeriodRange.end,
     );
-    if (startIndex === -1 || endIndex === -1) {
-      return {
-        mode: "accounting-period",
-        startAccountingPeriodId: defaultAccountingPeriodRange.start,
-        endAccountingPeriodId: defaultAccountingPeriodRange.end,
-      };
-    }
     // Accounting periods are sorted newest first, so the start has the larger index
     return startIndex >= endIndex
       ? {

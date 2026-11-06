@@ -5,7 +5,7 @@ import {
   formatCurrency,
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
-import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
+import type { AccountingPeriod } from "@/accounting-periods/types";
 import ContentSurface from "@/framework/view/ContentSurface";
 import ContributionReductionRow from "@/accounting-periods/workspace/ContributionReductionRow";
 import GoalDetailRow from "@/accounting-periods/workspace/GoalDetailRow";
@@ -114,7 +114,7 @@ const ContributionSection = function ({
 interface PeriodFundGoalCardProps {
   readonly goal: FundGoal;
   readonly progress: FundGoalProgress;
-  readonly accountingPeriod: AccountingPeriodWithBalance;
+  readonly accountingPeriod: AccountingPeriod;
   readonly redirectUrl: string;
 }
 
@@ -140,7 +140,7 @@ const PeriodFundGoalCard = function ({
           {accountingPeriod.isOpen ? (
             <UpdateFundGoalForm
               fundGoal={goal}
-              accountingPeriod={accountingPeriod}
+              accountingPeriodId={accountingPeriod.id}
               redirectUrl={redirectUrl}
             />
           ) : null}

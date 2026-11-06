@@ -3,6 +3,9 @@ import type {
   FundsInAccountingPeriodRange,
 } from "@/funds/types";
 import type { FundGoal, FundGoalProgress } from "@/fund-goals/types";
+import resolveEntityHistory, {
+  periodTab,
+} from "@/balance-events/resolveEntityHistory";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
 import type { BalanceEventTotals } from "@/balance-events/types";
 import BalanceHistoryFilter from "@/balance-events/BalanceHistoryFilter";
@@ -19,9 +22,9 @@ import createApiClient from "@/framework/data/createApiClient";
 import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import getDateSummary from "@/balance-events/getDateSummary";
 import getDetailViewParams from "@/balance-events/getDetailViewParams";
+import isEntityId from "@/framework/data/isEntityId";
 import isFundGoalMet from "@/fund-goals/isFundGoalMet";
 import { redirect } from "next/navigation";
-import resolveEntityHistory from "@/balance-events/resolveEntityHistory";
 import routes from "@/funds/routes";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -64,38 +67,24 @@ interface PeriodActivity {
  */
 const getDateActivity = async function (
   apiClient: ApiClient,
-  fundName: string,
+  fundId: string,
   dates: { readonly start: string; readonly end: string },
 ): Promise<DateActivity> {
-  const query = {
-    "Range.Start": dates.start,
-    "Range.End": dates.end,
-    "Filter.Names": [fundName],
-  };
-  const [eventsResponse, totalsResponse] = await Promise.all([
-    apiClient.GET("/funds/balance-events/date-range", {
+  const { events, totals } = unwrapApiResponse(
+    await apiClient.GET("/funds/balance-events/date-range/with-totals", {
       params: {
         query: {
-          ...query,
+          "Range.Start": dates.start,
+          "Range.End": dates.end,
+          "Filter.Ids": [fundId],
           IncludePending: true,
           Sort: FundBalanceEventSortModel.DateDescending,
         },
       },
     }),
-    apiClient.GET("/funds/balance-events/date-range/totals", {
-      params: { query },
-    }),
-  ]);
-  return {
-    events: unwrapApiResponse(
-      eventsResponse,
-      "Failed to fetch fund balance events",
-    ).items,
-    totals: unwrapApiResponse(
-      totalsResponse,
-      "Failed to fetch fund activity totals",
-    ),
-  };
+    "Failed to fetch fund activity",
+  );
+  return { events, totals };
 };
 
 /**
@@ -103,7 +92,7 @@ const getDateActivity = async function (
  */
 const getPeriodActivity = async function (
   apiClient: ApiClient,
-  fund: { readonly id: string; readonly name: string },
+  fund: { readonly id: string },
   periods: { readonly start: string; readonly end: string },
 ): Promise<PeriodActivity> {
   const range = { "Range.Start": periods.start, "Range.End": periods.end };
@@ -113,7 +102,7 @@ const getPeriodActivity = async function (
       params: { query: eventQuery },
     }),
     apiClient.GET("/funds/accounting-period-range", {
-      params: { query: { ...range, "Filter.Names": [fund.name] } },
+      params: { query: { ...range, "Filter.Ids": [fund.id] } },
     }),
     apiClient.GET("/fund-goals/fund/{fundId}/history", {
       params: { path: { fundId: fund.id }, query: range },
@@ -146,25 +135,34 @@ const FundWorkspaceDetailPage = async function ({
   const { fundId } = await params;
   const resolvedSearchParams = await searchParams;
   const { search } = resolvedSearchParams;
-  const apiClient = await createApiClient();
-  const [periodsResponse, fundsResponse] = await Promise.all([
-    apiClient.GET("/accounting-periods", {
-      params: {
-        query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
-      },
-    }),
-    apiClient.GET("/funds/with-balances"),
-  ]);
-  const periods = unwrapApiResponse(
-    periodsResponse,
-    "Failed to fetch accounting periods",
-  ).items;
-  const fund = unwrapApiResponse(
-    fundsResponse,
-    "Failed to fetch funds",
-  ).items.find((item) => item.id === fundId);
   const workspaceParams = search === undefined ? {} : { search };
   const workspaceUrl = routes.workspace(workspaceParams);
+  if (!isEntityId(fundId)) {
+    redirect(workspaceUrl);
+  }
+  const apiClient = await createApiClient();
+  // Only the By Period view needs every period, for its range picker and default range
+  const [periodsResponse, fundsResponse] = await Promise.all([
+    resolvedSearchParams.tab === periodTab
+      ? apiClient.GET("/accounting-periods", {
+          params: {
+            query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
+          },
+        })
+      : null,
+    apiClient.GET("/funds/with-balances", {
+      params: { query: { "Filter.Ids": [fundId] } },
+    }),
+  ]);
+  const periods =
+    periodsResponse === null
+      ? []
+      : unwrapApiResponse(periodsResponse, "Failed to fetch accounting periods")
+          .items;
+  const [fund] = unwrapApiResponse(
+    fundsResponse,
+    "Failed to fetch funds",
+  ).items;
   if (fund === undefined) {
     redirect(workspaceUrl);
   }
@@ -179,7 +177,7 @@ const FundWorkspaceDetailPage = async function ({
     periods: periodRange,
   } = resolveEntityHistory(resolvedSearchParams, periods);
   const dateActivity =
-    view === "date" ? await getDateActivity(apiClient, fund.name, dates) : null;
+    view === "date" ? await getDateActivity(apiClient, fundId, dates) : null;
   const periodActivity =
     view === "period" && periodRange !== null
       ? await getPeriodActivity(apiClient, fund, periodRange)
@@ -211,6 +209,7 @@ const FundWorkspaceDetailPage = async function ({
       name={fund.name}
       subtitle={fund.description === "" ? null : fund.description}
       back={{ href: workspaceUrl, label: "Back to Funds" }}
+      returnUrl={resolvedSearchParams.returnUrl}
       actions={
         <FundDetailActions
           fund={fund}

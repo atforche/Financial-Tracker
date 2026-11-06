@@ -1,48 +1,43 @@
-import {
-  type BalanceTrendDateSummary,
-  buildDateChartPoints,
-} from "@/framework/charts/balanceTrendHelpers";
 import { Button, Chip, Stack, Typography } from "@mui/material";
 import type { JSX, ReactNode } from "react";
+import ReturnLink, { isInternalUrl } from "@/framework/view/ReturnLink";
 import {
   formatCurrency,
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
-import type { BalanceEventTotals } from "@/balance-events/types";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
+import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
 import PeriodNavigation from "@/framework/view/PeriodNavigation";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import ReturnLink from "@/framework/view/ReturnLink";
 import type { Route } from "next";
 import SignedChange from "@/framework/view/SignedChange";
 import StatCard from "@/framework/view/StatCard";
-
-/**
- * A link to the same account or fund in an adjacent period.
- */
-interface NeighborLink {
-  readonly name: string;
-  readonly href: Route;
-}
+import { buildDateChartPoints } from "@/framework/charts/balanceTrendHelpers";
+import type { components } from "@/framework/data/api";
 
 /**
  * Props for the PeriodEntityLayout component.
  */
 interface PeriodEntityLayoutProps {
   readonly name: string;
-  readonly period: { readonly name: string; readonly isOpen: boolean };
-  readonly previousPeriod: NeighborLink | null;
-  readonly nextPeriod: NeighborLink | null;
+  readonly detail: Pick<
+    components["schemas"]["PeriodFundDetailModel"],
+    | "accountingPeriod"
+    | "previousPeriod"
+    | "nextPeriod"
+    | "totalInflow"
+    | "totalOutflow"
+    | "dailyBalances"
+  >;
+  readonly getPeriodHref: (accountingPeriodId: string) => Route;
   readonly periodHref: Route;
   readonly returnUrl: string | undefined;
   readonly allPeriodsHref: Route;
   readonly openingBalance: number;
   readonly closingBalance: number;
-  readonly totals: BalanceEventTotals;
   readonly isIncreaseGood?: boolean;
   readonly goalCard: ReactNode;
-  readonly dailyBalances: readonly BalanceTrendDateSummary[];
   readonly balanceLabel: string;
   readonly transactions: ReactNode;
 }
@@ -53,27 +48,38 @@ interface PeriodEntityLayoutProps {
  */
 const PeriodEntityLayout = function ({
   name,
-  period,
-  previousPeriod,
-  nextPeriod,
+  detail,
+  getPeriodHref,
   periodHref,
   returnUrl,
   allPeriodsHref,
   openingBalance,
   closingBalance,
-  totals,
   isIncreaseGood = true,
   goalCard,
-  dailyBalances,
   balanceLabel,
   transactions,
 }: PeriodEntityLayoutProps): JSX.Element {
+  const period = detail.accountingPeriod;
+  // Coming from the period's own page keeps its search and sort, and can still name the period
+  const returnsToPeriod =
+    isInternalUrl(returnUrl) &&
+    returnUrl.split("?")[0] === periodHref.split("?")[0];
+  const getNeighborLink = (
+    neighbor: typeof detail.previousPeriod,
+  ): { name: string; href: Route } | null =>
+    neighbor === null
+      ? null
+      : { name: neighbor.name, href: getPeriodHref(neighbor.id) };
   return (
     <PageLayout>
       <Stack spacing={2}>
         <ReturnLink
-          returnUrl={returnUrl}
-          fallback={{ href: periodHref, label: `Back to ${period.name}` }}
+          returnUrl={returnsToPeriod ? undefined : returnUrl}
+          fallback={{
+            href: returnsToPeriod ? returnUrl : periodHref,
+            label: `Back to ${period.name}`,
+          }}
         />
         <Stack spacing={0.5}>
           <Typography variant="h4" noWrap>
@@ -86,8 +92,8 @@ const PeriodEntityLayout = function ({
             sx={{ alignItems: "center", flexWrap: "wrap", ml: -1 }}
           >
             <PeriodNavigation
-              previousPeriod={previousPeriod}
-              nextPeriod={nextPeriod}
+              previousPeriod={getNeighborLink(detail.previousPeriod)}
+              nextPeriod={getNeighborLink(detail.nextPeriod)}
             >
               {/* Wide enough for the longest period name so the arrows stay in place between periods */}
               <Typography
@@ -104,13 +110,15 @@ const PeriodEntityLayout = function ({
               size="small"
               variant="outlined"
             />
-            <Button
-              size="small"
-              href={allPeriodsHref}
-              sx={{ whiteSpace: "nowrap" }}
-            >
-              All Periods
-            </Button>
+            <Link href={allPeriodsHref} style={{ textDecoration: "none" }}>
+              <Button
+                component="span"
+                size="small"
+                sx={{ whiteSpace: "nowrap" }}
+              >
+                All Periods
+              </Button>
+            </Link>
           </Stack>
         </Stack>
       </Stack>
@@ -123,12 +131,12 @@ const PeriodEntityLayout = function ({
           />
           <StatCard
             label="Total inflow"
-            value={formatCurrency(totals.totalInflow)}
+            value={formatCurrency(detail.totalInflow)}
             caption="posted this period"
           />
           <StatCard
             label="Total outflow"
-            value={formatCurrency(totals.totalOutflow)}
+            value={formatCurrency(detail.totalOutflow)}
             caption="posted this period"
           />
           <StatCard
@@ -147,7 +155,7 @@ const PeriodEntityLayout = function ({
         </ResponsiveGrid>
         {goalCard}
         <BalanceTrendChart
-          chartPoints={buildDateChartPoints(dailyBalances)}
+          chartPoints={buildDateChartPoints(detail.dailyBalances.dates)}
           title="Accounting Period Balance"
           variant="surface"
           emptyMessage="No posted balance movement is available in this period."

@@ -17,6 +17,7 @@ interface PeriodEntityTransactionsProps {
   readonly entityName: "account" | "fund";
   readonly events: readonly EntityEvent[];
   readonly addTransactionHref: string;
+  readonly isOpen: boolean;
   readonly returnUrl: string;
 }
 
@@ -27,6 +28,7 @@ const PeriodEntityTransactions = function ({
   entityName,
   events,
   addTransactionHref,
+  isOpen,
   returnUrl,
 }: PeriodEntityTransactionsProps): JSX.Element {
   const canWrite = useWriteAccess();
@@ -39,7 +41,7 @@ const PeriodEntityTransactions = function ({
           sx={{ alignItems: "center", justifyContent: "space-between" }}
         >
           <Typography variant="h5">Transactions</Typography>
-          {canWrite ? (
+          {canWrite && isOpen ? (
             <Button
               component={Link}
               href={addTransactionHref}
@@ -55,8 +57,8 @@ const PeriodEntityTransactions = function ({
           </Typography>
         ) : (
           <RowList
-            rows={events.map((event) => ({
-              ...getTransactionRow(event, returnUrl),
+            rows={events.map((event, index) => ({
+              ...getTransactionRow(event, index, returnUrl),
               ...(event.isPosted ? {} : { tag: "Pending" }),
             }))}
           />

@@ -11,9 +11,9 @@ public interface IAccountingPeriodQueryRepository
     Task<QueryPage<AccountingPeriod>> GetAsync(AccountingPeriodQuery query, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves Accounting Periods with their stored balances matching the provided query.
+    /// Retrieves Accounting Periods matching the provided query, which can sort by their stored balances.
     /// </summary>
-    Task<QueryPage<StoredAccountingPeriodBalance>> GetBalancesAsync(
+    Task<QueryPage<AccountingPeriod>> GetBalancesAsync(
         AccountingPeriodBalanceQuery query,
         CancellationToken cancellationToken = default);
 
@@ -32,6 +32,11 @@ public interface IAccountingPeriodQueryRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves the earliest and latest Accounting Periods, when any exist.
+    /// </summary>
+    Task<(AccountingPeriod? First, AccountingPeriod? Latest)> GetBoundsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves Accounting Periods with the provided IDs.
     /// </summary>
     Task<IReadOnlyCollection<AccountingPeriod>> GetByIdsAsync(
@@ -47,9 +52,9 @@ public interface IAccountingPeriodQueryRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves Accounting Periods with their stored balances between the provided chronological indexes.
+    /// Retrieves Accounting Periods with balances between the provided chronological indexes.
     /// </summary>
-    Task<IReadOnlyCollection<StoredAccountingPeriodBalance>> GetRangeBalancesAsync(
+    Task<IReadOnlyCollection<AccountingPeriod>> GetRangeBalancesAsync(
         int startIndex,
         int endIndex,
         CancellationToken cancellationToken = default);

@@ -36,7 +36,7 @@ public sealed class OnboardingTests
 
         CollectionModel<AccountWithBalanceModel> accounts = await test.Api.GetAsync<CollectionModel<AccountWithBalanceModel>>("/accounts/with-balances");
         CollectionModel<FundWithBalanceModel> funds = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>("/funds/with-balances");
-        FundGoalModel goal = await test.Api.GetAsync<FundGoalModel>($"/fund-goals/fund/{fund.Id}");
+        FundGoalModel goal = await test.Api.GetFundGoalAsync(fund.Id);
 
         Assert.Equal(120m, Assert.Single(accounts.Items, item => item.Id == account.Id).CurrentBalance.PostedBalance);
         Assert.Equal(80m, Assert.Single(funds.Items, item => item.Id == fund.Id).CurrentBalance.PostedBalance);

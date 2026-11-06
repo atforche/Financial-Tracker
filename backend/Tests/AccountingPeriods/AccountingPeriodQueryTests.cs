@@ -1,6 +1,8 @@
 using System.Net;
 using Models;
 using Models.AccountingPeriods;
+using Models.Accounts;
+using Models.Funds;
 using Models.Transactions;
 using Models.Transactions.Create;
 
@@ -36,6 +38,102 @@ public sealed class AccountingPeriodQueryTests
         Assert.Equal(100m, period.OpeningBalance);
         Assert.Equal(90m, period.ClosingBalance);
         Assert.Equal(august.Id, Assert.Single(periods.Items).Id);
+    }
+
+    /// <summary>
+    /// Returns an account's and a fund's period detail with their totals and events, or 404 when either side is missing.
+    /// </summary>
+    [Fact]
+    public async Task EntityDetailReturnsBalancesTotalsAndEvents()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        TransactionHandle income = await test.Transactions.Income().In(july).On(new DateOnly(2026, 7, 10)).For(40m).From("Employer").To(cash, groceries).CreateAsync();
+        TransactionHandle spending = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 15)).For(10m).From(cash).To("Market", groceries).CreateAsync();
+        await test.Transactions.PostAsync(income, cash, new DateOnly(2026, 7, 10));
+        await test.Transactions.PostAsync(spending, cash, new DateOnly(2026, 7, 15));
+
+        PeriodAccountDetailModel account = await test.Api.GetAsync<PeriodAccountDetailModel>($"/accounting-periods/{july.Id}/accounts/{cash.Id}");
+        PeriodFundDetailModel fund = await test.Api.GetAsync<PeriodFundDetailModel>($"/accounting-periods/{july.Id}/funds/{groceries.Id}");
+        using HttpResponseMessage missingFund = await test.Api.GetResponseAsync($"/accounting-periods/{july.Id}/funds/{Guid.NewGuid()}");
+        using HttpResponseMessage missingPeriod = await test.Api.GetResponseAsync($"/accounting-periods/{Guid.NewGuid()}/accounts/{cash.Id}");
+
+        Assert.Equal(august.Id, account.NextPeriod?.Id);
+        Assert.Equal(100m, account.Account.OpeningBalance);
+        Assert.Equal(130m, account.Account.ClosingBalance);
+        Assert.Equal(40m, account.TotalInflow);
+        Assert.Equal(10m, account.TotalOutflow);
+        Assert.NotEmpty(account.Events);
+        Assert.Equal(30m, fund.Fund.ClosingBalance);
+        Assert.Equal(40m, fund.TotalInflow);
+        Assert.Equal(10m, fund.TotalOutflow);
+        Assert.NotEmpty(fund.Events);
+        Assert.Equal(HttpStatusCode.NotFound, missingFund.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, missingPeriod.StatusCode);
+    }
+
+    /// <summary>
+    /// Narrows the account and fund balance lists to the requested IDs.
+    /// </summary>
+    [Fact]
+    public async Task BalanceListsFilterByIds()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        _ = await test.Accounts.Onboard("Savings").WithOpeningBalance(50m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        _ = await test.Funds.Create("Rent").In(july).CreateAsync();
+
+        CollectionModel<AccountWithBalanceModel> accounts = await test.Api.GetAsync<CollectionModel<AccountWithBalanceModel>>($"/accounts/with-balances?filter.ids={cash.Id}");
+        CollectionModel<FundWithBalanceModel> funds = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>($"/funds/with-balances?filter.ids={groceries.Id}");
+
+        Assert.Equal(cash.Id, Assert.Single(accounts.Items).Id);
+        Assert.Equal(groceries.Id, Assert.Single(funds.Items).Id);
+    }
+
+    /// <summary>
+    /// Limits both period lists to open or closed periods.
+    /// </summary>
+    [Fact]
+    public async Task ListsFilterByIsOpen()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        await test.Periods.CloseAsync(july);
+
+        CollectionModel<AccountingPeriodModel> open = await test.Api.GetAsync<CollectionModel<AccountingPeriodModel>>("/accounting-periods?filter.isOpen=true");
+        CollectionModel<AccountingPeriodModel> closed = await test.Api.GetAsync<CollectionModel<AccountingPeriodModel>>("/accounting-periods?filter.isOpen=false");
+        CollectionModel<AccountingPeriodWithBalanceModel> openBalances = await test.Api.GetAsync<CollectionModel<AccountingPeriodWithBalanceModel>>(
+            "/accounting-periods/with-balances?filter.isOpen=true");
+
+        Assert.Equal(august.Id, Assert.Single(open.Items).Id);
+        Assert.Equal(july.Id, Assert.Single(closed.Items).Id);
+        Assert.Equal(august.Id, Assert.Single(openBalances.Items).Id);
+    }
+
+    /// <summary>
+    /// Returns the earliest and latest periods across years, or neither before any exist.
+    /// </summary>
+    [Fact]
+    public async Task BoundsReturnEarliestAndLatestPeriods()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodBoundsModel empty = await test.Api.GetAsync<AccountingPeriodBoundsModel>("/accounting-periods/bounds");
+        AccountingPeriodHandle december = await test.Periods.Create(2025, 12).CreateAsync();
+        _ = await test.Periods.Create(2026, 1).CreateAsync();
+        AccountingPeriodHandle february = await test.Periods.Create(2026, 2).CreateAsync();
+
+        AccountingPeriodBoundsModel bounds = await test.Api.GetAsync<AccountingPeriodBoundsModel>("/accounting-periods/bounds");
+
+        Assert.Null(empty.First);
+        Assert.Null(empty.Latest);
+        Assert.Equal(december.Id, bounds.First?.Id);
+        Assert.Equal(february.Id, bounds.Latest?.Id);
     }
 
     /// <summary>
@@ -136,14 +234,6 @@ public sealed class AccountingPeriodQueryTests
         Assert.Equal(20m, detail.TotalSpending);
         Assert.Equal(75m, detail.AccountingPeriod.PlannedGoalContributions);
         Assert.Equal(25m, detail.AccountingPeriod.ExpectedGoalContributions);
-        Assert.Equal(1, detail.CappedGoalCount);
-        Assert.Equal(4, detail.GoalSummary.FundGoalCount);
-        Assert.Equal(2, detail.GoalSummary.ContributionGoalCount);
-        Assert.Equal(1, detail.GoalSummary.ContributedGoalCount);
-        Assert.Equal(0, detail.GoalSummary.FundGoalsBelowMinimumCount);
-        Assert.Equal(0, detail.GoalSummary.FundGoalsAboveMaximumCount);
-        Assert.Equal(1, detail.GoalSummary.AccountGoalCount);
-        Assert.Equal(0, detail.GoalSummary.AccountGoalsBelowMinimumCount);
         Assert.Equal(100m, detail.AccountOpeningBalance.TotalBalance);
         Assert.Equal(140m, detail.AccountClosingBalance.TotalBalance);
         Assert.Equal(100m, detail.FundOpeningBalance.TotalBalance);
@@ -236,5 +326,38 @@ public sealed class AccountingPeriodQueryTests
         ExpectedIncomeSourceModel sideJob = Assert.Single(periods.Last().ExpectedIncomeSources);
         Assert.Equal("Side job", sideJob.Name);
         Assert.Equal(0m, sideJob.ReceivedAmount.Total);
+    }
+
+    /// <summary>
+    /// An all-zero ID can't name anything, so every route reports it as not found instead of failing.
+    /// </summary>
+    [Theory]
+    [InlineData("/accounting-periods/00000000-0000-0000-0000-000000000000")]
+    [InlineData("/accounting-periods/00000000-0000-0000-0000-000000000000/detail")]
+    [InlineData("/accounts/with-balances?filter.ids=00000000-0000-0000-0000-000000000000")]
+    [InlineData("/funds/with-balances?filter.ids=00000000-0000-0000-0000-000000000000")]
+    public async Task EmptyEntityIdsAreNotFound(string route)
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+
+        using HttpResponseMessage response = await test.Api.GetResponseAsync(route);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    /// <summary>
+    /// An all-zero Account or Fund in a real Accounting Period is not found.
+    /// </summary>
+    [Fact]
+    public async Task EmptyEntityIdsInAPeriodAreNotFound()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+
+        using HttpResponseMessage account = await test.Api.GetResponseAsync($"/accounting-periods/{july.Id}/accounts/{Guid.Empty}");
+        using HttpResponseMessage fund = await test.Api.GetResponseAsync($"/accounting-periods/{july.Id}/funds/{Guid.Empty}");
+
+        Assert.Equal(HttpStatusCode.NotFound, account.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, fund.StatusCode);
     }
 }

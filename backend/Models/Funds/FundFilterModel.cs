@@ -14,4 +14,9 @@ public class FundFilterModel
     /// Fund name filters to apply to the results.
     /// </summary>
     public List<string>? Names { get; init; }
+
+    /// <summary>
+    /// IDs to include in the results
+    /// </summary>
+    public List<Guid>? Ids { get; init; }
 }

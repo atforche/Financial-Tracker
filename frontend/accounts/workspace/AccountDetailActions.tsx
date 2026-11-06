@@ -12,14 +12,12 @@ import deleteAccount from "@/accounts/workspace/deleteAccount";
  */
 const AccountDetailActions = function ({
   account,
-  financialInstitutions,
   addTransactionHref,
   trendsHref,
   redirectUrl,
   deleteRedirectUrl,
 }: {
   readonly account: AccountWithBalance;
-  readonly financialInstitutions: readonly string[];
   readonly addTransactionHref: string;
   readonly trendsHref: Route;
   readonly redirectUrl: string;
@@ -36,7 +34,6 @@ const AccountDetailActions = function ({
       renderUpdateForm={(onClose) => (
         <UpdateAccountForm
           account={account}
-          financialInstitutions={financialInstitutions}
           redirectUrl={redirectUrl}
           onClose={onClose}
         />

@@ -3,6 +3,7 @@
 import {
   Box,
   Button,
+  Chip,
   Menu,
   MenuItem,
   Paper,
@@ -43,6 +44,7 @@ interface PeriodEntity {
   readonly contribution: {
     readonly assigned: number;
     readonly expected: number;
+    readonly isSatisfied: boolean;
   } | null;
 }
 
@@ -58,6 +60,11 @@ const statuses = [
   {
     status: PeriodEntityStatus.AboveMaximum,
     label: "Above maximum",
+    color: "warning.main",
+  },
+  {
+    status: PeriodEntityStatus.NotFullyFunded,
+    label: "Not fully funded",
     color: "warning.main",
   },
   {
@@ -87,6 +94,24 @@ const sortLabels: Record<EntitySort, string> = {
   [EntitySort.Name]: "Name",
   [EntitySort.Closing]: "Closing balance",
   [EntitySort.Change]: "Change",
+};
+
+/**
+ * Determines whether an entity is short of its expected contribution.
+ */
+const isNotFullyFunded = function ({ contribution }: PeriodEntity): boolean {
+  return contribution !== null && !contribution.isSatisfied;
+};
+
+/**
+ * Gets the status section an entity belongs to. Range problems take priority, so only an entity that would otherwise
+ * read as in range moves to the not fully funded section.
+ */
+const getSectionStatus = function (entity: PeriodEntity): PeriodEntityStatus {
+  return entity.status === PeriodEntityStatus.WithinRange &&
+    isNotFullyFunded(entity)
+    ? PeriodEntityStatus.NotFullyFunded
+    : entity.status;
 };
 
 /**
@@ -160,9 +185,23 @@ const EntityTile = function ({
         "&:hover": { borderColor: "primary.main" },
       }}
     >
-      <Typography variant="subtitle2" noWrap>
-        {entity.name}
-      </Typography>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{ alignItems: "center", justifyContent: "space-between" }}
+      >
+        <Typography variant="subtitle2" noWrap>
+          {entity.name}
+        </Typography>
+        {isNotFullyFunded(entity) ? (
+          <Chip
+            label="Not fully funded"
+            size="small"
+            color="warning"
+            variant="outlined"
+          />
+        ) : null}
+      </Stack>
       <Stack
         direction="row"
         spacing={2}
@@ -198,17 +237,12 @@ const EntityTile = function ({
         {getGoalLabel(entity)}
       </Typography>
       {entity.contribution === null ||
-      compareCurrencyAmounts(entity.contribution.expected, 0) === 0 ? null : (
+      (entity.contribution.isSatisfied &&
+        compareCurrencyAmounts(entity.contribution.expected, 0) ===
+          0) ? null : (
         <Typography
           variant="caption"
-          color={
-            compareCurrencyAmounts(
-              entity.contribution.assigned,
-              entity.contribution.expected,
-            ) < 0
-              ? "warning.main"
-              : "text.secondary"
-          }
+          color={isNotFullyFunded(entity) ? "warning.main" : "text.secondary"}
         >
           {formatCurrency(entity.contribution.assigned)} of{" "}
           {formatCurrency(entity.contribution.expected)} contributed
@@ -329,8 +363,8 @@ const AccountingPeriodEntityList = function ({
             key={entity.id}
             entity={entity}
             color={
-              statuses.find(({ status }) => status === entity.status)?.color ??
-              "text.secondary"
+              statuses.find(({ status }) => status === getSectionStatus(entity))
+                ?.color ?? "text.secondary"
             }
           />
         ))}
@@ -340,7 +374,9 @@ const AccountingPeriodEntityList = function ({
   const sections = statuses
     .map((details) => ({
       ...details,
-      tiles: visible.filter((entity) => entity.status === details.status),
+      tiles: visible.filter(
+        (entity) => getSectionStatus(entity) === details.status,
+      ),
     }))
     .filter(({ tiles }) => tiles.length > 0);
 

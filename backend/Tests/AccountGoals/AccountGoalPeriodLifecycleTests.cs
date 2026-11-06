@@ -63,8 +63,7 @@ public sealed class AccountGoalPeriodLifecycleTests
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountHandle account = await test.Accounts.Onboard("Checking").CreateAsync();
         AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
-        AccountGoalModel julyGoal = await test.Api.GetAsync<AccountGoalModel>(
-            $"/account-goals/account/{account.Id}?accountingPeriodId={july.Id}");
+        AccountGoalModel julyGoal = await test.Api.GetAccountGoalAsync(account.Id, july.Id);
         _ = await test.Api.PostAsync<UpdateAccountGoalModel, AccountGoalModel>(
             $"/account-goals/{julyGoal.Id}",
             new UpdateAccountGoalModel
@@ -75,10 +74,8 @@ public sealed class AccountGoalPeriodLifecycleTests
 
         AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
 
-        AccountGoalModel original = await test.Api.GetAsync<AccountGoalModel>(
-            $"/account-goals/account/{account.Id}?accountingPeriodId={july.Id}");
-        AccountGoalModel copied = await test.Api.GetAsync<AccountGoalModel>(
-            $"/account-goals/account/{account.Id}?accountingPeriodId={august.Id}");
+        AccountGoalModel original = await test.Api.GetAccountGoalAsync(account.Id, july.Id);
+        AccountGoalModel copied = await test.Api.GetAccountGoalAsync(account.Id, august.Id);
         Assert.NotEqual(original.Id, copied.Id);
         Assert.Equal(50m, original.MinimumEndingBalance);
         Assert.Equal(150m, original.MaximumEndingBalance);

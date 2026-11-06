@@ -16,6 +16,7 @@ import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FundGoalSetupSection from "@/funds/workspace/FundGoalSetupSection";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
+import getAccountingPeriodBalance from "@/accounting-periods/workspace/getAccountingPeriodBalance";
 import updateFundGoal from "@/fund-goals/workspace/updateFundGoal";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
@@ -24,7 +25,7 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
  */
 interface UpdateFundGoalFormProps {
   readonly fundGoal: FundGoal;
-  readonly accountingPeriod: AccountingPeriodWithBalance;
+  readonly accountingPeriodId: string;
   readonly redirectUrl: string;
 }
 
@@ -33,11 +34,13 @@ interface UpdateFundGoalFormProps {
  */
 const UpdateFundGoalForm = function ({
   fundGoal,
-  accountingPeriod,
+  accountingPeriodId,
   redirectUrl,
 }: UpdateFundGoalFormProps): JSX.Element | null {
   const canWrite = useWriteAccess();
   const [open, setOpen] = useState(false);
+  const [accountingPeriod, setAccountingPeriod] =
+    useState<AccountingPeriodWithBalance | null>(null);
   const [plannedMonthlyContribution, setPlannedMonthlyContribution] = useState(
     fundGoal.plannedMonthlyContribution ?? null,
   );
@@ -90,6 +93,12 @@ const UpdateFundGoalForm = function ({
         variant="contained"
         onClick={() => {
           setOpen(true);
+          setAccountingPeriod(null);
+          startTransition(async () => {
+            setAccountingPeriod(
+              await getAccountingPeriodBalance(accountingPeriodId),
+            );
+          });
         }}
       >
         Edit

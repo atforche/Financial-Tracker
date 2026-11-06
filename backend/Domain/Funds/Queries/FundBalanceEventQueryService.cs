@@ -53,9 +53,12 @@ public sealed class FundBalanceEventQueryService(
         FundBalanceEventQuery query,
         CancellationToken cancellationToken = default)
     {
-        IReadOnlyCollection<Transaction> postedTransactions = await transactionQueryRepository.GetForFundPostingsAsync(query.Start, query.End, cancellationToken);
+        IReadOnlyCollection<FundId>? requestedFundIds = query.Filter.Ids.Count == 0
+            ? null
+            : query.Filter.Ids.Select(id => new FundId(id)).ToList();
+        IReadOnlyCollection<Transaction> postedTransactions = await transactionQueryRepository.GetForFundPostingsAsync(query.Start, query.End, requestedFundIds, cancellationToken);
         IReadOnlyCollection<Transaction> pendingTransactions = query.IncludePending
-            ? await transactionQueryRepository.GetPendingForFundsAsync(null, cancellationToken)
+            ? await transactionQueryRepository.GetPendingForFundsAsync(requestedFundIds, cancellationToken)
             : [];
         IReadOnlyCollection<Transaction> transactions = postedTransactions.Concat(pendingTransactions)
             .DistinctBy(transaction => transaction.Id).ToList();
@@ -84,7 +87,8 @@ public sealed class FundBalanceEventQueryService(
         var periods = accountingPeriods.ToDictionary(period => period.Id);
         IReadOnlyCollection<FundId> fundIds = transactions.SelectMany(transaction => transaction.GetAllAffectedFundIds(null)).Distinct().ToList();
         var funds = (await repository.GetFundsAsync(fundIds, cancellationToken)).ToDictionary(fund => fund.Id);
-        IReadOnlyCollection<FundBalanceHistory> histories = await repository.GetFundHistoriesAsync(fundIds, cancellationToken);
+        IReadOnlyCollection<FundId> reportedFundIds = funds.Values.Where(fund => Matches(fund, filter)).Select(fund => fund.Id).ToList();
+        IReadOnlyCollection<FundBalanceHistory> histories = await repository.GetFundHistoriesAsync(reportedFundIds, cancellationToken);
         var historiesByFund = histories
             .GroupBy(history => history.Fund.Id)
             .ToDictionary(group => group.Key, group => group.ToList());
@@ -222,7 +226,8 @@ public sealed class FundBalanceEventQueryService(
     /// </summary>
     private static bool Matches(Fund fund, FundFilter filter) =>
         (string.IsNullOrWhiteSpace(filter.NameSearch) || fund.Name.Contains(filter.NameSearch, StringComparison.OrdinalIgnoreCase))
-        && (filter.Names.Count == 0 || filter.Names.Contains(fund.Name));
+        && (filter.Names.Count == 0 || filter.Names.Contains(fund.Name))
+        && (filter.Ids.Count == 0 || filter.Ids.Contains(fund.Id.Value));
 
     /// <summary>
     /// Sorts Fund balance events by the provided sort order.

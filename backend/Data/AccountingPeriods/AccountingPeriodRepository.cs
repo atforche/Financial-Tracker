@@ -56,15 +56,6 @@ public class AccountingPeriodRepository(DatabaseContext databaseContext) : IAcco
     }
 
     /// <inheritdoc/>
-    public AccountingPeriod? GetPreviousAccountingPeriod(AccountingPeriodId id)
-    {
-        AccountingPeriod currentAccountingPeriod = GetById(id);
-        DateOnly previousMonth = currentAccountingPeriod.PeriodStartDate.AddMonths(-1);
-        return databaseContext.AccountingPeriods.AsSplitQuery()
-            .SingleOrDefault(accountingPeriod => accountingPeriod.Year == previousMonth.Year && accountingPeriod.Month == previousMonth.Month);
-    }
-
-    /// <inheritdoc/>
     public void Add(AccountingPeriod accountingPeriod) => databaseContext.Add(accountingPeriod);
 
     /// <inheritdoc/>

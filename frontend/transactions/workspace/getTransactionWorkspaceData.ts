@@ -25,22 +25,32 @@ import { normalizeTransactionTypes } from "@/transactions/transactionTypeFilter"
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
- * Represents reference data required for the transaction workspace, including accounting periods, accounts, funds, and Fund Goals.
+ * Represents the accounts, funds, and locations that transaction pages choose from, with accounting periods.
  */
-interface TransactionWorkspaceReferenceData {
-  readonly openAccountingPeriods: AccountingPeriod[];
-  readonly allAccountingPeriods: AccountingPeriod[];
+interface TransactionChoices {
+  readonly accountingPeriods: AccountingPeriod[];
   readonly accounts: AccountWithBalance[];
   readonly funds: FundWithBalance[];
-  readonly fundGoals: FundGoalWithProgress[];
-  readonly expectedIncomeSources: ExpectedIncomeSourcesByPeriod;
   readonly locations: Location[];
 }
 
 /**
- * Represents the data required for displaying the transaction workspace, including reference data and the list of transactions.
+ * Represents reference data required by the transaction forms, which can only enter transactions in open periods.
  */
-interface TransactionWorkspaceListData extends TransactionWorkspaceReferenceData {
+interface TransactionWorkspaceReferenceData extends Omit<
+  TransactionChoices,
+  "accountingPeriods"
+> {
+  readonly openAccountingPeriods: AccountingPeriod[];
+  readonly fundGoals: FundGoalWithProgress[];
+  readonly expectedIncomeSources: ExpectedIncomeSourcesByPeriod;
+}
+
+/**
+ * Represents the data required for displaying the transaction workspace, including its filter choices and the list of
+ * transactions.
+ */
+interface TransactionWorkspaceListData extends TransactionChoices {
   readonly currentPage: number;
   readonly normalizedAccountingPeriodIds: string[];
   readonly normalizedAccountIds: string[];
@@ -63,130 +73,102 @@ interface TransactionWorkspaceDetailReferenceData {
 }
 
 /**
- * Fetches reference data required for the transaction workspace, including accounting periods, accounts, funds, and Fund Goals.
+ * Fetches the choices shared by transaction pages, with every accounting period or only the open ones.
+ */
+const getTransactionChoices = async function (
+  apiClient: Awaited<ReturnType<typeof createApiClient>>,
+  onlyOpenPeriods: boolean,
+): Promise<TransactionChoices> {
+  const [accountingPeriods, accounts, funds, locations] = await Promise.all([
+    apiClient.GET("/accounting-periods", {
+      params: {
+        query: onlyOpenPeriods ? { "Filter.IsOpen": true } : { Limit: 500 },
+      },
+    }),
+    apiClient.GET("/accounts/with-balances"),
+    apiClient.GET("/funds/with-balances"),
+    apiClient.GET("/locations", { params: { query: { Limit: 500 } } }),
+  ]);
+  return {
+    accountingPeriods: unwrapApiResponse(
+      accountingPeriods,
+      "Failed to fetch accounting periods",
+    ).items,
+    accounts: unwrapApiResponse(accounts, "Failed to fetch accounts").items,
+    funds: unwrapApiResponse(funds, "Failed to fetch funds").items,
+    locations: unwrapApiResponse(locations, "Failed to fetch Locations").items,
+  };
+};
+
+/**
+ * Fetches the Fund Goals of the provided accounting periods with their progress.
+ */
+const getFundGoalsWithProgress = async function (
+  apiClient: Awaited<ReturnType<typeof createApiClient>>,
+  accountingPeriodIds: string[],
+): Promise<FundGoalWithProgress[]> {
+  const [goalResponse, ...progressResponses] = await Promise.all([
+    apiClient.GET("/fund-goals", {
+      params: { query: { "Filter.AccountingPeriodIds": accountingPeriodIds } },
+    }),
+    ...accountingPeriodIds.map(async (accountingPeriodId) =>
+      apiClient.GET("/fund-goals/progress/{accountingPeriodId}", {
+        params: { path: { accountingPeriodId } },
+      }),
+    ),
+  ]);
+  const progressByFundGoalId = new Map(
+    progressResponses
+      .flatMap((response) =>
+        unwrapApiResponse(response, "Failed to fetch Fund Goal progress"),
+      )
+      .map((result) => [result.fundGoalId, result.progress]),
+  );
+  return unwrapApiResponse(
+    goalResponse,
+    "Failed to fetch fund goals",
+  ).items.flatMap((fundGoal) => {
+    const progress = progressByFundGoalId.get(fundGoal.id);
+    return typeof progress === "undefined" ? [] : [{ ...fundGoal, progress }];
+  });
+};
+
+/**
+ * Fetches reference data required by the transaction forms.
  */
 const getTransactionWorkspaceReferenceData =
   async function (): Promise<TransactionWorkspaceReferenceData> {
     const apiClient = await createApiClient();
-
-    const allAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
-      params: {
-        query: {
-          Limit: 500,
-        },
-      },
-    });
-    const accountsPromise = apiClient.GET("/accounts/with-balances");
-    const fundsPromise = apiClient.GET("/funds/with-balances");
-    const locationsPromise = apiClient.GET("/locations", {
-      params: { query: { Limit: 500 } },
-    });
-
-    const [
-      allAccountingPeriodsResponse,
-      accountsResponse,
-      fundsResponse,
-      locationsResponse,
-    ] = await Promise.all([
-      allAccountingPeriodsPromise,
-      accountsPromise,
-      fundsPromise,
-      locationsPromise,
-    ]);
-
-    const allAccountingPeriods = unwrapApiResponse(
-      allAccountingPeriodsResponse,
-      "Failed to fetch accounting periods",
+    const { accountingPeriods, ...choices } = await getTransactionChoices(
+      apiClient,
+      true,
     );
-    const accounts = unwrapApiResponse(
-      accountsResponse,
-      "Failed to fetch accounts",
-    );
-    const funds = unwrapApiResponse(fundsResponse, "Failed to fetch funds");
-    const locations = unwrapApiResponse(
-      locationsResponse,
-      "Failed to fetch Locations",
-    ).items;
-
-    const openAccountingPeriods = allAccountingPeriods.items.filter(
-      (period) => period.isOpen,
-    );
-    let fundGoals: FundGoalWithProgress[] = [];
-    // Income can only be entered in open periods, so only their Expected Income Sources can be chosen
-    const expectedIncomeSourcesPromise =
-      openAccountingPeriods.length === 0
-        ? Promise.resolve([])
-        : apiClient
-            .GET("/accounting-periods/expected-income-sources", {
-              params: {
-                query: {
-                  accountingPeriodIds: openAccountingPeriods.map(
-                    (period) => period.id,
-                  ),
-                },
-              },
-            })
-            .then((response) =>
-              unwrapApiResponse(
-                response,
-                "Failed to fetch expected income sources",
-              ),
-            );
-
-    if (openAccountingPeriods.length > 0) {
-      const goalResponse = await apiClient.GET("/fund-goals", {
-        params: {
-          query: {
-            "Filter.AccountingPeriodIds": openAccountingPeriods.map(
-              (period) => period.id,
-            ),
-            Limit: 500,
-          },
-        },
-      });
-      const loadedFundGoals = unwrapApiResponse(
-        goalResponse,
-        "Failed to fetch fund goals",
-      ).items;
-      const progressResults = (
-        await Promise.all(
-          openAccountingPeriods.map(async (accountingPeriod) =>
-            unwrapApiResponse(
-              await apiClient.GET("/fund-goals/progress/{accountingPeriodId}", {
-                params: { path: { accountingPeriodId: accountingPeriod.id } },
-              }),
-              "Failed to fetch Fund Goal progress",
-            ),
-          ),
-        )
-      ).flatMap((results) => results);
-      const progressByFundGoalId = new Map(
-        progressResults.map((result) => [result.fundGoalId, result]),
-      );
-      fundGoals = loadedFundGoals.flatMap((fundGoal) => {
-        const result = progressByFundGoalId.get(fundGoal.id);
-        return typeof result === "undefined"
-          ? []
-          : [{ ...fundGoal, progress: result.progress }];
-      });
+    const openPeriodIds = accountingPeriods.map((period) => period.id);
+    if (openPeriodIds.length === 0) {
+      return {
+        ...choices,
+        openAccountingPeriods: [],
+        fundGoals: [],
+        expectedIncomeSources: {},
+      };
     }
-
-    const expectedIncomeSources: ExpectedIncomeSourcesByPeriod =
-      Object.fromEntries(
-        (await expectedIncomeSourcesPromise).map((period) => [
-          period.id,
-          period.expectedIncomeSources,
-        ]),
-      );
-
+    // Income can only be entered in open periods, so only their Expected Income Sources can be chosen
+    const [expectedIncomeResponse, fundGoals] = await Promise.all([
+      apiClient.GET("/accounting-periods/expected-income-sources", {
+        params: { query: { accountingPeriodIds: openPeriodIds } },
+      }),
+      getFundGoalsWithProgress(apiClient, openPeriodIds),
+    ]);
     return {
-      openAccountingPeriods,
-      allAccountingPeriods: allAccountingPeriods.items,
-      accounts: accounts.items,
-      funds: funds.items,
+      ...choices,
+      openAccountingPeriods: accountingPeriods,
       fundGoals,
-      expectedIncomeSources,
-      locations,
+      expectedIncomeSources: Object.fromEntries(
+        unwrapApiResponse(
+          expectedIncomeResponse,
+          "Failed to fetch expected income sources",
+        ).map((period) => [period.id, period.expectedIncomeSources]),
+      ),
     };
   };
 
@@ -225,32 +207,12 @@ const getTransactionWorkspaceDetailReferenceData = async function (
       params: { query: { accountingPeriodIds: [accountingPeriodId] } },
     },
   );
-  const fundsPromise = apiClient.GET("/funds/with-balances");
-  const fundGoalsPromise = apiClient.GET("/fund-goals", {
-    params: {
-      query: {
-        "Filter.AccountingPeriodIds": [accountingPeriodId],
-        Limit: 500,
-      },
-    },
-  });
-  const progressPromise = apiClient.GET(
-    "/fund-goals/progress/{accountingPeriodId}",
-    {
-      params: { path: { accountingPeriodId } },
-    },
-  );
-  const [
-    accountingPeriodResponse,
-    fundsResponse,
-    fundGoalsResponse,
-    progressResponse,
-  ] = await Promise.all([
-    accountingPeriodPromise,
-    fundsPromise,
-    fundGoalsPromise,
-    progressPromise,
-  ]);
+  const [accountingPeriodResponse, fundsResponse, fundGoals] =
+    await Promise.all([
+      accountingPeriodPromise,
+      apiClient.GET("/funds/with-balances"),
+      getFundGoalsWithProgress(apiClient, [accountingPeriodId]),
+    ]);
   const [accountingPeriod] = unwrapApiResponse(
     accountingPeriodResponse,
     "Failed to fetch accounting period",
@@ -258,23 +220,11 @@ const getTransactionWorkspaceDetailReferenceData = async function (
   if (accountingPeriod === undefined) {
     throw new Error("Failed to find the transaction accounting period");
   }
-  const progressByFundGoalId = new Map(
-    unwrapApiResponse(
-      progressResponse,
-      "Failed to fetch Fund Goal progress",
-    ).map((result) => [result.fundGoalId, result.progress]),
-  );
 
   return {
     accountingPeriod,
     funds: unwrapApiResponse(fundsResponse, "Failed to fetch funds").items,
-    fundGoals: unwrapApiResponse(
-      fundGoalsResponse,
-      "Failed to fetch fund goals",
-    ).items.flatMap((fundGoal) => {
-      const progress = progressByFundGoalId.get(fundGoal.id);
-      return typeof progress === "undefined" ? [] : [{ ...fundGoal, progress }];
-    }),
+    fundGoals,
   };
 };
 
@@ -332,10 +282,10 @@ const getTransactionWorkspaceListData = async function (
     toRepeatedSearchParams(transactionTypes),
   );
   const normalizedFullyPosted = normalizeFullyPosted(fullyPosted);
-  const referenceData = await getTransactionWorkspaceReferenceData();
+  const choices = await getTransactionChoices(apiClient, false);
   const hasDerivedAccountFilter =
     normalizedAccountTypes.length > 0 || normalizedAccountNames.length > 0;
-  const selectedAccountIds = referenceData.accounts
+  const selectedAccountIds = choices.accounts
     .filter(
       (account) =>
         (normalizedAccountIds.length === 0 ||
@@ -347,7 +297,7 @@ const getTransactionWorkspaceListData = async function (
     )
     .map((account) => account.id);
   const hasDerivedFundFilter = normalizedFundNames.length > 0;
-  const selectedFundIds = referenceData.funds
+  const selectedFundIds = choices.funds
     .filter(
       (fund) =>
         (normalizedFundIds.length === 0 ||
@@ -430,7 +380,7 @@ const getTransactionWorkspaceListData = async function (
         })();
 
   return {
-    ...referenceData,
+    ...choices,
     currentPage,
     normalizedAccountingPeriodIds,
     normalizedAccountIds,

@@ -42,8 +42,7 @@ public sealed class AccountGoalEndpointTests
         AccountHandle account = await test.Accounts.Onboard("Checking").WithOpeningBalance(100m).CreateAsync();
         AccountingPeriodHandle period = await test.Periods.Create(2026, 8).CreateAsync();
 
-        AccountGoalModel goal = await test.Api.GetAsync<AccountGoalModel>(
-            $"/account-goals/account/{account.Id}?accountingPeriodId={period.Id}");
+        AccountGoalModel goal = await test.Api.GetAccountGoalAsync(account.Id, period.Id);
         Assert.Equal(0m, goal.MinimumEndingBalance);
         AccountGoalModel updated = await test.Api.PostAsync<UpdateAccountGoalModel, AccountGoalModel>(
             $"/account-goals/{goal.Id}",
@@ -74,8 +73,7 @@ public sealed class AccountGoalEndpointTests
         await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
         AccountHandle account = await test.Accounts.Onboard("Checking").CreateAsync();
         AccountingPeriodHandle period = await test.Periods.Create(2026, 8).CreateAsync();
-        AccountGoalModel goal = await test.Api.GetAsync<AccountGoalModel>(
-            $"/account-goals/account/{account.Id}?accountingPeriodId={period.Id}");
+        AccountGoalModel goal = await test.Api.GetAccountGoalAsync(account.Id, period.Id);
 
         using HttpResponseMessage invalidUpdate = await test.Api.PostResponseAsync(
             $"/account-goals/{goal.Id}",

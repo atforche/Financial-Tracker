@@ -3,7 +3,7 @@ namespace Models.FundGoals;
 /// <summary>
 /// Query parameters for Fund Goal balance events in an Accounting Period range.
 /// </summary>
-public sealed class FundGoalBalanceEventsInAccountingPeriodRangeQueryParameterModel : PaginationModel
+public sealed class FundGoalBalanceEventsInAccountingPeriodRangeQueryParameterModel
 {
     /// <summary>
     /// Accounting Period range to query.
@@ -14,9 +14,4 @@ public sealed class FundGoalBalanceEventsInAccountingPeriodRangeQueryParameterMo
     /// Optional Fund Goal filter.
     /// </summary>
     public FundGoalFilterModel? Filter { get; init; }
-
-    /// <summary>
-    /// Optional event ordering.
-    /// </summary>
-    public FundGoalBalanceEventSortModel? Sort { get; init; }
 }

@@ -32,20 +32,24 @@ const FundWorkspaceCreatePage = async function ({
   const accountingPeriodsResponse = await apiClient.GET(
     "/accounting-periods/with-balances",
     {
-      params: { query: { Limit: 500 } },
+      params: { query: { "Filter.IsOpen": true } },
     },
   );
 
-  const accountingPeriods = unwrapApiResponse(
+  const openAccountingPeriods = unwrapApiResponse(
     accountingPeriodsResponse,
     "Failed to fetch accounting periods",
-  );
-  if (accountingPeriods.items.length === 0) {
+  ).items;
+  // Only without an open period can there be no periods at all, so only then is the extra request needed
+  if (
+    openAccountingPeriods.length === 0 &&
+    unwrapApiResponse(
+      await apiClient.GET("/accounting-periods/bounds"),
+      "Failed to fetch the accounting period bounds",
+    ).latest === null
+  ) {
     redirect(workspaceUrl);
   }
-  const openAccountingPeriods = accountingPeriods.items.filter(
-    (period) => period.isOpen,
-  );
 
   return (
     <PageLayout>

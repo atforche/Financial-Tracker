@@ -1,8 +1,6 @@
-using Domain;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
 using Domain.BalanceEvents;
-using Models;
 using Models.AccountingPeriods;
 using Models.Accounts;
 using Models.BalanceEvents;
@@ -47,15 +45,6 @@ public sealed class AccountBalanceEventConverter
         AccountBalanceEventSortModel.Counterparty => AccountBalanceEventSort.Counterparty,
         AccountBalanceEventSortModel.CounterpartyDescending => AccountBalanceEventSort.CounterpartyDescending,
         _ => AccountBalanceEventSort.DateDescending,
-    };
-
-    /// <summary>
-    /// Converts the provided Domain page to an API collection.
-    /// </summary>
-    public CollectionModel<AccountBalanceEventModel> ToModel(QueryPage<AccountBalanceEvent> page) => new()
-    {
-        Items = page.Items.Select(ToModel).ToList(),
-        TotalCount = page.TotalCount,
     };
 
     /// <summary>

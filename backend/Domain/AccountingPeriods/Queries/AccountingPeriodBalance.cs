@@ -29,12 +29,6 @@ public sealed record AccountingPeriodBalance(
 }
 
 /// <summary>
-/// Represents an Accounting Period with the opening and closing balances stored for it, before its income and Fund Goal
-/// totals are calculated.
-/// </summary>
-public sealed record StoredAccountingPeriodBalance(AccountingPeriod AccountingPeriod, decimal OpeningBalance, decimal ClosingBalance);
-
-/// <summary>
 /// Represents an Accounting Period with its Expected Income Sources and the posted income linked to each of them.
 /// </summary>
 public sealed record AccountingPeriodExpectedIncome(AccountingPeriod AccountingPeriod, ReceivedIncomeBySource ReceivedIncome);

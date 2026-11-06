@@ -77,9 +77,9 @@ public sealed class OverviewQueryService(
         CancellationToken cancellationToken)
     {
         (List<AccountDateBalanceSummary> accountSummaries, BalanceGranularity granularity) =
-            await accountQueryService.GetDateSummariesAsync(new AccountFilter(null, [], []), start, end, cancellationToken);
+            await accountQueryService.GetDateSummariesAsync(new AccountFilter(null, [], [], []), start, end, cancellationToken);
         (List<FundDateBalanceSummary> fundSummaries, _) =
-            await fundQueryService.GetDateSummariesAsync(new FundFilter(null, []), start, end, cancellationToken);
+            await fundQueryService.GetDateSummariesAsync(new FundFilter(null, [], []), start, end, cancellationToken);
         return new OverviewDateRange(
             start,
             accountSummaries[0].Balance,

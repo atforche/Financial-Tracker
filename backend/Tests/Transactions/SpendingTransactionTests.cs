@@ -157,8 +157,8 @@ public sealed class SpendingTransactionTests
         await test.AssertBalanceAsync(cash, 780m, 780m);
         await test.AssertBalanceAsync(groceries, -220m, -220m);
         await test.AssertBalanceAsync(july, 1000m, 780m);
-        CollectionModel<AccountBalanceEventModel> events = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?range.start=2026-07-01&range.end=2026-07-31");
+        CollectionModel<AccountBalanceEventModel> events = await test.Api.GetAccountEventsAsync(
+            $"/accounts/{cash.Id}/balance-events/with-totals?range.start=2026-07-01&range.end=2026-07-31");
         AccountBalanceEventModel laterEvent = Assert.Single(events.Items, item => item.TransactionId == later.Id);
         Assert.True(laterEvent.IsPosted);
         Assert.Equal(900m, laterEvent.PreviousBalance?.PostedBalance);
@@ -186,8 +186,8 @@ public sealed class SpendingTransactionTests
         await test.Transactions.PostAsync(earlier, cash, new DateOnly(2026, 7, 15));
 
         await test.AssertBalanceAsync(cash, 65m, 65m);
-        CollectionModel<AccountBalanceEventModel> events = await test.Api.GetAsync<CollectionModel<AccountBalanceEventModel>>(
-            $"/accounts/{cash.Id}/balance-events?range.start=2026-07-15&range.end=2026-07-15&sort=Date");
+        CollectionModel<AccountBalanceEventModel> events = await test.Api.GetAccountEventsAsync(
+            $"/accounts/{cash.Id}/balance-events/with-totals?range.start=2026-07-15&range.end=2026-07-15&sort=Date");
         Assert.Equal([later.Id, earlier.Id], events.Items.Select(item => item.TransactionId));
         Assert.Equal([80m, 65m], events.Items.Select(item => item.NewBalance?.PostedBalance));
     }

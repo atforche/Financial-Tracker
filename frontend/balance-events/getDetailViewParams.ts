@@ -2,6 +2,7 @@
  * Search parameters choosing what an account or fund page shows.
  */
 interface DetailViewParams {
+  returnUrl?: string;
   tab?: string;
   startDate?: string;
   endDate?: string;
@@ -10,6 +11,7 @@ interface DetailViewParams {
 }
 
 const detailViewParamNames = [
+  "returnUrl",
   "tab",
   "startDate",
   "endDate",
@@ -18,7 +20,7 @@ const detailViewParamNames = [
 ] as const;
 
 /**
- * Keeps the selected view and ranges, so saving a change returns to the same view.
+ * Keeps the selected view, ranges, and return link, so saving a change returns to the same view.
  */
 const getDetailViewParams = function (
   params: DetailViewParams,

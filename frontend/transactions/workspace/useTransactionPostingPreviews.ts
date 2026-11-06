@@ -29,6 +29,11 @@ const PostingDateReporterContext = createContext<ReportPostingDate | null>(
 );
 
 /**
+ * Whether posted accounts can be unposted, which a closed period rejects even though it still accepts posting.
+ */
+const CanUnpostContext = createContext(true);
+
+/**
  * Gets the reporter for posting dates, or null when no view previews postings.
  */
 const usePostingDateReporter = function (): ReportPostingDate | null {
@@ -143,6 +148,7 @@ const useTransactionPostingPreviews = function (transaction: Transaction): {
 };
 
 export {
+  CanUnpostContext,
   PostingDateReporterContext,
   usePostingDateReporter,
   useTransactionPostingPreviews,
