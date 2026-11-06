@@ -3,6 +3,9 @@ import type {
   FundsInAccountingPeriodRange,
 } from "@/funds/types";
 import type { FundGoal, FundGoalProgress } from "@/fund-goals/types";
+import resolveEntityHistory, {
+  periodTab,
+} from "@/balance-events/resolveEntityHistory";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
 import type { BalanceEventTotals } from "@/balance-events/types";
 import BalanceHistoryFilter from "@/balance-events/BalanceHistoryFilter";
@@ -21,7 +24,6 @@ import getDateSummary from "@/balance-events/getDateSummary";
 import getDetailViewParams from "@/balance-events/getDetailViewParams";
 import isFundGoalMet from "@/fund-goals/isFundGoalMet";
 import { redirect } from "next/navigation";
-import resolveEntityHistory from "@/balance-events/resolveEntityHistory";
 import routes from "@/funds/routes";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -147,22 +149,28 @@ const FundWorkspaceDetailPage = async function ({
   const resolvedSearchParams = await searchParams;
   const { search } = resolvedSearchParams;
   const apiClient = await createApiClient();
+  // Only the By Period view needs every period, for its range picker and default range
   const [periodsResponse, fundsResponse] = await Promise.all([
-    apiClient.GET("/accounting-periods", {
-      params: {
-        query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
-      },
+    resolvedSearchParams.tab === periodTab
+      ? apiClient.GET("/accounting-periods", {
+          params: {
+            query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
+          },
+        })
+      : null,
+    apiClient.GET("/funds/with-balances", {
+      params: { query: { "Filter.Ids": [fundId] } },
     }),
-    apiClient.GET("/funds/with-balances"),
   ]);
-  const periods = unwrapApiResponse(
-    periodsResponse,
-    "Failed to fetch accounting periods",
-  ).items;
-  const fund = unwrapApiResponse(
+  const periods =
+    periodsResponse === null
+      ? []
+      : unwrapApiResponse(periodsResponse, "Failed to fetch accounting periods")
+          .items;
+  const [fund] = unwrapApiResponse(
     fundsResponse,
     "Failed to fetch funds",
-  ).items.find((item) => item.id === fundId);
+  ).items;
   const workspaceParams = search === undefined ? {} : { search };
   const workspaceUrl = routes.workspace(workspaceParams);
   if (fund === undefined) {

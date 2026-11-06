@@ -1,6 +1,8 @@
 using System.Net;
 using Models;
 using Models.AccountingPeriods;
+using Models.Accounts;
+using Models.Funds;
 using Models.Transactions;
 using Models.Transactions.Create;
 
@@ -71,6 +73,26 @@ public sealed class AccountingPeriodQueryTests
         Assert.NotEmpty(fund.Events);
         Assert.Equal(HttpStatusCode.NotFound, missingFund.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, missingPeriod.StatusCode);
+    }
+
+    /// <summary>
+    /// Narrows the account and fund balance lists to the requested IDs.
+    /// </summary>
+    [Fact]
+    public async Task BalanceListsFilterByIds()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(100m).CreateAsync();
+        _ = await test.Accounts.Onboard("Savings").WithOpeningBalance(50m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        _ = await test.Funds.Create("Rent").In(july).CreateAsync();
+
+        CollectionModel<AccountWithBalanceModel> accounts = await test.Api.GetAsync<CollectionModel<AccountWithBalanceModel>>($"/accounts/with-balances?filter.ids={cash.Id}");
+        CollectionModel<FundWithBalanceModel> funds = await test.Api.GetAsync<CollectionModel<FundWithBalanceModel>>($"/funds/with-balances?filter.ids={groceries.Id}");
+
+        Assert.Equal(cash.Id, Assert.Single(accounts.Items).Id);
+        Assert.Equal(groceries.Id, Assert.Single(funds.Items).Id);
     }
 
     /// <summary>

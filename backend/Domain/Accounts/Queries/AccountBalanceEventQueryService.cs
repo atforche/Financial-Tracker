@@ -359,6 +359,7 @@ public sealed class AccountBalanceEventQueryService(
             || account.Name.Contains(filter.NameSearch, StringComparison.OrdinalIgnoreCase)
             || (account.FinancialInstitution?.Contains(filter.NameSearch, StringComparison.OrdinalIgnoreCase) ?? false))
         && (filter.Names.Count == 0 || filter.Names.Contains(account.Name))
+        && (filter.Ids.Count == 0 || filter.Ids.Contains(account.Id.Value))
         && (filter.Types.Count == 0 || filter.Types.Contains(account.Type));
 
     /// <summary>

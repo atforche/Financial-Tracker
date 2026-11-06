@@ -1,3 +1,6 @@
+import resolveEntityHistory, {
+  periodTab,
+} from "@/balance-events/resolveEntityHistory";
 import { AccountBalanceEventSortModel } from "@/framework/data/api";
 import AccountDetailActions from "@/accounts/workspace/AccountDetailActions";
 import AccountGoalHistory from "@/account-goals/AccountGoalHistory";
@@ -18,7 +21,6 @@ import getDateSummary from "@/balance-events/getDateSummary";
 import getDetailViewParams from "@/balance-events/getDetailViewParams";
 import { isDebtAccountType } from "@/accounts/helpers";
 import { redirect } from "next/navigation";
-import resolveEntityHistory from "@/balance-events/resolveEntityHistory";
 import routes from "@/accounts/routes";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
@@ -44,22 +46,28 @@ const AccountWorkspaceDetailPage = async function ({
   const resolvedSearchParams = await searchParams;
   const { search, accountType } = resolvedSearchParams;
   const apiClient = await createApiClient();
+  // Only the By Period view needs every period, for its range picker and default range
   const [periodsResponse, accountsResponse] = await Promise.all([
-    apiClient.GET("/accounting-periods", {
-      params: {
-        query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
-      },
+    resolvedSearchParams.tab === periodTab
+      ? apiClient.GET("/accounting-periods", {
+          params: {
+            query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
+          },
+        })
+      : null,
+    apiClient.GET("/accounts/with-balances", {
+      params: { query: { "Filter.Ids": [accountId] } },
     }),
-    apiClient.GET("/accounts/with-balances"),
   ]);
-  const periods = unwrapApiResponse(
-    periodsResponse,
-    "Failed to fetch accounting periods",
-  ).items;
-  const account = unwrapApiResponse(
+  const periods =
+    periodsResponse === null
+      ? []
+      : unwrapApiResponse(periodsResponse, "Failed to fetch accounting periods")
+          .items;
+  const [account] = unwrapApiResponse(
     accountsResponse,
     "Failed to fetch accounts",
-  ).items.find((item) => item.id === accountId);
+  ).items;
   const workspaceUrl = routes.workspace({
     ...(search === undefined ? {} : { search }),
     ...(accountType === undefined ? {} : { accountType }),

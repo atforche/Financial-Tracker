@@ -19,4 +19,9 @@ public class AccountFilterModel
     /// Account Type filters to apply to the results.
     /// </summary>
     public List<AccountTypeModel>? Types { get; init; }
+
+    /// <summary>
+    /// IDs to include in the results
+    /// </summary>
+    public List<Guid>? Ids { get; init; }
 }

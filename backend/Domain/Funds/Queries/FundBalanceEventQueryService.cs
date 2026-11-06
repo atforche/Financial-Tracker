@@ -222,7 +222,8 @@ public sealed class FundBalanceEventQueryService(
     /// </summary>
     private static bool Matches(Fund fund, FundFilter filter) =>
         (string.IsNullOrWhiteSpace(filter.NameSearch) || fund.Name.Contains(filter.NameSearch, StringComparison.OrdinalIgnoreCase))
-        && (filter.Names.Count == 0 || filter.Names.Contains(fund.Name));
+        && (filter.Names.Count == 0 || filter.Names.Contains(fund.Name))
+        && (filter.Ids.Count == 0 || filter.Ids.Contains(fund.Id.Value));
 
     /// <summary>
     /// Sorts Fund balance events by the provided sort order.

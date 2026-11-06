@@ -1372,6 +1372,7 @@ export interface paths {
                     IncludePending?: boolean;
                     "Filter.NameSearch"?: string;
                     "Filter.Names"?: string[];
+                    "Filter.Ids"?: string[];
                     /** @description Sort order to apply to the results. */
                     Sort?: components["schemas"]["FundBalanceEventSortModel"];
                     Limit?: number;
@@ -1421,6 +1422,7 @@ export interface paths {
                     IncludePending?: boolean;
                     "Filter.NameSearch"?: string;
                     "Filter.Names"?: string[];
+                    "Filter.Ids"?: string[];
                     /** @description Sort order to apply to the results. */
                     Sort?: components["schemas"]["FundBalanceEventSortModel"];
                     Limit?: number;
@@ -1477,6 +1479,7 @@ export interface paths {
                 query?: {
                     "Filter.NameSearch"?: string;
                     "Filter.Names"?: string[];
+                    "Filter.Ids"?: string[];
                     /** @description Sort to apply. */
                     Sort?: components["schemas"]["FundWithBalanceSortModel"];
                     Limit?: number;
@@ -1524,6 +1527,7 @@ export interface paths {
                     "Range.End"?: string;
                     "Filter.NameSearch"?: string;
                     "Filter.Names"?: string[];
+                    "Filter.Ids"?: string[];
                     /** @description Optional sort to apply to the results. */
                     Sort?: components["schemas"]["FundWithBalanceRangeSortModel"];
                     Limit?: number;
@@ -1582,6 +1586,7 @@ export interface paths {
                     "Range.End"?: string;
                     "Filter.NameSearch"?: string;
                     "Filter.Names"?: string[];
+                    "Filter.Ids"?: string[];
                     /** @description Optional sort to apply to the results. */
                     Sort?: components["schemas"]["FundWithBalanceRangeSortModel"];
                     Limit?: number;
@@ -2371,6 +2376,7 @@ export interface paths {
                     "Filter.NameSearch"?: string;
                     "Filter.Names"?: string[];
                     "Filter.Types"?: components["schemas"]["AccountTypeModel"][];
+                    "Filter.Ids"?: string[];
                     /** @description Sort to apply. */
                     Sort?: components["schemas"]["AccountWithBalanceSortModel"];
                     Limit?: number;
@@ -2419,6 +2425,7 @@ export interface paths {
                     "Filter.NameSearch"?: string;
                     "Filter.Names"?: string[];
                     "Filter.Types"?: components["schemas"]["AccountTypeModel"][];
+                    "Filter.Ids"?: string[];
                     /** @description Optional sort to apply to the results. */
                     Sort?: components["schemas"]["AccountWithBalanceRangeSortModel"];
                     Limit?: number;
@@ -2478,6 +2485,7 @@ export interface paths {
                     "Filter.NameSearch"?: string;
                     "Filter.Names"?: string[];
                     "Filter.Types"?: components["schemas"]["AccountTypeModel"][];
+                    "Filter.Ids"?: string[];
                     /** @description Optional sort to apply to the results. */
                     Sort?: components["schemas"]["AccountWithBalanceRangeSortModel"];
                     Limit?: number;

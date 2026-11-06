@@ -245,6 +245,11 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
         {
             query = query.Where(account => filter.Names.Contains(account.Name));
         }
+        if (filter.Ids.Count > 0)
+        {
+            var ids = filter.Ids.Select(id => new AccountId(id)).ToList();
+            query = query.Where(account => ids.Contains(account.Id));
+        }
         if (filter.Types.Count > 0)
         {
             query = query.Where(account => filter.Types.Contains(account.Type));

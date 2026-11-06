@@ -29,7 +29,7 @@ public sealed class FundBalanceEventConverter
     /// <summary>
     /// Converts an API Fund filter to a Domain filter.
     /// </summary>
-    private static FundFilter ToDomain(FundFilterModel? filter) => new(filter?.NameSearch, filter?.Names ?? []);
+    private static FundFilter ToDomain(FundFilterModel? filter) => new(filter?.NameSearch, filter?.Names ?? [], filter?.Ids ?? []);
 
     /// <summary>
     /// Converts an API sort to a Domain sort.

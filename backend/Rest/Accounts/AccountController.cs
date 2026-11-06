@@ -81,7 +81,7 @@ public sealed class AccountController(
         if (query.AccountingPeriodIds == null && query.Range?.Start is DateOnly start && query.Range.End is DateOnly end)
         {
             AccountDateRange range = await accountQueryService.GetDateRangeAsync(new AccountDateRangeQuery(
-                start, end, new AccountFilter(null, [account.Name], []), AccountRangeSort.Name, 0, null), cancellationToken);
+                start, end, new AccountFilter(null, [account.Name], [], []), AccountRangeSort.Name, 0, null), cancellationToken);
             openingBalance = range.OpeningBalance?.TotalBalance;
             dates = range.Dates.Select(item => (item.Date, item.Balance.TotalBalance)).ToList();
             granularity = range.Granularity;

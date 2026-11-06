@@ -6,4 +6,5 @@ namespace Domain.Accounts.Queries;
 public sealed record AccountFilter(
     string? NameSearch,
     IReadOnlyCollection<string> Names,
-    IReadOnlyCollection<AccountType> Types);
+    IReadOnlyCollection<AccountType> Types,
+    IReadOnlyCollection<Guid> Ids);
