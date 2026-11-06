@@ -2829,6 +2829,7 @@ export interface paths {
                 query?: {
                     "Filter.Years"?: number[];
                     "Filter.Months"?: number[];
+                    "Filter.IsOpen"?: boolean;
                     /** @description Sort to apply to the results */
                     Sort?: components["schemas"]["AccountingPeriodSortModel"];
                     Limit?: number;
@@ -2952,6 +2953,7 @@ export interface paths {
                 query?: {
                     "Filter.Years"?: number[];
                     "Filter.Months"?: number[];
+                    "Filter.IsOpen"?: boolean;
                     /** @description Sort to apply to the results */
                     Sort?: components["schemas"]["AccountingPeriodWithBalanceSortModel"];
                     Limit?: number;

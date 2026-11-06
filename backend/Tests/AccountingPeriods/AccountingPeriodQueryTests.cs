@@ -39,6 +39,27 @@ public sealed class AccountingPeriodQueryTests
     }
 
     /// <summary>
+    /// Limits both period lists to open or closed periods.
+    /// </summary>
+    [Fact]
+    public async Task ListsFilterByIsOpen()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+        await test.Periods.CloseAsync(july);
+
+        CollectionModel<AccountingPeriodModel> open = await test.Api.GetAsync<CollectionModel<AccountingPeriodModel>>("/accounting-periods?filter.isOpen=true");
+        CollectionModel<AccountingPeriodModel> closed = await test.Api.GetAsync<CollectionModel<AccountingPeriodModel>>("/accounting-periods?filter.isOpen=false");
+        CollectionModel<AccountingPeriodWithBalanceModel> openBalances = await test.Api.GetAsync<CollectionModel<AccountingPeriodWithBalanceModel>>(
+            "/accounting-periods/with-balances?filter.isOpen=true");
+
+        Assert.Equal(august.Id, Assert.Single(open.Items).Id);
+        Assert.Equal(july.Id, Assert.Single(closed.Items).Id);
+        Assert.Equal(august.Id, Assert.Single(openBalances.Items).Id);
+    }
+
+    /// <summary>
     /// Returns the earliest and latest periods across years, or neither before any exist.
     /// </summary>
     [Fact]

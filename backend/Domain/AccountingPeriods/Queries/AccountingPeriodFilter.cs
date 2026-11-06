@@ -5,4 +5,5 @@ namespace Domain.AccountingPeriods.Queries;
 /// </summary>
 public sealed record AccountingPeriodFilter(
     IReadOnlyCollection<int> Years,
-    IReadOnlyCollection<int> Months);
+    IReadOnlyCollection<int> Months,
+    bool? IsOpen);

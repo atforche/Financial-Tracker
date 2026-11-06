@@ -210,7 +210,8 @@ public sealed class AccountingPeriodQueryConverter(
     /// </summary>
     private static AccountingPeriodFilter ToDomain(AccountingPeriodFilterModel? model) => new(
         model?.Years ?? [],
-        model?.Months ?? []);
+        model?.Months ?? [],
+        model?.IsOpen);
 
     private static IncomeAmountModel ToExpectedIncomeAmountModel(IReadOnlyCollection<ExpectedIncomeSource> sources) => new()
     {

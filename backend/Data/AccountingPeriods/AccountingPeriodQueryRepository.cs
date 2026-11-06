@@ -248,6 +248,10 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
         {
             periods = periods.Where(period => filter.Months.Contains(period.Month));
         }
+        if (filter.IsOpen != null)
+        {
+            periods = periods.Where(period => period.IsOpen == filter.IsOpen);
+        }
         return periods;
     }
 
@@ -265,6 +269,10 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
         if (filter.Months.Count > 0)
         {
             balances = balances.Where(item => filter.Months.Contains(item.AccountingPeriod.Month));
+        }
+        if (filter.IsOpen != null)
+        {
+            balances = balances.Where(item => item.AccountingPeriod.IsOpen == filter.IsOpen);
         }
         return balances;
     }
