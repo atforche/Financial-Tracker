@@ -154,7 +154,7 @@ const AccountWorkspaceDetailPage = async function ({
               query: {
                 "Range.Start": periodRange.start,
                 "Range.End": periodRange.end,
-                "Filter.Names": [account.name],
+                "Filter.Ids": [accountId],
               },
             },
           }),

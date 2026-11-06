@@ -4,6 +4,7 @@ import {
 } from "@/framework/currencyHelpers";
 import type { ExpectedIncomeSourceRequest } from "@/accounting-periods/types";
 import type { Route } from "next";
+import { isInternalUrl } from "@/framework/view/ReturnLink";
 import { periodTab } from "@/balance-events/resolveEntityHistory";
 
 /**
@@ -49,7 +50,8 @@ const getAllPeriodsHref = function (
   returnUrl: string | undefined,
   currentUrl: string,
 ): Route {
-  return returnUrl?.split("?")[0] === getEntityHref({})
+  return isInternalUrl(returnUrl) &&
+    returnUrl.split("?")[0] === getEntityHref({})
     ? returnUrl
     : getEntityHref({ tab: periodTab, returnUrl: currentUrl });
 };

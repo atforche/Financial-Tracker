@@ -92,7 +92,7 @@ const getDateActivity = async function (
  */
 const getPeriodActivity = async function (
   apiClient: ApiClient,
-  fund: { readonly id: string; readonly name: string },
+  fund: { readonly id: string },
   periods: { readonly start: string; readonly end: string },
 ): Promise<PeriodActivity> {
   const range = { "Range.Start": periods.start, "Range.End": periods.end };
@@ -102,7 +102,7 @@ const getPeriodActivity = async function (
       params: { query: eventQuery },
     }),
     apiClient.GET("/funds/accounting-period-range", {
-      params: { query: { ...range, "Filter.Names": [fund.name] } },
+      params: { query: { ...range, "Filter.Ids": [fund.id] } },
     }),
     apiClient.GET("/fund-goals/fund/{fundId}/history", {
       params: { path: { fundId: fund.id }, query: range },

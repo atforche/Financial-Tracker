@@ -9,14 +9,18 @@ import createApiClient from "@/framework/data/createApiClient";
 const getAccountingPeriodBalance = async function (
   accountingPeriodId: string,
 ): Promise<AccountingPeriodWithBalance | null> {
-  const apiClient = await createApiClient();
-  const { data } = await apiClient.GET(
-    "/accounting-periods/{accountingPeriodId}",
-    {
-      params: { path: { accountingPeriodId } },
-    },
-  );
-  return data ?? null;
+  try {
+    const apiClient = await createApiClient();
+    const { data } = await apiClient.GET(
+      "/accounting-periods/{accountingPeriodId}",
+      {
+        params: { path: { accountingPeriodId } },
+      },
+    );
+    return data ?? null;
+  } catch {
+    return null;
+  }
 };
 
 export default getAccountingPeriodBalance;

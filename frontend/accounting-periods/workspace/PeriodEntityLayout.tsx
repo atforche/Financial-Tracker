@@ -1,5 +1,6 @@
 import { Button, Chip, Stack, Typography } from "@mui/material";
 import type { JSX, ReactNode } from "react";
+import ReturnLink, { isInternalUrl } from "@/framework/view/ReturnLink";
 import {
   formatCurrency,
   getCurrencyDifference,
@@ -9,7 +10,6 @@ import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
 import PeriodNavigation from "@/framework/view/PeriodNavigation";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import ReturnLink from "@/framework/view/ReturnLink";
 import type { Route } from "next";
 import SignedChange from "@/framework/view/SignedChange";
 import StatCard from "@/framework/view/StatCard";
@@ -63,8 +63,8 @@ const PeriodEntityLayout = function ({
   const period = detail.accountingPeriod;
   // Coming from the period's own page keeps its search and sort, and can still name the period
   const returnsToPeriod =
-    returnUrl?.split("?")[0] === periodHref.split("?")[0] &&
-    returnUrl !== undefined;
+    isInternalUrl(returnUrl) &&
+    returnUrl.split("?")[0] === periodHref.split("?")[0];
   const getNeighborLink = (
     neighbor: typeof detail.previousPeriod,
   ): { name: string; href: Route } | null =>
