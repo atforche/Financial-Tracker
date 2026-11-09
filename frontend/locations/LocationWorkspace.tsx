@@ -3,66 +3,110 @@ import {
   getRowsPerPage,
   normalizePageValue,
 } from "@/framework/listframe/page";
+import routes, { type LocationWorkspaceSearchParams } from "@/locations/routes";
 import type { JSX } from "react";
-import type { LocationSortModel } from "@/framework/data/api";
+import { LocationRangeSortModel } from "@/framework/data/api";
 import LocationWorkspaceFilter from "@/locations/LocationWorkspaceFilter";
-import LocationWorkspaceListFrame from "@/locations/LocationWorkspaceListFrame";
+import LocationWorkspaceTable from "@/locations/LocationWorkspaceTable";
 import PageLayout from "@/framework/view/PageLayout";
+import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
+import StatCard from "@/framework/view/StatCard";
 import createApiClient from "@/framework/data/createApiClient";
+import { formatCurrency } from "@/framework/currencyHelpers";
+import parseEnumValue from "@/framework/data/parseEnumValue";
+import resolveLocationRange from "@/locations/resolveLocationRange";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
- * Search parameters supported by the Location workspace.
- */
-interface LocationWorkspaceSearchParams {
-  readonly search?: string;
-  readonly sort?: LocationSortModel;
-  readonly page?: number | string | null;
-  readonly pageSize?: number | string | null;
-  readonly transactionPage?: number | string | null;
-}
-
-/**
- * Props for the LocationWorkspace component.
- */
-interface LocationWorkspaceProps {
-  readonly searchParams: Promise<LocationWorkspaceSearchParams>;
-}
-
-/**
- * Displays the searchable Location workspace.
+ * Shows where money went over a date or period range: totals across every location, and the locations ranked by
+ * their activity.
  */
 const LocationWorkspace = async function ({
   searchParams,
-}: LocationWorkspaceProps): Promise<JSX.Element> {
-  const { search, sort, page, pageSize } = await searchParams;
-  const client = await createApiClient();
+}: {
+  readonly searchParams: Promise<LocationWorkspaceSearchParams>;
+}): Promise<JSX.Element> {
+  const resolvedSearchParams = await searchParams;
+  const { search, sort, page, pageSize } = resolvedSearchParams;
+  const listParams = {
+    ...(search === undefined ? {} : { search }),
+    ...(sort === undefined ? {} : { sort }),
+  };
+  const { accountingPeriods, range } = await resolveLocationRange(
+    resolvedSearchParams,
+    (canonicalRange) => routes.workspace({ ...listParams, ...canonicalRange }),
+  );
   const rowsPerPage = getRowsPerPage(pageSize);
-  const locationsResponse = await client.GET("/locations", {
-    params: {
-      query: {
-        "Filter.NameSearch": search ?? "",
-        Sort: sort ?? null,
-        Limit: rowsPerPage,
-        Offset: getPageOffset(normalizePageValue(page), rowsPerPage),
-      },
-    },
-  });
+  const parsedSort = parseEnumValue(LocationRangeSortModel, sort ?? "");
+  const query = {
+    ...(search === undefined ? {} : { NameSearch: search }),
+    ...(parsedSort === null ? {} : { Sort: parsedSort }),
+    Limit: rowsPerPage,
+    Offset: getPageOffset(normalizePageValue(page), rowsPerPage),
+  };
+  const apiClient = await createApiClient();
   const locations = unwrapApiResponse(
-    locationsResponse,
-    "Failed to fetch Locations",
+    range.mode === "date"
+      ? await apiClient.GET("/locations/date-range", {
+          params: {
+            query: {
+              ...query,
+              "Range.Start": range.startDate,
+              "Range.End": range.endDate,
+            },
+          },
+        })
+      : await apiClient.GET("/locations/accounting-period-range", {
+          params: {
+            query: {
+              ...query,
+              "Range.Start": range.startAccountingPeriodId,
+              "Range.End": range.endAccountingPeriodId,
+            },
+          },
+        }),
+    "Failed to fetch location activity",
   );
 
   return (
     <PageLayout>
-      <LocationWorkspaceFilter />
-      <LocationWorkspaceListFrame
-        data={locations.items}
-        totalCount={locations.totalCount}
+      <LocationWorkspaceFilter accountingPeriods={accountingPeriods} />
+      <ResponsiveGrid columns={{ xs: 1, sm: 2, lg: 4 }}>
+        <StatCard
+          label="Spent"
+          value={formatCurrency(locations.totalSpent)}
+          caption="Paid to locations in this range"
+        />
+        <StatCard
+          label="Received"
+          value={formatCurrency(locations.totalReceived)}
+          caption="Income and refunds from locations"
+        />
+        <StatCard
+          label="Places with activity"
+          value={locations.activeLocationCount.toString()}
+          caption={`of ${locations.locations.totalCount.toString()} locations`}
+        />
+        <StatCard
+          label="Top 5 share"
+          value={
+            locations.totalSpent === 0
+              ? "—"
+              : `${Math.round((locations.topFiveSpent / locations.totalSpent) * 100).toString()}%`
+          }
+          caption="of spending went to the top 5 locations"
+        />
+      </ResponsiveGrid>
+      <LocationWorkspaceTable
+        locations={locations.locations.items}
+        totalCount={locations.locations.totalCount}
+        detailParams={{
+          ...range,
+          returnUrl: routes.workspace({ ...listParams, ...range }),
+        }}
       />
     </PageLayout>
   );
 };
 
-export type { LocationWorkspaceSearchParams };
 export default LocationWorkspace;

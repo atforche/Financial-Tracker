@@ -28,6 +28,11 @@ interface TrendFilterHeaderProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly hasActiveFilters: boolean;
   readonly clearFilters: (params: URLSearchParams) => void;
+
+  /**
+   * Actions shown beside the title.
+   */
+  readonly action?: ReactNode;
   readonly children: ReactNode;
 }
 
@@ -41,6 +46,7 @@ const TrendFilterHeader = function ({
   accountingPeriods,
   hasActiveFilters,
   clearFilters,
+  action = null,
   children,
 }: TrendFilterHeaderProps): JSX.Element {
   const defaultRange = getDefaultTrendAccountingPeriodRange(accountingPeriods);
@@ -74,7 +80,7 @@ const TrendFilterHeader = function ({
   return (
     <Stack spacing={2}>
       <ReturnLink returnUrl={returnUrl} />
-      <WorkspaceHeader title={title} action={null}>
+      <WorkspaceHeader title={title} action={action}>
         <ToggleButtonSelector
           value={mode}
           onChange={(nextMode: TrendRangeMode) => {

@@ -1,10 +1,12 @@
 using Data;
+using Domain.AccountingPeriods.Queries;
 using Domain.Locations;
 using Domain.Locations.Queries;
 using Domain.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Locations;
+using Rest.AccountingPeriods;
 
 namespace Rest.Locations;
 
@@ -29,6 +31,93 @@ public sealed class LocationController(
         [FromQuery] LocationQueryParameterModel query,
         CancellationToken cancellationToken) =>
         Ok(locationConverter.ToModel(await locationQueryService.GetAsync(locationConverter.ToDomain(query), cancellationToken)));
+
+    /// <summary>
+    /// Retrieves the Locations' activity over a date range, most spent first by default.
+    /// </summary>
+    [HttpGet("date-range")]
+    [ProducesResponseType(typeof(LocationsInRangeModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<LocationsInRangeModel>> GetDateRangeAsync(
+        [FromQuery] LocationsInDateRangeQueryParameterModel query,
+        CancellationToken cancellationToken) =>
+        ValidateDates(query.Range, "Unable to retrieve Location range.") is ValidationProblemDetails problem
+            ? UnprocessableEntity(problem)
+            : Ok(locationConverter.ToModel(await locationQueryService.GetDateRangeAsync(
+                query.Range.Start!.Value,
+                query.Range.End!.Value,
+                locationConverter.ToDomain(query.NameSearch, query.Sort, query),
+                cancellationToken)));
+
+    /// <summary>
+    /// Retrieves the Locations' activity over an Accounting Period range, most spent first by default.
+    /// </summary>
+    [HttpGet("accounting-period-range")]
+    [ProducesResponseType(typeof(LocationsInRangeModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<LocationsInRangeModel>> GetAccountingPeriodRangeAsync(
+        [FromQuery] LocationsInAccountingPeriodRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        AccountingPeriodRangeQueryResult<LocationRange> result = await locationQueryService.GetAccountingPeriodRangeAsync(
+            query.Range.Start,
+            query.Range.End,
+            locationConverter.ToDomain(query.NameSearch, query.Sort, query),
+            cancellationToken);
+        return result.Range == null
+            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Location range."))
+            : Ok(locationConverter.ToModel(result.Range));
+    }
+
+    /// <summary>
+    /// Retrieves one Location's activity over a date range, by month, and how it was paid for.
+    /// </summary>
+    [HttpGet("{locationId:guid}/date-range")]
+    [ProducesResponseType(typeof(LocationDetailRangeModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<LocationDetailRangeModel>> GetDetailDateRangeAsync(
+        Guid locationId,
+        [FromQuery] LocationDateRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        if (ValidateDates(query.Range, "Unable to retrieve Location range.") is ValidationProblemDetails problem)
+        {
+            return UnprocessableEntity(problem);
+        }
+        LocationDetailRange? range = await locationQueryService.GetDetailDateRangeAsync(
+            locationId,
+            query.Range.Start!.Value,
+            query.Range.End!.Value,
+            cancellationToken);
+        return range == null ? NotFound() : Ok(locationConverter.ToModel(range));
+    }
+
+    /// <summary>
+    /// Retrieves one Location's activity over an Accounting Period range, by period, and how it was paid for.
+    /// </summary>
+    [HttpGet("{locationId:guid}/accounting-period-range")]
+    [ProducesResponseType(typeof(LocationDetailRangeModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<LocationDetailRangeModel>> GetDetailAccountingPeriodRangeAsync(
+        Guid locationId,
+        [FromQuery] LocationAccountingPeriodRangeQueryParameterModel query,
+        CancellationToken cancellationToken)
+    {
+        AccountingPeriodRangeQueryResult<LocationDetailRange>? result = await locationQueryService.GetDetailAccountingPeriodRangeAsync(
+            locationId,
+            query.Range.Start,
+            query.Range.End,
+            cancellationToken);
+        if (result == null)
+        {
+            return NotFound();
+        }
+        return result.Range == null
+            ? UnprocessableEntity(AccountingPeriodRangeValidationProblem.Create(result.Failure, query.Range.Start, query.Range.End, "Unable to retrieve Location range."))
+            : Ok(locationConverter.ToModel(result.Range));
+    }
 
     /// <summary>
     /// Renames a Location.
@@ -112,4 +201,16 @@ public sealed class LocationController(
             Errors = ValidationErrorHelper.GroupValidationErrors(validationErrors),
             Status = StatusCodes.Status422UnprocessableEntity,
         });
+
+    /// <summary>
+    /// Requires both ends of a date range, in order and within the maximum span.
+    /// </summary>
+    private static ValidationProblemDetails? ValidateDates(DateRangeModel range, string title) =>
+        range.Start == null || range.End == null
+            ? new ValidationProblemDetails(new Dictionary<string, string[]> { ["Range"] = ["Both a start date and an end date are required."] })
+            {
+                Title = title,
+                Status = StatusCodes.Status422UnprocessableEntity,
+            }
+            : DateRangeValidationProblem.Validate(range.Start, range.End, title);
 }

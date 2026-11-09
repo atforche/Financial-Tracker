@@ -7,5 +7,4 @@ public sealed record TransactionAccountingPeriodRangeFacts(
     TransactionQueryFacts QueryFacts,
     IReadOnlyCollection<string> AvailableAccountNames,
     IReadOnlyCollection<string> AvailableFundNames,
-    IReadOnlyCollection<TransactionTypeSummary> TransactionTypes,
-    LocationCashFlow LocationCashFlow);
+    IReadOnlyCollection<TransactionTypeSummary> TransactionTypes);

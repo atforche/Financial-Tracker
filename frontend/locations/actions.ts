@@ -1,71 +1,92 @@
 "use server";
 
+import type { Location } from "@/locations/types";
 import createApiClient from "@/framework/data/createApiClient";
+import { isApiError } from "@/framework/data/apiError";
+import mapApiValidationError from "@/framework/forms/mapApiValidationError";
 import { revalidatePath } from "next/cache";
 
 /**
- * Gets a required string value from submitted form data.
+ * Describes why a location request failed, using the API's messages when it sent any. Server actions return this
+ * rather than throwing, because production builds hide a thrown error's message.
  */
-const getRequiredString = function (formData: FormData, name: string): string {
-  const value = formData.get(name);
-  if (typeof value !== "string" || value.trim() === "") {
-    throw new Error(`${name} is required.`);
+const describeFailure = function (error: unknown, fallback: string): string {
+  if (!isApiError(error)) {
+    return fallback;
   }
-  return value.trim();
+  const { errorTitle, unmappedErrors } = mapApiValidationError(error, {});
+  return unmappedErrors ?? errorTitle ?? fallback;
 };
 
 /**
- * Renames an existing Location.
+ * Renames a location, returning why it failed or null on success.
  */
-const renameLocation = async function (formData: FormData): Promise<void> {
-  const id = getRequiredString(formData, "id");
-  const name = getRequiredString(formData, "name");
+const renameLocation = async function (
+  locationId: string,
+  name: string,
+): Promise<string | null> {
   const client = await createApiClient();
-  const response = await client.POST("/locations/{locationId}", {
-    params: { path: { locationId: id } },
-    body: { name },
+  const { error } = await client.POST("/locations/{locationId}", {
+    params: { path: { locationId } },
+    body: { name: name.trim() },
   });
-  if (response.error) {
-    throw new Error("Unable to rename Location.");
+  if (error !== undefined) {
+    return describeFailure(error, "Unable to rename this location.");
   }
-  revalidatePath("/locations");
+  revalidatePath("/locations", "layout");
+  return null;
 };
 
 /**
- * Deletes an unused Location.
+ * Deletes a location that no transaction uses, returning why it failed or null on success.
  */
-const deleteLocation = async function (formData: FormData): Promise<void> {
-  const id = getRequiredString(formData, "id");
+const deleteLocation = async function (
+  locationId: string,
+): Promise<string | null> {
   const client = await createApiClient();
-  const response = await client.DELETE("/locations/{locationId}", {
-    params: { path: { locationId: id } },
+  const { error } = await client.DELETE("/locations/{locationId}", {
+    params: { path: { locationId } },
   });
-  if (response.error) {
-    throw new Error(
-      "This Location cannot be deleted while transactions use it.",
+  if (error !== undefined) {
+    return describeFailure(
+      error,
+      "This location cannot be deleted while transactions use it.",
     );
   }
-  revalidatePath("/locations");
+  revalidatePath("/locations", "layout");
+  return null;
 };
 
 /**
- * Consolidates a source Location into a target Location.
+ * Moves every transaction from one location to another and removes the first, returning why it failed or null on
+ * success.
  */
-const consolidateLocation = async function (formData: FormData): Promise<void> {
-  const sourceId = getRequiredString(formData, "sourceId");
-  const targetLocationId = getRequiredString(formData, "targetLocationId");
+const mergeLocation = async function (
+  sourceLocationId: string,
+  targetLocationId: string,
+): Promise<string | null> {
   const client = await createApiClient();
-  const response = await client.POST(
+  const { error } = await client.POST(
     "/locations/{sourceLocationId}/consolidate",
     {
-      params: { path: { sourceLocationId: sourceId } },
+      params: { path: { sourceLocationId } },
       body: { targetLocationId },
     },
   );
-  if (response.error) {
-    throw new Error("Unable to consolidate Locations.");
+  if (error !== undefined) {
+    return describeFailure(error, "Unable to merge these locations.");
   }
-  revalidatePath("/locations");
+  revalidatePath("/locations", "layout");
+  return null;
 };
 
-export { renameLocation, deleteLocation, consolidateLocation };
+/**
+ * Gets every location, for choosing which one to merge into.
+ */
+const getLocationOptions = async function (): Promise<Location[]> {
+  const client = await createApiClient();
+  const { data } = await client.GET("/locations");
+  return data?.items ?? [];
+};
+
+export { deleteLocation, getLocationOptions, mergeLocation, renameLocation };

@@ -98,8 +98,6 @@ public sealed class TransactionConverter(
         AvailableAccountNames = range.AvailableAccountNames,
         AvailableFundNames = range.AvailableFundNames,
         TransactionTypes = range.TransactionTypes.Select(ToModel).ToList(),
-        LocationIncomingAmount = range.LocationCashFlow.Incoming,
-        LocationOutgoingAmount = range.LocationCashFlow.Outgoing,
         Offset = range.Offset,
         Limit = range.Limit,
     };
@@ -113,8 +111,6 @@ public sealed class TransactionConverter(
         AvailableAccountNames = range.AvailableAccountNames,
         AvailableFundNames = range.AvailableFundNames,
         TransactionTypes = range.TransactionTypes.Select(ToModel).ToList(),
-        LocationIncomingAmount = range.LocationCashFlow.Incoming,
-        LocationOutgoingAmount = range.LocationCashFlow.Outgoing,
         Offset = range.Offset,
         Limit = range.Limit,
     };

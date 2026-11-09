@@ -11,6 +11,16 @@ type Location = components["schemas"]["LocationModel"];
 type LocationInput = components["schemas"]["LocationInputModel"];
 
 /**
+ * Type representing a location's activity over a range.
+ */
+type LocationRangeSummary = components["schemas"]["LocationRangeSummaryModel"];
+
+/**
+ * Type representing one location's activity over a range, by month, and how it was paid for.
+ */
+type LocationDetailRange = components["schemas"]["LocationDetailRangeModel"];
+
+/**
  * A draft of a Location being entered in a form.
  */
 interface LocationDraft {
@@ -40,4 +50,11 @@ const toLocationInput = function (
       : { locationId: location.id };
 };
 
-export { type Location, type LocationDraft, toLocationDraft, toLocationInput };
+export {
+  type Location,
+  type LocationDetailRange,
+  type LocationDraft,
+  type LocationRangeSummary,
+  toLocationDraft,
+  toLocationInput,
+};

@@ -1210,6 +1210,252 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/locations/date-range": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves the Locations' activity over a date range, most spent first by default. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    /** @description Text that Location names must contain. */
+                    NameSearch?: string;
+                    /** @description Order of the Locations. Defaults to most spent first. */
+                    Sort?: components["schemas"]["LocationRangeSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LocationsInRangeModel"];
+                        "application/json": components["schemas"]["LocationsInRangeModel"];
+                        "text/json": components["schemas"]["LocationsInRangeModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/locations/accounting-period-range": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves the Locations' activity over an Accounting Period range, most spent first by default. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                    /** @description Text that Location names must contain. */
+                    NameSearch?: string;
+                    /** @description Order of the Locations. Defaults to most spent first. */
+                    Sort?: components["schemas"]["LocationRangeSortModel"];
+                    Limit?: number;
+                    Offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LocationsInRangeModel"];
+                        "application/json": components["schemas"]["LocationsInRangeModel"];
+                        "text/json": components["schemas"]["LocationsInRangeModel"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/locations/{locationId}/date-range": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves one Location's activity over a date range, by month, and how it was paid for. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                };
+                header?: never;
+                path: {
+                    locationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LocationDetailRangeModel"];
+                        "application/json": components["schemas"]["LocationDetailRangeModel"];
+                        "text/json": components["schemas"]["LocationDetailRangeModel"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/locations/{locationId}/accounting-period-range": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrieves one Location's activity over an Accounting Period range, by period, and how it was paid for. */
+        get: {
+            parameters: {
+                query?: {
+                    "Range.Start"?: string;
+                    "Range.End"?: string;
+                };
+                header?: never;
+                path: {
+                    locationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LocationDetailRangeModel"];
+                        "application/json": components["schemas"]["LocationDetailRangeModel"];
+                        "text/json": components["schemas"]["LocationDetailRangeModel"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ValidationProblemDetails"];
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                        "text/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/locations/{locationId}": {
         parameters: {
             query?: never;
@@ -4192,6 +4438,16 @@ export interface components {
             totalCount: number;
         };
         /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
+        CollectionModelOfLocationRangeSummaryModel: {
+            /** @description The collection of items. */
+            items: components["schemas"]["LocationRangeSummaryModel"][];
+            /**
+             * Format: int32
+             * @description The total count of items in the collection, which may be greater than the number of items in the Items property if pagination is being used.
+             */
+            totalCount: number;
+        };
+        /** @description Model used to represent a collection of items, along with the total count of items in the collection. */
         CollectionModelOfstring: {
             /** @description The collection of items. */
             items: string[];
@@ -5203,6 +5459,17 @@ export interface components {
             /** @description Income deductions for the source. */
             incomeDeductions: components["schemas"]["IncomeDeductionModel"][];
         };
+        /** @description One Location's activity over a range, by month, and how it was paid for. */
+        LocationDetailRangeModel: {
+            /** @description The Location's totals over the range. */
+            summary: components["schemas"]["LocationRangeSummaryModel"];
+            /** @description The Location's activity in each month of the range. */
+            months: components["schemas"]["LocationMonthModel"][];
+            /** @description Accounts the Location was paid from, most first. */
+            accounts: components["schemas"]["LocationPaymentShareModel"][];
+            /** @description Funds the Location was paid with, most first. */
+            funds: components["schemas"]["LocationPaymentShareModel"][];
+        };
         /** @description Selects an existing Location or explicitly requests a new one. */
         LocationInputModel: {
             /**
@@ -5222,6 +5489,101 @@ export interface components {
             id: string;
             /** @description Canonical Location name. */
             name: string;
+        };
+        /** @description A Location's activity in one month. */
+        LocationMonthModel: {
+            /**
+             * Format: int32
+             * @description Year of the month.
+             */
+            year: number;
+            /**
+             * Format: int32
+             * @description Month of the year, from 1.
+             */
+            month: number;
+            /**
+             * Format: double
+             * @description Money paid to the Location in the month.
+             */
+            spent: number;
+            /**
+             * Format: double
+             * @description Money received from the Location in the month.
+             */
+            received: number;
+        };
+        /** @description An amount paid to a Location from one Account or Fund. */
+        LocationPaymentShareModel: {
+            /**
+             * Format: uuid
+             * @description ID of the Account or Fund.
+             */
+            id: string;
+            /** @description Name of the Account or Fund. */
+            name: string;
+            /**
+             * Format: double
+             * @description Amount paid.
+             */
+            amount: number;
+        };
+        /** @enum {unknown} */
+        LocationRangeSortModel: LocationRangeSortModel | null;
+        /** @description A Location's activity over a range. */
+        LocationRangeSummaryModel: {
+            /**
+             * Format: uuid
+             * @description ID of the Location.
+             */
+            id: string;
+            /** @description Name of the Location. */
+            name: string;
+            /**
+             * Format: double
+             * @description Money paid to the Location in the range.
+             */
+            spent: number;
+            /**
+             * Format: double
+             * @description Money received from the Location in the range.
+             */
+            received: number;
+            /**
+             * Format: int32
+             * @description Number of transaction lines with the Location in the range.
+             */
+            transactionCount: number;
+            /**
+             * Format: date
+             * @description Date of the latest transaction with the Location in the range.
+             */
+            lastActivity?: null | string;
+        };
+        /** @description The Locations over a range, and totals across all of them. */
+        LocationsInRangeModel: {
+            /** @description The requested page of Locations. */
+            locations: components["schemas"]["CollectionModelOfLocationRangeSummaryModel"];
+            /**
+             * Format: double
+             * @description Money paid to all matching Locations in the range.
+             */
+            totalSpent: number;
+            /**
+             * Format: double
+             * @description Money received from all matching Locations in the range.
+             */
+            totalReceived: number;
+            /**
+             * Format: int32
+             * @description Number of matching Locations with any activity in the range.
+             */
+            activeLocationCount: number;
+            /**
+             * Format: double
+             * @description Money paid to the five Locations with the most spending.
+             */
+            topFiveSpent: number;
         };
         /** @enum {unknown} */
         LocationSortModel: LocationSortModel | null;
@@ -5825,16 +6187,6 @@ export interface components {
             /** @description Summary counts and amounts for each Transaction Type in the current Accounting Period. */
             transactionTypes: components["schemas"]["TransactionSummaryByTypeModel"][];
             /**
-             * Format: double
-             * @description Money received by the selected Locations in the current Accounting Period range.
-             */
-            locationIncomingAmount: number;
-            /**
-             * Format: double
-             * @description Money sent to the selected Locations in the current Accounting Period range.
-             */
-            locationOutgoingAmount: number;
-            /**
              * Format: int32
              * @description Maximum number of results to return
              */
@@ -5855,16 +6207,6 @@ export interface components {
             availableFundNames: string[];
             /** @description Summary counts and amounts for each Transaction Type in the current date range. */
             transactionTypes: components["schemas"]["TransactionSummaryByTypeModel"][];
-            /**
-             * Format: double
-             * @description Money received by the selected Locations in the current date range.
-             */
-            locationIncomingAmount: number;
-            /**
-             * Format: double
-             * @description Money sent to the selected Locations in the current date range.
-             */
-            locationOutgoingAmount: number;
             /**
              * Format: int32
              * @description Maximum number of results to return
@@ -6314,6 +6656,18 @@ export enum FundWithBalanceSortModel {
     DescriptionDescending = "DescriptionDescending",
     PostedBalance = "PostedBalance",
     PostedBalanceDescending = "PostedBalanceDescending"
+}
+export enum LocationRangeSortModel {
+    Name = "Name",
+    NameDescending = "NameDescending",
+    Spent = "Spent",
+    SpentDescending = "SpentDescending",
+    Received = "Received",
+    ReceivedDescending = "ReceivedDescending",
+    TransactionCount = "TransactionCount",
+    TransactionCountDescending = "TransactionCountDescending",
+    LastActivity = "LastActivity",
+    LastActivityDescending = "LastActivityDescending"
 }
 export enum LocationSortModel {
     Name = "Name",

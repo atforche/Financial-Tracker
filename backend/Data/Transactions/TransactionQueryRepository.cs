@@ -49,7 +49,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
         {
             filtered = filtered.Where(transaction => transaction.Date <= end);
         }
-        return await GetRangeFactsAsync(filtered, query.Filter.LocationIds, query.Sort, query.Offset, query.Limit, cancellationToken);
+        return await GetRangeFactsAsync(filtered, query.Sort, query.Offset, query.Limit, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -62,7 +62,6 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
             .Where(transaction => accountingPeriodIds.Contains(transaction.AccountingPeriodId));
         TransactionDateRangeFacts facts = await GetRangeFactsAsync(
             filtered,
-            query.Filter.LocationIds,
             query.Sort,
             query.Offset,
             query.Limit,
@@ -71,8 +70,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
             facts.QueryFacts,
             facts.AvailableAccountNames,
             facts.AvailableFundNames,
-            facts.TransactionTypes,
-            facts.LocationCashFlow);
+            facts.TransactionTypes);
     }
 
     /// <summary>
@@ -80,7 +78,6 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
     /// </summary>
     private async Task<TransactionDateRangeFacts> GetRangeFactsAsync(
         IQueryable<Transaction> filtered,
-        IReadOnlyCollection<Guid> locationIds,
         TransactionSort sort,
         int offset,
         int? limit,
@@ -106,61 +103,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
             offset,
             limit,
             cancellationToken);
-        LocationCashFlow locationCashFlow = await GetLocationCashFlowAsync(filtered, locationIds, cancellationToken);
-        return new TransactionDateRangeFacts(queryFacts, accountNames, fundNames, summaries, locationCashFlow);
-    }
-
-    /// <summary>
-    /// Calculates directional flow for the selected Location endpoints across the full range.
-    /// </summary>
-    private static async Task<LocationCashFlow> GetLocationCashFlowAsync(
-        IQueryable<Transaction> filtered,
-        IReadOnlyCollection<Guid> locationIds,
-        CancellationToken cancellationToken)
-    {
-        if (locationIds.Count == 0)
-        {
-            return new LocationCashFlow(0, 0);
-        }
-        var selectedIds = locationIds.ToHashSet();
-        IReadOnlyCollection<Transaction> transactions = await filtered.AsSplitQuery().ToListAsync(cancellationToken);
-        decimal incoming = 0;
-        decimal outgoing = 0;
-        foreach (Transaction transaction in transactions)
-        {
-            switch (transaction)
-            {
-                case IncomeTransaction income when income.Source.Location != null
-                    && selectedIds.Contains(income.Source.Location.Id.Value):
-                    incoming += income.Amount;
-                    break;
-                case SpendingTransaction spending:
-                    decimal spendingAmount = spending.Destinations
-                        .Where(destination => destination.Location != null
-                            && selectedIds.Contains(destination.Location.Id.Value))
-                        .Sum(destination => destination.Amount);
-                    outgoing += spendingAmount;
-                    break;
-                case RefundTransaction refund:
-                    incoming += refund.Sources.Where(source => source.Location != null && selectedIds.Contains(source.Location.Id.Value)).Sum(source => source.Amount);
-                    break;
-                case AccountTransaction account:
-                    if (account.Source.Location != null
-                        && selectedIds.Contains(account.Source.Location.Id.Value))
-                    {
-                        incoming += account.Amount;
-                    }
-                    decimal accountAmount = account.Destinations
-                        .Where(destination => destination.Location != null
-                            && selectedIds.Contains(destination.Location.Id.Value))
-                        .Sum(destination => destination.Amount);
-                    outgoing += accountAmount;
-                    break;
-                default:
-                    break;
-            }
-        }
-        return new LocationCashFlow(incoming, outgoing);
+        return new TransactionDateRangeFacts(queryFacts, accountNames, fundNames, summaries);
     }
 
     /// <summary>
