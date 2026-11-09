@@ -60,7 +60,7 @@ const InstitutionSection = function ({
       sx={{ borderRadius: 3, "&::before": { display: "none" } }}
     >
       <AccordionSummary expandIcon={<ExpandMore />}>
-        <Typography variant="subtitle1" component="h2" sx={{ flexGrow: 1 }}>
+        <Typography variant="subtitle1" component="span" sx={{ flexGrow: 1 }}>
           {institution}
         </Typography>
         <Typography
