@@ -1,13 +1,13 @@
 "use client";
 
-import { Button, Stack } from "@mui/material";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import type { AccountingPeriodTrendsSearchParams } from "@/accounting-periods/trends/AccountingPeriodTrends";
+import { Button } from "@mui/material";
 import type { JSX } from "react";
 import Link from "next/link";
-import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import type { Route } from "next";
+import WorkspaceHeader from "@/framework/view/WorkspaceHeader";
 import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import propertyName from "@/framework/data/propertyName";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -87,23 +87,14 @@ const AccountingPeriodTrendsFilter = function ({
   };
 
   return (
-    <PageFilterFrame
+    <WorkspaceHeader
       title="Accounting Period Trends"
-      actions={
-        <Stack direction="row" spacing={1}>
-          {transactionsHref === null ? null : (
-            <Button component={Link} href={transactionsHref} variant="outlined">
-              View transactions
-            </Button>
-          )}
-          <Button
-            variant="outlined"
-            onClick={clearView}
-            disabled={!hasActiveView}
-          >
-            Reset filters
+      action={
+        transactionsHref === null ? null : (
+          <Button component={Link} href={transactionsHref} variant="outlined">
+            View transactions
           </Button>
-        </Stack>
+        )
       }
     >
       <AccountingPeriodRangeFilter
@@ -113,7 +104,10 @@ const AccountingPeriodTrendsFilter = function ({
         onChange={handleAccountingPeriodRangeChange}
         disabled={disabled}
       />
-    </PageFilterFrame>
+      <Button onClick={clearView} disabled={!hasActiveView}>
+        Reset Filters
+      </Button>
+    </WorkspaceHeader>
   );
 };
 
