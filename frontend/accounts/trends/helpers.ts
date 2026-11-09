@@ -1,14 +1,8 @@
 import type {
-  AccountBalanceEventSort,
-  AccountBalanceSummary,
-  AccountBalanceSummaryByDate,
-  AccountBalanceSummaryByPeriod,
   AccountType,
-  AccountTypeBalance,
   AccountWithBalanceRangeSort,
 } from "@/accounts/types";
 import type { TrendRangeMode } from "@/framework/routes/trendRange";
-import { formatShortDate } from "@/framework/dateHelpers";
 
 /**
  * Search parameters supported by the account trends page.
@@ -17,8 +11,6 @@ interface AccountTrendsSearchParams {
   sort?: AccountWithBalanceRangeSort;
   page?: number | string | null;
   pageSize?: number | string | null;
-  balanceEventSort?: AccountBalanceEventSort;
-  balanceEventPage?: number | string | null;
   mode?: TrendRangeMode;
   accountType?: AccountType | readonly AccountType[];
   accountName?: string | readonly string[];
@@ -30,107 +22,12 @@ interface AccountTrendsSearchParams {
 }
 
 /**
- * Mode for the account trends data, either by accounting period or by date.
- */
-type AccountTrendsDataMode = "AccountingPeriod" | "Date";
-
-/**
- * Snapshot of account balances and changes for the selected trends range.
- */
-interface AccountTrendsSnapshot {
-  readonly startLabel: string;
-  readonly endLabel: string;
-  readonly totalStartingBalance: number;
-  readonly totalEndingBalance: number;
-  readonly trackedStartingBalance: number;
-  readonly trackedEndingBalance: number;
-  readonly untrackedStartingBalance: number;
-  readonly untrackedEndingBalance: number;
-  readonly startingBalancesByType: readonly AccountTypeBalance[];
-  readonly endingBalancesByType: readonly AccountTypeBalance[];
-  readonly startingBalance: AccountBalanceSummary;
-  readonly endingBalance: AccountBalanceSummary;
-}
-
-/**
- * Builds the summary snapshot for the selected account trends range.
- */
-const getAccountTrendsSnapshot = function (
-  mode: AccountTrendsDataMode,
-  accountingPeriods: readonly AccountBalanceSummaryByPeriod[],
-  dates: readonly AccountBalanceSummaryByDate[],
-  openingBalance: AccountBalanceSummary | null,
-  startDate: string | null,
-): AccountTrendsSnapshot {
-  if (mode === "AccountingPeriod") {
-    const firstPeriod = accountingPeriods.at(0);
-    const lastPeriod = accountingPeriods.at(-1);
-    if (
-      typeof firstPeriod !== "undefined" &&
-      typeof lastPeriod !== "undefined"
-    ) {
-      return {
-        startLabel: firstPeriod.accountingPeriod.name,
-        endLabel: lastPeriod.accountingPeriod.name,
-        totalStartingBalance: firstPeriod.openingBalance.totalBalance,
-        totalEndingBalance: lastPeriod.closingBalance.totalBalance,
-        trackedStartingBalance: firstPeriod.openingBalance.totalTrackedBalance,
-        trackedEndingBalance: lastPeriod.closingBalance.totalTrackedBalance,
-        untrackedStartingBalance:
-          firstPeriod.openingBalance.totalUntrackedBalance,
-        untrackedEndingBalance: lastPeriod.closingBalance.totalUntrackedBalance,
-        startingBalancesByType: firstPeriod.openingBalance.balanceByAccountType,
-        endingBalancesByType: lastPeriod.closingBalance.balanceByAccountType,
-        startingBalance: firstPeriod.openingBalance,
-        endingBalance: lastPeriod.closingBalance,
-      };
-    }
-  }
-
-  const firstDate = dates.at(0);
-  const lastDate = dates.at(-1);
-  const startLabelDate = startDate ?? firstDate?.date;
-  const startingBalance: AccountBalanceSummary = openingBalance ?? {
-    totalBalance: firstDate?.totalBalance ?? 0,
-    totalTrackedBalance: firstDate?.totalTrackedBalance ?? 0,
-    totalUntrackedBalance: firstDate?.totalUntrackedBalance ?? 0,
-    balanceByAccountType: firstDate?.balanceByAccountType ?? [],
-  };
-  return {
-    startLabel:
-      typeof startLabelDate === "undefined"
-        ? "Start"
-        : formatShortDate(new Date(`${startLabelDate}T00:00:00`)),
-    endLabel: lastDate
-      ? formatShortDate(new Date(`${lastDate.date}T00:00:00`))
-      : "End",
-    totalStartingBalance: startingBalance.totalBalance,
-    totalEndingBalance: lastDate?.totalBalance ?? 0,
-    trackedStartingBalance: startingBalance.totalTrackedBalance,
-    trackedEndingBalance: lastDate?.totalTrackedBalance ?? 0,
-    untrackedStartingBalance: startingBalance.totalUntrackedBalance,
-    untrackedEndingBalance: lastDate?.totalUntrackedBalance ?? 0,
-    startingBalancesByType: startingBalance.balanceByAccountType,
-    endingBalancesByType: lastDate?.balanceByAccountType ?? [],
-    startingBalance,
-    endingBalance: {
-      totalBalance: lastDate?.totalBalance ?? 0,
-      totalTrackedBalance: lastDate?.totalTrackedBalance ?? 0,
-      totalUntrackedBalance: lastDate?.totalUntrackedBalance ?? 0,
-      balanceByAccountType: lastDate?.balanceByAccountType ?? [],
-    },
-  };
-};
-
-/**
  * Parameter names used by the account trends page.
  */
 const accountTrendsParamNames = {
   sort: "sort",
   page: "page",
   pageSize: "pageSize",
-  balanceEventSort: "balanceEventSort",
-  balanceEventPage: "balanceEventPage",
   mode: "mode",
   accountType: "accountType",
   accountName: "accountName",
@@ -162,16 +59,11 @@ const hasActiveAccountTrendsFilters = function (
 };
 
 /**
- * Removes account filters and resets both filtered result lists.
+ * Removes account filters and returns to the first page.
  */
 const clearAccountTrendsFilters = function (params: URLSearchParams): void {
   const names = accountTrendsParamNames;
-  [
-    names.accountType,
-    names.accountName,
-    names.page,
-    names.balanceEventPage,
-  ].forEach((name) => {
+  [names.accountType, names.accountName, names.page].forEach((name) => {
     params.delete(name);
   });
 };
@@ -179,7 +71,6 @@ const clearAccountTrendsFilters = function (params: URLSearchParams): void {
 export {
   accountTrendsParamNames,
   clearAccountTrendsFilters,
-  getAccountTrendsSnapshot,
   hasActiveAccountTrendsFilters,
 };
-export type { AccountTrendsDataMode, AccountTrendsSearchParams };
+export type { AccountTrendsSearchParams };

@@ -1,21 +1,17 @@
-import {
-  type AccountTrendsDataMode,
-  type AccountTrendsSearchParams,
-  getAccountTrendsSnapshot,
-} from "@/accounts/trends/helpers";
 import type {
   AccountsInAccountingPeriodRange,
   AccountsInDateRange,
 } from "@/accounts/types";
 import {
+  getAccountingPeriodIdsInRange,
+  matchesTrendRange,
+  resolveTrendRange,
+} from "@/framework/routes/trendRange";
+import {
   getPageOffset,
   getRowsPerPage,
   normalizePageValue,
 } from "@/framework/listframe/page";
-import {
-  matchesTrendRange,
-  resolveTrendRange,
-} from "@/framework/routes/trendRange";
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
@@ -24,20 +20,17 @@ import {
   normalizeRequestedAccountNames,
   shouldPersistAccountNames,
 } from "@/accounts/accountNameFilterHelpers";
-import AccountBalanceSummaryCards from "@/accounts/AccountBalanceSummaryCards";
 import AccountTrendsFilter from "@/accounts/trends/AccountTrendsFilter";
 import AccountTrendsListFrame from "@/accounts/trends/AccountTrendsListFrame";
+import type { AccountTrendsSearchParams } from "@/accounts/trends/helpers";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
-import { BalanceGranularityModel } from "@/framework/data/api";
-import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
-import BalanceTrendsChangeChart from "@/framework/charts/BalanceTrendsChangeChart";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
+import BalanceStatCards from "@/accounts/BalanceStatCards";
+import BalanceTrendCharts from "@/framework/charts/BalanceTrendCharts";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import ReturnLink from "@/framework/view/ReturnLink";
-import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
+import getTrendSnapshot from "@/framework/charts/getTrendSnapshot";
+import { periodTab } from "@/balance-events/resolveEntityHistory";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
@@ -144,28 +137,6 @@ const AccountTrends = async function ({
       "Failed to load account trends",
     );
   })();
-  const modeValue: AccountTrendsDataMode =
-    currentMode === "date" ? "Date" : "AccountingPeriod";
-  const periodSummaries =
-    "accountingPeriods" in trends ? trends.accountingPeriods : [];
-  const dateSummaries = "dates" in trends ? trends.dates : [];
-  const openingBalance = "dates" in trends ? trends.openingBalance : null;
-  const granularity =
-    "dates" in trends ? trends.granularity : BalanceGranularityModel.Day;
-  const chartPeriods = periodSummaries.map((summary) => ({
-    accountingPeriodId: summary.accountingPeriod.id,
-    accountingPeriodName: summary.accountingPeriod.name,
-    year: summary.accountingPeriod.year,
-    month: summary.accountingPeriod.month,
-    totalOpeningBalance: summary.openingBalance.totalBalance,
-    totalClosingBalance: summary.closingBalance.totalBalance,
-  }));
-  const balanceTrendChartPoints = buildBalanceTrendChartPoints({
-    mode: modeValue,
-    accountingPeriods: chartPeriods,
-    dates: dateSummaries,
-    granularity,
-  });
   const currentRange =
     range.mode === "date"
       ? { startDate: range.startDate, endDate: range.endDate }
@@ -173,32 +144,21 @@ const AccountTrends = async function ({
           startAccountingPeriodId: range.startAccountingPeriodId,
           endAccountingPeriodId: range.endAccountingPeriodId,
         };
+  const trendsUrl = routes.trends({
+    returnUrl,
+    mode: currentMode,
+    ...persistedFilters,
+    ...currentRange,
+  });
   const transactionWorkspaceHref = transactionRoutes.workspace({
-    ...(currentMode === "date"
+    ...(range.mode === "date"
       ? currentRange
       : {
-          accountingPeriodIds: accountingPeriods.items
-            .slice(
-              Math.min(
-                accountingPeriods.items.findIndex(
-                  (period) =>
-                    period.id === currentRange.startAccountingPeriodId,
-                ),
-                accountingPeriods.items.findIndex(
-                  (period) => period.id === currentRange.endAccountingPeriodId,
-                ),
-              ),
-              Math.max(
-                accountingPeriods.items.findIndex(
-                  (period) =>
-                    period.id === currentRange.startAccountingPeriodId,
-                ),
-                accountingPeriods.items.findIndex(
-                  (period) => period.id === currentRange.endAccountingPeriodId,
-                ),
-              ) + 1,
-            )
-            .map((period) => period.id),
+          accountingPeriodIds: getAccountingPeriodIdsInRange(
+            accountingPeriods.items,
+            range.startAccountingPeriodId,
+            range.endAccountingPeriodId,
+          ),
         }),
     ...(shouldPersistAccountTypes(currentAccountTypes)
       ? { accountTypes: currentAccountTypes }
@@ -206,50 +166,42 @@ const AccountTrends = async function ({
     ...(shouldPersistAccountNames(currentAccountNames)
       ? { accountNames: currentAccountNames }
       : {}),
-    returnUrl: routes.trends({
-      returnUrl,
-      mode: currentMode,
-      ...persistedFilters,
-      ...currentRange,
-    }),
+    returnUrl: trendsUrl,
   });
-  const snapshot = getAccountTrendsSnapshot(
-    modeValue,
-    periodSummaries,
-    dateSummaries,
-    openingBalance,
+
+  const snapshot = getTrendSnapshot(
+    "accountingPeriods" in trends ? trends.accountingPeriods : [],
+    "dates" in trends ? trends.dates : [],
+    "dates" in trends ? (trends.openingBalance ?? null) : null,
     range.mode === "date" ? range.startDate : null,
+    {
+      totalBalance: 0,
+      totalTrackedBalance: 0,
+      totalUntrackedBalance: 0,
+      balanceByAccountType: [],
+    },
   );
 
   return (
     <PageLayout>
-      <ReturnLink returnUrl={returnUrl} />
-      <ConstrainedContent>
-        <AccountTrendsFilter
-          accountingPeriods={accountingPeriods.items}
-          availableAccountNames={trends.availableAccountNames}
-        />
-      </ConstrainedContent>
-      <AccountBalanceSummaryCards
-        startingLabel={snapshot.startLabel}
-        endingLabel={snapshot.endLabel}
-        startingBalance={snapshot.startingBalance}
-        endingBalance={snapshot.endingBalance}
+      <AccountTrendsFilter
+        accountingPeriods={accountingPeriods.items}
+        availableAccountNames={trends.availableAccountNames}
+        returnUrl={returnUrl}
       />
-      <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
-        <BalanceTrendChart
-          chartPoints={balanceTrendChartPoints}
-          xAxisLabel={modeValue === "Date" ? "Date" : "Accounting Period"}
-        />
-        <BalanceTrendsChangeChart
-          mode={modeValue}
-          accountingPeriods={periodSummaries}
-          dates={dateSummaries}
-          openingBalance={openingBalance?.totalBalance ?? null}
-          granularity={granularity}
-        />
-      </ResponsiveGrid>
+      <BalanceStatCards
+        openingBalance={snapshot.startingBalance}
+        closingBalance={snapshot.endingBalance}
+        totalLabel="Total balance"
+        changeDescription={`since ${snapshot.startLabel}`}
+      />
+      <BalanceTrendCharts trends={trends} />
       <AccountTrendsListFrame
+        detailParams={{
+          ...currentRange,
+          ...(range.mode === "date" ? {} : { tab: periodTab }),
+          returnUrl: trendsUrl,
+        }}
         data={trends.accounts.items}
         isInOnboardingMode={isInOnboardingMode}
         totalCount={trends.accounts.totalCount}

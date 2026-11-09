@@ -1,5 +1,4 @@
 import { type AccountBalanceEventDraft, AccountType } from "@/accounts/types";
-import { compareCurrencyAmounts } from "@/framework/currencyHelpers";
 
 /**
  * Determines if the provided account type supports tracked fund assignments.
@@ -41,19 +40,6 @@ const isDebtAccountType = function (accountType: AccountType): boolean {
 };
 
 /**
- * Determines if the provided change in balance is "positive" based on the provided account type.
- */
-const isPositiveChangeInBalance = function (
-  accountType: AccountType,
-  changeInBalance: number,
-): boolean {
-  if (isDebtAccountType(accountType)) {
-    return compareCurrencyAmounts(changeInBalance, 0) <= 0;
-  }
-  return compareCurrencyAmounts(changeInBalance, 0) >= 0;
-};
-
-/**
  * Formats the provided account type into a readable string.
  */
 const formatAccountType = function (accountType: AccountType): string {
@@ -79,6 +65,5 @@ export {
   isDebtAccountType,
   isTrackedAccount,
   isTrackedAccountType,
-  isPositiveChangeInBalance,
   formatAccountType,
 };

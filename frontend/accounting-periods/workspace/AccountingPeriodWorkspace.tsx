@@ -5,10 +5,10 @@ import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/works
 import AccountingPeriodWorkspaceActions from "@/accounting-periods/workspace/AccountingPeriodWorkspaceActions";
 import AccountingPeriodYearSelector from "@/accounting-periods/workspace/AccountingPeriodYearSelector";
 import CardResponsiveGrid from "@/framework/view/CardResponsiveGrid";
-import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import ReturnLink from "@/framework/view/ReturnLink";
+import WorkspaceEmptyState from "@/framework/view/WorkspaceEmptyState";
 import createApiClient from "@/framework/data/createApiClient";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
@@ -89,16 +89,10 @@ const AccountingPeriodWorkspace = async function ({
         </Stack>
       </Stack>
       {selectedYear === undefined ? (
-        <ContentSurface>
-          <Stack spacing={0.5}>
-            <Typography variant="subtitle2">
-              No accounting periods yet
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Create the first accounting period to start tracking.
-            </Typography>
-          </Stack>
-        </ContentSurface>
+        <WorkspaceEmptyState
+          title="No accounting periods yet"
+          message="Create the first accounting period to start tracking."
+        />
       ) : (
         <Stack spacing={2}>
           {years.length > 1 ? (

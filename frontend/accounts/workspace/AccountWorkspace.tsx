@@ -30,69 +30,74 @@ const AccountWorkspace = async function ({
   const currentAccountTypes = normalizeAccountTypes(
     toRepeatedSearchParams(accountType),
   );
+  const hasAccountTypeFilter = shouldPersistAccountTypes(currentAccountTypes);
 
-  const openAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
-    params: { query: { "Filter.IsOpen": true } },
-  });
-  const accountsPromise = apiClient.GET("/accounts/with-balances", {
-    params: {
-      query: {
-        "Filter.NameSearch": search ?? "",
-        ...(shouldPersistAccountTypes(currentAccountTypes)
-          ? { "Filter.Types": [...currentAccountTypes] }
-          : {}),
-      },
-    },
-  });
-  const financialInstitutionsPromise = apiClient.GET(
-    "/accounts/financial-institutions",
-  );
-
+  // Only the dialogs need the open periods and financial institutions
   const [
-    openAccountingPeriodsResponse,
+    boundsResponse,
     accountsResponse,
+    openAccountingPeriodsResponse,
     financialInstitutionsResponse,
   ] = await Promise.all([
-    openAccountingPeriodsPromise,
-    accountsPromise,
-    financialInstitutionsPromise,
+    apiClient.GET("/accounting-periods/bounds"),
+    apiClient.GET("/accounts/with-balances", {
+      params: {
+        query: {
+          "Filter.NameSearch": search ?? "",
+          ...(hasAccountTypeFilter
+            ? { "Filter.Types": [...currentAccountTypes] }
+            : {}),
+        },
+      },
+    }),
+    action === "create"
+      ? apiClient.GET("/accounting-periods", {
+          params: { query: { "Filter.IsOpen": true } },
+        })
+      : null,
+    action === undefined
+      ? null
+      : apiClient.GET("/accounts/financial-institutions"),
   ]);
-  const openAccountingPeriods = unwrapApiResponse(
-    openAccountingPeriodsResponse,
-    "Failed to fetch accounting periods",
-  ).items;
+  const isInOnboardingMode =
+    unwrapApiResponse(
+      boundsResponse,
+      "Failed to fetch the accounting period bounds",
+    ).latest === null;
   const accounts = unwrapApiResponse(
     accountsResponse,
     "Failed to fetch accounts",
-  );
-  const financialInstitutions = unwrapApiResponse(
-    financialInstitutionsResponse,
-    "Failed to fetch financial institutions",
-  );
-
-  const filteredAccounts = shouldPersistAccountTypes(currentAccountTypes)
-    ? accounts.items.filter((account) =>
-        currentAccountTypes.includes(account.type),
-      )
-    : accounts.items;
-  // Only without an open period can there be no periods at all, so only then is the extra request needed
-  const isInOnboardingMode =
-    openAccountingPeriods.length === 0 &&
-    unwrapApiResponse(
-      await apiClient.GET("/accounting-periods/bounds"),
-      "Failed to fetch the accounting period bounds",
-    ).latest === null;
+  ).items;
+  const openAccountingPeriods =
+    openAccountingPeriodsResponse === null
+      ? []
+      : unwrapApiResponse(
+          openAccountingPeriodsResponse,
+          "Failed to fetch accounting periods",
+        ).items;
+  const financialInstitutions =
+    financialInstitutionsResponse === null
+      ? []
+      : unwrapApiResponse(
+          financialInstitutionsResponse,
+          "Failed to fetch financial institutions",
+        ).items;
 
   return (
     <PageLayout>
       <AccountWorkspaceFilter isInOnboardingMode={isInOnboardingMode} />
       <AccountWorkspaceCards
-        data={filteredAccounts}
+        data={accounts}
+        filters={{
+          ...(search === undefined ? {} : { search }),
+          ...(hasAccountTypeFilter ? { accountType: currentAccountTypes } : {}),
+        }}
+        hasActiveFilters={(search ?? "").trim() !== "" || hasAccountTypeFilter}
         isInOnboardingMode={isInOnboardingMode}
       />
       <AccountWorkspaceActions
         accountingPeriods={openAccountingPeriods}
-        financialInstitutions={financialInstitutions.items}
+        financialInstitutions={financialInstitutions}
         isInOnboardingMode={isInOnboardingMode}
         requestedAction={action ?? null}
       />

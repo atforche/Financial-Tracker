@@ -6,9 +6,7 @@ import { Box } from "@mui/material";
  */
 interface CardResponsiveGridProps {
   readonly children: ReactNode;
-  readonly contentSized?: boolean;
   readonly minimumColumnWidth: number;
-  readonly wrap?: boolean;
   readonly spacing?: number;
 }
 
@@ -17,37 +15,21 @@ interface CardResponsiveGridProps {
  */
 const CardResponsiveGrid = function ({
   children,
-  contentSized = false,
   minimumColumnWidth,
-  wrap = false,
   spacing = 3,
 }: CardResponsiveGridProps): JSX.Element {
   return (
     <Box
       sx={{
-        display: wrap ? "flex" : "grid",
-        flexWrap: wrap ? "wrap" : undefined,
+        display: "grid",
         gap: spacing,
-        width: contentSized ? { xs: "100%", sm: "max-content" } : undefined,
-        maxWidth: contentSized && wrap ? "100%" : undefined,
         justifyContent: "start",
         justifyItems: "stretch",
         alignItems: "start",
-        gridTemplateColumns: wrap
-          ? undefined
-          : {
-              xs: "minmax(0, 1fr)",
-              sm: `repeat(auto-fit, minmax(${minimumColumnWidth}px, max-content))`,
-            },
-        "& > *": wrap
-          ? {
-              flex: contentSized
-                ? "0 0 max-content"
-                : `0 0 ${minimumColumnWidth}px`,
-              minWidth: { xs: 0, sm: minimumColumnWidth },
-              maxWidth: "100%",
-            }
-          : undefined,
+        gridTemplateColumns: {
+          xs: "minmax(0, 1fr)",
+          sm: `repeat(auto-fit, minmax(${minimumColumnWidth}px, max-content))`,
+        },
         "& .MuiTypography-root": {
           whiteSpace: { xs: "normal", sm: "nowrap" },
         },

@@ -1,6 +1,5 @@
 "use client";
 
-import { Button, Stack } from "@mui/material";
 import {
   accountWorkspaceParamNames,
   clearAccountWorkspaceFilters,
@@ -9,9 +8,10 @@ import {
 import type { AccountType } from "@/accounts/types";
 import AccountTypeFilter from "@/accounts/AccountTypeFilter";
 import type { AccountWorkspaceAction } from "@/accounts/workspace/types";
+import { Button } from "@mui/material";
 import type { JSX } from "react";
-import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import SearchBar from "@/framework/listframe/SearchBar";
+import WorkspaceHeader from "@/framework/view/WorkspaceHeader";
 import { shouldPersistAccountTypes } from "@/accounts/accountTypeFilterHelpers";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
@@ -25,7 +25,7 @@ interface AccountWorkspaceFilterProps {
 }
 
 /**
- * Renders the filter card for the Accounts workspace with header and search bar.
+ * Renders the Accounts workspace header with its filters and primary action.
  */
 const AccountWorkspaceFilter = function ({
   isInOnboardingMode,
@@ -74,28 +74,19 @@ const AccountWorkspaceFilter = function ({
   };
 
   return (
-    <PageFilterFrame
-      title="Accounts Workspace"
-      actions={
-        <Stack direction="row" spacing={1.5} useFlexGap flexWrap="wrap">
+    <WorkspaceHeader
+      title="Accounts"
+      action={
+        canWrite ? (
           <Button
-            variant="outlined"
-            onClick={clearView}
-            disabled={!filters.hasActiveFilters}
+            variant="contained"
+            onClick={() => {
+              setAction(isInOnboardingMode ? "onboard" : "create");
+            }}
           >
-            Reset Filters
+            {addActionLabel}
           </Button>
-          {!canWrite ? null : (
-            <Button
-              variant="contained"
-              onClick={() => {
-                setAction(isInOnboardingMode ? "onboard" : "create");
-              }}
-            >
-              {addActionLabel}
-            </Button>
-          )}
-        </Stack>
+        ) : null
       }
     >
       <AccountTypeFilter
@@ -103,7 +94,10 @@ const AccountWorkspaceFilter = function ({
         onChange={handleAccountTypeChange}
       />
       <SearchBar searchParamName={searchParamName} />
-    </PageFilterFrame>
+      <Button onClick={clearView} disabled={!filters.hasActiveFilters}>
+        Reset Filters
+      </Button>
+    </WorkspaceHeader>
   );
 };
 

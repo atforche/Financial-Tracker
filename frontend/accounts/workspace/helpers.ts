@@ -10,7 +10,6 @@ import {
 } from "@/accounting-periods/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
-import type { FrameColor } from "@/framework/view/Frame";
 
 /**
  * Gets the normalized date opened for creating an account.
@@ -82,11 +81,11 @@ const buildOnboardRequest = function (
 };
 
 /**
- * Gets the account card color to display for the account type.
+ * Gets the card color to display for the account type.
  */
 const getAccountCardColor = function (
-  accountType: AccountType | null,
-): FrameColor {
+  accountType: AccountType,
+): "primary" | "warning" | "error" {
   if (accountType === AccountType.CreditCard) {
     return "warning";
   }
@@ -94,8 +93,8 @@ const getAccountCardColor = function (
 };
 
 export {
-  getNormalizedDateOpened,
   buildCreateRequest,
   buildOnboardRequest,
   getAccountCardColor,
+  getNormalizedDateOpened,
 };

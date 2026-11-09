@@ -13,6 +13,7 @@ interface AccountWorkspaceSearchParams extends DetailViewParams {
   search?: string;
   accountType?: AccountType | readonly AccountType[];
   action?: AccountWorkspaceAction;
+  institution?: string;
 }
 
 export type { AccountWorkspaceAction, AccountWorkspaceSearchParams };
