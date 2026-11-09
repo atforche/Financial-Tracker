@@ -14,10 +14,10 @@ test("the browser creates a safe authenticated session and onboards an account",
   page,
 }) => {
   await signInAsLocalDeveloper(page);
-  const onboardAccountButton = page.getByRole("button", {
+  const onboardAccountLink = page.getByRole("link", {
     name: "Onboard Account",
   });
-  await expect(onboardAccountButton).toBeVisible();
+  await expect(onboardAccountLink).toBeVisible();
 
   const session: unknown = await page.evaluate(async () => {
     const response = await fetch("/api/auth/session");
@@ -30,16 +30,19 @@ test("the browser creates a safe authenticated session and onboards an account",
   expect(session).not.toBeNull();
   expect(session).not.toHaveProperty("idToken");
 
-  await onboardAccountButton.click();
+  await onboardAccountLink.click();
+  await expect(page).toHaveURL(/\/accounts\/workspace\/onboard$/u);
   await page.getByRole("textbox", { name: "Name" }).fill("E2E checking");
   await page.getByRole("combobox", { name: "Type" }).click();
   await page.getByRole("option", { name: "Standard" }).click();
   await page.getByRole("textbox", { name: "Starting Balance" }).fill("125.50");
-  await page
-    .getByRole("button", { name: "Onboard Account", exact: true })
-    .last()
-    .click();
+  await page.getByRole("button", { name: "Onboard Account" }).click();
 
+  // Institutions start collapsed; the open one is kept in the URL, so it stays open across a reload
+  await expect(page).toHaveURL(/\/accounts\/workspace$/u);
+  await page
+    .getByRole("button", { name: /^No Financial Institution/u })
+    .click();
   await expect(page.getByText("E2E checking", { exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByText("E2E checking", { exact: true })).toBeVisible();

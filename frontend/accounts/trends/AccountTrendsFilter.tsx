@@ -1,17 +1,9 @@
 "use client";
 
-import type {
-  AccountingPeriod,
-  AccountingPeriodRange,
-} from "@/accounting-periods/types";
 import {
-  type TrendRangeMode,
-  getDefaultTrendAccountingPeriodRange,
-  getDefaultTrendDateRange,
-  getTrendRangeModeOptions,
-  maximumTrendRangeYears,
-  setTrendRangeMode,
-} from "@/framework/routes/trendRange";
+  accountTrendsParamNames,
+  clearAccountTrendsFilters,
+} from "@/accounts/trends/helpers";
 import {
   normalizeAccountNames,
   shouldPersistAccountNames,
@@ -23,13 +15,9 @@ import {
 import AccountNameFilter from "@/accounts/AccountNameFilter";
 import type { AccountType } from "@/accounts/types";
 import AccountTypeFilter from "@/accounts/AccountTypeFilter";
-import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
-import { Button } from "@mui/material";
-import DateRangeFilter from "@/framework/forms/DateRangeFilter";
+import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
-import PageFilterFrame from "@/framework/view/PageFilterFrame";
-import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
-import { accountTrendsParamNames } from "@/accounts/trends/helpers";
+import TrendFilterHeader from "@/framework/view/TrendFilterHeader";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
 
@@ -39,80 +27,37 @@ import { useSearchParams } from "next/navigation";
 interface AccountTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly availableAccountNames: readonly string[];
+  readonly returnUrl: string | undefined;
 }
 
 /**
- * Renders the trends filter card for the Accounts view.
+ * Renders the header and filters for the account trends page.
  */
 const AccountTrendsFilter = function ({
   accountingPeriods,
   availableAccountNames,
+  returnUrl,
 }: AccountTrendsFilterProps): JSX.Element {
-  const defaultRange = getDefaultTrendAccountingPeriodRange(accountingPeriods);
-  const defaultStartAccountingPeriodId = defaultRange?.start ?? null;
-  const defaultEndAccountingPeriodId = defaultRange?.end ?? null;
-  const { start: defaultStartDate, end: defaultEndDate } =
-    getDefaultTrendDateRange();
   const searchParams = useSearchParams();
-
-  const {
-    page: pageParamName,
-    balanceEventPage: balanceEventPageParamName,
-    mode: modeParamName,
-    accountType: accountTypeParamName,
-    accountName: accountNameParamName,
-    startAccountingPeriodId: startAccountingPeriodIdParamName,
-    endAccountingPeriodId: endAccountingPeriodIdParamName,
-    startDate: startDateParamName,
-    endDate: endDateParamName,
-  } = accountTrendsParamNames;
-
-  const currentMode: TrendRangeMode =
-    searchParams.get(modeParamName) === "accounting-period"
-      ? "accounting-period"
-      : "date";
+  const { page, accountType, accountName } = accountTrendsParamNames;
   const currentAccountTypes = normalizeAccountTypes(
-    searchParams.getAll(accountTypeParamName),
+    searchParams.getAll(accountType),
   );
   const currentAccountNames = normalizeAccountNames(
-    searchParams.getAll(accountNameParamName),
+    searchParams.getAll(accountName),
     availableAccountNames,
   );
-  const currentStartAccountingPeriodId =
-    searchParams.get(startAccountingPeriodIdParamName) ??
-    defaultStartAccountingPeriodId ??
-    "";
-  const currentEndAccountingPeriodId =
-    searchParams.get(endAccountingPeriodIdParamName) ??
-    defaultEndAccountingPeriodId ??
-    "";
-  const currentStartDate =
-    searchParams.get(startDateParamName) ?? defaultStartDate;
-  const currentEndDate = searchParams.get(endDateParamName) ?? defaultEndDate;
-
-  const updateParams = useSearchParamUpdater([
-    pageParamName,
-    balanceEventPageParamName,
-  ]);
-
-  const hasActiveView =
-    currentMode !== "date" ||
-    shouldPersistAccountTypes(currentAccountTypes) ||
-    shouldPersistAccountNames(currentAccountNames) ||
-    currentStartAccountingPeriodId !== (defaultStartAccountingPeriodId ?? "") ||
-    currentEndAccountingPeriodId !== (defaultEndAccountingPeriodId ?? "") ||
-    currentStartDate !== defaultStartDate ||
-    currentEndDate !== defaultEndDate;
+  const updateParams = useSearchParamUpdater([page]);
 
   const handleAccountTypeChange = function (
     nextAccountTypes: readonly AccountType[],
   ): void {
     updateParams((params) => {
-      params.delete(accountTypeParamName);
-      params.delete(accountNameParamName);
+      params.delete(accountType);
+      params.delete(accountName);
       if (shouldPersistAccountTypes(nextAccountTypes)) {
-        nextAccountTypes.forEach((accountType) => {
-          params.append(accountTypeParamName, accountType);
+        nextAccountTypes.forEach((type) => {
+          params.append(accountType, type);
         });
       }
     });
@@ -122,77 +67,26 @@ const AccountTrendsFilter = function ({
     nextAccountNames: readonly string[],
   ): void {
     updateParams((params) => {
-      params.delete(accountNameParamName);
+      params.delete(accountName);
       if (shouldPersistAccountNames(nextAccountNames)) {
-        nextAccountNames.forEach((accountName) => {
-          params.append(accountNameParamName, accountName);
+        nextAccountNames.forEach((name) => {
+          params.append(accountName, name);
         });
       }
     });
   };
 
-  const handleModeChange = function (nextMode: TrendRangeMode): void {
-    updateParams((params) => {
-      setTrendRangeMode(params, nextMode, {
-        defaultStartAccountingPeriodId,
-        defaultEndAccountingPeriodId,
-        defaultStartDate,
-        defaultEndDate,
-      });
-    });
-  };
-
-  const handleAccountingPeriodRangeChange = function (
-    range: AccountingPeriodRange,
-  ): void {
-    updateParams((params) => {
-      params.set(startAccountingPeriodIdParamName, range.start);
-      params.set(endAccountingPeriodIdParamName, range.end);
-    });
-  };
-
-  const handleDateRangeChange = function (range: AccountingPeriodRange): void {
-    updateParams((params) => {
-      params.set(startDateParamName, range.start);
-      params.set(endDateParamName, range.end);
-    });
-  };
-
-  const clearView = function (): void {
-    updateParams((params) => {
-      params.delete(accountTypeParamName);
-      params.delete(accountNameParamName);
-      params.set(modeParamName, "date");
-      params.set(startDateParamName, defaultStartDate);
-      params.set(endDateParamName, defaultEndDate);
-      params.delete(startAccountingPeriodIdParamName);
-      params.delete(endAccountingPeriodIdParamName);
-    });
-  };
-
   return (
-    <PageFilterFrame title="Account Trends">
-      <ToggleButtonSelector
-        value={currentMode}
-        onChange={handleModeChange}
-        options={getTrendRangeModeOptions(
-          defaultEndAccountingPeriodId !== null,
-        )}
-      />
-      {currentMode === "accounting-period" ? (
-        <AccountingPeriodRangeFilter
-          accountingPeriods={accountingPeriods}
-          startValue={currentStartAccountingPeriodId}
-          endValue={currentEndAccountingPeriodId}
-          onChange={handleAccountingPeriodRangeChange}
-        />
-      ) : (
-        <DateRangeFilter
-          value={{ start: currentStartDate, end: currentEndDate }}
-          onChange={handleDateRangeChange}
-          maxYears={maximumTrendRangeYears}
-        />
-      )}
+    <TrendFilterHeader
+      title="Account Trends"
+      returnUrl={returnUrl}
+      accountingPeriods={accountingPeriods}
+      hasActiveFilters={
+        shouldPersistAccountTypes(currentAccountTypes) ||
+        shouldPersistAccountNames(currentAccountNames)
+      }
+      clearFilters={clearAccountTrendsFilters}
+    >
       <AccountTypeFilter
         value={currentAccountTypes}
         onChange={handleAccountTypeChange}
@@ -202,15 +96,7 @@ const AccountTrendsFilter = function ({
         value={currentAccountNames}
         onChange={handleAccountNameChange}
       />
-      <Button
-        variant="outlined"
-        onClick={clearView}
-        disabled={!hasActiveView}
-        sx={{ flexShrink: 0 }}
-      >
-        Reset filters
-      </Button>
-    </PageFilterFrame>
+    </TrendFilterHeader>
   );
 };
 

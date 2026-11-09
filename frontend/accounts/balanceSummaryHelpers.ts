@@ -72,5 +72,4 @@ const getAccountTypeStatDetails = function (
     }));
 };
 
-export { getAccountTypeBreakdownDetails, getAccountTypeStatDetails };
-export type { AccountTypeBreakdownDetail };
+export { getAccountTypeStatDetails };

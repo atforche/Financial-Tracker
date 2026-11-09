@@ -17,6 +17,8 @@ import { revalidatePath } from "next/cache";
 interface ActionState extends WorkspaceActionState {
   readonly nameErrors?: string | null;
   readonly typeErrors?: string | null;
+  readonly minimumEndingBalanceErrors?: string | null;
+  readonly maximumEndingBalanceErrors?: string | null;
   readonly accountingPeriodErrors?: string | null;
   readonly dateOpenedErrors?: string | null;
 }
@@ -44,6 +46,10 @@ const createAccount = async function (
       const formattedError = mapApiValidationError(error, {
         [propertyName<CreateAccountRequest>("name")]: "nameErrors",
         [propertyName<CreateAccountRequest>("type")]: "typeErrors",
+        [propertyName<CreateAccountRequest>("minimumEndingBalance")]:
+          "minimumEndingBalanceErrors",
+        [propertyName<CreateAccountRequest>("maximumEndingBalance")]:
+          "maximumEndingBalanceErrors",
         [propertyName<CreateAccountRequest>("openingAccountingPeriodId")]:
           "accountingPeriodErrors",
         [propertyName<CreateAccountRequest>("dateOpened")]: "dateOpenedErrors",
@@ -52,6 +58,10 @@ const createAccount = async function (
         errorTitle: formattedError.errorTitle,
         nameErrors: formattedError.fieldErrors.nameErrors ?? null,
         typeErrors: formattedError.fieldErrors.typeErrors ?? null,
+        minimumEndingBalanceErrors:
+          formattedError.fieldErrors.minimumEndingBalanceErrors ?? null,
+        maximumEndingBalanceErrors:
+          formattedError.fieldErrors.maximumEndingBalanceErrors ?? null,
         accountingPeriodErrors:
           formattedError.fieldErrors.accountingPeriodErrors ?? null,
         dateOpenedErrors: formattedError.fieldErrors.dateOpenedErrors ?? null,

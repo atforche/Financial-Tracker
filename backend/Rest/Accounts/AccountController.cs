@@ -214,7 +214,9 @@ public sealed class AccountController(
                 FinancialInstitution = createAccountModel.FinancialInstitution,
                 Type = accountType.Value,
                 OpeningAccountingPeriod = accountingPeriod,
-                DateOpened = createAccountModel.DateOpened
+                DateOpened = createAccountModel.DateOpened,
+                MinimumEndingBalance = createAccountModel.MinimumEndingBalance,
+                MaximumEndingBalance = createAccountModel.MaximumEndingBalance,
             },
             out Account? newAccount,
             out IEnumerable<ValidationError> validationErrors))
@@ -261,7 +263,9 @@ public sealed class AccountController(
                 Name = onboardAccountModel.Name,
                 FinancialInstitution = onboardAccountModel.FinancialInstitution,
                 Type = accountType.Value,
-                OnboardedBalance = onboardAccountModel.OnboardedBalance
+                OnboardedBalance = onboardAccountModel.OnboardedBalance,
+                MinimumEndingBalance = onboardAccountModel.MinimumEndingBalance,
+                MaximumEndingBalance = onboardAccountModel.MaximumEndingBalance,
             },
             out Account? newAccount,
             out IEnumerable<ValidationError> validationErrors))

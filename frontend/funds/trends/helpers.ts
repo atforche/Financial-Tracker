@@ -1,12 +1,5 @@
-import type {
-  FundBalanceEventSort,
-  FundBalanceSummary,
-  FundBalanceSummaryByDate,
-  FundBalanceSummaryByPeriod,
-  FundWithBalanceRangeSort,
-} from "@/funds/types";
+import type { FundWithBalanceRangeSort } from "@/funds/types";
 import type { TrendRangeMode } from "@/framework/routes/trendRange";
-import { formatShortDate } from "@/framework/dateHelpers";
 
 /**
  * Search parameters supported by the fund trends page.
@@ -15,8 +8,6 @@ interface FundTrendsSearchParams {
   sort?: FundWithBalanceRangeSort;
   page?: number | string | null;
   pageSize?: number | string | null;
-  balanceEventSort?: FundBalanceEventSort;
-  balanceEventPage?: number | string | null;
   mode?: TrendRangeMode;
   fundName?: string | readonly string[];
   startAccountingPeriodId?: string;
@@ -27,101 +18,12 @@ interface FundTrendsSearchParams {
 }
 
 /**
- * Mode for the fund trends data.
- */
-type FundTrendsDataMode = "AccountingPeriod" | "Date";
-
-/**
- * Snapshot of the fund trends data for the selected range.
- */
-interface FundTrendsSnapshot {
-  readonly startLabel: string;
-  readonly endLabel: string;
-  readonly totalStartingBalance: number;
-  readonly totalEndingBalance: number;
-  readonly assignedStartingBalance: number;
-  readonly assignedEndingBalance: number;
-  readonly unassignedStartingBalance: number;
-  readonly unassignedEndingBalance: number;
-  readonly startingBalance: FundBalanceSummary;
-  readonly endingBalance: FundBalanceSummary;
-}
-
-/**
- * Builds the summary snapshot for the selected fund trends range.
- */
-const getFundTrendsSnapshot = function (
-  mode: FundTrendsDataMode,
-  accountingPeriods: readonly FundBalanceSummaryByPeriod[],
-  dates: readonly FundBalanceSummaryByDate[],
-  openingBalance: FundBalanceSummary | null,
-  startDate: string | null,
-): FundTrendsSnapshot {
-  if (mode === "AccountingPeriod") {
-    const firstPeriod = accountingPeriods.at(0);
-    const lastPeriod = accountingPeriods.at(-1);
-    if (
-      typeof firstPeriod !== "undefined" &&
-      typeof lastPeriod !== "undefined"
-    ) {
-      return {
-        startLabel: firstPeriod.accountingPeriod.name,
-        endLabel: lastPeriod.accountingPeriod.name,
-        totalStartingBalance: firstPeriod.openingBalance.totalBalance,
-        totalEndingBalance: lastPeriod.closingBalance.totalBalance,
-        assignedStartingBalance:
-          firstPeriod.openingBalance.totalAssignedBalance,
-        assignedEndingBalance: lastPeriod.closingBalance.totalAssignedBalance,
-        unassignedStartingBalance:
-          firstPeriod.openingBalance.totalUnassignedBalance,
-        unassignedEndingBalance:
-          lastPeriod.closingBalance.totalUnassignedBalance,
-        startingBalance: firstPeriod.openingBalance,
-        endingBalance: lastPeriod.closingBalance,
-      };
-    }
-  }
-
-  const firstDate = dates.at(0);
-  const lastDate = dates.at(-1);
-  const startLabelDate = startDate ?? firstDate?.date;
-  const startingBalance: FundBalanceSummary = openingBalance ?? {
-    totalBalance: firstDate?.totalBalance ?? 0,
-    totalAssignedBalance: firstDate?.totalAssignedBalance ?? 0,
-    totalUnassignedBalance: firstDate?.totalUnassignedBalance ?? 0,
-  };
-  return {
-    startLabel:
-      typeof startLabelDate === "undefined"
-        ? "Start"
-        : formatShortDate(new Date(`${startLabelDate}T00:00:00`)),
-    endLabel: lastDate
-      ? formatShortDate(new Date(`${lastDate.date}T00:00:00`))
-      : "End",
-    totalStartingBalance: startingBalance.totalBalance,
-    totalEndingBalance: lastDate?.totalBalance ?? 0,
-    assignedStartingBalance: startingBalance.totalAssignedBalance,
-    assignedEndingBalance: lastDate?.totalAssignedBalance ?? 0,
-    unassignedStartingBalance: startingBalance.totalUnassignedBalance,
-    unassignedEndingBalance: lastDate?.totalUnassignedBalance ?? 0,
-    startingBalance,
-    endingBalance: {
-      totalBalance: lastDate?.totalBalance ?? 0,
-      totalAssignedBalance: lastDate?.totalAssignedBalance ?? 0,
-      totalUnassignedBalance: lastDate?.totalUnassignedBalance ?? 0,
-    },
-  };
-};
-
-/**
  * Parameter names used by the fund trends page.
  */
 const fundTrendsParamNames = {
   sort: "sort",
   page: "page",
   pageSize: "pageSize",
-  balanceEventSort: "balanceEventSort",
-  balanceEventPage: "balanceEventPage",
   mode: "mode",
   fundName: "fundName",
   startAccountingPeriodId: "startAccountingPeriodId",
@@ -148,14 +50,10 @@ const hasActiveFundTrendsFilters = function (
 };
 
 /**
- * Removes fund filters and resets both filtered result lists.
+ * Removes fund filters and returns to the first page.
  */
 const clearFundTrendsFilters = function (params: URLSearchParams): void {
-  [
-    fundTrendsParamNames.fundName,
-    fundTrendsParamNames.page,
-    fundTrendsParamNames.balanceEventPage,
-  ].forEach((name) => {
+  [fundTrendsParamNames.fundName, fundTrendsParamNames.page].forEach((name) => {
     params.delete(name);
   });
 };
@@ -163,7 +61,6 @@ const clearFundTrendsFilters = function (params: URLSearchParams): void {
 export {
   clearFundTrendsFilters,
   fundTrendsParamNames,
-  getFundTrendsSnapshot,
   hasActiveFundTrendsFilters,
 };
-export type { FundTrendsDataMode, FundTrendsSearchParams };
+export type { FundTrendsSearchParams };

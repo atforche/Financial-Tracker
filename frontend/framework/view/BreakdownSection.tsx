@@ -154,5 +154,4 @@ const BreakdownSection = function ({
 };
 
 export { breakdownValueInset };
-export type { BreakdownDetailRow };
 export default BreakdownSection;

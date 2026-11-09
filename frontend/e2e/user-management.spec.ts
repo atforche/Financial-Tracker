@@ -133,10 +133,14 @@ test("an administrator manages invitations and application user access", async (
     browser,
     "container-smoke-standard",
   );
+  // Open the onboarding form while the user can still write, so its submission is stale after the role change
   await standardSession.page.goto("/accounts/workspace");
-  await expect(
-    standardSession.page.getByRole("button", { name: "Onboard Account" }),
-  ).toBeVisible();
+  await standardSession.page
+    .getByRole("link", { name: "Onboard Account" })
+    .click();
+  await expect(standardSession.page).toHaveURL(
+    /\/accounts\/workspace\/onboard$/u,
+  );
 
   await page.getByRole("button", { name: "Invite user" }).click();
   const inviteUserDialog = page.getByRole("dialog", { name: "Invite User" });
@@ -171,9 +175,6 @@ test("an administrator manages invitations and application user access", async (
   await expect(userRow).toContainText("Read only");
 
   await standardSession.page
-    .getByRole("button", { name: "Onboard Account" })
-    .click();
-  await standardSession.page
     .getByRole("textbox", { name: "Name" })
     .fill("Denied stale account");
   await standardSession.page.getByRole("combobox", { name: "Type" }).click();
@@ -182,19 +183,15 @@ test("an administrator manages invitations and application user access", async (
     .getByRole("textbox", { name: "Starting Balance" })
     .fill("1");
   await standardSession.page
-    .getByRole("button", { name: "Onboard Account", exact: true })
-    .last()
+    .getByRole("button", { name: "Onboard Account" })
     .click();
+  await expect(standardSession.page.getByText("Request failed")).toBeVisible();
+  await standardSession.page.goto("/accounts/workspace");
   await expect(
-    standardSession.page.getByRole("dialog", { name: "Onboard Account" }),
-  ).toBeHidden();
-  await expect(
-    standardSession.page.getByRole("heading", {
-      name: "Denied stale account",
-    }),
+    standardSession.page.getByText("Denied stale account"),
   ).toHaveCount(0);
   await expect(
-    standardSession.page.getByRole("button", { name: "Onboard Account" }),
+    standardSession.page.getByRole("link", { name: "Onboard Account" }),
   ).toHaveCount(0);
   await expect(
     standardSession.page.getByRole("link", { name: "Manage users" }),

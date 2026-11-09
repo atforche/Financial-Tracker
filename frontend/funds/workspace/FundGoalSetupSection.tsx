@@ -1,5 +1,4 @@
 import { Checkbox, Chip, FormControlLabel, Stack } from "@mui/material";
-import Frame, { type FrameColor } from "@/framework/view/Frame";
 import { type JSX, useEffect } from "react";
 import {
   compareCurrencyAmounts,
@@ -15,8 +14,6 @@ import GoalAmountOption from "@/framework/forms/GoalAmountOption";
  * Props for the FundGoalSetupSection component.
  */
 interface FundGoalSetupSectionProps {
-  readonly color?: FrameColor;
-  readonly showFrame?: boolean;
   readonly accountingPeriod: AccountingPeriodWithBalance | null;
   readonly originalPlannedMonthlyContribution?: number | null;
   readonly plannedMonthlyContribution: number | null;
@@ -38,8 +35,6 @@ interface FundGoalSetupSectionProps {
  * Renders the configurable quantities in a Fund Goal.
  */
 const FundGoalSetupSection = function ({
-  color = "primary",
-  showFrame = true,
   accountingPeriod,
   originalPlannedMonthlyContribution = 0,
   plannedMonthlyContribution,
@@ -77,7 +72,7 @@ const FundGoalSetupSection = function ({
     setAllowExpectedContributionAboveMaximum,
   ]);
 
-  const content = (
+  return (
     <Stack spacing={2}>
       <CurrencyEntryField
         label="Minimum Ending Balance"
@@ -143,13 +138,6 @@ const FundGoalSetupSection = function ({
         </Stack>
       ) : null}
     </Stack>
-  );
-  return showFrame ? (
-    <Frame title="Fund Goal Setup" color={color}>
-      {content}
-    </Frame>
-  ) : (
-    content
   );
 };
 

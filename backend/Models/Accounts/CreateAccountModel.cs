@@ -29,4 +29,14 @@ public class CreateAccountModel
     /// Date the Account is being opened
     /// </summary>
     public required DateOnly DateOpened { get; init; }
+
+    /// <summary>
+    /// Minimum ending balance for the Account's goals, when the Account is a standard Account.
+    /// </summary>
+    public decimal? MinimumEndingBalance { get; init; }
+
+    /// <summary>
+    /// Maximum ending balance for the Account's goals, when the Account is a standard Account.
+    /// </summary>
+    public decimal? MaximumEndingBalance { get; init; }
 }

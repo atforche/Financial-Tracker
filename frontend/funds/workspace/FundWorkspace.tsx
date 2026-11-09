@@ -21,30 +21,27 @@ const FundWorkspace = async function ({
 }: FundWorkspaceProps): Promise<JSX.Element> {
   const { search } = await searchParams;
   const apiClient = await createApiClient();
-  const anyAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
-    params: { query: { Limit: 1 } },
-  });
-  const fundsPromise = apiClient.GET("/funds/with-balances", {
-    params: { query: { "Filter.NameSearch": search ?? "" } },
-  });
   const [accountingPeriodResponse, fundsResponse] = await Promise.all([
-    anyAccountingPeriodsPromise,
-    fundsPromise,
+    apiClient.GET("/accounting-periods", {
+      params: { query: { Limit: 1 } },
+    }),
+    apiClient.GET("/funds/with-balances", {
+      params: { query: { "Filter.NameSearch": search ?? "" } },
+    }),
   ]);
-
-  const accountingPeriod = unwrapApiResponse(
-    accountingPeriodResponse,
-    "Failed to fetch accounting periods",
-  );
+  const isInOnboardingMode =
+    unwrapApiResponse(
+      accountingPeriodResponse,
+      "Failed to fetch accounting periods",
+    ).items.length === 0;
   const funds = unwrapApiResponse(fundsResponse, "Failed to fetch funds");
-
-  const isInOnboardingMode = accountingPeriod.items.length === 0;
 
   return (
     <PageLayout>
       <FundWorkspaceFilter isInOnboardingMode={isInOnboardingMode} />
       <FundWorkspaceCards
         data={funds.items}
+        search={search}
         isInOnboardingMode={isInOnboardingMode}
       />
     </PageLayout>

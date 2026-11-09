@@ -1,5 +1,4 @@
 import {
-  FundBalanceEventSortModel,
   FundWithBalanceRangeSortModel,
   type components,
 } from "@/framework/data/api";
@@ -23,18 +22,6 @@ type FundWithBalanceRange = components["schemas"]["FundWithBalanceRangeModel"];
  * Type representing Fund summary balances.
  */
 type FundBalanceSummary = components["schemas"]["FundBalanceSummaryModel"];
-
-/**
- * Type representing a Fund summary balance for a specific date.
- */
-type FundBalanceSummaryByDate =
-  components["schemas"]["FundBalanceSummaryByDateModel"];
-
-/**
- * Type representing a Fund summary balance for a specific accounting period.
- */
-type FundBalanceSummaryByPeriod =
-  components["schemas"]["FundBalanceSummaryByPeriodModel"];
 
 /**
  * Type representing a balance event on the Fund workspace page.
@@ -86,11 +73,8 @@ export {
   type FundWithBalanceRange,
   FundWithBalanceRangeSortModel as FundWithBalanceRangeSort,
   type FundBalanceSummary,
-  type FundBalanceSummaryByDate,
-  type FundBalanceSummaryByPeriod,
   type FundBalanceEvent,
   type FundBalanceEventDraft,
-  FundBalanceEventSortModel as FundBalanceEventSort,
   type FundsInDateRange,
   type FundsInAccountingPeriodRange,
   type CreateFundRequest,

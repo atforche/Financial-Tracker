@@ -4300,6 +4300,16 @@ export interface components {
              * @description Date the Account is being opened
              */
             dateOpened: string;
+            /**
+             * Format: double
+             * @description Minimum ending balance for the Account's goals, when the Account is a standard Account.
+             */
+            minimumEndingBalance?: null | number;
+            /**
+             * Format: double
+             * @description Maximum ending balance for the Account's goals, when the Account is a standard Account.
+             */
+            maximumEndingBalance?: null | number;
         };
         /** @description Model representing a destination of an account transaction create request. */
         CreateAccountTransactionDestinationModel: {
@@ -5243,6 +5253,16 @@ export interface components {
              * @description Starting balance assigned during onboarding
              */
             onboardedBalance: number;
+            /**
+             * Format: double
+             * @description Minimum ending balance for the Account's goals, when the Account is a standard Account.
+             */
+            minimumEndingBalance?: null | number;
+            /**
+             * Format: double
+             * @description Maximum ending balance for the Account's goals, when the Account is a standard Account.
+             */
+            maximumEndingBalance?: null | number;
         };
         /** @description Model representing a request to onboard a Fund. */
         OnboardFundModel: {

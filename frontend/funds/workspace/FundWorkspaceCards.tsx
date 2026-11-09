@@ -1,102 +1,66 @@
-"use client";
-
-import { Button, Stack, Typography } from "@mui/material";
 import {
   compareCurrencyAmounts,
   formatCurrency,
 } from "@/framework/currencyHelpers";
-import { useRouter, useSearchParams } from "next/navigation";
 import CardResponsiveGrid from "@/framework/view/CardResponsiveGrid";
+import EntityCard from "@/framework/view/EntityCard";
 import type { FundWithBalance } from "@/funds/types";
-import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
-import WorkspaceCard from "@/framework/view/WorkspaceCard";
-import propertyName from "@/framework/data/propertyName";
+import WorkspaceEmptyState from "@/framework/view/WorkspaceEmptyState";
 import routes from "@/funds/routes";
-import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 
 /**
  * Props for the FundWorkspaceCards component.
  */
 interface FundWorkspaceCardsProps {
-  readonly data: FundWithBalance[] | null;
+  readonly data: FundWithBalance[];
+  readonly search: string | undefined;
   readonly isInOnboardingMode: boolean;
 }
 
 /**
- * Displays the fund workspace as a collection of clickable cards.
+ * Displays the workspace's funds as linked cards.
  */
 const FundWorkspaceCards = function ({
   data,
+  search,
   isInOnboardingMode,
 }: FundWorkspaceCardsProps): JSX.Element {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const searchParamName = propertyName<FundWorkspaceSearchParams>("search");
-  const hasSearch = (searchParams.get(searchParamName) ?? "").trim() !== "";
-  const funds = data ?? [];
-  const updateParams = useSearchParamUpdater([]);
-
-  const clearSearch = function (): void {
-    updateParams((params) => {
-      params.delete(searchParamName);
-    });
-  };
-
-  const openFund = function (fundId: string): void {
-    const search = searchParams.get(searchParamName);
-    const detailSearchParams: FundWorkspaceSearchParams =
-      search === null ? {} : { search };
-    router.push(routes.workspaceDetail(fundId, detailSearchParams));
-  };
-
-  if (funds.length === 0) {
-    return (
-      <Stack spacing={2} alignItems="flex-start">
-        <Typography color="text.secondary">
-          {hasSearch
-            ? "No funds match the current search. Try a different name."
-            : isInOnboardingMode
-              ? "Use onboarding to add the first fund to your workspace."
-              : "Create a fund to start building your workspace."}
-        </Typography>
-        {hasSearch ? (
-          <Button variant="contained" onClick={clearSearch}>
-            Clear search
-          </Button>
-        ) : null}
-      </Stack>
+  if (data.length === 0) {
+    return (search ?? "").trim() === "" ? (
+      <WorkspaceEmptyState
+        title="No funds yet"
+        message={
+          isInOnboardingMode
+            ? "Use onboarding to add the first fund to your workspace."
+            : "Create a fund to start building your workspace."
+        }
+      />
+    ) : (
+      <WorkspaceEmptyState
+        title="No matching funds"
+        message="Try a different name."
+      />
     );
   }
 
   return (
     <CardResponsiveGrid minimumColumnWidth={280} spacing={2}>
-      {funds.map((fund) => (
-        <WorkspaceCard
+      {data.map((fund) => (
+        <EntityCard
           key={fund.id}
-          title={fund.name}
+          name={fund.name}
+          href={routes.workspaceDetail(
+            fund.id,
+            search === undefined ? {} : { search },
+          )}
           color={
             compareCurrencyAmounts(fund.currentBalance.postedBalance, 0) >= 0
               ? "info"
               : "error"
           }
-          onClick={() => {
-            openFund(fund.id);
-          }}
-        >
-          <Stack spacing={0.5}>
-            <Typography
-              variant="overline"
-              sx={{ color: "text.secondary", fontWeight: 700 }}
-            >
-              Current balance
-            </Typography>
-            <Typography variant="h5">
-              {formatCurrency(fund.currentBalance.postedBalance)}
-            </Typography>
-          </Stack>
-        </WorkspaceCard>
+          balance={formatCurrency(fund.currentBalance.postedBalance)}
+        />
       ))}
     </CardResponsiveGrid>
   );

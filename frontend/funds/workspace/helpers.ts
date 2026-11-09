@@ -108,9 +108,4 @@ const buildOnboardFundRequest = function (
   };
 };
 
-export {
-  validateCreateFundSetup,
-  validateOnboardFundSetup,
-  buildCreateFundRequest,
-  buildOnboardFundRequest,
-};
+export { buildCreateFundRequest, buildOnboardFundRequest };

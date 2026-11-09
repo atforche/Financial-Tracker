@@ -4,28 +4,23 @@ import type {
   AccountingPeriod,
   AccountingPeriodWithBalance,
 } from "@/accounting-periods/types";
-import { Button, Stack } from "@mui/material";
 import {
   type JSX,
   startTransition,
   useActionState,
   useEffect,
   useEffectEvent,
-  useRef,
   useState,
 } from "react";
-import {
-  buildCreateFundRequest,
-  validateCreateFundSetup,
-} from "@/funds/workspace/helpers";
+import { Stack, Typography } from "@mui/material";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import Frame from "@/framework/view/Frame";
+import ContentSurface from "@/framework/view/ContentSurface";
+import FormPage from "@/framework/view/FormPage";
 import FundGoalSetupSection from "@/funds/workspace/FundGoalSetupSection";
+import type { Route } from "next";
 import StringEntryField from "@/framework/forms/StringEntryField";
+import { buildCreateFundRequest } from "@/funds/workspace/helpers";
 import createFund from "@/funds/workspace/createFund";
-import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import useFundSetupState from "@/funds/workspace/useFundSetupState";
 import { useRouter } from "next/navigation";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
@@ -35,7 +30,7 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
  */
 interface CreateFundFormProps {
   readonly accountingPeriods: AccountingPeriodWithBalance[];
-  readonly redirectUrl: string;
+  readonly redirectUrl: Route;
 }
 
 /**
@@ -62,7 +57,6 @@ const CreateFundForm = function ({
     allowExpectedContributionAboveMaximum,
     setAllowExpectedContributionAboveMaximum,
   } = fundSetup;
-  const formRef = useRef<HTMLDivElement | null>(null);
   const [accountingPeriod, setAccountingPeriod] =
     useState<AccountingPeriod | null>(null);
   const accountingPeriodWithBalance =
@@ -71,14 +65,7 @@ const CreateFundForm = function ({
 
   const [state, action, pending] = useActionState(createFund, {});
 
-  const reset = function (): void {
-    fundSetup.reset();
-    setAccountingPeriod(null);
-    focusFirstEntryControl(formRef.current);
-  };
-
   const handleSuccess = useEffectEvent((): void => {
-    reset();
     router.replace(redirectUrl);
   });
   useEffect(() => {
@@ -87,7 +74,6 @@ const CreateFundForm = function ({
     }
   }, [state.success]);
 
-  const fundSetupIsComplete = validateCreateFundSetup(name, accountingPeriod);
   const request = buildCreateFundRequest({
     name,
     description,
@@ -103,86 +89,69 @@ const CreateFundForm = function ({
   }
 
   return (
-    <ConstrainedContent maxWidth={780}>
-      <Stack ref={formRef} spacing={3}>
-        <Frame
-          title="Fund Setup"
-          color={fundSetupIsComplete ? "info" : "error"}
-        >
-          <Stack spacing={2.5}>
-            <StringEntryField
-              label="Name"
-              value={name}
-              setValue={setName}
-              errorMessage={state.nameErrors ?? null}
-            />
-            <StringEntryField
-              label="Description"
-              value={description}
-              setValue={setDescription}
-              errorMessage={state.descriptionErrors ?? null}
-            />
-            <AccountingPeriodEntryField
-              label="Accounting Period"
-              options={accountingPeriods}
-              value={accountingPeriod}
-              setValue={setAccountingPeriod}
-              errorMessage={state.accountingPeriodErrors ?? null}
-            />
-          </Stack>
-        </Frame>
-
-        <FundGoalSetupSection
-          color="info"
-          accountingPeriod={accountingPeriodWithBalance}
-          plannedMonthlyContribution={plannedMonthlyContribution}
-          setPlannedMonthlyContribution={setPlannedMonthlyContribution}
-          minimumEndingBalance={minimumEndingBalance}
-          setMinimumEndingBalance={setMinimumEndingBalance}
-          maximumEndingBalance={maximumEndingBalance}
-          setMaximumEndingBalance={setMaximumEndingBalance}
-          allowExpectedContributionAboveMaximum={
-            allowExpectedContributionAboveMaximum
-          }
-          setAllowExpectedContributionAboveMaximum={
-            setAllowExpectedContributionAboveMaximum
-          }
-        />
-
-        <ErrorAlert
-          errorMessage={state.errorTitle ?? null}
-          unmappedErrors={state.unmappedErrors ?? null}
-        />
-
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          justifyContent="flex-end"
-        >
-          <Button variant="outlined" onClick={reset}>
-            Reset
-          </Button>
-          <Button
-            variant="contained"
-            loading={pending}
-            disabled={request === null}
-            onClick={() => {
-              if (request === null) {
-                return;
-              }
-              startTransition(() => {
-                action({
-                  redirectUrl,
-                  request,
-                });
-              });
-            }}
-          >
-            Create Fund
-          </Button>
+    <FormPage
+      title="Create Fund"
+      returnHref={redirectUrl}
+      returnLabel="Back to Funds"
+      submitLabel="Create Fund"
+      canSubmit={request !== null}
+      pending={pending}
+      onSubmit={() => {
+        if (request === null) {
+          return;
+        }
+        startTransition(() => {
+          action({ redirectUrl, request });
+        });
+      }}
+      errorTitle={state.errorTitle ?? null}
+      unmappedErrors={state.unmappedErrors ?? null}
+    >
+      <ContentSurface>
+        <Stack spacing={2}>
+          <Typography variant="h5">Fund</Typography>
+          <StringEntryField
+            label="Name"
+            value={name}
+            setValue={setName}
+            errorMessage={state.nameErrors ?? null}
+          />
+          <StringEntryField
+            label="Description"
+            value={description}
+            setValue={setDescription}
+            errorMessage={state.descriptionErrors ?? null}
+          />
+          <AccountingPeriodEntryField
+            label="Accounting Period"
+            options={accountingPeriods}
+            value={accountingPeriod}
+            setValue={setAccountingPeriod}
+            errorMessage={state.accountingPeriodErrors ?? null}
+          />
         </Stack>
-      </Stack>
-    </ConstrainedContent>
+      </ContentSurface>
+      <ContentSurface>
+        <Stack spacing={2}>
+          <Typography variant="h5">Goal</Typography>
+          <FundGoalSetupSection
+            accountingPeriod={accountingPeriodWithBalance}
+            plannedMonthlyContribution={plannedMonthlyContribution}
+            setPlannedMonthlyContribution={setPlannedMonthlyContribution}
+            minimumEndingBalance={minimumEndingBalance}
+            setMinimumEndingBalance={setMinimumEndingBalance}
+            maximumEndingBalance={maximumEndingBalance}
+            setMaximumEndingBalance={setMaximumEndingBalance}
+            allowExpectedContributionAboveMaximum={
+              allowExpectedContributionAboveMaximum
+            }
+            setAllowExpectedContributionAboveMaximum={
+              setAllowExpectedContributionAboveMaximum
+            }
+          />
+        </Stack>
+      </ContentSurface>
+    </FormPage>
   );
 };
 

@@ -14,11 +14,11 @@ import {
   useRef,
   useState,
 } from "react";
-import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
+import AccountGoalFields from "@/account-goals/AccountGoalFields";
 import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import GoalAmountOption from "@/framework/forms/GoalAmountOption";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
+import isAccountGoalRangeValid from "@/account-goals/isAccountGoalRangeValid";
 import updateAccountGoal from "@/account-goals/workspace/updateAccountGoal";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
@@ -65,9 +65,10 @@ const UpdateAccountGoalForm = function ({
     minimumEndingBalance,
     maximumEndingBalance,
   };
-  const rangeIsValid =
-    maximumEndingBalance === null ||
-    minimumEndingBalance <= maximumEndingBalance;
+  const rangeIsValid = isAccountGoalRangeValid(
+    minimumEndingBalance,
+    maximumEndingBalance,
+  );
   if (!canWrite) {
     return null;
   }
@@ -124,19 +125,17 @@ const UpdateAccountGoalForm = function ({
         }
       >
         <Stack ref={formRef} spacing={2}>
-          <CurrencyEntryField
-            label="Minimum Ending Balance"
-            value={minimumEndingBalance}
-            setValue={(value) => {
-              setMinimumEndingBalance(value ?? 0);
-            }}
-            errorMessage={state.minimumEndingBalanceErrors ?? null}
-          />
-          <GoalAmountOption
-            label="Maximum Ending Balance"
-            value={maximumEndingBalance}
-            setValue={setMaximumEndingBalance}
-            errorMessage={state.maximumEndingBalanceErrors ?? null}
+          <AccountGoalFields
+            minimumEndingBalance={minimumEndingBalance}
+            setMinimumEndingBalance={setMinimumEndingBalance}
+            maximumEndingBalance={maximumEndingBalance}
+            setMaximumEndingBalance={setMaximumEndingBalance}
+            minimumEndingBalanceErrors={
+              state.minimumEndingBalanceErrors ?? null
+            }
+            maximumEndingBalanceErrors={
+              state.maximumEndingBalanceErrors ?? null
+            }
           />
           <ErrorAlert
             errorMessage={state.errorTitle ?? null}

@@ -1,3 +1,4 @@
+using System.Net;
 using Domain.AccountGoals;
 using Models.AccountGoals;
 using Models.Accounts;
@@ -52,6 +53,87 @@ public sealed class AccountGoalPeriodLifecycleTests
         IReadOnlyCollection<AccountGoal> goals = test.AccountGoalQueries.GetForAccount(created.Id);
         Assert.Equal(1, goals.Count(goal => goal.AccountingPeriod?.Id.Value == july.Id));
         Assert.Equal(1, goals.Count(goal => goal.AccountingPeriod?.Id.Value == august.Id));
+    }
+
+    /// <summary>
+    /// Applies the goal bounds given when creating a standard Account to each of its periods.
+    /// </summary>
+    [Fact]
+    public async Task AccountCreatedWithGoalBoundsAppliesThemToEveryPeriod()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        AccountingPeriodHandle august = await test.Periods.Create(2026, 8).CreateAsync();
+
+        AccountModel created = await test.Api.PostAsync<CreateAccountModel, AccountModel>("/accounts", new CreateAccountModel
+        {
+            Name = "Goal savings",
+            Type = AccountTypeModel.Standard,
+            OpeningAccountingPeriodId = july.Id,
+            DateOpened = new DateOnly(2026, 7, 1),
+            MinimumEndingBalance = 100m,
+            MaximumEndingBalance = 500m,
+        });
+
+        foreach (AccountingPeriodHandle period in new[] { july, august })
+        {
+            AccountGoalModel goal = await test.Api.GetAccountGoalAsync(created.Id, period.Id);
+            Assert.Equal(100m, goal.MinimumEndingBalance);
+            Assert.Equal(500m, goal.MaximumEndingBalance);
+        }
+    }
+
+    /// <summary>
+    /// Applies the goal bounds given when onboarding a standard Account to its onboarding goal.
+    /// </summary>
+    [Fact]
+    public async Task AccountOnboardedWithGoalBoundsKeepsThem()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+
+        AccountModel onboarded = await test.Api.PostAsync<OnboardAccountModel, AccountModel>("/accounts/onboard", new OnboardAccountModel
+        {
+            Name = "Onboarded savings",
+            Type = AccountTypeModel.Standard,
+            OnboardedBalance = 0m,
+            MinimumEndingBalance = 25m,
+        });
+
+        AccountGoal goal = Assert.Single(test.AccountGoalQueries.GetForAccount(onboarded.Id));
+        Assert.Equal(25m, goal.MinimumEndingBalance);
+        Assert.Null(goal.MaximumEndingBalance);
+    }
+
+    /// <summary>
+    /// Rejects goal bounds that are out of order, or given for an Account that has no goals, without creating it.
+    /// </summary>
+    [Fact]
+    public async Task AccountCreationRejectsInvalidGoalBounds()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+
+        HttpResponseMessage outOfOrder = await test.Api.PostResponseAsync("/accounts", new CreateAccountModel
+        {
+            Name = "Backwards",
+            Type = AccountTypeModel.Standard,
+            OpeningAccountingPeriodId = july.Id,
+            DateOpened = new DateOnly(2026, 7, 1),
+            MinimumEndingBalance = 500m,
+            MaximumEndingBalance = 100m,
+        });
+        HttpResponseMessage notStandard = await test.Api.PostResponseAsync("/accounts", new CreateAccountModel
+        {
+            Name = "Card",
+            Type = AccountTypeModel.CreditCard,
+            OpeningAccountingPeriodId = july.Id,
+            DateOpened = new DateOnly(2026, 7, 1),
+            MinimumEndingBalance = 10m,
+        });
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, outOfOrder.StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, notStandard.StatusCode);
+        Assert.Empty(test.AccountGoalQueries.GetForPeriod(july.Id));
     }
 
     /// <summary>

@@ -24,4 +24,14 @@ public class OnboardAccountModel
     /// Starting balance assigned during onboarding
     /// </summary>
     public required decimal OnboardedBalance { get; init; }
+
+    /// <summary>
+    /// Minimum ending balance for the Account's goals, when the Account is a standard Account.
+    /// </summary>
+    public decimal? MinimumEndingBalance { get; init; }
+
+    /// <summary>
+    /// Maximum ending balance for the Account's goals, when the Account is a standard Account.
+    /// </summary>
+    public decimal? MaximumEndingBalance { get; init; }
 }

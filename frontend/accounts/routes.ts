@@ -48,6 +48,8 @@ const routes = {
       "/accounts/workspace",
       accountWorkspaceSearchParamsToSearchParams(searchParams),
     ),
+  workspaceCreate: (): Route => "/accounts/workspace/create",
+  workspaceOnboard: (): Route => "/accounts/workspace/onboard",
   workspaceDetail: (
     accountId: string,
     searchParams: AccountWorkspaceSearchParams,

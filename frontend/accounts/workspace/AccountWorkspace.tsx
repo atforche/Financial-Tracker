@@ -2,7 +2,6 @@ import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
 } from "@/accounts/accountTypeFilterHelpers";
-import AccountWorkspaceActions from "@/accounts/workspace/AccountWorkspaceActions";
 import AccountWorkspaceCards from "@/accounts/workspace/AccountWorkspaceCards";
 import AccountWorkspaceFilter from "@/accounts/workspace/AccountWorkspaceFilter";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
@@ -20,81 +19,52 @@ interface AccountWorkspaceProps {
 }
 
 /**
- * Displays the account workspace with card-backed navigation and actions.
+ * Displays the account workspace with card-backed navigation.
  */
 const AccountWorkspace = async function ({
   searchParams,
 }: AccountWorkspaceProps): Promise<JSX.Element> {
-  const { search, accountType, action } = await searchParams;
+  const { search, accountType } = await searchParams;
   const apiClient = await createApiClient();
   const currentAccountTypes = normalizeAccountTypes(
     toRepeatedSearchParams(accountType),
   );
+  const hasAccountTypeFilter = shouldPersistAccountTypes(currentAccountTypes);
 
-  const openAccountingPeriodsPromise = apiClient.GET("/accounting-periods", {
-    params: { query: { "Filter.IsOpen": true } },
-  });
-  const accountsPromise = apiClient.GET("/accounts/with-balances", {
-    params: {
-      query: {
-        "Filter.NameSearch": search ?? "",
-        ...(shouldPersistAccountTypes(currentAccountTypes)
-          ? { "Filter.Types": [...currentAccountTypes] }
-          : {}),
+  const [boundsResponse, accountsResponse] = await Promise.all([
+    apiClient.GET("/accounting-periods/bounds"),
+    apiClient.GET("/accounts/with-balances", {
+      params: {
+        query: {
+          "Filter.NameSearch": search ?? "",
+          ...(hasAccountTypeFilter
+            ? { "Filter.Types": [...currentAccountTypes] }
+            : {}),
+        },
       },
-    },
-  });
-  const financialInstitutionsPromise = apiClient.GET(
-    "/accounts/financial-institutions",
-  );
-
-  const [
-    openAccountingPeriodsResponse,
-    accountsResponse,
-    financialInstitutionsResponse,
-  ] = await Promise.all([
-    openAccountingPeriodsPromise,
-    accountsPromise,
-    financialInstitutionsPromise,
+    }),
   ]);
-  const openAccountingPeriods = unwrapApiResponse(
-    openAccountingPeriodsResponse,
-    "Failed to fetch accounting periods",
-  ).items;
+  const isInOnboardingMode =
+    unwrapApiResponse(
+      boundsResponse,
+      "Failed to fetch the accounting period bounds",
+    ).latest === null;
   const accounts = unwrapApiResponse(
     accountsResponse,
     "Failed to fetch accounts",
-  );
-  const financialInstitutions = unwrapApiResponse(
-    financialInstitutionsResponse,
-    "Failed to fetch financial institutions",
-  );
-
-  const filteredAccounts = shouldPersistAccountTypes(currentAccountTypes)
-    ? accounts.items.filter((account) =>
-        currentAccountTypes.includes(account.type),
-      )
-    : accounts.items;
-  // Only without an open period can there be no periods at all, so only then is the extra request needed
-  const isInOnboardingMode =
-    openAccountingPeriods.length === 0 &&
-    unwrapApiResponse(
-      await apiClient.GET("/accounting-periods/bounds"),
-      "Failed to fetch the accounting period bounds",
-    ).latest === null;
+  ).items;
 
   return (
     <PageLayout>
       <AccountWorkspaceFilter isInOnboardingMode={isInOnboardingMode} />
       <AccountWorkspaceCards
-        data={filteredAccounts}
+        data={accounts}
+        filters={{
+          ...(search === undefined ? {} : { search }),
+          ...(hasAccountTypeFilter ? { accountType: currentAccountTypes } : {}),
+        }}
+        hasActiveFilters={(search ?? "").trim() !== "" || hasAccountTypeFilter}
         isInOnboardingMode={isInOnboardingMode}
-      />
-      <AccountWorkspaceActions
-        accountingPeriods={openAccountingPeriods}
-        financialInstitutions={financialInstitutions.items}
-        isInOnboardingMode={isInOnboardingMode}
-        requestedAction={action ?? null}
       />
     </PageLayout>
   );

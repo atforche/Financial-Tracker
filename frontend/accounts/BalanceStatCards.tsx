@@ -15,8 +15,9 @@ import { getAccountTypeStatDetails } from "@/accounts/balanceSummaryHelpers";
 interface BalanceStatCardsProps {
   readonly openingBalance: AccountBalanceSummary;
   readonly closingBalance: AccountBalanceSummary;
-  readonly unassignedBalance: number;
-  readonly unassignedCaption: ReactNode;
+  readonly totalLabel?: string;
+  readonly unassignedBalance?: number;
+  readonly unassignedCaption?: ReactNode;
   readonly changeDescription: string;
 }
 
@@ -27,6 +28,7 @@ interface BalanceStatCardsProps {
 const BalanceStatCards = function ({
   openingBalance,
   closingBalance,
+  totalLabel = "Net worth",
   unassignedBalance,
   unassignedCaption,
   changeDescription,
@@ -43,9 +45,11 @@ const BalanceStatCards = function ({
     );
   };
   return (
-    <ResponsiveGrid columns={{ xs: 1, sm: 2, lg: 4 }}>
+    <ResponsiveGrid
+      columns={{ xs: 1, sm: 2, lg: unassignedBalance === undefined ? 3 : 4 }}
+    >
       <StatCard
-        label="Net worth"
+        label={totalLabel}
         value={formatCurrency(closingBalance.totalBalance)}
         caption={describeChange(
           closingBalance.totalBalance,
@@ -80,11 +84,13 @@ const BalanceStatCards = function ({
         )}
         detailsLabel="by account type"
       />
-      <StatCard
-        label="Unassigned funds"
-        value={formatCurrency(unassignedBalance)}
-        caption={unassignedCaption}
-      />
+      {unassignedBalance === undefined ? null : (
+        <StatCard
+          label="Unassigned funds"
+          value={formatCurrency(unassignedBalance)}
+          caption={unassignedCaption}
+        />
+      )}
     </ResponsiveGrid>
   );
 };

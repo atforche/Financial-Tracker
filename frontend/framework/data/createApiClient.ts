@@ -33,6 +33,22 @@ const redirectOnUnauthorized: Middleware = {
 };
 
 /**
+ * Gives a failed response with no body, such as a 403 after the user loses write access, an empty problem body.
+ * Without one openapi-fetch reports no error, so the caller would treat the failure as a success.
+ */
+const describeEmptyErrors: Middleware = {
+  async onResponse({ response }) {
+    if (response.ok || (await response.clone().text()) !== "") {
+      return undefined;
+    }
+    return Response.json(
+      { status: response.status },
+      { status: response.status, statusText: response.statusText },
+    );
+  },
+};
+
+/**
  * Creates an API client for the current authenticated user. Redirects to the login page when the session
  * no longer has a usable token.
  */
@@ -51,7 +67,7 @@ const createApiClient = async function (): Promise<Client<paths>> {
     baseUrl: apiUrl,
     headers: { Authorization: `Bearer ${idToken}` },
   });
-  client.use(redirectOnUnauthorized);
+  client.use(redirectOnUnauthorized, describeEmptyErrors);
   return client;
 };
 

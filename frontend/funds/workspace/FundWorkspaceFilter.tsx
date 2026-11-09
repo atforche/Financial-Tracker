@@ -1,10 +1,10 @@
 "use client";
 
-import { Button, Stack } from "@mui/material";
+import { Button } from "@mui/material";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
-import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import SearchBar from "@/framework/listframe/SearchBar";
+import WorkspaceHeader from "@/framework/view/WorkspaceHeader";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/funds/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -19,7 +19,7 @@ interface FundWorkspaceFilterProps {
 }
 
 /**
- * Renders the filter card for the Fund workspace with header, search bar, and primary action.
+ * Renders the Funds workspace header with its search and primary action.
  */
 const FundWorkspaceFilter = function ({
   isInOnboardingMode,
@@ -34,31 +34,28 @@ const FundWorkspaceFilter = function ({
     : routes.workspaceCreate({});
 
   return (
-    <PageFilterFrame
-      title="Fund Workspace"
-      actions={
-        <Stack direction="row" spacing={1.5} useFlexGap flexWrap="wrap">
-          <Button
-            variant="outlined"
-            disabled={!hasSearch}
-            onClick={() => {
-              updateParams((params) => {
-                params.delete(searchParamName);
-              });
-            }}
-          >
-            Reset Filters
+    <WorkspaceHeader
+      title="Funds"
+      action={
+        canWrite ? (
+          <Button variant="contained" href={addFundHref}>
+            {isInOnboardingMode ? "Onboard Fund" : "Create Fund"}
           </Button>
-          {!canWrite ? null : (
-            <Button variant="contained" href={addFundHref}>
-              {isInOnboardingMode ? "Onboard Fund" : "Create Fund"}
-            </Button>
-          )}
-        </Stack>
+        ) : null
       }
     >
       <SearchBar searchParamName={searchParamName} />
-    </PageFilterFrame>
+      <Button
+        disabled={!hasSearch}
+        onClick={() => {
+          updateParams((params) => {
+            params.delete(searchParamName);
+          });
+        }}
+      >
+        Reset Filters
+      </Button>
+    </WorkspaceHeader>
   );
 };
 

@@ -14,13 +14,15 @@ import {
   type BarMetricChartPoint,
   getBarMetricTooltipChartPoint,
 } from "@/framework/charts/barMetricHelpers";
+import ChartFrame, {
+  type ChartFrameVariant,
+} from "@/framework/charts/ChartFrame";
 import { alpha, useTheme } from "@mui/material/styles";
 import {
   chartMargin,
   xAxisTick,
   yAxisTick,
 } from "@/framework/charts/chartStyles";
-import ChartFrame from "@/framework/charts/ChartFrame";
 import ChartTooltip from "@/framework/charts/ChartTooltip";
 import type { JSX } from "react";
 import { getChartColor } from "@/framework/charts/chartTheme";
@@ -30,6 +32,7 @@ import { getChartColor } from "@/framework/charts/chartTheme";
  */
 interface BarMetricChartProps {
   readonly title: string;
+  readonly variant?: ChartFrameVariant;
   readonly emptyMessage: string;
   readonly chartPoints: readonly BarMetricChartPoint[];
   readonly hasData?: boolean;
@@ -47,6 +50,7 @@ interface BarMetricChartProps {
  */
 const BarMetricChart = function ({
   title,
+  variant = "frame",
   emptyMessage,
   chartPoints,
   hasData = chartPoints.length > 0,
@@ -67,6 +71,7 @@ const BarMetricChart = function ({
   return (
     <ChartFrame
       title={title}
+      variant={variant}
       emptyMessage={emptyMessage}
       hasData={hasData}
       xAxisLabel={xAxisLabel}

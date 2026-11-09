@@ -1,15 +1,12 @@
 import AccountingPeriodCard from "@/accounting-periods/workspace/AccountingPeriodCard";
 import AccountingPeriodProgressCard from "@/accounting-periods/workspace/AccountingPeriodProgressCard";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
-import AccountingPeriodTrendChart from "@/accounting-periods/trends/AccountingPeriodTrendChart";
-import AccountingPeriodTrendsChangeChart from "@/accounting-periods/trends/AccountingPeriodTrendsChangeChart";
 import AccountingPeriodTrendsFilter from "@/accounting-periods/trends/AccountingPeriodTrendsFilter";
 import BalanceStatCards from "@/accounts/BalanceStatCards";
+import BalanceTrendCharts from "@/framework/charts/BalanceTrendCharts";
 import CardResponsiveGrid from "@/framework/view/CardResponsiveGrid";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import SignedChange from "@/framework/view/SignedChange";
 import createApiClient from "@/framework/data/createApiClient";
 import { getCurrencyDifference } from "@/framework/currencyHelpers";
@@ -81,23 +78,21 @@ const AccountingPeriodTrends = async function ({
           )
           .map(({ id }) => id);
   const filter = (
-    <ConstrainedContent>
-      <AccountingPeriodTrendsFilter
-        accountingPeriods={accountingPeriods}
-        disabled={accountingPeriods.length === 0}
-        transactionsHref={
-          selectedIds.length === 0
-            ? null
-            : transactionRoutes.workspace({
-                accountingPeriodIds: selectedIds,
-                returnUrl: routes.trends({
-                  startAccountingPeriodId: start,
-                  endAccountingPeriodId: end,
-                }),
-              })
-        }
-      />
-    </ConstrainedContent>
+    <AccountingPeriodTrendsFilter
+      accountingPeriods={accountingPeriods}
+      disabled={accountingPeriods.length === 0}
+      transactionsHref={
+        selectedIds.length === 0
+          ? null
+          : transactionRoutes.workspace({
+              accountingPeriodIds: selectedIds,
+              returnUrl: routes.trends({
+                startAccountingPeriodId: start,
+                endAccountingPeriodId: end,
+              }),
+            })
+      }
+    />
   );
   if (selectedIds.length === 0) {
     return <PageLayout>{filter}</PageLayout>;
@@ -159,14 +154,7 @@ const AccountingPeriodTrends = async function ({
         accountingPeriod={sumProgress(range.accountingPeriods)}
         totalSpending={range.totalSpending}
       />
-      <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
-        <AccountingPeriodTrendChart
-          accountingPeriods={range.accountingPeriods}
-        />
-        <AccountingPeriodTrendsChangeChart
-          accountingPeriods={range.accountingPeriods}
-        />
-      </ResponsiveGrid>
+      <BalanceTrendCharts trends={{ accountingPeriods: accountBalances }} />
       <CardResponsiveGrid minimumColumnWidth={280} spacing={2}>
         {range.accountingPeriods.toReversed().map((period) => (
           <AccountingPeriodCard key={period.id} period={period} />

@@ -45,10 +45,11 @@ const AccountWorkspaceDetailPage = async function ({
 }: AccountWorkspaceDetailPageProps): Promise<JSX.Element> {
   const { accountId } = await params;
   const resolvedSearchParams = await searchParams;
-  const { search, accountType } = resolvedSearchParams;
+  const { search, accountType, institution } = resolvedSearchParams;
   const workspaceUrl = routes.workspace({
     ...(search === undefined ? {} : { search }),
     ...(accountType === undefined ? {} : { accountType }),
+    ...(institution === undefined ? {} : { institution }),
   });
   if (!isEntityId(accountId)) {
     redirect(workspaceUrl);

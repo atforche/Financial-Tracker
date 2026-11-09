@@ -1,39 +1,32 @@
-import {
-  type FundTrendsDataMode,
-  type FundTrendsSearchParams,
-  getFundTrendsSnapshot,
-} from "@/funds/trends/helpers";
 import type {
   FundsInAccountingPeriodRange,
   FundsInDateRange,
 } from "@/funds/types";
+import {
+  getAccountingPeriodIdsInRange,
+  matchesTrendRange,
+  resolveTrendRange,
+} from "@/framework/routes/trendRange";
 import {
   getPageOffset,
   getRowsPerPage,
   normalizePageValue,
 } from "@/framework/listframe/page";
 import {
-  matchesTrendRange,
-  resolveTrendRange,
-} from "@/framework/routes/trendRange";
-import {
   normalizeRequestedFundNames,
   shouldPersistFundNames,
 } from "@/funds/trends/fundNameFilter";
 import { AccountingPeriodSort } from "@/accounting-periods/types";
-import { BalanceGranularityModel } from "@/framework/data/api";
-import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
-import BalanceTrendsChangeChart from "@/framework/charts/BalanceTrendsChangeChart";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
-import FundBalanceSummaryCards from "@/funds/FundBalanceSummaryCards";
+import BalanceTrendCharts from "@/framework/charts/BalanceTrendCharts";
+import FundBalanceStatCards from "@/funds/FundBalanceStatCards";
 import FundTrendsFilter from "@/funds/trends/FundTrendsFilter";
 import FundTrendsListFrame from "@/funds/trends/FundTrendsListFrame";
+import type { FundTrendsSearchParams } from "@/funds/trends/helpers";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
-import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import ReturnLink from "@/framework/view/ReturnLink";
-import { buildBalanceTrendChartPoints } from "@/framework/charts/balanceTrendHelpers";
 import createApiClient from "@/framework/data/createApiClient";
+import getTrendSnapshot from "@/framework/charts/getTrendSnapshot";
+import { periodTab } from "@/balance-events/resolveEntityHistory";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
@@ -130,35 +123,6 @@ const FundTrends = async function ({
       "Failed to load fund trends",
     );
   })();
-  const modeValue: FundTrendsDataMode =
-    currentMode === "date" ? "Date" : "AccountingPeriod";
-  const periodSummaries =
-    "accountingPeriods" in trends ? trends.accountingPeriods : [];
-  const dateSummaries = "dates" in trends ? trends.dates : [];
-  const openingBalance = "dates" in trends ? trends.openingBalance : null;
-  const granularity =
-    "dates" in trends ? trends.granularity : BalanceGranularityModel.Day;
-  const snapshot = getFundTrendsSnapshot(
-    modeValue,
-    periodSummaries,
-    dateSummaries,
-    openingBalance,
-    range.mode === "date" ? range.startDate : null,
-  );
-  const chartPeriods = periodSummaries.map((summary) => ({
-    accountingPeriodId: summary.accountingPeriod.id,
-    accountingPeriodName: summary.accountingPeriod.name,
-    year: summary.accountingPeriod.year,
-    month: summary.accountingPeriod.month,
-    totalOpeningBalance: summary.openingBalance.totalBalance,
-    totalClosingBalance: summary.closingBalance.totalBalance,
-  }));
-  const balanceTrendChartPoints = buildBalanceTrendChartPoints({
-    mode: modeValue,
-    accountingPeriods: chartPeriods,
-    dates: dateSummaries,
-    granularity,
-  });
   const selectedFundIds = trends.funds.items
     .filter((fund) =>
       currentFundNames.some(
@@ -177,32 +141,21 @@ const FundTrends = async function ({
           startAccountingPeriodId: range.startAccountingPeriodId,
           endAccountingPeriodId: range.endAccountingPeriodId,
         };
+  const trendsUrl = routes.trends({
+    returnUrl,
+    mode: currentMode,
+    ...persistedFilters,
+    ...currentRange,
+  });
   const transactionWorkspaceHref = transactionRoutes.workspace({
-    ...(currentMode === "date"
+    ...(range.mode === "date"
       ? currentRange
       : {
-          accountingPeriodIds: accountingPeriods.items
-            .slice(
-              Math.min(
-                accountingPeriods.items.findIndex(
-                  (period) =>
-                    period.id === currentRange.startAccountingPeriodId,
-                ),
-                accountingPeriods.items.findIndex(
-                  (period) => period.id === currentRange.endAccountingPeriodId,
-                ),
-              ),
-              Math.max(
-                accountingPeriods.items.findIndex(
-                  (period) =>
-                    period.id === currentRange.startAccountingPeriodId,
-                ),
-                accountingPeriods.items.findIndex(
-                  (period) => period.id === currentRange.endAccountingPeriodId,
-                ),
-              ) + 1,
-            )
-            .map((period) => period.id),
+          accountingPeriodIds: getAccountingPeriodIdsInRange(
+            accountingPeriods.items,
+            range.startAccountingPeriodId,
+            range.endAccountingPeriodId,
+          ),
         }),
     ...(hasResolvedSelectedFundIds && selectedFundIds.length > 0
       ? { fundIds: selectedFundIds }
@@ -210,44 +163,37 @@ const FundTrends = async function ({
     ...(!hasResolvedSelectedFundIds && shouldPersistFundNames(currentFundNames)
       ? { fundNames: currentFundNames }
       : {}),
-    returnUrl: routes.trends({
-      returnUrl,
-      mode: currentMode,
-      ...persistedFilters,
-      ...currentRange,
-    }),
+    returnUrl: trendsUrl,
   });
+
+  const snapshot = getTrendSnapshot(
+    "accountingPeriods" in trends ? trends.accountingPeriods : [],
+    "dates" in trends ? trends.dates : [],
+    "dates" in trends ? (trends.openingBalance ?? null) : null,
+    range.mode === "date" ? range.startDate : null,
+    { totalBalance: 0, totalAssignedBalance: 0, totalUnassignedBalance: 0 },
+  );
 
   return (
     <PageLayout>
-      <ReturnLink returnUrl={returnUrl} />
-      <ConstrainedContent>
-        <FundTrendsFilter
-          accountingPeriods={accountingPeriods.items}
-          availableFundNames={trends.availableFundNames}
-        />
-      </ConstrainedContent>
-      <FundBalanceSummaryCards
-        startingLabel={snapshot.startLabel}
-        endingLabel={snapshot.endLabel}
+      <FundTrendsFilter
+        accountingPeriods={accountingPeriods.items}
+        availableFundNames={trends.availableFundNames}
+        returnUrl={returnUrl}
+      />
+      <FundBalanceStatCards
         startingBalance={snapshot.startingBalance}
         endingBalance={snapshot.endingBalance}
+        changeDescription={`since ${snapshot.startLabel}`}
       />
-      <ResponsiveGrid columns={{ xs: 1, lg: 2 }}>
-        <BalanceTrendChart
-          chartPoints={balanceTrendChartPoints}
-          xAxisLabel={modeValue === "Date" ? "Date" : "Accounting Period"}
-        />
-        <BalanceTrendsChangeChart
-          mode={modeValue}
-          accountingPeriods={periodSummaries}
-          dates={dateSummaries}
-          openingBalance={openingBalance?.totalBalance ?? null}
-          granularity={granularity}
-        />
-      </ResponsiveGrid>
+      <BalanceTrendCharts trends={trends} />
       <FundTrendsListFrame
-        data={[...trends.funds.items]}
+        detailParams={{
+          ...currentRange,
+          ...(range.mode === "date" ? {} : { tab: periodTab }),
+          returnUrl: trendsUrl,
+        }}
+        data={trends.funds.items}
         isInOnboardingMode={isInOnboardingMode}
         totalCount={trends.funds.totalCount}
         transactionWorkspaceHref={transactionWorkspaceHref}
