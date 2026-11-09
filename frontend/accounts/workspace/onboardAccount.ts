@@ -17,6 +17,8 @@ import { revalidatePath } from "next/cache";
 interface ActionState extends WorkspaceActionState {
   readonly nameErrors?: string | null;
   readonly typeErrors?: string | null;
+  readonly minimumEndingBalanceErrors?: string | null;
+  readonly maximumEndingBalanceErrors?: string | null;
   readonly onboardedBalanceErrors?: string | null;
 }
 
@@ -43,6 +45,10 @@ const onboardAccount = async function (
       const formattedError = mapApiValidationError(error, {
         [propertyName<OnboardAccountRequest>("name")]: "nameErrors",
         [propertyName<OnboardAccountRequest>("type")]: "typeErrors",
+        [propertyName<OnboardAccountRequest>("minimumEndingBalance")]:
+          "minimumEndingBalanceErrors",
+        [propertyName<OnboardAccountRequest>("maximumEndingBalance")]:
+          "maximumEndingBalanceErrors",
         [propertyName<OnboardAccountRequest>("onboardedBalance")]:
           "onboardedBalanceErrors",
       });
@@ -50,6 +56,10 @@ const onboardAccount = async function (
         errorTitle: formattedError.errorTitle,
         nameErrors: formattedError.fieldErrors.nameErrors ?? null,
         typeErrors: formattedError.fieldErrors.typeErrors ?? null,
+        minimumEndingBalanceErrors:
+          formattedError.fieldErrors.minimumEndingBalanceErrors ?? null,
+        maximumEndingBalanceErrors:
+          formattedError.fieldErrors.maximumEndingBalanceErrors ?? null,
         onboardedBalanceErrors:
           formattedError.fieldErrors.onboardedBalanceErrors ?? null,
         unmappedErrors: formattedError.unmappedErrors,

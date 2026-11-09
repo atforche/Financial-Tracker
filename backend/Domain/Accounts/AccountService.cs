@@ -40,7 +40,7 @@ public class AccountService(
             request.OpeningAccountingPeriod.Id,
             request.DateOpened);
         accountRepository.Add(account);
-        accountGoalService.CreateForAccount(account);
+        accountGoalService.CreateForAccount(account, request.MinimumEndingBalance, request.MaximumEndingBalance);
         accountingPeriodBalanceService.AddAccount(account);
         return true;
     }
@@ -80,7 +80,7 @@ public class AccountService(
             request.Type,
             request.OnboardedBalance);
         accountRepository.Add(account);
-        accountGoalService.CreateForAccount(account);
+        accountGoalService.CreateForAccount(account, request.MinimumEndingBalance, request.MaximumEndingBalance);
         return true;
     }
 
@@ -184,6 +184,10 @@ public class AccountService(
                 new ValidationErrorPath(nameof(CreateAccountRequest.Type)),
                 "The provided account type is invalid."));
         }
+        errors = errors.Concat(AccountGoalService.ValidateForNewAccount(
+            request.Type,
+            request.MinimumEndingBalance,
+            request.MaximumEndingBalance));
         return !errors.Any();
     }
 
@@ -228,6 +232,10 @@ public class AccountService(
                 errors = errors.Append(new ValidationError(ValidationErrorPath.Empty, "Onboarding this Account would cause the unassigned fund balance to go negative."));
             }
         }
+        errors = errors.Concat(AccountGoalService.ValidateForNewAccount(
+            request.Type,
+            request.MinimumEndingBalance,
+            request.MaximumEndingBalance));
         return !errors.Any();
     }
 

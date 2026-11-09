@@ -163,6 +163,7 @@ const FundTrendsListFrame = function ({
       getKey={(fund) => fund.id}
       getHref={(fund) => routes.workspaceDetail(fund.id, detailParams)}
       totalCount={totalCount}
+      defaultSort={FundWithBalanceRangeSort.Name}
       sortParamName={fundTrendsParamNames.sort}
       pageParamName={fundTrendsParamNames.page}
       emptyState={emptyState}

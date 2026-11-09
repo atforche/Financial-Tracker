@@ -10,6 +10,7 @@ import {
 } from "@/accounting-periods/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { Dayjs } from "dayjs";
+import isAccountGoalRangeValid from "@/account-goals/isAccountGoalRangeValid";
 
 /**
  * Gets the normalized date opened for creating an account.
@@ -34,6 +35,33 @@ const getNormalizedDateOpened = function (
 };
 
 /**
+ * An account goal's bounds as entered on the account form.
+ */
+interface AccountGoalDraft {
+  readonly minimumEndingBalance: number;
+  readonly maximumEndingBalance: number | null;
+}
+
+/**
+ * Gets the goal bounds to send with a new account: none unless it is a standard account, which has goals, and null
+ * when they are out of order.
+ */
+const getGoalBounds = function (
+  accountType: AccountType,
+  { minimumEndingBalance, maximumEndingBalance }: AccountGoalDraft,
+): Pick<
+  CreateAccountRequest,
+  "minimumEndingBalance" | "maximumEndingBalance"
+> | null {
+  if (accountType !== AccountType.Standard) {
+    return {};
+  }
+  return isAccountGoalRangeValid(minimumEndingBalance, maximumEndingBalance)
+    ? { minimumEndingBalance, maximumEndingBalance }
+    : null;
+};
+
+/**
  * Validates a request to create an account.
  */
 const buildCreateRequest = function (
@@ -42,6 +70,7 @@ const buildCreateRequest = function (
   accountType: AccountType | null,
   accountingPeriod: AccountingPeriod | null,
   dateOpened: Dayjs | null,
+  goal: AccountGoalDraft,
 ): CreateAccountRequest | null {
   if (
     name === "" ||
@@ -51,13 +80,17 @@ const buildCreateRequest = function (
   ) {
     return null;
   }
-  return {
-    name,
-    financialInstitution,
-    type: accountType,
-    openingAccountingPeriodId: accountingPeriod.id,
-    dateOpened: dateOpened.format("YYYY-MM-DD"),
-  };
+  const goalBounds = getGoalBounds(accountType, goal);
+  return goalBounds === null
+    ? null
+    : {
+        name,
+        financialInstitution,
+        type: accountType,
+        openingAccountingPeriodId: accountingPeriod.id,
+        dateOpened: dateOpened.format("YYYY-MM-DD"),
+        ...goalBounds,
+      };
 };
 
 /**
@@ -68,16 +101,21 @@ const buildOnboardRequest = function (
   financialInstitution: string | null,
   accountType: AccountType | null,
   onboardedBalance: number | null,
+  goal: AccountGoalDraft,
 ): OnboardAccountRequest | null {
   if (name === "" || accountType === null || onboardedBalance === null) {
     return null;
   }
-  return {
-    name,
-    financialInstitution,
-    type: accountType,
-    onboardedBalance,
-  };
+  const goalBounds = getGoalBounds(accountType, goal);
+  return goalBounds === null
+    ? null
+    : {
+        name,
+        financialInstitution,
+        type: accountType,
+        onboardedBalance,
+        ...goalBounds,
+      };
 };
 
 /**

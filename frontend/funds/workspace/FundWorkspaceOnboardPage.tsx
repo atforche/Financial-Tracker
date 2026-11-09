@@ -1,8 +1,6 @@
-import FundWorkspacePageHeader from "@/funds/workspace/FundWorkspacePageHeader";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
 import OnboardFundForm from "@/funds/workspace/OnboardFundForm";
-import PageLayout from "@/framework/view/PageLayout";
 import createApiClient from "@/framework/data/createApiClient";
 import { isUnassignedFund } from "@/funds/helpers";
 import { redirect } from "next/navigation";
@@ -54,13 +52,10 @@ const FundWorkspaceOnboardPage = async function ({
       .postedBalance ?? null;
 
   return (
-    <PageLayout>
-      <FundWorkspacePageHeader backHref={workspaceUrl} title="Onboard Fund" />
-      <OnboardFundForm
-        redirectUrl={workspaceUrl}
-        unassignedBalance={unassignedBalance}
-      />
-    </PageLayout>
+    <OnboardFundForm
+      redirectUrl={workspaceUrl}
+      unassignedBalance={unassignedBalance}
+    />
   );
 };
 

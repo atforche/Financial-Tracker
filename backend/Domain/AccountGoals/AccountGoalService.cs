@@ -94,9 +94,10 @@ public sealed class AccountGoalService(
         });
 
     /// <summary>
-    /// Creates default Account Goals for an Account across its applicable Accounting Periods.
+    /// Creates Account Goals for an Account across its applicable Accounting Periods, using the provided bounds or the
+    /// defaults when none are provided.
     /// </summary>
-    public void CreateForAccount(Account account)
+    public void CreateForAccount(Account account, decimal? minimumEndingBalance = null, decimal? maximumEndingBalance = null)
     {
         if (account.Type != AccountType.Standard)
         {
@@ -104,7 +105,12 @@ public sealed class AccountGoalService(
         }
         if (account.IsOnboarded)
         {
-            _ = CreateOrThrow(new CreateAccountGoalRequest { Account = account });
+            _ = CreateOrThrow(new CreateAccountGoalRequest
+            {
+                Account = account,
+                MinimumEndingBalance = minimumEndingBalance,
+                MaximumEndingBalance = maximumEndingBalance,
+            });
             return;
         }
 
@@ -115,6 +121,8 @@ public sealed class AccountGoalService(
             {
                 Account = account,
                 AccountingPeriod = accountingPeriod,
+                MinimumEndingBalance = minimumEndingBalance,
+                MaximumEndingBalance = maximumEndingBalance,
             });
             accountingPeriod = accountingPeriodRepository.GetNextAccountingPeriod(accountingPeriod.Id);
         }
@@ -297,6 +305,25 @@ public sealed class AccountGoalService(
             }
         }
         return errors;
+    }
+
+    /// <summary>
+    /// Validates the goal bounds provided when creating or onboarding an Account. Only standard Accounts have goals.
+    /// </summary>
+    public static IEnumerable<ValidationError> ValidateForNewAccount(
+        AccountType accountType,
+        decimal? minimumEndingBalance,
+        decimal? maximumEndingBalance)
+    {
+        if (accountType == AccountType.Standard)
+        {
+            return Validate(minimumEndingBalance, maximumEndingBalance);
+        }
+        return minimumEndingBalance == null && maximumEndingBalance == null
+            ? []
+            : [new ValidationError(
+                ValidationErrorPath.Empty,
+                "Account Goals can only be associated with standard Accounts.")];
     }
 
     /// <summary>

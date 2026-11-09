@@ -24,4 +24,14 @@ public record OnboardAccountRequest
     /// Onboarded Balance for the Account
     /// </summary>
     public required decimal OnboardedBalance { get; init; }
+
+    /// <summary>
+    /// Minimum ending balance for the Account's goals, when the Account is a standard Account.
+    /// </summary>
+    public decimal? MinimumEndingBalance { get; init; }
+
+    /// <summary>
+    /// Maximum ending balance for the Account's goals, when the Account is a standard Account.
+    /// </summary>
+    public decimal? MaximumEndingBalance { get; init; }
 }

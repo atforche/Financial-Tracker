@@ -7,11 +7,11 @@ import {
 } from "@/accounts/workspace/searchParams";
 import type { AccountType } from "@/accounts/types";
 import AccountTypeFilter from "@/accounts/AccountTypeFilter";
-import type { AccountWorkspaceAction } from "@/accounts/workspace/types";
 import { Button } from "@mui/material";
 import type { JSX } from "react";
 import SearchBar from "@/framework/listframe/SearchBar";
 import WorkspaceHeader from "@/framework/view/WorkspaceHeader";
+import routes from "@/accounts/routes";
 import { shouldPersistAccountTypes } from "@/accounts/accountTypeFilterHelpers";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
@@ -34,11 +34,8 @@ const AccountWorkspaceFilter = function ({
   const searchParams = useSearchParams();
   const filters = parseAccountWorkspaceFilters(searchParams);
 
-  const {
-    action: actionParamName,
-    accountType: accountTypeParamName,
-    search: searchParamName,
-  } = accountWorkspaceParamNames;
+  const { accountType: accountTypeParamName, search: searchParamName } =
+    accountWorkspaceParamNames;
 
   const currentAccountTypes = filters.accountTypes;
 
@@ -67,12 +64,6 @@ const AccountWorkspaceFilter = function ({
     ? "Onboard Account"
     : "Create Account";
 
-  const setAction = function (action: AccountWorkspaceAction): void {
-    updateParams((params) => {
-      params.set(actionParamName, action);
-    });
-  };
-
   return (
     <WorkspaceHeader
       title="Accounts"
@@ -80,9 +71,11 @@ const AccountWorkspaceFilter = function ({
         canWrite ? (
           <Button
             variant="contained"
-            onClick={() => {
-              setAction(isInOnboardingMode ? "onboard" : "create");
-            }}
+            href={
+              isInOnboardingMode
+                ? routes.workspaceOnboard()
+                : routes.workspaceCreate()
+            }
           >
             {addActionLabel}
           </Button>

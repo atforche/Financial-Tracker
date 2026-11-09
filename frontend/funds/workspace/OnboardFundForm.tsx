@@ -1,31 +1,26 @@
 "use client";
 
-import { Button, Stack, Typography } from "@mui/material";
 import {
   type JSX,
   startTransition,
   useActionState,
   useEffect,
   useEffectEvent,
-  useRef,
   useState,
 } from "react";
-import {
-  buildOnboardFundRequest,
-  validateOnboardFundSetup,
-} from "@/funds/workspace/helpers";
+import { Stack, Typography } from "@mui/material";
 import {
   compareCurrencyAmounts,
   formatCurrency,
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
-import ConstrainedContent from "@/framework/view/ConstrainedContent";
+import ContentSurface from "@/framework/view/ContentSurface";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
-import ErrorAlert from "@/framework/alerts/ErrorAlert";
-import Frame from "@/framework/view/Frame";
+import FormPage from "@/framework/view/FormPage";
 import FundGoalSetupSection from "@/funds/workspace/FundGoalSetupSection";
+import type { Route } from "next";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
+import { buildOnboardFundRequest } from "@/funds/workspace/helpers";
 import onboardFund from "@/funds/workspace/onboardFund";
 import useFundSetupState from "@/funds/workspace/useFundSetupState";
 import { useRouter } from "next/navigation";
@@ -35,7 +30,7 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
  * Props for the OnboardFundForm component.
  */
 interface OnboardFundFormProps {
-  readonly redirectUrl: string;
+  readonly redirectUrl: Route;
   readonly unassignedBalance: number | null;
 }
 
@@ -63,18 +58,10 @@ const OnboardFundForm = function ({
     allowExpectedContributionAboveMaximum,
     setAllowExpectedContributionAboveMaximum,
   } = fundSetup;
-  const formRef = useRef<HTMLDivElement | null>(null);
   const [onboardedBalance, setOnboardedBalance] = useState<number | null>(null);
   const [state, action, pending] = useActionState(onboardFund, {});
 
-  const reset = function (): void {
-    fundSetup.reset();
-    setOnboardedBalance(null);
-    focusFirstEntryControl(formRef.current);
-  };
-
   const handleSuccess = useEffectEvent((): void => {
-    reset();
     router.replace(redirectUrl);
   });
   useEffect(() => {
@@ -88,7 +75,6 @@ const OnboardFundForm = function ({
       ? null
       : getCurrencyDifference(unassignedBalance, onboardedBalance ?? 0);
 
-  const fundSetupIsComplete = validateOnboardFundSetup(name, onboardedBalance);
   const request = buildOnboardFundRequest({
     name,
     description,
@@ -104,99 +90,82 @@ const OnboardFundForm = function ({
   }
 
   return (
-    <ConstrainedContent maxWidth={780}>
-      <Stack ref={formRef} spacing={3}>
-        <Frame
-          title="Fund Setup"
-          color={fundSetupIsComplete ? "success" : "error"}
-        >
-          <Stack spacing={2.5}>
-            <StringEntryField
-              label="Name"
-              value={name}
-              setValue={setName}
-              errorMessage={state.nameErrors ?? null}
-            />
-            <StringEntryField
-              label="Description"
-              value={description}
-              setValue={setDescription}
-              errorMessage={state.descriptionErrors ?? null}
-            />
-            <CurrencyEntryField
-              label="Starting Balance"
-              value={onboardedBalance}
-              setValue={setOnboardedBalance}
-              errorMessage={state.onboardedBalanceErrors ?? null}
-            />
-            {remainingUnassignedAmount !== null ? (
-              <Typography
-                variant="body2"
-                sx={{
-                  color:
-                    compareCurrencyAmounts(remainingUnassignedAmount, 0) < 0
-                      ? "error.main"
-                      : "text.secondary",
-                }}
-              >
-                Remaining Unassigned Balance:{" "}
-                {formatCurrency(remainingUnassignedAmount)}
-              </Typography>
-            ) : null}
-          </Stack>
-        </Frame>
-
-        <FundGoalSetupSection
-          color="success"
-          accountingPeriod={null}
-          plannedMonthlyContribution={plannedMonthlyContribution}
-          setPlannedMonthlyContribution={setPlannedMonthlyContribution}
-          minimumEndingBalance={minimumEndingBalance}
-          setMinimumEndingBalance={setMinimumEndingBalance}
-          maximumEndingBalance={maximumEndingBalance}
-          setMaximumEndingBalance={setMaximumEndingBalance}
-          allowExpectedContributionAboveMaximum={
-            allowExpectedContributionAboveMaximum
-          }
-          setAllowExpectedContributionAboveMaximum={
-            setAllowExpectedContributionAboveMaximum
-          }
-        />
-
-        <ErrorAlert
-          errorMessage={state.errorTitle ?? null}
-          unmappedErrors={state.unmappedErrors ?? null}
-        />
-
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          justifyContent="flex-end"
-        >
-          <Button variant="outlined" onClick={reset}>
-            Reset
-          </Button>
-          <Button
-            variant="contained"
-            loading={pending}
-            disabled={request === null}
-            onClick={() => {
-              if (request === null) {
-                return;
-              }
-              startTransition(() => {
-                action({
-                  redirectUrl,
-                  request,
-                });
-              });
-            }}
-          >
-            Onboard Fund
-          </Button>
+    <FormPage
+      title="Onboard Fund"
+      returnHref={redirectUrl}
+      returnLabel="Back to Funds"
+      submitLabel="Onboard Fund"
+      canSubmit={request !== null}
+      pending={pending}
+      onSubmit={() => {
+        if (request === null) {
+          return;
+        }
+        startTransition(() => {
+          action({ redirectUrl, request });
+        });
+      }}
+      errorTitle={state.errorTitle ?? null}
+      unmappedErrors={state.unmappedErrors ?? null}
+    >
+      <ContentSurface>
+        <Stack spacing={2}>
+          <Typography variant="h5">Fund</Typography>
+          <StringEntryField
+            label="Name"
+            value={name}
+            setValue={setName}
+            errorMessage={state.nameErrors ?? null}
+          />
+          <StringEntryField
+            label="Description"
+            value={description}
+            setValue={setDescription}
+            errorMessage={state.descriptionErrors ?? null}
+          />
+          <CurrencyEntryField
+            label="Starting Balance"
+            value={onboardedBalance}
+            setValue={setOnboardedBalance}
+            errorMessage={state.onboardedBalanceErrors ?? null}
+          />
+          {remainingUnassignedAmount === null ? null : (
+            <Typography
+              variant="body2"
+              sx={{
+                color:
+                  compareCurrencyAmounts(remainingUnassignedAmount, 0) < 0
+                    ? "error.main"
+                    : "text.secondary",
+              }}
+            >
+              Remaining Unassigned Balance:{" "}
+              {formatCurrency(remainingUnassignedAmount)}
+            </Typography>
+          )}
         </Stack>
-      </Stack>
-    </ConstrainedContent>
+      </ContentSurface>
+      <ContentSurface>
+        <Stack spacing={2}>
+          <Typography variant="h5">Goal</Typography>
+          <FundGoalSetupSection
+            accountingPeriod={null}
+            plannedMonthlyContribution={plannedMonthlyContribution}
+            setPlannedMonthlyContribution={setPlannedMonthlyContribution}
+            minimumEndingBalance={minimumEndingBalance}
+            setMinimumEndingBalance={setMinimumEndingBalance}
+            maximumEndingBalance={maximumEndingBalance}
+            setMaximumEndingBalance={setMaximumEndingBalance}
+            allowExpectedContributionAboveMaximum={
+              allowExpectedContributionAboveMaximum
+            }
+            setAllowExpectedContributionAboveMaximum={
+              setAllowExpectedContributionAboveMaximum
+            }
+          />
+        </Stack>
+      </ContentSurface>
+    </FormPage>
   );
 };
 

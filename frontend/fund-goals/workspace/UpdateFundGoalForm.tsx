@@ -147,7 +147,6 @@ const UpdateFundGoalForm = function ({
       >
         <Stack ref={formRef} spacing={3}>
           <FundGoalSetupSection
-            showFrame={false}
             accountingPeriod={accountingPeriod}
             originalPlannedMonthlyContribution={
               fundGoal.plannedMonthlyContribution ?? null

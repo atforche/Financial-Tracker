@@ -8,7 +8,7 @@ import {
   TableSortLabel,
   Typography,
 } from "@mui/material";
-import type { JSX, ReactNode } from "react";
+import { type JSX, type ReactNode, useEffect } from "react";
 import { getPaginationIndex, getRowsPerPage } from "@/framework/listframe/page";
 import ChevronRight from "@mui/icons-material/ChevronRight";
 import ContentSurface from "@/framework/view/ContentSurface";
@@ -64,6 +64,11 @@ interface PagedTableProps<T> {
   readonly getHref: (item: T) => Route;
   readonly totalCount: number;
   readonly sortParamName: string;
+
+  /**
+   * The sort the server applies while the URL names none.
+   */
+  readonly defaultSort: string;
   readonly pageParamName: string;
   readonly emptyState: PagedTableEmptyState;
 }
@@ -96,6 +101,7 @@ const PagedTable = function <T>({
   getHref,
   totalCount,
   sortParamName,
+  defaultSort,
   pageParamName,
   emptyState,
 }: PagedTableProps<T>): JSX.Element {
@@ -104,7 +110,23 @@ const PagedTable = function <T>({
   const updateSortParams = useSearchParamUpdater([pageParamName]);
   const updatePageParams = useSearchParamUpdater([]);
   const rowsPerPage = getRowsPerPage(searchParams.get("pageSize"));
-  const currentSort = searchParams.get(sortParamName);
+  const currentSort = searchParams.get(sortParamName) ?? defaultSort;
+  const currentPage = searchParams.get(pageParamName);
+  const paginationIndex = getPaginationIndex(
+    currentPage,
+    totalCount,
+    rowsPerPage,
+  );
+
+  // A page past the end, such as after a larger page size, moves to the last page
+  useEffect(() => {
+    const canonicalPage = (paginationIndex + 1).toString();
+    if (currentPage !== null && currentPage !== canonicalPage) {
+      updatePageParams((params) => {
+        params.set(pageParamName, canonicalPage);
+      });
+    }
+  }, [currentPage, pageParamName, paginationIndex, updatePageParams]);
   const rowSx = {
     display: "grid",
     alignItems: "center",
@@ -140,7 +162,7 @@ const PagedTable = function <T>({
           <Typography variant="h5">{title}</Typography>
           {headerContent}
         </Stack>
-        {data.length === 0 ? (
+        {totalCount === 0 ? (
           <Stack spacing={1} sx={{ alignItems: "center", py: 4 }}>
             <Typography variant="subtitle1">{emptyState.title}</Typography>
             <Typography
@@ -243,11 +265,7 @@ const PagedTable = function <T>({
             rowsPerPageOptions={[rowsPerPage]}
             count={totalCount}
             rowsPerPage={rowsPerPage}
-            page={getPaginationIndex(
-              searchParams.get(pageParamName),
-              totalCount,
-              rowsPerPage,
-            )}
+            page={paginationIndex}
             onPageChange={(_, newPage) => {
               updatePageParams((params) => {
                 params.set(pageParamName, (newPage + 1).toString());

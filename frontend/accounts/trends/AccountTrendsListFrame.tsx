@@ -150,9 +150,9 @@ const AccountTrendsListFrame = function ({
             variant="contained"
             onClick={() => {
               router.push(
-                routes.workspace({
-                  action: isInOnboardingMode ? "onboard" : "create",
-                }),
+                isInOnboardingMode
+                  ? routes.workspaceOnboard()
+                  : routes.workspaceCreate(),
               );
             }}
           >
@@ -178,6 +178,7 @@ const AccountTrendsListFrame = function ({
       getKey={(account) => account.id}
       getHref={(account) => routes.workspaceDetail(account.id, detailParams)}
       totalCount={totalCount}
+      defaultSort={AccountWithBalanceRangeSort.Name}
       sortParamName={accountTrendsParamNames.sort}
       pageParamName={accountTrendsParamNames.page}
       emptyState={emptyState}

@@ -19,7 +19,6 @@ interface AccountWorkspaceFilters {
  * Defines the parameter names used in the account workspace search parameters.
  */
 const accountWorkspaceParamNames = {
-  action: propertyName<AccountWorkspaceSearchParams>("action"),
   accountType: propertyName<AccountWorkspaceSearchParams>("accountType"),
   search: propertyName<AccountWorkspaceSearchParams>("search"),
 } as const;

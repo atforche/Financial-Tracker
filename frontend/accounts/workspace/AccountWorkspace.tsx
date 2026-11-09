@@ -2,7 +2,6 @@ import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
 } from "@/accounts/accountTypeFilterHelpers";
-import AccountWorkspaceActions from "@/accounts/workspace/AccountWorkspaceActions";
 import AccountWorkspaceCards from "@/accounts/workspace/AccountWorkspaceCards";
 import AccountWorkspaceFilter from "@/accounts/workspace/AccountWorkspaceFilter";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
@@ -20,25 +19,19 @@ interface AccountWorkspaceProps {
 }
 
 /**
- * Displays the account workspace with card-backed navigation and actions.
+ * Displays the account workspace with card-backed navigation.
  */
 const AccountWorkspace = async function ({
   searchParams,
 }: AccountWorkspaceProps): Promise<JSX.Element> {
-  const { search, accountType, action } = await searchParams;
+  const { search, accountType } = await searchParams;
   const apiClient = await createApiClient();
   const currentAccountTypes = normalizeAccountTypes(
     toRepeatedSearchParams(accountType),
   );
   const hasAccountTypeFilter = shouldPersistAccountTypes(currentAccountTypes);
 
-  // Only the dialogs need the open periods and financial institutions
-  const [
-    boundsResponse,
-    accountsResponse,
-    openAccountingPeriodsResponse,
-    financialInstitutionsResponse,
-  ] = await Promise.all([
+  const [boundsResponse, accountsResponse] = await Promise.all([
     apiClient.GET("/accounting-periods/bounds"),
     apiClient.GET("/accounts/with-balances", {
       params: {
@@ -50,14 +43,6 @@ const AccountWorkspace = async function ({
         },
       },
     }),
-    action === "create"
-      ? apiClient.GET("/accounting-periods", {
-          params: { query: { "Filter.IsOpen": true } },
-        })
-      : null,
-    action === undefined
-      ? null
-      : apiClient.GET("/accounts/financial-institutions"),
   ]);
   const isInOnboardingMode =
     unwrapApiResponse(
@@ -68,20 +53,6 @@ const AccountWorkspace = async function ({
     accountsResponse,
     "Failed to fetch accounts",
   ).items;
-  const openAccountingPeriods =
-    openAccountingPeriodsResponse === null
-      ? []
-      : unwrapApiResponse(
-          openAccountingPeriodsResponse,
-          "Failed to fetch accounting periods",
-        ).items;
-  const financialInstitutions =
-    financialInstitutionsResponse === null
-      ? []
-      : unwrapApiResponse(
-          financialInstitutionsResponse,
-          "Failed to fetch financial institutions",
-        ).items;
 
   return (
     <PageLayout>
@@ -94,12 +65,6 @@ const AccountWorkspace = async function ({
         }}
         hasActiveFilters={(search ?? "").trim() !== "" || hasAccountTypeFilter}
         isInOnboardingMode={isInOnboardingMode}
-      />
-      <AccountWorkspaceActions
-        accountingPeriods={openAccountingPeriods}
-        financialInstitutions={financialInstitutions}
-        isInOnboardingMode={isInOnboardingMode}
-        requestedAction={action ?? null}
       />
     </PageLayout>
   );
