@@ -7,10 +7,11 @@ import {
   useContext,
   useState,
 } from "react";
+import TransactionSection, {
+  type FrameColor,
+} from "@/transactions/workspace/TransactionSection";
 import CollectionItemDeleteButton from "@/framework/view/CollectionItemDeleteButton";
-import type { FrameColor } from "@/framework/view/Frame";
 import { Stack } from "@mui/material";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
 
 /**
  * Context exposing the header element of the enclosing source or destination frame, so that nested

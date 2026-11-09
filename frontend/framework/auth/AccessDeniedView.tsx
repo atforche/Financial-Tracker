@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Stack, Typography } from "@mui/material";
-import Frame from "@/framework/view/Frame";
+import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import { signOut } from "next-auth/react";
@@ -12,7 +12,10 @@ import { signOut } from "next-auth/react";
 const AccessDeniedView = function (): JSX.Element {
   return (
     <PageLayout>
-      <Frame title="Access Unavailable" color="error">
+      <ContentSurface>
+        <Typography variant="h5" color="error" sx={{ mb: 2 }}>
+          Access Unavailable
+        </Typography>
         <Stack spacing={2} alignItems="flex-start">
           <Typography>
             This account is not currently authorized to use Financial Tracker.
@@ -28,7 +31,7 @@ const AccessDeniedView = function (): JSX.Element {
             Return to sign in
           </Button>
         </Stack>
-      </Frame>
+      </ContentSurface>
     </PageLayout>
   );
 };

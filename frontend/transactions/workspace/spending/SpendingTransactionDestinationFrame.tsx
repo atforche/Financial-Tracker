@@ -8,7 +8,7 @@ import { Box, Stack } from "@mui/material";
 import type { FundBalanceEvent, FundWithBalance } from "@/funds/types";
 import type { Location, LocationDraft } from "@/locations/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
-import type { FrameColor } from "@/framework/view/Frame";
+import type { FrameColor } from "@/transactions/workspace/TransactionSection";
 import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import type { JSX } from "react";

@@ -1,13 +1,7 @@
 import { Box, Stack, Typography } from "@mui/material";
-import Frame, { type FrameColor } from "@/framework/view/Frame";
 import type { JSX, ReactNode } from "react";
 import ContentSurface from "@/framework/view/ContentSurface";
 import { chartFontFamily } from "@/framework/charts/chartStyles";
-
-/**
- * How a chart is presented: in a frame with a colored header, or on a plain surface with its title inside.
- */
-type ChartFrameVariant = "frame" | "surface";
 
 /**
  * Props for the ChartFrame component.
@@ -15,13 +9,11 @@ type ChartFrameVariant = "frame" | "surface";
 interface ChartFrameProps {
   readonly title: string;
   readonly headerContent?: ReactNode;
-  readonly variant?: ChartFrameVariant;
   readonly emptyMessage: string;
   readonly hasData: boolean;
   readonly children: ReactNode;
   readonly xAxisLabel?: string;
   readonly yAxisLabel?: string;
-  readonly color?: FrameColor;
 }
 
 /**
@@ -30,13 +22,11 @@ interface ChartFrameProps {
 const ChartFrame = function ({
   title,
   headerContent,
-  variant = "frame",
   emptyMessage,
   hasData,
   children,
   xAxisLabel,
   yAxisLabel,
-  color = "primary",
 }: ChartFrameProps): JSX.Element {
   const content = (
     <Stack spacing={hasData ? 2.5 : 1}>
@@ -90,30 +80,21 @@ const ChartFrame = function ({
     </Stack>
   );
 
-  if (variant === "surface") {
-    return (
-      <ContentSurface>
-        <Stack spacing={2}>
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{ alignItems: "center", justifyContent: "space-between" }}
-          >
-            <Typography variant="h5">{title}</Typography>
-            {headerContent}
-          </Stack>
-          {content}
-        </Stack>
-      </ContentSurface>
-    );
-  }
-
   return (
-    <Frame title={title} headerContent={headerContent} color={color}>
-      <Box sx={{ p: { xs: 2, md: 1.5 } }}>{content}</Box>
-    </Frame>
+    <ContentSurface>
+      <Stack spacing={2}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{ alignItems: "center", justifyContent: "space-between" }}
+        >
+          <Typography variant="h5">{title}</Typography>
+          {headerContent}
+        </Stack>
+        {content}
+      </Stack>
+    </ContentSurface>
   );
 };
 
-export type { ChartFrameVariant };
 export default ChartFrame;

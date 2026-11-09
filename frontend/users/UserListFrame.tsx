@@ -1,15 +1,12 @@
 "use client";
 
 import { type JSX, useState } from "react";
+import PagedTable, { type PagedTableColumn } from "@/framework/view/PagedTable";
 import { UserRoleModel, UserStatusModel } from "@/framework/data/api";
 import { formatDate, formatUserRole } from "@/users/userManagementHelpers";
 import { getPaginationIndex, getRowsPerPage } from "@/framework/listframe/page";
-import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import { Button } from "@mui/material";
-import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
 import InviteUserForm from "@/users/InviteUserForm";
-import ListFrame from "@/framework/listframe/ListFrame";
-import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import ManageUserDialog from "@/users/ManageUserDialog";
 import type { User } from "@/users/types";
 import { useSearchParams } from "next/navigation";
@@ -49,58 +46,45 @@ const UserListFrame = function ({
     paginationIndex * rowsPerPage,
     (paginationIndex + 1) * rowsPerPage,
   );
-  const columns: readonly ColumnDefinition<User>[] = [
+  const columns: readonly PagedTableColumn<User>[] = [
     {
       name: "name",
-      headerContent: "Name",
-      getBodyContent: (user) => user.displayName ?? "—",
-      minWidth: 150,
+      header: "Name",
+      getValue: (user) => user.displayName ?? "—",
+      width: "minmax(0, 1fr)",
     },
     {
       name: "email",
-      headerContent: "Email",
-      getBodyContent: (user) => user.email,
-      minWidth: 220,
+      header: "Email",
+      getValue: (user) => user.email,
+      width: "minmax(0, 1.5fr)",
     },
     {
       name: "role",
-      headerContent: "Role",
-      getBodyContent: (user) => formatUserRole(user.role),
+      header: "Role",
+      getValue: (user) => formatUserRole(user.role),
+      width: "minmax(0, 0.8fr)",
+      hideOnMobile: true,
     },
     {
       name: "status",
-      headerContent: "Status",
-      getBodyContent: (user) => user.status,
+      header: "Status",
+      getValue: (user) => user.status,
+      width: "minmax(0, 0.8fr)",
+      hideOnMobile: true,
     },
     {
       name: "lastSignIn",
-      headerContent: "Last sign-in",
-      getBodyContent: (user) => formatDate(user.lastLoginAt),
-    },
-    {
-      name: "actions",
-      headerContent: "",
-      getBodyContent: (user) => (
-        <ListFrameActionButton
-          size="small"
-          color="primary"
-          onClick={() => {
-            setManagedUser(user);
-          }}
-          ariaLabel={`Manage ${user.displayName ?? user.email}`}
-        >
-          <ArrowForwardOutlined fontSize="small" color="action" />
-        </ListFrameActionButton>
-      ),
-      alignment: "right",
-      minWidth: 52,
-      maxWidth: 52,
+      header: "Last sign-in",
+      getValue: (user) => formatDate(user.lastLoginAt),
+      width: "minmax(0, 1fr)",
+      hideOnMobile: true,
     },
   ];
 
   return (
     <>
-      <ListFrame<User>
+      <PagedTable
         title="Application Users"
         headerContent={
           <Button
@@ -113,15 +97,14 @@ const UserListFrame = function ({
           </Button>
         }
         columns={columns}
-        getId={(user) => user.id}
         data={pageUsers}
+        getKey={(item) => item.id}
+        onRowClick={(item) => {
+          setManagedUser(item);
+        }}
         totalCount={users.length}
         pageParamName={pageParamName}
-        hasActiveFilters={false}
-        onRowClick={(user) => {
-          setManagedUser(user);
-        }}
-        initialEmptyState={{
+        emptyState={{
           title: "No Application Users",
           description: "Users appear here after accepting an invitation.",
         }}

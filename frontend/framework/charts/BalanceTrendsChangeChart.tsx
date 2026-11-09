@@ -6,7 +6,6 @@ import {
 } from "@/framework/currencyHelpers";
 import { BalanceGranularityModel } from "@/framework/data/api";
 import BarMetricChart from "@/framework/charts/BarMetricChart";
-import type { ChartFrameVariant } from "@/framework/charts/ChartFrame";
 import type { JSX } from "react";
 import { buildBalanceChangeChartPoints } from "@/framework/charts/balanceChangeHelpers";
 
@@ -27,7 +26,6 @@ interface BalanceTrendsChangeChartProps {
   readonly openingBalance: number | null;
   readonly granularity?: BalanceGranularityModel;
   readonly title?: string;
-  readonly variant?: ChartFrameVariant;
 }
 
 /**
@@ -40,12 +38,10 @@ const BalanceTrendsChangeChart = function ({
   openingBalance,
   granularity = BalanceGranularityModel.Day,
   title = "Balance Change",
-  variant = "frame",
 }: BalanceTrendsChangeChartProps): JSX.Element {
   return (
     <BarMetricChart
       title={title}
-      variant={variant}
       emptyMessage="No balance changes are available for the selected trends range."
       chartPoints={buildBalanceChangeChartPoints({
         mode,

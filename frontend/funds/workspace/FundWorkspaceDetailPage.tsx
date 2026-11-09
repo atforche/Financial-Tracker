@@ -251,7 +251,6 @@ const FundWorkspaceDetailPage = async function ({
               : { granularity: dateActivity.totals.granularity }),
           })}
           title="Balance"
-          variant="surface"
           emptyMessage="No posted balance movement is available in this range."
           xAxisLabel="Date"
           yAxisLabel="Fund Balance"

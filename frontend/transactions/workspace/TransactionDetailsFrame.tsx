@@ -1,14 +1,15 @@
 import type { JSX, ReactNode } from "react";
+import TransactionSection, {
+  type FrameColor,
+} from "@/transactions/workspace/TransactionSection";
 import { getMaximumDate, getMinimumDate } from "@/accounting-periods/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import type { Dayjs } from "dayjs";
-import type { FrameColor } from "@/framework/view/Frame";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import StringEntryField from "@/framework/forms/StringEntryField";
-import TransactionSection from "@/transactions/workspace/TransactionSection";
 
 /**
  * Props for the TransactionDetailsFrame component.

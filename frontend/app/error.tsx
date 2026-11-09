@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Stack, Typography } from "@mui/material";
-import Frame from "@/framework/view/Frame";
+import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 
@@ -19,7 +19,10 @@ interface ErrorPageProps {
 const ErrorPage = function ({ error, reset }: ErrorPageProps): JSX.Element {
   return (
     <PageLayout>
-      <Frame title="Unable To Load This Page" color="error">
+      <ContentSurface>
+        <Typography variant="h5" color="error" sx={{ mb: 2 }}>
+          Unable To Load This Page
+        </Typography>
         <Stack spacing={2} alignItems="flex-start">
           <Typography>
             Something went wrong while loading the requested data. Try the
@@ -40,7 +43,7 @@ const ErrorPage = function ({ error, reset }: ErrorPageProps): JSX.Element {
             </Typography>
           ) : null}
         </Stack>
-      </Frame>
+      </ContentSurface>
     </PageLayout>
   );
 };

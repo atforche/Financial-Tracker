@@ -12,7 +12,7 @@ import type {
 } from "@/fund-goals/types";
 import AccountBalanceEventFrame from "@/transactions/workspace/AccountBalanceEventFrame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
-import type { FrameColor } from "@/framework/view/Frame";
+import type { FrameColor } from "@/transactions/workspace/TransactionSection";
 import type { FundAssignmentDraft } from "@/funds/assignmentPlanner/helpers";
 import IncomeFundAssignmentPlanner from "@/funds/assignmentPlanner/IncomeFundAssignmentPlanner";
 import type { JSX } from "react";

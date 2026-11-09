@@ -269,7 +269,6 @@ const AccountWorkspaceDetailPage = async function ({
               : { granularity: totals.granularity }),
           })}
           title="Balance"
-          variant="surface"
           emptyMessage="No posted balance movement is available in this range."
           xAxisLabel="Date"
           yAxisLabel="Posted Balance"
@@ -290,7 +289,6 @@ const AccountWorkspaceDetailPage = async function ({
               dates: null,
             })}
             title="Balance"
-            variant="surface"
             emptyMessage="No accounting periods are available in this range."
             xAxisLabel="Accounting Period"
             yAxisLabel="Closing Balance"

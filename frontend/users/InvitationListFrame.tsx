@@ -1,12 +1,9 @@
 "use client";
 
 import { type JSX, useState } from "react";
+import PagedTable, { type PagedTableColumn } from "@/framework/view/PagedTable";
 import { formatDate, formatUserRole } from "@/users/userManagementHelpers";
 import { getPaginationIndex, getRowsPerPage } from "@/framework/listframe/page";
-import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
-import type ColumnDefinition from "@/framework/listframe/ColumnDefinition";
-import ListFrame from "@/framework/listframe/ListFrame";
-import ListFrameActionButton from "@/framework/listframe/ListFrameActionButton";
 import ManageInvitationDialog from "@/users/ManageInvitationDialog";
 import type { UserInvitation } from "@/users/types";
 import { useSearchParams } from "next/navigation";
@@ -39,67 +36,55 @@ const InvitationListFrame = function ({
     paginationIndex * rowsPerPage,
     (paginationIndex + 1) * rowsPerPage,
   );
-  const columns: readonly ColumnDefinition<UserInvitation>[] = [
+  const columns: readonly PagedTableColumn<UserInvitation>[] = [
     {
       name: "email",
-      headerContent: "Email",
-      getBodyContent: (invitation) => invitation.email,
+      header: "Email",
+      getValue: (invitation) => invitation.email,
+      width: "minmax(0, 1.5fr)",
     },
     {
       name: "role",
-      headerContent: "Role",
-      getBodyContent: (invitation) => formatUserRole(invitation.role),
+      header: "Role",
+      getValue: (invitation) => formatUserRole(invitation.role),
+      width: "minmax(0, 0.8fr)",
+      hideOnMobile: true,
     },
     {
       name: "status",
-      headerContent: "Status",
-      getBodyContent: (invitation) => invitation.status,
+      header: "Status",
+      getValue: (invitation) => invitation.status,
+      width: "minmax(0, 0.8fr)",
     },
     {
       name: "created",
-      headerContent: "Created",
-      getBodyContent: (invitation) => formatDate(invitation.createdAt),
+      header: "Created",
+      getValue: (invitation) => formatDate(invitation.createdAt),
+      width: "minmax(0, 1fr)",
+      hideOnMobile: true,
     },
     {
       name: "accepted",
-      headerContent: "Accepted",
-      getBodyContent: (invitation) => formatDate(invitation.acceptedAt),
-    },
-    {
-      name: "actions",
-      headerContent: "",
-      getBodyContent: (invitation) => (
-        <ListFrameActionButton
-          size="small"
-          color="primary"
-          onClick={() => {
-            setManagedInvitation(invitation);
-          }}
-          ariaLabel={`Open invitation for ${invitation.email}`}
-        >
-          <ArrowForwardOutlined fontSize="small" color="action" />
-        </ListFrameActionButton>
-      ),
-      alignment: "right",
-      minWidth: 52,
-      maxWidth: 52,
+      header: "Accepted",
+      getValue: (invitation) => formatDate(invitation.acceptedAt),
+      width: "minmax(0, 1fr)",
+      hideOnMobile: true,
     },
   ];
 
   return (
     <>
-      <ListFrame<UserInvitation>
+      <PagedTable
         title="Invitation History"
         columns={columns}
-        getId={(invitation) => invitation.id}
         data={pageInvitations}
+        getKey={(item) => item.id}
+        onRowClick={(item) => {
+          setManagedInvitation(item);
+        }}
         totalCount={invitations.length}
         pageParamName={pageParamName}
-        hasActiveFilters={false}
-        onRowClick={(invitation) => {
-          setManagedInvitation(invitation);
-        }}
-        initialEmptyState={{
+        emptyState={{
           title: "No Invitations",
           description: "Create an invitation to grant a collaborator access.",
         }}

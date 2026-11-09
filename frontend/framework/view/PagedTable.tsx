@@ -66,14 +66,23 @@ interface PagedTableProps<T> {
   readonly columns: readonly PagedTableColumn<T>[];
   readonly data: readonly T[];
   readonly getKey: (item: T) => string;
-  readonly getHref: (item: T) => Route;
   readonly totalCount: number;
-  readonly sortParamName: string;
+
+  /**
+   * Where each row links to. Rows that open something on the same page use onRowClick instead.
+   */
+  readonly getHref?: (item: T) => Route;
+  readonly onRowClick?: (item: T) => void;
+
+  /**
+   * The search parameter holding the sort, needed only when a column sorts.
+   */
+  readonly sortParamName?: string;
 
   /**
    * The sort the server applies while the URL names none.
    */
-  readonly defaultSort: string;
+  readonly defaultSort?: string;
   readonly pageParamName: string;
   readonly emptyState: PagedTableEmptyState;
 }
@@ -104,8 +113,9 @@ const PagedTable = function <T>({
   data,
   getKey,
   getHref,
+  onRowClick,
   totalCount,
-  sortParamName,
+  sortParamName = "sort",
   defaultSort,
   pageParamName,
   emptyState,
@@ -115,7 +125,7 @@ const PagedTable = function <T>({
   const updateSortParams = useSearchParamUpdater([pageParamName]);
   const updatePageParams = useSearchParamUpdater([]);
   const rowsPerPage = getRowsPerPage(searchParams.get("pageSize"));
-  const currentSort = searchParams.get(sortParamName) ?? defaultSort;
+  const currentSort = searchParams.get(sortParamName) ?? defaultSort ?? null;
   const currentPage = searchParams.get(pageParamName);
   const paginationIndex = getPaginationIndex(
     currentPage,
@@ -239,8 +249,13 @@ const PagedTable = function <T>({
             {data.map((item, index) => (
               <ButtonBase
                 key={getKey(item)}
-                component={Link}
-                href={getHref(item)}
+                {...(getHref === undefined
+                  ? {
+                      onClick: (): void => {
+                        onRowClick?.(item);
+                      },
+                    }
+                  : { component: Link, href: getHref(item) })}
                 sx={{
                   ...rowSx,
                   width: "100%",

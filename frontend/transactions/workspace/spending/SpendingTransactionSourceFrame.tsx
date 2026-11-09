@@ -6,7 +6,7 @@ import type {
 } from "@/accounts/types";
 import AccountBalanceEventFrame from "@/transactions/workspace/AccountBalanceEventFrame";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
-import type { FrameColor } from "@/framework/view/Frame";
+import type { FrameColor } from "@/transactions/workspace/TransactionSection";
 import type { JSX } from "react";
 import { Stack } from "@mui/material";
 import type { Transaction } from "@/transactions/types";

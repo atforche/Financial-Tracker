@@ -1,4 +1,4 @@
-import Frame from "@/framework/view/Frame";
+import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
 import { Typography } from "@mui/material";
@@ -16,11 +16,14 @@ const UserManagementPage = async function (): Promise<JSX.Element> {
   if (currentUser.user?.role !== UserRoleModel.Admin) {
     return (
       <PageLayout>
-        <Frame title="Administrator Access Required" color="error">
+        <ContentSurface>
+          <Typography variant="h5" color="error" sx={{ mb: 2 }}>
+            Administrator Access Required
+          </Typography>
           <Typography>
             Your current role cannot manage application users or invitations.
           </Typography>
-        </Frame>
+        </ContentSurface>
       </PageLayout>
     );
   }

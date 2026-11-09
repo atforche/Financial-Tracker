@@ -4,6 +4,13 @@ import { Box, Chip, Paper, Stack, Typography, alpha } from "@mui/material";
 import type { JSX, ReactNode } from "react";
 
 /**
+ * The status color a transaction card's caller reports: "error" while the card still needs input, anything else when
+ * it is complete.
+ */
+type FrameColor =
+  "primary" | "secondary" | "success" | "info" | "warning" | "error";
+
+/**
  * Props for the TransactionSection component.
  */
 interface TransactionSectionProps {
@@ -82,4 +89,5 @@ const TransactionSection = function ({
   );
 };
 
+export type { FrameColor };
 export default TransactionSection;

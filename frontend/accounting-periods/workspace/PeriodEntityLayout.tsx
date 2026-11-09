@@ -157,7 +157,6 @@ const PeriodEntityLayout = function ({
         <BalanceTrendChart
           chartPoints={buildDateChartPoints(detail.dailyBalances.dates)}
           title="Accounting Period Balance"
-          variant="surface"
           emptyMessage="No posted balance movement is available in this period."
           xAxisLabel="Date"
           yAxisLabel={balanceLabel}
