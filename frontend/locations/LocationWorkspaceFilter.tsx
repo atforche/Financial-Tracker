@@ -1,21 +1,32 @@
 "use client";
 
+import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
-import type { LocationWorkspaceSearchParams } from "@/locations/LocationWorkspace";
-import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import SearchBar from "@/framework/listframe/SearchBar";
-import propertyName from "@/framework/data/propertyName";
+import TrendFilterHeader from "@/framework/view/TrendFilterHeader";
+import { useSearchParams } from "next/navigation";
 
 /**
- * Renders the Location workspace search filter.
+ * Shows the location workspace's title with its range controls and name search.
  */
-const LocationWorkspaceFilter = function (): JSX.Element {
+const LocationWorkspaceFilter = function ({
+  accountingPeriods,
+}: {
+  readonly accountingPeriods: readonly AccountingPeriod[];
+}): JSX.Element {
+  const searchParams = useSearchParams();
   return (
-    <PageFilterFrame title="Locations Workspace">
-      <SearchBar
-        searchParamName={propertyName<LocationWorkspaceSearchParams>("search")}
-      />
-    </PageFilterFrame>
+    <TrendFilterHeader
+      title="Locations"
+      returnUrl={undefined}
+      accountingPeriods={accountingPeriods}
+      hasActiveFilters={(searchParams.get("search") ?? "").trim() !== ""}
+      clearFilters={(params) => {
+        params.delete("search");
+      }}
+    >
+      <SearchBar searchParamName="search" pageParamName="page" />
+    </TrendFilterHeader>
   );
 };
 

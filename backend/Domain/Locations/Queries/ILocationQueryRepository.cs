@@ -1,12 +1,29 @@
 namespace Domain.Locations.Queries;
 
 /// <summary>
-/// Read operations for Locations.
+/// Reads Locations and the money that moved to and from them.
 /// </summary>
 public interface ILocationQueryRepository
 {
     /// <summary>
-    /// Gets a page of Locations matching the query.
+    /// Gets a page of Locations.
     /// </summary>
     Task<QueryPage<Location>> GetAsync(LocationQuery query, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets every Location whose name matches the search, or every Location without one.
+    /// </summary>
+    Task<IReadOnlyCollection<Location>> GetMatchingAsync(string? nameSearch, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the money that moved to and from Locations in the scoped transactions.
+    /// </summary>
+    Task<IReadOnlyCollection<LocationFlow>> GetFlowsAsync(LocationFlowScope scope, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the payments made to the scoped Location, with their Accounts and Funds.
+    /// </summary>
+    Task<IReadOnlyCollection<LocationPayment>> GetPaymentsAsync(
+        LocationFlowScope scope,
+        CancellationToken cancellationToken = default);
 }

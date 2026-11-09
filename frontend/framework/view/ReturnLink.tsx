@@ -11,7 +11,7 @@ const returnLabels: readonly (readonly [RegExp, string])[] = [
   [/^\/(?:\?|$)/u, "Back to Overview"],
   [/^\/transactions\/workspace(?:\?|$)/u, "Back to Transactions"],
   [
-    /^\/(?:accounting-periods|accounts|funds|locations)\/trends(?:\?|$)/u,
+    /^\/(?:accounting-periods|accounts|funds)\/trends(?:\?|$)/u,
     "Back to Trends",
   ],
   [
@@ -26,7 +26,8 @@ const returnLabels: readonly (readonly [RegExp, string])[] = [
     /^\/accounting-periods\/workspace\/[^/?#]+(?:\?|$)/u,
     "Back to Accounting Period",
   ],
-  [/^\/locations\/workspace\/[^/?#]+(?:\?|$)/u, "Back to Location"],
+  [/^\/locations(?:\?|$)/u, "Back to Locations"],
+  [/^\/locations\/[^/?#]+(?:\?|$)/u, "Back to Location"],
   [/^\/accounts\/workspace\/[^/?#]+(?:\?|$)/u, "Back to Account Details"],
   [/^\/funds\/workspace\/[^/?#]+(?:\?|$)/u, "Back to Fund Details"],
 ];

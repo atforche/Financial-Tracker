@@ -1,10 +1,17 @@
 "use client";
 
-import { Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import {
+  Autocomplete,
+  Button,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { type JSX, useState, useTransition } from "react";
 import {
-  consolidateLocation,
   deleteLocation,
+  getLocationOptions,
+  mergeLocation,
   renameLocation,
 } from "@/locations/actions";
 import Dialog from "@/framework/dialog/Dialog";
@@ -13,29 +20,28 @@ import { useRouter } from "next/navigation";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
- * Props for the Location Detail Actions component.
+ * Props for the LocationDetailActions component.
  */
 interface LocationDetailActionsProps {
   readonly location: Location;
-  readonly locations: readonly Location[];
   readonly workspaceUrl: string;
 }
 
 /**
- * Provides Location maintenance actions through focused dialogs.
+ * Renames, merges, or deletes a location from its page.
  */
 const LocationDetailActions = function ({
   location,
-  locations,
   workspaceUrl,
 }: LocationDetailActionsProps): JSX.Element | null {
   const canWrite = useWriteAccess();
   const router = useRouter();
-  const [dialog, setDialog] = useState<
-    "rename" | "consolidate" | "delete" | null
-  >(null);
+  const [dialog, setDialog] = useState<"rename" | "merge" | "delete" | null>(
+    null,
+  );
   const [name, setName] = useState(location.name);
-  const [targetLocationId, setTargetLocationId] = useState("");
+  const [mergeOptions, setMergeOptions] = useState<Location[] | null>(null);
+  const [mergeTarget, setMergeTarget] = useState<Location | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -45,31 +51,45 @@ const LocationDetailActions = function ({
       setError(null);
     }
   };
+
+  /**
+   * Runs an action, then leaves the page when the location is gone or refreshes it when it was renamed.
+   */
   const runAction = function (
-    action: (formData: FormData) => Promise<void>,
-    formData: FormData,
-    redirect = false,
+    action: () => Promise<string | null>,
+    leavesPage: boolean,
   ): void {
     startTransition(async () => {
-      try {
-        await action(formData);
-        if (redirect) {
-          router.push(workspaceUrl);
-        } else {
-          router.refresh();
-          setDialog(null);
-        }
-      } catch (caughtError) {
-        setError(
-          caughtError instanceof Error ? caughtError.message : "Action failed.",
-        );
+      const failure = await action();
+      if (failure !== null) {
+        setError(failure);
+      } else if (leavesPage) {
+        router.push(workspaceUrl);
+      } else {
+        setDialog(null);
+        router.refresh();
       }
     });
+  };
+
+  const openMerge = function (): void {
+    setDialog("merge");
+    if (mergeOptions === null) {
+      startTransition(async () => {
+        const options = await getLocationOptions();
+        setMergeOptions(
+          options.filter((candidate) => candidate.id !== location.id),
+        );
+      });
+    }
   };
 
   if (!canWrite) {
     return null;
   }
+
+  const errorMessage =
+    error === null ? null : <Typography color="error">{error}</Typography>;
 
   return (
     <>
@@ -82,13 +102,8 @@ const LocationDetailActions = function ({
         >
           Rename
         </Button>
-        <Button
-          variant="outlined"
-          onClick={() => {
-            setDialog("consolidate");
-          }}
-        >
-          Consolidate
+        <Button variant="outlined" onClick={openMerge}>
+          Merge
         </Button>
         <Button
           color="error"
@@ -114,11 +129,9 @@ const LocationDetailActions = function ({
             <Button
               variant="contained"
               loading={pending}
+              disabled={name.trim() === ""}
               onClick={() => {
-                const formData = new FormData();
-                formData.set("id", location.id);
-                formData.set("name", name);
-                runAction(renameLocation, formData);
+                runAction(async () => renameLocation(location.id, name), false);
               }}
             >
               Rename
@@ -135,15 +148,13 @@ const LocationDetailActions = function ({
             }}
             autoFocus
           />
-          {error === null ? null : (
-            <Typography color="error">{error}</Typography>
-          )}
+          {errorMessage}
         </Stack>
       </Dialog>
       <Dialog
-        open={dialog === "consolidate"}
+        open={dialog === "merge"}
         onClose={closeDialog}
-        title="Consolidate Location"
+        title="Merge Location"
         fullWidth
         maxWidth="sm"
         actions={
@@ -153,43 +164,41 @@ const LocationDetailActions = function ({
             </Button>
             <Button
               variant="contained"
-              disabled={targetLocationId === ""}
+              disabled={mergeTarget === null}
               loading={pending}
               onClick={() => {
-                const formData = new FormData();
-                formData.set("sourceId", location.id);
-                formData.set("targetLocationId", targetLocationId);
-                runAction(consolidateLocation, formData, true);
+                if (mergeTarget !== null) {
+                  runAction(
+                    async () => mergeLocation(location.id, mergeTarget.id),
+                    true,
+                  );
+                }
               }}
             >
-              Consolidate
+              Merge
             </Button>
           </>
         }
       >
         <Stack spacing={2}>
           <Typography>
-            Move all transactions from {location.name} to the selected Location.
+            Moves every transaction at {location.name} to the location you
+            choose, then removes {location.name}.
           </Typography>
-          <TextField
-            select
-            label="Keep Location"
-            value={targetLocationId}
-            onChange={(event) => {
-              setTargetLocationId(event.target.value);
+          <Autocomplete
+            options={mergeOptions ?? []}
+            loading={mergeOptions === null}
+            value={mergeTarget}
+            onChange={(_, value) => {
+              setMergeTarget(value);
             }}
-          >
-            {locations
-              .filter((candidate) => candidate.id !== location.id)
-              .map((candidate) => (
-                <MenuItem key={candidate.id} value={candidate.id}>
-                  {candidate.name}
-                </MenuItem>
-              ))}
-          </TextField>
-          {error === null ? null : (
-            <Typography color="error">{error}</Typography>
-          )}
+            getOptionLabel={(option) => option.name}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            renderInput={(params) => (
+              <TextField {...params} label="Merge into" autoFocus />
+            )}
+          />
+          {errorMessage}
         </Stack>
       </Dialog>
       <Dialog
@@ -208,9 +217,7 @@ const LocationDetailActions = function ({
               variant="contained"
               loading={pending}
               onClick={() => {
-                const formData = new FormData();
-                formData.set("id", location.id);
-                runAction(deleteLocation, formData, true);
+                runAction(async () => deleteLocation(location.id), true);
               }}
             >
               Delete
@@ -221,11 +228,10 @@ const LocationDetailActions = function ({
         <Stack spacing={1}>
           <Typography>Delete {location.name}?</Typography>
           <Typography variant="body2" color="text.secondary">
-            Deletion is unavailable when any transaction uses this Location.
+            A location can only be deleted when no transaction uses it. To
+            remove one that is in use, merge it into another location.
           </Typography>
-          {error === null ? null : (
-            <Typography color="error">{error}</Typography>
-          )}
+          {errorMessage}
         </Stack>
       </Dialog>
     </>

@@ -1,6 +1,6 @@
-import type { ChartColor, ChartRangeMode } from "@/framework/charts/chartTypes";
 import { BalanceGranularityModel } from "@/framework/data/api";
 import type { BarMetricChartPoint } from "@/framework/charts/barMetricHelpers";
+import type { ChartColor } from "@/framework/charts/chartTypes";
 import dayjs from "dayjs";
 import { formatLongDate } from "@/framework/dateHelpers";
 
@@ -77,33 +77,7 @@ const createDateMetricPoint = function (
   };
 };
 
-/**
- * Builds normalized metric points for the active trends grouping.
- */
-const buildRangeMetricChartPoints = function ({
-  mode,
-  accountingPeriods,
-  dates,
-  getColor,
-}: {
-  readonly mode: ChartRangeMode;
-  readonly accountingPeriods: readonly AccountingPeriodMetric[];
-  readonly dates: readonly DateMetric[];
-  readonly getColor?: (value: number) => ChartColor;
-}): BarMetricChartPoint[] {
-  if (mode === "AccountingPeriod") {
-    return accountingPeriods.map((metric) =>
-      createAccountingPeriodMetricPoint(metric, getColor?.(metric.value)),
-    );
-  }
-
-  return dates.map((metric) =>
-    createDateMetricPoint(metric, getColor?.(metric.value)),
-  );
-};
-
 export {
-  buildRangeMetricChartPoints,
   createAccountingPeriodMetricPoint,
   createDateMetricPoint,
   getDateLabels,

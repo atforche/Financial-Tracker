@@ -7,8 +7,7 @@ public sealed record TransactionDateRangeFacts(
     TransactionQueryFacts QueryFacts,
     IReadOnlyCollection<string> AvailableAccountNames,
     IReadOnlyCollection<string> AvailableFundNames,
-    IReadOnlyCollection<TransactionTypeSummary> TransactionTypes,
-    LocationCashFlow LocationCashFlow);
+    IReadOnlyCollection<TransactionTypeSummary> TransactionTypes);
 
 /// <summary>
 /// Count and amount totals for a persisted Transaction type.

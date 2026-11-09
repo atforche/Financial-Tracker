@@ -41,6 +41,11 @@ interface PagedTableColumn<T> {
    * The server's ascending and descending sorts for the column.
    */
   readonly sort?: readonly [string, string];
+
+  /**
+   * Sorts descending on the first click, for columns where the largest values matter most.
+   */
+  readonly descendingFirst?: boolean;
 }
 
 /**
@@ -202,14 +207,17 @@ const PagedTable = function <T>({
                         direction={currentSort === descending ? "desc" : "asc"}
                         onClick={() => {
                           updateSortParams((params) => {
-                            // Ascending, then descending, then back to the server's default
+                            // An active column flips direction; another starts in its first direction
+                            let next = ascending;
                             if (currentSort === ascending) {
-                              params.set(sortParamName, descending ?? "");
-                            } else if (currentSort === descending) {
-                              params.delete(sortParamName);
-                            } else {
-                              params.set(sortParamName, ascending ?? "");
+                              next = descending;
+                            } else if (
+                              currentSort !== descending &&
+                              column.descendingFirst === true
+                            ) {
+                              next = descending;
                             }
+                            params.set(sortParamName, next ?? "");
                           });
                         }}
                         sx={{

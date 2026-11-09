@@ -67,10 +67,6 @@ const navigationItems = function (): NavigationLink[] {
       name: "Locations",
       href: "/locations",
       icon: <Place />,
-      childLinks: [
-        { name: "Workspace", href: "/locations", icon: <Workspaces /> },
-        { name: "Trends", href: "/locations/trends", icon: <Timeline /> },
-      ],
     },
     {
       name: "Transactions",

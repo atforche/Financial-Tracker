@@ -8,6 +8,5 @@ public sealed record TransactionDateRange(
     IReadOnlyCollection<string> AvailableAccountNames,
     IReadOnlyCollection<string> AvailableFundNames,
     IReadOnlyCollection<TransactionTypeSummary> TransactionTypes,
-    LocationCashFlow LocationCashFlow,
     int Offset,
     int? Limit);

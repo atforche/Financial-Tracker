@@ -1,173 +1,197 @@
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import {
-  getPageOffset,
-  getRowsPerPage,
-  normalizePageValue,
-} from "@/framework/listframe/page";
-import ArrowBack from "@mui/icons-material/ArrowBack";
+  getTransactionDestinationLabel,
+  getTransactionSourceLabel,
+} from "@/transactions/transactionListHelpers";
+import routes, { type LocationDetailSearchParams } from "@/locations/routes";
+import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
 import Link from "next/link";
-import LocationCashFlowChart from "@/locations/LocationCashFlowChart";
-import LocationDetailActions from "@/locations/LocationDetailActions";
-import type { LocationWorkspaceSearchParams } from "@/locations/LocationWorkspace";
+import LocationDetailFilter from "@/locations/LocationDetailFilter";
+import LocationMonthlyChart from "@/locations/LocationMonthlyChart";
+import LocationPaymentBreakdown from "@/locations/LocationPaymentBreakdown";
 import PageLayout from "@/framework/view/PageLayout";
-import RecentLocationTransactionsFrame from "@/locations/RecentLocationTransactionsFrame";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
-import SummaryCard from "@/framework/view/SummaryCard";
+import RowList from "@/framework/view/RowList";
+import StatCard from "@/framework/view/StatCard";
 import createApiClient from "@/framework/data/createApiClient";
-import dayjs from "dayjs";
+import { formatCurrency } from "@/framework/currencyHelpers";
+import { formatShortDate } from "@/framework/dateHelpers";
+import isEntityId from "@/framework/data/isEntityId";
 import { redirect } from "next/navigation";
-import routes from "@/locations/routes";
+import resolveLocationRange from "@/locations/resolveLocationRange";
 import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
-/**
- * Props for the LocationWorkspaceDetailPage component.
- */
-interface LocationWorkspaceDetailPageProps {
-  readonly params: Promise<{ locationId: string }>;
-  readonly searchParams: Promise<LocationWorkspaceSearchParams>;
-}
+const recentTransactionCount = 10;
 
 /**
- * Displays one Location and its recent transaction activity.
+ * Shows one location over a date or period range: its totals, spending by month, the accounts and funds that paid
+ * it, and its most recent transactions.
  */
 const LocationWorkspaceDetailPage = async function ({
   params,
   searchParams,
-}: LocationWorkspaceDetailPageProps): Promise<JSX.Element> {
+}: {
+  readonly params: Promise<{ readonly locationId: string }>;
+  readonly searchParams: Promise<LocationDetailSearchParams>;
+}): Promise<JSX.Element> {
   const { locationId } = await params;
   const resolvedSearchParams = await searchParams;
-  const workspaceParams = {
-    ...(typeof resolvedSearchParams.search === "undefined"
-      ? {}
-      : { search: resolvedSearchParams.search }),
-    ...(typeof resolvedSearchParams.sort === "undefined"
-      ? {}
-      : { sort: resolvedSearchParams.sort }),
-    ...(typeof resolvedSearchParams.page === "undefined"
-      ? {}
-      : { page: resolvedSearchParams.page }),
-    ...(typeof resolvedSearchParams.pageSize === "undefined"
-      ? {}
-      : { pageSize: resolvedSearchParams.pageSize }),
-  } satisfies LocationWorkspaceSearchParams;
-  const workspaceUrl = routes.workspace(workspaceParams);
-  const transactionPage = normalizePageValue(
-    resolvedSearchParams.transactionPage,
-  );
-  const rowsPerPage = getRowsPerPage(resolvedSearchParams.pageSize);
-  const client = await createApiClient();
-  const allLocationsResponse = await client.GET("/locations");
-  const locations = unwrapApiResponse(
-    allLocationsResponse,
-    "Failed to fetch Locations",
-  );
-  const location = locations.items.find(
-    (item) => item.id.toLowerCase() === locationId.toLowerCase(),
-  );
-  if (typeof location === "undefined") {
+  const { returnUrl } = resolvedSearchParams;
+  const workspaceUrl = routes.workspace({});
+  if (!isEntityId(locationId)) {
     redirect(workspaceUrl);
   }
-  const transactionsResponse = await client.GET("/transactions", {
-    params: {
-      query: {
-        "Filter.LocationIds": [location.id],
-        Limit: rowsPerPage,
-        Offset: getPageOffset(transactionPage, rowsPerPage),
-      },
-    },
-  });
-  const transactions = unwrapApiResponse(
-    transactionsResponse,
-    "Failed to fetch Location transactions",
+  const { accountingPeriods, range } = await resolveLocationRange(
+    resolvedSearchParams,
+    (canonicalRange) =>
+      routes.workspaceDetail(locationId, {
+        ...(returnUrl === undefined ? {} : { returnUrl }),
+        ...canonicalRange,
+      }),
   );
-  const defaultEndDate = dayjs();
-  const defaultStartDate = defaultEndDate.subtract(90, "day");
-  const cashFlow = unwrapApiResponse(
-    await client.GET("/transactions/date-range", {
+  const apiClient = await createApiClient();
+  const path = { locationId };
+  const [detailResponse, transactionsResponse] = await Promise.all([
+    range.mode === "date"
+      ? apiClient.GET("/locations/{locationId}/date-range", {
+          params: {
+            path,
+            query: {
+              "Range.Start": range.startDate,
+              "Range.End": range.endDate,
+            },
+          },
+        })
+      : apiClient.GET("/locations/{locationId}/accounting-period-range", {
+          params: {
+            path,
+            query: {
+              "Range.Start": range.startAccountingPeriodId,
+              "Range.End": range.endAccountingPeriodId,
+            },
+          },
+        }),
+    apiClient.GET("/transactions", {
       params: {
         query: {
-          "Filter.LocationIds": [location.id],
-          "Range.Start": defaultStartDate.format("YYYY-MM-DD"),
-          "Range.End": defaultEndDate.format("YYYY-MM-DD"),
-          Limit: 500,
+          "Filter.LocationIds": [locationId],
+          Limit: recentTransactionCount,
         },
       },
     }),
-    "Failed to fetch Location cash flow",
+  ]);
+  if (detailResponse.response.status === 404) {
+    redirect(workspaceUrl);
+  }
+  const { summary, months, accounts, funds } = unwrapApiResponse(
+    detailResponse,
+    "Failed to fetch location activity",
   );
-  const incomingTotal = cashFlow.locationIncomingAmount;
-  const outgoingTotal = cashFlow.locationOutgoingAmount;
-  const currentUrl = routes.workspaceDetail(location.id, {
-    ...workspaceParams,
-    ...(typeof resolvedSearchParams.transactionPage === "undefined"
-      ? {}
-      : { transactionPage: resolvedSearchParams.transactionPage }),
-  });
-  const transactionWorkspaceUrl = transactionRoutes.workspace({
-    locationIds: [location.id],
-    returnUrl: currentUrl,
+  const transactions = unwrapApiResponse(
+    transactionsResponse,
+    "Failed to fetch location transactions",
+  );
+  const currentUrl = routes.workspaceDetail(locationId, {
+    ...(returnUrl === undefined ? {} : { returnUrl }),
+    ...range,
   });
 
   return (
     <PageLayout>
-      <Box sx={{ maxWidth: 1200, width: "100%" }}>
-        <Stack spacing={2.5}>
-          <Link
-            href={workspaceUrl}
-            style={{ alignSelf: "flex-start", textDecoration: "none" }}
-          >
-            <Button component="span" startIcon={<ArrowBack />}>
-              Back to Workspace
-            </Button>
-          </Link>
+      <LocationDetailFilter
+        location={{ id: summary.id, name: summary.name }}
+        accountingPeriods={accountingPeriods}
+        returnUrl={returnUrl ?? workspaceUrl}
+        workspaceUrl={workspaceUrl}
+      />
+      <ResponsiveGrid columns={{ xs: 1, sm: 2, lg: 4 }}>
+        <StatCard
+          label="Spent"
+          value={formatCurrency(summary.spent)}
+          caption="Paid here in this range"
+        />
+        <StatCard
+          label="Received"
+          value={formatCurrency(summary.received)}
+          caption="Income and refunds"
+        />
+        <StatCard
+          label="Transactions"
+          value={summary.transactionCount.toString()}
+          caption={
+            summary.transactionCount === 0
+              ? "None in this range"
+              : `${formatCurrency(summary.spent / summary.transactionCount)} average spent`
+          }
+        />
+        <StatCard
+          label="Last activity"
+          value={
+            summary.lastActivity === null || summary.lastActivity === undefined
+              ? "—"
+              : formatShortDate(new Date(`${summary.lastActivity}T00:00:00`))
+          }
+          caption="Latest transaction in this range"
+        />
+      </ResponsiveGrid>
+      <LocationMonthlyChart months={months} />
+      <ResponsiveGrid columns={{ xs: 1, md: 2 }}>
+        <LocationPaymentBreakdown
+          title="Paid From"
+          shares={accounts}
+          emptyMessage="Nothing was paid here from an account in this range."
+        />
+        <LocationPaymentBreakdown
+          title="Paid With"
+          shares={funds}
+          emptyMessage="No fund paid for anything here in this range."
+        />
+      </ResponsiveGrid>
+      <ContentSurface>
+        <Stack spacing={1.5}>
           <Stack
-            direction={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
+            direction="row"
             spacing={2}
+            sx={{ alignItems: "center", justifyContent: "space-between" }}
           >
-            <Typography variant="h4">{location.name}</Typography>
-            <LocationDetailActions
-              location={location}
-              locations={locations.items}
-              workspaceUrl={workspaceUrl}
-            />
-          </Stack>
-          <ResponsiveGrid columns={{ xs: 1, md: 2 }}>
-            <SummaryCard
-              title="Incoming Money"
-              value={`$ ${incomingTotal.toFixed(2)}`}
-            />
-            <SummaryCard
-              title="Outgoing Money"
-              value={`$ ${outgoingTotal.toFixed(2)}`}
-            />
-          </ResponsiveGrid>
-          <LocationCashFlowChart
-            transactions={cashFlow.transactions.items}
-            mode="Date"
-            startDate={defaultStartDate.format("YYYY-MM-DD")}
-            endDate={defaultEndDate.format("YYYY-MM-DD")}
-          />
-          <RecentLocationTransactionsFrame
-            transactions={transactions.items}
-            totalCount={transactions.totalCount}
-            locationId={location.id}
-            returnUrl={currentUrl}
-            headerContent={
-              <Link
-                href={transactionWorkspaceUrl}
-                style={{ textDecoration: "none" }}
+            <Typography variant="h5">Recent Transactions</Typography>
+            {transactions.totalCount > recentTransactionCount ? (
+              <Button
+                component={Link}
+                href={transactionRoutes.workspace({
+                  locationIds: [locationId],
+                  returnUrl: currentUrl,
+                })}
+                variant="outlined"
               >
-                <Button component="span" variant="outlined">
-                  View All Transactions
-                </Button>
-              </Link>
-            }
-          />
+                View all {transactions.totalCount}
+              </Button>
+            ) : null}
+          </Stack>
+          {transactions.items.length === 0 ? (
+            <Typography variant="body2" color="text.secondary">
+              No transactions name this location.
+            </Typography>
+          ) : (
+            <RowList
+              rows={transactions.items.map((transaction) => ({
+                key: transaction.id,
+                href: transactionRoutes.workspaceDetail(transaction.id, {
+                  returnUrl: currentUrl,
+                }),
+                leading: formatShortDate(
+                  new Date(`${transaction.date}T00:00:00`),
+                ),
+                title: transaction.description,
+                detail: `${getTransactionSourceLabel(transaction)} → ${getTransactionDestinationLabel(transaction)}`,
+                value: formatCurrency(transaction.amount),
+              }))}
+            />
+          )}
         </Stack>
-      </Box>
+      </ContentSurface>
     </PageLayout>
   );
 };

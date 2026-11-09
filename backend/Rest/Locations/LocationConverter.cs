@@ -47,4 +47,77 @@ public sealed class LocationConverter
         Items = page.Items.Select(location => ToModel(location)).ToList(),
         TotalCount = page.TotalCount,
     };
+
+    /// <summary>
+    /// Converts the requested name search, sort and page into a Location range query.
+    /// </summary>
+    public LocationRangeQuery ToDomain(string? nameSearch, LocationRangeSortModel? sort, PaginationModel page) => new(
+        nameSearch,
+        sort switch
+        {
+            LocationRangeSortModel.Name => LocationRangeSort.Name,
+            LocationRangeSortModel.NameDescending => LocationRangeSort.NameDescending,
+            LocationRangeSortModel.Spent => LocationRangeSort.Spent,
+            LocationRangeSortModel.Received => LocationRangeSort.Received,
+            LocationRangeSortModel.ReceivedDescending => LocationRangeSort.ReceivedDescending,
+            LocationRangeSortModel.TransactionCount => LocationRangeSort.TransactionCount,
+            LocationRangeSortModel.TransactionCountDescending => LocationRangeSort.TransactionCountDescending,
+            LocationRangeSortModel.LastActivity => LocationRangeSort.LastActivity,
+            LocationRangeSortModel.LastActivityDescending => LocationRangeSort.LastActivityDescending,
+            LocationRangeSortModel.SpentDescending or null or _ => LocationRangeSort.SpentDescending,
+        },
+        page.Offset ?? 0,
+        page.Limit);
+
+    /// <summary>
+    /// Converts a Location's activity over a range.
+    /// </summary>
+    public LocationRangeSummaryModel ToModel(LocationRangeSummary summary) => new()
+    {
+        Id = summary.Location.Id.Value,
+        Name = summary.Location.Name,
+        Spent = summary.Spent,
+        Received = summary.Received,
+        TransactionCount = summary.TransactionCount,
+        LastActivity = summary.LastActivity,
+    };
+
+    /// <summary>
+    /// Converts the Locations over a range.
+    /// </summary>
+    public LocationsInRangeModel ToModel(LocationRange range) => new()
+    {
+        Locations = new CollectionModel<LocationRangeSummaryModel>
+        {
+            Items = range.Locations.Items.Select(ToModel).ToList(),
+            TotalCount = range.Locations.TotalCount,
+        },
+        TotalSpent = range.TotalSpent,
+        TotalReceived = range.TotalReceived,
+        ActiveLocationCount = range.ActiveLocationCount,
+        TopFiveSpent = range.TopFiveSpent,
+    };
+
+    /// <summary>
+    /// Converts one Location's activity over a range.
+    /// </summary>
+    public LocationDetailRangeModel ToModel(LocationDetailRange range) => new()
+    {
+        Summary = ToModel(range.Summary),
+        Months = range.Months
+            .Select(month => new LocationMonthModel { Year = month.Year, Month = month.Month, Spent = month.Spent, Received = month.Received })
+            .ToList(),
+        Accounts = range.Accounts.Select(ToModel).ToList(),
+        Funds = range.Funds.Select(ToModel).ToList(),
+    };
+
+    /// <summary>
+    /// Converts an amount paid from one Account or Fund.
+    /// </summary>
+    private static LocationPaymentShareModel ToModel(LocationPaymentShare share) => new()
+    {
+        Id = share.Id,
+        Name = share.Name,
+        Amount = share.Amount,
+    };
 }
