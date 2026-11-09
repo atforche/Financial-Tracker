@@ -444,7 +444,6 @@ const ViewTransactionForm = function ({
           destinationContent={destinationContent}
           sourceAmount={sourceAmount}
           destinationAmount={destinationAmount}
-          destinationCount={destinationContent.length}
           showSummary={transaction.transactionType === TransactionType.Income}
         />
       </PostingDateReporterContext.Provider>

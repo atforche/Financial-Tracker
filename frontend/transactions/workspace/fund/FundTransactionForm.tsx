@@ -180,7 +180,6 @@ const FundTransactionForm = function <RequestPayload>({
       }
       sourceAmount={destinationTotal}
       destinationAmount={destinationTotal}
-      destinationCount={destinations.length}
       submitLabel={submitLabel}
       state={state}
       pending={pending}

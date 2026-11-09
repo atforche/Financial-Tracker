@@ -1,6 +1,5 @@
 "use client";
 
-import Frame, { type FrameColor } from "@/framework/view/Frame";
 import {
   type JSX,
   type ReactNode,
@@ -9,7 +8,9 @@ import {
   useState,
 } from "react";
 import CollectionItemDeleteButton from "@/framework/view/CollectionItemDeleteButton";
+import type { FrameColor } from "@/framework/view/Frame";
 import { Stack } from "@mui/material";
+import TransactionSection from "@/transactions/workspace/TransactionSection";
 
 /**
  * Context exposing the header element of the enclosing source or destination frame, so that nested
@@ -47,10 +48,9 @@ const TransactionSourceOrDestinationFrame = function ({
 }: TransactionSourceOrDestinationFrameProps): JSX.Element {
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
   return (
-    <Frame
+    <TransactionSection
       title={title}
-      color={color}
-      headerContentInline
+      incomplete={color === "error"}
       headerContent={
         <Stack
           direction="row"
@@ -74,7 +74,7 @@ const TransactionSourceOrDestinationFrame = function ({
       <FrameHeaderSlotContext.Provider value={headerSlot}>
         {children}
       </FrameHeaderSlotContext.Provider>
-    </Frame>
+    </TransactionSection>
   );
 };
 

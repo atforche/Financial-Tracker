@@ -1,4 +1,3 @@
-import Frame, { type FrameColor } from "@/framework/view/Frame";
 import type { JSX, ReactNode } from "react";
 import { getMaximumDate, getMinimumDate } from "@/accounting-periods/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
@@ -6,8 +5,10 @@ import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEnt
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import DateEntryField from "@/framework/forms/DateEntryField";
 import type { Dayjs } from "dayjs";
+import type { FrameColor } from "@/framework/view/Frame";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import StringEntryField from "@/framework/forms/StringEntryField";
+import TransactionSection from "@/transactions/workspace/TransactionSection";
 
 /**
  * Props for the TransactionDetailsFrame component.
@@ -41,11 +42,10 @@ const TransactionDetailsFrame = function ({
 }: TransactionDetailsFrameProps): JSX.Element {
   return (
     <ConstrainedContent maxWidth={1200}>
-      <Frame
+      <TransactionSection
         title="Details"
-        color={color}
+        incomplete={color === "error"}
         headerContent={headerContent}
-        headerContentInline
       >
         <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
           <AccountingPeriodEntryField
@@ -67,7 +67,7 @@ const TransactionDetailsFrame = function ({
           value={descriptionValue}
           setValue={setDescriptionValue}
         />
-      </Frame>
+      </TransactionSection>
     </ConstrainedContent>
   );
 };

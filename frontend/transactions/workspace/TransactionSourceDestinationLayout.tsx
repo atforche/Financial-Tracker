@@ -24,20 +24,27 @@ const TransactionSourceDestinationLayout = function ({
         position: "relative",
         display: "grid",
         gap: 2,
-        alignItems: { xs: "start", lg: "center" },
+        alignItems: "start",
         gridTemplateColumns: {
           xs: "1fr",
           lg: "minmax(280px, 0.95fr) auto minmax(320px, 1.15fr)",
         },
+        // Wide screens give the source its own top row so the arrow centers on it beside the destinations
+        gridTemplateRows: { lg: "auto 1fr" },
       }}
     >
-      <Stack spacing={2} sx={{ position: "relative", zIndex: 1 }}>
+      <Stack
+        spacing={2}
+        sx={{ position: "relative", zIndex: 1, gridRow: { lg: 1 } }}
+      >
         {sourceFrame}
       </Stack>
       <EastOutlined
         sx={{
           display: { xs: "none", lg: "block" },
           fontSize: 30,
+          gridRow: { lg: 1 },
+          alignSelf: "center",
         }}
       />
       <SouthOutlined
@@ -47,7 +54,15 @@ const TransactionSourceDestinationLayout = function ({
           justifySelf: "center",
         }}
       />
-      <Stack spacing={2} sx={{ position: "relative", zIndex: 1 }}>
+      <Stack
+        spacing={2}
+        sx={{
+          position: "relative",
+          zIndex: 1,
+          gridRow: { lg: "1 / span 2" },
+          gridColumn: { lg: 3 },
+        }}
+      >
         {destinationFrames}
       </Stack>
     </Box>

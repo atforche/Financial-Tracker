@@ -9,17 +9,16 @@ import {
   type SetStateAction,
   startTransition,
 } from "react";
-import {
-  validateDetails,
-  validateSummary,
-} from "@/transactions/workspace/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { Dayjs } from "dayjs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import TransactionDetailsFrame from "@/transactions/workspace/TransactionDetailsFrame";
+import TransactionSection from "@/transactions/workspace/TransactionSection";
 import TransactionSourceDestinationLayout from "@/transactions/workspace/TransactionSourceDestinationLayout";
 import TransactionSourceDestinationSummary from "@/transactions/workspace/TransactionSourceDestinationSummary";
+import { getCurrencyDifference } from "@/framework/currencyHelpers";
+import { validateDetails } from "@/transactions/workspace/helpers";
 
 /**
  * Represents the shared status displayed by transaction create/update forms.
@@ -67,7 +66,6 @@ interface TransactionFormProps<RequestPayload> {
   readonly destinationContent?: ReactNode;
   readonly sourceAmount?: number | null;
   readonly destinationAmount?: number;
-  readonly destinationCount?: number;
   readonly showSummary?: boolean;
   readonly actionsContent?: ReactNode;
   readonly submitLabel?: string;
@@ -101,7 +99,6 @@ const TransactionForm = function <RequestPayload>({
   destinationContent,
   sourceAmount,
   destinationAmount,
-  destinationCount = 0,
   showSummary = false,
   actionsContent = null,
   submitLabel = "Submit",
@@ -114,9 +111,9 @@ const TransactionForm = function <RequestPayload>({
   const detailsAreValid = readOnly
     ? true
     : validateDetails(accountingPeriod, date, defaultDate, description);
-  const summaryIsValid = readOnly
-    ? true
-    : validateSummary(sourceAmount, destinationAmount ?? 0, destinationCount);
+
+  const summaryIsBalanced =
+    getCurrencyDifference(sourceAmount ?? 0, destinationAmount ?? 0) === 0;
 
   return (
     <Stack ref={formRef} spacing={3}>
@@ -138,11 +135,17 @@ const TransactionForm = function <RequestPayload>({
             destinationFrames={destinationContent ?? emptyFrame}
           />
           {showSummary && typeof destinationAmount === "number" ? (
-            <TransactionSourceDestinationSummary
-              sourceAmount={sourceAmount ?? 0}
-              destinationAmount={destinationAmount}
-              isValid={summaryIsValid}
-            />
+            <ConstrainedContent maxWidth={1200}>
+              <TransactionSection
+                title="Summary"
+                incomplete={!readOnly && !summaryIsBalanced}
+              >
+                <TransactionSourceDestinationSummary
+                  sourceAmount={sourceAmount ?? 0}
+                  destinationAmount={destinationAmount}
+                />
+              </TransactionSection>
+            </ConstrainedContent>
           ) : null}
           {!readOnly ? (
             <>

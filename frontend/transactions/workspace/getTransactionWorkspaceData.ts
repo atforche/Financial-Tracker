@@ -233,7 +233,6 @@ const getTransactionWorkspaceDetailReferenceData = async function (
  */
 const getTransactionWorkspaceListData = async function (
   searchParams: TransactionWorkspaceSearchParams,
-  loadTransactions = true,
 ): Promise<TransactionWorkspaceListData> {
   const {
     accountingPeriodIds,
@@ -329,7 +328,6 @@ const getTransactionWorkspaceListData = async function (
     Offset: getPageOffset(currentPage, rowsPerPage),
   };
   const transactions =
-    !loadTransactions ||
     (hasAccountFilter && selectedAccountIds.length === 0) ||
     (hasFundFilter && selectedFundIds.length === 0)
       ? { items: [], totalCount: 0 }
