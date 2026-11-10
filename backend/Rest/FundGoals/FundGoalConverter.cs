@@ -2,9 +2,9 @@ using Domain;
 using Domain.FundGoals;
 using Domain.FundGoals.Queries;
 using Models;
-using Models.AccountingPeriods;
 using Models.FundGoals;
 using Models.Funds;
+using Rest.AccountingPeriods;
 
 namespace Rest.FundGoals;
 
@@ -37,14 +37,7 @@ public sealed class FundGoalConverter
             Name = fundGoal.Fund.Name,
             Description = fundGoal.Fund.Description,
         },
-        AccountingPeriod = fundGoal.AccountingPeriod == null ? null : new AccountingPeriodModel
-        {
-            Id = fundGoal.AccountingPeriod.Id.Value,
-            Name = fundGoal.AccountingPeriod.Name,
-            Year = fundGoal.AccountingPeriod.Year,
-            Month = fundGoal.AccountingPeriod.Month,
-            IsOpen = fundGoal.AccountingPeriod.IsOpen,
-        },
+        AccountingPeriod = fundGoal.AccountingPeriod == null ? null : AccountingPeriodConverter.ToModel(fundGoal.AccountingPeriod),
         PlannedMonthlyContribution = fundGoal.PlannedMonthlyContribution,
         MinimumEndingBalance = fundGoal.MinimumEndingBalance,
         MaximumEndingBalance = fundGoal.MaximumEndingBalance,

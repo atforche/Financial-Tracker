@@ -46,7 +46,7 @@ public sealed class AccountingPeriodQueryConverter(
     /// <summary>
     /// Converts the provided Accounting Period to an API model.
     /// </summary>
-    public AccountingPeriodModel ToModel(AccountingPeriod accountingPeriod) => accountingPeriodConverter.ToModel(accountingPeriod);
+    public AccountingPeriodModel ToModel(AccountingPeriod accountingPeriod) => AccountingPeriodConverter.ToModel(accountingPeriod);
 
     /// <summary>
     /// Converts the provided earliest and latest Accounting Periods to an API model.

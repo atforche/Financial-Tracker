@@ -9,7 +9,7 @@ namespace Rest.Overview;
 /// <summary>
 /// Converter class that handles converting overview queries and results to and from API models.
 /// </summary>
-public sealed class OverviewConverter(AccountingPeriodConverter accountingPeriodConverter)
+public sealed class OverviewConverter
 {
     /// <summary>
     /// Converts the provided overview history range model to its domain value.
@@ -50,9 +50,9 @@ public sealed class OverviewConverter(AccountingPeriodConverter accountingPeriod
     /// <summary>
     /// Converts the provided current Accounting Period figures to an API model.
     /// </summary>
-    private OverviewPeriodModel ToModel(OverviewPeriod period) => new()
+    private static OverviewPeriodModel ToModel(OverviewPeriod period) => new()
     {
-        AccountingPeriod = accountingPeriodConverter.ToModel(period.AccountingPeriod),
+        AccountingPeriod = AccountingPeriodConverter.ToModel(period.AccountingPeriod),
         ExpectedTrackedIncome = period.ExpectedTrackedIncome,
         ActualPlannedTrackedIncome = period.ActualPlannedTrackedIncome,
         ActualUnplannedTrackedIncome = period.ActualUnplannedTrackedIncome,

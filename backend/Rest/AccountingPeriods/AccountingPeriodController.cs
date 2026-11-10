@@ -191,7 +191,7 @@ public sealed class AccountingPeriodController(UnitOfWork unitOfWork,
         }
         accountingPeriodRepository.Add(newAccountingPeriod);
         await unitOfWork.SaveChangesAsync();
-        return Ok(accountingPeriodConverter.ToModel(newAccountingPeriod));
+        return Ok(AccountingPeriodConverter.ToModel(newAccountingPeriod));
     }
 
     /// <summary>

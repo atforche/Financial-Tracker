@@ -3,6 +3,7 @@ using Domain.Accounts;
 using Domain.Accounts.Queries;
 using Models;
 using Models.Accounts;
+using Rest.AccountingPeriods;
 
 namespace Rest.Accounts;
 
@@ -133,14 +134,7 @@ public sealed class AccountConverter
     /// </summary>
     private static AccountBalanceSummaryByPeriodModel ToModel(AccountPeriodBalanceSummary summary) => new()
     {
-        AccountingPeriod = new Models.AccountingPeriods.AccountingPeriodModel
-        {
-            Id = summary.AccountingPeriod.Id.Value,
-            Name = summary.AccountingPeriod.Name,
-            Year = summary.AccountingPeriod.Year,
-            Month = summary.AccountingPeriod.Month,
-            IsOpen = summary.AccountingPeriod.IsOpen,
-        },
+        AccountingPeriod = AccountingPeriodConverter.ToModel(summary.AccountingPeriod),
         OpeningBalance = ToModel(summary.OpeningBalance),
         ClosingBalance = ToModel(summary.ClosingBalance),
     };

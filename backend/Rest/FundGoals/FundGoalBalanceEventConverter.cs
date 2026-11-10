@@ -1,10 +1,10 @@
 using Domain.BalanceEvents;
 using Domain.FundGoals;
 using Domain.FundGoals.Queries;
-using Models.AccountingPeriods;
 using Models.BalanceEvents;
 using Models.FundGoals;
 using Models.Funds;
+using Rest.AccountingPeriods;
 
 namespace Rest.FundGoals;
 
@@ -31,14 +31,7 @@ public sealed class FundGoalBalanceEventConverter
     /// </summary>
     public FundGoalBalanceEventModel ToModel(FundGoalBalanceEvent balanceEvent) => new()
     {
-        AccountingPeriod = new AccountingPeriodModel
-        {
-            Id = balanceEvent.AccountingPeriod.Id.Value,
-            Name = balanceEvent.AccountingPeriod.Name,
-            Year = balanceEvent.AccountingPeriod.Year,
-            Month = balanceEvent.AccountingPeriod.Month,
-            IsOpen = balanceEvent.AccountingPeriod.IsOpen,
-        },
+        AccountingPeriod = AccountingPeriodConverter.ToModel(balanceEvent.AccountingPeriod),
         TransactionId = balanceEvent.TransactionId.Value,
         Description = balanceEvent.Description,
         TransactionDate = balanceEvent.TransactionDate,

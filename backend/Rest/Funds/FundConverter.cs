@@ -3,6 +3,7 @@ using Domain.Funds;
 using Domain.Funds.Queries;
 using Models;
 using Models.Funds;
+using Rest.AccountingPeriods;
 
 namespace Rest.Funds;
 
@@ -117,14 +118,7 @@ public sealed class FundConverter
     /// </summary>
     private static FundBalanceSummaryByPeriodModel ToModel(FundPeriodBalanceSummary summary) => new()
     {
-        AccountingPeriod = new Models.AccountingPeriods.AccountingPeriodModel
-        {
-            Id = summary.AccountingPeriod.Id.Value,
-            Name = summary.AccountingPeriod.Name,
-            Year = summary.AccountingPeriod.Year,
-            Month = summary.AccountingPeriod.Month,
-            IsOpen = summary.AccountingPeriod.IsOpen,
-        },
+        AccountingPeriod = AccountingPeriodConverter.ToModel(summary.AccountingPeriod),
         OpeningBalance = ToModel(summary.OpeningBalance),
         ClosingBalance = ToModel(summary.ClosingBalance),
     };

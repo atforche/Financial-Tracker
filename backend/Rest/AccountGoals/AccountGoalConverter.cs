@@ -8,9 +8,7 @@ namespace Rest.AccountGoals;
 /// <summary>
 /// Converts between Account Goal API models and Domain types.
 /// </summary>
-public sealed class AccountGoalConverter(
-    AccountConverter accountConverter,
-    AccountingPeriodConverter accountingPeriodConverter)
+public sealed class AccountGoalConverter(AccountConverter accountConverter)
 {
     /// <summary>
     /// Converts an Account Goal to an API model.
@@ -21,7 +19,7 @@ public sealed class AccountGoalConverter(
         Account = accountConverter.ToModel(accountGoal.Account),
         AccountingPeriod = accountGoal.AccountingPeriod == null
             ? null
-            : accountingPeriodConverter.ToModel(accountGoal.AccountingPeriod),
+            : AccountingPeriodConverter.ToModel(accountGoal.AccountingPeriod),
         MinimumEndingBalance = accountGoal.MinimumEndingBalance,
         MaximumEndingBalance = accountGoal.MaximumEndingBalance,
     };
