@@ -118,17 +118,12 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
     {
         int totalCount = await filtered.CountAsync(cancellationToken);
         IReadOnlyCollection<Transaction> transactions;
-        if (sort is TransactionSort.AccountingPeriod or TransactionSort.AccountingPeriodDescending
-            or TransactionSort.Source or TransactionSort.SourceDescending
+        if (sort is TransactionSort.Source or TransactionSort.SourceDescending
             or TransactionSort.Destination or TransactionSort.DestinationDescending
             or TransactionSort.FullyPosted or TransactionSort.FullyPostedDescending)
         {
             List<Transaction> allTransactions = await filtered.AsSplitQuery().ToListAsync(cancellationToken);
-            Dictionary<AccountingPeriodId, int> periodOrder = sort is TransactionSort.AccountingPeriod or TransactionSort.AccountingPeriodDescending
-                ? await databaseContext.AccountingPeriods.AsNoTracking()
-                    .ToDictionaryAsync(period => period.Id, period => (period.Year * 12) + period.Month, cancellationToken)
-                : [];
-            transactions = Sort(allTransactions, sort, periodOrder)
+            transactions = Sort(allTransactions, sort)
                 .Skip(offset)
                 .Take(limit ?? int.MaxValue)
                 .ToList();
@@ -257,8 +252,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
         TransactionSort.DescriptionDescending => transactions.OrderByDescending(transaction => transaction.Description).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),
         TransactionSort.Amount => transactions.OrderBy(transaction => transaction.Amount).ThenBy(transaction => transaction.Date).ThenBy(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),
         TransactionSort.AmountDescending => transactions.OrderByDescending(transaction => transaction.Amount).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),
-        TransactionSort.AccountingPeriod or TransactionSort.AccountingPeriodDescending
-            or TransactionSort.Source or TransactionSort.SourceDescending
+        TransactionSort.Source or TransactionSort.SourceDescending
             or TransactionSort.Destination or TransactionSort.DestinationDescending
             or TransactionSort.FullyPosted or TransactionSort.FullyPostedDescending =>
             transactions.OrderByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),
@@ -270,11 +264,8 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
     /// </summary>
     private static IOrderedEnumerable<Transaction> Sort(
         IEnumerable<Transaction> transactions,
-        TransactionSort sort,
-        Dictionary<AccountingPeriodId, int> periodOrder) => sort switch
+        TransactionSort sort) => sort switch
         {
-            TransactionSort.AccountingPeriod => transactions.OrderBy(transaction => periodOrder[transaction.AccountingPeriodId]).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),
-            TransactionSort.AccountingPeriodDescending => transactions.OrderByDescending(transaction => periodOrder[transaction.AccountingPeriodId]).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),
             TransactionSort.Source => transactions.OrderBy(GetSource).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),
             TransactionSort.SourceDescending => transactions.OrderByDescending(GetSource).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),
             TransactionSort.Destination => transactions.OrderBy(GetDestination).ThenByDescending(transaction => transaction.Date).ThenByDescending(transaction => transaction.Sequence).ThenBy(transaction => transaction.Id),

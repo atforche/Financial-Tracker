@@ -22,18 +22,6 @@ public sealed class FundGoalConverter
             model.Filter?.AccountingPeriodIds ?? [],
             model.Filter?.IncludeOnboarded,
             model.Filter?.NameSearch),
-        model.Sort switch
-        {
-            FundGoalSortModel.Fund => FundGoalSort.Fund,
-            FundGoalSortModel.FundDescending => FundGoalSort.FundDescending,
-            FundGoalSortModel.PlannedMonthlyContribution => FundGoalSort.PlannedMonthlyContribution,
-            FundGoalSortModel.PlannedMonthlyContributionDescending => FundGoalSort.PlannedMonthlyContributionDescending,
-            FundGoalSortModel.MinimumEndingBalance => FundGoalSort.MinimumEndingBalance,
-            FundGoalSortModel.MinimumEndingBalanceDescending => FundGoalSort.MinimumEndingBalanceDescending,
-            FundGoalSortModel.MaximumEndingBalance => FundGoalSort.MaximumEndingBalance,
-            FundGoalSortModel.MaximumEndingBalanceDescending => FundGoalSort.MaximumEndingBalanceDescending,
-            _ => FundGoalSort.Fund,
-        },
         model.Offset ?? 0,
         model.Limit);
 

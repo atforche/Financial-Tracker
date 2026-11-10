@@ -69,8 +69,6 @@ public sealed class TransactionConverter(
         TransactionSortModel.DescriptionDescending => TransactionSort.DescriptionDescending,
         TransactionSortModel.Amount => TransactionSort.Amount,
         TransactionSortModel.AmountDescending => TransactionSort.AmountDescending,
-        TransactionSortModel.AccountingPeriod => TransactionSort.AccountingPeriod,
-        TransactionSortModel.AccountingPeriodDescending => TransactionSort.AccountingPeriodDescending,
         TransactionSortModel.Source => TransactionSort.Source,
         TransactionSortModel.SourceDescending => TransactionSort.SourceDescending,
         TransactionSortModel.Destination => TransactionSort.Destination,

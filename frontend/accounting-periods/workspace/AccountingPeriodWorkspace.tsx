@@ -1,6 +1,5 @@
 import { Stack, Typography } from "@mui/material";
 import AccountingPeriodCard from "@/accounting-periods/workspace/AccountingPeriodCard";
-import { AccountingPeriodWithBalanceSort } from "@/accounting-periods/types";
 import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/workspace/helpers";
 import AccountingPeriodWorkspaceActions from "@/accounting-periods/workspace/AccountingPeriodWorkspaceActions";
 import AccountingPeriodYearSelector from "@/accounting-periods/workspace/AccountingPeriodYearSelector";
@@ -59,7 +58,6 @@ const AccountingPeriodWorkspace = async function ({
             params: {
               query: {
                 "Filter.Years": [selectedYear],
-                Sort: AccountingPeriodWithBalanceSort.DateDescending,
                 Limit: 12,
               },
             },

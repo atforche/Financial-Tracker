@@ -1,6 +1,5 @@
 import AccountingPeriodCard from "@/accounting-periods/workspace/AccountingPeriodCard";
 import AccountingPeriodProgressCard from "@/accounting-periods/workspace/AccountingPeriodProgressCard";
-import { AccountingPeriodSort } from "@/accounting-periods/types";
 import AccountingPeriodTrendsFilter from "@/accounting-periods/trends/AccountingPeriodTrendsFilter";
 import BalanceStatCards from "@/accounts/BalanceStatCards";
 import BalanceTrendCharts from "@/framework/charts/BalanceTrendCharts";
@@ -43,7 +42,7 @@ const AccountingPeriodTrends = async function ({
   const accountingPeriods = unwrapApiResponse(
     await apiClient.GET("/accounting-periods", {
       params: {
-        query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
+        query: { Limit: 500 },
       },
     }),
     "Failed to fetch accounting periods",

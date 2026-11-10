@@ -16,16 +16,6 @@ public sealed class FundConverter
     /// </summary>
     public FundBalanceQuery ToDomain(FundWithBalanceQueryParameterModel model) => new(
         ToDomain(model.Filter),
-        model.Sort switch
-        {
-            FundWithBalanceSortModel.Name => FundBalanceSort.Name,
-            FundWithBalanceSortModel.NameDescending => FundBalanceSort.NameDescending,
-            FundWithBalanceSortModel.Description => FundBalanceSort.Description,
-            FundWithBalanceSortModel.DescriptionDescending => FundBalanceSort.DescriptionDescending,
-            FundWithBalanceSortModel.PostedBalance => FundBalanceSort.PostedBalance,
-            FundWithBalanceSortModel.PostedBalanceDescending => FundBalanceSort.PostedBalanceDescending,
-            _ => FundBalanceSort.Name,
-        },
         model.Offset ?? 0,
         model.Limit);
 

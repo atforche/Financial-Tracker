@@ -9,9 +9,4 @@ public class AccountingPeriodWithBalanceQueryParameterModel : PaginationModel
     /// Filter to apply to the results
     /// </summary>
     public AccountingPeriodFilterModel? Filter { get; init; }
-
-    /// <summary>
-    /// Sort to apply to the results
-    /// </summary>
-    public AccountingPeriodWithBalanceSortModel? Sort { get; init; }
 }

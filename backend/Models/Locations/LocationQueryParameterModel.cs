@@ -9,9 +9,4 @@ public sealed class LocationQueryParameterModel : PaginationModel
     /// Filters applied to Locations.
     /// </summary>
     public LocationFilterModel? Filter { get; init; }
-
-    /// <summary>
-    /// Sort order for Locations.
-    /// </summary>
-    public LocationSortModel? Sort { get; init; }
 }

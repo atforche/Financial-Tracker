@@ -1178,8 +1178,6 @@ export interface paths {
                 query?: {
                     "Filter.NameSearch"?: string;
                     "Filter.Ids"?: string[];
-                    /** @description Sort order for Locations. */
-                    Sort?: components["schemas"]["LocationSortModel"];
                     Limit?: number;
                     Offset?: number;
                 };
@@ -1619,8 +1617,6 @@ export interface paths {
                     "Filter.NameSearch"?: string;
                     "Filter.Names"?: string[];
                     "Filter.Ids"?: string[];
-                    /** @description Sort order to apply to the results. */
-                    Sort?: components["schemas"]["FundBalanceEventSortModel"];
                     Limit?: number;
                     Offset?: number;
                 };
@@ -1676,8 +1672,6 @@ export interface paths {
                     "Filter.NameSearch"?: string;
                     "Filter.Names"?: string[];
                     "Filter.Ids"?: string[];
-                    /** @description Sort to apply. */
-                    Sort?: components["schemas"]["FundWithBalanceSortModel"];
                     Limit?: number;
                     Offset?: number;
                 };
@@ -2077,8 +2071,6 @@ export interface paths {
                     "Filter.FundIds"?: string[];
                     "Filter.AccountingPeriodIds"?: string[];
                     "Filter.IncludeOnboarded"?: boolean;
-                    /** @description Gets the optional Fund Goal ordering. */
-                    Sort?: components["schemas"]["FundGoalSortModel"];
                     Limit?: number;
                     Offset?: number;
                 };
@@ -2307,8 +2299,6 @@ export interface paths {
                     AccountingPeriodIds?: string[];
                     /** @description Whether to include current pending events in addition to matching posted events. */
                     IncludePending?: boolean;
-                    /** @description Sort order to apply to the results. */
-                    Sort?: components["schemas"]["AccountBalanceEventSortModel"];
                     Limit?: number;
                     Offset?: number;
                 };
@@ -2380,8 +2370,6 @@ export interface paths {
                     AccountingPeriodIds?: string[];
                     /** @description Whether to include current pending events in addition to matching posted events. */
                     IncludePending?: boolean;
-                    /** @description Sort order to apply to the results. */
-                    Sort?: components["schemas"]["AccountBalanceEventSortModel"];
                     Limit?: number;
                     Offset?: number;
                 };
@@ -2489,8 +2477,6 @@ export interface paths {
                     "Filter.Names"?: string[];
                     "Filter.Types"?: components["schemas"]["AccountTypeModel"][];
                     "Filter.Ids"?: string[];
-                    /** @description Sort to apply. */
-                    Sort?: components["schemas"]["AccountWithBalanceSortModel"];
                     Limit?: number;
                     Offset?: number;
                 };
@@ -2846,8 +2832,6 @@ export interface paths {
                     "Filter.Years"?: number[];
                     "Filter.Months"?: number[];
                     "Filter.IsOpen"?: boolean;
-                    /** @description Sort to apply to the results */
-                    Sort?: components["schemas"]["AccountingPeriodSortModel"];
                     Limit?: number;
                     Offset?: number;
                 };
@@ -3074,8 +3058,6 @@ export interface paths {
                     "Filter.Years"?: number[];
                     "Filter.Months"?: number[];
                     "Filter.IsOpen"?: boolean;
-                    /** @description Sort to apply to the results */
-                    Sort?: components["schemas"]["AccountingPeriodWithBalanceSortModel"];
                     Limit?: number;
                     Offset?: number;
                 };
@@ -3833,8 +3815,6 @@ export interface components {
              */
             amount?: null | number;
         };
-        /** @enum {unknown} */
-        AccountBalanceEventSortModel: AccountBalanceEventSortModel | null;
         /** @description Model representing an Account Balance */
         AccountBalanceModel: {
             /**
@@ -4060,8 +4040,6 @@ export interface components {
              */
             totalSpending: number;
         };
-        /** @enum {unknown} */
-        AccountingPeriodSortModel: AccountingPeriodSortModel | null;
         /** @description Model representing an Accounting Period along with its balance */
         AccountingPeriodWithBalanceModel: {
             /**
@@ -4123,8 +4101,6 @@ export interface components {
             /** @description True if the Accounting Period is open, false otherwise */
             isOpen: boolean;
         };
-        /** @enum {unknown} */
-        AccountingPeriodWithBalanceSortModel: AccountingPeriodWithBalanceSortModel | null;
         /** @description Model representing an Accounting Period with its Expected Income Sources. */
         AccountingPeriodWithExpectedIncomeSourcesModel: {
             /** @description Sources of expected income for the Accounting Period, with the income received from each so far. */
@@ -4280,8 +4256,6 @@ export interface components {
         };
         /** @enum {unknown} */
         AccountWithBalanceRangeSortModel: AccountWithBalanceRangeSortModel | null;
-        /** @enum {unknown} */
-        AccountWithBalanceSortModel: AccountWithBalanceSortModel | null;
         /** @description A posted balance checkpoint for one event date. */
         BalanceEventDateBalanceModel: {
             /**
@@ -5059,8 +5033,6 @@ export interface components {
              */
             amount?: null | number;
         };
-        /** @enum {unknown} */
-        FundBalanceEventSortModel: FundBalanceEventSortModel | null;
         /** @description Model representing an Fund Balance */
         FundBalanceModel: {
             /**
@@ -5264,8 +5236,6 @@ export interface components {
             /** @description Gets the calculated progress for the Fund Goal. */
             progress: components["schemas"]["FundGoalProgressModel"];
         };
-        /** @enum {unknown} */
-        FundGoalSortModel: FundGoalSortModel | null;
         /** @description Model representing assignment and spending totals for a Fund Goal. */
         FundGoalTotalsModel: {
             /**
@@ -5391,8 +5361,6 @@ export interface components {
         };
         /** @enum {unknown} */
         FundWithBalanceRangeSortModel: FundWithBalanceRangeSortModel | null;
-        /** @enum {unknown} */
-        FundWithBalanceSortModel: FundWithBalanceSortModel | null;
         /** @description Model representing an income amount. */
         IncomeAmountModel: {
             /**
@@ -5585,8 +5553,6 @@ export interface components {
              */
             topFiveSpent: number;
         };
-        /** @enum {unknown} */
-        LocationSortModel: LocationSortModel | null;
         /** @description Location endpoint and its signed impact on a Transaction. */
         LocationWithAmountModel: {
             /**
@@ -6523,40 +6489,10 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
-export enum AccountBalanceEventSortModel {
-    AccountName = "AccountName",
-    AccountNameDescending = "AccountNameDescending",
-    AccountingPeriodName = "AccountingPeriodName",
-    AccountingPeriodNameDescending = "AccountingPeriodNameDescending",
-    Date = "Date",
-    DateDescending = "DateDescending",
-    Type = "Type",
-    TypeDescending = "TypeDescending",
-    Amount = "Amount",
-    AmountDescending = "AmountDescending",
-    Counterparty = "Counterparty",
-    CounterpartyDescending = "CounterpartyDescending"
-}
 export enum AccountGoalEndingBalanceStatusModel {
     BelowMinimum = "BelowMinimum",
     WithinRange = "WithinRange",
     AboveMaximum = "AboveMaximum"
-}
-export enum AccountingPeriodSortModel {
-    Date = "Date",
-    DateDescending = "DateDescending",
-    IsOpen = "IsOpen",
-    IsOpenDescending = "IsOpenDescending"
-}
-export enum AccountingPeriodWithBalanceSortModel {
-    Date = "Date",
-    DateDescending = "DateDescending",
-    IsOpen = "IsOpen",
-    IsOpenDescending = "IsOpenDescending",
-    OpeningBalance = "OpeningBalance",
-    OpeningBalanceDescending = "OpeningBalanceDescending",
-    ClosingBalance = "ClosingBalance",
-    ClosingBalanceDescending = "ClosingBalanceDescending"
 }
 export enum AccountTypeModel {
     Standard = "Standard",
@@ -6577,14 +6513,6 @@ export enum AccountWithBalanceRangeSortModel {
     EndingBalanceDescending = "EndingBalanceDescending",
     NetChange = "NetChange",
     NetChangeDescending = "NetChangeDescending"
-}
-export enum AccountWithBalanceSortModel {
-    Name = "Name",
-    NameDescending = "NameDescending",
-    Type = "Type",
-    TypeDescending = "TypeDescending",
-    PostedBalance = "PostedBalance",
-    PostedBalanceDescending = "PostedBalanceDescending"
 }
 export enum BalanceEventTypeModel {
     Debit = "Debit",
@@ -6610,34 +6538,10 @@ export enum CreateTransactionModelCreateRefundTransactionModelType {
 export enum CreateTransactionModelCreateSpendingTransactionModelType {
     Spending = "Spending"
 }
-export enum FundBalanceEventSortModel {
-    FundName = "FundName",
-    FundNameDescending = "FundNameDescending",
-    AccountingPeriodName = "AccountingPeriodName",
-    AccountingPeriodNameDescending = "AccountingPeriodNameDescending",
-    Date = "Date",
-    DateDescending = "DateDescending",
-    Type = "Type",
-    TypeDescending = "TypeDescending",
-    Amount = "Amount",
-    AmountDescending = "AmountDescending",
-    Counterparty = "Counterparty",
-    CounterpartyDescending = "CounterpartyDescending"
-}
 export enum FundGoalEndingBalanceStatusModel {
     BelowMinimum = "BelowMinimum",
     WithinRange = "WithinRange",
     AboveMaximum = "AboveMaximum"
-}
-export enum FundGoalSortModel {
-    Fund = "Fund",
-    FundDescending = "FundDescending",
-    PlannedMonthlyContribution = "PlannedMonthlyContribution",
-    PlannedMonthlyContributionDescending = "PlannedMonthlyContributionDescending",
-    MinimumEndingBalance = "MinimumEndingBalance",
-    MinimumEndingBalanceDescending = "MinimumEndingBalanceDescending",
-    MaximumEndingBalance = "MaximumEndingBalance",
-    MaximumEndingBalanceDescending = "MaximumEndingBalanceDescending"
 }
 export enum FundWithBalanceRangeSortModel {
     Name = "Name",
@@ -6648,14 +6552,6 @@ export enum FundWithBalanceRangeSortModel {
     EndingBalanceDescending = "EndingBalanceDescending",
     NetChange = "NetChange",
     NetChangeDescending = "NetChangeDescending"
-}
-export enum FundWithBalanceSortModel {
-    Name = "Name",
-    NameDescending = "NameDescending",
-    Description = "Description",
-    DescriptionDescending = "DescriptionDescending",
-    PostedBalance = "PostedBalance",
-    PostedBalanceDescending = "PostedBalanceDescending"
 }
 export enum LocationRangeSortModel {
     Name = "Name",
@@ -6668,10 +6564,6 @@ export enum LocationRangeSortModel {
     TransactionCountDescending = "TransactionCountDescending",
     LastActivity = "LastActivity",
     LastActivityDescending = "LastActivityDescending"
-}
-export enum LocationSortModel {
-    Name = "Name",
-    NameDescending = "NameDescending"
 }
 export enum OverviewAttentionKindModel {
     FundGoalsOutOfRange = "FundGoalsOutOfRange",
@@ -6703,8 +6595,6 @@ export enum TransactionModelSpendingTransactionModelType {
 export enum TransactionSortModel {
     Date = "Date",
     DateDescending = "DateDescending",
-    AccountingPeriod = "AccountingPeriod",
-    AccountingPeriodDescending = "AccountingPeriodDescending",
     Description = "Description",
     DescriptionDescending = "DescriptionDescending",
     Source = "Source",

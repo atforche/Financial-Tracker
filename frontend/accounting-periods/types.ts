@@ -1,8 +1,4 @@
-import {
-  AccountingPeriodSortModel,
-  AccountingPeriodWithBalanceSortModel,
-  type components,
-} from "@/framework/data/api";
+import type { components } from "@/framework/data/api";
 
 /**
  * Type representing an Accounting Period.
@@ -62,10 +58,8 @@ type ExpectedIncomeSourceRequest =
 export {
   type AccountingPeriod,
   type AccountingPeriodRange,
-  AccountingPeriodSortModel as AccountingPeriodSort,
   type AccountingPeriodWithBalance,
   type AccountingPeriodWithExpectedIncomeSources,
-  AccountingPeriodWithBalanceSortModel as AccountingPeriodWithBalanceSort,
   type CreateAccountingPeriodRequest,
   type ExpectedIncomeSource,
   type ExpectedIncomeSourceIncome,

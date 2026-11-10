@@ -57,16 +57,6 @@ public enum TransactionSort
     AmountDescending,
 
     /// <summary>
-    /// Sorts by Accounting Period ascending.
-    /// </summary>
-    AccountingPeriod,
-
-    /// <summary>
-    /// Sorts by Accounting Period descending.
-    /// </summary>
-    AccountingPeriodDescending,
-
-    /// <summary>
     /// Sorts by source ascending.
     /// </summary>
     Source,

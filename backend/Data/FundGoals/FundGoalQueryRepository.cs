@@ -20,18 +20,7 @@ public sealed class FundGoalQueryRepository(DatabaseContext databaseContext) : I
     public async Task<QueryPage<FundGoal>> GetAsync(FundGoalQuery query, CancellationToken cancellationToken = default)
     {
         IQueryable<FundGoal> fundGoals = ApplyFilter(databaseContext.FundGoals.AsNoTracking(), query.Filter);
-        fundGoals = query.Sort switch
-        {
-            FundGoalSort.Fund => fundGoals.OrderBy(fundGoal => fundGoal.Fund.Name).ThenBy(fundGoal => fundGoal.Id),
-            FundGoalSort.FundDescending => fundGoals.OrderByDescending(fundGoal => fundGoal.Fund.Name).ThenBy(fundGoal => fundGoal.Id),
-            FundGoalSort.PlannedMonthlyContribution => fundGoals.OrderBy(fundGoal => fundGoal.PlannedMonthlyContribution).ThenBy(fundGoal => fundGoal.Id),
-            FundGoalSort.PlannedMonthlyContributionDescending => fundGoals.OrderByDescending(fundGoal => fundGoal.PlannedMonthlyContribution).ThenBy(fundGoal => fundGoal.Id),
-            FundGoalSort.MinimumEndingBalance => fundGoals.OrderBy(fundGoal => fundGoal.MinimumEndingBalance).ThenBy(fundGoal => fundGoal.Id),
-            FundGoalSort.MinimumEndingBalanceDescending => fundGoals.OrderByDescending(fundGoal => fundGoal.MinimumEndingBalance).ThenBy(fundGoal => fundGoal.Id),
-            FundGoalSort.MaximumEndingBalance => fundGoals.OrderBy(fundGoal => fundGoal.MaximumEndingBalance).ThenBy(fundGoal => fundGoal.Id),
-            FundGoalSort.MaximumEndingBalanceDescending => fundGoals.OrderByDescending(fundGoal => fundGoal.MaximumEndingBalance).ThenBy(fundGoal => fundGoal.Id),
-            _ => fundGoals.OrderBy(fundGoal => fundGoal.Fund.Name).ThenBy(fundGoal => fundGoal.Id),
-        };
+        fundGoals = fundGoals.OrderBy(fundGoal => fundGoal.Fund.Name).ThenBy(fundGoal => fundGoal.Id);
         int totalCount = await fundGoals.CountAsync(cancellationToken);
         IReadOnlyCollection<FundGoal> items = await fundGoals.Skip(query.Offset).Take(query.Limit ?? int.MaxValue).ToListAsync(cancellationToken);
         return new QueryPage<FundGoal>(items, totalCount);

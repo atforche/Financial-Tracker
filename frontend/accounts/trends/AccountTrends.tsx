@@ -23,7 +23,6 @@ import {
 import AccountTrendsFilter from "@/accounts/trends/AccountTrendsFilter";
 import AccountTrendsListFrame from "@/accounts/trends/AccountTrendsListFrame";
 import type { AccountTrendsSearchParams } from "@/accounts/trends/helpers";
-import { AccountingPeriodSort } from "@/accounting-periods/types";
 import BalanceStatCards from "@/accounts/BalanceStatCards";
 import BalanceTrendCharts from "@/framework/charts/BalanceTrendCharts";
 import type { JSX } from "react";
@@ -58,7 +57,6 @@ const AccountTrends = async function ({
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
       query: {
-        Sort: AccountingPeriodSort.DateDescending,
         Limit: 500,
         Offset: 0,
       },

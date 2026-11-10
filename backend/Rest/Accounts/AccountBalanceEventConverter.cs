@@ -23,29 +23,8 @@ public sealed class AccountBalanceEventConverter
             model.AccountingPeriodIds == null ? model.Range?.End : null,
             model.AccountingPeriodIds,
             model.IncludePending,
-            ToDomain(model.Sort),
             model.Offset ?? 0,
             model.Limit);
-
-    /// <summary>
-    /// Converts the provided API sort to a Domain sort.
-    /// </summary>
-    private static AccountBalanceEventSort ToDomain(AccountBalanceEventSortModel? sort) => sort switch
-    {
-        AccountBalanceEventSortModel.AccountName => AccountBalanceEventSort.AccountName,
-        AccountBalanceEventSortModel.AccountNameDescending => AccountBalanceEventSort.AccountNameDescending,
-        AccountBalanceEventSortModel.AccountingPeriodName => AccountBalanceEventSort.AccountingPeriod,
-        AccountBalanceEventSortModel.AccountingPeriodNameDescending => AccountBalanceEventSort.AccountingPeriodDescending,
-        AccountBalanceEventSortModel.Date => AccountBalanceEventSort.Date,
-        AccountBalanceEventSortModel.DateDescending => AccountBalanceEventSort.DateDescending,
-        AccountBalanceEventSortModel.Type => AccountBalanceEventSort.Type,
-        AccountBalanceEventSortModel.TypeDescending => AccountBalanceEventSort.TypeDescending,
-        AccountBalanceEventSortModel.Amount => AccountBalanceEventSort.Amount,
-        AccountBalanceEventSortModel.AmountDescending => AccountBalanceEventSort.AmountDescending,
-        AccountBalanceEventSortModel.Counterparty => AccountBalanceEventSort.Counterparty,
-        AccountBalanceEventSortModel.CounterpartyDescending => AccountBalanceEventSort.CounterpartyDescending,
-        _ => AccountBalanceEventSort.DateDescending,
-    };
 
     /// <summary>
     /// Converts the provided Domain Account balance event to an API model.

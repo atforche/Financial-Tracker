@@ -25,14 +25,6 @@ public sealed class AccountingPeriodQueryConverter(
     /// </summary>
     public AccountingPeriodQuery ToDomain(AccountingPeriodQueryParameterModel model) => new(
         ToDomain(model.Filter),
-        model.Sort switch
-        {
-            AccountingPeriodSortModel.Date => AccountingPeriodSort.Date,
-            AccountingPeriodSortModel.DateDescending => AccountingPeriodSort.DateDescending,
-            AccountingPeriodSortModel.IsOpen => AccountingPeriodSort.IsOpen,
-            AccountingPeriodSortModel.IsOpenDescending => AccountingPeriodSort.IsOpenDescending,
-            _ => AccountingPeriodSort.DateDescending,
-        },
         model.Offset ?? 0,
         model.Limit);
 
@@ -41,7 +33,6 @@ public sealed class AccountingPeriodQueryConverter(
     /// </summary>
     public AccountingPeriodBalanceQuery ToDomain(AccountingPeriodWithBalanceQueryParameterModel model) => new(
         ToDomain(model.Filter),
-        ToDomain(model.Sort),
         model.Offset ?? 0,
         model.Limit);
 
@@ -216,18 +207,5 @@ public sealed class AccountingPeriodQueryConverter(
         Total = sources.Sum(source => source.ExpectedAmount),
         Tracked = sources.Sum(source => source.ExpectedTrackedAmount),
         Untracked = sources.Sum(source => source.ExpectedUntrackedAmount),
-    };
-
-    private static AccountingPeriodBalanceSort ToDomain(AccountingPeriodWithBalanceSortModel? sort) => sort switch
-    {
-        AccountingPeriodWithBalanceSortModel.Date => AccountingPeriodBalanceSort.Date,
-        AccountingPeriodWithBalanceSortModel.DateDescending => AccountingPeriodBalanceSort.DateDescending,
-        AccountingPeriodWithBalanceSortModel.IsOpen => AccountingPeriodBalanceSort.IsOpen,
-        AccountingPeriodWithBalanceSortModel.IsOpenDescending => AccountingPeriodBalanceSort.IsOpenDescending,
-        AccountingPeriodWithBalanceSortModel.OpeningBalance => AccountingPeriodBalanceSort.OpeningBalance,
-        AccountingPeriodWithBalanceSortModel.OpeningBalanceDescending => AccountingPeriodBalanceSort.OpeningBalanceDescending,
-        AccountingPeriodWithBalanceSortModel.ClosingBalance => AccountingPeriodBalanceSort.ClosingBalance,
-        AccountingPeriodWithBalanceSortModel.ClosingBalanceDescending => AccountingPeriodBalanceSort.ClosingBalanceDescending,
-        _ => AccountingPeriodBalanceSort.DateDescending,
     };
 }

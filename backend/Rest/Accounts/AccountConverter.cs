@@ -16,16 +16,6 @@ public sealed class AccountConverter
     /// </summary>
     public AccountBalanceQuery ToDomain(AccountWithBalanceQueryParameterModel model) => new(
         ToDomain(model.Filter),
-        model.Sort switch
-        {
-            AccountWithBalanceSortModel.Name => AccountBalanceSort.Name,
-            AccountWithBalanceSortModel.NameDescending => AccountBalanceSort.NameDescending,
-            AccountWithBalanceSortModel.Type => AccountBalanceSort.Type,
-            AccountWithBalanceSortModel.TypeDescending => AccountBalanceSort.TypeDescending,
-            AccountWithBalanceSortModel.PostedBalance => AccountBalanceSort.PostedBalance,
-            AccountWithBalanceSortModel.PostedBalanceDescending => AccountBalanceSort.PostedBalanceDescending,
-            _ => AccountBalanceSort.Name,
-        },
         model.Offset ?? 0,
         model.Limit);
 

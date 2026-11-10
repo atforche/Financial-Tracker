@@ -19,9 +19,4 @@ public sealed class AccountBalanceEventsQueryParameterModel : PaginationModel
     /// Whether to include current pending events in addition to matching posted events.
     /// </summary>
     public bool IncludePending { get; init; }
-
-    /// <summary>
-    /// Sort order to apply to the results.
-    /// </summary>
-    public AccountBalanceEventSortModel? Sort { get; init; }
 }

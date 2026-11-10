@@ -16,7 +16,6 @@ public sealed class LocationConverter
     /// </summary>
     public LocationQuery ToDomain(LocationQueryParameterModel model) => new(
         new LocationFilter(model.Filter?.NameSearch, model.Filter?.Ids ?? []),
-        model.Sort == LocationSortModel.NameDescending ? LocationSort.NameDescending : LocationSort.Name,
         model.Offset ?? 0,
         model.Limit);
 

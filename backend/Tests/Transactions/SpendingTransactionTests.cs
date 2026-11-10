@@ -187,8 +187,8 @@ public sealed class SpendingTransactionTests
 
         await test.AssertBalanceAsync(cash, 65m, 65m);
         CollectionModel<AccountBalanceEventModel> events = await test.Api.GetAccountEventsAsync(
-            $"/accounts/{cash.Id}/balance-events/with-totals?range.start=2026-07-15&range.end=2026-07-15&sort=Date");
-        Assert.Equal([later.Id, earlier.Id], events.Items.Select(item => item.TransactionId));
-        Assert.Equal([80m, 65m], events.Items.Select(item => item.NewBalance?.PostedBalance));
+            $"/accounts/{cash.Id}/balance-events/with-totals?range.start=2026-07-15&range.end=2026-07-15");
+        Assert.Equal([earlier.Id, later.Id], events.Items.Select(item => item.TransactionId));
+        Assert.Equal([65m, 80m], events.Items.Select(item => item.NewBalance?.PostedBalance));
     }
 }

@@ -9,9 +9,4 @@ public class AccountWithBalanceQueryParameterModel : PaginationModel
     /// Filters to apply.
     /// </summary>
     public AccountFilterModel? Filter { get; init; }
-
-    /// <summary>
-    /// Sort to apply.
-    /// </summary>
-    public AccountWithBalanceSortModel? Sort { get; init; }
 }

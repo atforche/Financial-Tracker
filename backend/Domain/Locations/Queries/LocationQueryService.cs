@@ -108,7 +108,7 @@ public sealed class LocationQueryService(
     /// </summary>
     private async Task<Location?> GetLocationAsync(Guid locationId, CancellationToken cancellationToken) =>
         (await locationQueryRepository.GetAsync(
-            new LocationQuery(new LocationFilter(null, [locationId]), LocationSort.Name, 0, 1),
+            new LocationQuery(new LocationFilter(null, [locationId]), 0, 1),
             cancellationToken)).Items.SingleOrDefault();
 
     /// <summary>

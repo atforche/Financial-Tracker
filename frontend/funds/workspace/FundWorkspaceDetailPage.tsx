@@ -6,13 +6,11 @@ import type { FundGoal, FundGoalProgress } from "@/fund-goals/types";
 import resolveEntityHistory, {
   periodTab,
 } from "@/balance-events/resolveEntityHistory";
-import { AccountingPeriodSort } from "@/accounting-periods/types";
 import type { BalanceEventTotals } from "@/balance-events/types";
 import BalanceHistoryFilter from "@/balance-events/BalanceHistoryFilter";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
 import EntityHistoryLayout from "@/balance-events/EntityHistoryLayout";
 import EntityTransactionList from "@/balance-events/EntityTransactionList";
-import { FundBalanceEventSortModel } from "@/framework/data/api";
 import FundDetailActions from "@/funds/workspace/FundDetailActions";
 import FundGoalHistory from "@/fund-goals/FundGoalHistory";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
@@ -78,7 +76,6 @@ const getDateActivity = async function (
           "Range.End": dates.end,
           "Filter.Ids": [fundId],
           IncludePending: true,
-          Sort: FundBalanceEventSortModel.DateDescending,
         },
       },
     }),
@@ -146,7 +143,7 @@ const FundWorkspaceDetailPage = async function ({
     resolvedSearchParams.tab === periodTab
       ? apiClient.GET("/accounting-periods", {
           params: {
-            query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
+            query: { Limit: 500 },
           },
         })
       : null,

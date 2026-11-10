@@ -64,7 +64,7 @@ public sealed class FundBalanceEventQueryService(
             .DistinctBy(transaction => transaction.Id).ToList();
         IReadOnlyCollection<AccountingPeriodId> periodIds = transactions.Select(transaction => transaction.AccountingPeriodId).Distinct().ToList();
         IReadOnlyCollection<AccountingPeriod> periods = await accountingPeriodRepository.GetByIdsAsync(periodIds, cancellationToken);
-        return await GetAsync(transactions, periods, query.Filter, query.Sort, query.Offset, query.Limit, cancellationToken,
+        return await GetAsync(transactions, periods, query.Filter, query.Offset, query.Limit, cancellationToken,
             query.Start, query.End, true, query.IncludePending);
     }
 
@@ -75,7 +75,6 @@ public sealed class FundBalanceEventQueryService(
         IReadOnlyCollection<Transaction> transactions,
         IReadOnlyCollection<AccountingPeriod> accountingPeriods,
         FundFilter filter,
-        FundBalanceEventSort sort,
         int offset,
         int? limit,
         CancellationToken cancellationToken,
@@ -99,7 +98,7 @@ public sealed class FundBalanceEventQueryService(
             || (item.IsPosted
                 && (!filterByPostingDate || item.EventDate.HasValue)
                 && (postingStart == null || item.EventDate >= postingStart)
-                && (postingEnd == null || item.EventDate <= postingEnd))), sort).ToList();
+                && (postingEnd == null || item.EventDate <= postingEnd)))).ToList();
         return new QueryPage<FundBalanceEvent>(
             allItems.Skip(offset).Take(limit ?? int.MaxValue).ToList(),
             allItems.Count);
@@ -230,66 +229,11 @@ public sealed class FundBalanceEventQueryService(
         && (filter.Ids.Count == 0 || filter.Ids.Contains(fund.Id.Value));
 
     /// <summary>
-    /// Sorts Fund balance events by the provided sort order.
+    /// Orders Fund balance events newest first, with pending events ahead of posted ones.
     /// </summary>
-    private static IOrderedEnumerable<FundBalanceEvent> Sort(
-        IEnumerable<FundBalanceEvent> events,
-        FundBalanceEventSort sort) => sort switch
-        {
-            FundBalanceEventSort.FundName => events.OrderBy(item => item.Fund.Name).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.FundNameDescending => events.OrderByDescending(item => item.Fund.Name).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.AccountingPeriod => events.OrderBy(item => item.AccountingPeriod.Year).ThenBy(item => item.AccountingPeriod.Month).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.AccountingPeriodDescending => events.OrderByDescending(item => item.AccountingPeriod.Year).ThenByDescending(item => item.AccountingPeriod.Month).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.Date => events.OrderBy(item => !item.IsPosted)
-                .ThenBy(item => item.IsPosted ? item.EventDate : item.TransactionDate)
-                .ThenBy(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence)
-                .ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.DateDescending => events.OrderByDescending(item => !item.IsPosted)
-                .ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate)
-                .ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence)
-                .ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.Type => events.OrderBy(item => item.Type).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.TypeDescending => events.OrderByDescending(item => item.Type).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.Amount => events.OrderBy(item => item.Amount).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.AmountDescending => events.OrderByDescending(item => item.Amount).ThenByDescending(item => item.EventDate).ThenBy(item => item.TransactionId),
-            FundBalanceEventSort.Counterparty => SortByText(events, GetCounterpartySortKey, false),
-            FundBalanceEventSort.CounterpartyDescending => SortByText(events, GetCounterpartySortKey, true),
-            _ => events.OrderByDescending(item => !item.IsPosted)
-                .ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate)
-                .ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence)
-                .ThenBy(item => item.TransactionId),
-        };
-
-    /// <summary>
-    /// Sorts events by a displayed text value, putting events without a value last.
-    /// </summary>
-    private static IOrderedEnumerable<FundBalanceEvent> SortByText(
-        IEnumerable<FundBalanceEvent> events,
-        Func<FundBalanceEvent, string> getSortKey,
-        bool descending) => descending
-            ? events.OrderBy(item => string.IsNullOrWhiteSpace(getSortKey(item)))
-                .ThenByDescending(getSortKey, StringComparer.OrdinalIgnoreCase)
-                .ThenByDescending(item => item.EventDate)
-                .ThenBy(item => item.TransactionId)
-            : events.OrderBy(item => string.IsNullOrWhiteSpace(getSortKey(item)))
-                .ThenBy(getSortKey, StringComparer.OrdinalIgnoreCase)
-                .ThenByDescending(item => item.EventDate)
-                .ThenBy(item => item.TransactionId);
-
-    /// <summary>
-    /// Gets the text displayed for transaction destinations in a balance-event list.
-    /// </summary>
-    private static string GetDestinationSortKey(FundBalanceEvent balanceEvent) => string.Join(
-        ", ",
-        balanceEvent.Destinations
-            .Select(destination => destination.DisplayName)
-            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase));
-
-    /// <summary>
-    /// Gets the other party relevant to a balance event's debit or credit direction.
-    /// </summary>
-    private static string GetCounterpartySortKey(FundBalanceEvent balanceEvent) =>
-        balanceEvent.Type == BalanceEventType.Debit
-            ? GetDestinationSortKey(balanceEvent)
-            : balanceEvent.Source.DisplayName;
+    private static IOrderedEnumerable<FundBalanceEvent> Sort(IEnumerable<FundBalanceEvent> events) => events
+        .OrderByDescending(item => !item.IsPosted)
+        .ThenByDescending(item => item.IsPosted ? item.EventDate : item.TransactionDate)
+        .ThenByDescending(item => item.IsPosted ? item.EventDateSequence : item.TransactionSequence)
+        .ThenBy(item => item.TransactionId);
 }

@@ -30,9 +30,7 @@ public sealed class LocationQueryRepository(DatabaseContext databaseContext) : I
             var ids = query.Filter.Ids.Select(id => new LocationId(id)).ToList();
             locations = locations.Where(location => ids.Contains(location.Id));
         }
-        locations = query.Sort == LocationSort.NameDescending
-            ? locations.OrderByDescending(location => location.Name).ThenBy(location => location.Id)
-            : locations.OrderBy(location => location.Name).ThenBy(location => location.Id);
+        locations = locations.OrderBy(location => location.Name).ThenBy(location => location.Id);
         int totalCount = await locations.CountAsync(cancellationToken);
         locations = locations.Skip(query.Offset);
         if (query.Limit != null)

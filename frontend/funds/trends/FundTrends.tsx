@@ -16,7 +16,6 @@ import {
   normalizeRequestedFundNames,
   shouldPersistFundNames,
 } from "@/funds/trends/fundNameFilter";
-import { AccountingPeriodSort } from "@/accounting-periods/types";
 import BalanceTrendCharts from "@/framework/charts/BalanceTrendCharts";
 import FundBalanceStatCards from "@/funds/FundBalanceStatCards";
 import FundTrendsFilter from "@/funds/trends/FundTrendsFilter";
@@ -53,7 +52,6 @@ const FundTrends = async function ({
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
     params: {
       query: {
-        Sort: AccountingPeriodSort.DateDescending,
         Limit: 500,
         Offset: 0,
       },

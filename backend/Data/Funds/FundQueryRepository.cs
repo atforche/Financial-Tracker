@@ -55,16 +55,7 @@ public sealed class FundQueryRepository(DatabaseContext databaseContext) : IFund
                     PostedBalance = fund.OnboardedBalance ?? 0,
                 },
         });
-        balances = query.Sort switch
-        {
-            FundBalanceSort.Name => balances.OrderBy(item => item.Fund.Name).ThenBy(item => item.Fund.Id),
-            FundBalanceSort.NameDescending => balances.OrderByDescending(item => item.Fund.Name).ThenBy(item => item.Fund.Id),
-            FundBalanceSort.Description => balances.OrderBy(item => item.Fund.Description).ThenBy(item => item.Fund.Name).ThenBy(item => item.Fund.Id),
-            FundBalanceSort.DescriptionDescending => balances.OrderByDescending(item => item.Fund.Description).ThenBy(item => item.Fund.Name).ThenBy(item => item.Fund.Id),
-            FundBalanceSort.PostedBalance => balances.OrderBy(item => item.CurrentBalance.PostedBalance).ThenBy(item => item.Fund.Name).ThenBy(item => item.Fund.Id),
-            FundBalanceSort.PostedBalanceDescending => balances.OrderByDescending(item => item.CurrentBalance.PostedBalance).ThenBy(item => item.Fund.Name).ThenBy(item => item.Fund.Id),
-            _ => balances.OrderBy(item => item.Fund.Name).ThenBy(item => item.Fund.Id),
-        };
+        balances = balances.OrderBy(item => item.Fund.Name).ThenBy(item => item.Fund.Id);
         int totalCount = await balances.CountAsync(cancellationToken);
         List<FundBalanceRow> rows = await balances.Skip(query.Offset).Take(query.Limit ?? int.MaxValue).ToListAsync(cancellationToken);
         IReadOnlyCollection<FundBalance> items = rows.Select(row => new FundBalance(

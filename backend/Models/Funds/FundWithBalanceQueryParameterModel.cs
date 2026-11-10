@@ -9,9 +9,4 @@ public class FundWithBalanceQueryParameterModel : PaginationModel
     /// Filters to apply.
     /// </summary>
     public FundFilterModel? Filter { get; init; }
-
-    /// <summary>
-    /// Sort to apply.
-    /// </summary>
-    public FundWithBalanceSortModel? Sort { get; init; }
 }
