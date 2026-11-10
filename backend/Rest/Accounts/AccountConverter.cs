@@ -26,20 +26,7 @@ public sealed class AccountConverter
         model.Range.Start,
         model.Range.End,
         ToDomain(model.Filter),
-        model.Sort switch
-        {
-            AccountWithBalanceRangeSortModel.Name => AccountRangeSort.Name,
-            AccountWithBalanceRangeSortModel.NameDescending => AccountRangeSort.NameDescending,
-            AccountWithBalanceRangeSortModel.Type => AccountRangeSort.Type,
-            AccountWithBalanceRangeSortModel.TypeDescending => AccountRangeSort.TypeDescending,
-            AccountWithBalanceRangeSortModel.StartingBalance => AccountRangeSort.StartingBalance,
-            AccountWithBalanceRangeSortModel.StartingBalanceDescending => AccountRangeSort.StartingBalanceDescending,
-            AccountWithBalanceRangeSortModel.EndingBalance => AccountRangeSort.EndingBalance,
-            AccountWithBalanceRangeSortModel.EndingBalanceDescending => AccountRangeSort.EndingBalanceDescending,
-            AccountWithBalanceRangeSortModel.NetChange => AccountRangeSort.NetChange,
-            AccountWithBalanceRangeSortModel.NetChangeDescending => AccountRangeSort.NetChangeDescending,
-            _ => AccountRangeSort.Name,
-        },
+        ToDomain(model.Sort),
         model.Offset ?? 0,
         model.Limit);
 
@@ -113,26 +100,9 @@ public sealed class AccountConverter
     /// </summary>
     public AccountsInAccountingPeriodRangeModel ToModel(AccountAccountingPeriodRange range) => new()
     {
-        Accounts = new CollectionModel<AccountWithBalanceRangeModel>
-        {
-            Items = range.Accounts.Items.Select(balance => new AccountWithBalanceRangeModel
-            {
-                Id = balance.Account.Id.Value,
-                Name = balance.Account.Name,
-                FinancialInstitution = balance.Account.FinancialInstitution,
-                Type = AccountTypeConverter.ToModel(balance.Account.Type),
-                StartingBalance = balance.StartingBalance,
-                EndingBalance = balance.EndingBalance,
-            }).ToList(),
-            TotalCount = range.Accounts.TotalCount,
-        },
+        Accounts = ToModel(range.Accounts),
         AvailableAccountNames = range.AvailableAccountNames,
-        TotalIncome = new IncomeAmountModel
-        {
-            Total = range.TotalIncome,
-            Tracked = range.TrackedIncome,
-            Untracked = range.UntrackedIncome,
-        },
+        TotalIncome = ToIncomeModel(range.TotalIncome, range.TrackedIncome, range.UntrackedIncome),
         TotalSpending = range.TotalSpending,
         AccountingPeriods = range.AccountingPeriods.Select(ToModel).ToList(),
     };
@@ -142,26 +112,9 @@ public sealed class AccountConverter
     /// </summary>
     public AccountsInDateRangeModel ToModel(AccountDateRange range) => new()
     {
-        Accounts = new CollectionModel<AccountWithBalanceRangeModel>
-        {
-            Items = range.Accounts.Items.Select(balance => new AccountWithBalanceRangeModel
-            {
-                Id = balance.Account.Id.Value,
-                Name = balance.Account.Name,
-                FinancialInstitution = balance.Account.FinancialInstitution,
-                Type = AccountTypeConverter.ToModel(balance.Account.Type),
-                StartingBalance = balance.StartingBalance,
-                EndingBalance = balance.EndingBalance,
-            }).ToList(),
-            TotalCount = range.Accounts.TotalCount,
-        },
+        Accounts = ToModel(range.Accounts),
         AvailableAccountNames = range.AvailableAccountNames,
-        TotalIncome = new IncomeAmountModel
-        {
-            Total = range.TotalIncome,
-            Tracked = range.TrackedIncome,
-            Untracked = range.UntrackedIncome,
-        },
+        TotalIncome = ToIncomeModel(range.TotalIncome, range.TrackedIncome, range.UntrackedIncome),
         TotalSpending = range.TotalSpending,
         OpeningBalance = range.OpeningBalance == null ? null : ToModel(range.OpeningBalance),
         Granularity = BalanceGranularityConverter.ToModel(range.Granularity),
@@ -209,6 +162,33 @@ public sealed class AccountConverter
             AccountType = AccountTypeConverter.ToModel(balance.AccountType),
             TotalBalance = balance.TotalBalance,
         }).ToList(),
+    };
+
+    /// <summary>
+    /// Converts a page of Account range balances to an API collection.
+    /// </summary>
+    private static CollectionModel<AccountWithBalanceRangeModel> ToModel(QueryPage<AccountRangeBalance> page) => new()
+    {
+        Items = page.Items.Select(balance => new AccountWithBalanceRangeModel
+        {
+            Id = balance.Account.Id.Value,
+            Name = balance.Account.Name,
+            FinancialInstitution = balance.Account.FinancialInstitution,
+            Type = AccountTypeConverter.ToModel(balance.Account.Type),
+            StartingBalance = balance.StartingBalance,
+            EndingBalance = balance.EndingBalance,
+        }).ToList(),
+        TotalCount = page.TotalCount,
+    };
+
+    /// <summary>
+    /// Converts income totals to an API model.
+    /// </summary>
+    private static IncomeAmountModel ToIncomeModel(decimal total, decimal tracked, decimal untracked) => new()
+    {
+        Total = total,
+        Tracked = tracked,
+        Untracked = untracked,
     };
 
     /// <summary>
