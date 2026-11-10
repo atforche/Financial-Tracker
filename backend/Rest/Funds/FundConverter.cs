@@ -3,6 +3,7 @@ using Domain.Funds;
 using Domain.Funds.Queries;
 using Models;
 using Models.Funds;
+using Rest.AccountingPeriods;
 
 namespace Rest.Funds;
 
@@ -16,16 +17,6 @@ public sealed class FundConverter
     /// </summary>
     public FundBalanceQuery ToDomain(FundWithBalanceQueryParameterModel model) => new(
         ToDomain(model.Filter),
-        model.Sort switch
-        {
-            FundWithBalanceSortModel.Name => FundBalanceSort.Name,
-            FundWithBalanceSortModel.NameDescending => FundBalanceSort.NameDescending,
-            FundWithBalanceSortModel.Description => FundBalanceSort.Description,
-            FundWithBalanceSortModel.DescriptionDescending => FundBalanceSort.DescriptionDescending,
-            FundWithBalanceSortModel.PostedBalance => FundBalanceSort.PostedBalance,
-            FundWithBalanceSortModel.PostedBalanceDescending => FundBalanceSort.PostedBalanceDescending,
-            _ => FundBalanceSort.Name,
-        },
         model.Offset ?? 0,
         model.Limit);
 
@@ -36,18 +27,7 @@ public sealed class FundConverter
         model.Range.Start,
         model.Range.End,
         ToDomain(model.Filter),
-        model.Sort switch
-        {
-            FundWithBalanceRangeSortModel.Name => FundRangeSort.Name,
-            FundWithBalanceRangeSortModel.NameDescending => FundRangeSort.NameDescending,
-            FundWithBalanceRangeSortModel.StartingBalance => FundRangeSort.StartingBalance,
-            FundWithBalanceRangeSortModel.StartingBalanceDescending => FundRangeSort.StartingBalanceDescending,
-            FundWithBalanceRangeSortModel.EndingBalance => FundRangeSort.EndingBalance,
-            FundWithBalanceRangeSortModel.EndingBalanceDescending => FundRangeSort.EndingBalanceDescending,
-            FundWithBalanceRangeSortModel.NetChange => FundRangeSort.NetChange,
-            FundWithBalanceRangeSortModel.NetChangeDescending => FundRangeSort.NetChangeDescending,
-            _ => FundRangeSort.Name,
-        },
+        ToDomain(model.Sort),
         model.Offset ?? 0,
         model.Limit);
 
@@ -110,26 +90,8 @@ public sealed class FundConverter
     /// </summary>
     public FundsInAccountingPeriodRangeModel ToModel(FundAccountingPeriodRange range) => new()
     {
-        Funds = new CollectionModel<FundWithBalanceRangeModel>
-        {
-            Items = range.Funds.Items.Select(balance => new FundWithBalanceRangeModel
-            {
-                Id = balance.Fund.Id.Value,
-                Name = balance.Fund.Name,
-                Description = balance.Fund.Description,
-                StartingBalance = balance.StartingBalance,
-                EndingBalance = balance.EndingBalance,
-            }).ToList(),
-            TotalCount = range.Funds.TotalCount,
-        },
+        Funds = ToModel(range.Funds),
         AvailableFundNames = range.AvailableFundNames,
-        TotalIncome = new IncomeAmountModel
-        {
-            Total = range.TotalIncome,
-            Tracked = range.TrackedIncome,
-            Untracked = range.UntrackedIncome,
-        },
-        TotalSpending = range.TotalSpending,
         AccountingPeriods = range.AccountingPeriods.Select(ToModel).ToList(),
     };
 
@@ -138,26 +100,8 @@ public sealed class FundConverter
     /// </summary>
     public FundsInDateRangeModel ToModel(FundDateRange range) => new()
     {
-        Funds = new CollectionModel<FundWithBalanceRangeModel>
-        {
-            Items = range.Funds.Items.Select(balance => new FundWithBalanceRangeModel
-            {
-                Id = balance.Fund.Id.Value,
-                Name = balance.Fund.Name,
-                Description = balance.Fund.Description,
-                StartingBalance = balance.StartingBalance,
-                EndingBalance = balance.EndingBalance,
-            }).ToList(),
-            TotalCount = range.Funds.TotalCount,
-        },
+        Funds = ToModel(range.Funds),
         AvailableFundNames = range.AvailableFundNames,
-        TotalIncome = new IncomeAmountModel
-        {
-            Total = range.TotalIncome,
-            Tracked = range.TrackedIncome,
-            Untracked = range.UntrackedIncome,
-        },
-        TotalSpending = range.TotalSpending,
         OpeningBalance = range.OpeningBalance == null ? null : ToModel(range.OpeningBalance),
         Granularity = BalanceGranularityConverter.ToModel(range.Granularity),
         Dates = range.Dates.Select(summary => new FundBalanceSummaryByDateModel
@@ -174,14 +118,7 @@ public sealed class FundConverter
     /// </summary>
     private static FundBalanceSummaryByPeriodModel ToModel(FundPeriodBalanceSummary summary) => new()
     {
-        AccountingPeriod = new Models.AccountingPeriods.AccountingPeriodModel
-        {
-            Id = summary.AccountingPeriod.Id.Value,
-            Name = summary.AccountingPeriod.Name,
-            Year = summary.AccountingPeriod.Year,
-            Month = summary.AccountingPeriod.Month,
-            IsOpen = summary.AccountingPeriod.IsOpen,
-        },
+        AccountingPeriod = AccountingPeriodConverter.ToModel(summary.AccountingPeriod),
         OpeningBalance = ToModel(summary.OpeningBalance),
         ClosingBalance = ToModel(summary.ClosingBalance),
     };
@@ -194,6 +131,22 @@ public sealed class FundConverter
         TotalBalance = summary.TotalBalance,
         TotalAssignedBalance = summary.TotalAssignedBalance,
         TotalUnassignedBalance = summary.TotalUnassignedBalance,
+    };
+
+    /// <summary>
+    /// Converts a page of Fund range balances to an API collection.
+    /// </summary>
+    private static CollectionModel<FundWithBalanceRangeModel> ToModel(QueryPage<FundRangeBalance> page) => new()
+    {
+        Items = page.Items.Select(balance => new FundWithBalanceRangeModel
+        {
+            Id = balance.Fund.Id.Value,
+            Name = balance.Fund.Name,
+            Description = balance.Fund.Description,
+            StartingBalance = balance.StartingBalance,
+            EndingBalance = balance.EndingBalance,
+        }).ToList(),
+        TotalCount = page.TotalCount,
     };
 
     /// <summary>

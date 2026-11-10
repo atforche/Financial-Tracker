@@ -1,5 +1,7 @@
-import Frame, { type FrameColor } from "@/framework/view/Frame";
 import type { JSX, ReactNode } from "react";
+import TransactionSection, {
+  type FrameColor,
+} from "@/transactions/workspace/TransactionSection";
 import { getMaximumDate, getMinimumDate } from "@/accounting-periods/helpers";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodEntryField from "@/accounting-periods/AccountingPeriodEntryField";
@@ -41,11 +43,10 @@ const TransactionDetailsFrame = function ({
 }: TransactionDetailsFrameProps): JSX.Element {
   return (
     <ConstrainedContent maxWidth={1200}>
-      <Frame
+      <TransactionSection
         title="Details"
-        color={color}
+        incomplete={color === "error"}
         headerContent={headerContent}
-        headerContentInline
       >
         <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
           <AccountingPeriodEntryField
@@ -67,7 +68,7 @@ const TransactionDetailsFrame = function ({
           value={descriptionValue}
           setValue={setDescriptionValue}
         />
-      </Frame>
+      </TransactionSection>
     </ConstrainedContent>
   );
 };

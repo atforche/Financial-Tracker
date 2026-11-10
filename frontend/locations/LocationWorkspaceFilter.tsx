@@ -2,7 +2,7 @@
 
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { JSX } from "react";
-import SearchBar from "@/framework/listframe/SearchBar";
+import SearchBar from "@/framework/view/SearchBar";
 import TrendFilterHeader from "@/framework/view/TrendFilterHeader";
 import { useSearchParams } from "next/navigation";
 

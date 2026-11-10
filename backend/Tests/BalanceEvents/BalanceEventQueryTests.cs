@@ -236,18 +236,18 @@ public sealed class BalanceEventQueryTests
         string accountUri = $"/accounts/{cash.Id}/balance-events/with-totals?range.start=2026-07-01&range.end=2026-07-31";
         const string fundUri = "/funds/balance-events/date-range/with-totals?range.start=2026-07-01&range.end=2026-07-31";
 
-        CollectionModel<AccountBalanceEventModel> accounts = await test.Api.GetAccountEventsAsync($"{accountUri}&sort=Date");
-        CollectionModel<FundBalanceEventModel> funds = await test.Api.GetFundEventsAsync($"{fundUri}&sort=Date");
+        CollectionModel<AccountBalanceEventModel> accounts = await test.Api.GetAccountEventsAsync(accountUri);
+        CollectionModel<FundBalanceEventModel> funds = await test.Api.GetFundEventsAsync(fundUri);
         IReadOnlyCollection<FundGoalBalanceEventModel> goals = await test.Api.GetFundGoalEventsAsync(july, groceries);
-        Assert.Equal([earlier.Id, later.Id], accounts.Items.Select(item => item.TransactionId));
-        Assert.Equal([earlier.Id, later.Id], funds.Items.Select(item => item.TransactionId));
+        Assert.Equal([later.Id, earlier.Id], accounts.Items.Select(item => item.TransactionId));
+        Assert.Equal([later.Id, earlier.Id], funds.Items.Select(item => item.TransactionId));
         Assert.Equal([later.Id, earlier.Id], goals.Select(item => item.TransactionId));
         Assert.All(accounts.Items, item => Assert.True(item.IsPosted));
         Assert.All(funds.Items, item => Assert.True(item.IsPosted));
         Assert.All(goals, item => Assert.True(item.IsPosted));
 
-        accounts = await test.Api.GetAccountEventsAsync($"{accountUri}&sort=DateDescending&limit=1");
-        funds = await test.Api.GetFundEventsAsync($"{fundUri}&sort=DateDescending&limit=1");
+        accounts = await test.Api.GetAccountEventsAsync($"{accountUri}&limit=1");
+        funds = await test.Api.GetFundEventsAsync($"{fundUri}&limit=1");
         using HttpResponseMessage missing = await test.Api.GetResponseAsync(
             $"/accounts/{Guid.NewGuid()}/balance-events/with-totals?range.start=2026-07-01&range.end=2026-07-31");
         Assert.Equal(2, accounts.TotalCount);

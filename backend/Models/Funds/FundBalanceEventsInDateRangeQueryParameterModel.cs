@@ -19,9 +19,4 @@ public class FundBalanceEventsInDateRangeQueryParameterModel : PaginationModel
     /// Filters to apply to the results.
     /// </summary>
     public FundFilterModel? Filter { get; init; }
-
-    /// <summary>
-    /// Sort order to apply to the results.
-    /// </summary>
-    public FundBalanceEventSortModel? Sort { get; init; }
 }

@@ -3,7 +3,7 @@
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodConfirmationForm from "@/accounting-periods/workspace/AccountingPeriodConfirmationForm";
 import type { JSX } from "react";
-import deleteAccountingPeriod from "@/accounting-periods/workspace/deleteAccountingPeriod";
+import { deleteAccountingPeriod } from "@/accounting-periods/workspace/accountingPeriodActions";
 
 /**
  * Props for the DeleteAccountingPeriodForm component.

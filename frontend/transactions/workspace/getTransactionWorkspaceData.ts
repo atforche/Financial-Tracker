@@ -7,7 +7,7 @@ import {
   getPageOffset,
   getRowsPerPage,
   normalizePageValue,
-} from "@/framework/listframe/page";
+} from "@/framework/view/pagination";
 import {
   normalizeStringSearchParams,
   toRepeatedSearchParams,
@@ -107,30 +107,12 @@ const getFundGoalsWithProgress = async function (
   apiClient: Awaited<ReturnType<typeof createApiClient>>,
   accountingPeriodIds: string[],
 ): Promise<FundGoalWithProgress[]> {
-  const [goalResponse, ...progressResponses] = await Promise.all([
-    apiClient.GET("/fund-goals", {
-      params: { query: { "Filter.AccountingPeriodIds": accountingPeriodIds } },
-    }),
-    ...accountingPeriodIds.map(async (accountingPeriodId) =>
-      apiClient.GET("/fund-goals/progress/{accountingPeriodId}", {
-        params: { path: { accountingPeriodId } },
-      }),
-    ),
-  ]);
-  const progressByFundGoalId = new Map(
-    progressResponses
-      .flatMap((response) =>
-        unwrapApiResponse(response, "Failed to fetch Fund Goal progress"),
-      )
-      .map((result) => [result.fundGoalId, result.progress]),
-  );
-  return unwrapApiResponse(
-    goalResponse,
-    "Failed to fetch fund goals",
-  ).items.flatMap((fundGoal) => {
-    const progress = progressByFundGoalId.get(fundGoal.id);
-    return typeof progress === "undefined" ? [] : [{ ...fundGoal, progress }];
+  const response = await apiClient.GET("/fund-goals/progress", {
+    params: { query: { accountingPeriodIds } },
   });
+  return unwrapApiResponse(response, "Failed to fetch Fund Goal progress").map(
+    ({ fundGoal, progress }) => ({ ...fundGoal, progress }),
+  );
 };
 
 /**
@@ -233,7 +215,6 @@ const getTransactionWorkspaceDetailReferenceData = async function (
  */
 const getTransactionWorkspaceListData = async function (
   searchParams: TransactionWorkspaceSearchParams,
-  loadTransactions = true,
 ): Promise<TransactionWorkspaceListData> {
   const {
     accountingPeriodIds,
@@ -329,7 +310,6 @@ const getTransactionWorkspaceListData = async function (
     Offset: getPageOffset(currentPage, rowsPerPage),
   };
   const transactions =
-    !loadTransactions ||
     (hasAccountFilter && selectedAccountIds.length === 0) ||
     (hasFundFilter && selectedFundIds.length === 0)
       ? { items: [], totalCount: 0 }

@@ -22,7 +22,7 @@ import Link from "next/link";
 import PeriodEntityStatus from "@/accounting-periods/workspace/periodEntityStatus";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import type { Route } from "next";
-import SearchBar from "@/framework/listframe/SearchBar";
+import SearchBar from "@/framework/view/SearchBar";
 import SignedChange from "@/framework/view/SignedChange";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";

@@ -207,7 +207,6 @@ const RefundTransactionForm = function <RequestPayload>({
       }
       sourceAmount={total}
       destinationAmount={total}
-      destinationCount={1}
       submitLabel={submitLabel}
       state={state}
       pending={pending}

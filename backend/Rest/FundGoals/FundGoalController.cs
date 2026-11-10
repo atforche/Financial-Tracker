@@ -62,32 +62,36 @@ public sealed class FundGoalController(
             cancellationToken)));
 
     /// <summary>
-    /// Retrieves progress for all Fund Goals in an Accounting Period.
+    /// Retrieves the Fund Goals in the given Accounting Periods with their progress.
     /// </summary>
-    [HttpGet("progress/{accountingPeriodId:guid}")]
+    [HttpGet("progress")]
     public async Task<ActionResult<IReadOnlyCollection<FundGoalProgressResultModel>>> GetProgressesAsync(
-        Guid accountingPeriodId,
+        [FromQuery] IReadOnlyCollection<Guid> accountingPeriodIds,
         CancellationToken cancellationToken)
     {
-        AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetByIdAsync(
-            accountingPeriodId,
-            cancellationToken);
-        if (accountingPeriod == null)
+        var results = new List<FundGoalProgressResultModel>();
+        foreach (Guid accountingPeriodId in accountingPeriodIds.Distinct())
         {
-            return NotFound();
-        }
-        IReadOnlyCollection<FundGoal> fundGoals = fundGoalRepository.GetAllByAccountingPeriod(accountingPeriod.Id);
-        IReadOnlyDictionary<FundGoalId, FundGoalProgress> progressByFundGoalId = fundGoalService.GetProgresses(
-            fundGoals,
-            accountingPeriod);
-        return Ok(fundGoals
-            .Where(fundGoal => progressByFundGoalId.ContainsKey(fundGoal.Id))
-            .Select(fundGoal => new FundGoalProgressResultModel
+            AccountingPeriod? accountingPeriod = await accountingPeriodQueryService.GetByIdAsync(
+                accountingPeriodId,
+                cancellationToken);
+            if (accountingPeriod == null)
             {
-                FundGoalId = fundGoal.Id.Value,
-                Progress = fundGoalConverter.ToModel(progressByFundGoalId[fundGoal.Id]),
-            })
-            .ToList());
+                return NotFound();
+            }
+            IReadOnlyCollection<FundGoal> fundGoals = fundGoalRepository.GetAllByAccountingPeriod(accountingPeriod.Id);
+            IReadOnlyDictionary<FundGoalId, FundGoalProgress> progressByFundGoalId = fundGoalService.GetProgresses(
+                fundGoals,
+                accountingPeriod);
+            results.AddRange(fundGoals
+                .Where(fundGoal => progressByFundGoalId.ContainsKey(fundGoal.Id))
+                .Select(fundGoal => new FundGoalProgressResultModel
+                {
+                    FundGoal = fundGoalConverter.ToModel(fundGoal),
+                    Progress = fundGoalConverter.ToModel(progressByFundGoalId[fundGoal.Id]),
+                }));
+        }
+        return Ok(results.OrderBy(result => result.FundGoal.Fund.Name).ThenBy(result => result.FundGoal.Id).ToList());
     }
 
     /// <summary>

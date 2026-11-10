@@ -364,7 +364,7 @@ const TransactionWorkspaceFilter = function ({
   };
 
   return (
-    <PageFilterFrame title="Transactions">
+    <PageFilterFrame>
       <TransactionFilterControl>
         <DateRangeFilter
           value={{ start: currentStartDate, end: currentEndDate }}
@@ -401,6 +401,7 @@ const TransactionWorkspaceFilter = function ({
       <TransactionFilterControl>
         <TextField
           select
+          size="small"
           label="Fully posted"
           value={currentFullyPosted ?? ""}
           onChange={(event) => {

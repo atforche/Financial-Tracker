@@ -5,8 +5,7 @@ import type {
   WorkspaceActionState,
 } from "@/framework/forms/workspaceAction";
 import createApiClient from "@/framework/data/createApiClient";
-import { isApiError } from "@/framework/data/apiError";
-import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import mapActionError from "@/framework/forms/mapActionError";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -38,14 +37,7 @@ const deleteAccount = async function (
     },
   });
   if (error) {
-    if (isApiError(error)) {
-      const formattedError = mapApiValidationError(error, {});
-      return {
-        errorTitle: formattedError.errorTitle,
-        unmappedErrors: formattedError.unmappedErrors,
-      };
-    }
-    throw new Error("An unexpected error occurred", { cause: error });
+    return mapActionError(error, {});
   }
   revalidatePath(redirectUrl);
   redirect(redirectUrl);

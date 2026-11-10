@@ -15,7 +15,7 @@ import type { Location, LocationDraft } from "@/locations/types";
 import { Chip } from "@mui/material";
 import type { ExpectedIncomeSource } from "@/accounting-periods/types";
 import ExpectedIncomeSourceEntryField from "@/transactions/workspace/income/ExpectedIncomeSourceEntryField";
-import type { FrameColor } from "@/framework/view/Frame";
+import type { FrameColor } from "@/transactions/workspace/TransactionSection";
 import IncomeTransactionItemSection from "@/transactions/workspace/income/IncomeTransactionSourceItemFrame";
 import type { JSX } from "react";
 import type { Transaction } from "@/transactions/types";

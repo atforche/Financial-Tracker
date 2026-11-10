@@ -6,8 +6,7 @@ import type {
 } from "@/framework/forms/workspaceAction";
 import type { OnboardFundRequest } from "@/funds/types";
 import createApiClient from "@/framework/data/createApiClient";
-import { isApiError } from "@/framework/data/apiError";
-import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import mapActionError from "@/framework/forms/mapActionError";
 import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
@@ -40,25 +39,18 @@ const onboardFund = async function (
   const apiClient = await createApiClient();
   const { error } = await apiClient.POST("/funds/onboard", { body: request });
   if (error) {
-    if (isApiError(error)) {
-      const mappedError = mapApiValidationError(error, {
-        [propertyName<OnboardFundRequest>("name")]: "nameErrors",
-        [propertyName<OnboardFundRequest>("description")]: "descriptionErrors",
-        [propertyName<OnboardFundRequest>("onboardedBalance")]:
-          "onboardedBalanceErrors",
-        [propertyName<OnboardFundRequest>("plannedMonthlyContribution")]:
-          "plannedMonthlyContributionErrors",
-        [propertyName<OnboardFundRequest>("minimumEndingBalance")]:
-          "minimumEndingBalanceErrors",
-        [propertyName<OnboardFundRequest>("maximumEndingBalance")]:
-          "maximumEndingBalanceErrors",
-      });
-      return {
-        ...mappedError,
-        ...mappedError.fieldErrors,
-      };
-    }
-    throw new Error("An unexpected error occurred", { cause: error });
+    return mapActionError(error, {
+      [propertyName<OnboardFundRequest>("name")]: "nameErrors",
+      [propertyName<OnboardFundRequest>("description")]: "descriptionErrors",
+      [propertyName<OnboardFundRequest>("onboardedBalance")]:
+        "onboardedBalanceErrors",
+      [propertyName<OnboardFundRequest>("plannedMonthlyContribution")]:
+        "plannedMonthlyContributionErrors",
+      [propertyName<OnboardFundRequest>("minimumEndingBalance")]:
+        "minimumEndingBalanceErrors",
+      [propertyName<OnboardFundRequest>("maximumEndingBalance")]:
+        "maximumEndingBalanceErrors",
+    });
   }
 
   revalidatePath(redirectUrl);

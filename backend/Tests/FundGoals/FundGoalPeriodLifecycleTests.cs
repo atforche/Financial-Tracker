@@ -29,8 +29,8 @@ public sealed class FundGoalPeriodLifecycleTests
         FundGoalModel original = await test.Api.GetFundGoalAsync(groceries.Id, july.Id);
         FundGoalModel copied = await test.Api.GetFundGoalAsync(groceries.Id, august.Id);
         IReadOnlyCollection<FundGoalProgressResultModel> progresses = await test.Api.GetAsync<IReadOnlyCollection<FundGoalProgressResultModel>>(
-            $"/fund-goals/progress/{august.Id}");
-        using HttpResponseMessage missing = await test.Api.GetResponseAsync($"/fund-goals/progress/{Guid.NewGuid()}");
+            $"/fund-goals/progress?accountingPeriodIds={august.Id}");
+        using HttpResponseMessage missing = await test.Api.GetResponseAsync($"/fund-goals/progress?accountingPeriodIds={Guid.NewGuid()}");
 
         Assert.NotEqual(original.Id, copied.Id);
         Assert.Equal(50m, original.PlannedMonthlyContribution);
@@ -39,7 +39,7 @@ public sealed class FundGoalPeriodLifecycleTests
         Assert.Equal(50m, copied.PlannedMonthlyContribution);
         Assert.Equal(100m, copied.MinimumEndingBalance);
         Assert.Equal(200m, copied.MaximumEndingBalance);
-        Assert.Contains(progresses, item => item.FundGoalId == copied.Id && item.Progress.Contribution != null);
+        Assert.Contains(progresses, item => item.FundGoal.Id == copied.Id && item.Progress.Contribution != null);
         Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
     }
 

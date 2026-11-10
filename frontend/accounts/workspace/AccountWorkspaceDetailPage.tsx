@@ -1,12 +1,10 @@
 import resolveEntityHistory, {
   periodTab,
 } from "@/balance-events/resolveEntityHistory";
-import { AccountBalanceEventSortModel } from "@/framework/data/api";
 import AccountDetailActions from "@/accounts/workspace/AccountDetailActions";
 import AccountGoalHistory from "@/account-goals/AccountGoalHistory";
 import { AccountType } from "@/accounts/types";
 import type { AccountWorkspaceSearchParams } from "@/accounts/workspace/types";
-import { AccountingPeriodSort } from "@/accounting-periods/types";
 import BalanceHistoryFilter from "@/balance-events/BalanceHistoryFilter";
 import BalancePeriodList from "@/balance-events/BalancePeriodList";
 import BalanceTrendChart from "@/framework/charts/BalanceTrendChart";
@@ -60,7 +58,7 @@ const AccountWorkspaceDetailPage = async function ({
     resolvedSearchParams.tab === periodTab
       ? apiClient.GET("/accounting-periods", {
           params: {
-            query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
+            query: { Limit: 500 },
           },
         })
       : null,
@@ -108,7 +106,6 @@ const AccountWorkspaceDetailPage = async function ({
                   "Range.Start": dates.start,
                   "Range.End": dates.end,
                   IncludePending: true,
-                  Sort: AccountBalanceEventSortModel.DateDescending,
                 },
               },
             },
@@ -269,7 +266,6 @@ const AccountWorkspaceDetailPage = async function ({
               : { granularity: totals.granularity }),
           })}
           title="Balance"
-          variant="surface"
           emptyMessage="No posted balance movement is available in this range."
           xAxisLabel="Date"
           yAxisLabel="Posted Balance"
@@ -290,7 +286,6 @@ const AccountWorkspaceDetailPage = async function ({
               dates: null,
             })}
             title="Balance"
-            variant="surface"
             emptyMessage="No accounting periods are available in this range."
             xAxisLabel="Accounting Period"
             yAxisLabel="Closing Balance"

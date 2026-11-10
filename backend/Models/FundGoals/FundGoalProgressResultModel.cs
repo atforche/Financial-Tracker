@@ -6,9 +6,9 @@ namespace Models.FundGoals;
 public sealed class FundGoalProgressResultModel
 {
     /// <summary>
-    /// Gets the ID of the Fund Goal.
+    /// Gets the Fund Goal.
     /// </summary>
-    public required Guid FundGoalId { get; init; }
+    public required FundGoalModel FundGoal { get; init; }
 
     /// <summary>
     /// Gets the calculated progress for the Fund Goal.

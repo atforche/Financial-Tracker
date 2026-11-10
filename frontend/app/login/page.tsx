@@ -6,7 +6,7 @@ import {
   developmentAuthenticationIdentities,
   signIn,
 } from "@/auth";
-import Frame from "@/framework/view/Frame";
+import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
 import applicationIcon from "@/app/icon.svg";
 import getCallbackPath from "@/framework/auth/callbackPath";
@@ -64,7 +64,7 @@ const LoginPage = async function ({
       }}
     >
       <Box sx={{ maxWidth: 460, width: "100%" }}>
-        <Frame title="Welcome Back">
+        <ContentSurface>
           <Stack
             alignItems="center"
             spacing={2.5}
@@ -126,7 +126,7 @@ const LoginPage = async function ({
               </form>
             )}
           </Stack>
-        </Frame>
+        </ContentSurface>
       </Box>
     </Box>
   );

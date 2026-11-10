@@ -6,8 +6,12 @@ import PageLayout from "@/framework/view/PageLayout";
 import ReturnLink from "@/framework/view/ReturnLink";
 import TransactionWorkspaceFilter from "@/transactions/workspace/TransactionWorkspaceFilter";
 import TransactionWorkspaceListFrame from "@/transactions/workspace/TransactionWorkspaceListFrame";
+import { Typography } from "@mui/material";
+import { getDefaultTrendDateRange } from "@/framework/routes/trendRange";
 import { getTransactionWorkspaceListData } from "@/transactions/workspace/getTransactionWorkspaceData";
 import { normalizeFullyPosted } from "@/transactions/fullyPostedFilter";
+import { redirect } from "next/navigation";
+import routes from "@/transactions/routes";
 
 /**
  * Search parameters supported by the Transactions workspace.
@@ -47,6 +51,7 @@ const TransactionWorkspace = async function ({
   searchParams,
 }: TransactionWorkspaceProps): Promise<JSX.Element> {
   const resolvedSearchParams = await searchParams;
+  // Filters other than the date range narrow the search
   const hasFilter =
     [
       resolvedSearchParams.accountingPeriodIds,
@@ -57,13 +62,30 @@ const TransactionWorkspace = async function ({
       resolvedSearchParams.accountTypes,
       resolvedSearchParams.accountNames,
       resolvedSearchParams.transactionTypes,
+    ].some((value) =>
+      Array.isArray(value) ? value.length > 0 : typeof value !== "undefined",
+    ) || normalizeFullyPosted(resolvedSearchParams.fullyPosted) !== null;
+  // With nothing to narrow the list, start on the recent range the other range pages use, as some sorts load the whole range
+  // A link with a filter, such as unposted transactions, keeps every transaction it matches
+  if (
+    !hasFilter &&
+    [
+      resolvedSearchParams.accountingPeriodIds,
       resolvedSearchParams.startDate,
       resolvedSearchParams.endDate,
       resolvedSearchParams.startAccountingPeriodId,
       resolvedSearchParams.endAccountingPeriodId,
-    ].some((value) =>
-      Array.isArray(value) ? value.length > 0 : typeof value !== "undefined",
-    ) || normalizeFullyPosted(resolvedSearchParams.fullyPosted) !== null;
+    ].every((value) => typeof value === "undefined")
+  ) {
+    const defaultRange = getDefaultTrendDateRange();
+    redirect(
+      routes.workspace({
+        ...resolvedSearchParams,
+        startDate: defaultRange.start,
+        endDate: defaultRange.end,
+      }),
+    );
+  }
   const {
     accountingPeriods,
     accounts,
@@ -72,12 +94,13 @@ const TransactionWorkspace = async function ({
     selectedAccountIds,
     selectedFundIds,
     transactions,
-  } = await getTransactionWorkspaceListData(resolvedSearchParams, hasFilter);
+  } = await getTransactionWorkspaceListData(resolvedSearchParams);
 
   return (
     <ConstrainedContent>
       <PageLayout>
         <ReturnLink returnUrl={resolvedSearchParams.returnUrl} />
+        <Typography variant="h4">Transactions</Typography>
         <TransactionWorkspaceFilter
           accountingPeriods={accountingPeriods}
           accounts={accounts}

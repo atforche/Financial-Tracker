@@ -1,4 +1,4 @@
-import { type SxProps, type Theme, alpha } from "@mui/material";
+import type { SxProps, Theme } from "@mui/material";
 import type { SystemStyleObject } from "@mui/system";
 
 /**
@@ -34,8 +34,8 @@ const toSxArray = function (sx?: SxProps<Theme>): readonly ResolvedSx[] {
 const buildPaperSx = function (baseSx?: SxProps<Theme>): readonly ResolvedSx[] {
   const sharedSx = (theme: Theme): SystemStyleObject<Theme> => ({
     overflow: "hidden",
-    borderRadius: 5,
-    border: `1px solid ${alpha(theme.palette.divider, 0.72)}`,
+    borderRadius: 3,
+    border: `1px solid ${theme.palette.divider}`,
     backgroundColor: "background.paper",
   });
   return [sharedSx, ...toSxArray(baseSx)];

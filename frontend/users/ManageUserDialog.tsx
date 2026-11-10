@@ -63,7 +63,7 @@ const ManageUserDialog = function ({
       title={`Manage ${user.displayName ?? user.email}`}
       actions={
         <>
-          <Button disabled={pending} onClick={onClose}>
+          <Button variant="outlined" disabled={pending} onClick={onClose}>
             Cancel
           </Button>
           <ConfirmActionDialog

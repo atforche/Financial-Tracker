@@ -18,6 +18,7 @@ import ConstrainedContent from "@/framework/view/ConstrainedContent";
 import type { Dayjs } from "dayjs";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import TransactionDetailsFrame from "@/transactions/workspace/TransactionDetailsFrame";
+import TransactionSection from "@/transactions/workspace/TransactionSection";
 import TransactionSourceDestinationLayout from "@/transactions/workspace/TransactionSourceDestinationLayout";
 import TransactionSourceDestinationSummary from "@/transactions/workspace/TransactionSourceDestinationSummary";
 
@@ -114,9 +115,12 @@ const TransactionForm = function <RequestPayload>({
   const detailsAreValid = readOnly
     ? true
     : validateDetails(accountingPeriod, date, defaultDate, description);
-  const summaryIsValid = readOnly
-    ? true
-    : validateSummary(sourceAmount, destinationAmount ?? 0, destinationCount);
+
+  const summaryIsComplete = validateSummary(
+    sourceAmount,
+    destinationAmount ?? 0,
+    destinationCount,
+  );
 
   return (
     <Stack ref={formRef} spacing={3}>
@@ -138,11 +142,17 @@ const TransactionForm = function <RequestPayload>({
             destinationFrames={destinationContent ?? emptyFrame}
           />
           {showSummary && typeof destinationAmount === "number" ? (
-            <TransactionSourceDestinationSummary
-              sourceAmount={sourceAmount ?? 0}
-              destinationAmount={destinationAmount}
-              isValid={summaryIsValid}
-            />
+            <ConstrainedContent maxWidth={1200}>
+              <TransactionSection
+                title="Summary"
+                incomplete={!readOnly && !summaryIsComplete}
+              >
+                <TransactionSourceDestinationSummary
+                  sourceAmount={sourceAmount ?? 0}
+                  destinationAmount={destinationAmount}
+                />
+              </TransactionSection>
+            </ConstrainedContent>
           ) : null}
           {!readOnly ? (
             <>

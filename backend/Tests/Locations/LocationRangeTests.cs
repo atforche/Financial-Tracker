@@ -46,6 +46,27 @@ public sealed class LocationRangeTests
     }
 
     /// <summary>
+    /// Counts the spending transactions apart from refunds, so an average spent covers only purchases.
+    /// </summary>
+    [Fact]
+    public async Task CountsSpendingTransactionsApartFromRefunds()
+    {
+        await using FinancialTrackerTestContext test = await FinancialTrackerTestContext.CreateAsync();
+        AccountHandle cash = await test.Accounts.Onboard("Cash").WithOpeningBalance(1000m).CreateAsync();
+        AccountingPeriodHandle july = await test.Periods.Create(2026, 7).CreateAsync();
+        FundHandle groceries = await test.Funds.Create("Groceries").In(july).CreateAsync();
+        _ = await test.Transactions.Spending().In(july).On(new DateOnly(2026, 7, 5)).For(100m).From(cash).To("Market", groceries).CreateAsync();
+        _ = await test.Transactions.Refund().In(july).On(new DateOnly(2026, 7, 9)).For(25m).From("Market").To(cash, groceries).CreateAsync();
+
+        LocationsInRangeModel range = await test.Api.GetAsync<LocationsInRangeModel>(
+            "/locations/date-range?range.start=2026-07-01&range.end=2026-07-31");
+
+        LocationRangeSummaryModel market = Assert.Single(range.Locations.Items);
+        Assert.Equal(2, market.TransactionCount);
+        Assert.Equal(1, market.SpendingTransactionCount);
+    }
+
+    /// <summary>
     /// Summarizes one Location by period, with the Accounts and Funds that paid it.
     /// </summary>
     [Fact]

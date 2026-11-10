@@ -6,18 +6,9 @@ namespace Domain.Accounts.Queries;
 public sealed record AccountDateRange(
     QueryPage<AccountRangeBalance> Accounts,
     IReadOnlyCollection<string> AvailableAccountNames,
-    decimal TotalIncome,
-    decimal TrackedIncome,
-    decimal TotalSpending,
     AccountBalanceSummary? OpeningBalance,
     BalanceGranularity Granularity,
-    IReadOnlyCollection<AccountDateBalanceSummary> Dates)
-{
-    /// <summary>
-    /// Gets income deposited into untracked Accounts.
-    /// </summary>
-    public decimal UntrackedIncome => TotalIncome - TrackedIncome;
-}
+    IReadOnlyCollection<AccountDateBalanceSummary> Dates);
 
 /// <summary>
 /// Represents an Account balance summary for a date.

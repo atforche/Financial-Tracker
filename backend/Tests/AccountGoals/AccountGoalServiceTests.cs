@@ -87,7 +87,7 @@ public sealed class AccountGoalServiceTests
     /// Calculates Account Goal progress from the period's closing Account balance.
     /// </summary>
     [Fact]
-    public void TryGetProgressUsesClosingBalance()
+    public void GetProgressesUsesClosingBalance()
     {
         AccountingPeriod period = new(2026, 7);
         Account account = new("Checking", null, AccountType.Standard, period.Id, new DateOnly(2026, 7, 1));
@@ -97,16 +97,10 @@ public sealed class AccountGoalServiceTests
             [new AccountingPeriodAccountBalanceHistory(account, period, 80m, 150m)],
             [],
             []);
-        AccountGoalService service = new(
-            new InMemoryAccountGoalRepository(),
-            new InMemoryAccountingPeriodRepository([period]),
-            new InMemoryAccountRepository(),
-            new InMemoryBalanceHistoryRepository([history]));
 
-        bool calculated = service.TryGetProgress(goal, period, out AccountGoalProgress? progress, out _);
+        AccountGoalProgress progress = AccountGoalService.GetProgresses([goal], history)[goal.Id];
 
-        Assert.True(calculated);
-        Assert.Equal(150m, progress!.EndingBalance.CurrentBalance);
+        Assert.Equal(150m, progress.EndingBalance.CurrentBalance);
         Assert.True(progress.IsSatisfied);
     }
 

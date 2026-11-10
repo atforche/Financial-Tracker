@@ -14,7 +14,7 @@ public sealed class AccountingPeriodConverter
     /// <summary>
     /// Converts the provided Accounting Period to an Accounting Period Model
     /// </summary>
-    public AccountingPeriodModel ToModel(AccountingPeriod accountingPeriod) => new()
+    public static AccountingPeriodModel ToModel(AccountingPeriod accountingPeriod) => new()
     {
         Id = accountingPeriod.Id.Value,
         Name = accountingPeriod.Name,

@@ -20,7 +20,6 @@ const LocationMonthlyChart = function ({
   return (
     <BarMetricChart
       title="Spending by Month"
-      variant="surface"
       emptyMessage="Nothing was spent here in this range."
       hasData={months.some((month) => month.spent !== 0)}
       chartPoints={months.map((month) => {

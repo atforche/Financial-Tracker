@@ -4,6 +4,7 @@ import type { User, UserInvitation } from "@/users/types";
 import InvitationListFrame from "@/users/InvitationListFrame";
 import type { JSX } from "react";
 import PageLayout from "@/framework/view/PageLayout";
+import { Typography } from "@mui/material";
 import UserListFrame from "@/users/UserListFrame";
 
 /**
@@ -25,6 +26,7 @@ const UserManagement = function ({
 }: UserManagementProps): JSX.Element {
   return (
     <PageLayout>
+      <Typography variant="h4">Manage Users</Typography>
       <UserListFrame currentUserId={currentUserId} users={users} />
       <InvitationListFrame invitations={invitations} />
     </PageLayout>

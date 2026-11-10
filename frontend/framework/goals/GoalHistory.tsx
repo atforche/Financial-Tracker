@@ -79,7 +79,6 @@ const GoalHistory = function ({
     <Stack spacing={2}>
       <ChartFrame
         title="Goal Progress"
-        variant="surface"
         emptyMessage={`No goal history for this ${subject} in the selected periods.`}
         hasData={hasData}
         xAxisLabel="Accounting period"

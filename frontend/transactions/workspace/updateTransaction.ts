@@ -1,9 +1,8 @@
 "use server";
 
-import {
-  type TransactionActionErrorState,
-  mapTransactionActionError,
-} from "@/transactions/workspace/transactionActionHelpers";
+import mapActionError, {
+  type ActionErrorState,
+} from "@/framework/forms/mapActionError";
 import type { UpdateTransactionRequest } from "@/transactions/types";
 import createApiClient from "@/framework/data/createApiClient";
 import propertyName from "@/framework/data/propertyName";
@@ -12,7 +11,7 @@ import { revalidatePath } from "next/cache";
 /**
  * Interface representing the state of updating a transaction, including success status and any validation errors.
  */
-interface ActionState extends TransactionActionErrorState {
+interface ActionState extends ActionErrorState {
   readonly success?: boolean;
   readonly dateErrors?: string | null;
   readonly locationErrors?: string | null;
@@ -60,7 +59,7 @@ const updateTransaction = async function (
     body: request,
   });
   if (error) {
-    return mapTransactionActionError(error, {
+    return mapActionError(error, {
       [propertyName<UpdateTransactionRequest>("date")]: "dateErrors",
       [propertyName<TransactionValidationFields>("location")]: "locationErrors",
       [propertyName<TransactionValidationFields>("sourceLocation")]:

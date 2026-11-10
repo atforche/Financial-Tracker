@@ -1,6 +1,5 @@
 "use client";
 
-import { Button, Stack } from "@mui/material";
 import type { Fund, UpdateFundRequest } from "@/funds/types";
 import {
   type JSX,
@@ -9,8 +8,9 @@ import {
   useEffect,
   useState,
 } from "react";
-import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import FormDialog from "@/framework/dialog/FormDialog";
+import { Stack } from "@mui/material";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import updateFund from "@/funds/workspace/updateFund";
 import { useRouter } from "next/navigation";
@@ -48,45 +48,21 @@ const UpdateFundForm = function ({
     name === "" ? null : { name, description };
 
   return (
-    <Dialog
+    <FormDialog
       open
-      onClose={
-        pending
-          ? undefined
-          : (): void => {
-              onClose();
-            }
-      }
-      fullWidth
-      maxWidth="sm"
       title="Update Fund"
-      actions={
-        <>
-          <Button
-            disabled={pending}
-            onClick={() => {
-              onClose();
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            loading={pending}
-            disabled={request === null}
-            onClick={() => {
-              if (request === null) {
-                return;
-              }
-              startTransition(() => {
-                action({ fundId: fund.id, redirectUrl, request });
-              });
-            }}
-          >
-            Save
-          </Button>
-        </>
-      }
+      onClose={onClose}
+      pending={pending}
+      submitLabel="Save"
+      onSubmit={() => {
+        if (request === null) {
+          return;
+        }
+        startTransition(() => {
+          action({ fundId: fund.id, redirectUrl, request });
+        });
+      }}
+      canSubmit={request !== null}
     >
       <Stack spacing={3}>
         <StringEntryField
@@ -106,7 +82,7 @@ const UpdateFundForm = function ({
           unmappedErrors={state.unmappedErrors ?? null}
         />
       </Stack>
-    </Dialog>
+    </FormDialog>
   );
 };
 

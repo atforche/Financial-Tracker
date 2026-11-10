@@ -9,7 +9,7 @@ import type { AccountType } from "@/accounts/types";
 import AccountTypeFilter from "@/accounts/AccountTypeFilter";
 import { Button } from "@mui/material";
 import type { JSX } from "react";
-import SearchBar from "@/framework/listframe/SearchBar";
+import SearchBar from "@/framework/view/SearchBar";
 import WorkspaceHeader from "@/framework/view/WorkspaceHeader";
 import routes from "@/accounts/routes";
 import { shouldPersistAccountTypes } from "@/accounts/accountTypeFilterHelpers";

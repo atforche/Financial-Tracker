@@ -2,9 +2,9 @@ using Domain;
 using Domain.FundGoals;
 using Domain.FundGoals.Queries;
 using Models;
-using Models.AccountingPeriods;
 using Models.FundGoals;
 using Models.Funds;
+using Rest.AccountingPeriods;
 
 namespace Rest.FundGoals;
 
@@ -22,18 +22,6 @@ public sealed class FundGoalConverter
             model.Filter?.AccountingPeriodIds ?? [],
             model.Filter?.IncludeOnboarded,
             model.Filter?.NameSearch),
-        model.Sort switch
-        {
-            FundGoalSortModel.Fund => FundGoalSort.Fund,
-            FundGoalSortModel.FundDescending => FundGoalSort.FundDescending,
-            FundGoalSortModel.PlannedMonthlyContribution => FundGoalSort.PlannedMonthlyContribution,
-            FundGoalSortModel.PlannedMonthlyContributionDescending => FundGoalSort.PlannedMonthlyContributionDescending,
-            FundGoalSortModel.MinimumEndingBalance => FundGoalSort.MinimumEndingBalance,
-            FundGoalSortModel.MinimumEndingBalanceDescending => FundGoalSort.MinimumEndingBalanceDescending,
-            FundGoalSortModel.MaximumEndingBalance => FundGoalSort.MaximumEndingBalance,
-            FundGoalSortModel.MaximumEndingBalanceDescending => FundGoalSort.MaximumEndingBalanceDescending,
-            _ => FundGoalSort.Fund,
-        },
         model.Offset ?? 0,
         model.Limit);
 
@@ -49,14 +37,7 @@ public sealed class FundGoalConverter
             Name = fundGoal.Fund.Name,
             Description = fundGoal.Fund.Description,
         },
-        AccountingPeriod = fundGoal.AccountingPeriod == null ? null : new AccountingPeriodModel
-        {
-            Id = fundGoal.AccountingPeriod.Id.Value,
-            Name = fundGoal.AccountingPeriod.Name,
-            Year = fundGoal.AccountingPeriod.Year,
-            Month = fundGoal.AccountingPeriod.Month,
-            IsOpen = fundGoal.AccountingPeriod.IsOpen,
-        },
+        AccountingPeriod = fundGoal.AccountingPeriod == null ? null : AccountingPeriodConverter.ToModel(fundGoal.AccountingPeriod),
         PlannedMonthlyContribution = fundGoal.PlannedMonthlyContribution,
         MinimumEndingBalance = fundGoal.MinimumEndingBalance,
         MaximumEndingBalance = fundGoal.MaximumEndingBalance,

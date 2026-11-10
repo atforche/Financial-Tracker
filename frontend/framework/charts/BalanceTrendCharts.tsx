@@ -62,7 +62,6 @@ const BalanceTrendCharts = function ({
           granularity,
         })}
         title="Balance"
-        variant="surface"
         xAxisLabel={isDateRange ? "Date" : "Accounting Period"}
       />
       <BalanceTrendsChangeChart
@@ -73,7 +72,6 @@ const BalanceTrendCharts = function ({
           isDateRange ? (trends.openingBalance?.totalBalance ?? null) : null
         }
         granularity={granularity}
-        variant="surface"
       />
     </ResponsiveGrid>
   );

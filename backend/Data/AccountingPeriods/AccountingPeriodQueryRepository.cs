@@ -19,14 +19,7 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
         CancellationToken cancellationToken = default)
     {
         IQueryable<AccountingPeriod> periods = ApplyFilter(databaseContext.AccountingPeriods.AsNoTracking(), query.Filter);
-        periods = query.Sort switch
-        {
-            AccountingPeriodSort.Date => periods.OrderBy(period => period.Year).ThenBy(period => period.Month).ThenBy(period => period.Id),
-            AccountingPeriodSort.DateDescending => periods.OrderByDescending(period => period.Year).ThenByDescending(period => period.Month).ThenBy(period => period.Id),
-            AccountingPeriodSort.IsOpen => periods.OrderBy(period => period.IsOpen).ThenByDescending(period => period.Year).ThenByDescending(period => period.Month).ThenBy(period => period.Id),
-            AccountingPeriodSort.IsOpenDescending => periods.OrderByDescending(period => period.IsOpen).ThenByDescending(period => period.Year).ThenByDescending(period => period.Month).ThenBy(period => period.Id),
-            _ => periods.OrderByDescending(period => period.Year).ThenByDescending(period => period.Month).ThenBy(period => period.Id),
-        };
+        periods = periods.OrderByDescending(period => period.Year).ThenByDescending(period => period.Month).ThenBy(period => period.Id);
         int totalCount = await periods.CountAsync(cancellationToken);
         IReadOnlyCollection<AccountingPeriod> items = await periods.Skip(query.Offset).Take(query.Limit ?? int.MaxValue).ToListAsync(cancellationToken);
         return new QueryPage<AccountingPeriod>(items, totalCount);
@@ -48,18 +41,7 @@ public sealed class AccountingPeriodQueryRepository(DatabaseContext databaseCont
                 ClosingBalance = history.ClosingBalance,
             });
         balances = ApplyFilter(balances, query.Filter);
-        balances = query.Sort switch
-        {
-            AccountingPeriodBalanceSort.Date => balances.OrderBy(item => item.AccountingPeriod.Year).ThenBy(item => item.AccountingPeriod.Month).ThenBy(item => item.AccountingPeriod.Id),
-            AccountingPeriodBalanceSort.DateDescending => balances.OrderByDescending(item => item.AccountingPeriod.Year).ThenByDescending(item => item.AccountingPeriod.Month).ThenBy(item => item.AccountingPeriod.Id),
-            AccountingPeriodBalanceSort.IsOpen => balances.OrderBy(item => item.AccountingPeriod.IsOpen).ThenByDescending(item => item.AccountingPeriod.Year).ThenByDescending(item => item.AccountingPeriod.Month).ThenBy(item => item.AccountingPeriod.Id),
-            AccountingPeriodBalanceSort.IsOpenDescending => balances.OrderByDescending(item => item.AccountingPeriod.IsOpen).ThenByDescending(item => item.AccountingPeriod.Year).ThenByDescending(item => item.AccountingPeriod.Month).ThenBy(item => item.AccountingPeriod.Id),
-            AccountingPeriodBalanceSort.OpeningBalance => balances.OrderBy(item => item.OpeningBalance).ThenBy(item => item.AccountingPeriod.Year).ThenBy(item => item.AccountingPeriod.Month).ThenBy(item => item.AccountingPeriod.Id),
-            AccountingPeriodBalanceSort.OpeningBalanceDescending => balances.OrderByDescending(item => item.OpeningBalance).ThenByDescending(item => item.AccountingPeriod.Year).ThenByDescending(item => item.AccountingPeriod.Month).ThenBy(item => item.AccountingPeriod.Id),
-            AccountingPeriodBalanceSort.ClosingBalance => balances.OrderBy(item => item.ClosingBalance).ThenBy(item => item.AccountingPeriod.Year).ThenBy(item => item.AccountingPeriod.Month).ThenBy(item => item.AccountingPeriod.Id),
-            AccountingPeriodBalanceSort.ClosingBalanceDescending => balances.OrderByDescending(item => item.ClosingBalance).ThenByDescending(item => item.AccountingPeriod.Year).ThenByDescending(item => item.AccountingPeriod.Month).ThenBy(item => item.AccountingPeriod.Id),
-            _ => balances.OrderByDescending(item => item.AccountingPeriod.Year).ThenByDescending(item => item.AccountingPeriod.Month).ThenBy(item => item.AccountingPeriod.Id),
-        };
+        balances = balances.OrderByDescending(item => item.AccountingPeriod.Year).ThenByDescending(item => item.AccountingPeriod.Month).ThenBy(item => item.AccountingPeriod.Id);
         int totalCount = await balances.CountAsync(cancellationToken);
         List<AccountingPeriod> periods = await balances.Skip(query.Offset).Take(query.Limit ?? int.MaxValue)
             .Select(row => row.AccountingPeriod).ToListAsync(cancellationToken);

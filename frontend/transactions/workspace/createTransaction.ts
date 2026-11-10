@@ -1,9 +1,8 @@
 "use server";
 
-import {
-  type TransactionActionErrorState,
-  mapTransactionActionError,
-} from "@/transactions/workspace/transactionActionHelpers";
+import mapActionError, {
+  type ActionErrorState,
+} from "@/framework/forms/mapActionError";
 import type { CreateTransactionRequest } from "@/transactions/types";
 import createApiClient from "@/framework/data/createApiClient";
 import propertyName from "@/framework/data/propertyName";
@@ -12,7 +11,7 @@ import { revalidatePath } from "next/cache";
 /**
  * Interface representing the state of creating a transaction.
  */
-interface ActionState extends TransactionActionErrorState {
+interface ActionState extends ActionErrorState {
   readonly success?: boolean;
   readonly transactionId?: string | null;
   readonly accountingPeriodErrors?: string | null;
@@ -56,7 +55,7 @@ const createTransaction = async function (
     body: request,
   });
   if (error) {
-    return mapTransactionActionError(error, {
+    return mapActionError(error, {
       [propertyName<CreateTransactionRequest>("accountingPeriodId")]:
         "accountingPeriodErrors",
       [propertyName<CreateTransactionRequest>("date")]: "dateErrors",

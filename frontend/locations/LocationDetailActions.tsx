@@ -14,7 +14,7 @@ import {
   mergeLocation,
   renameLocation,
 } from "@/locations/actions";
-import Dialog from "@/framework/dialog/Dialog";
+import FormDialog from "@/framework/dialog/FormDialog";
 import type { Location } from "@/locations/types";
 import { useRouter } from "next/navigation";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
@@ -44,6 +44,8 @@ const LocationDetailActions = function ({
   const [mergeTarget, setMergeTarget] = useState<Location | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // Loading merge options runs apart from the actions, so the dialog stays usable while they load
+  const [, startLoadingOptions] = useTransition();
 
   const closeDialog = function (): void {
     if (!pending) {
@@ -75,11 +77,16 @@ const LocationDetailActions = function ({
   const openMerge = function (): void {
     setDialog("merge");
     if (mergeOptions === null) {
-      startTransition(async () => {
-        const options = await getLocationOptions();
-        setMergeOptions(
-          options.filter((candidate) => candidate.id !== location.id),
-        );
+      startLoadingOptions(async () => {
+        try {
+          const options = await getLocationOptions();
+          setMergeOptions(
+            options.filter((candidate) => candidate.id !== location.id),
+          );
+        } catch {
+          setMergeOptions([]);
+          setError("Unable to load the locations to merge into.");
+        }
       });
     }
   };
@@ -115,29 +122,16 @@ const LocationDetailActions = function ({
           Delete
         </Button>
       </Stack>
-      <Dialog
+      <FormDialog
         open={dialog === "rename"}
-        onClose={closeDialog}
         title="Rename Location"
-        fullWidth
-        maxWidth="sm"
-        actions={
-          <>
-            <Button disabled={pending} onClick={closeDialog}>
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              loading={pending}
-              disabled={name.trim() === ""}
-              onClick={() => {
-                runAction(async () => renameLocation(location.id, name), false);
-              }}
-            >
-              Rename
-            </Button>
-          </>
-        }
+        onClose={closeDialog}
+        pending={pending}
+        submitLabel="Rename"
+        onSubmit={() => {
+          runAction(async () => renameLocation(location.id, name), false);
+        }}
+        canSubmit={name.trim() !== ""}
       >
         <Stack spacing={2}>
           <TextField
@@ -150,35 +144,22 @@ const LocationDetailActions = function ({
           />
           {errorMessage}
         </Stack>
-      </Dialog>
-      <Dialog
+      </FormDialog>
+      <FormDialog
         open={dialog === "merge"}
-        onClose={closeDialog}
         title="Merge Location"
-        fullWidth
-        maxWidth="sm"
-        actions={
-          <>
-            <Button disabled={pending} onClick={closeDialog}>
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              disabled={mergeTarget === null}
-              loading={pending}
-              onClick={() => {
-                if (mergeTarget !== null) {
-                  runAction(
-                    async () => mergeLocation(location.id, mergeTarget.id),
-                    true,
-                  );
-                }
-              }}
-            >
-              Merge
-            </Button>
-          </>
-        }
+        onClose={closeDialog}
+        pending={pending}
+        submitLabel="Merge"
+        onSubmit={() => {
+          if (mergeTarget !== null) {
+            runAction(
+              async () => mergeLocation(location.id, mergeTarget.id),
+              true,
+            );
+          }
+        }}
+        canSubmit={mergeTarget !== null}
       >
         <Stack spacing={2}>
           <Typography>
@@ -200,30 +181,17 @@ const LocationDetailActions = function ({
           />
           {errorMessage}
         </Stack>
-      </Dialog>
-      <Dialog
+      </FormDialog>
+      <FormDialog
         open={dialog === "delete"}
-        onClose={closeDialog}
         title="Delete Location"
-        fullWidth
-        maxWidth="sm"
-        actions={
-          <>
-            <Button disabled={pending} onClick={closeDialog}>
-              Cancel
-            </Button>
-            <Button
-              color="error"
-              variant="contained"
-              loading={pending}
-              onClick={() => {
-                runAction(async () => deleteLocation(location.id), true);
-              }}
-            >
-              Delete
-            </Button>
-          </>
-        }
+        onClose={closeDialog}
+        pending={pending}
+        submitLabel="Delete"
+        onSubmit={() => {
+          runAction(async () => deleteLocation(location.id), true);
+        }}
+        submitButtonProps={{ color: "error" }}
       >
         <Stack spacing={1}>
           <Typography>Delete {location.name}?</Typography>
@@ -233,7 +201,7 @@ const LocationDetailActions = function ({
           </Typography>
           {errorMessage}
         </Stack>
-      </Dialog>
+      </FormDialog>
     </>
   );
 };

@@ -1,9 +1,9 @@
 using Domain.BalanceEvents;
 using Domain.Funds;
 using Domain.Funds.Queries;
-using Models.AccountingPeriods;
 using Models.BalanceEvents;
 using Models.Funds;
+using Rest.AccountingPeriods;
 
 namespace Rest.Funds;
 
@@ -20,7 +20,6 @@ public sealed class FundBalanceEventConverter
         model.Range.End,
         ToDomain(model.Filter),
         model.IncludePending,
-        ToDomain(model.Sort),
         model.Offset ?? 0,
         model.Limit);
 
@@ -30,38 +29,11 @@ public sealed class FundBalanceEventConverter
     private static FundFilter ToDomain(FundFilterModel? filter) => new(filter?.NameSearch, filter?.Names ?? [], filter?.Ids ?? []);
 
     /// <summary>
-    /// Converts an API sort to a Domain sort.
-    /// </summary>
-    private static FundBalanceEventSort ToDomain(FundBalanceEventSortModel? sort) => sort switch
-    {
-        FundBalanceEventSortModel.FundName => FundBalanceEventSort.FundName,
-        FundBalanceEventSortModel.FundNameDescending => FundBalanceEventSort.FundNameDescending,
-        FundBalanceEventSortModel.AccountingPeriodName => FundBalanceEventSort.AccountingPeriod,
-        FundBalanceEventSortModel.AccountingPeriodNameDescending => FundBalanceEventSort.AccountingPeriodDescending,
-        FundBalanceEventSortModel.Date => FundBalanceEventSort.Date,
-        FundBalanceEventSortModel.DateDescending => FundBalanceEventSort.DateDescending,
-        FundBalanceEventSortModel.Type => FundBalanceEventSort.Type,
-        FundBalanceEventSortModel.TypeDescending => FundBalanceEventSort.TypeDescending,
-        FundBalanceEventSortModel.Amount => FundBalanceEventSort.Amount,
-        FundBalanceEventSortModel.AmountDescending => FundBalanceEventSort.AmountDescending,
-        FundBalanceEventSortModel.Counterparty => FundBalanceEventSort.Counterparty,
-        FundBalanceEventSortModel.CounterpartyDescending => FundBalanceEventSort.CounterpartyDescending,
-        _ => FundBalanceEventSort.DateDescending,
-    };
-
-    /// <summary>
     /// Converts a Domain Fund balance event to an API model.
     /// </summary>
     public FundBalanceEventModel ToModel(FundBalanceEvent balanceEvent) => new()
     {
-        AccountingPeriod = new AccountingPeriodModel
-        {
-            Id = balanceEvent.AccountingPeriod.Id.Value,
-            Name = balanceEvent.AccountingPeriod.Name,
-            Year = balanceEvent.AccountingPeriod.Year,
-            Month = balanceEvent.AccountingPeriod.Month,
-            IsOpen = balanceEvent.AccountingPeriod.IsOpen,
-        },
+        AccountingPeriod = AccountingPeriodConverter.ToModel(balanceEvent.AccountingPeriod),
         TransactionId = balanceEvent.TransactionId.Value,
         Description = balanceEvent.Description,
         TransactionDate = balanceEvent.TransactionDate,

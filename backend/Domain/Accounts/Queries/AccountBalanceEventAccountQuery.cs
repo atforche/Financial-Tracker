@@ -9,6 +9,5 @@ public sealed record AccountBalanceEventAccountQuery(
     DateOnly? End,
     IReadOnlyCollection<Guid>? AccountingPeriodIds,
     bool IncludePending,
-    AccountBalanceEventSort Sort,
     int Offset,
     int? Limit);

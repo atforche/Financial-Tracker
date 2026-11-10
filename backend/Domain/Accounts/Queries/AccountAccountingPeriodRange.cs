@@ -8,16 +8,7 @@ namespace Domain.Accounts.Queries;
 public sealed record AccountAccountingPeriodRange(
     QueryPage<AccountRangeBalance> Accounts,
     IReadOnlyCollection<string> AvailableAccountNames,
-    decimal TotalIncome,
-    decimal TrackedIncome,
-    decimal TotalSpending,
-    IReadOnlyCollection<AccountPeriodBalanceSummary> AccountingPeriods)
-{
-    /// <summary>
-    /// Gets income deposited into untracked Accounts.
-    /// </summary>
-    public decimal UntrackedIncome => TotalIncome - TrackedIncome;
-}
+    IReadOnlyCollection<AccountPeriodBalanceSummary> AccountingPeriods);
 
 /// <summary>
 /// Represents an Account's balances at the boundaries of a range.

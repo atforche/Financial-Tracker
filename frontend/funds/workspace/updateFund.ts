@@ -6,8 +6,7 @@ import type {
 } from "@/framework/forms/workspaceAction";
 import type { UpdateFundRequest } from "@/funds/types";
 import createApiClient from "@/framework/data/createApiClient";
-import { isApiError } from "@/framework/data/apiError";
-import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import mapActionError from "@/framework/forms/mapActionError";
 import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
@@ -44,17 +43,10 @@ const updateFund = async function (
     body: request,
   });
   if (error) {
-    if (isApiError(error)) {
-      const mappedError = mapApiValidationError(error, {
-        [propertyName<UpdateFundRequest>("name")]: "nameErrors",
-        [propertyName<UpdateFundRequest>("description")]: "descriptionErrors",
-      });
-      return {
-        ...mappedError,
-        ...mappedError.fieldErrors,
-      };
-    }
-    throw new Error("An unexpected error occurred", { cause: error });
+    return mapActionError(error, {
+      [propertyName<UpdateFundRequest>("name")]: "nameErrors",
+      [propertyName<UpdateFundRequest>("description")]: "descriptionErrors",
+    });
   }
 
   revalidatePath(redirectUrl);

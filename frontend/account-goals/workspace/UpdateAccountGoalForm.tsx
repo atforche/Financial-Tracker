@@ -15,8 +15,8 @@ import {
   useState,
 } from "react";
 import AccountGoalFields from "@/account-goals/AccountGoalFields";
-import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import FormDialog from "@/framework/dialog/FormDialog";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import isAccountGoalRangeValid from "@/account-goals/isAccountGoalRangeValid";
 import updateAccountGoal from "@/account-goals/workspace/updateAccountGoal";
@@ -82,46 +82,25 @@ const UpdateAccountGoalForm = function ({
       >
         Edit
       </Button>
-      <Dialog
+      <FormDialog
         open={open}
-        fullWidth
-        maxWidth="sm"
         title="Update Account Goal"
-        {...(pending
-          ? {}
-          : {
-              onClose: (): void => {
-                setOpen(false);
-                reset();
-              },
-            })}
-        actions={
-          <>
-            <Button
-              disabled={pending}
-              onClick={() => {
-                setOpen(false);
-                reset();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button variant="outlined" disabled={pending} onClick={reset}>
-              Reset
-            </Button>
-            <Button
-              variant="contained"
-              loading={pending}
-              disabled={!rangeIsValid}
-              onClick={() => {
-                startTransition(() => {
-                  action({ accountGoal, request, redirectUrl });
-                });
-              }}
-            >
-              Save
-            </Button>
-          </>
+        onClose={() => {
+          setOpen(false);
+          reset();
+        }}
+        pending={pending}
+        submitLabel="Save"
+        onSubmit={() => {
+          startTransition(() => {
+            action({ accountGoal, request, redirectUrl });
+          });
+        }}
+        canSubmit={rangeIsValid}
+        extraActions={
+          <Button variant="outlined" disabled={pending} onClick={reset}>
+            Reset
+          </Button>
         }
       >
         <Stack ref={formRef} spacing={2}>
@@ -142,7 +121,7 @@ const UpdateAccountGoalForm = function ({
             unmappedErrors={state.unmappedErrors ?? null}
           />
         </Stack>
-      </Dialog>
+      </FormDialog>
     </>
   );
 };

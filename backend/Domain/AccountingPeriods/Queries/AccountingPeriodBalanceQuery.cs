@@ -5,6 +5,5 @@ namespace Domain.AccountingPeriods.Queries;
 /// </summary>
 public sealed record AccountingPeriodBalanceQuery(
     AccountingPeriodFilter Filter,
-    AccountingPeriodBalanceSort Sort,
     int Offset,
     int? Limit);

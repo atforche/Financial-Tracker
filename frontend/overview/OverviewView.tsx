@@ -125,7 +125,6 @@ const OverviewView = async function ({
           )}
           title="Account Balance Trend"
           xAxisLabel="Date"
-          variant="surface"
           headerContent={
             <Link
               href={accountRoutes.trends(trendsRange)}
@@ -144,7 +143,6 @@ const OverviewView = async function ({
           )}
           title="Fund Balance Trend"
           xAxisLabel="Date"
-          variant="surface"
           headerContent={
             <Link
               href={fundRoutes.trends(trendsRange)}

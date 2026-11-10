@@ -8,16 +8,7 @@ namespace Domain.Funds.Queries;
 public sealed record FundAccountingPeriodRange(
     QueryPage<FundRangeBalance> Funds,
     IReadOnlyCollection<string> AvailableFundNames,
-    decimal TotalIncome,
-    decimal TrackedIncome,
-    decimal TotalSpending,
-    IReadOnlyCollection<FundPeriodBalanceSummary> AccountingPeriods)
-{
-    /// <summary>
-    /// Gets income deposited into untracked Accounts.
-    /// </summary>
-    public decimal UntrackedIncome => TotalIncome - TrackedIncome;
-}
+    IReadOnlyCollection<FundPeriodBalanceSummary> AccountingPeriods);
 
 /// <summary>
 /// Represents a Fund's balances at the boundaries of a range.

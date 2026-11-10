@@ -1,13 +1,12 @@
 using Domain.AccountingPeriods;
-using Domain.Accounts;
-using Domain.Funds;
+using Domain.Transactions;
 
 namespace Domain.Locations.Queries;
 
 /// <summary>
 /// Money that moved to or from a Location in one transaction line.
 /// </summary>
-public sealed record LocationFlow(LocationId LocationId, DateOnly Date, AccountingPeriodId AccountingPeriodId, decimal Received, decimal Spent);
+public sealed record LocationFlow(TransactionId TransactionId, LocationId LocationId, DateOnly Date, AccountingPeriodId AccountingPeriodId, decimal Received, decimal Spent);
 
 /// <summary>
 /// Transactions to read Location flows from: those dated within a range, or those in a set of Accounting Periods,
@@ -20,9 +19,22 @@ public sealed record LocationFlowScope(
     LocationId? LocationId);
 
 /// <summary>
-/// A payment made to a Location, with the Account it was paid from and the Funds that paid for it.
+/// One Location's totals over the scoped transactions.
 /// </summary>
-public sealed record LocationPayment(Account? Account, IReadOnlyCollection<(Fund Fund, decimal Amount)> Funds, decimal Amount);
+public sealed record LocationTotals(
+    LocationId LocationId,
+    decimal Spent,
+    decimal Received,
+    int TransactionCount,
+    int SpendingTransactionCount,
+    DateOnly LastActivity);
+
+/// <summary>
+/// How much each Account and each Fund paid a Location.
+/// </summary>
+public sealed record LocationPaymentShares(
+    IReadOnlyCollection<LocationPaymentShare> Accounts,
+    IReadOnlyCollection<LocationPaymentShare> Funds);
 
 /// <summary>
 /// Orders the Locations in a range.
@@ -73,6 +85,7 @@ public sealed record LocationRangeSummary(
     decimal Spent,
     decimal Received,
     int TransactionCount,
+    int SpendingTransactionCount,
     DateOnly? LastActivity);
 
 /// <summary>

@@ -16,16 +16,6 @@ public class FundsInDateRangeModel
     public required IReadOnlyCollection<string> AvailableFundNames { get; init; }
 
     /// <summary>
-    /// Total income over the requested range.
-    /// </summary>
-    public required IncomeAmountModel TotalIncome { get; init; }
-
-    /// <summary>
-    /// Total spending over the requested range.
-    /// </summary>
-    public required decimal TotalSpending { get; init; }
-
-    /// <summary>
     /// Summary balances at the start of the requested range, before any activity on the start date.
     /// </summary>
     public required FundBalanceSummaryModel? OpeningBalance { get; init; }

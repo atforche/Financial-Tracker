@@ -3,7 +3,7 @@
 import { Button } from "@mui/material";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
-import SearchBar from "@/framework/listframe/SearchBar";
+import SearchBar from "@/framework/view/SearchBar";
 import WorkspaceHeader from "@/framework/view/WorkspaceHeader";
 import propertyName from "@/framework/data/propertyName";
 import routes from "@/funds/routes";

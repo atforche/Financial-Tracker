@@ -53,6 +53,10 @@ const LocationWorkspaceDetailPage = async function ({
   );
   const apiClient = await createApiClient();
   const path = { locationId };
+  const transactionQuery = {
+    "Filter.LocationIds": [locationId],
+    Limit: recentTransactionCount,
+  };
   const [detailResponse, transactionsResponse] = await Promise.all([
     range.mode === "date"
       ? apiClient.GET("/locations/{locationId}/date-range", {
@@ -73,14 +77,25 @@ const LocationWorkspaceDetailPage = async function ({
             },
           },
         }),
-    apiClient.GET("/transactions", {
-      params: {
-        query: {
-          "Filter.LocationIds": [locationId],
-          Limit: recentTransactionCount,
-        },
-      },
-    }),
+    range.mode === "date"
+      ? apiClient.GET("/transactions/date-range", {
+          params: {
+            query: {
+              ...transactionQuery,
+              "Range.Start": range.startDate,
+              "Range.End": range.endDate,
+            },
+          },
+        })
+      : apiClient.GET("/transactions/accounting-period-range", {
+          params: {
+            query: {
+              ...transactionQuery,
+              "Range.Start": range.startAccountingPeriodId,
+              "Range.End": range.endAccountingPeriodId,
+            },
+          },
+        }),
   ]);
   if (detailResponse.response.status === 404) {
     redirect(workspaceUrl);
@@ -89,7 +104,7 @@ const LocationWorkspaceDetailPage = async function ({
     detailResponse,
     "Failed to fetch location activity",
   );
-  const transactions = unwrapApiResponse(
+  const { transactions } = unwrapApiResponse(
     transactionsResponse,
     "Failed to fetch location transactions",
   );
@@ -123,7 +138,9 @@ const LocationWorkspaceDetailPage = async function ({
           caption={
             summary.transactionCount === 0
               ? "None in this range"
-              : `${formatCurrency(summary.spent / summary.transactionCount)} average spent`
+              : summary.spendingTransactionCount === 0
+                ? "Nothing spent here"
+                : `${formatCurrency(summary.spent / summary.spendingTransactionCount)} average spent`
           }
         />
         <StatCard
@@ -162,6 +179,12 @@ const LocationWorkspaceDetailPage = async function ({
                 component={Link}
                 href={transactionRoutes.workspace({
                   locationIds: [locationId],
+                  ...(range.mode === "date"
+                    ? { startDate: range.startDate, endDate: range.endDate }
+                    : {
+                        startAccountingPeriodId: range.startAccountingPeriodId,
+                        endAccountingPeriodId: range.endAccountingPeriodId,
+                      }),
                   returnUrl: currentUrl,
                 })}
                 variant="outlined"

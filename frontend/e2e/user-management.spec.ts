@@ -18,10 +18,10 @@ const signInAsLocalDeveloper = async function (page: Page): Promise<void> {
 };
 
 /**
- * Gets the table row for the user with the provided email.
+ * Gets the list row for the user with the provided email. Each row is a button that opens its details.
  */
 const getRow = function (page: Page, email: string): Locator {
-  return page.getByRole("row").filter({ hasText: email });
+  return page.getByRole("button").filter({ hasText: email });
 };
 
 /**
@@ -94,7 +94,6 @@ test("list frames fit within a mobile viewport", async ({ page }) => {
   await expect(
     page.getByText("Application Users", { exact: true }),
   ).toBeVisible();
-  await expect(page.locator("table").first()).toBeHidden();
   const applicationUsersFrame = page
     .getByText("Application Users", { exact: true })
     .locator("xpath=ancestor::div[contains(@class, 'MuiPaper-root')][1]");

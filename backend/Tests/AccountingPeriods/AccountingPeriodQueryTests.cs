@@ -28,9 +28,9 @@ public sealed class AccountingPeriodQueryTests
         await test.Transactions.PostAsync(transaction, cash, new DateOnly(2026, 7, 15));
 
         CollectionModel<AccountingPeriodWithBalanceModel> balances = await test.Api.GetAsync<CollectionModel<AccountingPeriodWithBalanceModel>>(
-            "/accounting-periods/with-balances?filter.months=7&filter.months=8&sort=ClosingBalanceDescending&offset=1&limit=1");
+            "/accounting-periods/with-balances?filter.months=7&filter.months=8&offset=1&limit=1");
         CollectionModel<AccountingPeriodModel> periods = await test.Api.GetAsync<CollectionModel<AccountingPeriodModel>>(
-            "/accounting-periods?filter.months=8&sort=DateDescending");
+            "/accounting-periods?filter.months=8");
 
         Assert.Equal(2, balances.TotalCount);
         AccountingPeriodWithBalanceModel period = Assert.Single(balances.Items);
@@ -191,11 +191,11 @@ public sealed class AccountingPeriodQueryTests
         await test.Transactions.PostAsync(augustIncome, cash, new DateOnly(2026, 8, 10));
 
         CollectionModel<AccountingPeriodWithBalanceModel> balances = await test.Api.GetAsync<CollectionModel<AccountingPeriodWithBalanceModel>>(
-            "/accounting-periods/with-balances?sort=Date");
+            "/accounting-periods/with-balances");
         AccountingPeriodsInRangeModel range = await test.Api.GetAsync<AccountingPeriodsInRangeModel>(
             $"/accounting-periods/range?range.start={july.Id}&range.end={august.Id}");
 
-        Assert.Equal([60m, 40m], balances.Items.Select(period => period.ActualIncome.Total));
+        Assert.Equal([40m, 60m], balances.Items.Select(period => period.ActualIncome.Total));
         Assert.All(balances.Items, period => Assert.Equal(50m, period.PlannedGoalContributions));
         Assert.Equal([60m, 40m], range.AccountingPeriods.Select(period => period.ActualIncome.Total));
         Assert.All(range.AccountingPeriods, period => Assert.Equal(50m, period.PlannedGoalContributions));

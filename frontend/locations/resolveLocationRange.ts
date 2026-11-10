@@ -1,11 +1,8 @@
 import {
-  type AccountingPeriod,
-  AccountingPeriodSort,
-} from "@/accounting-periods/types";
-import {
   matchesTrendRange,
   resolveTrendRange,
 } from "@/framework/routes/trendRange";
+import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { LocationRangeSearchParams } from "@/locations/routes";
 import type { Route } from "next";
 import createApiClient from "@/framework/data/createApiClient";
@@ -32,7 +29,7 @@ const resolveLocationRange = async function (
   const accountingPeriods = unwrapApiResponse(
     await apiClient.GET("/accounting-periods", {
       params: {
-        query: { Sort: AccountingPeriodSort.DateDescending, Limit: 500 },
+        query: { Limit: 500 },
       },
     }),
     "Failed to fetch accounting periods",

@@ -14,9 +14,6 @@ import {
   type BalanceTrendChartPoint,
   getBalanceTrendTooltipPoint,
 } from "@/framework/charts/balanceTrendHelpers";
-import ChartFrame, {
-  type ChartFrameVariant,
-} from "@/framework/charts/ChartFrame";
 import { type JSX, type ReactNode, useId } from "react";
 import { alpha, useTheme } from "@mui/material/styles";
 import {
@@ -28,6 +25,7 @@ import {
   formatCompactCurrency,
   formatCurrency,
 } from "@/framework/currencyHelpers";
+import ChartFrame from "@/framework/charts/ChartFrame";
 import ChartTooltip from "@/framework/charts/ChartTooltip";
 
 /**
@@ -38,7 +36,6 @@ interface BalanceTrendChartProps {
   readonly xAxisLabel: string;
   readonly title?: string;
   readonly headerContent?: ReactNode;
-  readonly variant?: ChartFrameVariant;
   readonly emptyMessage?: string;
   readonly yAxisLabel?: string;
   readonly color?: "primary" | "secondary";
@@ -52,7 +49,6 @@ const BalanceTrendChart = function ({
   xAxisLabel,
   title = "Balance Trend",
   headerContent,
-  variant = "frame",
   emptyMessage = "No balance history is available for the selected trends range.",
   yAxisLabel = "Total Balance",
   color = "primary",
@@ -69,10 +65,8 @@ const BalanceTrendChart = function ({
     <ChartFrame
       title={title}
       headerContent={headerContent}
-      variant={variant}
       emptyMessage={emptyMessage}
       hasData={chartPoints.length > 0}
-      color={color}
       xAxisLabel={xAxisLabel}
       yAxisLabel={yAxisLabel}
     >

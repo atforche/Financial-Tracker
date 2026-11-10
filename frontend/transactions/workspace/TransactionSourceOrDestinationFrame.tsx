@@ -1,6 +1,5 @@
 "use client";
 
-import Frame, { type FrameColor } from "@/framework/view/Frame";
 import {
   type JSX,
   type ReactNode,
@@ -8,6 +7,9 @@ import {
   useContext,
   useState,
 } from "react";
+import TransactionSection, {
+  type FrameColor,
+} from "@/transactions/workspace/TransactionSection";
 import CollectionItemDeleteButton from "@/framework/view/CollectionItemDeleteButton";
 import { Stack } from "@mui/material";
 
@@ -47,10 +49,9 @@ const TransactionSourceOrDestinationFrame = function ({
 }: TransactionSourceOrDestinationFrameProps): JSX.Element {
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
   return (
-    <Frame
+    <TransactionSection
       title={title}
-      color={color}
-      headerContentInline
+      incomplete={color === "error"}
       headerContent={
         <Stack
           direction="row"
@@ -74,7 +75,7 @@ const TransactionSourceOrDestinationFrame = function ({
       <FrameHeaderSlotContext.Provider value={headerSlot}>
         {children}
       </FrameHeaderSlotContext.Provider>
-    </Frame>
+    </TransactionSection>
   );
 };
 

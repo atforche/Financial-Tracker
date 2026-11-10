@@ -1,5 +1,3 @@
-using Domain.AccountingPeriods.Queries;
-
 namespace Domain.Accounts.Queries;
 
 /// <summary>
@@ -67,37 +65,4 @@ public interface IAccountQueryRepository
         DateOnly? endDate,
         CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Retrieves income destination facts for the Accounts within the provided date range.
-    /// </summary>
-    Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetDateRangeIncomeFactsAsync(
-        IReadOnlyCollection<AccountId> accountIds,
-        DateOnly? startDate,
-        DateOnly? endDate,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves spending facts for the Accounts within the provided date range.
-    /// </summary>
-    Task<IReadOnlyCollection<FinancialRangeSpendingFact>> GetDateRangeSpendingFactsAsync(
-        IReadOnlyCollection<AccountId> accountIds,
-        DateOnly? startDate,
-        DateOnly? endDate,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves income destination facts for the Accounts within the provided Accounting Periods.
-    /// </summary>
-    Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetAccountingPeriodRangeIncomeFactsAsync(
-        IReadOnlyCollection<AccountId> accountIds,
-        IReadOnlyCollection<Guid> accountingPeriodIds,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves spending facts for the Accounts within the provided Accounting Periods.
-    /// </summary>
-    Task<IReadOnlyCollection<FinancialRangeSpendingFact>> GetAccountingPeriodRangeSpendingFactsAsync(
-        IReadOnlyCollection<AccountId> accountIds,
-        IReadOnlyCollection<Guid> accountingPeriodIds,
-        CancellationToken cancellationToken = default);
 }

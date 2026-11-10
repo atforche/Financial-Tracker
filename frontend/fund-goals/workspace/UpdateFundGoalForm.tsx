@@ -12,8 +12,8 @@ import {
   useState,
 } from "react";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
-import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import FormDialog from "@/framework/dialog/FormDialog";
 import FundGoalSetupSection from "@/funds/workspace/FundGoalSetupSection";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
 import getAccountingPeriodBalance from "@/accounting-periods/workspace/getAccountingPeriodBalance";
@@ -103,47 +103,27 @@ const UpdateFundGoalForm = function ({
       >
         Edit
       </Button>
-      <Dialog
+      <FormDialog
         open={open}
-        fullWidth
-        maxWidth="md"
         title="Update Fund Goal"
-        {...(pending
-          ? {}
-          : {
-              onClose: (): void => {
-                setOpen(false);
-                reset();
-              },
-            })}
-        actions={
-          <>
-            <Button
-              disabled={pending}
-              onClick={() => {
-                setOpen(false);
-                reset();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button variant="outlined" disabled={pending} onClick={reset}>
-              Reset
-            </Button>
-            <Button
-              variant="contained"
-              loading={pending}
-              disabled={!rangeIsValid}
-              onClick={() => {
-                startTransition(() => {
-                  action({ fundGoal, request, redirectUrl });
-                });
-              }}
-            >
-              Save
-            </Button>
-          </>
+        onClose={() => {
+          setOpen(false);
+          reset();
+        }}
+        pending={pending}
+        submitLabel="Save"
+        onSubmit={() => {
+          startTransition(() => {
+            action({ fundGoal, request, redirectUrl });
+          });
+        }}
+        canSubmit={rangeIsValid}
+        extraActions={
+          <Button variant="outlined" disabled={pending} onClick={reset}>
+            Reset
+          </Button>
         }
+        maxWidth="md"
       >
         <Stack ref={formRef} spacing={3}>
           <FundGoalSetupSection
@@ -178,7 +158,7 @@ const UpdateFundGoalForm = function ({
             unmappedErrors={state.unmappedErrors ?? null}
           />
         </Stack>
-      </Dialog>
+      </FormDialog>
     </>
   );
 };

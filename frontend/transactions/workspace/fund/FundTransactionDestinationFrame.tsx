@@ -6,7 +6,7 @@ import type {
   FundWithBalance,
 } from "@/funds/types";
 import CurrencyEntryField from "@/framework/forms/CurrencyEntryField";
-import type { FrameColor } from "@/framework/view/Frame";
+import type { FrameColor } from "@/transactions/workspace/TransactionSection";
 import FundBalanceEventFrame from "@/transactions/workspace/FundBalanceEventFrame";
 import type { JSX } from "react";
 import TransactionSourceOrDestinationFrame from "@/transactions/workspace/TransactionSourceOrDestinationFrame";
