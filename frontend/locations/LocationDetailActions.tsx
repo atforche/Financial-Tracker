@@ -44,6 +44,8 @@ const LocationDetailActions = function ({
   const [mergeTarget, setMergeTarget] = useState<Location | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // Loading merge options runs apart from the actions, so the dialog stays usable while they load
+  const [, startLoadingOptions] = useTransition();
 
   const closeDialog = function (): void {
     if (!pending) {
@@ -75,11 +77,16 @@ const LocationDetailActions = function ({
   const openMerge = function (): void {
     setDialog("merge");
     if (mergeOptions === null) {
-      startTransition(async () => {
-        const options = await getLocationOptions();
-        setMergeOptions(
-          options.filter((candidate) => candidate.id !== location.id),
-        );
+      startLoadingOptions(async () => {
+        try {
+          const options = await getLocationOptions();
+          setMergeOptions(
+            options.filter((candidate) => candidate.id !== location.id),
+          );
+        } catch {
+          setMergeOptions([]);
+          setError("Unable to load the locations to merge into.");
+        }
       });
     }
   };

@@ -41,54 +41,42 @@ public sealed class LocationQueryRepository(DatabaseContext databaseContext) : I
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<Location>> GetMatchingAsync(string? nameSearch, CancellationToken cancellationToken = default)
-    {
-        IQueryable<Location> locations = databaseContext.Locations.AsNoTracking();
-        if (!string.IsNullOrWhiteSpace(nameSearch))
-        {
-            string pattern = LikeSearchPattern.Contains(nameSearch);
-            locations = locations.Where(location => EF.Functions.Like(location.Name, pattern, LikeSearchPattern.EscapeCharacter));
-        }
-        return await locations.ToListAsync(cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public async Task<IReadOnlyCollection<LocationFlow>> GetFlowsAsync(
         LocationFlowScope scope,
         CancellationToken cancellationToken = default)
     {
         IQueryable<Transaction> transactions = ApplyScope(scope);
         LocationId? locationId = scope.LocationId;
-        var lines = new List<(LocationId? LocationId, DateOnly Date, Domain.AccountingPeriods.AccountingPeriodId PeriodId, decimal Received, decimal Spent)>();
+        var lines = new List<(TransactionId TransactionId, LocationId? LocationId, DateOnly Date, Domain.AccountingPeriods.AccountingPeriodId PeriodId, decimal Received, decimal Spent)>();
 
         // Each transaction type keeps its Locations on different sides, so each is read separately
         lines.AddRange((await transactions.OfType<IncomeTransaction>()
-            .Select(transaction => new { LocationId = EF.Property<LocationId?>(transaction.Source, "LocationId"), transaction.Date, transaction.AccountingPeriodId, transaction.Amount })
+            .Select(transaction => new { TransactionId = transaction.Id, LocationId = EF.Property<LocationId?>(transaction.Source, "LocationId"), transaction.Date, transaction.AccountingPeriodId, transaction.Amount })
             .Where(line => line.LocationId != null && (locationId == null || line.LocationId == locationId))
             .ToListAsync(cancellationToken))
-            .Select(line => (line.LocationId, line.Date, line.AccountingPeriodId, line.Amount, 0m)));
+            .Select(line => (line.TransactionId, line.LocationId, line.Date, line.AccountingPeriodId, line.Amount, 0m)));
         lines.AddRange((await transactions.OfType<SpendingTransaction>()
-            .SelectMany(transaction => transaction.Destinations, (transaction, destination) => new { LocationId = EF.Property<LocationId?>(destination, "LocationId"), transaction.Date, transaction.AccountingPeriodId, destination.Amount })
+            .SelectMany(transaction => transaction.Destinations, (transaction, destination) => new { TransactionId = transaction.Id, LocationId = EF.Property<LocationId?>(destination, "LocationId"), transaction.Date, transaction.AccountingPeriodId, destination.Amount })
             .Where(line => line.LocationId != null && (locationId == null || line.LocationId == locationId))
             .ToListAsync(cancellationToken))
-            .Select(line => (line.LocationId, line.Date, line.AccountingPeriodId, 0m, line.Amount)));
+            .Select(line => (line.TransactionId, line.LocationId, line.Date, line.AccountingPeriodId, 0m, line.Amount)));
         lines.AddRange((await transactions.OfType<RefundTransaction>()
-            .SelectMany(transaction => transaction.Sources, (transaction, source) => new { LocationId = EF.Property<LocationId?>(source, "LocationId"), transaction.Date, transaction.AccountingPeriodId, source.Amount })
+            .SelectMany(transaction => transaction.Sources, (transaction, source) => new { TransactionId = transaction.Id, LocationId = EF.Property<LocationId?>(source, "LocationId"), transaction.Date, transaction.AccountingPeriodId, source.Amount })
             .Where(line => line.LocationId != null && (locationId == null || line.LocationId == locationId))
             .ToListAsync(cancellationToken))
-            .Select(line => (line.LocationId, line.Date, line.AccountingPeriodId, line.Amount, 0m)));
+            .Select(line => (line.TransactionId, line.LocationId, line.Date, line.AccountingPeriodId, line.Amount, 0m)));
         lines.AddRange((await transactions.OfType<AccountTransaction>()
-            .Select(transaction => new { LocationId = EF.Property<LocationId?>(transaction.Source, "LocationId"), transaction.Date, transaction.AccountingPeriodId, transaction.Amount })
+            .Select(transaction => new { TransactionId = transaction.Id, LocationId = EF.Property<LocationId?>(transaction.Source, "LocationId"), transaction.Date, transaction.AccountingPeriodId, transaction.Amount })
             .Where(line => line.LocationId != null && (locationId == null || line.LocationId == locationId))
             .ToListAsync(cancellationToken))
-            .Select(line => (line.LocationId, line.Date, line.AccountingPeriodId, line.Amount, 0m)));
+            .Select(line => (line.TransactionId, line.LocationId, line.Date, line.AccountingPeriodId, line.Amount, 0m)));
         lines.AddRange((await transactions.OfType<AccountTransaction>()
-            .SelectMany(transaction => transaction.Destinations, (transaction, destination) => new { LocationId = EF.Property<LocationId?>(destination, "LocationId"), transaction.Date, transaction.AccountingPeriodId, destination.Amount })
+            .SelectMany(transaction => transaction.Destinations, (transaction, destination) => new { TransactionId = transaction.Id, LocationId = EF.Property<LocationId?>(destination, "LocationId"), transaction.Date, transaction.AccountingPeriodId, destination.Amount })
             .Where(line => line.LocationId != null && (locationId == null || line.LocationId == locationId))
             .ToListAsync(cancellationToken))
-            .Select(line => (line.LocationId, line.Date, line.AccountingPeriodId, 0m, line.Amount)));
+            .Select(line => (line.TransactionId, line.LocationId, line.Date, line.AccountingPeriodId, 0m, line.Amount)));
         return lines
-            .Select(line => new LocationFlow(line.LocationId!, line.Date, line.PeriodId, line.Received, line.Spent))
+            .Select(line => new LocationFlow(line.TransactionId, line.LocationId!, line.Date, line.PeriodId, line.Received, line.Spent))
             .ToList();
     }
 

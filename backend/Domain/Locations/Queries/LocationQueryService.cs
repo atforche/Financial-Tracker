@@ -121,7 +121,8 @@ public sealed class LocationQueryService(
             location,
             all.Sum(flow => flow.Spent),
             all.Sum(flow => flow.Received),
-            all.Count,
+            all.Select(flow => flow.TransactionId).Distinct().Count(),
+            all.Where(flow => flow.Spent != 0).Select(flow => flow.TransactionId).Distinct().Count(),
             all.Count == 0 ? null : all.Max(flow => flow.Date));
     }
 
@@ -133,7 +134,9 @@ public sealed class LocationQueryService(
         LocationRangeQuery query,
         CancellationToken cancellationToken)
     {
-        IReadOnlyCollection<Location> locations = await locationQueryRepository.GetMatchingAsync(query.NameSearch, cancellationToken);
+        IReadOnlyCollection<Location> locations = (await locationQueryRepository.GetAsync(
+            new LocationQuery(new LocationFilter(query.NameSearch, []), 0, null),
+            cancellationToken)).Items;
         ILookup<LocationId, LocationFlow> flowsByLocation = (await locationQueryRepository.GetFlowsAsync(scope, cancellationToken))
             .ToLookup(flow => flow.LocationId);
         var summaries = locations

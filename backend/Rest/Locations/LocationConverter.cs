@@ -78,6 +78,7 @@ public sealed class LocationConverter
         Spent = summary.Spent,
         Received = summary.Received,
         TransactionCount = summary.TransactionCount,
+        SpendingTransactionCount = summary.SpendingTransactionCount,
         LastActivity = summary.LastActivity,
     };
 

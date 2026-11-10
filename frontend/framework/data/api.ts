@@ -5519,9 +5519,14 @@ export interface components {
             received: number;
             /**
              * Format: int32
-             * @description Number of transaction lines with the Location in the range.
+             * @description Number of transactions with the Location in the range.
              */
             transactionCount: number;
+            /**
+             * Format: int32
+             * @description Number of transactions that spent money at the Location in the range.
+             */
+            spendingTransactionCount: number;
             /**
              * Format: date
              * @description Date of the latest transaction with the Location in the range.

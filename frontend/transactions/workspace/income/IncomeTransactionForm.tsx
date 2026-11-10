@@ -368,6 +368,7 @@ const IncomeTransactionForm = function <RequestPayload>({
       }
       sourceAmount={sourceNetAmount}
       destinationAmount={destinationTotal}
+      destinationCount={destinations.length}
       showSummary
       submitLabel={submitLabel}
       state={state}

@@ -51,8 +51,24 @@ const TransactionWorkspace = async function ({
   searchParams,
 }: TransactionWorkspaceProps): Promise<JSX.Element> {
   const resolvedSearchParams = await searchParams;
-  // Starts on the same recent range as the other range pages, since some sorts load every transaction in the range
+  // Filters other than the date range narrow the search
+  const hasFilter =
+    [
+      resolvedSearchParams.accountingPeriodIds,
+      resolvedSearchParams.accountIds,
+      resolvedSearchParams.fundIds,
+      resolvedSearchParams.locationIds,
+      resolvedSearchParams.fundNames,
+      resolvedSearchParams.accountTypes,
+      resolvedSearchParams.accountNames,
+      resolvedSearchParams.transactionTypes,
+    ].some((value) =>
+      Array.isArray(value) ? value.length > 0 : typeof value !== "undefined",
+    ) || normalizeFullyPosted(resolvedSearchParams.fullyPosted) !== null;
+  // With nothing to narrow the list, start on the recent range the other range pages use, as some sorts load the whole range
+  // A link with a filter, such as unposted transactions, keeps every transaction it matches
   if (
+    !hasFilter &&
     [
       resolvedSearchParams.accountingPeriodIds,
       resolvedSearchParams.startDate,
@@ -70,20 +86,6 @@ const TransactionWorkspace = async function ({
       }),
     );
   }
-  // The range is always set, so only the other filters make this a narrowed search
-  const hasFilter =
-    [
-      resolvedSearchParams.accountingPeriodIds,
-      resolvedSearchParams.accountIds,
-      resolvedSearchParams.fundIds,
-      resolvedSearchParams.locationIds,
-      resolvedSearchParams.fundNames,
-      resolvedSearchParams.accountTypes,
-      resolvedSearchParams.accountNames,
-      resolvedSearchParams.transactionTypes,
-    ].some((value) =>
-      Array.isArray(value) ? value.length > 0 : typeof value !== "undefined",
-    ) || normalizeFullyPosted(resolvedSearchParams.fullyPosted) !== null;
   const {
     accountingPeriods,
     accounts,

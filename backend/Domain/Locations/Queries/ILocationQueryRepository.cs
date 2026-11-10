@@ -11,11 +11,6 @@ public interface ILocationQueryRepository
     Task<QueryPage<Location>> GetAsync(LocationQuery query, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets every Location whose name matches the search, or every Location without one.
-    /// </summary>
-    Task<IReadOnlyCollection<Location>> GetMatchingAsync(string? nameSearch, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Gets the money that moved to and from Locations in the scoped transactions.
     /// </summary>
     Task<IReadOnlyCollection<LocationFlow>> GetFlowsAsync(LocationFlowScope scope, CancellationToken cancellationToken = default);

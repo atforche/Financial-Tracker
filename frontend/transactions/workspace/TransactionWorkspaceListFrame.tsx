@@ -167,9 +167,9 @@ const TransactionWorkspaceListFrame = function ({
               ),
             }
           : {
-              title: "No Transactions Yet",
+              title: "No Transactions in This Range",
               description:
-                "Transactions you add will be listed here, newest first.",
+                "Widen the date range to see earlier or later transactions.",
             }
       }
     />

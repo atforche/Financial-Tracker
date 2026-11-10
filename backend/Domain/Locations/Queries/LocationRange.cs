@@ -1,13 +1,14 @@
 using Domain.AccountingPeriods;
 using Domain.Accounts;
 using Domain.Funds;
+using Domain.Transactions;
 
 namespace Domain.Locations.Queries;
 
 /// <summary>
 /// Money that moved to or from a Location in one transaction line.
 /// </summary>
-public sealed record LocationFlow(LocationId LocationId, DateOnly Date, AccountingPeriodId AccountingPeriodId, decimal Received, decimal Spent);
+public sealed record LocationFlow(TransactionId TransactionId, LocationId LocationId, DateOnly Date, AccountingPeriodId AccountingPeriodId, decimal Received, decimal Spent);
 
 /// <summary>
 /// Transactions to read Location flows from: those dated within a range, or those in a set of Accounting Periods,
@@ -73,6 +74,7 @@ public sealed record LocationRangeSummary(
     decimal Spent,
     decimal Received,
     int TransactionCount,
+    int SpendingTransactionCount,
     DateOnly? LastActivity);
 
 /// <summary>

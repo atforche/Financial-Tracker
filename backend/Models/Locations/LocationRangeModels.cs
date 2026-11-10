@@ -117,8 +117,11 @@ public sealed class LocationRangeSummaryModel
     /// <summary>Money received from the Location in the range.</summary>
     public required decimal Received { get; init; }
 
-    /// <summary>Number of transaction lines with the Location in the range.</summary>
+    /// <summary>Number of transactions with the Location in the range.</summary>
     public required int TransactionCount { get; init; }
+
+    /// <summary>Number of transactions that spent money at the Location in the range.</summary>
+    public required int SpendingTransactionCount { get; init; }
 
     /// <summary>Date of the latest transaction with the Location in the range.</summary>
     public DateOnly? LastActivity { get; init; }
