@@ -1,5 +1,3 @@
-using Domain.AccountingPeriods.Queries;
-
 namespace Domain.Funds.Queries;
 
 /// <summary>
@@ -60,37 +58,4 @@ public interface IFundQueryRepository
         DateOnly? endDate,
         CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Retrieves income assignment facts for the Funds within the provided date range.
-    /// </summary>
-    Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetDateRangeIncomeFactsAsync(
-        IReadOnlyCollection<FundId> fundIds,
-        DateOnly? startDate,
-        DateOnly? endDate,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves spending assignment facts for the Funds within the provided date range.
-    /// </summary>
-    Task<IReadOnlyCollection<FinancialRangeSpendingFact>> GetDateRangeSpendingFactsAsync(
-        IReadOnlyCollection<FundId> fundIds,
-        DateOnly? startDate,
-        DateOnly? endDate,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves income assignment facts for the Funds within the provided Accounting Periods.
-    /// </summary>
-    Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetAccountingPeriodRangeIncomeFactsAsync(
-        IReadOnlyCollection<FundId> fundIds,
-        IReadOnlyCollection<Guid> accountingPeriodIds,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves spending assignment facts for the Funds within the provided Accounting Periods.
-    /// </summary>
-    Task<IReadOnlyCollection<FinancialRangeSpendingFact>> GetAccountingPeriodRangeSpendingFactsAsync(
-        IReadOnlyCollection<FundId> fundIds,
-        IReadOnlyCollection<Guid> accountingPeriodIds,
-        CancellationToken cancellationToken = default);
 }

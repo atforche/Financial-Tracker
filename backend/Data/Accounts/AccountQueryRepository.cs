@@ -1,11 +1,7 @@
 using Domain;
 using Domain.AccountingPeriods;
-using Domain.AccountingPeriods.Queries;
 using Domain.Accounts;
 using Domain.Accounts.Queries;
-using Domain.Transactions.Income;
-using Domain.Transactions.Refunds;
-using Domain.Transactions.Spending;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data.Accounts;
@@ -144,81 +140,6 @@ public sealed class AccountQueryRepository(DatabaseContext databaseContext) : IA
             .OrderBy(history => history.Date).ThenBy(history => history.Sequence)
             .Select(history => new AccountDateBalanceFact(history.Account.Id, history.Date, history.Sequence, history.PostedBalance))
             .ToListAsync(cancellationToken);
-
-    /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetDateRangeIncomeFactsAsync(
-        IReadOnlyCollection<AccountId> accountIds,
-        DateOnly? startDate,
-        DateOnly? endDate,
-        CancellationToken cancellationToken = default) =>
-        await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
-            .Where(transaction => (startDate == null || transaction.Date >= startDate)
-                && (endDate == null || transaction.Date <= endDate))
-            .SelectMany(transaction => transaction.Destinations.Where(destination => accountIds.Contains(destination.Account.Id)), (transaction, destination) => new FinancialRangeIncomeFact(
-                destination.Amount,
-                destination.Account.Type,
-                destination.PostedDate,
-                transaction.ExpectedIncomeSourceId))
-            .ToListAsync(cancellationToken);
-
-    /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<FinancialRangeSpendingFact>> GetDateRangeSpendingFactsAsync(
-        IReadOnlyCollection<AccountId> accountIds,
-        DateOnly? startDate,
-        DateOnly? endDate,
-        CancellationToken cancellationToken = default)
-    {
-        List<FinancialRangeSpendingFact> spending = await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
-            .Where(transaction => (startDate == null || transaction.Date >= startDate)
-                && (endDate == null || transaction.Date <= endDate)
-                && accountIds.Contains(transaction.Source.Account.Id))
-            .Select(transaction => new FinancialRangeSpendingFact(transaction.Amount, transaction.Source.PostedDate))
-            .ToListAsync(cancellationToken);
-        List<FinancialRangeSpendingFact> refunds = await databaseContext.Transactions.AsNoTracking().OfType<RefundTransaction>()
-            .Where(transaction => (startDate == null || transaction.Date >= startDate)
-                && (endDate == null || transaction.Date <= endDate))
-            .Where(transaction => accountIds.Contains(transaction.Destination.Account.Id))
-            .Select(transaction => new FinancialRangeSpendingFact(-transaction.Amount, transaction.Destination.PostedDate))
-            .ToListAsync(cancellationToken);
-        return spending.Concat(refunds).ToList();
-    }
-
-    /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<FinancialRangeIncomeFact>> GetAccountingPeriodRangeIncomeFactsAsync(
-        IReadOnlyCollection<AccountId> accountIds,
-        IReadOnlyCollection<Guid> accountingPeriodIds,
-        CancellationToken cancellationToken = default)
-    {
-        var periodIds = accountingPeriodIds.Select(id => new AccountingPeriodId(id)).ToList();
-        return await databaseContext.Transactions.AsNoTracking().OfType<IncomeTransaction>()
-            .Where(transaction => periodIds.Contains(transaction.AccountingPeriodId))
-            .SelectMany(transaction => transaction.Destinations.Where(destination => accountIds.Contains(destination.Account.Id)), (transaction, destination) => new FinancialRangeIncomeFact(
-                destination.Amount,
-                destination.Account.Type,
-                destination.PostedDate,
-                transaction.ExpectedIncomeSourceId))
-            .ToListAsync(cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<FinancialRangeSpendingFact>> GetAccountingPeriodRangeSpendingFactsAsync(
-        IReadOnlyCollection<AccountId> accountIds,
-        IReadOnlyCollection<Guid> accountingPeriodIds,
-        CancellationToken cancellationToken = default)
-    {
-        var periodIds = accountingPeriodIds.Select(id => new AccountingPeriodId(id)).ToList();
-        List<FinancialRangeSpendingFact> spending = await databaseContext.Transactions.AsNoTracking().OfType<SpendingTransaction>()
-            .Where(transaction => periodIds.Contains(transaction.AccountingPeriodId)
-                && accountIds.Contains(transaction.Source.Account.Id))
-            .Select(transaction => new FinancialRangeSpendingFact(transaction.Amount, transaction.Source.PostedDate))
-            .ToListAsync(cancellationToken);
-        List<FinancialRangeSpendingFact> refunds = await databaseContext.Transactions.AsNoTracking().OfType<RefundTransaction>()
-            .Where(transaction => periodIds.Contains(transaction.AccountingPeriodId))
-            .Where(transaction => accountIds.Contains(transaction.Destination.Account.Id))
-            .Select(transaction => new FinancialRangeSpendingFact(-transaction.Amount, transaction.Destination.PostedDate))
-            .ToListAsync(cancellationToken);
-        return spending.Concat(refunds).ToList();
-    }
 
     /// <summary>
     /// Applies the provided filter to the queryable collection of Accounts.

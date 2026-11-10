@@ -87,9 +87,6 @@ public sealed class AccountQueryService(
             .ToList();
         IReadOnlyCollection<Guid> periodIds = orderedHistories.Select(history => history.AccountingPeriod.Id.Value).ToList();
         IReadOnlyCollection<AccountId> accountIds = accounts.Select(account => account.Id).ToList();
-        IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await accountQueryRepository.GetAccountingPeriodRangeIncomeFactsAsync(accountIds, periodIds, cancellationToken);
-        IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await accountQueryRepository.GetAccountingPeriodRangeSpendingFactsAsync(accountIds, periodIds, cancellationToken);
-        var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
         IReadOnlyCollection<AccountPeriodBalanceSummary> summaries = orderedHistories.Select(history => new AccountPeriodBalanceSummary(
             history.AccountingPeriod,
             Summarize(history.Balances.Where(balance => matchingIds.Contains(balance.Account.Id)), true),
@@ -97,9 +94,6 @@ public sealed class AccountQueryService(
         var range = new AccountAccountingPeriodRange(
             new QueryPage<AccountRangeBalance>(items, balances.Count),
             await accountQueryRepository.GetAllNamesAsync(cancellationToken),
-            totals.TotalIncome,
-            totals.TrackedIncome,
-            totals.TotalSpending,
             summaries);
         return new AccountingPeriodRangeQueryResult<AccountAccountingPeriodRange>(range, AccountingPeriodRangeQueryFailure.None);
     }
@@ -131,17 +125,6 @@ public sealed class AccountQueryService(
             query.End,
             cancellationToken);
         IReadOnlyCollection<AccountId> accountIds = balances.Select(balance => balance.Account.Id).ToList();
-        IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await accountQueryRepository.GetDateRangeIncomeFactsAsync(
-            accountIds,
-            query.Start,
-            query.End,
-            cancellationToken);
-        IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await accountQueryRepository.GetDateRangeSpendingFactsAsync(
-            accountIds,
-            query.Start,
-            query.End,
-            cancellationToken);
-        var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
         BalanceGranularity granularity = BalanceGranularity.Day;
         List<AccountDateBalanceSummary> summaries = [];
         if (query.Start is DateOnly start && query.End is DateOnly end)
@@ -155,9 +138,6 @@ public sealed class AccountQueryService(
         return new AccountDateRange(
             new QueryPage<AccountRangeBalance>(items, balances.Count),
             await accountQueryRepository.GetAllNamesAsync(cancellationToken),
-            totals.TotalIncome,
-            totals.TrackedIncome,
-            totals.TotalSpending,
             summaries.FirstOrDefault()?.Balance,
             granularity,
             summaries.Skip(1).ToList());

@@ -102,8 +102,6 @@ public sealed class AccountConverter
     {
         Accounts = ToModel(range.Accounts),
         AvailableAccountNames = range.AvailableAccountNames,
-        TotalIncome = ToIncomeModel(range.TotalIncome, range.TrackedIncome, range.UntrackedIncome),
-        TotalSpending = range.TotalSpending,
         AccountingPeriods = range.AccountingPeriods.Select(ToModel).ToList(),
     };
 
@@ -114,8 +112,6 @@ public sealed class AccountConverter
     {
         Accounts = ToModel(range.Accounts),
         AvailableAccountNames = range.AvailableAccountNames,
-        TotalIncome = ToIncomeModel(range.TotalIncome, range.TrackedIncome, range.UntrackedIncome),
-        TotalSpending = range.TotalSpending,
         OpeningBalance = range.OpeningBalance == null ? null : ToModel(range.OpeningBalance),
         Granularity = BalanceGranularityConverter.ToModel(range.Granularity),
         Dates = range.Dates.Select(summary => new AccountBalanceSummaryByDateModel
@@ -179,16 +175,6 @@ public sealed class AccountConverter
             EndingBalance = balance.EndingBalance,
         }).ToList(),
         TotalCount = page.TotalCount,
-    };
-
-    /// <summary>
-    /// Converts income totals to an API model.
-    /// </summary>
-    private static IncomeAmountModel ToIncomeModel(decimal total, decimal tracked, decimal untracked) => new()
-    {
-        Total = total,
-        Tracked = tracked,
-        Untracked = untracked,
     };
 
     /// <summary>

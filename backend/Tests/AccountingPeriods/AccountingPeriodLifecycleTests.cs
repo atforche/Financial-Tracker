@@ -50,14 +50,14 @@ public sealed class AccountingPeriodLifecycleTests
         FundHandle unassigned = await test.FundQueries.GetUnassignedAsync(july);
         FundGoalModel goal = await test.Api.GetFundGoalAsync(unassigned.Id, july.Id);
         IReadOnlyCollection<FundGoalProgressResultModel> progresses = await test.Api.GetAsync<IReadOnlyCollection<FundGoalProgressResultModel>>(
-            $"/fund-goals/progress/{july.Id}");
+            $"/fund-goals/progress?accountingPeriodIds={july.Id}");
         FundGoalProgressModel directProgress = await test.Api.GetFundGoalProgressAsync(goal.Id, july.Id);
 
         Assert.Equal("Unassigned", goal.Fund.Name);
         Assert.Null(goal.PlannedMonthlyContribution);
         Assert.Equal(0m, goal.MinimumEndingBalance);
         Assert.Null(goal.MaximumEndingBalance);
-        Assert.Contains(progresses, progress => progress.FundGoalId == goal.Id);
+        Assert.Contains(progresses, progress => progress.FundGoal.Id == goal.Id);
         Assert.NotNull(directProgress);
     }
 

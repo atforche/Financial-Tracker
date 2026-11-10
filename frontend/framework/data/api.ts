@@ -2101,21 +2101,21 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/fund-goals/progress/{accountingPeriodId}": {
+    "/fund-goals/progress": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Retrieves progress for all Fund Goals in an Accounting Period. */
+        /** Retrieves the Fund Goals in the given Accounting Periods with their progress. */
         get: {
             parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    accountingPeriodId: string;
+                query?: {
+                    accountingPeriodIds?: string[];
                 };
+                header?: never;
+                path?: never;
                 cookie?: never;
             };
             requestBody?: never;
@@ -4145,13 +4145,6 @@ export interface components {
             accounts: components["schemas"]["CollectionModelOfAccountWithBalanceRangeModel"];
             /** @description List of all account names in the range before account-name filtering. */
             availableAccountNames: string[];
-            /** @description Total income over the requested range. */
-            totalIncome: components["schemas"]["IncomeAmountModel"];
-            /**
-             * Format: double
-             * @description Total spending over the requested range.
-             */
-            totalSpending: number;
             /** @description Summary balances for each accounting period in the requested range. */
             accountingPeriods: components["schemas"]["AccountBalanceSummaryByPeriodModel"][];
         };
@@ -4161,13 +4154,6 @@ export interface components {
             accounts: components["schemas"]["CollectionModelOfAccountWithBalanceRangeModel"];
             /** @description List of all account names in the range before account-name filtering. */
             availableAccountNames: string[];
-            /** @description Total income over the requested range. */
-            totalIncome: components["schemas"]["IncomeAmountModel"];
-            /**
-             * Format: double
-             * @description Total spending over the requested range.
-             */
-            totalSpending: number;
             openingBalance: null | components["schemas"]["AccountBalanceSummaryModel"];
             /** @description Spacing between the dates in the balance series. */
             granularity: components["schemas"]["BalanceGranularityModel"];
@@ -5228,11 +5214,8 @@ export interface components {
         };
         /** @description Model pairing a Fund Goal with its progress for an Accounting Period. */
         FundGoalProgressResultModel: {
-            /**
-             * Format: uuid
-             * @description Gets the ID of the Fund Goal.
-             */
-            fundGoalId: string;
+            /** @description Gets the Fund Goal. */
+            fundGoal: components["schemas"]["FundGoalModel"];
             /** @description Gets the calculated progress for the Fund Goal. */
             progress: components["schemas"]["FundGoalProgressModel"];
         };
@@ -5277,13 +5260,6 @@ export interface components {
             funds: components["schemas"]["CollectionModelOfFundWithBalanceRangeModel"];
             /** @description List of all fund names in the range before fund-name filtering. */
             availableFundNames: string[];
-            /** @description Total income over the requested range. */
-            totalIncome: components["schemas"]["IncomeAmountModel"];
-            /**
-             * Format: double
-             * @description Total spending over the requested range.
-             */
-            totalSpending: number;
             /** @description Summary balances for each accounting period in the requested range. */
             accountingPeriods: components["schemas"]["FundBalanceSummaryByPeriodModel"][];
         };
@@ -5293,13 +5269,6 @@ export interface components {
             funds: components["schemas"]["CollectionModelOfFundWithBalanceRangeModel"];
             /** @description List of all fund names in the range before fund-name filtering. */
             availableFundNames: string[];
-            /** @description Total income over the requested range. */
-            totalIncome: components["schemas"]["IncomeAmountModel"];
-            /**
-             * Format: double
-             * @description Total spending over the requested range.
-             */
-            totalSpending: number;
             openingBalance: null | components["schemas"]["FundBalanceSummaryModel"];
             /** @description Spacing between the dates in the balance series. */
             granularity: components["schemas"]["BalanceGranularityModel"];

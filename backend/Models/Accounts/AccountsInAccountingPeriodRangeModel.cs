@@ -16,16 +16,6 @@ public class AccountsInAccountingPeriodRangeModel
     public required IReadOnlyCollection<string> AvailableAccountNames { get; init; }
 
     /// <summary>
-    /// Total income over the requested range.
-    /// </summary>
-    public required IncomeAmountModel TotalIncome { get; init; }
-
-    /// <summary>
-    /// Total spending over the requested range.
-    /// </summary>
-    public required decimal TotalSpending { get; init; }
-
-    /// <summary>
     /// Summary balances for each accounting period in the requested range.
     /// </summary>
     public required IReadOnlyCollection<AccountBalanceSummaryByPeriodModel> AccountingPeriods { get; init; }

@@ -79,9 +79,6 @@ public sealed class FundQueryService(
             .ToList();
         IReadOnlyCollection<Guid> periodIds = orderedHistories.Select(history => history.AccountingPeriod.Id.Value).ToList();
         IReadOnlyCollection<FundId> fundIds = funds.Select(fund => fund.Id).ToList();
-        IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await fundQueryRepository.GetAccountingPeriodRangeIncomeFactsAsync(fundIds, periodIds, cancellationToken);
-        IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await fundQueryRepository.GetAccountingPeriodRangeSpendingFactsAsync(fundIds, periodIds, cancellationToken);
-        var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
         IReadOnlyCollection<FundPeriodBalanceSummary> summaries = orderedHistories.Select(history => new FundPeriodBalanceSummary(
             history.AccountingPeriod,
             Summarize(history.Balances.Where(balance => matchingIds.Contains(balance.Fund.Id)), true),
@@ -89,9 +86,6 @@ public sealed class FundQueryService(
         var range = new FundAccountingPeriodRange(
             new QueryPage<FundRangeBalance>(items, balances.Count),
             await fundQueryRepository.GetAllNamesAsync(cancellationToken),
-            totals.TotalIncome,
-            totals.TrackedIncome,
-            totals.TotalSpending,
             summaries);
         return new AccountingPeriodRangeQueryResult<FundAccountingPeriodRange>(range, AccountingPeriodRangeQueryFailure.None);
     }
@@ -123,17 +117,6 @@ public sealed class FundQueryService(
             query.End,
             cancellationToken);
         IReadOnlyCollection<FundId> fundIds = balances.Select(balance => balance.Fund.Id).ToList();
-        IReadOnlyCollection<FinancialRangeIncomeFact> incomeFacts = await fundQueryRepository.GetDateRangeIncomeFactsAsync(
-            fundIds,
-            query.Start,
-            query.End,
-            cancellationToken);
-        IReadOnlyCollection<FinancialRangeSpendingFact> spendingFacts = await fundQueryRepository.GetDateRangeSpendingFactsAsync(
-            fundIds,
-            query.Start,
-            query.End,
-            cancellationToken);
-        var totals = FinancialRangeTotals.Calculate(incomeFacts, spendingFacts);
         BalanceGranularity granularity = BalanceGranularity.Day;
         List<FundDateBalanceSummary> summaries = [];
         if (query.Start is DateOnly start && query.End is DateOnly end)
@@ -147,9 +130,6 @@ public sealed class FundQueryService(
         return new FundDateRange(
             new QueryPage<FundRangeBalance>(items, balances.Count),
             await fundQueryRepository.GetAllNamesAsync(cancellationToken),
-            totals.TotalIncome,
-            totals.TrackedIncome,
-            totals.TotalSpending,
             summaries.FirstOrDefault()?.Balance,
             granularity,
             summaries.Skip(1).ToList());

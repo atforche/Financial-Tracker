@@ -8,22 +8,6 @@ namespace Tests.Domain;
 public sealed class CoreValueObjectTests
 {
     /// <summary>
-    /// Applies inclusive and exclusive endpoints consistently when enumerating and testing ranges.
-    /// </summary>
-    [Fact]
-    public void DateRangeHonorsEndpointTypesAndRejectsEmptyRanges()
-    {
-        DateOnly start = new(2026, 7, 1);
-        DateOnly end = new(2026, 7, 3);
-        var range = new DateRange(start, end, EndpointType.Exclusive, EndpointType.Inclusive);
-
-        Assert.Equal([new DateOnly(2026, 7, 2), end], range.GetInclusiveDates());
-        Assert.False(range.IsWithinStartDate(start));
-        Assert.True(range.IsWithinEndDate(end));
-        _ = Assert.Throws<InvalidOperationException>(() => new DateRange(start, start, EndpointType.Exclusive));
-    }
-
-    /// <summary>
     /// Compares IDs by value, including null and incompatible-object cases.
     /// </summary>
     [Fact]
