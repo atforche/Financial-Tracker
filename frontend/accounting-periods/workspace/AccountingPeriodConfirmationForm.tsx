@@ -1,11 +1,11 @@
 "use client";
 
-import { Button, type ButtonProps, Stack, Typography } from "@mui/material";
+import { type ButtonProps, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState, useEffect } from "react";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { AccountingPeriodServerAction } from "@/accounting-periods/workspace/accountingPeriodAction";
-import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import FormDialog from "@/framework/dialog/FormDialog";
 import { useRouter } from "next/navigation";
 
 /**
@@ -46,34 +46,21 @@ const AccountingPeriodConfirmationForm = function ({
   }, [onClose, preserveScroll, redirectUrl, router, state.success]);
 
   return (
-    <Dialog
+    <FormDialog
       open
-      onClose={pending ? undefined : onClose}
-      fullWidth
-      maxWidth="sm"
       title={`${actionLabel} Accounting Period`}
-      actions={
-        <>
-          <Button variant="outlined" disabled={pending} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            color={color}
-            variant="contained"
-            loading={pending}
-            onClick={() => {
-              startTransition(() => {
-                action({
-                  accountingPeriodId: accountingPeriod.id,
-                  redirectUrl,
-                });
-              });
-            }}
-          >
-            {actionLabel}
-          </Button>
-        </>
-      }
+      onClose={onClose}
+      pending={pending}
+      submitLabel={actionLabel}
+      onSubmit={() => {
+        startTransition(() => {
+          action({
+            accountingPeriodId: accountingPeriod.id,
+            redirectUrl,
+          });
+        });
+      }}
+      submitButtonProps={{ color }}
     >
       <Stack spacing={2}>
         <Typography>
@@ -85,7 +72,7 @@ const AccountingPeriodConfirmationForm = function ({
           unmappedErrors={state.unmappedErrors ?? null}
         />
       </Stack>
-    </Dialog>
+    </FormDialog>
   );
 };
 

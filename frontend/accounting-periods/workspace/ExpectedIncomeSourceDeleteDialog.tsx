@@ -1,9 +1,9 @@
 "use client";
 
-import { Button, Stack, Typography } from "@mui/material";
 import { type JSX, startTransition, useActionState, useEffect } from "react";
-import Dialog from "@/framework/dialog/Dialog";
+import { Stack, Typography } from "@mui/material";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import FormDialog from "@/framework/dialog/FormDialog";
 import deleteExpectedIncomeSource from "@/accounting-periods/workspace/deleteExpectedIncomeSource";
 import { useRouter } from "next/navigation";
 
@@ -42,35 +42,22 @@ const ExpectedIncomeSourceDeleteDialog = function ({
   }, [onClose, redirectUrl, router, state.success]);
 
   return (
-    <Dialog
+    <FormDialog
       open={open}
-      onClose={pending ? undefined : onClose}
-      fullWidth
-      maxWidth="sm"
       title="Delete Expected Income Source"
-      actions={
-        <>
-          <Button variant="outlined" disabled={pending} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            color="error"
-            variant="contained"
-            loading={pending}
-            onClick={() => {
-              startTransition(() => {
-                action({
-                  accountingPeriodId,
-                  expectedIncomeSourceId: source.id,
-                  redirectUrl,
-                });
-              });
-            }}
-          >
-            Delete
-          </Button>
-        </>
-      }
+      onClose={onClose}
+      pending={pending}
+      submitLabel="Delete"
+      onSubmit={() => {
+        startTransition(() => {
+          action({
+            accountingPeriodId,
+            expectedIncomeSourceId: source.id,
+            redirectUrl,
+          });
+        });
+      }}
+      submitButtonProps={{ color: "error" }}
     >
       <Stack spacing={2}>
         <Typography>
@@ -81,7 +68,7 @@ const ExpectedIncomeSourceDeleteDialog = function ({
           unmappedErrors={state.unmappedErrors ?? null}
         />
       </Stack>
-    </Dialog>
+    </FormDialog>
   );
 };
 

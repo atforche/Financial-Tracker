@@ -1,8 +1,10 @@
 "use client";
 
-import { Button, type ButtonProps, Stack, Typography } from "@mui/material";
+import FormDialog, {
+  type FormDialogSubmitButtonProps,
+} from "@/framework/dialog/FormDialog";
 import { type JSX, type ReactNode, useEffect, useState } from "react";
-import Dialog from "@/framework/dialog/Dialog";
+import { Stack, Typography } from "@mui/material";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 
 /**
@@ -18,7 +20,7 @@ interface ConfirmActionDialogProps {
   readonly success?: boolean | undefined;
   readonly errorTitle?: string | null | undefined;
   readonly unmappedErrors?: string | null | undefined;
-  readonly confirmButtonProps?: Omit<ButtonProps, "children" | "onClick">;
+  readonly confirmButtonProps?: FormDialogSubmitButtonProps;
 }
 
 /**
@@ -55,30 +57,17 @@ const ConfirmActionDialog = function ({
       {trigger(() => {
         setOpen(true);
       })}
-      <Dialog
+      <FormDialog
         open={open}
-        onClose={pending ? undefined : closeDialog}
-        fullWidth
-        maxWidth="sm"
         title={title}
-        actions={
-          <>
-            <Button variant="outlined" disabled={pending} onClick={closeDialog}>
-              Cancel
-            </Button>
-            <Button
-              {...confirmButtonProps}
-              variant="contained"
-              loading={pending}
-              onClick={() => {
-                setConfirmationAttempted(true);
-                onConfirm();
-              }}
-            >
-              {confirmLabel}
-            </Button>
-          </>
-        }
+        onClose={closeDialog}
+        pending={pending}
+        submitLabel={confirmLabel}
+        onSubmit={() => {
+          setConfirmationAttempted(true);
+          onConfirm();
+        }}
+        submitButtonProps={confirmButtonProps}
       >
         <Stack spacing={2}>
           <Typography component="div">{confirmationCopy}</Typography>
@@ -87,7 +76,7 @@ const ConfirmActionDialog = function ({
             unmappedErrors={confirmationAttempted ? unmappedErrors : null}
           />
         </Stack>
-      </Dialog>
+      </FormDialog>
     </>
   );
 };

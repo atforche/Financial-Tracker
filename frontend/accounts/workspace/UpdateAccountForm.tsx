@@ -1,7 +1,6 @@
 "use client";
 
 import type { Account, UpdateAccountRequest } from "@/accounts/types";
-import { Button, Stack } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -10,8 +9,9 @@ import {
   useState,
 } from "react";
 import CreatableComboBoxEntryField from "@/framework/forms/CreatableComboBoxEntryField";
-import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import FormDialog from "@/framework/dialog/FormDialog";
+import { Stack } from "@mui/material";
 import StringEntryField from "@/framework/forms/StringEntryField";
 import getFinancialInstitutions from "@/accounts/workspace/getFinancialInstitutions";
 import updateAccount from "@/accounts/workspace/updateAccount";
@@ -65,46 +65,21 @@ const UpdateAccountForm = function ({
   }
 
   return (
-    <Dialog
+    <FormDialog
       open
-      onClose={
-        pending
-          ? undefined
-          : (): void => {
-              onClose();
-            }
-      }
-      fullWidth
-      maxWidth="sm"
       title="Update Account"
-      actions={
-        <>
-          <Button
-            variant="outlined"
-            disabled={pending}
-            onClick={() => {
-              onClose();
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            loading={pending}
-            disabled={request === null}
-            onClick={() => {
-              if (request === null) {
-                return;
-              }
-              startTransition(() => {
-                action({ accountId: account.id, redirectUrl, request });
-              });
-            }}
-          >
-            Save
-          </Button>
-        </>
-      }
+      onClose={onClose}
+      pending={pending}
+      submitLabel="Save"
+      onSubmit={() => {
+        if (request === null) {
+          return;
+        }
+        startTransition(() => {
+          action({ accountId: account.id, redirectUrl, request });
+        });
+      }}
+      canSubmit={request !== null}
     >
       <Stack spacing={3}>
         <StringEntryField
@@ -123,7 +98,7 @@ const UpdateAccountForm = function ({
           unmappedErrors={state.unmappedErrors ?? null}
         />
       </Stack>
-    </Dialog>
+    </FormDialog>
   );
 };
 

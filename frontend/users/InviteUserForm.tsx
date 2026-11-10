@@ -1,10 +1,10 @@
 "use client";
 
-import { Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { type JSX, type SyntheticEvent, useEffect, useState } from "react";
+import { MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { formatUserRole, roles } from "@/users/userManagementHelpers";
-import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import FormDialog from "@/framework/dialog/FormDialog";
 import type { UserRole } from "@/users/types";
 import { UserRoleModel } from "@/framework/data/api";
 import { createUserInvitation } from "@/users/userManagementActions";
@@ -47,28 +47,14 @@ const InviteUserForm = function ({
   };
 
   return (
-    <Dialog
+    <FormDialog
       open={open}
-      onClose={pending ? undefined : onClose}
-      fullWidth
-      maxWidth="sm"
       title="Invite User"
-      actions={
-        <>
-          <Button variant="outlined" disabled={pending} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            loading={pending}
-            disabled={email.trim() === ""}
-            form="invite-user-form"
-            type="submit"
-          >
-            Send invitation
-          </Button>
-        </>
-      }
+      onClose={onClose}
+      pending={pending}
+      submitLabel="Send invitation"
+      canSubmit={email.trim() !== ""}
+      submitButtonProps={{ form: "invite-user-form", type: "submit" }}
     >
       <Stack
         component="form"
@@ -115,7 +101,7 @@ const InviteUserForm = function ({
           unmappedErrors={state.unmappedErrors}
         />
       </Stack>
-    </Dialog>
+    </FormDialog>
   );
 };
 

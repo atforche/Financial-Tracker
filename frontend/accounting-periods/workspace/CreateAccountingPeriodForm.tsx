@@ -4,7 +4,7 @@ import type {
   AccountingPeriod,
   CreateAccountingPeriodRequest,
 } from "@/accounting-periods/types";
-import { Alert, Button, Stack, Typography } from "@mui/material";
+import { Alert, Stack, Typography } from "@mui/material";
 import {
   type JSX,
   startTransition,
@@ -17,8 +17,8 @@ import {
   getNextAccountingPeriod,
 } from "@/accounting-periods/helpers";
 import { ComboBoxEntryField } from "@/framework/forms/ComboBoxEntryField";
-import Dialog from "@/framework/dialog/Dialog";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
+import FormDialog from "@/framework/dialog/FormDialog";
 import IntegerEntryField from "@/framework/forms/IntegerEntryField";
 import createAccountingPeriod from "@/accounting-periods/workspace/createAccountingPeriod";
 import { useRouter } from "next/navigation";
@@ -71,33 +71,20 @@ const CreateAccountingPeriodForm = function ({
       : "Create Next Accounting Period";
 
   return (
-    <Dialog
+    <FormDialog
       open
-      onClose={pending ? undefined : onClose}
-      fullWidth
-      maxWidth="sm"
       title={title}
-      actions={
-        <>
-          <Button variant="outlined" disabled={pending} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            loading={pending}
-            disabled={request === null}
-            onClick={() => {
-              if (request !== null) {
-                startTransition(() => {
-                  action({ request, redirectUrl });
-                });
-              }
-            }}
-          >
-            Create Period
-          </Button>
-        </>
-      }
+      onClose={onClose}
+      pending={pending}
+      submitLabel="Create Period"
+      onSubmit={() => {
+        if (request !== null) {
+          startTransition(() => {
+            action({ request, redirectUrl });
+          });
+        }
+      }}
+      canSubmit={request !== null}
     >
       <Stack spacing={2}>
         {nextPeriod === null ? (
@@ -134,7 +121,7 @@ const CreateAccountingPeriodForm = function ({
           unmappedErrors={state.unmappedErrors ?? null}
         />
       </Stack>
-    </Dialog>
+    </FormDialog>
   );
 };
 
