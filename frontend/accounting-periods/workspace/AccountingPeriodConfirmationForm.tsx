@@ -54,7 +54,7 @@ const AccountingPeriodConfirmationForm = function ({
       title={`${actionLabel} Accounting Period`}
       actions={
         <>
-          <Button disabled={pending} onClick={onClose}>
+          <Button variant="outlined" disabled={pending} onClick={onClose}>
             Cancel
           </Button>
           <Button

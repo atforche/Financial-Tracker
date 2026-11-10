@@ -123,7 +123,7 @@ const LocationDetailActions = function ({
         maxWidth="sm"
         actions={
           <>
-            <Button disabled={pending} onClick={closeDialog}>
+            <Button variant="outlined" disabled={pending} onClick={closeDialog}>
               Cancel
             </Button>
             <Button
@@ -159,7 +159,7 @@ const LocationDetailActions = function ({
         maxWidth="sm"
         actions={
           <>
-            <Button disabled={pending} onClick={closeDialog}>
+            <Button variant="outlined" disabled={pending} onClick={closeDialog}>
               Cancel
             </Button>
             <Button
@@ -209,7 +209,7 @@ const LocationDetailActions = function ({
         maxWidth="sm"
         actions={
           <>
-            <Button disabled={pending} onClick={closeDialog}>
+            <Button variant="outlined" disabled={pending} onClick={closeDialog}>
               Cancel
             </Button>
             <Button

@@ -63,6 +63,7 @@ const UpdateFundForm = function ({
       actions={
         <>
           <Button
+            variant="outlined"
             disabled={pending}
             onClick={() => {
               onClose();

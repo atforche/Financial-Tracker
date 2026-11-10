@@ -98,6 +98,7 @@ const UpdateAccountGoalForm = function ({
         actions={
           <>
             <Button
+              variant="outlined"
               disabled={pending}
               onClick={() => {
                 setOpen(false);

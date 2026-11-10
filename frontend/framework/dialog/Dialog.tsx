@@ -84,13 +84,15 @@ const Dialog = function ({
     >
       <DialogTitle
         id={titleId}
-        sx={(theme) => ({
+        variant="h6"
+        sx={{
           px: { xs: 2.5, md: 3 },
-          py: 1.75,
-          borderBottom: `1px solid ${theme.palette.divider}`,
-          backgroundColor: theme.palette.primary.main,
-          color: theme.palette.primary.contrastText,
-        })}
+          py: 2,
+          borderBottom: 1,
+          borderColor: "divider",
+          bgcolor: "rgb(var(--mui-palette-primary-mainChannel) / 0.1)",
+          color: "primary.main",
+        }}
       >
         {title}
       </DialogTitle>

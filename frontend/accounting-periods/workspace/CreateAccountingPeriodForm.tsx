@@ -79,7 +79,7 @@ const CreateAccountingPeriodForm = function ({
       title={title}
       actions={
         <>
-          <Button disabled={pending} onClick={onClose}>
+          <Button variant="outlined" disabled={pending} onClick={onClose}>
             Cancel
           </Button>
           <Button

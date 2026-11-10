@@ -119,6 +119,7 @@ const UpdateFundGoalForm = function ({
         actions={
           <>
             <Button
+              variant="outlined"
               disabled={pending}
               onClick={() => {
                 setOpen(false);

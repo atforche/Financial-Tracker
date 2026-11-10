@@ -80,6 +80,7 @@ const UpdateAccountForm = function ({
       actions={
         <>
           <Button
+            variant="outlined"
             disabled={pending}
             onClick={() => {
               onClose();

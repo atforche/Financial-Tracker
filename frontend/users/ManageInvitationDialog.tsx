@@ -45,7 +45,7 @@ const ManageInvitationDialog = function ({
       title="Invitation Details"
       actions={
         <>
-          <Button disabled={pending} onClick={onClose}>
+          <Button variant="outlined" disabled={pending} onClick={onClose}>
             Cancel
           </Button>
           {canRevoke ? (

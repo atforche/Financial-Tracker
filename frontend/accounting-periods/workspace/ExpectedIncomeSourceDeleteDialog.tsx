@@ -50,7 +50,7 @@ const ExpectedIncomeSourceDeleteDialog = function ({
       title="Delete Expected Income Source"
       actions={
         <>
-          <Button disabled={pending} onClick={onClose}>
+          <Button variant="outlined" disabled={pending} onClick={onClose}>
             Cancel
           </Button>
           <Button
