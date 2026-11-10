@@ -3,7 +3,10 @@
 import { type JSX, useState } from "react";
 import PagedTable, { type PagedTableColumn } from "@/framework/view/PagedTable";
 import { formatDate, formatUserRole } from "@/users/userManagementHelpers";
-import { getPaginationIndex, getRowsPerPage } from "@/framework/view/pagination";
+import {
+  getPaginationIndex,
+  getRowsPerPage,
+} from "@/framework/view/pagination";
 import ManageInvitationDialog from "@/users/ManageInvitationDialog";
 import type { UserInvitation } from "@/users/types";
 import { useSearchParams } from "next/navigation";
