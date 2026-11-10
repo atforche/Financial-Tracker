@@ -137,10 +137,16 @@ public sealed class LocationQueryService(
         IReadOnlyCollection<Location> locations = (await locationQueryRepository.GetAsync(
             new LocationQuery(new LocationFilter(query.NameSearch, []), 0, null),
             cancellationToken)).Items;
-        ILookup<LocationId, LocationFlow> flowsByLocation = (await locationQueryRepository.GetFlowsAsync(scope, cancellationToken))
-            .ToLookup(flow => flow.LocationId);
+        // A name search narrows the totals to the matching Locations
+        IReadOnlyCollection<LocationId>? locationIds = string.IsNullOrWhiteSpace(query.NameSearch)
+            ? null
+            : locations.Select(location => location.Id).ToList();
+        var totals = (await locationQueryRepository.GetTotalsAsync(scope, locationIds, cancellationToken))
+            .ToDictionary(item => item.LocationId);
         var summaries = locations
-            .Select(location => Summarize(location, flowsByLocation[location.Id]))
+            .Select(location => totals.TryGetValue(location.Id, out LocationTotals? item)
+                ? new LocationRangeSummary(location, item.Spent, item.Received, item.TransactionCount, item.SpendingTransactionCount, item.LastActivity)
+                : new LocationRangeSummary(location, 0, 0, 0, 0, null))
             .ToList();
         IReadOnlyCollection<LocationRangeSummary> items = Sort(summaries, query.Sort)
             .Skip(query.Offset)
@@ -166,7 +172,7 @@ public sealed class LocationQueryService(
     {
         IReadOnlyCollection<LocationFlow> flows = await locationQueryRepository.GetFlowsAsync(scope, cancellationToken);
         ILookup<(int Year, int Month), LocationFlow> flowsByMonth = flows.ToLookup(getMonth);
-        IReadOnlyCollection<LocationPayment> payments = await locationQueryRepository.GetPaymentsAsync(scope, cancellationToken);
+        LocationPaymentShares payments = await locationQueryRepository.GetPaymentSharesAsync(scope, cancellationToken);
         return new LocationDetailRange(
             Summarize(location, flows),
             months
@@ -176,18 +182,8 @@ public sealed class LocationQueryService(
                     flowsByMonth[month].Sum(flow => flow.Spent),
                     flowsByMonth[month].Sum(flow => flow.Received)))
                 .ToList(),
-            payments
-                .Where(payment => payment.Account != null)
-                .GroupBy(payment => payment.Account!.Id)
-                .Select(group => new LocationPaymentShare(group.Key.Value, group.First().Account!.Name, group.Sum(payment => payment.Amount)))
-                .OrderByDescending(share => share.Amount)
-                .ToList(),
-            payments
-                .SelectMany(payment => payment.Funds)
-                .GroupBy(share => share.Fund.Id)
-                .Select(group => new LocationPaymentShare(group.Key.Value, group.First().Fund.Name, group.Sum(share => share.Amount)))
-                .OrderByDescending(share => share.Amount)
-                .ToList());
+            payments.Accounts,
+            payments.Funds);
     }
 
     /// <summary>

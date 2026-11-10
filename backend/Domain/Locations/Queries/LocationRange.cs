@@ -1,6 +1,4 @@
 using Domain.AccountingPeriods;
-using Domain.Accounts;
-using Domain.Funds;
 using Domain.Transactions;
 
 namespace Domain.Locations.Queries;
@@ -21,9 +19,22 @@ public sealed record LocationFlowScope(
     LocationId? LocationId);
 
 /// <summary>
-/// A payment made to a Location, with the Account it was paid from and the Funds that paid for it.
+/// One Location's totals over the scoped transactions.
 /// </summary>
-public sealed record LocationPayment(Account? Account, IReadOnlyCollection<(Fund Fund, decimal Amount)> Funds, decimal Amount);
+public sealed record LocationTotals(
+    LocationId LocationId,
+    decimal Spent,
+    decimal Received,
+    int TransactionCount,
+    int SpendingTransactionCount,
+    DateOnly LastActivity);
+
+/// <summary>
+/// How much each Account and each Fund paid a Location.
+/// </summary>
+public sealed record LocationPaymentShares(
+    IReadOnlyCollection<LocationPaymentShare> Accounts,
+    IReadOnlyCollection<LocationPaymentShare> Funds);
 
 /// <summary>
 /// Orders the Locations in a range.
