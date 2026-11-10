@@ -4,7 +4,7 @@ import {
   desktopRowsPerPage,
   getRowsPerPage,
   mobileRowsPerPage,
-} from "@/framework/listframe/page";
+} from "@/framework/view/pagination";
 import { useEffect } from "react";
 import { useMediaQuery } from "@mui/material";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";

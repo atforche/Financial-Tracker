@@ -9,11 +9,11 @@ import {
   Typography,
 } from "@mui/material";
 import { type JSX, type ReactNode, useEffect } from "react";
-import { getPaginationIndex, getRowsPerPage } from "@/framework/listframe/page";
+import { getPaginationIndex, getRowsPerPage } from "@/framework/view/pagination";
 import ChevronRight from "@mui/icons-material/ChevronRight";
 import ContentSurface from "@/framework/view/ContentSurface";
 import Link from "next/link";
-import ResponsivePageSize from "@/framework/listframe/ResponsivePageSize";
+import ResponsivePageSize from "@/framework/view/ResponsivePageSize";
 import type { Route } from "next";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";

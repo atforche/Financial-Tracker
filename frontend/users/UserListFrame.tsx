@@ -4,7 +4,7 @@ import { type JSX, useState } from "react";
 import PagedTable, { type PagedTableColumn } from "@/framework/view/PagedTable";
 import { UserRoleModel, UserStatusModel } from "@/framework/data/api";
 import { formatDate, formatUserRole } from "@/users/userManagementHelpers";
-import { getPaginationIndex, getRowsPerPage } from "@/framework/listframe/page";
+import { getPaginationIndex, getRowsPerPage } from "@/framework/view/pagination";
 import { Button } from "@mui/material";
 import InviteUserForm from "@/users/InviteUserForm";
 import ManageUserDialog from "@/users/ManageUserDialog";

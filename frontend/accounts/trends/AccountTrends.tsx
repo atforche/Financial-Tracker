@@ -11,7 +11,7 @@ import {
   getPageOffset,
   getRowsPerPage,
   normalizePageValue,
-} from "@/framework/listframe/page";
+} from "@/framework/view/pagination";
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,

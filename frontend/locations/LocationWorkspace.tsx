@@ -2,7 +2,7 @@ import {
   getPageOffset,
   getRowsPerPage,
   normalizePageValue,
-} from "@/framework/listframe/page";
+} from "@/framework/view/pagination";
 import routes, { type LocationWorkspaceSearchParams } from "@/locations/routes";
 import type { JSX } from "react";
 import { LocationRangeSortModel } from "@/framework/data/api";
