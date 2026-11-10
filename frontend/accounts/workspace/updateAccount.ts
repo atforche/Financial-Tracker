@@ -6,8 +6,7 @@ import type {
 } from "@/framework/forms/workspaceAction";
 import type { UpdateAccountRequest } from "@/accounts/types";
 import createApiClient from "@/framework/data/createApiClient";
-import { isApiError } from "@/framework/data/apiError";
-import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import mapActionError from "@/framework/forms/mapActionError";
 import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
@@ -43,17 +42,9 @@ const updateAccount = async function (
     body: request,
   });
   if (error) {
-    if (isApiError(error)) {
-      const formattedError = mapApiValidationError(error, {
-        [propertyName<UpdateAccountRequest>("name")]: "nameErrors",
-      });
-      return {
-        errorTitle: formattedError.errorTitle,
-        nameErrors: formattedError.fieldErrors.nameErrors ?? null,
-        unmappedErrors: formattedError.unmappedErrors,
-      };
-    }
-    throw new Error("An unexpected error occurred", { cause: error });
+    return mapActionError(error, {
+      [propertyName<UpdateAccountRequest>("name")]: "nameErrors",
+    });
   }
 
   revalidatePath(redirectUrl);

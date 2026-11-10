@@ -1,16 +1,15 @@
 "use server";
 
-import {
-  type TransactionActionErrorState,
-  mapTransactionActionError,
-} from "@/transactions/workspace/transactionActionHelpers";
+import mapActionError, {
+  type ActionErrorState,
+} from "@/framework/forms/mapActionError";
 import createApiClient from "@/framework/data/createApiClient";
 import { revalidatePath } from "next/cache";
 
 /**
  * Interface representing the state of unposting a transaction.
  */
-interface ActionState extends TransactionActionErrorState {
+interface ActionState extends ActionErrorState {
   readonly success?: boolean;
 }
 
@@ -40,7 +39,7 @@ const unpostTransaction = async function (
     },
   });
   if (error) {
-    return mapTransactionActionError<never>(error, {});
+    return mapActionError(error, {});
   }
   revalidatePath(redirectUrl);
   return { success: true };

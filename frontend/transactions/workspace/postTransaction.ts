@@ -1,9 +1,8 @@
 "use server";
 
-import {
-  type TransactionActionErrorState,
-  mapTransactionActionError,
-} from "@/transactions/workspace/transactionActionHelpers";
+import mapActionError, {
+  type ActionErrorState,
+} from "@/framework/forms/mapActionError";
 import type { PostTransactionRequest } from "@/transactions/types";
 import createApiClient from "@/framework/data/createApiClient";
 import propertyName from "@/framework/data/propertyName";
@@ -12,7 +11,7 @@ import { revalidatePath } from "next/cache";
 /**
  * Interface representing the state of posting a transaction.
  */
-interface ActionState extends TransactionActionErrorState {
+interface ActionState extends ActionErrorState {
   readonly success?: boolean;
   readonly accountErrors?: string | null;
   readonly dateErrors?: string | null;
@@ -44,7 +43,7 @@ const postTransaction = async function (
     body: request,
   });
   if (error) {
-    return mapTransactionActionError(error, {
+    return mapActionError(error, {
       [propertyName<PostTransactionRequest>("accountId")]: "accountErrors",
       [propertyName<PostTransactionRequest>("date")]: "dateErrors",
     });

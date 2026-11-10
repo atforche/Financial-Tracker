@@ -2,8 +2,7 @@
 
 import type { CreateAccountingPeriodRequest } from "@/accounting-periods/types";
 import createApiClient from "@/framework/data/createApiClient";
-import { isApiError } from "@/framework/data/apiError";
-import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import mapActionError from "@/framework/forms/mapActionError";
 import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
@@ -38,17 +37,10 @@ const createAccountingPeriod = async function (
     body: request,
   });
   if (error) {
-    if (isApiError(error)) {
-      const mappedError = mapApiValidationError(error, {
-        [propertyName<CreateAccountingPeriodRequest>("year")]: "yearErrors",
-        [propertyName<CreateAccountingPeriodRequest>("month")]: "monthErrors",
-      });
-      return {
-        ...mappedError,
-        ...mappedError.fieldErrors,
-      };
-    }
-    throw new Error("An unexpected error occurred", { cause: error });
+    return mapActionError(error, {
+      [propertyName<CreateAccountingPeriodRequest>("year")]: "yearErrors",
+      [propertyName<CreateAccountingPeriodRequest>("month")]: "monthErrors",
+    });
   }
   revalidatePath(redirectUrl);
   return { success: true };

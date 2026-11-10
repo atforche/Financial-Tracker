@@ -6,8 +6,7 @@ import type {
 } from "@/framework/forms/workspaceAction";
 import type { CreateAccountRequest } from "@/accounts/types";
 import createApiClient from "@/framework/data/createApiClient";
-import { isApiError } from "@/framework/data/apiError";
-import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import mapActionError from "@/framework/forms/mapActionError";
 import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
@@ -42,33 +41,17 @@ const createAccount = async function (
     body: request,
   });
   if (error) {
-    if (isApiError(error)) {
-      const formattedError = mapApiValidationError(error, {
-        [propertyName<CreateAccountRequest>("name")]: "nameErrors",
-        [propertyName<CreateAccountRequest>("type")]: "typeErrors",
-        [propertyName<CreateAccountRequest>("minimumEndingBalance")]:
-          "minimumEndingBalanceErrors",
-        [propertyName<CreateAccountRequest>("maximumEndingBalance")]:
-          "maximumEndingBalanceErrors",
-        [propertyName<CreateAccountRequest>("openingAccountingPeriodId")]:
-          "accountingPeriodErrors",
-        [propertyName<CreateAccountRequest>("dateOpened")]: "dateOpenedErrors",
-      });
-      return {
-        errorTitle: formattedError.errorTitle,
-        nameErrors: formattedError.fieldErrors.nameErrors ?? null,
-        typeErrors: formattedError.fieldErrors.typeErrors ?? null,
-        minimumEndingBalanceErrors:
-          formattedError.fieldErrors.minimumEndingBalanceErrors ?? null,
-        maximumEndingBalanceErrors:
-          formattedError.fieldErrors.maximumEndingBalanceErrors ?? null,
-        accountingPeriodErrors:
-          formattedError.fieldErrors.accountingPeriodErrors ?? null,
-        dateOpenedErrors: formattedError.fieldErrors.dateOpenedErrors ?? null,
-        unmappedErrors: formattedError.unmappedErrors,
-      };
-    }
-    throw new Error("An unexpected error occurred", { cause: error });
+    return mapActionError(error, {
+      [propertyName<CreateAccountRequest>("name")]: "nameErrors",
+      [propertyName<CreateAccountRequest>("type")]: "typeErrors",
+      [propertyName<CreateAccountRequest>("minimumEndingBalance")]:
+        "minimumEndingBalanceErrors",
+      [propertyName<CreateAccountRequest>("maximumEndingBalance")]:
+        "maximumEndingBalanceErrors",
+      [propertyName<CreateAccountRequest>("openingAccountingPeriodId")]:
+        "accountingPeriodErrors",
+      [propertyName<CreateAccountRequest>("dateOpened")]: "dateOpenedErrors",
+    });
   }
   revalidatePath(redirectUrl);
   return { success: true };

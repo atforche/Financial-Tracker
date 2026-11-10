@@ -5,8 +5,7 @@ import type {
   UpdateAccountGoalRequest,
 } from "@/account-goals/types";
 import createApiClient from "@/framework/data/createApiClient";
-import { isApiError } from "@/framework/data/apiError";
-import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import mapActionError from "@/framework/forms/mapActionError";
 import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
@@ -44,19 +43,12 @@ const updateAccountGoal = async function (
   });
   const error: unknown = response.error;
   if (error !== undefined && error !== null) {
-    if (!isApiError(error)) {
-      throw new Error("An unexpected error occurred", { cause: error });
-    }
-    const mappedError = mapApiValidationError(error, {
+    return mapActionError(error, {
       [propertyName<UpdateAccountGoalRequest>("minimumEndingBalance")]:
         "minimumEndingBalanceErrors",
       [propertyName<UpdateAccountGoalRequest>("maximumEndingBalance")]:
         "maximumEndingBalanceErrors",
     });
-    return {
-      ...mappedError,
-      ...mappedError.fieldErrors,
-    };
   }
 
   revalidatePath(payload.redirectUrl);

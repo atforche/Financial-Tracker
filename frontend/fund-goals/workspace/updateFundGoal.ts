@@ -2,8 +2,7 @@
 
 import type { FundGoal, UpdateFundGoalRequest } from "@/fund-goals/types";
 import createApiClient from "@/framework/data/createApiClient";
-import { isApiError } from "@/framework/data/apiError";
-import mapApiValidationError from "@/framework/forms/mapApiValidationError";
+import mapActionError from "@/framework/forms/mapActionError";
 import propertyName from "@/framework/data/propertyName";
 import { revalidatePath } from "next/cache";
 
@@ -42,10 +41,7 @@ const updateFundGoal = async function (
   });
   const error: unknown = response.error;
   if (error !== undefined && error !== null) {
-    if (!isApiError(error)) {
-      throw new Error("An unexpected error occurred", { cause: error });
-    }
-    const mappedError = mapApiValidationError(error, {
+    return mapActionError(error, {
       [propertyName<UpdateFundGoalRequest>("plannedMonthlyContribution")]:
         "plannedMonthlyContributionErrors",
       [propertyName<UpdateFundGoalRequest>("minimumEndingBalance")]:
@@ -53,7 +49,6 @@ const updateFundGoal = async function (
       [propertyName<UpdateFundGoalRequest>("maximumEndingBalance")]:
         "maximumEndingBalanceErrors",
     });
-    return { ...mappedError, ...mappedError.fieldErrors };
   }
   revalidatePath(payload.redirectUrl);
   return { success: true };

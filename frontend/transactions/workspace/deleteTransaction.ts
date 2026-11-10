@@ -1,9 +1,8 @@
 "use server";
 
-import {
-  type TransactionActionErrorState,
-  mapTransactionActionError,
-} from "@/transactions/workspace/transactionActionHelpers";
+import mapActionError, {
+  type ActionErrorState,
+} from "@/framework/forms/mapActionError";
 import createApiClient from "@/framework/data/createApiClient";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -11,7 +10,7 @@ import { revalidatePath } from "next/cache";
 /**
  * Interface representing the state of deleting a transaction.
  */
-interface ActionState extends TransactionActionErrorState {
+interface ActionState extends ActionErrorState {
   readonly success?: boolean;
 }
 
@@ -39,7 +38,7 @@ const deleteTransaction = async function (
     },
   });
   if (error) {
-    return mapTransactionActionError<never>(error, {});
+    return mapActionError(error, {});
   }
   revalidatePath(redirectUrl);
   redirect(redirectUrl);
