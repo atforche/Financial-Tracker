@@ -62,13 +62,6 @@ public class DateRange
         _endDateType == EndpointType.Inclusive ? date <= _endDate : date < _endDate;
 
     /// <summary>
-    /// Determines if the provided date falls within the current Date Range
-    /// </summary>
-    /// <param name="date">Date to check</param>
-    /// <returns>True if the provided date falls in the date range, false otherwise</returns>
-    public bool IsInRange(DateOnly date) => IsWithinStartDate(date) && IsWithinEndDate(date);
-
-    /// <summary>
     /// Validates the current Date Range
     /// </summary>
     private void Validate()

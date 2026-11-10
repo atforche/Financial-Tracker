@@ -176,43 +176,6 @@ public sealed class AccountGoalService(
     }
 
     /// <summary>
-    /// Calculates progress for an Account Goal in the provided Accounting Period.
-    /// </summary>
-    public bool TryGetProgress(
-        AccountGoal accountGoal,
-        AccountingPeriod accountingPeriod,
-        [NotNullWhen(true)] out AccountGoalProgress? progress,
-        out IEnumerable<ValidationError> errors)
-    {
-        progress = null;
-        errors = [];
-        if (accountGoal.AccountingPeriod?.Id != accountingPeriod.Id)
-        {
-            errors = [new ValidationError(
-                new ValidationErrorPath(nameof(accountingPeriod)),
-                "The Account Goal does not apply to the provided Accounting Period.")];
-            return false;
-        }
-        AccountingPeriodBalanceHistory balanceHistory = accountingPeriodBalanceHistoryRepository
-            .GetForAccountingPeriod(accountingPeriod.Id);
-        AccountingPeriodAccountBalanceHistory? accountBalance = balanceHistory.AccountBalances
-            .SingleOrDefault(balance => balance.Account.Id == accountGoal.Account.Id);
-        if (accountBalance == null)
-        {
-            errors = [new ValidationError(
-                new ValidationErrorPath(nameof(accountingPeriod)),
-                "The Account Goal does not apply to the provided Accounting Period.")];
-            return false;
-        }
-
-        progress = AccountGoalProgressService.Calculate(
-            accountBalance.ClosingBalance,
-            accountGoal.MinimumEndingBalance,
-            accountGoal.MaximumEndingBalance);
-        return true;
-    }
-
-    /// <summary>
     /// Calculates progress for Account Goals in the same Accounting Period using one balance-history lookup.
     /// </summary>
     public IReadOnlyDictionary<AccountGoalId, AccountGoalProgress> GetProgresses(

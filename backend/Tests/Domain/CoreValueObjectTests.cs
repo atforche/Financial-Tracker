@@ -20,8 +20,6 @@ public sealed class CoreValueObjectTests
         Assert.Equal([new DateOnly(2026, 7, 2), end], range.GetInclusiveDates());
         Assert.False(range.IsWithinStartDate(start));
         Assert.True(range.IsWithinEndDate(end));
-        Assert.True(range.IsInRange(new DateOnly(2026, 7, 2)));
-        Assert.False(range.IsInRange(start));
         _ = Assert.Throws<InvalidOperationException>(() => new DateRange(start, start, EndpointType.Exclusive));
     }
 
