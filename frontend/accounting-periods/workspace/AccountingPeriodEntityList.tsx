@@ -3,12 +3,15 @@
 import {
   Box,
   Button,
+  ButtonBase,
   Chip,
+  Collapse,
   Menu,
   MenuItem,
   Paper,
   Stack,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import { type JSX, useState } from "react";
 import {
@@ -27,6 +30,7 @@ import SignedChange from "@/framework/view/SignedChange";
 import parseEnumValue from "@/framework/data/parseEnumValue";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
+import { useTheme } from "@mui/material/styles";
 
 /**
  * An account or fund's balances and goal status in an accounting period.
@@ -78,6 +82,14 @@ const statuses = [
     color: "text.secondary",
   },
 ] as const;
+
+/**
+ * Sections that start collapsed on phones, leaving the ones that need attention open.
+ */
+const closedOnPhone: ReadonlySet<PeriodEntityStatus> = new Set([
+  PeriodEntityStatus.WithinRange,
+  PeriodEntityStatus.NoGoal,
+]);
 
 /**
  * Supported tile orders within each section.
@@ -154,6 +166,11 @@ const getGoalLabel = function ({ minimum, maximum }: PeriodEntity): string {
 };
 
 /**
+ * Hides a tile detail on phones, where the list of tiles runs long.
+ */
+const phoneHiddenSx = { display: { xs: "none", sm: "block" } } as const;
+
+/**
  * Links to an account or fund's goal, summarizing how it ended the period.
  */
 const EntityTile = function ({
@@ -175,7 +192,7 @@ const EntityTile = function ({
       sx={{
         display: "flex",
         flexDirection: "column",
-        gap: 0.75,
+        gap: { xs: 0.5, sm: 0.75 },
         p: 1.5,
         border: "1px solid",
         borderColor: "divider",
@@ -205,18 +222,32 @@ const EntityTile = function ({
       <Stack
         direction="row"
         spacing={2}
-        sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
+        sx={{ alignItems: "baseline", justifyContent: "space-between" }}
       >
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant="caption" color="text.secondary" component="p">
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            component="p"
+            sx={phoneHiddenSx}
+          >
             Closing balance
           </Typography>
-          <Typography variant="h6" component="p" sx={{ fontWeight: 500 }}>
+          <Typography
+            variant="h6"
+            component="p"
+            sx={{ fontWeight: 500, fontSize: { xs: "1.1rem", sm: undefined } }}
+          >
             {formatCurrency(entity.closingBalance)}
           </Typography>
         </Box>
         <Box sx={{ textAlign: "right", whiteSpace: "nowrap" }}>
-          <Typography variant="caption" color="text.secondary" component="p">
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            component="p"
+            sx={phoneHiddenSx}
+          >
             This period
           </Typography>
           <Typography variant="body2" component="p">
@@ -233,7 +264,12 @@ const EntityTile = function ({
         balance={entity.closingBalance}
         color={color}
       />
-      <Typography variant="caption" color="text.secondary">
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        // Phones leave out "No goal", since the missing bar already says so
+        sx={entity.minimum === null ? phoneHiddenSx : {}}
+      >
         {getGoalLabel(entity)}
       </Typography>
       {entity.contribution === null ||
@@ -348,6 +384,11 @@ const AccountingPeriodEntityList = function ({
     parseEnumValue(EntitySort, searchParams.get("entitySort") ?? "") ??
     EntitySort.Status;
   const search = (searchParams.get("search") ?? "").trim().toLowerCase();
+  const theme = useTheme();
+  const isPhone = useMediaQuery(theme.breakpoints.down("sm"));
+  const [openStatuses, setOpenStatuses] = useState<
+    Partial<Record<PeriodEntityStatus, boolean>>
+  >({});
   const visible = entities
     .filter((entity) => entity.name.toLowerCase().includes(search))
     .sort(
@@ -379,6 +420,12 @@ const AccountingPeriodEntityList = function ({
       ),
     }))
     .filter(({ tiles }) => tiles.length > 0);
+  // A search opens every section so no match is hidden
+  const isOpen = function (status: PeriodEntityStatus): boolean {
+    return (
+      search !== "" || (openStatuses[status] ?? !closedOnPhone.has(status))
+    );
+  };
 
   return (
     <Stack spacing={2.5}>
@@ -390,17 +437,41 @@ const AccountingPeriodEntityList = function ({
       {sort === EntitySort.Status
         ? sections.map(({ status, label, color, tiles }) => (
             <Stack key={status} spacing={1.25}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 500, color }}>
-                {label}{" "}
-                <Typography
-                  component="span"
-                  variant="body2"
-                  color="text.secondary"
-                >
-                  {tiles.length}
+              <ButtonBase
+                aria-expanded={isOpen(status)}
+                onClick={() => {
+                  setOpenStatuses((current) => ({
+                    ...current,
+                    [status]: !isOpen(status),
+                  }));
+                }}
+                // Only phones collapse sections, so wider screens show a plain heading
+                disabled={!isPhone}
+                sx={{ justifyContent: "space-between", borderRadius: 1 }}
+              >
+                <Typography variant="subtitle1" sx={{ fontWeight: 500, color }}>
+                  {label}{" "}
+                  <Typography
+                    component="span"
+                    variant="body2"
+                    color="text.secondary"
+                  >
+                    {tiles.length}
+                  </Typography>
                 </Typography>
-              </Typography>
-              {renderTiles(tiles)}
+                {isPhone ? (
+                  <ExpandMore
+                    color="action"
+                    sx={{
+                      transform: isOpen(status) ? "rotate(180deg)" : "none",
+                      transition: "transform 0.2s ease-in-out",
+                    }}
+                  />
+                ) : null}
+              </ButtonBase>
+              <Collapse in={!isPhone || isOpen(status)}>
+                {renderTiles(tiles)}
+              </Collapse>
             </Stack>
           ))
         : renderTiles(visible)}

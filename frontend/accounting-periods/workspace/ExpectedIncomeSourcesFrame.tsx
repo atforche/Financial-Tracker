@@ -120,12 +120,29 @@ const ExpectedIncomeSourcesFrame = function ({
                     received={source.receivedAmount.tracked}
                     expected={source.expectedAmount.tracked}
                   />
-                  {source.expectedDates
-                    .map(
-                      (date) =>
-                        ` · ${formatShortDate(new Date(`${date}T00:00:00`))}`,
-                    )
-                    .join("")}
+                  {source.expectedDates.length === 0 ? null : (
+                    <>
+                      <Box
+                        component="span"
+                        sx={{ display: { xs: "none", sm: "inline" } }}
+                      >
+                        {" · "}
+                      </Box>
+                      {/* Phones give the dates their own line, and no date breaks across lines */}
+                      <Box
+                        component="span"
+                        sx={{ display: { xs: "block", sm: "inline" } }}
+                      >
+                        {source.expectedDates
+                          .map((date) =>
+                            formatShortDate(
+                              new Date(`${date}T00:00:00`),
+                            ).replaceAll(" ", "\u00a0"),
+                          )
+                          .join(" · ")}
+                      </Box>
+                    </>
+                  )}
                 </>
               }
             />
