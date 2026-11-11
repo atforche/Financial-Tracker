@@ -1,6 +1,12 @@
 "use client";
 
-import { type JSX, startTransition, useActionState, useEffect } from "react";
+import {
+  type JSX,
+  type ReactNode,
+  startTransition,
+  useActionState,
+  useEffect,
+} from "react";
 import { Button } from "@mui/material";
 import ConfirmActionDialog from "@/framework/dialog/ConfirmActionDialog";
 import type { Transaction } from "@/transactions/types";
@@ -16,6 +22,11 @@ interface UnpostTransactionFormProps {
   readonly account?: { accountId: string; accountName: string } | null;
   readonly label?: string;
   readonly size?: "small" | "medium";
+
+  /**
+   * Renders what opens the confirmation, such as a menu item, in place of the default button.
+   */
+  readonly trigger?: (openDialog: () => void) => ReactNode;
 }
 
 /**
@@ -28,6 +39,7 @@ const UnpostTransactionForm = function ({
   account = null,
   label = "Unpost",
   size = "medium",
+  trigger,
 }: UnpostTransactionFormProps): JSX.Element {
   const router = useRouter();
   const [state, action, pending] = useActionState(unpostTransaction, {});
@@ -40,11 +52,15 @@ const UnpostTransactionForm = function ({
 
   return (
     <ConfirmActionDialog
-      trigger={(openDialog) => (
-        <Button variant="outlined" size={size} onClick={openDialog}>
-          {label}
-        </Button>
-      )}
+      trigger={(openDialog): ReactNode =>
+        trigger === undefined ? (
+          <Button variant="outlined" size={size} onClick={openDialog}>
+            {label}
+          </Button>
+        ) : (
+          trigger(openDialog)
+        )
+      }
       title="Unpost Transaction"
       confirmationCopy={
         account === null

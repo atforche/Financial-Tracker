@@ -13,7 +13,6 @@ import {
   asRefundTransaction,
   asSpendingTransaction,
 } from "@/transactions/types";
-import { Button, Stack } from "@mui/material";
 import {
   CanUnpostContext,
   PostingDateReporterContext,
@@ -43,7 +42,6 @@ import {
 import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFrame";
 import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFrame";
 import type { AccountingPeriodWithExpectedIncomeSources } from "@/accounting-periods/types";
-import DeleteTransactionForm from "@/transactions/workspace/DeleteTransactionForm";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
 import FundTransactionSourceFrame from "@/transactions/workspace/fund/FundTransactionSourceFrame";
@@ -51,11 +49,10 @@ import type { FundWithBalance } from "@/funds/types";
 import IncomeTransactionDestinationFrame from "@/transactions/workspace/income/IncomeTransactionDestinationFrame";
 import IncomeTransactionSourceFrame from "@/transactions/workspace/income/IncomeTransactionSourceFrame";
 import type { JSX } from "react";
-import Link from "next/link";
 import SpendingTransactionDestinationFrame from "@/transactions/workspace/spending/SpendingTransactionDestinationFrame";
 import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
+import TransactionDetailsMenu from "@/transactions/workspace/TransactionDetailsMenu";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
-import UnpostTransactionForm from "@/transactions/workspace/UnpostTransactionForm";
 import dayjs from "dayjs";
 import { getCurrencyTotal } from "@/framework/currencyHelpers";
 import { getPostedTransactionAccounts } from "@/transactions/postingHelpers";
@@ -410,23 +407,13 @@ const ViewTransactionForm = function ({
           setDescription={null}
           headerContent={
             !canWrite || !transactionAccountingPeriod.isOpen ? undefined : (
-              <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-                <Button component={Link} href={editUrl} variant="contained">
-                  Edit
-                </Button>
-                {postedAccountCount > 0 ? (
-                  <UnpostTransactionForm
-                    transaction={transaction}
-                    redirectUrl={currentUrl}
-                    label={postedAccountCount > 1 ? "Unpost All" : "Unpost"}
-                  />
-                ) : (
-                  <DeleteTransactionForm
-                    transaction={transaction}
-                    redirectUrl={deleteRedirectUrl}
-                  />
-                )}
-              </Stack>
+              <TransactionDetailsMenu
+                transaction={transaction}
+                editUrl={editUrl}
+                postedAccountCount={postedAccountCount}
+                currentUrl={currentUrl}
+                deleteRedirectUrl={deleteRedirectUrl}
+              />
             )
           }
           sourceContent={

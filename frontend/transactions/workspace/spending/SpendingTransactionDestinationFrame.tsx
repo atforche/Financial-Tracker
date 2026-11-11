@@ -91,11 +91,15 @@ const SpendingTransactionDestinationFrame = function ({
       color={fundAssignmentsValid ? color : "error"}
     >
       <Stack
-        direction={{ xs: "column", sm: "row" }}
+        // Viewing keeps the name and amount on one row on phones, since neither needs an input's width
+        direction={{ xs: readOnly ? "row" : "column", sm: "row" }}
         spacing={2}
-        alignItems={{ xs: "stretch", sm: "flex-start" }}
+        alignItems={{
+          xs: readOnly ? "flex-start" : "stretch",
+          sm: "flex-start",
+        }}
       >
-        <Box sx={{ flex: { sm: "1 1 auto" }, minWidth: 0 }}>
+        <Box sx={{ flex: "1 1 auto", minWidth: 0 }}>
           <TransactionAccountOrLocationFrame
             accounts={accounts}
             transaction={transaction}
@@ -117,7 +121,12 @@ const SpendingTransactionDestinationFrame = function ({
           label="Destination Amount"
           value={amount}
           setValue={readOnly ? null : setAmount}
-          sx={{ width: { xs: "100%", sm: 220 } }}
+          sx={{
+            width: { xs: readOnly ? "auto" : "100%", sm: 220 },
+            // Keeps a viewed amount whole beside a long name or balance chips
+            flexShrink: 0,
+            whiteSpace: "nowrap",
+          }}
         />
       </Stack>
       <SpendingFundAssignmentPlanner
