@@ -5,8 +5,8 @@ import type {
 } from "@/accounting-periods/types";
 import {
   getPageOffset,
-  getRowsPerPage,
   normalizePageValue,
+  rowsPerPage,
 } from "@/framework/view/pagination";
 import {
   normalizeStringSearchParams,
@@ -232,11 +232,9 @@ const getTransactionWorkspaceListData = async function (
     endAccountingPeriodId,
     sort,
     page,
-    pageSize,
   } = searchParams;
   const apiClient = await createApiClient();
   const currentPage = normalizePageValue(page);
-  const rowsPerPage = getRowsPerPage(pageSize);
   const normalizedAccountingPeriodIds = normalizeStringSearchParams(
     toRepeatedSearchParams(accountingPeriodIds),
   );
@@ -307,7 +305,7 @@ const getTransactionWorkspaceListData = async function (
       : { "Filter.FullyPosted": normalizedFullyPosted === "true" }),
     Sort: sort ?? null,
     Limit: rowsPerPage,
-    Offset: getPageOffset(currentPage, rowsPerPage),
+    Offset: getPageOffset(currentPage),
   };
   const transactions =
     (hasAccountFilter && selectedAccountIds.length === 0) ||

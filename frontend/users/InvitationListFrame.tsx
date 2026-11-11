@@ -3,10 +3,7 @@
 import { type JSX, useState } from "react";
 import PagedTable, { type PagedTableColumn } from "@/framework/view/PagedTable";
 import { formatDate, formatUserRole } from "@/users/userManagementHelpers";
-import {
-  getPaginationIndex,
-  getRowsPerPage,
-} from "@/framework/view/pagination";
+import { getPaginationIndex, rowsPerPage } from "@/framework/view/pagination";
 import ManageInvitationDialog from "@/users/ManageInvitationDialog";
 import type { UserInvitation } from "@/users/types";
 import { useSearchParams } from "next/navigation";
@@ -29,11 +26,9 @@ const InvitationListFrame = function ({
   const searchParams = useSearchParams();
   const [managedInvitation, setManagedInvitation] =
     useState<UserInvitation | null>(null);
-  const rowsPerPage = getRowsPerPage(searchParams.get("pageSize"));
   const paginationIndex = getPaginationIndex(
     searchParams.get(pageParamName),
     invitations.length,
-    rowsPerPage,
   );
   const pageInvitations = invitations.slice(
     paginationIndex * rowsPerPage,

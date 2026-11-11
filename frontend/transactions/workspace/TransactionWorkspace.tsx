@@ -32,7 +32,6 @@ interface TransactionWorkspaceSearchParams {
   endAccountingPeriodId?: string;
   sort?: TransactionSort | null;
   page?: number | string | null;
-  pageSize?: number | string | null;
   selectedTransactionId?: string;
   returnUrl?: string;
 }

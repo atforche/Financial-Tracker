@@ -9,8 +9,8 @@ import {
 } from "@/framework/routes/trendRange";
 import {
   getPageOffset,
-  getRowsPerPage,
   normalizePageValue,
+  rowsPerPage,
 } from "@/framework/view/pagination";
 import {
   normalizeRequestedFundNames,
@@ -46,7 +46,7 @@ const FundTrends = async function ({
   searchParams,
 }: FundTrendsProps): Promise<JSX.Element> {
   const resolvedSearchParams = await searchParams;
-  const { returnUrl, sort, page, pageSize, fundName } = resolvedSearchParams;
+  const { returnUrl, sort, page, fundName } = resolvedSearchParams;
 
   const apiClient = await createApiClient();
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
@@ -71,7 +71,6 @@ const FundTrends = async function ({
     toRepeatedSearchParams(fundName),
   );
   const currentPage = normalizePageValue(page);
-  const rowsPerPage = getRowsPerPage(pageSize);
 
   const persistedFilters = {
     ...(typeof sort === "string" ? { sort } : {}),
@@ -93,7 +92,7 @@ const FundTrends = async function ({
     ...(typeof sort === "string" ? { Sort: sort } : {}),
     ...filterQuery,
     Limit: rowsPerPage,
-    Offset: getPageOffset(currentPage, rowsPerPage),
+    Offset: getPageOffset(currentPage),
   };
   const trends = await (async function (): Promise<
     FundsInDateRange | FundsInAccountingPeriodRange

@@ -20,7 +20,6 @@ interface LocationWorkspaceSearchParams extends LocationRangeSearchParams {
   search?: string;
   sort?: string;
   page?: string;
-  pageSize?: string;
 }
 
 /**

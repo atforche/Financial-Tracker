@@ -4,10 +4,7 @@ import { type JSX, useState } from "react";
 import PagedTable, { type PagedTableColumn } from "@/framework/view/PagedTable";
 import { UserRoleModel, UserStatusModel } from "@/framework/data/api";
 import { formatDate, formatUserRole } from "@/users/userManagementHelpers";
-import {
-  getPaginationIndex,
-  getRowsPerPage,
-} from "@/framework/view/pagination";
+import { getPaginationIndex, rowsPerPage } from "@/framework/view/pagination";
 import { Button } from "@mui/material";
 import InviteUserForm from "@/users/InviteUserForm";
 import ManageUserDialog from "@/users/ManageUserDialog";
@@ -34,7 +31,6 @@ const UserListFrame = function ({
   const searchParams = useSearchParams();
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [managedUser, setManagedUser] = useState<User | null>(null);
-  const rowsPerPage = getRowsPerPage(searchParams.get("pageSize"));
   const activeAdministratorCount = users.filter(
     (user) =>
       user.role === UserRoleModel.Admin &&
@@ -43,7 +39,6 @@ const UserListFrame = function ({
   const paginationIndex = getPaginationIndex(
     searchParams.get(pageParamName),
     users.length,
-    rowsPerPage,
   );
   const pageUsers = users.slice(
     paginationIndex * rowsPerPage,

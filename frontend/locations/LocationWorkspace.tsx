@@ -1,7 +1,7 @@
 import {
   getPageOffset,
-  getRowsPerPage,
   normalizePageValue,
+  rowsPerPage,
 } from "@/framework/view/pagination";
 import routes, { type LocationWorkspaceSearchParams } from "@/locations/routes";
 import type { JSX } from "react";
@@ -27,7 +27,7 @@ const LocationWorkspace = async function ({
   readonly searchParams: Promise<LocationWorkspaceSearchParams>;
 }): Promise<JSX.Element> {
   const resolvedSearchParams = await searchParams;
-  const { search, sort, page, pageSize } = resolvedSearchParams;
+  const { search, sort, page } = resolvedSearchParams;
   const listParams = {
     ...(search === undefined ? {} : { search }),
     ...(sort === undefined ? {} : { sort }),
@@ -36,13 +36,12 @@ const LocationWorkspace = async function ({
     resolvedSearchParams,
     (canonicalRange) => routes.workspace({ ...listParams, ...canonicalRange }),
   );
-  const rowsPerPage = getRowsPerPage(pageSize);
   const parsedSort = parseEnumValue(LocationRangeSortModel, sort ?? "");
   const query = {
     ...(search === undefined ? {} : { NameSearch: search }),
     ...(parsedSort === null ? {} : { Sort: parsedSort }),
     Limit: rowsPerPage,
-    Offset: getPageOffset(normalizePageValue(page), rowsPerPage),
+    Offset: getPageOffset(normalizePageValue(page)),
   };
   const apiClient = await createApiClient();
   const locations = unwrapApiResponse(
