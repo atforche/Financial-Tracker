@@ -1,7 +1,14 @@
 "use client";
 
 import type { Account, AccountType } from "@/accounts/types";
-import { Button, MenuItem, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  ButtonBase,
+  MenuItem,
+  TextField,
+  Typography,
+} from "@mui/material";
 import {
   type FullyPostedFilterValue,
   normalizeFullyPosted,
@@ -23,6 +30,7 @@ import {
 import AccountTypeFilter from "@/accounts/AccountTypeFilter";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import DateRangeFilter from "@/framework/forms/DateRangeFilter";
+import ExpandMore from "@mui/icons-material/ExpandMore";
 import type { Fund } from "@/funds/types";
 import type { Location } from "@/locations/types";
 import MultiSelectAutocompleteFilter from "@/framework/forms/MultiSelectAutocompleteFilter";
@@ -58,6 +66,8 @@ const TransactionWorkspaceFilter = function ({
   locations,
 }: TransactionWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
+  // Phones hide the filters behind a toggle so the list shows first
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const pageParamName = propertyName<TransactionWorkspaceSearchParams>("page");
   const accountingPeriodParamName =
@@ -260,6 +270,7 @@ const TransactionWorkspaceFilter = function ({
       }
       params.delete(pageParamName);
     });
+    setFiltersOpen(false);
   };
 
   const hasActiveView =
@@ -289,6 +300,18 @@ const TransactionWorkspaceFilter = function ({
     startAccountingPeriodIdParamName,
     endAccountingPeriodIdParamName,
   ].some((paramName) => searchParams.has(paramName));
+  // Counts the applied filters beyond the date range, which every search has
+  const appliedFilterCount = [
+    accountingPeriodParamName,
+    accountParamName,
+    fundParamName,
+    locationParamName,
+    fundNameParamName,
+    accountTypeParamName,
+    accountNameParamName,
+    transactionTypeParamName,
+    fullyPostedParamName,
+  ].filter((paramName) => searchParams.has(paramName)).length;
 
   const handleAccountingPeriodChange = function (
     nextAccountingPeriods: readonly AccountingPeriod[],
@@ -365,129 +388,166 @@ const TransactionWorkspaceFilter = function ({
 
   return (
     <PageFilterFrame>
-      <TransactionFilterControl>
-        <DateRangeFilter
-          value={{ start: currentStartDate, end: currentEndDate }}
-          onChange={handleDateRangeChange}
-        />
-      </TransactionFilterControl>
-      <TransactionFilterControl>
-        <MultiSelectAutocompleteFilter
-          label="Accounting periods"
-          options={accountingPeriods}
-          value={currentAccountingPeriods}
-          disabled={accountingPeriods.length === 0}
-          placeholder="All accounting periods"
-          noOptionsText={
-            accountingPeriods.length === 0
-              ? "No accounting periods available"
-              : "No accounting periods found"
-          }
-          isOptionEqualToValue={(option, value) => option.id === value.id}
-          onChange={handleAccountingPeriodChange}
-          getOptionLabel={(accountingPeriod) => accountingPeriod.name}
-        />
-      </TransactionFilterControl>
-      <TransactionFilterControl>
-        <MultiSelectAutocompleteFilter
-          label="Transaction types"
-          options={transactionTypeValues}
-          value={currentTransactionTypes}
-          placeholder="All transaction types"
-          noOptionsText="No transaction types found"
-          onChange={handleTransactionTypeChange}
-        />
-      </TransactionFilterControl>
-      <TransactionFilterControl>
-        <TextField
-          select
-          size="small"
-          label="Fully posted"
-          value={currentFullyPosted ?? ""}
-          onChange={(event) => {
-            setCurrentFullyPosted(normalizeFullyPosted(event.target.value));
+      <ButtonBase
+        aria-expanded={filtersOpen}
+        onClick={() => {
+          setFiltersOpen((current) => !current);
+        }}
+        sx={{
+          display: { xs: "flex", md: "none" },
+          flex: "1 1 100%",
+          justifyContent: "space-between",
+          borderRadius: 1,
+        }}
+      >
+        <Typography variant="subtitle1">
+          Filters
+          {appliedFilterCount === 0 ? null : (
+            <Typography component="span" color="text.secondary">
+              {` · ${appliedFilterCount.toString()} applied`}
+            </Typography>
+          )}
+        </Typography>
+        <ExpandMore
+          color="action"
+          sx={{
+            transform: filtersOpen ? "rotate(180deg)" : "none",
+            transition: "transform 0.2s ease-in-out",
           }}
-          slotProps={{
-            select: { displayEmpty: true },
-            inputLabel: { shrink: true },
-          }}
-        >
-          <MenuItem value="">All transactions</MenuItem>
-          <MenuItem value="true">Fully posted</MenuItem>
-          <MenuItem value="false">Not fully posted</MenuItem>
-        </TextField>
-      </TransactionFilterControl>
-      <TransactionFilterControl>
-        <AccountTypeFilter
-          value={currentAccountTypes}
-          onChange={handleAccountTypeChange}
         />
-      </TransactionFilterControl>
-      <TransactionFilterControl>
-        <MultiSelectAutocompleteFilter
-          label="Accounts"
-          options={accounts}
-          value={currentAccounts}
-          disabled={accounts.length === 0}
-          placeholder="All accounts"
-          noOptionsText={
-            accounts.length === 0
-              ? "No accounts available"
-              : "No accounts found"
-          }
-          isOptionEqualToValue={(option, value) => option.id === value.id}
-          onChange={handleAccountChange}
-          getOptionLabel={(account) => account.name}
-        />
-      </TransactionFilterControl>
-      <TransactionFilterControl>
-        <MultiSelectAutocompleteFilter
-          label="Funds"
-          options={funds}
-          value={currentFunds}
-          disabled={funds.length === 0}
-          placeholder="All funds"
-          noOptionsText={
-            funds.length === 0 ? "No funds available" : "No funds found"
-          }
-          isOptionEqualToValue={(option, value) => option.id === value.id}
-          onChange={handleFundChange}
-          getOptionLabel={(fund) => fund.name}
-        />
-      </TransactionFilterControl>
-      <TransactionFilterControl>
-        <MultiSelectAutocompleteFilter
-          label="Locations"
-          options={locations}
-          value={currentLocations}
-          disabled={locations.length === 0}
-          placeholder="All locations"
-          noOptionsText={
-            locations.length === 0
-              ? "No locations available"
-              : "No locations found"
-          }
-          isOptionEqualToValue={(option, value) => option.id === value.id}
-          onChange={handleLocationChange}
-          getOptionLabel={(location) => location.name}
-        />
-      </TransactionFilterControl>
-      <TransactionFilterControl expand={false}>
-        <Button
-          variant="contained"
-          onClick={submitSearch}
-          disabled={!hasActiveView}
-        >
-          Search
-        </Button>
-        <Button
-          variant="outlined"
-          onClick={clearView}
-          disabled={!(hasActiveView || hasAppliedFilters)}
-        >
-          Reset filters
-        </Button>
-      </TransactionFilterControl>
+      </ButtonBase>
+      <Box
+        sx={{
+          display: { xs: filtersOpen ? "flex" : "none", md: "contents" },
+          flex: "1 1 100%",
+          flexWrap: "wrap",
+          gap: 1.5,
+        }}
+      >
+        <TransactionFilterControl>
+          <DateRangeFilter
+            value={{ start: currentStartDate, end: currentEndDate }}
+            onChange={handleDateRangeChange}
+          />
+        </TransactionFilterControl>
+        <TransactionFilterControl>
+          <MultiSelectAutocompleteFilter
+            label="Accounting periods"
+            options={accountingPeriods}
+            value={currentAccountingPeriods}
+            disabled={accountingPeriods.length === 0}
+            placeholder="All accounting periods"
+            noOptionsText={
+              accountingPeriods.length === 0
+                ? "No accounting periods available"
+                : "No accounting periods found"
+            }
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            onChange={handleAccountingPeriodChange}
+            getOptionLabel={(accountingPeriod) => accountingPeriod.name}
+          />
+        </TransactionFilterControl>
+        <TransactionFilterControl>
+          <MultiSelectAutocompleteFilter
+            label="Transaction types"
+            options={transactionTypeValues}
+            value={currentTransactionTypes}
+            placeholder="All transaction types"
+            noOptionsText="No transaction types found"
+            onChange={handleTransactionTypeChange}
+          />
+        </TransactionFilterControl>
+        <TransactionFilterControl>
+          <TextField
+            select
+            size="small"
+            label="Fully posted"
+            value={currentFullyPosted ?? ""}
+            onChange={(event) => {
+              setCurrentFullyPosted(normalizeFullyPosted(event.target.value));
+            }}
+            slotProps={{
+              select: { displayEmpty: true },
+              inputLabel: { shrink: true },
+            }}
+          >
+            <MenuItem value="">All transactions</MenuItem>
+            <MenuItem value="true">Fully posted</MenuItem>
+            <MenuItem value="false">Not fully posted</MenuItem>
+          </TextField>
+        </TransactionFilterControl>
+        <TransactionFilterControl>
+          <AccountTypeFilter
+            value={currentAccountTypes}
+            onChange={handleAccountTypeChange}
+          />
+        </TransactionFilterControl>
+        <TransactionFilterControl>
+          <MultiSelectAutocompleteFilter
+            label="Accounts"
+            options={accounts}
+            value={currentAccounts}
+            disabled={accounts.length === 0}
+            placeholder="All accounts"
+            noOptionsText={
+              accounts.length === 0
+                ? "No accounts available"
+                : "No accounts found"
+            }
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            onChange={handleAccountChange}
+            getOptionLabel={(account) => account.name}
+          />
+        </TransactionFilterControl>
+        <TransactionFilterControl>
+          <MultiSelectAutocompleteFilter
+            label="Funds"
+            options={funds}
+            value={currentFunds}
+            disabled={funds.length === 0}
+            placeholder="All funds"
+            noOptionsText={
+              funds.length === 0 ? "No funds available" : "No funds found"
+            }
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            onChange={handleFundChange}
+            getOptionLabel={(fund) => fund.name}
+          />
+        </TransactionFilterControl>
+        <TransactionFilterControl>
+          <MultiSelectAutocompleteFilter
+            label="Locations"
+            options={locations}
+            value={currentLocations}
+            disabled={locations.length === 0}
+            placeholder="All locations"
+            noOptionsText={
+              locations.length === 0
+                ? "No locations available"
+                : "No locations found"
+            }
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            onChange={handleLocationChange}
+            getOptionLabel={(location) => location.name}
+          />
+        </TransactionFilterControl>
+        <TransactionFilterControl expand={false}>
+          <Button
+            variant="contained"
+            onClick={submitSearch}
+            disabled={!hasActiveView}
+          >
+            Search
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={clearView}
+            disabled={!(hasActiveView || hasAppliedFilters)}
+          >
+            Reset filters
+          </Button>
+        </TransactionFilterControl>
+      </Box>
     </PageFilterFrame>
   );
 };

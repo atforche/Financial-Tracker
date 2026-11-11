@@ -29,6 +29,11 @@ interface PagedTableColumn<T> {
    * CSS grid track size for the column.
    */
   readonly width: string;
+
+  /**
+   * CSS grid track size for the column on phone-width screens, when it differs from width.
+   */
+  readonly mobileWidth?: string;
   readonly alignment?: "left" | "right";
 
   /**
@@ -96,7 +101,11 @@ const getGridColumns = function <T>(
   return [
     ...columns
       .filter((column) => includeMobileHidden || column.hideOnMobile !== true)
-      .map((column) => column.width),
+      .map((column) =>
+        includeMobileHidden
+          ? column.width
+          : (column.mobileWidth ?? column.width),
+      ),
     "1.25rem",
   ].join(" ");
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Chip } from "@mui/material";
+import { Box, Button, Chip } from "@mui/material";
 import PagedTable, { type PagedTableColumn } from "@/framework/view/PagedTable";
 import { type Transaction, TransactionSort } from "@/transactions/types";
 import {
@@ -25,6 +25,8 @@ const columns: readonly PagedTableColumn<Transaction>[] = [
     getValue: (transaction) =>
       formatShortDate(new Date(`${transaction.date}T00:00:00`)),
     width: "minmax(0, 0.9fr)",
+    // Keeps the whole date on phones, where the description gives up the space instead
+    mobileWidth: "max-content",
     sort: [TransactionSort.Date, TransactionSort.DateDescending],
     descendingFirst: true,
   },
@@ -130,8 +132,26 @@ const TransactionWorkspaceListFrame = function ({
       title={hasActiveFilters ? "Matching Transactions" : "Recent Transactions"}
       headerContent={
         canWrite ? (
-          <Button variant="contained" component={Link} href={createUrl}>
-            Add Transaction
+          <Button
+            variant="contained"
+            component={Link}
+            href={createUrl}
+            aria-label="Add transaction"
+            sx={{ flexShrink: 0 }}
+          >
+            {/* Keeps the title and button on one line on phones */}
+            <Box
+              component="span"
+              sx={{ display: { xs: "inline", sm: "none" } }}
+            >
+              Add
+            </Box>
+            <Box
+              component="span"
+              sx={{ display: { xs: "none", sm: "inline" } }}
+            >
+              Add Transaction
+            </Box>
           </Button>
         ) : null
       }
