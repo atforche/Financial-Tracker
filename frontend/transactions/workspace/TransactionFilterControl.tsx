@@ -20,6 +20,8 @@ const TransactionFilterControl = function ({
     <Box
       sx={{
         display: "flex",
+        // Lets the date range stack on phones instead of overflowing the card
+        flexWrap: { xs: "wrap", md: "nowrap" },
         gap: 1.5,
         alignItems: "center",
         flex: expand

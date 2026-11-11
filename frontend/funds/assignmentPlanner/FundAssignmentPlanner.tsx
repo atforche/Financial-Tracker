@@ -115,8 +115,9 @@ const FundAssignmentPlanner = function ({
             <Box
               sx={{
                 display: "grid",
+                // Viewing keeps the fund and amount side by side on phones
                 gridTemplateColumns: {
-                  xs: "minmax(0, 1fr)",
+                  xs: readOnly ? "minmax(0, 1fr) auto" : "minmax(0, 1fr)",
                   sm: "minmax(0, 1fr) minmax(0, 1fr)",
                 },
                 alignItems: "start",
@@ -127,7 +128,7 @@ const FundAssignmentPlanner = function ({
               <Box
                 sx={{
                   minWidth: 0,
-                  gridColumn: { xs: "1 / -1", sm: "auto" },
+                  gridColumn: { xs: readOnly ? "auto" : "1 / -1", sm: "auto" },
                   "& .combo-box-entry-field": { width: "100%" },
                 }}
               >
@@ -212,8 +213,8 @@ const FundAssignmentPlanner = function ({
               {assignmentDetails === null ? null : (
                 <Box
                   sx={{
-                    gridColumn: { xs: "1", sm: "1 / 3" },
-                    gridRow: { xs: "3", sm: "2" },
+                    gridColumn: { xs: "1 / -1", sm: "1 / 3" },
+                    gridRow: { xs: readOnly ? "2" : "3", sm: "2" },
                   }}
                 >
                   {assignmentDetails}

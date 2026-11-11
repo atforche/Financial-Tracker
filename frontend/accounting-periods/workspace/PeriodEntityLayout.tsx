@@ -123,7 +123,7 @@ const PeriodEntityLayout = function ({
         </Stack>
       </Stack>
       <Stack spacing={2}>
-        <ResponsiveGrid columns={{ xs: 1, sm: 2, lg: 4 }} spacing={2}>
+        <ResponsiveGrid columns={{ xs: 2, lg: 4 }} spacing={2} uniformPhoneRows>
           <StatCard
             label="Opening balance"
             value={formatCurrency(openingBalance)}

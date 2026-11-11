@@ -252,23 +252,8 @@ const setTrendRangeMode = function (
   }
 };
 
-/**
- * Gets the IDs of the periods from one period to another, inclusive, in the given list's order.
- */
-const getAccountingPeriodIdsInRange = function (
-  accountingPeriods: readonly { readonly id: string }[],
-  startAccountingPeriodId: string,
-  endAccountingPeriodId: string,
-): string[] {
-  const ids = accountingPeriods.map((period) => period.id);
-  const start = ids.indexOf(startAccountingPeriodId);
-  const end = ids.indexOf(endAccountingPeriodId);
-  return ids.slice(Math.min(start, end), Math.max(start, end) + 1);
-};
-
 export {
   type TrendRangeMode,
-  getAccountingPeriodIdsInRange,
   getDefaultTrendAccountingPeriodRange,
   getDefaultTrendDateRange,
   getTrendRangeModeOptions,

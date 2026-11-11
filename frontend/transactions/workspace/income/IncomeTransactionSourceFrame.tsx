@@ -86,7 +86,16 @@ const IncomeTransactionSourceFrame = function ({
       title="Source"
       color={color}
       headerContent={
-        <Chip label={`Net Income ${formatCurrency(netIncomeAmount)}`} />
+        <Chip
+          label={`Net Income ${formatCurrency(netIncomeAmount)}`}
+          // Phones only fit one header chip, and the Incomplete tag takes priority
+          sx={{
+            display: {
+              xs: color === "error" ? "none" : "inline-flex",
+              sm: "inline-flex",
+            },
+          }}
+        />
       }
     >
       <TransactionAccountOrLocationFrame

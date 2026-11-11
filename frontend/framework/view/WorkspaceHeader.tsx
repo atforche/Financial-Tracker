@@ -1,5 +1,5 @@
+import { Box, Stack, Typography } from "@mui/material";
 import type { JSX, ReactNode } from "react";
-import { Stack, Typography } from "@mui/material";
 
 /**
  * Props for the WorkspaceHeader component.
@@ -24,14 +24,13 @@ const WorkspaceHeader = function ({
         direction="row"
         useFlexGap
         spacing={2}
-        sx={{
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
+        // A long title wraps within its own space, so the action stays beside it
+        sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
       >
-        <Typography variant="h4">{title}</Typography>
-        {action}
+        <Typography variant="h4" sx={{ minWidth: 0, overflowWrap: "anywhere" }}>
+          {title}
+        </Typography>
+        <Box sx={{ flexShrink: 0 }}>{action}</Box>
       </Stack>
       <Stack
         direction="row"

@@ -15,7 +15,7 @@ import {
 import GoalHistoryTable, {
   type HistoryPoint,
 } from "@/framework/goals/GoalHistoryTable";
-import { Paper, Stack, Typography } from "@mui/material";
+import { Paper, Stack, Typography, useMediaQuery } from "@mui/material";
 import {
   compareCurrencyAmounts,
   formatCompactCurrency,
@@ -40,6 +40,7 @@ const GoalHistory = function ({
   readonly showContribution: boolean;
 }): JSX.Element {
   const theme = useTheme();
+  const isPhone = useMediaQuery(theme.breakpoints.down("sm"));
   const amounts = points.flatMap((point) =>
     [point.minimum, point.maximum, point.balance].filter(
       (amount): amount is number => amount !== null,
@@ -87,15 +88,27 @@ const GoalHistory = function ({
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={points}
-            margin={{ top: 16, right: 20, bottom: 4, left: 12 }}
+            // Phones have no y-axis, so leave room for the first and last period names at the edges
+            margin={{
+              top: 16,
+              right: isPhone ? 40 : 20,
+              bottom: 4,
+              left: isPhone ? 40 : 12,
+            }}
           >
             <CartesianGrid
               strokeDasharray="4 4"
               vertical={false}
               opacity={0.24}
             />
-            <XAxis dataKey="period" minTickGap={24} />
+            <XAxis
+              dataKey="period"
+              interval="preserveStartEnd"
+              minTickGap={24}
+            />
             <YAxis
+              // Phones drop the labels to give the chart the full width; tapping a period shows its values
+              hide={isPhone}
               tickFormatter={(value: number) => formatCompactCurrency(value)}
               width={76}
               domain={yDomain}

@@ -31,7 +31,7 @@ const FundBalanceStatCards = function ({
     { label: "Unassigned", key: "totalUnassignedBalance" },
   ] as const;
   return (
-    <ResponsiveGrid columns={{ xs: 1, sm: 3 }}>
+    <ResponsiveGrid columns={{ xs: 2, sm: 3 }} uniformPhoneRows>
       {cards.map(({ label, key }) => (
         <StatCard
           key={key}

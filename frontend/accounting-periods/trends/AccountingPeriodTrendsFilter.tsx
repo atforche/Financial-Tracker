@@ -3,10 +3,8 @@
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import type { AccountingPeriodTrendsSearchParams } from "@/accounting-periods/trends/AccountingPeriodTrends";
-import { Button } from "@mui/material";
 import type { JSX } from "react";
-import Link from "next/link";
-import type { Route } from "next";
+import ResetFiltersButton from "@/framework/view/ResetFiltersButton";
 import WorkspaceHeader from "@/framework/view/WorkspaceHeader";
 import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import propertyName from "@/framework/data/propertyName";
@@ -19,7 +17,6 @@ import { useSearchParams } from "next/navigation";
 interface AccountingPeriodTrendsFilterProps {
   readonly accountingPeriods: readonly AccountingPeriod[];
   readonly disabled?: boolean;
-  readonly transactionsHref: Route | null;
 }
 
 /**
@@ -28,7 +25,6 @@ interface AccountingPeriodTrendsFilterProps {
 const AccountingPeriodTrendsFilter = function ({
   accountingPeriods,
   disabled = false,
-  transactionsHref,
 }: AccountingPeriodTrendsFilterProps): JSX.Element {
   const defaultRange = getDefaultTrendAccountingPeriodRange(accountingPeriods);
   const defaultStartAccountingPeriodId = defaultRange?.start ?? null;
@@ -87,16 +83,7 @@ const AccountingPeriodTrendsFilter = function ({
   };
 
   return (
-    <WorkspaceHeader
-      title="Accounting Period Trends"
-      action={
-        transactionsHref === null ? null : (
-          <Button component={Link} href={transactionsHref} variant="outlined">
-            View transactions
-          </Button>
-        )
-      }
-    >
+    <WorkspaceHeader title="Accounting Period Trends" action={null}>
       <AccountingPeriodRangeFilter
         accountingPeriods={accountingPeriods}
         startValue={currentStartAccountingPeriodId}
@@ -104,9 +91,7 @@ const AccountingPeriodTrendsFilter = function ({
         onChange={handleAccountingPeriodRangeChange}
         disabled={disabled}
       />
-      <Button onClick={clearView} disabled={!hasActiveView}>
-        Reset Filters
-      </Button>
+      <ResetFiltersButton active={hasActiveView} onClick={clearView} />
     </WorkspaceHeader>
   );
 };

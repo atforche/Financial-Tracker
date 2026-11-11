@@ -10,7 +10,6 @@ import type { TrendRangeMode } from "@/framework/routes/trendRange";
 interface AccountTrendsSearchParams {
   sort?: AccountWithBalanceRangeSort;
   page?: number | string | null;
-  pageSize?: number | string | null;
   mode?: TrendRangeMode;
   accountType?: AccountType | readonly AccountType[];
   accountName?: string | readonly string[];
@@ -27,7 +26,6 @@ interface AccountTrendsSearchParams {
 const accountTrendsParamNames = {
   sort: "sort",
   page: "page",
-  pageSize: "pageSize",
   mode: "mode",
   accountType: "accountType",
   accountName: "accountName",

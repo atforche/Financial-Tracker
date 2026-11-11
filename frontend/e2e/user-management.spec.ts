@@ -169,7 +169,7 @@ test("an administrator manages invitations and application user access", async (
   });
   await manageUserDialog.getByRole("combobox", { name: "Role" }).click();
   await page.getByRole("option", { name: "Read only", exact: true }).click();
-  await manageUserDialog.getByRole("button", { name: "Save changes" }).click();
+  await manageUserDialog.getByRole("button", { name: "Save" }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(userRow).toContainText("Read only");
 

@@ -48,7 +48,11 @@ const TransactionDetailsFrame = function ({
         incomplete={color === "error"}
         headerContent={headerContent}
       >
-        <ResponsiveGrid minimumColumnWidth={220} spacing={2}>
+        {/* Viewing fits the period and date side by side on phones */}
+        <ResponsiveGrid
+          minimumColumnWidth={setDate === null ? 140 : 220}
+          spacing={2}
+        >
           <AccountingPeriodEntryField
             label="Accounting Period"
             options={accountingPeriods}

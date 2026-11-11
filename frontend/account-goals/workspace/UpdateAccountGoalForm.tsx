@@ -15,6 +15,7 @@ import {
   useState,
 } from "react";
 import AccountGoalFields from "@/account-goals/AccountGoalFields";
+import ActionIconButton from "@/framework/view/ActionIconButton";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FormDialog from "@/framework/dialog/FormDialog";
 import { focusFirstEntryControl } from "@/framework/forms/focusFirstEntryControl";
@@ -74,14 +75,13 @@ const UpdateAccountGoalForm = function ({
   }
   return (
     <>
-      <Button
-        variant="contained"
+      <ActionIconButton
+        action="edit"
+        label="Edit account goal"
         onClick={() => {
           setOpen(true);
         }}
-      >
-        Edit
-      </Button>
+      />
       <FormDialog
         open={open}
         title="Update Account Goal"

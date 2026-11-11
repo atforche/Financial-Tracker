@@ -1,6 +1,5 @@
 "use client";
 
-import { Button, IconButton, Menu, MenuItem, Stack } from "@mui/material";
 import {
   type JSX,
   type ReactNode,
@@ -8,10 +7,9 @@ import {
   useActionState,
   useState,
 } from "react";
+import ActionIconButton from "@/framework/view/ActionIconButton";
 import ConfirmActionDialog from "@/framework/dialog/ConfirmActionDialog";
-import Link from "next/link";
-import MoreVert from "@mui/icons-material/MoreVert";
-import type { Route } from "next";
+import { Stack } from "@mui/material";
 import type { WorkspaceActionState } from "@/framework/forms/workspaceAction";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
@@ -21,8 +19,6 @@ import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 interface EntityDetailActionsProps<TDeletePayload> {
   readonly entityName: "account" | "fund";
   readonly name: string;
-  readonly addTransactionHref: string;
-  readonly trendsHref: Route;
   readonly deleteAction: (
     state: WorkspaceActionState,
     payload: TDeletePayload,
@@ -32,78 +28,42 @@ interface EntityDetailActionsProps<TDeletePayload> {
 }
 
 /**
- * Shows the actions for one account or fund: adding a transaction, and a menu for the less common ones.
+ * Shows the edit and delete actions for one account or fund.
  */
 const EntityDetailActions = function <TDeletePayload>({
   entityName,
   name,
-  addTransactionHref,
-  trendsHref,
   deleteAction,
   deletePayload,
   renderUpdateForm,
-}: EntityDetailActionsProps<TDeletePayload>): JSX.Element {
+}: EntityDetailActionsProps<TDeletePayload>): JSX.Element | null {
   const canWrite = useWriteAccess();
-  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [deleteState, deleteDispatch, deletePending] = useActionState(
     deleteAction,
     {},
   );
   const entityLabel = entityName === "account" ? "Account" : "Fund";
-  const closeMenu = function (): void {
-    setMenuAnchor(null);
-  };
 
+  if (!canWrite) {
+    return null;
+  }
   return (
-    <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-      {canWrite ? (
-        <Button component={Link} href={addTransactionHref} variant="contained">
-          Add Transaction
-        </Button>
-      ) : null}
+    <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
+      <ActionIconButton
+        action="edit"
+        label={`Edit ${entityName}`}
+        onClick={() => {
+          setUpdateDialogOpen(true);
+        }}
+      />
       <ConfirmActionDialog
         trigger={(openDialog) => (
-          <>
-            <IconButton
-              aria-label={`${entityLabel} actions`}
-              onClick={(event) => {
-                setMenuAnchor(event.currentTarget);
-              }}
-            >
-              <MoreVert />
-            </IconButton>
-            <Menu
-              anchorEl={menuAnchor}
-              open={menuAnchor !== null}
-              onClose={closeMenu}
-            >
-              <MenuItem component={Link} href={trendsHref}>
-                Compare in Trends
-              </MenuItem>
-              {canWrite ? (
-                <MenuItem
-                  onClick={() => {
-                    closeMenu();
-                    setUpdateDialogOpen(true);
-                  }}
-                >
-                  Edit
-                </MenuItem>
-              ) : null}
-              {canWrite ? (
-                <MenuItem
-                  sx={{ color: "error.main" }}
-                  onClick={() => {
-                    closeMenu();
-                    openDialog();
-                  }}
-                >
-                  Delete
-                </MenuItem>
-              ) : null}
-            </Menu>
-          </>
+          <ActionIconButton
+            action="delete"
+            label={`Delete ${entityName}`}
+            onClick={openDialog}
+          />
         )}
         title={`Delete ${entityLabel}`}
         confirmationCopy={
@@ -122,7 +82,7 @@ const EntityDetailActions = function <TDeletePayload>({
           });
         }}
       />
-      {canWrite && updateDialogOpen
+      {updateDialogOpen
         ? renderUpdateForm(() => {
             setUpdateDialogOpen(false);
           })

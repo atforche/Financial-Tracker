@@ -24,6 +24,7 @@ import ChartFrame from "@/framework/charts/ChartFrame";
 import ChartTooltip from "@/framework/charts/ChartTooltip";
 import type { JSX } from "react";
 import { getChartColor } from "@/framework/charts/chartTheme";
+import { useMediaQuery } from "@mui/material";
 
 /**
  * Props for the BarMetricChart component.
@@ -59,6 +60,7 @@ const BarMetricChart = function ({
   yAxisDomain,
 }: BarMetricChartProps): JSX.Element {
   const theme = useTheme();
+  const isPhone = useMediaQuery(theme.breakpoints.down("sm"));
   const themedChartPoints = chartPoints.map((point) => ({
     ...point,
     fill: getChartColor(theme, point.color ?? "primary"),
@@ -97,6 +99,8 @@ const BarMetricChart = function ({
           <YAxis
             axisLine={false}
             {...(yAxisDomain === undefined ? {} : { domain: yAxisDomain })}
+            // Phones drop the labels to give the bars the full width; tapping a bar shows its value
+            hide={isPhone}
             tick={yAxisTick}
             tickFormatter={tickFormatter}
             tickLine={false}

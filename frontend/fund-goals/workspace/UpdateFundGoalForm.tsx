@@ -12,6 +12,7 @@ import {
   useState,
 } from "react";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
+import ActionIconButton from "@/framework/view/ActionIconButton";
 import ErrorAlert from "@/framework/alerts/ErrorAlert";
 import FormDialog from "@/framework/dialog/FormDialog";
 import FundGoalSetupSection from "@/funds/workspace/FundGoalSetupSection";
@@ -89,8 +90,9 @@ const UpdateFundGoalForm = function ({
 
   return (
     <>
-      <Button
-        variant="contained"
+      <ActionIconButton
+        action="edit"
+        label="Edit fund goal"
         onClick={() => {
           setOpen(true);
           setAccountingPeriod(null);
@@ -100,9 +102,7 @@ const UpdateFundGoalForm = function ({
             );
           });
         }}
-      >
-        Edit
-      </Button>
+      />
       <FormDialog
         open={open}
         title="Update Fund Goal"

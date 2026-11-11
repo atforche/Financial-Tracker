@@ -3,15 +3,14 @@ import type {
   FundsInDateRange,
 } from "@/funds/types";
 import {
-  getAccountingPeriodIdsInRange,
+  getPageOffset,
+  normalizePageValue,
+  rowsPerPage,
+} from "@/framework/view/pagination";
+import {
   matchesTrendRange,
   resolveTrendRange,
 } from "@/framework/routes/trendRange";
-import {
-  getPageOffset,
-  getRowsPerPage,
-  normalizePageValue,
-} from "@/framework/view/pagination";
 import {
   normalizeRequestedFundNames,
   shouldPersistFundNames,
@@ -29,7 +28,6 @@ import { periodTab } from "@/balance-events/resolveEntityHistory";
 import { redirect } from "next/navigation";
 import routes from "@/funds/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
-import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -46,7 +44,7 @@ const FundTrends = async function ({
   searchParams,
 }: FundTrendsProps): Promise<JSX.Element> {
   const resolvedSearchParams = await searchParams;
-  const { returnUrl, sort, page, pageSize, fundName } = resolvedSearchParams;
+  const { returnUrl, sort, page, fundName } = resolvedSearchParams;
 
   const apiClient = await createApiClient();
   const accountingPeriodsPromise = apiClient.GET("/accounting-periods", {
@@ -71,7 +69,6 @@ const FundTrends = async function ({
     toRepeatedSearchParams(fundName),
   );
   const currentPage = normalizePageValue(page);
-  const rowsPerPage = getRowsPerPage(pageSize);
 
   const persistedFilters = {
     ...(typeof sort === "string" ? { sort } : {}),
@@ -93,7 +90,7 @@ const FundTrends = async function ({
     ...(typeof sort === "string" ? { Sort: sort } : {}),
     ...filterQuery,
     Limit: rowsPerPage,
-    Offset: getPageOffset(currentPage, rowsPerPage),
+    Offset: getPageOffset(currentPage),
   };
   const trends = await (async function (): Promise<
     FundsInDateRange | FundsInAccountingPeriodRange
@@ -121,17 +118,6 @@ const FundTrends = async function ({
       "Failed to load fund trends",
     );
   })();
-  const selectedFundIds = trends.funds.items
-    .filter((fund) =>
-      currentFundNames.some(
-        (selectedFundName) =>
-          selectedFundName.toLocaleLowerCase() ===
-          fund.name.toLocaleLowerCase(),
-      ),
-    )
-    .map((fund) => fund.id);
-  const hasResolvedSelectedFundIds =
-    selectedFundIds.length === currentFundNames.length;
   const currentRange =
     range.mode === "date"
       ? { startDate: range.startDate, endDate: range.endDate }
@@ -144,24 +130,6 @@ const FundTrends = async function ({
     mode: currentMode,
     ...persistedFilters,
     ...currentRange,
-  });
-  const transactionWorkspaceHref = transactionRoutes.workspace({
-    ...(range.mode === "date"
-      ? currentRange
-      : {
-          accountingPeriodIds: getAccountingPeriodIdsInRange(
-            accountingPeriods.items,
-            range.startAccountingPeriodId,
-            range.endAccountingPeriodId,
-          ),
-        }),
-    ...(hasResolvedSelectedFundIds && selectedFundIds.length > 0
-      ? { fundIds: selectedFundIds }
-      : {}),
-    ...(!hasResolvedSelectedFundIds && shouldPersistFundNames(currentFundNames)
-      ? { fundNames: currentFundNames }
-      : {}),
-    returnUrl: trendsUrl,
   });
 
   const snapshot = getTrendSnapshot(
@@ -194,7 +162,6 @@ const FundTrends = async function ({
         data={trends.funds.items}
         isInOnboardingMode={isInOnboardingMode}
         totalCount={trends.funds.totalCount}
-        transactionWorkspaceHref={transactionWorkspaceHref}
       />
     </PageLayout>
   );

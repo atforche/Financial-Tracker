@@ -1,6 +1,5 @@
 "use client";
 
-import { Button, Stack } from "@mui/material";
 import type { JSX, ReactNode } from "react";
 import {
   type TrendRangeMode,
@@ -13,7 +12,9 @@ import {
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import DateRangeFilter from "@/framework/forms/DateRangeFilter";
+import ResetFiltersButton from "@/framework/view/ResetFiltersButton";
 import ReturnLink from "@/framework/view/ReturnLink";
+import { Stack } from "@mui/material";
 import ToggleButtonSelector from "@/framework/forms/ToggleButtonSelector";
 import WorkspaceHeader from "@/framework/view/WorkspaceHeader";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -71,11 +72,13 @@ const TrendFilterHeader = function ({
     searchParams.get("endAccountingPeriodId") ?? defaultRange?.end ?? "";
   const startDate = searchParams.get("startDate") ?? defaultStartDate;
   const endDate = searchParams.get("endDate") ?? defaultEndDate;
+  // The Dates and Accounting Periods tabs are views, so only a range away from that view's default counts as a filter
   const hasActiveView =
     hasActiveFilters ||
-    mode !== "date" ||
-    startDate !== defaultStartDate ||
-    endDate !== defaultEndDate;
+    (mode === "date"
+      ? startDate !== defaultStartDate || endDate !== defaultEndDate
+      : startAccountingPeriodId !== (defaultRange?.start ?? "") ||
+        endAccountingPeriodId !== (defaultRange?.end ?? ""));
 
   return (
     <Stack spacing={2}>
@@ -115,20 +118,23 @@ const TrendFilterHeader = function ({
           />
         )}
         {children}
-        <Button
-          disabled={!hasActiveView}
-          sx={{ flexShrink: 0 }}
+        <ResetFiltersButton
+          active={hasActiveView}
           onClick={() => {
             updateParams((params) => {
               clearFilters(params);
-              params.set("startDate", defaultStartDate);
-              params.set("endDate", defaultEndDate);
-              setTrendRangeMode(params, "date", defaults);
+              // Restores the default range of the view being shown
+              if (mode === "date") {
+                params.set("startDate", defaultStartDate);
+                params.set("endDate", defaultEndDate);
+              } else {
+                params.delete("startAccountingPeriodId");
+                params.delete("endAccountingPeriodId");
+              }
+              setTrendRangeMode(params, mode, defaults);
             });
           }}
-        >
-          Reset Filters
-        </Button>
+        />
       </WorkspaceHeader>
     </Stack>
   );

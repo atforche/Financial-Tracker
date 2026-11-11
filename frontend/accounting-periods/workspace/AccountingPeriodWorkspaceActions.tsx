@@ -3,7 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { AccountingPeriodWorkspaceAction } from "@/accounting-periods/workspace/helpers";
-import { Button } from "@mui/material";
+import ActionIconButton from "@/framework/view/ActionIconButton";
 import CreateAccountingPeriodForm from "@/accounting-periods/workspace/CreateAccountingPeriodForm";
 import type { JSX } from "react";
 import { buildUrl } from "@/framework/routes/helpers";
@@ -51,16 +51,17 @@ const AccountingPeriodWorkspaceActions = function ({
 
   return (
     <>
-      <Button
-        variant="contained"
+      <ActionIconButton
+        action="add"
+        label={
+          latestAccountingPeriod === null
+            ? "Create first period"
+            : `Create ${getNextAccountingPeriod(latestAccountingPeriod).name}`
+        }
         onClick={() => {
           setAction("create");
         }}
-      >
-        {latestAccountingPeriod === null
-          ? "Create First Period"
-          : `Create ${getNextAccountingPeriod(latestAccountingPeriod).name}`}
-      </Button>
+      />
       {requestedAction === "create" ? (
         <CreateAccountingPeriodForm
           latestAccountingPeriod={latestAccountingPeriod}

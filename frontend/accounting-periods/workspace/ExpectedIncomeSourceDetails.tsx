@@ -1,16 +1,16 @@
 "use client";
 
-import { Box, Button, Chip, Stack, Typography } from "@mui/material";
+import { Box, Chip, Stack, Typography } from "@mui/material";
 import type {
   ExpectedIncomeSource,
   ExpectedIncomeSourceIncome,
 } from "@/accounting-periods/types";
 import { type JSX, useState } from "react";
+import ActionIconButton from "@/framework/view/ActionIconButton";
 import ExpectedIncomePaymentCard from "@/accounting-periods/workspace/ExpectedIncomePaymentCard";
 import ExpectedIncomePeriodCard from "@/accounting-periods/workspace/ExpectedIncomePeriodCard";
 import ExpectedIncomeReceivedCard from "@/accounting-periods/workspace/ExpectedIncomeReceivedCard";
 import ExpectedIncomeSourceDeleteDialog from "@/accounting-periods/workspace/ExpectedIncomeSourceDeleteDialog";
-import Link from "next/link";
 import PageLayout from "@/framework/view/PageLayout";
 import ReturnLink from "@/framework/view/ReturnLink";
 import routes from "@/accounting-periods/routes";
@@ -62,11 +62,8 @@ const ExpectedIncomeSourceDetails = function ({
           direction="row"
           useFlexGap
           spacing={2}
-          sx={{
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
+          // A long name wraps within its own space, so the actions stay beside it
+          sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
         >
           <Stack
             direction="row"
@@ -86,24 +83,21 @@ const ExpectedIncomeSourceDetails = function ({
           {canEdit ? (
             <Stack
               direction="row"
-              spacing={1}
-              sx={{
-                width: { xs: "100%", sm: "auto" },
-                "& > *": { flex: { xs: 1, sm: "none" } },
-              }}
+              spacing={0.5}
+              sx={{ alignItems: "center", flexShrink: 0 }}
             >
-              <Button component={Link} href={editHref} variant="outlined">
-                Edit
-              </Button>
-              <Button
-                color="error"
-                variant="outlined"
+              <ActionIconButton
+                action="edit"
+                label="Edit expected income"
+                href={editHref}
+              />
+              <ActionIconButton
+                action="delete"
+                label="Delete expected income"
                 onClick={() => {
                   setDeleteOpen(true);
                 }}
-              >
-                Delete
-              </Button>
+              />
             </Stack>
           ) : null}
         </Stack>

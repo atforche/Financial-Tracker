@@ -45,7 +45,8 @@ const MultiSelectAutocompleteFilter = function <T>({
       value={[...value]}
       disabled={disabled}
       limitTags={1}
-      sx={{ minWidth: { xs: "100%", sm: 280 }, flex: { md: 1 } }}
+      // Phones fill the row but leave room for a reset button beside it
+      sx={{ minWidth: { xs: 0, sm: 280 }, flex: { xs: "1 1 200px", md: 1 } }}
       {...(noOptionsText === undefined ? {} : { noOptionsText })}
       getOptionLabel={optionLabel}
       {...(isOptionEqualToValue === undefined ? {} : { isOptionEqualToValue })}

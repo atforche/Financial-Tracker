@@ -7,7 +7,6 @@ import type { TrendRangeMode } from "@/framework/routes/trendRange";
 interface FundTrendsSearchParams {
   sort?: FundWithBalanceRangeSort;
   page?: number | string | null;
-  pageSize?: number | string | null;
   mode?: TrendRangeMode;
   fundName?: string | readonly string[];
   startAccountingPeriodId?: string;
@@ -23,7 +22,6 @@ interface FundTrendsSearchParams {
 const fundTrendsParamNames = {
   sort: "sort",
   page: "page",
-  pageSize: "pageSize",
   mode: "mode",
   fundName: "fundName",
   startAccountingPeriodId: "startAccountingPeriodId",

@@ -8,8 +8,8 @@ import {
   getTransactionSourceLabel,
 } from "@/transactions/transactionListHelpers";
 import { usePathname, useSearchParams } from "next/navigation";
+import ActionIconButton from "@/framework/view/ActionIconButton";
 import type { JSX } from "react";
-import Link from "next/link";
 import type { Route } from "next";
 import { buildUrl } from "@/framework/routes/helpers";
 import { formatCurrency } from "@/framework/currencyHelpers";
@@ -25,6 +25,8 @@ const columns: readonly PagedTableColumn<Transaction>[] = [
     getValue: (transaction) =>
       formatShortDate(new Date(`${transaction.date}T00:00:00`)),
     width: "minmax(0, 0.9fr)",
+    // Keeps the whole date on phones, where the description gives up the space instead
+    mobileWidth: "max-content",
     sort: [TransactionSort.Date, TransactionSort.DateDescending],
     descendingFirst: true,
   },
@@ -130,9 +132,11 @@ const TransactionWorkspaceListFrame = function ({
       title={hasActiveFilters ? "Matching Transactions" : "Recent Transactions"}
       headerContent={
         canWrite ? (
-          <Button variant="contained" component={Link} href={createUrl}>
-            Add Transaction
-          </Button>
+          <ActionIconButton
+            action="add"
+            label="Add transaction"
+            href={createUrl}
+          />
         ) : null
       }
       columns={columns}

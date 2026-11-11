@@ -9,14 +9,10 @@ import {
   Typography,
 } from "@mui/material";
 import { type JSX, type ReactNode, useEffect } from "react";
-import {
-  getPaginationIndex,
-  getRowsPerPage,
-} from "@/framework/view/pagination";
+import { getPaginationIndex, rowsPerPage } from "@/framework/view/pagination";
 import ChevronRight from "@mui/icons-material/ChevronRight";
 import ContentSurface from "@/framework/view/ContentSurface";
 import Link from "next/link";
-import ResponsivePageSize from "@/framework/view/ResponsivePageSize";
 import type { Route } from "next";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
@@ -33,6 +29,11 @@ interface PagedTableColumn<T> {
    * CSS grid track size for the column.
    */
   readonly width: string;
+
+  /**
+   * CSS grid track size for the column on phone-width screens, when it differs from width.
+   */
+  readonly mobileWidth?: string;
   readonly alignment?: "left" | "right";
 
   /**
@@ -100,7 +101,11 @@ const getGridColumns = function <T>(
   return [
     ...columns
       .filter((column) => includeMobileHidden || column.hideOnMobile !== true)
-      .map((column) => column.width),
+      .map((column) =>
+        includeMobileHidden
+          ? column.width
+          : (column.mobileWidth ?? column.width),
+      ),
     "1.25rem",
   ].join(" ");
 };
@@ -127,14 +132,9 @@ const PagedTable = function <T>({
   // A new sort starts from the first page
   const updateSortParams = useSearchParamUpdater([pageParamName]);
   const updatePageParams = useSearchParamUpdater([]);
-  const rowsPerPage = getRowsPerPage(searchParams.get("pageSize"));
   const currentSort = searchParams.get(sortParamName) ?? defaultSort ?? null;
   const currentPage = searchParams.get(pageParamName);
-  const paginationIndex = getPaginationIndex(
-    currentPage,
-    totalCount,
-    rowsPerPage,
-  );
+  const paginationIndex = getPaginationIndex(currentPage, totalCount);
 
   // A page past the end, such as after a larger page size, moves to the last page
   useEffect(() => {
@@ -170,7 +170,6 @@ const PagedTable = function <T>({
 
   return (
     <ContentSurface>
-      <ResponsivePageSize desktopBreakpoint="md" />
       <Stack spacing={1.5}>
         <Stack
           direction="row"

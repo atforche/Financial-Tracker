@@ -2,7 +2,10 @@
 
 import {
   Autocomplete,
-  Button,
+  Divider,
+  IconButton,
+  Menu,
+  MenuItem,
   Stack,
   TextField,
   Typography,
@@ -16,6 +19,7 @@ import {
 } from "@/locations/actions";
 import FormDialog from "@/framework/dialog/FormDialog";
 import type { Location } from "@/locations/types";
+import MoreVert from "@mui/icons-material/MoreVert";
 import { useRouter } from "next/navigation";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
@@ -39,6 +43,7 @@ const LocationDetailActions = function ({
   const [dialog, setDialog] = useState<"rename" | "merge" | "delete" | null>(
     null,
   );
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [name, setName] = useState(location.name);
   const [mergeOptions, setMergeOptions] = useState<Location[] | null>(null);
   const [mergeTarget, setMergeTarget] = useState<Location | null>(null);
@@ -100,28 +105,48 @@ const LocationDetailActions = function ({
 
   return (
     <>
-      <Stack direction="row" spacing={1.25} flexWrap="wrap" useFlexGap>
-        <Button
-          variant="contained"
+      <IconButton
+        aria-label="Location actions"
+        onClick={(event) => {
+          setMenuAnchor(event.currentTarget);
+        }}
+      >
+        <MoreVert />
+      </IconButton>
+      <Menu
+        anchorEl={menuAnchor}
+        open={menuAnchor !== null}
+        onClose={() => {
+          setMenuAnchor(null);
+        }}
+      >
+        <MenuItem
           onClick={() => {
+            setMenuAnchor(null);
             setDialog("rename");
           }}
         >
           Rename
-        </Button>
-        <Button variant="outlined" onClick={openMerge}>
-          Merge
-        </Button>
-        <Button
-          color="error"
-          variant="outlined"
+        </MenuItem>
+        <MenuItem
           onClick={() => {
+            setMenuAnchor(null);
+            openMerge();
+          }}
+        >
+          Merge
+        </MenuItem>
+        <Divider />
+        <MenuItem
+          sx={{ color: "error.main" }}
+          onClick={() => {
+            setMenuAnchor(null);
             setDialog("delete");
           }}
         >
           Delete
-        </Button>
-      </Stack>
+        </MenuItem>
+      </Menu>
       <FormDialog
         open={dialog === "rename"}
         title="Rename Location"

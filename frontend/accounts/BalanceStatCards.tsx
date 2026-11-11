@@ -46,7 +46,8 @@ const BalanceStatCards = function ({
   };
   return (
     <ResponsiveGrid
-      columns={{ xs: 1, sm: 2, lg: unassignedBalance === undefined ? 3 : 4 }}
+      uniformPhoneRows
+      columns={{ xs: 2, lg: unassignedBalance === undefined ? 3 : 4 }}
     >
       <StatCard
         label={totalLabel}
