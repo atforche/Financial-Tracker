@@ -12,7 +12,6 @@ import { getCurrencyDifference } from "@/framework/currencyHelpers";
 import { resolveTrendRange } from "@/framework/routes/trendRange";
 import routes from "@/accounting-periods/routes";
 import { sumProgress } from "@/accounting-periods/trends/helpers";
-import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -80,17 +79,6 @@ const AccountingPeriodTrends = async function ({
     <AccountingPeriodTrendsFilter
       accountingPeriods={accountingPeriods}
       disabled={accountingPeriods.length === 0}
-      transactionsHref={
-        selectedIds.length === 0
-          ? null
-          : transactionRoutes.workspace({
-              accountingPeriodIds: selectedIds,
-              returnUrl: routes.trends({
-                startAccountingPeriodId: start,
-                endAccountingPeriodId: end,
-              }),
-            })
-      }
     />
   );
   if (selectedIds.length === 0) {
@@ -156,7 +144,14 @@ const AccountingPeriodTrends = async function ({
       <BalanceTrendCharts trends={{ accountingPeriods: accountBalances }} />
       <CardResponsiveGrid minimumColumnWidth={280} spacing={2}>
         {range.accountingPeriods.toReversed().map((period) => (
-          <AccountingPeriodCard key={period.id} period={period} />
+          <AccountingPeriodCard
+            key={period.id}
+            period={period}
+            returnUrl={routes.trends({
+              startAccountingPeriodId: start,
+              endAccountingPeriodId: end,
+            })}
+          />
         ))}
       </CardResponsiveGrid>
     </PageLayout>

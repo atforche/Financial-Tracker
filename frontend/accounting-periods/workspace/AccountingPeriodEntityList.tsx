@@ -19,6 +19,7 @@ import {
   formatCurrency,
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
+import ChevronRight from "@mui/icons-material/ChevronRight";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import GoalRangeBar from "@/accounting-periods/workspace/GoalRangeBar";
 import Link from "next/link";
@@ -210,14 +211,21 @@ const EntityTile = function ({
         <Typography variant="subtitle2" noWrap>
           {entity.name}
         </Typography>
-        {isNotFullyFunded(entity) ? (
-          <Chip
-            label="Not fully funded"
-            size="small"
-            color="warning"
-            variant="outlined"
-          />
-        ) : null}
+        <Stack
+          direction="row"
+          spacing={0.5}
+          sx={{ alignItems: "center", flexShrink: 0 }}
+        >
+          {isNotFullyFunded(entity) ? (
+            <Chip
+              label="Not fully funded"
+              size="small"
+              color="warning"
+              variant="outlined"
+            />
+          ) : null}
+          <ChevronRight fontSize="small" color="action" sx={{ mr: -0.5 }} />
+        </Stack>
       </Stack>
       <Stack
         direction="row"

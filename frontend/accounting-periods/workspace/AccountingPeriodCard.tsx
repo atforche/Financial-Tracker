@@ -6,6 +6,7 @@ import {
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
+import ChevronRight from "@mui/icons-material/ChevronRight";
 import type { JSX } from "react";
 import Link from "next/link";
 import SignedChange from "@/framework/view/SignedChange";
@@ -16,6 +17,11 @@ import routes from "@/accounting-periods/routes";
  */
 interface AccountingPeriodCardProps {
   readonly period: AccountingPeriodWithBalance;
+
+  /**
+   * Where the period's back link returns to, when the card isn't on the accounting periods page.
+   */
+  readonly returnUrl?: string;
 }
 
 /**
@@ -24,6 +30,7 @@ interface AccountingPeriodCardProps {
  */
 const AccountingPeriodCard = function ({
   period,
+  returnUrl,
 }: AccountingPeriodCardProps): JSX.Element {
   const received = getCurrencyDifference(
     period.actualIncome.tracked,
@@ -35,7 +42,10 @@ const AccountingPeriodCard = function ({
   return (
     <Paper
       component={Link}
-      href={routes.workspaceDetail(period.id, {})}
+      href={routes.workspaceDetail(
+        period.id,
+        returnUrl === undefined ? {} : { returnUrl },
+      )}
       sx={{
         display: "flex",
         flexDirection: "column",
@@ -57,9 +67,17 @@ const AccountingPeriodCard = function ({
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
           {period.name}
         </Typography>
-        {period.isOpen ? (
-          <Chip label="Open" color="success" size="small" variant="outlined" />
-        ) : null}
+        <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
+          {period.isOpen ? (
+            <Chip
+              label="Open"
+              color="success"
+              size="small"
+              variant="outlined"
+            />
+          ) : null}
+          <ChevronRight color="action" sx={{ mr: -0.5 }} />
+        </Stack>
       </Stack>
       <Stack spacing={0.25}>
         <Typography variant="body2" color="text.secondary">

@@ -17,9 +17,13 @@ interface AccountingPeriodFilterProps {
 }
 
 const fieldSx = {
-  minWidth: { xs: "100%", sm: 240 },
+  // Phones fit a start and end period side by side
+  minWidth: { xs: "calc(50% - 6px)", sm: 240 },
   flex: 1,
   flexShrink: 0,
+  // Clearing never applies, since a period is always selected, so drop the clear button and the room it reserves
+  "& .MuiAutocomplete-clearIndicator": { display: "none" },
+  "& .MuiAutocomplete-inputRoot": { paddingRight: "32px !important" },
 };
 
 /**
