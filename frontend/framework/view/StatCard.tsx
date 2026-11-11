@@ -89,7 +89,7 @@ const StatCard = function ({
           component="p"
           sx={{
             fontWeight: 500,
-            fontSize: { xs: "1.1rem", sm: undefined },
+            fontSize: { xs: "1.1rem", sm: "1.5rem" },
             whiteSpace: "nowrap",
           }}
         >
