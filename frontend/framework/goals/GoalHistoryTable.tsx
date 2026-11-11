@@ -38,6 +38,11 @@ interface HistoryPoint {
 }
 
 /**
+ * Hides a column on phones, leaving the period, balance, and result. The goal range is drawn in the chart above.
+ */
+const phoneHiddenSx = { display: { xs: "none", sm: "table-cell" } } as const;
+
+/**
  * Describes how a period's goal turned out.
  */
 const getResultLabel = function (point: HistoryPoint): string {
@@ -69,16 +74,31 @@ const GoalHistoryTable = function ({
         Periods
       </Typography>
       <TableContainer>
-        <Table size="small">
+        <Table
+          size="small"
+          // Phones tighten the cell padding so the row chevron fits on screen
+          sx={{
+            "& .MuiTableCell-root": { px: { xs: 1, sm: 2 } },
+            "& .MuiTableCell-root:last-of-type": { pr: { xs: 0, sm: 2 } },
+          }}
+        >
           <TableHead>
             <TableRow>
               <TableCell>Period</TableCell>
-              <TableCell align="right">Minimum</TableCell>
-              <TableCell align="right">Maximum</TableCell>
+              <TableCell align="right" sx={phoneHiddenSx}>
+                Minimum
+              </TableCell>
+              <TableCell align="right" sx={phoneHiddenSx}>
+                Maximum
+              </TableCell>
               <TableCell align="right">Balance</TableCell>
-              <TableCell align="right">Change</TableCell>
+              <TableCell align="right" sx={phoneHiddenSx}>
+                Change
+              </TableCell>
               {showContribution ? (
-                <TableCell align="right">Contribution</TableCell>
+                <TableCell align="right" sx={phoneHiddenSx}>
+                  Contribution
+                </TableCell>
               ) : null}
               <TableCell>Result</TableCell>
               <TableCell />
@@ -93,20 +113,20 @@ const GoalHistoryTable = function ({
                     {point.isOpen ? " (open)" : ""}
                   </Box>
                 </TableCell>
-                <TableCell align="right">
+                <TableCell align="right" sx={phoneHiddenSx}>
                   {point.minimum === null ? "—" : formatCurrency(point.minimum)}
                 </TableCell>
-                <TableCell align="right">
+                <TableCell align="right" sx={phoneHiddenSx}>
                   {point.minimum === null
                     ? "—"
                     : point.maximum === null
                       ? "No maximum"
                       : formatCurrency(point.maximum)}
                 </TableCell>
-                <TableCell align="right">
+                <TableCell align="right" sx={{ whiteSpace: "nowrap" }}>
                   {point.balance === null ? "—" : formatCurrency(point.balance)}
                 </TableCell>
-                <TableCell align="right">
+                <TableCell align="right" sx={phoneHiddenSx}>
                   {point.change === null ? (
                     "—"
                   ) : (
@@ -114,7 +134,7 @@ const GoalHistoryTable = function ({
                   )}
                 </TableCell>
                 {showContribution ? (
-                  <TableCell align="right">
+                  <TableCell align="right" sx={phoneHiddenSx}>
                     {point.expected === null
                       ? "—"
                       : `${formatCurrency(point.assigned ?? 0)} / ${formatCurrency(point.expected)}`}

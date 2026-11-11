@@ -106,7 +106,20 @@ const UrlTabs = function ({
             />
           ))}
         </Tabs>
-        {activeTab.controls}
+        {activeTab.controls === undefined ? null : (
+          // Keeps a pair of range fields side by side on phones
+          <Box
+            sx={{
+              display: "flex",
+              flex: { sm: 1 },
+              flexWrap: "wrap",
+              gap: 1.5,
+              minWidth: 0,
+            }}
+          >
+            {activeTab.controls}
+          </Box>
+        )}
       </Stack>
       <Box
         role="tabpanel"

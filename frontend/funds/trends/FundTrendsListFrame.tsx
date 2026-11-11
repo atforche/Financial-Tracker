@@ -18,8 +18,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@mui/material";
 import type { DetailViewParams } from "@/balance-events/getDetailViewParams";
 import type { JSX } from "react";
-import Link from "next/link";
-import type { Route } from "next";
 import SignedChange from "@/framework/view/SignedChange";
 import routes from "@/funds/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -32,7 +30,6 @@ interface FundTrendsListFrameProps {
   readonly data: readonly FundWithBalanceRange[];
   readonly totalCount: number;
   readonly isInOnboardingMode: boolean;
-  readonly transactionWorkspaceHref: Route;
 
   /**
    * The trends range and return link, so each fund opens over the same range.
@@ -68,6 +65,8 @@ const columns: readonly PagedTableColumn<FundWithBalanceRange>[] = [
     header: "Ending Balance",
     getValue: (fund) => formatCurrency(fund.endingBalance),
     width: "minmax(0, 1fr)",
+    // Phones size amounts to fit, so the name gives up the space instead of digits
+    mobileWidth: "max-content",
     alignment: "right",
     sort: [
       FundWithBalanceRangeSort.EndingBalance,
@@ -84,6 +83,8 @@ const columns: readonly PagedTableColumn<FundWithBalanceRange>[] = [
       />
     ),
     width: "minmax(0, 1fr)",
+    // Phones size amounts to fit, so the name gives up the space instead of digits
+    mobileWidth: "max-content",
     alignment: "right",
     sort: [
       FundWithBalanceRangeSort.NetChange,
@@ -99,7 +100,6 @@ const FundTrendsListFrame = function ({
   data,
   totalCount,
   isInOnboardingMode,
-  transactionWorkspaceHref,
   detailParams,
 }: FundTrendsListFrameProps): JSX.Element {
   const canWrite = useWriteAccess();
@@ -149,15 +149,6 @@ const FundTrendsListFrame = function ({
   return (
     <PagedTable
       title="Funds"
-      headerContent={
-        <Button
-          component={Link}
-          href={transactionWorkspaceHref}
-          variant="outlined"
-        >
-          View transactions
-        </Button>
-      }
       columns={columns}
       data={data}
       getKey={(fund) => fund.id}

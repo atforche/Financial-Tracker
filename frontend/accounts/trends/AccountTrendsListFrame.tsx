@@ -19,8 +19,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@mui/material";
 import type { DetailViewParams } from "@/balance-events/getDetailViewParams";
 import type { JSX } from "react";
-import Link from "next/link";
-import type { Route } from "next";
 import SignedChange from "@/framework/view/SignedChange";
 import routes from "@/accounts/routes";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
@@ -33,7 +31,6 @@ interface AccountTrendsListFrameProps {
   readonly data: readonly AccountWithBalanceRange[];
   readonly totalCount: number;
   readonly isInOnboardingMode: boolean;
-  readonly transactionWorkspaceHref: Route;
 
   /**
    * The trends range and return link, so each account opens over the same range.
@@ -80,6 +77,8 @@ const columns: readonly PagedTableColumn<AccountWithBalanceRange>[] = [
     header: "Ending Balance",
     getValue: (account) => formatCurrency(account.endingBalance),
     width: "minmax(0, 1fr)",
+    // Phones size amounts to fit, so the name gives up the space instead of digits
+    mobileWidth: "max-content",
     alignment: "right",
     sort: [
       AccountWithBalanceRangeSort.EndingBalance,
@@ -99,6 +98,8 @@ const columns: readonly PagedTableColumn<AccountWithBalanceRange>[] = [
       />
     ),
     width: "minmax(0, 1fr)",
+    // Phones size amounts to fit, so the name gives up the space instead of digits
+    mobileWidth: "max-content",
     alignment: "right",
     sort: [
       AccountWithBalanceRangeSort.NetChange,
@@ -114,7 +115,6 @@ const AccountTrendsListFrame = function ({
   data,
   totalCount,
   isInOnboardingMode,
-  transactionWorkspaceHref,
   detailParams,
 }: AccountTrendsListFrameProps): JSX.Element {
   const canWrite = useWriteAccess();
@@ -164,15 +164,6 @@ const AccountTrendsListFrame = function ({
   return (
     <PagedTable
       title="Accounts"
-      headerContent={
-        <Button
-          component={Link}
-          href={transactionWorkspaceHref}
-          variant="outlined"
-        >
-          View transactions
-        </Button>
-      }
       columns={columns}
       data={data}
       getKey={(account) => account.id}

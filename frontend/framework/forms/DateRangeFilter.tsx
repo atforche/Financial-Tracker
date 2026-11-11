@@ -30,7 +30,8 @@ const toDate = function (date: string): Dayjs | null {
 const fieldSx = {
   flex: 1,
   flexShrink: 0,
-  minWidth: { xs: "100%", sm: 240 },
+  // Phones fit a start and end date side by side
+  minWidth: { xs: "calc(50% - 6px)", sm: 240 },
   "& .MuiFormControl-root": { width: "100%" },
 };
 

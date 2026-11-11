@@ -3,15 +3,14 @@ import type {
   AccountsInDateRange,
 } from "@/accounts/types";
 import {
-  getAccountingPeriodIdsInRange,
-  matchesTrendRange,
-  resolveTrendRange,
-} from "@/framework/routes/trendRange";
-import {
   getPageOffset,
   normalizePageValue,
   rowsPerPage,
 } from "@/framework/view/pagination";
+import {
+  matchesTrendRange,
+  resolveTrendRange,
+} from "@/framework/routes/trendRange";
 import {
   normalizeAccountTypes,
   shouldPersistAccountTypes,
@@ -33,7 +32,6 @@ import { periodTab } from "@/balance-events/resolveEntityHistory";
 import { redirect } from "next/navigation";
 import routes from "@/accounts/routes";
 import { toRepeatedSearchParams } from "@/framework/routes/helpers";
-import transactionRoutes from "@/transactions/routes";
 import unwrapApiResponse from "@/framework/data/unwrapApiResponse";
 
 /**
@@ -147,24 +145,6 @@ const AccountTrends = async function ({
     ...persistedFilters,
     ...currentRange,
   });
-  const transactionWorkspaceHref = transactionRoutes.workspace({
-    ...(range.mode === "date"
-      ? currentRange
-      : {
-          accountingPeriodIds: getAccountingPeriodIdsInRange(
-            accountingPeriods.items,
-            range.startAccountingPeriodId,
-            range.endAccountingPeriodId,
-          ),
-        }),
-    ...(shouldPersistAccountTypes(currentAccountTypes)
-      ? { accountTypes: currentAccountTypes }
-      : {}),
-    ...(shouldPersistAccountNames(currentAccountNames)
-      ? { accountNames: currentAccountNames }
-      : {}),
-    returnUrl: trendsUrl,
-  });
 
   const snapshot = getTrendSnapshot(
     "accountingPeriods" in trends ? trends.accountingPeriods : [],
@@ -202,7 +182,6 @@ const AccountTrends = async function ({
         data={trends.accounts.items}
         isInOnboardingMode={isInOnboardingMode}
         totalCount={trends.accounts.totalCount}
-        transactionWorkspaceHref={transactionWorkspaceHref}
       />
     </PageLayout>
   );

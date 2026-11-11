@@ -64,11 +64,11 @@ const EntityHistoryLayout = function ({
       {summary === null ? null : (
         <ResponsiveGrid
           columns={{
-            xs: 1,
-            sm: 2,
+            xs: 2,
             lg: summary.goalsMet === undefined ? 4 : 5,
           }}
           spacing={2}
+          uniformPhoneRows
         >
           <StatCard
             label={view === "date" ? "Starting balance" : "Opening balance"}
@@ -119,12 +119,9 @@ const EntityHistoryLayout = function ({
       <Stack spacing={2}>
         <ReturnLink returnUrl={returnUrl} fallback={back} />
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction="row"
           spacing={2}
-          sx={{
-            alignItems: { xs: "stretch", sm: "flex-start" },
-            justifyContent: "space-between",
-          }}
+          sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
         >
           <Stack spacing={0.5} sx={{ minWidth: 0 }}>
             <Typography variant="h4" noWrap>
