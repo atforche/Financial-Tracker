@@ -27,6 +27,7 @@ import {
 } from "@/framework/currencyHelpers";
 import ChartFrame from "@/framework/charts/ChartFrame";
 import ChartTooltip from "@/framework/charts/ChartTooltip";
+import { useMediaQuery } from "@mui/material";
 
 /**
  * Props for the BalanceTrendChart component.
@@ -56,6 +57,7 @@ const BalanceTrendChart = function ({
   const gradientId = `balance-trend-fill-${useId().replaceAll(":", "")}`;
   const theme = useTheme();
   const lineColor = theme.palette[color].main;
+  const isPhone = useMediaQuery(theme.breakpoints.down("sm"));
   const chartData = chartPoints.map((point, index) => ({
     ...point,
     xAxisValue: index.toString(),
@@ -97,6 +99,8 @@ const BalanceTrendChart = function ({
           <YAxis
             axisLine={false}
             domain={["auto", "auto"]}
+            // Phones drop the labels to give the line the full width; scrubbing shows each value
+            hide={isPhone}
             tick={yAxisTick}
             tickFormatter={(value: number): string =>
               formatCompactCurrency(value)

@@ -43,28 +43,28 @@ const StatCard = function ({
     <Paper
       sx={{
         // Keeps a card its own height when a neighbor's breakdown is expanded
-        alignSelf: "start",
+        // Phones instead fill a uniform grid cell so the 2x2 cards match
+        alignSelf: { xs: "stretch", sm: "start" },
         border: "1px solid",
         borderColor: "divider",
         borderRadius: 3,
-        p: 2,
+        p: { xs: 1.5, sm: 2 },
         display: "flex",
         flexDirection: "column",
         gap: 0.5,
+        position: "relative",
       }}
     >
-      <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-        <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant="body2" color="text.secondary">
-            {label}
-          </Typography>
-          <Typography variant="h5" component="p" sx={{ fontWeight: 500 }}>
-            {value}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {caption}
-          </Typography>
-        </Stack>
+      <Stack spacing={0.5}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          noWrap
+          // Leaves room for the expand button in the corner
+          sx={details.length === 0 ? {} : { pr: 3 }}
+        >
+          {label}
+        </Typography>
         {details.length === 0 ? null : (
           <IconButton
             size="small"
@@ -73,7 +73,8 @@ const StatCard = function ({
             onClick={() => {
               setExpanded((current) => !current);
             }}
-            sx={{ mr: -0.75 }}
+            // Floats in the corner so cards with and without breakdowns line up
+            sx={{ position: "absolute", top: 4, right: 4 }}
           >
             <ExpandMore
               sx={{
@@ -83,6 +84,20 @@ const StatCard = function ({
             />
           </IconButton>
         )}
+        <Typography
+          variant="h5"
+          component="p"
+          sx={{
+            fontWeight: 500,
+            fontSize: { xs: "1.1rem", sm: undefined },
+            whiteSpace: "nowrap",
+          }}
+        >
+          {value}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {caption}
+        </Typography>
       </Stack>
       {details.length === 0 ? null : (
         <Collapse in={expanded} timeout="auto" unmountOnExit>

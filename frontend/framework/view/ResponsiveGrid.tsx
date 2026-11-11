@@ -29,6 +29,7 @@ interface AutoFitResponsiveGridProps {
 type ResponsiveGridProps = {
   readonly children: ReactNode;
   readonly spacing?: number;
+  readonly uniformPhoneRows?: boolean;
 } & (FixedColumnResponsiveGridProps | AutoFitResponsiveGridProps);
 
 /**
@@ -39,6 +40,7 @@ const ResponsiveGrid = function ({
   columns,
   minimumColumnWidth,
   spacing = 3,
+  uniformPhoneRows = false,
 }: ResponsiveGridProps): JSX.Element {
   const gridTemplateColumns =
     typeof minimumColumnWidth === "number"
@@ -51,7 +53,17 @@ const ResponsiveGrid = function ({
         );
 
   return (
-    <Box sx={{ display: "grid", gap: spacing, gridTemplateColumns }}>
+    <Box
+      sx={{
+        display: "grid",
+        gap: spacing,
+        gridTemplateColumns,
+        // Gives every row the tallest row's height on phones
+        ...(uniformPhoneRows
+          ? { gridAutoRows: { xs: "1fr", sm: "auto" } }
+          : {}),
+      }}
+    >
       {children}
     </Box>
   );

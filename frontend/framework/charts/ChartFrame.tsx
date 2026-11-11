@@ -38,7 +38,8 @@ const ChartFrame = function ({
                 component="div"
                 sx={{
                   alignItems: "center",
-                  display: "flex",
+                  // Axis titles cost too much plot width on phones
+                  display: { xs: "none", sm: "flex" },
                   fontFamily: chartFontFamily,
                   fontSize: 14,
                   justifyContent: "center",
@@ -67,6 +68,7 @@ const ChartFrame = function ({
               fontFamily={chartFontFamily}
               fontSize={14}
               lineHeight={1}
+              sx={{ display: { xs: "none", sm: "block" } }}
             >
               {xAxisLabel}
             </Typography>
