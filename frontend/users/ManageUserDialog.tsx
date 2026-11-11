@@ -109,7 +109,7 @@ const ManageUserDialog = function ({
               run(async () => changeUserRole(user.id, role));
             }}
           >
-            Save changes
+            Save
           </Button>
         </>
       }

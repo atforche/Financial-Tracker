@@ -5,7 +5,7 @@ import PagedTable, { type PagedTableColumn } from "@/framework/view/PagedTable";
 import { UserRoleModel, UserStatusModel } from "@/framework/data/api";
 import { formatDate, formatUserRole } from "@/users/userManagementHelpers";
 import { getPaginationIndex, rowsPerPage } from "@/framework/view/pagination";
-import { Button } from "@mui/material";
+import ActionIconButton from "@/framework/view/ActionIconButton";
 import InviteUserForm from "@/users/InviteUserForm";
 import ManageUserDialog from "@/users/ManageUserDialog";
 import type { User } from "@/users/types";
@@ -85,14 +85,13 @@ const UserListFrame = function ({
       <PagedTable
         title="Application Users"
         headerContent={
-          <Button
-            variant="contained"
+          <ActionIconButton
+            action="add"
+            label="Invite user"
             onClick={() => {
               setInviteDialogOpen(true);
             }}
-          >
-            Invite user
-          </Button>
+          />
         }
         columns={columns}
         data={pageUsers}
