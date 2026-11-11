@@ -30,10 +30,17 @@ const EntityCard = function ({
       component={Link}
       href={href}
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 1.5,
-        p: 2,
+        display: "grid",
+        alignItems: "center",
+        // Phones show one compact row; wider screens put the balance under the name
+        gridTemplateAreas: {
+          xs: '"name balance chevron"',
+          sm: '"name chevron" "balance balance"',
+        },
+        gridTemplateColumns: { xs: "minmax(0, 1fr) auto auto", sm: "1fr auto" },
+        columnGap: 1,
+        rowGap: 1.5,
+        p: { xs: 1.5, sm: 2 },
         border: "1px solid",
         borderColor: "divider",
         borderRadius: 3,
@@ -42,7 +49,11 @@ const EntityCard = function ({
         "&:hover": { borderColor: "primary.main" },
       }}
     >
-      <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{ gridArea: "name", alignItems: "center", minWidth: 0 }}
+      >
         <Box
           sx={{
             width: 10,
@@ -52,16 +63,30 @@ const EntityCard = function ({
             bgcolor: `${color}.main`,
           }}
         />
-        <Typography variant="subtitle1" sx={{ flexGrow: 1, fontWeight: 600 }}>
+        <Typography variant="subtitle1" noWrap sx={{ fontWeight: 600 }}>
           {name}
         </Typography>
-        <KeyboardArrowRight sx={{ color: "text.secondary", fontSize: 22 }} />
       </Stack>
-      <Stack spacing={0.25}>
-        <Typography variant="body2" color="text.secondary">
+      <KeyboardArrowRight
+        sx={{ gridArea: "chevron", color: "text.secondary", fontSize: 22 }}
+      />
+      <Stack spacing={0.25} sx={{ gridArea: "balance" }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ display: { xs: "none", sm: "block" } }}
+        >
           Current balance
         </Typography>
-        <Typography variant="h5" component="p" sx={{ fontWeight: 500 }}>
+        <Typography
+          variant="h5"
+          component="p"
+          sx={{
+            fontWeight: 500,
+            fontSize: { xs: "1rem", sm: "1.5rem" },
+            whiteSpace: "nowrap",
+          }}
+        >
           {balance}
         </Typography>
       </Stack>
