@@ -62,11 +62,8 @@ const ExpectedIncomeSourceDetails = function ({
           direction="row"
           useFlexGap
           spacing={2}
-          sx={{
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
+          // A long name wraps within its own space, so the actions stay beside it
+          sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
         >
           <Stack
             direction="row"
@@ -87,8 +84,7 @@ const ExpectedIncomeSourceDetails = function ({
             <Stack
               direction="row"
               spacing={0.5}
-              // Lines the icons up with the title when they wrap below it on phones
-              sx={{ alignItems: "center", ml: { xs: -1, sm: 0 } }}
+              sx={{ alignItems: "center", flexShrink: 0 }}
             >
               <ActionIconButton
                 action="edit"
