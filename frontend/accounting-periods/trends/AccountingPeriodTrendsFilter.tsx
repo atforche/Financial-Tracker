@@ -3,8 +3,8 @@
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import AccountingPeriodRangeFilter from "@/accounting-periods/AccountingPeriodRangeFilter";
 import type { AccountingPeriodTrendsSearchParams } from "@/accounting-periods/trends/AccountingPeriodTrends";
-import { Button } from "@mui/material";
 import type { JSX } from "react";
+import ResetFiltersButton from "@/framework/view/ResetFiltersButton";
 import WorkspaceHeader from "@/framework/view/WorkspaceHeader";
 import { getDefaultTrendAccountingPeriodRange } from "@/framework/routes/trendRange";
 import propertyName from "@/framework/data/propertyName";
@@ -91,9 +91,7 @@ const AccountingPeriodTrendsFilter = function ({
         onChange={handleAccountingPeriodRangeChange}
         disabled={disabled}
       />
-      <Button onClick={clearView} disabled={!hasActiveView}>
-        Reset Filters
-      </Button>
+      <ResetFiltersButton active={hasActiveView} onClick={clearView} />
     </WorkspaceHeader>
   );
 };

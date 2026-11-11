@@ -8,8 +8,8 @@ import {
 import type { AccountType } from "@/accounts/types";
 import AccountTypeFilter from "@/accounts/AccountTypeFilter";
 import ActionIconButton from "@/framework/view/ActionIconButton";
-import { Button } from "@mui/material";
 import type { JSX } from "react";
+import ResetFiltersButton from "@/framework/view/ResetFiltersButton";
 import SearchBar from "@/framework/view/SearchBar";
 import WorkspaceHeader from "@/framework/view/WorkspaceHeader";
 import routes from "@/accounts/routes";
@@ -87,9 +87,10 @@ const AccountWorkspaceFilter = function ({
         onChange={handleAccountTypeChange}
       />
       <SearchBar searchParamName={searchParamName} />
-      <Button onClick={clearView} disabled={!filters.hasActiveFilters}>
-        Reset Filters
-      </Button>
+      <ResetFiltersButton
+        active={filters.hasActiveFilters}
+        onClick={clearView}
+      />
     </WorkspaceHeader>
   );
 };

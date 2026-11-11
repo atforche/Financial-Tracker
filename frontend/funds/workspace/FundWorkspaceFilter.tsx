@@ -1,9 +1,9 @@
 "use client";
 
 import ActionIconButton from "@/framework/view/ActionIconButton";
-import { Button } from "@mui/material";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
+import ResetFiltersButton from "@/framework/view/ResetFiltersButton";
 import SearchBar from "@/framework/view/SearchBar";
 import WorkspaceHeader from "@/framework/view/WorkspaceHeader";
 import propertyName from "@/framework/data/propertyName";
@@ -48,16 +48,14 @@ const FundWorkspaceFilter = function ({
       }
     >
       <SearchBar searchParamName={searchParamName} />
-      <Button
-        disabled={!hasSearch}
+      <ResetFiltersButton
+        active={hasSearch}
         onClick={() => {
           updateParams((params) => {
             params.delete(searchParamName);
           });
         }}
-      >
-        Reset Filters
-      </Button>
+      />
     </WorkspaceHeader>
   );
 };
