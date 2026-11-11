@@ -2,15 +2,16 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
+import { type JSX, Suspense } from "react";
 import AccessDeniedView from "@/framework/auth/AccessDeniedView";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import ApplicationShell from "@/framework/navigation/ApplicationShell";
 import ApplicationThemeProvider from "@/framework/theme/ApplicationThemeProvider";
 import DateLocalizationProvider from "@/framework/forms/DateLocalizationProvider";
 import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
-import type { JSX } from "react";
 import type { Metadata } from "next";
 import NavigationTransitionProvider from "@/framework/routes/NavigationTransitionProvider";
+import PageRestoration from "@/framework/routes/PageRestoration";
 import { auth } from "@/auth";
 import getCurrentApplicationUser from "@/framework/auth/currentApplicationUser";
 
@@ -54,6 +55,9 @@ const RootLayout = async function ({
           <ApplicationThemeProvider>
             <DateLocalizationProvider>
               <NavigationTransitionProvider>
+                <Suspense fallback={null}>
+                  <PageRestoration />
+                </Suspense>
                 {content}
               </NavigationTransitionProvider>
             </DateLocalizationProvider>

@@ -19,6 +19,7 @@ import {
   formatCurrency,
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
+import usePageState, { isBooleanRecord } from "@/framework/routes/usePageState";
 import ChevronRight from "@mui/icons-material/ChevronRight";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import GoalRangeBar from "@/accounting-periods/workspace/GoalRangeBar";
@@ -394,9 +395,9 @@ const AccountingPeriodEntityList = function ({
   const search = (searchParams.get("search") ?? "").trim().toLowerCase();
   const theme = useTheme();
   const isPhone = useMediaQuery(theme.breakpoints.down("sm"));
-  const [openStatuses, setOpenStatuses] = useState<
+  const [openStatuses, setOpenStatuses] = usePageState<
     Partial<Record<PeriodEntityStatus, boolean>>
-  >({});
+  >("entityStatuses", {}, isBooleanRecord);
   const visible = entities
     .filter((entity) => entity.name.toLowerCase().includes(search))
     .sort(

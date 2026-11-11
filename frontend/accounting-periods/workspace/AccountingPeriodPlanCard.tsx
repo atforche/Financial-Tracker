@@ -4,15 +4,16 @@ import BreakdownSection, {
   breakdownValueInset,
 } from "@/framework/view/BreakdownSection";
 import { Divider, Stack, Typography } from "@mui/material";
-import { type JSX, useState } from "react";
 import {
   compareCurrencyAmounts,
   formatCurrency,
   formatSignedCurrency,
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
+import usePageState, { isBoolean } from "@/framework/routes/usePageState";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
 import ContentSurface from "@/framework/view/ContentSurface";
+import type { JSX } from "react";
 import type { Route } from "next";
 import SignedChange from "@/framework/view/SignedChange";
 
@@ -82,7 +83,7 @@ const AccountingPeriodPlanCard = function ({
   unusedContributions,
 }: AccountingPeriodPlanCardProps): JSX.Element {
   const { expectedIncome } = accountingPeriod;
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = usePageState("planCard", false, isBoolean);
   const totalUnused = getCurrencyDifference(
     accountingPeriod.plannedGoalContributions,
     accountingPeriod.expectedGoalContributions,

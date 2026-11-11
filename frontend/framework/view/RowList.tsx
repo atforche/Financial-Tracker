@@ -8,8 +8,9 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { type JSX, useState } from "react";
+import usePageState, { isBoolean } from "@/framework/routes/usePageState";
 import ChevronRight from "@mui/icons-material/ChevronRight";
+import type { JSX } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 
@@ -33,6 +34,11 @@ interface RowListItem {
 interface RowListProps {
   readonly rows: readonly RowListItem[];
   readonly initialRowCount?: number;
+
+  /**
+   * Keeps whether the list is expanded with the page visit; needed only to tell apart several lists on one page.
+   */
+  readonly stateKey?: string;
 }
 
 /**
@@ -42,8 +48,9 @@ interface RowListProps {
 const RowList = function ({
   rows,
   initialRowCount = 10,
+  stateKey = "rowList",
 }: RowListProps): JSX.Element {
-  const [showAll, setShowAll] = useState(false);
+  const [showAll, setShowAll] = usePageState(stateKey, false, isBoolean);
   const visibleRows = showAll ? rows : rows.slice(0, initialRowCount);
   return (
     <Stack>

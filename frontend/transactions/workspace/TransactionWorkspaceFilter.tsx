@@ -27,6 +27,7 @@ import {
   shouldPersistTransactionTypes,
   transactionTypeValues,
 } from "@/transactions/transactionTypeFilter";
+import usePageState, { isBoolean } from "@/framework/routes/usePageState";
 import AccountTypeFilter from "@/accounts/AccountTypeFilter";
 import type { AccountingPeriod } from "@/accounting-periods/types";
 import DateRangeFilter from "@/framework/forms/DateRangeFilter";
@@ -67,7 +68,11 @@ const TransactionWorkspaceFilter = function ({
 }: TransactionWorkspaceFilterProps): JSX.Element {
   const searchParams = useSearchParams();
   // Phones hide the filters behind a toggle so the list shows first
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = usePageState(
+    "transactionFilters",
+    false,
+    isBoolean,
+  );
 
   const pageParamName = propertyName<TransactionWorkspaceSearchParams>("page");
   const accountingPeriodParamName =

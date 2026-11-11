@@ -8,13 +8,14 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { type JSX, type ReactNode, useId, useState } from "react";
+import { type JSX, type ReactNode, useId } from "react";
 import {
   compareCurrencyAmounts,
   formatCurrency,
   getCurrencyDifference,
   getCurrencyTotal,
 } from "@/framework/currencyHelpers";
+import usePageState, { isBoolean } from "@/framework/routes/usePageState";
 import ChevronRight from "@mui/icons-material/ChevronRight";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import Link from "next/link";
@@ -112,7 +113,11 @@ const PeriodProgressRow = function ({
   caption,
   href,
 }: PeriodProgressRowProps): JSX.Element {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = usePageState(
+    `progressRow:${label}`,
+    false,
+    isBoolean,
+  );
   const breakdownId = useId();
   const difference = getCurrencyDifference(actual, expected);
   const overColor = isOverGood ? "success.main" : "error.main";
