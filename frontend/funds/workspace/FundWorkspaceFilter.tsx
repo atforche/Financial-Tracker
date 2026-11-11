@@ -1,5 +1,6 @@
 "use client";
 
+import ActionIconButton from "@/framework/view/ActionIconButton";
 import { Button } from "@mui/material";
 import type { FundWorkspaceSearchParams } from "@/funds/workspace/types";
 import type { JSX } from "react";
@@ -38,9 +39,11 @@ const FundWorkspaceFilter = function ({
       title="Funds"
       action={
         canWrite ? (
-          <Button variant="contained" href={addFundHref}>
-            {isInOnboardingMode ? "Onboard Fund" : "Create Fund"}
-          </Button>
+          <ActionIconButton
+            action="add"
+            label={isInOnboardingMode ? "Onboard fund" : "Create fund"}
+            href={addFundHref}
+          />
         ) : null
       }
     >

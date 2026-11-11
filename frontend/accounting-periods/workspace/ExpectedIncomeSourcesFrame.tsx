@@ -1,15 +1,15 @@
 "use client";
 
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import {
   compareCurrencyAmounts,
   formatCurrency,
   getCurrencyDifference,
 } from "@/framework/currencyHelpers";
 import type { AccountingPeriodWithBalance } from "@/accounting-periods/types";
+import ActionIconButton from "@/framework/view/ActionIconButton";
 import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
-import Link from "next/link";
 import PeriodProgressRow from "@/accounting-periods/PeriodProgressRow";
 import { formatShortDate } from "@/framework/dateHelpers";
 import routes from "@/accounting-periods/routes";
@@ -67,31 +67,29 @@ const ExpectedIncomeSourcesFrame = function ({
 }: ExpectedIncomeSourcesFrameProps): JSX.Element {
   const canManageSources = useWriteAccess() && accountingPeriod.isOpen;
   const sources = accountingPeriod.expectedIncomeSources;
+  const createUrl = routes.expectedIncomeSourceCreate(
+    accountingPeriod.id,
+    redirectUrl,
+  );
   return (
     <ContentSurface>
       <Stack spacing={2}>
         <Stack
           direction="row"
           useFlexGap
-          spacing={2}
+          spacing={1}
           sx={{
-            flexWrap: "wrap",
             alignItems: "center",
             justifyContent: "space-between",
           }}
         >
           <Typography variant="h5">Expected Income Sources</Typography>
           {canManageSources ? (
-            <Button
-              component={Link}
-              href={routes.expectedIncomeSourceCreate(
-                accountingPeriod.id,
-                redirectUrl,
-              )}
-              variant="contained"
-            >
-              Add Expected Income
-            </Button>
+            <ActionIconButton
+              action="add"
+              label="Add expected income"
+              href={createUrl}
+            />
           ) : null}
         </Stack>
         {sources.length === 0 ? (

@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, Chip } from "@mui/material";
+import { Button, Chip } from "@mui/material";
 import PagedTable, { type PagedTableColumn } from "@/framework/view/PagedTable";
 import { type Transaction, TransactionSort } from "@/transactions/types";
 import {
@@ -8,8 +8,8 @@ import {
   getTransactionSourceLabel,
 } from "@/transactions/transactionListHelpers";
 import { usePathname, useSearchParams } from "next/navigation";
+import ActionIconButton from "@/framework/view/ActionIconButton";
 import type { JSX } from "react";
-import Link from "next/link";
 import type { Route } from "next";
 import { buildUrl } from "@/framework/routes/helpers";
 import { formatCurrency } from "@/framework/currencyHelpers";
@@ -132,27 +132,11 @@ const TransactionWorkspaceListFrame = function ({
       title={hasActiveFilters ? "Matching Transactions" : "Recent Transactions"}
       headerContent={
         canWrite ? (
-          <Button
-            variant="contained"
-            component={Link}
+          <ActionIconButton
+            action="add"
+            label="Add transaction"
             href={createUrl}
-            aria-label="Add transaction"
-            sx={{ flexShrink: 0 }}
-          >
-            {/* Keeps the title and button on one line on phones */}
-            <Box
-              component="span"
-              sx={{ display: { xs: "inline", sm: "none" } }}
-            >
-              Add
-            </Box>
-            <Box
-              component="span"
-              sx={{ display: { xs: "none", sm: "inline" } }}
-            >
-              Add Transaction
-            </Box>
-          </Button>
+          />
         ) : null
       }
       columns={columns}

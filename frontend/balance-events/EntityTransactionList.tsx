@@ -12,11 +12,13 @@ import { type JSX, useState } from "react";
 import getTransactionRow, {
   type EntityEvent,
 } from "@/balance-events/getTransactionRow";
+import ActionIconButton from "@/framework/view/ActionIconButton";
 import ContentSurface from "@/framework/view/ContentSurface";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import RowList from "@/framework/view/RowList";
 import dayjs from "dayjs";
 import { formatBalanceEventCounterparty } from "@/balance-events/helpers";
+import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
  * Posted events in one calendar month.
@@ -50,11 +52,14 @@ const EntityTransactionList = function ({
   entityName,
   events,
   returnUrl,
+  addTransactionHref,
 }: {
   readonly entityName: "account" | "fund";
   readonly events: readonly EntityEvent[];
   readonly returnUrl: string;
+  readonly addTransactionHref: string;
 }): JSX.Element {
+  const canWrite = useWriteAccess();
   const [search, setSearch] = useState("");
   const [toggledMonths, setToggledMonths] = useState<ReadonlySet<string>>(
     new Set(),
@@ -95,7 +100,20 @@ const EntityTransactionList = function ({
             justifyContent: "space-between",
           }}
         >
-          <Typography variant="h5">Transactions</Typography>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ alignItems: "center", justifyContent: "space-between" }}
+          >
+            <Typography variant="h5">Transactions</Typography>
+            {canWrite ? (
+              <ActionIconButton
+                action="add"
+                label="Add transaction"
+                href={addTransactionHref}
+              />
+            ) : null}
+          </Stack>
           <TextField
             label="Search transactions"
             size="small"

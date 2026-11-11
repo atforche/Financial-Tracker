@@ -3,7 +3,6 @@
 import type { AccountWithBalance } from "@/accounts/types";
 import EntityDetailActions from "@/balance-events/EntityDetailActions";
 import type { JSX } from "react";
-import type { Route } from "next";
 import UpdateAccountForm from "@/accounts/workspace/UpdateAccountForm";
 import deleteAccount from "@/accounts/workspace/deleteAccount";
 
@@ -12,14 +11,10 @@ import deleteAccount from "@/accounts/workspace/deleteAccount";
  */
 const AccountDetailActions = function ({
   account,
-  addTransactionHref,
-  trendsHref,
   redirectUrl,
   deleteRedirectUrl,
 }: {
   readonly account: AccountWithBalance;
-  readonly addTransactionHref: string;
-  readonly trendsHref: Route;
   readonly redirectUrl: string;
   readonly deleteRedirectUrl: string;
 }): JSX.Element {
@@ -27,8 +22,6 @@ const AccountDetailActions = function ({
     <EntityDetailActions
       entityName="account"
       name={account.name}
-      addTransactionHref={addTransactionHref}
-      trendsHref={trendsHref}
       deleteAction={deleteAccount}
       deletePayload={{ accountId: account.id, redirectUrl: deleteRedirectUrl }}
       renderUpdateForm={(onClose) => (

@@ -7,6 +7,7 @@ import {
 } from "@/accounts/workspace/searchParams";
 import type { AccountType } from "@/accounts/types";
 import AccountTypeFilter from "@/accounts/AccountTypeFilter";
+import ActionIconButton from "@/framework/view/ActionIconButton";
 import { Button } from "@mui/material";
 import type { JSX } from "react";
 import SearchBar from "@/framework/view/SearchBar";
@@ -61,24 +62,23 @@ const AccountWorkspaceFilter = function ({
   };
 
   const addActionLabel = isInOnboardingMode
-    ? "Onboard Account"
-    : "Create Account";
+    ? "Onboard account"
+    : "Create account";
 
   return (
     <WorkspaceHeader
       title="Accounts"
       action={
         canWrite ? (
-          <Button
-            variant="contained"
+          <ActionIconButton
+            action="add"
+            label={addActionLabel}
             href={
               isInOnboardingMode
                 ? routes.workspaceOnboard()
                 : routes.workspaceCreate()
             }
-          >
-            {addActionLabel}
-          </Button>
+          />
         ) : null
       }
     >

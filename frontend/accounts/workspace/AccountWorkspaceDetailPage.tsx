@@ -228,15 +228,6 @@ const AccountWorkspaceDetailPage = async function ({
       actions={
         <AccountDetailActions
           account={account}
-          addTransactionHref={transactionRoutes.workspaceCreate({
-            accountIds: [account.id],
-            returnUrl: currentUrl,
-          })}
-          trendsHref={routes.trends({
-            mode: "date",
-            accountName: [account.name],
-            returnUrl: currentUrl,
-          })}
           redirectUrl={currentUrl}
           deleteRedirectUrl={workspaceUrl}
         />
@@ -327,6 +318,10 @@ const AccountWorkspaceDetailPage = async function ({
           entityName="account"
           events={events}
           returnUrl={currentUrl}
+          addTransactionHref={transactionRoutes.workspaceCreate({
+            accountIds: [account.id],
+            returnUrl: currentUrl,
+          })}
         />
       ) : null}
     </EntityHistoryLayout>

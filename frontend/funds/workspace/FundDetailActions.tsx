@@ -3,7 +3,6 @@
 import EntityDetailActions from "@/balance-events/EntityDetailActions";
 import type { FundWithBalance } from "@/funds/types";
 import type { JSX } from "react";
-import type { Route } from "next";
 import UpdateFundForm from "@/funds/workspace/UpdateFundForm";
 import deleteFund from "@/funds/workspace/deleteFund";
 
@@ -12,14 +11,10 @@ import deleteFund from "@/funds/workspace/deleteFund";
  */
 const FundDetailActions = function ({
   fund,
-  addTransactionHref,
-  trendsHref,
   redirectUrl,
   deleteRedirectUrl,
 }: {
   readonly fund: FundWithBalance;
-  readonly addTransactionHref: string;
-  readonly trendsHref: Route;
   readonly redirectUrl: string;
   readonly deleteRedirectUrl: string;
 }): JSX.Element {
@@ -27,8 +22,6 @@ const FundDetailActions = function ({
     <EntityDetailActions
       entityName="fund"
       name={fund.name}
-      addTransactionHref={addTransactionHref}
-      trendsHref={trendsHref}
       deleteAction={deleteFund}
       deletePayload={{ fundId: fund.id, redirectUrl: deleteRedirectUrl }}
       renderUpdateForm={(onClose) => (

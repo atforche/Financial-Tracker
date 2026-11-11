@@ -210,15 +210,6 @@ const FundWorkspaceDetailPage = async function ({
       actions={
         <FundDetailActions
           fund={fund}
-          addTransactionHref={transactionRoutes.workspaceCreate({
-            fundIds: [fund.id],
-            returnUrl: currentUrl,
-          })}
-          trendsHref={routes.trends({
-            mode: "date",
-            fundName: [fund.name],
-            returnUrl: currentUrl,
-          })}
           redirectUrl={currentUrl}
           deleteRedirectUrl={workspaceUrl}
         />
@@ -275,6 +266,10 @@ const FundWorkspaceDetailPage = async function ({
           entityName="fund"
           events={dateActivity.events}
           returnUrl={currentUrl}
+          addTransactionHref={transactionRoutes.workspaceCreate({
+            fundIds: [fund.id],
+            returnUrl: currentUrl,
+          })}
         />
       )}
     </EntityHistoryLayout>

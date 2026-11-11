@@ -1,12 +1,12 @@
 "use client";
 
-import { Button, Stack, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import getTransactionRow, {
   type EntityEvent,
 } from "@/balance-events/getTransactionRow";
+import ActionIconButton from "@/framework/view/ActionIconButton";
 import ContentSurface from "@/framework/view/ContentSurface";
 import type { JSX } from "react";
-import Link from "next/link";
 import RowList from "@/framework/view/RowList";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
@@ -42,13 +42,11 @@ const PeriodEntityTransactions = function ({
         >
           <Typography variant="h5">Transactions</Typography>
           {canWrite && isOpen ? (
-            <Button
-              component={Link}
+            <ActionIconButton
+              action="add"
+              label="Add transaction"
               href={addTransactionHref}
-              variant="contained"
-            >
-              Add Transaction
-            </Button>
+            />
           ) : null}
         </Stack>
         {events.length === 0 ? (
