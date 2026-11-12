@@ -575,6 +575,19 @@ namespace Data.Migrations
                     b.HasDiscriminator().HasValue(2);
                 });
 
+            modelBuilder.Entity("Domain.Transactions.BalanceAdjustments.BalanceAdjustment", b =>
+                {
+                    b.HasBaseType("Domain.Transactions.Transaction");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("BalanceAdjustment_AccountId");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasDiscriminator().HasValue(5);
+                });
+
             modelBuilder.Entity("Domain.Transactions.Funds.FundTransaction", b =>
                 {
                     b.HasBaseType("Domain.Transactions.Transaction");
@@ -1131,6 +1144,17 @@ namespace Data.Migrations
 
                     b.Navigation("Source")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Transactions.BalanceAdjustments.BalanceAdjustment", b =>
+                {
+                    b.HasOne("Domain.Accounts.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("Domain.Transactions.Funds.FundTransaction", b =>

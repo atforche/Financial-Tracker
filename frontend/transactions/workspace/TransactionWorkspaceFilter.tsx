@@ -39,6 +39,7 @@ import PageFilterFrame from "@/framework/view/PageFilterFrame";
 import TransactionFilterControl from "@/transactions/workspace/TransactionFilterControl";
 import type { TransactionType } from "@/transactions/types";
 import type { TransactionWorkspaceSearchParams } from "@/transactions/workspace/TransactionWorkspace";
+import { getTransactionTypeLabel } from "@/transactions/transactionTypeLabels";
 import propertyName from "@/framework/data/propertyName";
 import useSearchParamUpdater from "@/framework/routes/useSearchParamUpdater";
 import { useSearchParams } from "next/navigation";
@@ -456,6 +457,7 @@ const TransactionWorkspaceFilter = function ({
           <MultiSelectAutocompleteFilter
             label="Transaction types"
             options={transactionTypeValues}
+            getOptionLabel={getTransactionTypeLabel}
             value={currentTransactionTypes}
             placeholder="All transaction types"
             noOptionsText="No transaction types found"

@@ -11,6 +11,7 @@ namespace Models.Transactions.Update;
 [JsonDerivedType(typeof(UpdateAccountTransactionModel), nameof(TransactionTypeModel.Account))]
 [JsonDerivedType(typeof(UpdateFundTransactionModel), nameof(TransactionTypeModel.Fund))]
 [JsonDerivedType(typeof(UpdateRefundTransactionModel), nameof(TransactionTypeModel.Refund))]
+[JsonDerivedType(typeof(UpdateBalanceAdjustmentModel), nameof(TransactionTypeModel.BalanceAdjustment))]
 public abstract class UpdateTransactionModel
 {
     /// <summary>

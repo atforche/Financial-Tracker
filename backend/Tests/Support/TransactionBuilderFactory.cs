@@ -33,6 +33,11 @@ internal sealed class TransactionBuilderFactory(TestApiClient apiClient)
     public RefundTransactionBuilder Refund() => new(apiClient);
 
     /// <summary>
+    /// Starts a builder for a balance adjustment.
+    /// </summary>
+    public BalanceAdjustmentBuilder BalanceAdjustment() => new(apiClient);
+
+    /// <summary>
     /// Posts a transaction to an affected account.
     /// </summary>
     public Task PostAsync(TransactionHandle transaction, AccountHandle account, DateOnly date) => apiClient.PostAsync(

@@ -29,4 +29,9 @@ public enum TransactionTypeModel
     /// Refund transaction.
     /// </summary>
     Refund,
+
+    /// <summary>
+    /// Balance adjustment.
+    /// </summary>
+    BalanceAdjustment,
 }

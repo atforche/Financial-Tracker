@@ -26,6 +26,11 @@ public class AccountBalance
     internal AccountBalance Debit(decimal amount) => new(Account, PostedBalance + (Account.Type.IsDebt() ? amount : -amount));
 
     /// <summary>
+    /// Adds the specified signed amount to this Account Balance as it is displayed, regardless of the Account type.
+    /// </summary>
+    internal AccountBalance Adjust(decimal amount) => new(Account, PostedBalance + amount);
+
+    /// <summary>
     /// Credits the specified amount to this Account Balance.
     /// </summary>
     internal AccountBalance Credit(decimal amount) => new(Account, PostedBalance + (Account.Type.IsDebt() ? -amount : amount));

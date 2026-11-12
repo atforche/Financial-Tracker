@@ -3,6 +3,7 @@ using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
+using Domain.Transactions.BalanceAdjustments;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Refunds;
@@ -35,7 +36,9 @@ public class TransactionRepository(DatabaseContext databaseContext) : ITransacti
         databaseContext.Transactions.OfType<RefundTransaction>()
             .Any(t => t.Sources.Any(s => s.Account != null && s.Account.Id == account.Id) || t.Destination.Account.Id == account.Id) ||
         databaseContext.Transactions.OfType<AccountTransaction>()
-            .Any(t => (t.Source.Account != null && t.Source.Account.Id == account.Id) || t.Destinations.Any(d => d.Account != null && d.Account.Id == account.Id));
+            .Any(t => (t.Source.Account != null && t.Source.Account.Id == account.Id) || t.Destinations.Any(d => d.Account != null && d.Account.Id == account.Id)) ||
+        databaseContext.Transactions.OfType<BalanceAdjustment>()
+            .Any(t => t.Account.Id == account.Id);
 
     /// <inheritdoc/>
     public bool DoAnyTransactionsExistForAccountingPeriod(AccountingPeriodId accountingPeriodId) =>

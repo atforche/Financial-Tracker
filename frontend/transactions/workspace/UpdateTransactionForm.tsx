@@ -7,6 +7,7 @@ import type {
 import {
   type Transaction,
   isAccountTransaction,
+  isBalanceAdjustment,
   isFundTransaction,
   isIncomeTransaction,
   isRefundTransaction,
@@ -18,7 +19,9 @@ import type { FundWithBalance } from "@/funds/types";
 import type { JSX } from "react";
 import type { Location } from "@/locations/types";
 import { LocationProvider } from "@/locations/LocationProvider";
+import { TransactionTypeProvider } from "@/transactions/workspace/TransactionTypeField";
 import UpdateAccountTransactionForm from "@/transactions/workspace/account/UpdateAccountTransactionForm";
+import UpdateBalanceAdjustmentForm from "@/transactions/workspace/balance-adjustment/UpdateBalanceAdjustmentForm";
 import UpdateFundTransactionForm from "@/transactions/workspace/fund/UpdateFundTransactionForm";
 import UpdateIncomeTransactionForm from "@/transactions/workspace/income/UpdateIncomeTransactionForm";
 import UpdateRefundTransactionForm from "@/transactions/workspace/refund/UpdateRefundTransactionForm";
@@ -104,8 +107,23 @@ const UpdateTransactionForm = function ({
         redirectUrl={redirectUrl}
       />
     );
+  } else if (isBalanceAdjustment(transaction)) {
+    form = (
+      <UpdateBalanceAdjustmentForm
+        transaction={transaction}
+        transactionAccountingPeriod={transactionAccountingPeriod}
+        accounts={accounts}
+        redirectUrl={redirectUrl}
+      />
+    );
   }
-  return <LocationProvider locations={locations}>{form}</LocationProvider>;
+  return (
+    <LocationProvider locations={locations}>
+      <TransactionTypeProvider type={transaction.transactionType}>
+        {form}
+      </TransactionTypeProvider>
+    </LocationProvider>
+  );
 };
 
 export default UpdateTransactionForm;

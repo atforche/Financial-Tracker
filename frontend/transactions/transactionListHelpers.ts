@@ -1,11 +1,13 @@
 import {
   type Transaction,
   asAccountTransaction,
+  asBalanceAdjustment,
   asFundTransaction,
   asIncomeTransaction,
   asRefundTransaction,
   asSpendingTransaction,
 } from "@/transactions/types";
+import { getTransactionTypeLabel } from "@/transactions/transactionTypeLabels";
 
 /**
  * Summarizes the provided values.
@@ -57,6 +59,9 @@ const getTransactionSourceLabel = function (transaction: Transaction): string {
     );
   }
 
+  if (asBalanceAdjustment(transaction) !== null) {
+    return getTransactionTypeLabel(transaction.transactionType);
+  }
   const fundTransaction = asFundTransaction(transaction);
   return fundTransaction?.source.fund.fund.name ?? "";
 };
@@ -101,6 +106,10 @@ const getTransactionDestinationLabel = function (
     );
   }
 
+  const balanceAdjustment = asBalanceAdjustment(transaction);
+  if (balanceAdjustment !== null) {
+    return balanceAdjustment.account.account.name;
+  }
   const fundTransaction = asFundTransaction(transaction);
   return fundTransaction === null
     ? ""

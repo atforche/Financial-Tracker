@@ -30,6 +30,11 @@ public abstract class TransactionService(
     protected ITransactionRepository TransactionRepository => transactionRepository;
 
     /// <summary>
+    /// True if this type of Transaction stores a signed amount, so that only a zero amount is invalid
+    /// </summary>
+    protected virtual bool AllowsNegativeAmount => false;
+
+    /// <summary>
     /// Attempts to post an existing Transaction to an Account
     /// </summary>
     public bool TryPost(Transaction transaction, PostTransactionRequest request, out IEnumerable<ValidationError> exceptions)
@@ -70,7 +75,7 @@ public abstract class TransactionService(
     /// <summary>
     /// Attempts to delete an existing Transaction
     /// </summary>
-    public bool TryDelete(Transaction transaction, out IEnumerable<ValidationError> exceptions)
+    public virtual bool TryDelete(Transaction transaction, out IEnumerable<ValidationError> exceptions)
     {
         if (!ValidateDelete(transaction, out exceptions))
         {
@@ -565,11 +570,15 @@ public abstract class TransactionService(
     /// <summary>
     /// Validates the Amount for this Transaction
     /// </summary>
-    private static bool ValidateAmount(decimal amount, ValidationErrorPath amountPath, out IEnumerable<ValidationError> exceptions)
+    private bool ValidateAmount(decimal amount, ValidationErrorPath amountPath, out IEnumerable<ValidationError> exceptions)
     {
         exceptions = [];
 
-        if (amount <= 0)
+        if (AllowsNegativeAmount && amount == 0)
+        {
+            exceptions = exceptions.Append(new ValidationError(amountPath, "The provided amount cannot be zero."));
+        }
+        else if (!AllowsNegativeAmount && amount <= 0)
         {
             exceptions = exceptions.Append(new ValidationError(amountPath, "The provided amount must be greater than zero."));
         }

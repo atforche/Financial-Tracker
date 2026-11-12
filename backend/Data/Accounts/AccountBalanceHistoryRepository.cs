@@ -73,18 +73,23 @@ public class AccountBalanceHistoryRepository(DatabaseContext databaseContext) : 
     public void Delete(AccountBalanceHistory accountBalanceHistory) => databaseContext.Remove(accountBalanceHistory);
 
     /// <summary>
-    /// Merges the results from the database query with the tracked entities in the change tracker, ensuring that any tracked entities that match the predicate are included and not duplicated.
+    /// Merges database results with non-deleted tracked histories so a transaction update observes its in-unit-of-work changes.
     /// </summary>
     private IEnumerable<AccountBalanceHistory> MergeWithTracked(
         IQueryable<AccountBalanceHistory> databaseQuery,
         Func<AccountBalanceHistory, bool> predicate)
     {
-        var trackedHistories = databaseContext.ChangeTracker.Entries<AccountBalanceHistory>()
+        var entries = databaseContext.ChangeTracker.Entries<AccountBalanceHistory>().ToList();
+        var deletedHistoryIds = entries
+            .Where(entry => entry.State == Microsoft.EntityFrameworkCore.EntityState.Deleted)
+            .Select(entry => entry.Entity.Id)
+            .ToHashSet();
+        var trackedHistories = entries
             .Where(entry => entry.State != Microsoft.EntityFrameworkCore.EntityState.Deleted && predicate(entry.Entity))
             .Select(entry => entry.Entity)
             .ToDictionary(history => history.Id);
         return databaseQuery.ToList()
-            .Where(history => !trackedHistories.ContainsKey(history.Id))
+            .Where(history => !deletedHistoryIds.Contains(history.Id) && !trackedHistories.ContainsKey(history.Id))
             .Concat(trackedHistories.Values);
     }
 }

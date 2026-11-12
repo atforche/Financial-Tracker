@@ -4,6 +4,7 @@ using Domain.Funds;
 using Domain.Locations;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
+using Domain.Transactions.BalanceAdjustments;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Refunds;
@@ -40,6 +41,7 @@ public sealed class TransactionRequestConverter(
             CreateAccountTransactionModel account => BuildAccountCreateRequest(accountingPeriod, account, errors),
             CreateFundTransactionModel fund => BuildFundCreateRequest(accountingPeriod, fund, errors),
             CreateRefundTransactionModel refund => BuildRefundCreateRequest(accountingPeriod, refund, errors),
+            CreateBalanceAdjustmentModel adjustment => BuildBalanceAdjustmentCreateRequest(accountingPeriod, adjustment, errors),
             _ => null
         };
         if (request != null)
@@ -74,6 +76,7 @@ public sealed class TransactionRequestConverter(
             (AccountTransaction, UpdateAccountTransactionModel account) => BuildAccountUpdateRequest(account, errors),
             (FundTransaction, UpdateFundTransactionModel fund) => BuildFundUpdateRequest(fund, errors),
             (RefundTransaction, UpdateRefundTransactionModel refund) => BuildRefundUpdateRequest(refund, errors),
+            (BalanceAdjustment, UpdateBalanceAdjustmentModel adjustment) => BuildBalanceAdjustmentUpdateRequest(adjustment, errors),
             _ => null
         };
         if (request != null)
@@ -246,6 +249,34 @@ public sealed class TransactionRequestConverter(
             Amount = model.Amount,
             Source = source,
             Destinations = destinations,
+        };
+    }
+
+    private CreateBalanceAdjustmentRequest? BuildBalanceAdjustmentCreateRequest(
+        AccountingPeriod accountingPeriod,
+        CreateBalanceAdjustmentModel model,
+        Dictionary<string, string[]> errors)
+    {
+        Account? account = TryGetAccount(model.AccountId, nameof(CreateBalanceAdjustmentModel.AccountId), errors);
+        return account == null ? null : new CreateBalanceAdjustmentRequest
+        {
+            AccountingPeriodId = accountingPeriod.Id,
+            TransactionDate = model.Date,
+            Description = model.Description,
+            Amount = model.Amount,
+            Account = account,
+        };
+    }
+
+    private UpdateBalanceAdjustmentRequest? BuildBalanceAdjustmentUpdateRequest(UpdateBalanceAdjustmentModel model, Dictionary<string, string[]> errors)
+    {
+        Account? account = TryGetAccount(model.AccountId, nameof(UpdateBalanceAdjustmentModel.AccountId), errors);
+        return account == null ? null : new UpdateBalanceAdjustmentRequest
+        {
+            TransactionDate = model.Date,
+            Description = model.Description,
+            Amount = model.Amount,
+            Account = account,
         };
     }
 

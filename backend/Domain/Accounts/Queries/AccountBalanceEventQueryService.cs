@@ -3,6 +3,7 @@ using Domain.AccountingPeriods.Queries;
 using Domain.BalanceEvents;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
+using Domain.Transactions.BalanceAdjustments;
 using Domain.Transactions.Income;
 using Domain.Transactions.Queries;
 using Domain.Transactions.Refunds;
@@ -158,9 +159,15 @@ public sealed class AccountBalanceEventQueryService(
             SpendingTransaction spending => GetSpendingEvents(transaction, period, spending, histories),
             IncomeTransaction income => GetIncomeEvents(transaction, period, income, histories),
             AccountTransaction account => GetAccountEvents(transaction, period, account, histories),
+            BalanceAdjustment adjustment => [GetBalanceAdjustmentEvent(period, adjustment, histories)],
             RefundTransaction refund => GetRefundEvents(transaction, period, refund, histories),
             _ => [],
         };
+
+    /// <summary>
+    /// Counterparty shown for Balance Adjustments, which have no source or destination other than their Account
+    /// </summary>
+    private const string BalanceAdjustmentPartyName = "Balance adjustment";
 
     private static IEnumerable<AccountBalanceEvent> GetRefundEvents(
         Transaction transaction,
@@ -284,6 +291,24 @@ public sealed class AccountBalanceEventQueryService(
                 ToParty(account.Source.Account, account.Source.Location?.Name, null),
                 parties,
                 histories)));
+    }
+
+    private static AccountBalanceEvent GetBalanceAdjustmentEvent(
+        AccountingPeriod period,
+        BalanceAdjustment adjustment,
+        IReadOnlyDictionary<AccountId, List<AccountBalanceHistory>> histories)
+    {
+        AccountBalanceEventParty party = ToParty(null, BalanceAdjustmentPartyName, null);
+        return Create(
+            adjustment,
+            period,
+            adjustment.Account,
+            adjustment.Date,
+            adjustment.BalanceEventAmount,
+            adjustment.BalanceEventType,
+            party,
+            [party],
+            histories);
     }
 
     /// <summary>

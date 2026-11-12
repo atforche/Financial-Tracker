@@ -1,8 +1,10 @@
+import type { AccountType } from "@/accounts/types";
 import { BalanceEventType } from "@/balance-events/types";
 import type { Route } from "next";
 import { formatBalanceEventCounterparty } from "@/balance-events/helpers";
 import { formatShortDate } from "@/framework/dateHelpers";
 import { formatSignedCurrency } from "@/framework/currencyHelpers";
+import { isDebtAccountType } from "@/accounts/helpers";
 import routes from "@/transactions/routes";
 
 /**
@@ -20,10 +22,11 @@ interface EntityEvent {
     | { readonly displayName: string }
     | readonly { readonly displayName: string }[];
   readonly destinations: readonly { readonly displayName: string }[];
+  readonly account?: { readonly type: AccountType };
 }
 
 /**
- * Builds the list row for a balance event. Identical events can share every field, so the row's index keeps its key unique.
+ * Builds the list row for a balance event. The value shows how the balance moved, and green marks a credit. Identical events can share every field, so the row's index keeps its key unique.
  */
 const getTransactionRow = function (
   event: EntityEvent,
@@ -39,6 +42,11 @@ const getTransactionRow = function (
   readonly valueColor?: string;
 } {
   const isCredit = event.type === BalanceEventType.Credit;
+  // A credit is good for every account, but it lowers the balance of a debt account, so the sign follows the balance
+  const raisesBalance =
+    event.account !== undefined && isDebtAccountType(event.account.type)
+      ? !isCredit
+      : isCredit;
   return {
     key: `${event.transactionId}-${index.toString()}`,
     href: routes.workspaceDetail(event.transactionId, { returnUrl }),
@@ -47,7 +55,7 @@ const getTransactionRow = function (
     ),
     title: event.description,
     detail: formatBalanceEventCounterparty(event),
-    value: formatSignedCurrency(isCredit ? event.amount : -event.amount),
+    value: formatSignedCurrency(raisesBalance ? event.amount : -event.amount),
     ...(isCredit ? { valueColor: "success.main" } : {}),
   };
 };
