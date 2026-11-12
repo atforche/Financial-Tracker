@@ -1,6 +1,5 @@
 "use client";
 
-import { type JSX, useState } from "react";
 import { Stack, Typography } from "@mui/material";
 import {
   compareCurrencyAmounts,
@@ -9,7 +8,9 @@ import {
   getCurrencyDifference,
   getCurrencyTotal,
 } from "@/framework/currencyHelpers";
+import usePageState, { isBoolean } from "@/framework/routes/usePageState";
 import BreakdownSection from "@/framework/view/BreakdownSection";
+import type { JSX } from "react";
 
 /**
  * Props for the ContributionReductionRow component.
@@ -32,7 +33,11 @@ const ContributionReductionRow = function ({
   limit,
   limitName,
 }: ContributionReductionRowProps): JSX.Element {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = usePageState(
+    "contributionReduction",
+    false,
+    isBoolean,
+  );
   const projectedBalance = getCurrencyTotal([currentBalance, plannedRemaining]);
   // A reduction can't exceed the planned amount, so a fund already past its limit can project further past it
   const isAlreadyPastLimit =

@@ -8,13 +8,17 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { type JSX, useState } from "react";
 import getTransactionRow, {
   type EntityEvent,
 } from "@/balance-events/getTransactionRow";
+import usePageState, {
+  isString,
+  isStringArray,
+} from "@/framework/routes/usePageState";
 import ActionIconButton from "@/framework/view/ActionIconButton";
 import ContentSurface from "@/framework/view/ContentSurface";
 import ExpandMore from "@mui/icons-material/ExpandMore";
+import type { JSX } from "react";
 import RowList from "@/framework/view/RowList";
 import dayjs from "dayjs";
 import { formatBalanceEventCounterparty } from "@/balance-events/helpers";
@@ -60,9 +64,12 @@ const EntityTransactionList = function ({
   readonly addTransactionHref: string;
 }): JSX.Element {
   const canWrite = useWriteAccess();
-  const [search, setSearch] = useState("");
-  const [toggledMonths, setToggledMonths] = useState<ReadonlySet<string>>(
-    new Set(),
+  const [search, setSearch] = usePageState("transactionSearch", "", isString);
+  // Months toggled from their default, the newest open and the rest closed
+  const [toggledMonths, setToggledMonths] = usePageState<string[]>(
+    "transactionMonths",
+    [],
+    isStringArray,
   );
   const term = search.trim().toLowerCase();
   const matches = events.filter(
@@ -76,13 +83,11 @@ const EntityTransactionList = function ({
     0,
   )?.key;
   const toggleMonth = function (key: string): void {
-    setToggledMonths((current) => {
-      const next = new Set(current);
-      if (!next.delete(key)) {
-        next.add(key);
-      }
-      return next;
-    });
+    setToggledMonths((current) =>
+      current.includes(key)
+        ? current.filter((month) => month !== key)
+        : [...current, key],
+    );
   };
   const getRows = (
     items: readonly EntityEvent[],
@@ -141,7 +146,7 @@ const EntityTransactionList = function ({
         {months.map((month) => {
           const isOpen =
             term !== "" ||
-            (month.key === newestMonth) !== toggledMonths.has(month.key);
+            (month.key === newestMonth) !== toggledMonths.includes(month.key);
           return (
             <Box key={month.key}>
               <ButtonBase

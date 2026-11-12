@@ -82,6 +82,7 @@ const AccountWorkspaceDetailPage = async function ({
   const currentUrl = routes.workspaceDetail(accountId, {
     ...(search === undefined ? {} : { search }),
     ...(accountType === undefined ? {} : { accountType }),
+    ...(institution === undefined ? {} : { institution }),
     ...getDetailViewParams(resolvedSearchParams),
   });
   const {

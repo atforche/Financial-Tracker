@@ -1,3 +1,4 @@
+import { Alert, Stack } from "@mui/material";
 import type { Fund, FundBalanceEvent, FundWithBalance } from "@/funds/types";
 import {
   type FundAssignmentDraft,
@@ -18,7 +19,6 @@ import type {
   FundGoalWithProgress,
 } from "@/fund-goals/types";
 import { type JSX, useState } from "react";
-import { Stack, Typography } from "@mui/material";
 import BalanceChangeChip from "@/framework/view/BalanceChangeChip";
 import FundAssignmentPlanner from "@/funds/assignmentPlanner/FundAssignmentPlanner";
 import Toast from "@/framework/alerts/Toast";
@@ -269,11 +269,9 @@ const IncomeFundAssignmentPlanner = function ({
   return (
     <>
       {readOnly || isPlanned ? null : (
-        <Typography variant="body2" color="text.secondary">
-          Unplanned income doesn&apos;t count toward fund goals, so it
-          isn&apos;t assigned automatically. Assign it to its fund here: money
-          moved later from Unassigned counts toward that fund&apos;s goal.
-        </Typography>
+        <Alert severity="info">
+          Unplanned income doesn&apos;t count toward fund goals.
+        </Alert>
       )}
       <FundAssignmentPlanner
         funds={funds}

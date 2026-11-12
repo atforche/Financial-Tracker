@@ -1,7 +1,8 @@
 "use client";
 
 import { Collapse, IconButton, Paper, Stack, Typography } from "@mui/material";
-import { type JSX, type ReactNode, useState } from "react";
+import type { JSX, ReactNode } from "react";
+import usePageState, { isBoolean } from "@/framework/routes/usePageState";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import SignedChange from "@/framework/view/SignedChange";
 
@@ -38,7 +39,11 @@ const StatCard = function ({
   details = noDetails,
   detailsLabel = "breakdown",
 }: StatCardProps): JSX.Element {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = usePageState(
+    `statCard:${label}`,
+    false,
+    isBoolean,
+  );
   return (
     <Paper
       sx={{
