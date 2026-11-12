@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Domain.Accounts;
 using Domain.Transactions.Accounts;
+using Domain.Transactions.BalanceAdjustments;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Refunds;
@@ -17,7 +18,8 @@ public sealed class TransactionDispatcherService(
     IncomeTransactionService incomeTransactionService,
     AccountTransactionService accountTransactionService,
     FundTransactionService fundTransactionService,
-    RefundTransactionService refundTransactionService)
+    RefundTransactionService refundTransactionService,
+    BalanceAdjustmentService balanceAdjustmentService)
 {
     /// <summary>
     /// Attempts to create a transaction using the provided concrete request.
@@ -40,6 +42,8 @@ public sealed class TransactionDispatcherService(
                 (fundTransactionService.TryCreate(fundRequest, out FundTransaction? fundTransaction, out exceptions), fundTransaction),
             CreateRefundTransactionRequest refundRequest =>
                 (refundTransactionService.TryCreate(refundRequest, out RefundTransaction? refundTransaction, out exceptions), refundTransaction),
+            CreateBalanceAdjustmentRequest balanceAdjustmentRequest =>
+                (balanceAdjustmentService.TryCreate(balanceAdjustmentRequest, out BalanceAdjustment? balanceAdjustment, out exceptions), balanceAdjustment),
             _ => (Fail(out exceptions, $"Unrecognized create request type: {request.GetType().Name}"), null)
         };
         return succeeded;
@@ -61,6 +65,8 @@ public sealed class TransactionDispatcherService(
                 fundTransactionService.TryUpdate(fundTransaction, fundRequest, out exceptions),
             (RefundTransaction refundTransaction, UpdateRefundTransactionRequest refundRequest) =>
                 refundTransactionService.TryUpdate(refundTransaction, refundRequest, out exceptions),
+            (BalanceAdjustment balanceAdjustment, UpdateBalanceAdjustmentRequest balanceAdjustmentRequest) =>
+                balanceAdjustmentService.TryUpdate(balanceAdjustment, balanceAdjustmentRequest, out exceptions),
             _ => Fail(out exceptions, $"Request {request.GetType().Name} is not valid for transaction {transaction.GetType().Name}.")
         };
 
@@ -68,17 +74,23 @@ public sealed class TransactionDispatcherService(
     /// Attempts to post the provided transaction to the provided account.
     /// </summary>
     public bool TryPost(Transaction transaction, PostTransactionRequest request, out IEnumerable<ValidationError> exceptions) =>
-        transaction is FundTransaction
-            ? Fail(out exceptions, "Fund transactions cannot be posted to an account.")
-            : GetService(transaction)?.TryPost(transaction, request, out exceptions) ?? FailUnrecognized(transaction, out exceptions);
+        transaction switch
+        {
+            FundTransaction => Fail(out exceptions, "Fund transactions cannot be posted to an account."),
+            BalanceAdjustment => Fail(out exceptions, "Balance adjustments are always posted on their date."),
+            _ => GetService(transaction)?.TryPost(transaction, request, out exceptions) ?? FailUnrecognized(transaction, out exceptions),
+        };
 
     /// <summary>
     /// Attempts to unpost the provided transaction.
     /// </summary>
     public bool TryUnpost(Transaction transaction, AccountId? accountId, out IEnumerable<ValidationError> exceptions) =>
-        transaction is FundTransaction
-            ? Fail(out exceptions, "Fund transactions cannot be unposted.")
-            : GetService(transaction)?.TryUnpost(transaction, accountId, out exceptions) ?? FailUnrecognized(transaction, out exceptions);
+        transaction switch
+        {
+            FundTransaction => Fail(out exceptions, "Fund transactions cannot be unposted."),
+            BalanceAdjustment => Fail(out exceptions, "Balance adjustments are always posted on their date."),
+            _ => GetService(transaction)?.TryUnpost(transaction, accountId, out exceptions) ?? FailUnrecognized(transaction, out exceptions),
+        };
 
     /// <summary>
     /// Attempts to delete the provided transaction.
@@ -97,6 +109,7 @@ public sealed class TransactionDispatcherService(
             AccountTransaction => accountTransactionService,
             FundTransaction => fundTransactionService,
             RefundTransaction => refundTransactionService,
+            BalanceAdjustment => balanceAdjustmentService,
             _ => null
         };
 

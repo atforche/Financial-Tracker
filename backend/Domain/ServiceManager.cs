@@ -13,6 +13,7 @@ using Domain.Locations.Queries;
 using Domain.Overview;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
+using Domain.Transactions.BalanceAdjustments;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Refunds;
@@ -63,6 +64,7 @@ public static class ServiceManager
         _ = serviceCollection.AddScoped<IncomeTransactionService>();
         _ = serviceCollection.AddScoped<AccountTransactionService>();
         _ = serviceCollection.AddScoped<FundTransactionService>();
+        _ = serviceCollection.AddScoped<BalanceAdjustmentService>();
         _ = serviceCollection.AddScoped<TransactionDispatcherService>();
         _ = serviceCollection.AddScoped<Transactions.Queries.TransactionQueryService>();
         _ = serviceCollection.AddScoped<LocationService>();

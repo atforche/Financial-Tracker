@@ -4,6 +4,7 @@ using Domain.Funds;
 using Domain.Locations;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
+using Domain.Transactions.BalanceAdjustments;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Refunds;
@@ -23,7 +24,8 @@ internal sealed class TransactionConfiguration :
     IEntityTypeConfiguration<IncomeTransaction>,
     IEntityTypeConfiguration<AccountTransaction>,
     IEntityTypeConfiguration<FundTransaction>,
-    IEntityTypeConfiguration<RefundTransaction>
+    IEntityTypeConfiguration<RefundTransaction>,
+    IEntityTypeConfiguration<BalanceAdjustment>
 {
     private static readonly ValueConverter<AccountId, Guid> AccountIdConverter =
         new(accountId => accountId.Value, value => new AccountId(value));
@@ -75,7 +77,8 @@ internal sealed class TransactionConfiguration :
             .HasValue<IncomeTransaction>(TransactionType.Income)
             .HasValue<AccountTransaction>(TransactionType.Account)
             .HasValue<FundTransaction>(TransactionType.Fund)
-            .HasValue<RefundTransaction>(TransactionType.Refund);
+            .HasValue<RefundTransaction>(TransactionType.Refund)
+            .HasValue<BalanceAdjustment>(TransactionType.BalanceAdjustment);
     }
 
     /// <inheritdoc/>
@@ -299,5 +302,15 @@ internal sealed class TransactionConfiguration :
             destinationBuilder.HasOne(destination => destination.Fund).WithMany().HasForeignKey("FundId");
             destinationBuilder.Navigation(destination => destination.Fund).AutoInclude();
         });
+    }
+
+    /// <inheritdoc/>
+    public void Configure(EntityTypeBuilder<BalanceAdjustment> builder)
+    {
+        builder.Property<AccountId>("AccountId")
+            .HasColumnName("BalanceAdjustment_AccountId")
+            .HasConversion(AccountIdConverter);
+        builder.HasOne(transaction => transaction.Account).WithMany().HasForeignKey("AccountId");
+        builder.Navigation(transaction => transaction.Account).AutoInclude();
     }
 }

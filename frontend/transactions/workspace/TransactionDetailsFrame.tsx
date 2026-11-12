@@ -10,6 +10,7 @@ import DateEntryField from "@/framework/forms/DateEntryField";
 import type { Dayjs } from "dayjs";
 import ResponsiveGrid from "@/framework/view/ResponsiveGrid";
 import StringEntryField from "@/framework/forms/StringEntryField";
+import TransactionTypeField from "@/transactions/workspace/TransactionTypeField";
 
 /**
  * Props for the TransactionDetailsFrame component.
@@ -28,7 +29,7 @@ interface TransactionDetailsFrameProps {
 }
 
 /**
- * Displays the shared date, accounting period, and description fields for transaction forms.
+ * Displays the shared date, accounting period, description, and type fields for transaction forms.
  */
 const TransactionDetailsFrame = function ({
   accountingPeriods,
@@ -72,6 +73,7 @@ const TransactionDetailsFrame = function ({
           value={descriptionValue}
           setValue={setDescriptionValue}
         />
+        <TransactionTypeField />
       </TransactionSection>
     </ConstrainedContent>
   );

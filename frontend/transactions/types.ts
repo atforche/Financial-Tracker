@@ -68,6 +68,12 @@ type RefundTransaction =
   components["schemas"]["TransactionModelRefundTransactionModel"];
 
 /**
+ * Type representing a balance adjustment. Its amount is a signed change to the account's balance as it is displayed.
+ */
+type BalanceAdjustment =
+  components["schemas"]["TransactionModelBalanceAdjustmentModel"];
+
+/**
  * Type representing a source of a refund transaction.
  */
 type RefundTransactionSource = RefundTransaction["sources"][number];
@@ -120,6 +126,24 @@ const isRefundTransaction = function (
   transaction: Transaction,
 ): transaction is RefundTransaction {
   return transaction.transactionType === TransactionTypeModel.Refund;
+};
+
+/**
+ * Determines whether a transaction is a balance adjustment.
+ */
+const isBalanceAdjustment = function (
+  transaction: Transaction,
+): transaction is BalanceAdjustment {
+  return transaction.transactionType === TransactionTypeModel.BalanceAdjustment;
+};
+
+/**
+ * Narrows a balance adjustment, returning null for other types.
+ */
+const asBalanceAdjustment = function (
+  transaction: Transaction,
+): BalanceAdjustment | null {
+  return isBalanceAdjustment(transaction) ? transaction : null;
 };
 
 /**
@@ -180,7 +204,8 @@ type UpdateTransactionRequest =
   | components["schemas"]["UpdateTransactionModelUpdateFundTransactionModel"]
   | components["schemas"]["UpdateTransactionModelUpdateIncomeTransactionModel"]
   | components["schemas"]["UpdateTransactionModelUpdateSpendingTransactionModel"]
-  | components["schemas"]["UpdateTransactionModelUpdateRefundTransactionModel"];
+  | components["schemas"]["UpdateTransactionModelUpdateRefundTransactionModel"]
+  | components["schemas"]["UpdateTransactionModelUpdateBalanceAdjustmentModel"];
 
 /**
  * Type representing a request to post a transaction.
@@ -193,6 +218,7 @@ export {
   TransactionTypeModel as TransactionType,
   type AccountTransaction,
   type AccountTransactionDestination,
+  type BalanceAdjustment,
   type FundTransaction,
   type IncomeTransaction,
   type IncomeLine,
@@ -207,11 +233,13 @@ export {
   type UpdateTransactionRequest,
   type PostTransactionRequest,
   isAccountTransaction,
+  isBalanceAdjustment,
   isFundTransaction,
   isIncomeTransaction,
   isSpendingTransaction,
   isRefundTransaction,
   asAccountTransaction,
+  asBalanceAdjustment,
   asFundTransaction,
   asIncomeTransaction,
   asSpendingTransaction,

@@ -64,6 +64,11 @@ interface TransactionFormProps<RequestPayload> {
   readonly description: string;
   readonly setDescription?: Dispatch<SetStateAction<string>> | null;
   readonly headerContent?: ReactNode;
+
+  /**
+   * Replaces the source and destination layout for transactions that have neither.
+   */
+  readonly content?: ReactNode;
   readonly sourceContent?: ReactNode;
   readonly destinationContent?: ReactNode;
   readonly sourceAmount?: number | null;
@@ -98,6 +103,7 @@ const TransactionForm = function <RequestPayload>({
   description,
   setDescription = null,
   headerContent,
+  content,
   sourceContent,
   destinationContent,
   sourceAmount,
@@ -137,10 +143,14 @@ const TransactionForm = function <RequestPayload>({
             headerContent={headerContent}
             color={detailsAreValid ? "info" : "error"}
           />
-          <TransactionSourceDestinationLayout
-            sourceFrame={sourceContent ?? emptyFrame}
-            destinationFrames={destinationContent ?? emptyFrame}
-          />
+          {content === undefined ? (
+            <TransactionSourceDestinationLayout
+              sourceFrame={sourceContent ?? emptyFrame}
+              destinationFrames={destinationContent ?? emptyFrame}
+            />
+          ) : (
+            <ConstrainedContent maxWidth={1200}>{content}</ConstrainedContent>
+          )}
           {showSummary && typeof destinationAmount === "number" ? (
             <ConstrainedContent maxWidth={1200}>
               <TransactionSection

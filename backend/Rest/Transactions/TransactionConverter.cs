@@ -3,6 +3,7 @@ using Domain.BalanceEvents;
 using Domain.Funds;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
+using Domain.Transactions.BalanceAdjustments;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Queries;
@@ -125,6 +126,7 @@ public sealed class TransactionConverter(
             TransactionType.Account => TransactionTypeModel.Account,
             TransactionType.Fund => TransactionTypeModel.Fund,
             TransactionType.Refund => TransactionTypeModel.Refund,
+            TransactionType.BalanceAdjustment => TransactionTypeModel.BalanceAdjustment,
             _ => throw new ArgumentOutOfRangeException(nameof(summary), summary.TransactionType, null),
         },
         TotalCount = summary.TotalCount,
@@ -152,6 +154,7 @@ public sealed class TransactionConverter(
         TransactionTypeModel.Account => TransactionType.Account,
         TransactionTypeModel.Fund => TransactionType.Fund,
         TransactionTypeModel.Refund => TransactionType.Refund,
+        TransactionTypeModel.BalanceAdjustment => TransactionType.BalanceAdjustment,
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
     };
 
@@ -339,6 +342,23 @@ public sealed class TransactionConverter(
                         fund.Date,
                         BalanceEventType.Credit)),
             }).ToList(),
+        },
+        BalanceAdjustment adjustment => new BalanceAdjustmentModel
+        {
+            Id = adjustment.Id.Value,
+            TransactionType = TransactionTypeModel.BalanceAdjustment,
+            AccountingPeriodId = details.AccountingPeriod.Id.Value,
+            AccountingPeriodName = details.AccountingPeriod.Name,
+            Date = adjustment.Date,
+            Sequence = adjustment.Sequence,
+            Description = adjustment.Description,
+            Amount = adjustment.Amount,
+            FullyPosted = true,
+            Account = accountBalanceEventConverter.ToModel(details.GetAccountEvent(
+                adjustment.Account,
+                adjustment.Date,
+                adjustment.BalanceEventAmount,
+                adjustment.BalanceEventType)),
         },
         _ => throw new InvalidOperationException($"Unrecognized Transaction type '{details.Transaction.GetType().Name}'."),
     };

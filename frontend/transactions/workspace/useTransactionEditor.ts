@@ -136,6 +136,7 @@ const useUpdateTransactionEditor = function ({
   redirectUrl,
   resetDraft,
   buildRequest,
+  dateState,
 }: {
   readonly transaction: Transaction;
   readonly transactionAccountingPeriod: AccountingPeriod;
@@ -146,11 +147,21 @@ const useUpdateTransactionEditor = function ({
     date: Dayjs | null,
     description: string,
   ) => UpdateTransactionRequest | null;
+
+  /**
+   * Date state owned by the caller, for forms whose draft depends on the date.
+   */
+  readonly dateState?: {
+    readonly date: Dayjs | null;
+    readonly setDate: Dispatch<SetStateAction<Dayjs | null>>;
+  };
 }): TransactionEditorFormProps<UpdateTransactionRequest> {
   const router = useRouter();
   const formRef = useRef<HTMLDivElement | null>(null);
   const [state, action, pending] = useActionState(updateTransaction, {});
-  const [date, setDate] = useState<Dayjs | null>(dayjs(transaction.date));
+  const [ownDate, setOwnDate] = useState<Dayjs | null>(dayjs(transaction.date));
+  const date = dateState === undefined ? ownDate : dateState.date;
+  const setDate = dateState === undefined ? setOwnDate : dateState.setDate;
   const [description, setDescription] = useState<string>(
     transaction.description,
   );
@@ -198,4 +209,5 @@ const useUpdateTransactionEditor = function ({
   };
 };
 
+export type { TransactionEditorFormProps };
 export { useCreateTransactionEditor, useUpdateTransactionEditor };

@@ -5,6 +5,7 @@ using Domain.Funds;
 using Domain.Locations;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
+using Domain.Transactions.BalanceAdjustments;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Queries;
@@ -195,7 +196,8 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
                         || ((AccountTransaction)transaction).Destinations.Any(destination => destination.Account != null && accountIds.Contains(destination.Account.Id))))
                 || (transaction is RefundTransaction
                     && (((RefundTransaction)transaction).Sources.Any(source => source.Account != null && accountIds.Contains(source.Account.Id))
-                        || accountIds.Contains(((RefundTransaction)transaction).Destination.Account.Id))));
+                        || accountIds.Contains(((RefundTransaction)transaction).Destination.Account.Id)))
+                || (transaction is BalanceAdjustment && accountIds.Contains(((BalanceAdjustment)transaction).Account.Id)));
         }
         if (filter.FundIds.Count > 0)
         {
@@ -289,6 +291,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
         AccountTransaction account => account.Source.Account?.Name ?? account.Source.Location?.Name,
         FundTransaction fund => fund.Source.Fund.Name,
         RefundTransaction refund => string.Join(", ", refund.Sources.Select(source => source.Account?.Name ?? source.Location?.Name)),
+        BalanceAdjustment => "Balance adjustment",
         _ => null,
     };
 
@@ -302,6 +305,7 @@ public sealed class TransactionQueryRepository(DatabaseContext databaseContext) 
         AccountTransaction account => string.Join(", ", account.Destinations.Select(destination => destination.Account?.Name ?? destination.Location?.Name).Distinct(StringComparer.OrdinalIgnoreCase)),
         FundTransaction fund => string.Join(", ", fund.Destinations.Select(destination => destination.Fund.Name).Distinct(StringComparer.OrdinalIgnoreCase)),
         RefundTransaction refund => refund.Destination.Account.Name,
+        BalanceAdjustment adjustment => adjustment.Account.Name,
         _ => string.Empty,
     };
 

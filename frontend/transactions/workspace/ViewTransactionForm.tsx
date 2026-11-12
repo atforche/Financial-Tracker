@@ -8,6 +8,7 @@ import {
   type Transaction,
   TransactionType,
   asAccountTransaction,
+  asBalanceAdjustment,
   asFundTransaction,
   asIncomeTransaction,
   asRefundTransaction,
@@ -42,6 +43,7 @@ import {
 import AccountTransactionDestinationFrame from "@/transactions/workspace/account/AccountTransactionDestinationFrame";
 import AccountTransactionSourceFrame from "@/transactions/workspace/account/AccountTransactionSourceFrame";
 import type { AccountingPeriodWithExpectedIncomeSources } from "@/accounting-periods/types";
+import BalanceAdjustmentFrame from "@/transactions/workspace/balance-adjustment/BalanceAdjustmentFrame";
 import type { FundGoalWithProgress } from "@/fund-goals/types";
 import FundTransactionDestinationFrame from "@/transactions/workspace/fund/FundTransactionDestinationFrame";
 import FundTransactionSourceFrame from "@/transactions/workspace/fund/FundTransactionSourceFrame";
@@ -53,9 +55,11 @@ import SpendingTransactionDestinationFrame from "@/transactions/workspace/spendi
 import SpendingTransactionSourceFrame from "@/transactions/workspace/spending/SpendingTransactionSourceFrame";
 import TransactionDetailsMenu from "@/transactions/workspace/TransactionDetailsMenu";
 import TransactionForm from "@/transactions/workspace/TransactionForm";
+import { TransactionTypeProvider } from "@/transactions/workspace/TransactionTypeField";
 import dayjs from "dayjs";
 import { getCurrencyTotal } from "@/framework/currencyHelpers";
 import { getPostedTransactionAccounts } from "@/transactions/postingHelpers";
+import { getTransactionAccountDraftFromTransactionAccount } from "@/transactions/workspace/accountBalanceEventDraft";
 import { useWriteAccess } from "@/framework/auth/ApplicationUserProvider";
 
 /**
@@ -95,6 +99,7 @@ const ViewTransactionForm = function ({
   const incomeTransaction = asIncomeTransaction(transaction);
   const accountTransaction = asAccountTransaction(transaction);
   const fundTransaction = asFundTransaction(transaction);
+  const balanceAdjustment = asBalanceAdjustment(transaction);
   const postedAccountCount = getPostedTransactionAccounts(transaction).length;
   const { reportPostingDate, previews } =
     useTransactionPostingPreviews(transaction);
@@ -393,48 +398,61 @@ const ViewTransactionForm = function ({
   }
 
   return (
-    <CanUnpostContext.Provider value={transactionAccountingPeriod.isOpen}>
-      <PostingDateReporterContext.Provider value={reportPostingDate}>
-        <TransactionForm
-          readOnly
-          accountingPeriods={[]}
-          accountingPeriod={transactionAccountingPeriod}
-          setAccountingPeriod={null}
-          date={dayjs(transaction.date)}
-          setDate={null}
-          defaultDate={null}
-          description={transaction.description}
-          setDescription={null}
-          headerContent={
-            !canWrite || !transactionAccountingPeriod.isOpen ? undefined : (
-              <TransactionDetailsMenu
-                transaction={transaction}
-                editUrl={editUrl}
-                postedAccountCount={postedAccountCount}
-                currentUrl={currentUrl}
-                deleteRedirectUrl={deleteRedirectUrl}
-              />
-            )
-          }
-          sourceContent={
-            sourceContent ?? (
-              <FundTransactionSourceFrame
-                readOnly
-                funds={emptyFunds}
-                fund={null}
-                setFund={null}
-                amount={null}
-                setAmount={null}
-              />
-            )
-          }
-          destinationContent={destinationContent}
-          sourceAmount={sourceAmount}
-          destinationAmount={destinationAmount}
-          showSummary={transaction.transactionType === TransactionType.Income}
-        />
-      </PostingDateReporterContext.Provider>
-    </CanUnpostContext.Provider>
+    <TransactionTypeProvider type={transaction.transactionType}>
+      <CanUnpostContext.Provider value={transactionAccountingPeriod.isOpen}>
+        <PostingDateReporterContext.Provider value={reportPostingDate}>
+          <TransactionForm
+            readOnly
+            accountingPeriods={[]}
+            accountingPeriod={transactionAccountingPeriod}
+            setAccountingPeriod={null}
+            date={dayjs(transaction.date)}
+            setDate={null}
+            defaultDate={null}
+            description={transaction.description}
+            setDescription={null}
+            content={
+              balanceAdjustment === null ? undefined : (
+                <BalanceAdjustmentFrame
+                  account={getTransactionAccountDraftFromTransactionAccount(
+                    balanceAdjustment.account,
+                  )}
+                  balanceEvent={balanceAdjustment.account}
+                  change={balanceAdjustment.amount}
+                />
+              )
+            }
+            headerContent={
+              !canWrite || !transactionAccountingPeriod.isOpen ? undefined : (
+                <TransactionDetailsMenu
+                  transaction={transaction}
+                  editUrl={editUrl}
+                  postedAccountCount={postedAccountCount}
+                  currentUrl={currentUrl}
+                  deleteRedirectUrl={deleteRedirectUrl}
+                />
+              )
+            }
+            sourceContent={
+              sourceContent ?? (
+                <FundTransactionSourceFrame
+                  readOnly
+                  funds={emptyFunds}
+                  fund={null}
+                  setFund={null}
+                  amount={null}
+                  setAmount={null}
+                />
+              )
+            }
+            destinationContent={destinationContent}
+            sourceAmount={sourceAmount}
+            destinationAmount={destinationAmount}
+            showSummary={transaction.transactionType === TransactionType.Income}
+          />
+        </PostingDateReporterContext.Provider>
+      </CanUnpostContext.Provider>
+    </TransactionTypeProvider>
   );
 };
 

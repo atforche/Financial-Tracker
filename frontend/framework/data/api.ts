@@ -4710,7 +4710,7 @@ export interface components {
             accountId: string;
         };
         /** @description Model representing a request to create a Transaction. */
-        CreateTransactionModel: components["schemas"]["CreateTransactionModelCreateSpendingTransactionModel"] | components["schemas"]["CreateTransactionModelCreateIncomeTransactionModel"] | components["schemas"]["CreateTransactionModelCreateAccountTransactionModel"] | components["schemas"]["CreateTransactionModelCreateFundTransactionModel"] | components["schemas"]["CreateTransactionModelCreateRefundTransactionModel"];
+        CreateTransactionModel: components["schemas"]["CreateTransactionModelCreateSpendingTransactionModel"] | components["schemas"]["CreateTransactionModelCreateIncomeTransactionModel"] | components["schemas"]["CreateTransactionModelCreateAccountTransactionModel"] | components["schemas"]["CreateTransactionModelCreateFundTransactionModel"] | components["schemas"]["CreateTransactionModelCreateRefundTransactionModel"] | components["schemas"]["CreateTransactionModelCreateBalanceAdjustmentModel"];
         /** @description Model representing a request to create an account transaction. */
         CreateTransactionModelCreateAccountTransactionModel: {
             /** @enum {string} */
@@ -4719,6 +4719,36 @@ export interface components {
             source: components["schemas"]["CreateAccountTransactionSourceModel"];
             /** @description Destinations for the account transaction. */
             destinations: components["schemas"]["CreateAccountTransactionDestinationModel"][];
+            /**
+             * Format: uuid
+             * @description Accounting Period for the Transaction.
+             */
+            accountingPeriodId: string;
+            /**
+             * Format: date
+             * @description Date for the Transaction.
+             */
+            date: string;
+            /** @description Description for the Transaction. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the Transaction.
+             */
+            amount: number;
+        };
+        /**
+         * @description Model representing a request to create a balance adjustment. Its amount is a signed change to the account's
+         *     balance as it is displayed.
+         */
+        CreateTransactionModelCreateBalanceAdjustmentModel: {
+            /** @enum {string} */
+            type?: CreateTransactionModelCreateBalanceAdjustmentModelType;
+            /**
+             * Format: uuid
+             * @description ID of the account whose balance is adjusted.
+             */
+            accountId: string;
             /**
              * Format: uuid
              * @description Accounting Period for the Transaction.
@@ -5895,7 +5925,7 @@ export interface components {
             account: components["schemas"]["AccountBalanceEventModel"];
         };
         /** @description Model representing a Transaction. */
-        TransactionModel: components["schemas"]["TransactionModelSpendingTransactionModel"] | components["schemas"]["TransactionModelIncomeTransactionModel"] | components["schemas"]["TransactionModelAccountTransactionModel"] | components["schemas"]["TransactionModelFundTransactionModel"] | components["schemas"]["TransactionModelRefundTransactionModel"];
+        TransactionModel: components["schemas"]["TransactionModelSpendingTransactionModel"] | components["schemas"]["TransactionModelIncomeTransactionModel"] | components["schemas"]["TransactionModelAccountTransactionModel"] | components["schemas"]["TransactionModelFundTransactionModel"] | components["schemas"]["TransactionModelRefundTransactionModel"] | components["schemas"]["TransactionModelBalanceAdjustmentModel"];
         /** @description Model representing an account transaction. */
         TransactionModelAccountTransactionModel: {
             /** @enum {string} */
@@ -5904,6 +5934,46 @@ export interface components {
             source: components["schemas"]["AccountTransactionSourceModel"];
             /** @description Destinations for the account transaction. */
             destinations: components["schemas"]["AccountTransactionDestinationModel"][];
+            /**
+             * Format: uuid
+             * @description ID for the Transaction.
+             */
+            id: string;
+            /** @description Type of the Transaction. */
+            transactionType: components["schemas"]["TransactionTypeModel"];
+            /**
+             * Format: uuid
+             * @description Accounting Period ID for the Transaction.
+             */
+            accountingPeriodId: string;
+            /** @description Name of the Accounting Period for the Transaction. */
+            accountingPeriodName: string;
+            /**
+             * Format: date
+             * @description Date for the Transaction.
+             */
+            date: string;
+            /**
+             * Format: int32
+             * @description Sequence number for the Transaction.
+             */
+            sequence: number;
+            /** @description Description for the Transaction. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the Transaction.
+             */
+            amount: number;
+            /** @description Whether the Transaction is posted to every affected Account. */
+            fullyPosted: boolean;
+        };
+        /** @description Model representing a balance adjustment. Its amount is a signed change to the account's balance as it is displayed. */
+        TransactionModelBalanceAdjustmentModel: {
+            /** @enum {string} */
+            type?: TransactionModelBalanceAdjustmentModelType;
+            /** @description Account whose balance is adjusted. */
+            account: components["schemas"]["AccountBalanceEventModel"];
             /**
              * Format: uuid
              * @description ID for the Transaction.
@@ -6233,7 +6303,7 @@ export interface components {
             name: string;
         };
         /** @description Model representing a request to update a Transaction. */
-        UpdateTransactionModel: components["schemas"]["UpdateTransactionModelUpdateSpendingTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateIncomeTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateAccountTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateFundTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateRefundTransactionModel"];
+        UpdateTransactionModel: components["schemas"]["UpdateTransactionModelUpdateSpendingTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateIncomeTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateAccountTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateFundTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateRefundTransactionModel"] | components["schemas"]["UpdateTransactionModelUpdateBalanceAdjustmentModel"];
         /** @description Model representing a request to update an account transaction. */
         UpdateTransactionModelUpdateAccountTransactionModel: {
             /** @enum {string} */
@@ -6242,6 +6312,31 @@ export interface components {
             source: components["schemas"]["CreateAccountTransactionSourceModel"];
             /** @description Destinations for the account transaction. */
             destinations: components["schemas"]["CreateAccountTransactionDestinationModel"][];
+            /**
+             * Format: date
+             * @description Date for the Transaction.
+             */
+            date: string;
+            /** @description Description for the Transaction. */
+            description: string;
+            /**
+             * Format: double
+             * @description Amount for the Transaction.
+             */
+            amount: number;
+        };
+        /**
+         * @description Model representing a request to update a balance adjustment. Its amount is a signed change to the account's
+         *     balance as it is displayed.
+         */
+        UpdateTransactionModelUpdateBalanceAdjustmentModel: {
+            /** @enum {string} */
+            type?: UpdateTransactionModelUpdateBalanceAdjustmentModelType;
+            /**
+             * Format: uuid
+             * @description ID of the account whose balance is adjusted.
+             */
+            accountId: string;
             /**
              * Format: date
              * @description Date for the Transaction.
@@ -6500,6 +6595,9 @@ export enum BalanceGranularityModel {
 export enum CreateTransactionModelCreateAccountTransactionModelType {
     Account = "Account"
 }
+export enum CreateTransactionModelCreateBalanceAdjustmentModelType {
+    BalanceAdjustment = "BalanceAdjustment"
+}
 export enum CreateTransactionModelCreateFundTransactionModelType {
     Fund = "Fund"
 }
@@ -6554,6 +6652,9 @@ export enum OverviewHistoryRangeModel {
 export enum TransactionModelAccountTransactionModelType {
     Account = "Account"
 }
+export enum TransactionModelBalanceAdjustmentModelType {
+    BalanceAdjustment = "BalanceAdjustment"
+}
 export enum TransactionModelFundTransactionModelType {
     Fund = "Fund"
 }
@@ -6585,10 +6686,14 @@ export enum TransactionTypeModel {
     Income = "Income",
     Account = "Account",
     Fund = "Fund",
-    Refund = "Refund"
+    Refund = "Refund",
+    BalanceAdjustment = "BalanceAdjustment"
 }
 export enum UpdateTransactionModelUpdateAccountTransactionModelType {
     Account = "Account"
+}
+export enum UpdateTransactionModelUpdateBalanceAdjustmentModelType {
+    BalanceAdjustment = "BalanceAdjustment"
 }
 export enum UpdateTransactionModelUpdateFundTransactionModelType {
     Fund = "Fund"

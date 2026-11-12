@@ -3,6 +3,7 @@ using Domain.Accounts;
 using Domain.Funds;
 using Domain.Transactions;
 using Domain.Transactions.Accounts;
+using Domain.Transactions.BalanceAdjustments;
 using Domain.Transactions.Funds;
 using Domain.Transactions.Income;
 using Domain.Transactions.Queries;
@@ -55,7 +56,13 @@ public sealed class TransactionBalanceEventQueryRepository(DatabaseContext datab
                 && (accountingPeriodIds == null || accountingPeriodIds.Contains(transaction.AccountingPeriodId)))
             .Where(transaction => transaction.Sources.Any(source => source.Account != null && source.Account.Id == accountId) || transaction.Destination.Account.Id == accountId)
             .ToListAsync(cancellationToken);
-        return spendingTransactions.Concat<Transaction>(incomeTransactions).Concat(accountTransactions).Concat(refundTransactions).ToList();
+        List<BalanceAdjustment> balanceAdjustments = await databaseContext.Transactions.OfType<BalanceAdjustment>().AsNoTracking()
+            .Where(transaction => (startDate == null || transaction.Date >= startDate)
+                && (endDate == null || transaction.Date <= endDate)
+                && (accountingPeriodIds == null || accountingPeriodIds.Contains(transaction.AccountingPeriodId)))
+            .Where(transaction => transaction.Account.Id == accountId)
+            .ToListAsync(cancellationToken);
+        return spendingTransactions.Concat<Transaction>(incomeTransactions).Concat(accountTransactions).Concat(refundTransactions).Concat(balanceAdjustments).ToList();
     }
 
     /// <inheritdoc/>
