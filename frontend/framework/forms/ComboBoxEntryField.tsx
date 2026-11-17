@@ -34,6 +34,7 @@ interface ComboBoxEntryFieldProps<T> {
     option: ComboBoxOption<T>,
     value: ComboBoxOption<T>,
   ) => boolean;
+  readonly disableClearable?: boolean;
 }
 
 /**
@@ -83,6 +84,7 @@ const ComboBoxEntryField = function <T>({
   size = "medium",
   createOption = null,
   isOptionEqualToValue = compareOptionValues,
+  disableClearable = false,
 }: ComboBoxEntryFieldProps<T>): JSX.Element {
   const justSelected = useRef(false);
   const [inputValue, setInputValue] = useState(value?.label ?? "");
@@ -118,6 +120,7 @@ const ComboBoxEntryField = function <T>({
       className="combo-box-entry-field"
       autoHighlight
       clearOnBlur
+      disableClearable={disableClearable}
       options={options}
       inputValue={inputValue}
       value={value}

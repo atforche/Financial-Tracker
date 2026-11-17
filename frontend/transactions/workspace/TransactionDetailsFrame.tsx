@@ -29,7 +29,7 @@ interface TransactionDetailsFrameProps {
 }
 
 /**
- * Displays the shared date, accounting period, description, and type fields for transaction forms.
+ * Displays the shared type, accounting period, date, and description fields for transaction forms.
  */
 const TransactionDetailsFrame = function ({
   accountingPeriods,
@@ -49,6 +49,7 @@ const TransactionDetailsFrame = function ({
         incomplete={color === "error"}
         headerContent={headerContent}
       >
+        <TransactionTypeField />
         {/* Viewing fits the period and date side by side on phones */}
         <ResponsiveGrid
           minimumColumnWidth={setDate === null ? 140 : 220}
@@ -73,7 +74,6 @@ const TransactionDetailsFrame = function ({
           value={descriptionValue}
           setValue={setDescriptionValue}
         />
-        <TransactionTypeField />
       </TransactionSection>
     </ConstrainedContent>
   );
