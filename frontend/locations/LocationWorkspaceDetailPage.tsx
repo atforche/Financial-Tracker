@@ -121,7 +121,7 @@ const LocationWorkspaceDetailPage = async function ({
         returnUrl={returnUrl ?? workspaceUrl}
         workspaceUrl={workspaceUrl}
       />
-      <ResponsiveGrid columns={{ xs: 2, lg: 4 }} uniformPhoneRows>
+      <ResponsiveGrid columns={{ xs: 2, lg: 4 }}>
         <StatCard
           label="Spent"
           value={formatCurrency(summary.spent)}

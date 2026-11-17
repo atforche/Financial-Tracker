@@ -68,7 +68,6 @@ const EntityHistoryLayout = function ({
             lg: summary.goalsMet === undefined ? 4 : 5,
           }}
           spacing={2}
-          uniformPhoneRows
         >
           <StatCard
             label={view === "date" ? "Starting balance" : "Opening balance"}
