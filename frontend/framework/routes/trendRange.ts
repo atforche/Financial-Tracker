@@ -2,7 +2,8 @@ import dayjs, { type Dayjs } from "dayjs";
 import type { ToggleButtonSelectorOption } from "@/framework/forms/ToggleButtonSelector";
 import propertyName from "@/framework/data/propertyName";
 
-const defaultTrendDateRangeDays = 90;
+// Matches the overview's default three-month balance history
+const defaultTrendDateRangeMonths = 3;
 const defaultTrendAccountingPeriodCount = 12;
 // Matches the longest date range the backend will summarize into a balance series
 const maximumTrendRangeYears = 10;
@@ -23,7 +24,7 @@ const getDefaultTrendDateRange = function (
 ): TrendRange {
   return {
     start: endDate
-      .subtract(defaultTrendDateRangeDays, "day")
+      .subtract(defaultTrendDateRangeMonths, "month")
       .format("YYYY-MM-DD"),
     end: endDate.format("YYYY-MM-DD"),
   };
@@ -34,7 +35,6 @@ const getDefaultTrendDateRange = function (
  */
 const getDefaultTrendAccountingPeriodRange = function (
   accountingPeriods: readonly { readonly id: string }[],
-  periodCount: number = defaultTrendAccountingPeriodCount,
 ): TrendRange | null {
   const [end] = accountingPeriods;
   if (typeof end === "undefined") {
@@ -42,7 +42,10 @@ const getDefaultTrendAccountingPeriodRange = function (
   }
   const start =
     accountingPeriods[
-      Math.min(periodCount - 1, accountingPeriods.length - 1)
+      Math.min(
+        defaultTrendAccountingPeriodCount - 1,
+        accountingPeriods.length - 1,
+      )
     ] ?? end;
   return { start: start.id, end: end.id };
 };

@@ -6,7 +6,6 @@ import type { AccountingPeriod } from "@/accounting-periods/types";
 import type { DetailViewParams } from "@/balance-events/getDetailViewParams";
 
 const periodTab = "period";
-const defaultPeriodCount = 6;
 
 /**
  * The selected view of an account or fund page, with the range of each view. The period range is null before any
@@ -51,10 +50,7 @@ const resolvePeriods = function (
   params: DetailViewParams,
   accountingPeriods: readonly AccountingPeriod[],
 ): EntityHistory["periods"] {
-  const fallback = getDefaultTrendAccountingPeriodRange(
-    accountingPeriods,
-    defaultPeriodCount,
-  );
+  const fallback = getDefaultTrendAccountingPeriodRange(accountingPeriods);
   if (fallback === null) {
     return null;
   }
