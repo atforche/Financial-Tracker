@@ -145,14 +145,20 @@ const PagedTable = function <T>({
       });
     }
   }, [currentPage, pageParamName, paginationIndex, updatePageParams]);
-  const rowSx = {
+  // Rows share the table's tracks through subgrid, so content-sized columns line up across rows
+  const tableSx = {
     display: "grid",
-    alignItems: "center",
     columnGap: 2,
     gridTemplateColumns: {
       xs: getGridColumns(columns, false),
       md: getGridColumns(columns, true),
     },
+  };
+  const rowSx = {
+    display: "grid",
+    gridColumn: "1 / -1",
+    gridTemplateColumns: "subgrid",
+    alignItems: "center",
     px: 1,
   };
   const getCellSx = function (
@@ -194,7 +200,7 @@ const PagedTable = function <T>({
             )}
           </Stack>
         ) : (
-          <Box>
+          <Box sx={tableSx}>
             <Box
               sx={{
                 ...rowSx,

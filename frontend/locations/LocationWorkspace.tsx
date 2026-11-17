@@ -70,7 +70,7 @@ const LocationWorkspace = async function ({
   return (
     <PageLayout>
       <LocationWorkspaceFilter accountingPeriods={accountingPeriods} />
-      <ResponsiveGrid columns={{ xs: 2, lg: 4 }} uniformPhoneRows>
+      <ResponsiveGrid columns={{ xs: 2, lg: 4 }}>
         <StatCard
           label="Spent"
           value={formatCurrency(locations.totalSpent)}

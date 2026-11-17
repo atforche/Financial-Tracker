@@ -48,8 +48,7 @@ const StatCard = function ({
     <Paper
       sx={{
         // Keeps a card its own height when a neighbor's breakdown is expanded
-        // Phones instead fill a uniform grid cell so the 2x2 cards match
-        alignSelf: { xs: "stretch", sm: "start" },
+        alignSelf: "start",
         border: "1px solid",
         borderColor: "divider",
         borderRadius: 3,
@@ -108,21 +107,27 @@ const StatCard = function ({
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <Stack spacing={1} sx={{ pt: 0.5 }}>
             {details.map((detail) => (
+              // Half-width phone cards have no room beside the label, so the amount moves below it
               <Stack
                 key={detail.key}
-                direction="row"
-                spacing={1.5}
+                direction={{ xs: "column", sm: "row" }}
                 sx={{
+                  columnGap: 1.5,
                   justifyContent: "space-between",
-                  alignItems: "baseline",
+                  alignItems: { xs: "flex-start", sm: "baseline" },
                 }}
               >
                 <Typography variant="body2">{detail.label}</Typography>
-                <Stack sx={{ alignItems: "flex-end" }}>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                <Stack
+                  sx={{ alignItems: { xs: "flex-start", sm: "flex-end" } }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 500, whiteSpace: "nowrap" }}
+                  >
                     {detail.value}
                   </Typography>
-                  <Typography variant="caption">
+                  <Typography variant="caption" sx={{ whiteSpace: "nowrap" }}>
                     <SignedChange amount={detail.change} />
                   </Typography>
                 </Stack>
